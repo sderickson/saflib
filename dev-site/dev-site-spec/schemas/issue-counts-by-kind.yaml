@@ -1,0 +1,16 @@
+type: object
+description: Per-kind issue counts for a commit or package (all kinds count as debt).
+properties:
+  dead-code:
+    type: integer
+    minimum: 0
+  oversized-file:
+    type: integer
+    minimum: 0
+  package-layout:
+    type: integer
+    minimum: 0
+required:
+  - dead-code
+  - oversized-file
+  - package-layout

@@ -80,6 +80,7 @@ describe("checkout routes", () => {
       hash: headHash,
       analyzed: false,
       packages: [],
+      branch: "main",
     });
     expect(response.body.message).toContain("init");
   });
@@ -95,7 +96,16 @@ describe("checkout routes", () => {
     const response = await request(lease.app).get("/api/checkout");
     expect(response.status).toBe(200);
     expect(response.body.analyzed).toBe(true);
+    expect(response.body.branch).toBe("main");
     expect(response.body.packages.length).toBeGreaterThan(0);
     expect(response.body.packages[0].packageName).toBe("@fixture/root");
+    expect(response.body.packages[0]).toMatchObject({
+      debtCount: expect.any(Number),
+      issueCountsByKind: {
+        "dead-code": expect.any(Number),
+        "oversized-file": expect.any(Number),
+        "package-layout": expect.any(Number),
+      },
+    });
   });
 });

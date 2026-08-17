@@ -16,11 +16,18 @@ export interface UsedByImporterUnit {
   packageDirectory: string;
   isTest: boolean;
   imports: Array<{ specifier: string; names: string[] }>;
+  /**
+   * Export names this file references as values (beyond declarations).
+   * Creates a same-file `usedBy` edge so in-file helpers aren't `dead-code`.
+   */
+  localExportUsages?: string[];
 }
 
 /**
  * Reverse-index of non-test importers for each export in a package.
  * Pure — no FS / git / DB. Key: `${filePath}\0${exportName}`.
+ *
+ * Also records same-file self-usages from {@link UsedByImporterUnit.localExportUsages}.
  */
 export function assembleUsedBy(
   packageName: string,
@@ -32,6 +39,10 @@ export function assembleUsedBy(
   if (exports.length === 0) return out;
 
   const exportsByModule = new Map<
+    string,
+    Array<{ filePath: string; name: string }>
+  >();
+  const exportsByRepoPath = new Map<
     string,
     Array<{ filePath: string; name: string }>
   >();
@@ -52,6 +63,13 @@ export function assembleUsedBy(
       exportsByModule.set(mod, list);
     }
     list.push(exp);
+
+    let byPath = exportsByRepoPath.get(exp.filePath);
+    if (!byPath) {
+      byPath = [];
+      exportsByRepoPath.set(exp.filePath, byPath);
+    }
+    byPath.push(exp);
   }
 
   const buckets = new Map<string, Map<string, ExportUsedBy>>();
@@ -99,6 +117,17 @@ export function assembleUsedBy(
       const wanted = new Set(names);
       for (const exp of moduleExports) {
         if (wanted.has(exp.name)) addImporter(exp, used);
+      }
+    }
+
+    const localUsages = unit.localExportUsages;
+    if (localUsages?.length) {
+      const fileExports = exportsByRepoPath.get(unit.path);
+      if (fileExports?.length) {
+        const wanted = new Set(localUsages);
+        for (const exp of fileExports) {
+          if (wanted.has(exp.name)) addImporter(exp, used);
+        }
       }
     }
   }

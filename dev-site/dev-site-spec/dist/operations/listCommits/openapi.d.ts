@@ -55,6 +55,11 @@ export interface components {
                 testLines: number;
                 exportCount: number;
                 testCaseCount: number;
+                issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+                /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
+                debtCount: number;
+                /** @description True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats. */
+                hasIssueStats: boolean;
             };
         };
         /** @description A branch or tag pointer observed at scan time for a commit. */
@@ -71,6 +76,12 @@ export interface components {
             type: "branch" | "tag";
             /** @description True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips. */
             isMainAncestor: boolean;
+        };
+        /** @description Per-kind issue counts for a commit or package (all kinds count as debt). */
+        "issue-counts-by-kind": {
+            "dead-code": number;
+            "oversized-file": number;
+            "package-layout": number;
         };
     };
     responses: never;

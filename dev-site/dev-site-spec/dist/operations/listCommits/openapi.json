@@ -144,6 +144,18 @@
               "testCaseCount": {
                 "type": "integer",
                 "minimum": 0
+              },
+              "issueCountsByKind": {
+                "$ref": "#/components/schemas/issue-counts-by-kind"
+              },
+              "debtCount": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Sum of all issue kinds (dead-code + oversized-file + package-layout).\n"
+              },
+              "hasIssueStats": {
+                "type": "boolean",
+                "description": "True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats.\n"
               }
             },
             "required": [
@@ -153,7 +165,10 @@
               "testFiles",
               "testLines",
               "exportCount",
-              "testCaseCount"
+              "testCaseCount",
+              "issueCountsByKind",
+              "debtCount",
+              "hasIssueStats"
             ]
           }
         },
@@ -195,6 +210,29 @@
           "name",
           "type",
           "isMainAncestor"
+        ]
+      },
+      "issue-counts-by-kind": {
+        "type": "object",
+        "description": "Per-kind issue counts for a commit or package (all kinds count as debt).",
+        "properties": {
+          "dead-code": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "oversized-file": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "package-layout": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "dead-code",
+          "oversized-file",
+          "package-layout"
         ]
       }
     }

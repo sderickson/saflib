@@ -81,10 +81,17 @@ export function siblingServicePackageNames(specPackageName: string): {
   return { http: `${base}-http`, sdk: `${base}-sdk` };
 }
 
-/** `@foo/bar-http` → `@foo/bar-spec`. */
-export function siblingSpecPackageName(httpPackageName: string): string | null {
-  if (!httpPackageName.endsWith("-http")) return null;
-  return `${httpPackageName.slice(0, -"-http".length)}-spec`;
+/** `@foo/bar-http` or `@foo/bar-sdk` → `@foo/bar-spec`. */
+export function siblingSpecPackageName(
+  servicePackageName: string,
+): string | null {
+  if (servicePackageName.endsWith("-http")) {
+    return `${servicePackageName.slice(0, -"-http".length)}-spec`;
+  }
+  if (servicePackageName.endsWith("-sdk")) {
+    return `${servicePackageName.slice(0, -"-sdk".length)}-spec`;
+  }
+  return null;
 }
 
 function handlerTestStem(filePath: string, stem: string): boolean {
@@ -236,16 +243,31 @@ export async function assemblePackageSpecInventory(
   }
 
   const requestByStem = new Map<string, SpecInventoryFileRef>();
+  const fakeByStem = new Map<string, SpecInventoryFileRef>();
   if (sdkRoot) {
     for (const entry of tree) {
       if (!underPackage(entry.path, sdkRoot.directory)) continue;
       const local = relativeToPackage(entry.path, sdkRoot.directory);
       if (!local.startsWith("requests/")) continue;
+      if (!local.endsWith(".ts") && !local.endsWith(".tsx")) continue;
+      if (local.includes(".test.")) continue;
+      // Aggregator barrels — not per-route modules.
       if (
-        !local.endsWith(".ts") ||
-        local.includes(".test.") ||
-        local.includes(".fake.")
+        local.endsWith("/index.ts") ||
+        local.endsWith("/index.tsx") ||
+        local.endsWith("/index.fakes.ts") ||
+        local.endsWith("/index.fakes.tsx") ||
+        local === "requests/index.ts" ||
+        local === "requests/index.fakes.ts"
       ) {
+        continue;
+      }
+      if (local.includes(".fake.")) {
+        const stem = local
+          .slice("requests/".length)
+          .replace(/\.fake\.tsx?$/, "");
+        if (!stem || stem.includes(".logic")) continue;
+        fakeByStem.set(stem, { filePath: local, repoPath: entry.path });
         continue;
       }
       const stem = local.slice("requests/".length).replace(/\.tsx?$/, "");
@@ -261,6 +283,7 @@ export async function assemblePackageSpecInventory(
       if (!stem) continue;
       op.handler = handlerByStem.get(stem) ?? null;
       op.request = requestByStem.get(stem) ?? null;
+      op.fake = fakeByStem.get(stem) ?? null;
     }
   }
 

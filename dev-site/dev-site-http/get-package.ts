@@ -13,6 +13,7 @@ import {
 import {
   looksLikeDbPackage,
   looksLikeHttpPackage,
+  looksLikeSdkPackage,
   looksLikeSpecPackage,
 } from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
@@ -23,9 +24,20 @@ import {
   type PackageSpecInventory,
 } from "./assemble-package-spec-inventory.ts";
 import type { PackageIssue } from "./package-issues.ts";
+import { annotateSpecInventoryJobEdges } from "./annotate-spec-inventory-jobs.ts";
+import { devSiteHttpStorage } from "./context.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
+
+function annotateJobsIfConfigured(
+  inventory: PackageSpecInventory | undefined,
+): void {
+  if (!inventory) return;
+  const triggerMap = devSiteHttpStorage.getStore()?.jobTriggerMap;
+  if (!triggerMap) return;
+  annotateSpecInventoryJobEdges(inventory, triggerMap);
+}
 
 function joinRepoPath(...parts: Array<string | undefined>): string {
   return parts
@@ -34,6 +46,7 @@ function joinRepoPath(...parts: Array<string | undefined>): string {
     .join("/");
 }
 
+/** Fast live layout/LoC only — do not run full workdir dead-code here (multi-second). */
 function collectLiveLayoutIssues(
   repoRoot: string,
   productRoot: string | undefined,
@@ -84,7 +97,11 @@ export interface CommitPackageDetail {
   }>;
   dbInventory?: PackageDbInventory;
   specInventory?: PackageSpecInventory;
-  /** Working-tree layout/LoC findings (same as `saf-dev-site issues --workdir`). */
+  /**
+   * Working-tree package-layout and oversized-file findings (cheap; package-local).
+   * Full dead-code workdir scans belong in `saf-dev-site issues --workdir` / a
+   * dedicated Issues fetch — not on every Spec package load.
+   */
   layoutIssues?: PackageIssue[];
 }
 
@@ -138,6 +155,7 @@ export async function getCommitPackage(
   const isDb = looksLikeDbPackage(metrics.packageName, metrics.directory);
   const isSpec = looksLikeSpecPackage(metrics.packageName, metrics.directory);
   const isHttp = looksLikeHttpPackage(metrics.packageName, metrics.directory);
+  const isSdk = looksLikeSdkPackage(metrics.packageName, metrics.directory);
   if (isDb) {
     const inv = await assemblePackageDbInventory(
       dbKey,
@@ -157,10 +175,11 @@ export async function getCommitPackage(
     );
     if (!inv.error) {
       specInventory = inv.result;
+      annotateJobsIfConfigured(specInventory);
     }
-  } else if (isHttp) {
-    // Join sibling -spec routes so the HTTP pane can show PackageRouteCards
-    // while still presenting handlers/ as a normal source package.
+  } else if (isHttp || isSdk) {
+    // Join sibling -spec routes so HTTP/SDK panes can show PackageRouteCards
+    // while still presenting handlers/ or requests/ as a normal source package.
     const specName = siblingSpecPackageName(packageName);
     if (specName) {
       const inv = await assemblePackageSpecInventory(
@@ -171,6 +190,7 @@ export async function getCommitPackage(
       );
       if (!inv.error) {
         specInventory = inv.result;
+        annotateJobsIfConfigured(specInventory);
       }
     }
   }

@@ -10,6 +10,7 @@ import {
   looksLikeDbPackage,
   looksLikeSpecPackage,
   looksLikeHttpPackage,
+  looksLikeSdkPackage,
 } from "./classify.ts";
 
 describe("classify", () => {
@@ -88,8 +89,8 @@ describe("classify", () => {
     });
   });
 
-  describe("looksLikeSpecPackage / looksLikeDbPackage / looksLikeHttpPackage", () => {
-    it("detects -spec, -db, and -http naming", () => {
+  describe("looksLikeSpecPackage / looksLikeDbPackage / looksLikeHttpPackage / looksLikeSdkPackage", () => {
+    it("detects -spec, -db, -http, and -sdk naming", () => {
       expect(
         looksLikeSpecPackage("@pathclerk/daemon-spec", "daemon/service/spec"),
       ).toBe(true);
@@ -107,6 +108,12 @@ describe("classify", () => {
       ).toBe(true);
       expect(
         looksLikeHttpPackage("@pathclerk/daemon-spec", "daemon/service/spec"),
+      ).toBe(false);
+      expect(
+        looksLikeSdkPackage("@pathclerk/daemon-sdk", "daemon/service/sdk"),
+      ).toBe(true);
+      expect(
+        looksLikeSdkPackage("@pathclerk/daemon-http", "daemon/service/http"),
       ).toBe(false);
     });
   });

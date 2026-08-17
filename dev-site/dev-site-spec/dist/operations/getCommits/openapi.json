@@ -225,6 +225,14 @@
             "type": "integer",
             "minimum": 0,
             "description": "Count of test files."
+          },
+          "issueCountsByKind": {
+            "$ref": "#/components/schemas/issue-counts-by-kind"
+          },
+          "debtCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Sum of all issue kinds (dead-code + oversized-file + package-layout).\n"
           }
         },
         "required": [
@@ -234,7 +242,32 @@
           "sourceLines",
           "prodLines",
           "testLines",
-          "testFiles"
+          "testFiles",
+          "issueCountsByKind",
+          "debtCount"
+        ]
+      },
+      "issue-counts-by-kind": {
+        "type": "object",
+        "description": "Per-kind issue counts for a commit or package (all kinds count as debt).",
+        "properties": {
+          "dead-code": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "oversized-file": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "package-layout": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "dead-code",
+          "oversized-file",
+          "package-layout"
         ]
       },
       "export-entry": {

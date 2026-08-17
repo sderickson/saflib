@@ -160,10 +160,13 @@ interface SpecOperation {
   routeStem?: string | null;
   handler?: SpecFileRef | null;
   request?: SpecFileRef | null;
+  fake?: SpecFileRef | null;
   handlerTests?: SpecTestSpec[];
   requestSchemas: string[];
   responseSchemas: string[];
   usedBy: SpecUsedBy[];
+  enqueues?: string[];
+  enqueuedBy?: string[];
 }
 
 const props = withDefaults(
@@ -404,10 +407,13 @@ function normalizeOp(op: SpecOperation): RouteCardOperation {
     routeStem: op.routeStem ?? null,
     handler: op.handler ?? null,
     request: op.request ?? null,
+    fake: op.fake ?? null,
     handlerTests: op.handlerTests ?? [],
     requestSchemas: op.requestSchemas,
     responseSchemas: op.responseSchemas,
     usedBy: op.usedBy ?? [],
+    enqueues: op.enqueues,
+    enqueuedBy: op.enqueuedBy,
   };
 }
 

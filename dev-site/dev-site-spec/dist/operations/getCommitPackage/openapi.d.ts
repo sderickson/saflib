@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (same source as `saf-dev-site issues --workdir`), not commit blobs.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP or SDK package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on `saf-dev-site issues --workdir` — not on this Spec package load.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -205,6 +205,11 @@ export interface components {
                         filePath: string;
                         repoPath: string;
                     } | null;
+                    /** @description Sibling SDK fake/MSW module (`*.fake.ts`) when present beside the request. */
+                    fake?: {
+                        filePath: string;
+                        repoPath: string;
+                    } | null;
                     /** @description describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses " > " nesting). */
                     handlerTests: {
                         /**
@@ -225,6 +230,10 @@ export interface components {
                         /** @description Repo-relative path for source links. */
                         repoPath: string;
                     }[];
+                    /** @description operationIds this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map. */
+                    enqueues?: string[];
+                    /** @description operationIds or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map. */
+                    enqueuedBy?: string[];
                 }[];
             }[];
         };
@@ -237,7 +246,7 @@ export interface components {
         };
         "package-issue": {
             /** @enum {string} */
-            kind: "dead-code" | "same-file-only-export" | "oversized-file" | "package-layout";
+            kind: "dead-code" | "oversized-file" | "package-layout";
             title: string;
             name: string;
             kindLabel: string;
@@ -297,7 +306,7 @@ export interface operations {
                             testCases: components["schemas"]["test-case"][];
                             dbInventory?: components["schemas"]["db-inventory"];
                             specInventory?: components["schemas"]["spec-inventory"];
-                            /** @description Working-tree package-layout and oversized-file findings (matches `saf-dev-site issues --workdir` layout portion). */
+                            /** @description Working-tree package-layout and oversized-file findings (package-local; cheap). Dead-code workdir scans are CLI-only. */
                             layoutIssues?: components["schemas"]["package-issue"][];
                         };
                     };

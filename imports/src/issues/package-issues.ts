@@ -28,9 +28,45 @@ function packageLocalPath(
 
 export type PackageIssueKind =
   | "dead-code"
-  | "same-file-only-export"
   | "oversized-file"
   | "package-layout";
+
+export const PACKAGE_ISSUE_KINDS: readonly PackageIssueKind[] = [
+  "dead-code",
+  "oversized-file",
+  "package-layout",
+] as const;
+
+/** All issue kinds count toward architectural debt. */
+export const DEBT_ISSUE_KINDS: readonly PackageIssueKind[] = PACKAGE_ISSUE_KINDS;
+
+export type IssueCountsByKind = Record<PackageIssueKind, number>;
+
+export function emptyIssueCountsByKind(): IssueCountsByKind {
+  return {
+    "dead-code": 0,
+    "oversized-file": 0,
+    "package-layout": 0,
+  };
+}
+
+export function countIssuesByKind(
+  issues: Array<{ kind: PackageIssueKind }>,
+): IssueCountsByKind {
+  const counts = emptyIssueCountsByKind();
+  for (const issue of issues) {
+    counts[issue.kind] += 1;
+  }
+  return counts;
+}
+
+export function debtCountFromIssueCounts(counts: IssueCountsByKind): number {
+  let n = 0;
+  for (const kind of DEBT_ISSUE_KINDS) {
+    n += counts[kind];
+  }
+  return n;
+}
 
 export interface PackageIssue {
   kind: PackageIssueKind;
@@ -75,16 +111,9 @@ export interface PackageDetailForIssues {
   layoutIssues?: PackageIssue[];
 }
 
-function isSameFileOnly(
-  exportFilePath: string,
-  usedBy: UsedBy[] | null | undefined,
-): boolean {
-  if (!usedBy || usedBy.length === 0) return false;
-  return usedBy.every((u) => u.repoPath === exportFilePath);
-}
-
 /**
- * Graph-derived issues: dead exports/queries and same-file-only exports.
+ * Graph-derived issues: dead exports/queries (plus merged layoutIssues).
+ * Same-file-only exports are not reported — self-use is enough to clear dead-code.
  */
 export function collectPackageIssues(
   detail: PackageDetailForIssues,
@@ -126,17 +155,6 @@ export function collectPackageIssues(
         issues.push({
           kind: "dead-code",
           title: "Dead code",
-          name: exp.name,
-          kindLabel: exp.kind,
-          filePath: local,
-          repoPath: exp.filePath,
-        });
-        continue;
-      }
-      if (isSameFileOnly(exp.filePath, exp.usedBy)) {
-        issues.push({
-          kind: "same-file-only-export",
-          title: "Same-file-only export",
           name: exp.name,
           kindLabel: exp.kind,
           filePath: local,

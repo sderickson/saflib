@@ -19,6 +19,7 @@ getCheckout:
               - authoredAt
               - analyzed
               - productRoot
+              - branch
               - packages
             properties:
               hash:
@@ -36,33 +37,14 @@ getCheckout:
                   Analysis path prefix within the repo (e.g. `products`). Empty
                   string means the whole repository. Package `directory` values
                   are relative to this prefix; prepend it for repo-absolute paths.
+              branch:
+                type: string
+                nullable: true
+                description: Short branch name for HEAD, or null when detached.
               packages:
                 type: array
                 items:
-                  type: object
-                  required:
-                    - packageName
-                    - directory
-                    - sourceFiles
-                    - sourceLines
-                    - prodLines
-                    - testLines
-                    - testFiles
-                  properties:
-                    packageName:
-                      type: string
-                    directory:
-                      type: string
-                    sourceFiles:
-                      type: integer
-                    sourceLines:
-                      type: integer
-                    prodLines:
-                      type: integer
-                    testLines:
-                      type: integer
-                    testFiles:
-                      type: integer
+                  $ref: "../../schemas/package-metrics.yaml"
     "500":
       description: Git command failed
       content:

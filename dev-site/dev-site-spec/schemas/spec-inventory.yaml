@@ -156,6 +156,20 @@ properties:
                     type: string
                   repoPath:
                     type: string
+              fake:
+                type: object
+                nullable: true
+                description: >
+                  Sibling SDK fake/MSW module (`*.fake.ts`) when present beside
+                  the request.
+                required:
+                  - filePath
+                  - repoPath
+                properties:
+                  filePath:
+                    type: string
+                  repoPath:
+                    type: string
               handlerTests:
                 type: array
                 description: >
@@ -204,3 +218,17 @@ properties:
                     repoPath:
                       type: string
                       description: Repo-relative path for source links.
+              enqueues:
+                type: array
+                description: >
+                  operationIds this op may enqueue (product job trigger map).
+                  Present only when the HTTP app was configured with a map.
+                items:
+                  type: string
+              enqueuedBy:
+                type: array
+                description: >
+                  operationIds or `cron:…` keys that may enqueue this op.
+                  Present only when the HTTP app was configured with a map.
+                items:
+                  type: string

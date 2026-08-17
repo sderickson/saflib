@@ -3,6 +3,7 @@ import {
   extractDrizzleTables,
   extractExports,
   extractImports,
+  extractLocalExportUsages,
   extractTestCases,
 } from "./index.ts";
 
@@ -352,5 +353,57 @@ describe("extractImports", () => {
 
   it("returns empty when there are no imports", () => {
     expect(extractImports("export const x = 1;\n")).toEqual([]);
+  });
+});
+
+describe("extractLocalExportUsages", () => {
+  it("returns empty when an export is never referenced as a value", () => {
+    const source = `
+      export function unused() { return 1; }
+      export const ALSO = 2;
+    `;
+    expect(extractLocalExportUsages(source)).toEqual([]);
+  });
+
+  it("detects same-file calls of an exported function", () => {
+    const source = `
+      export function helper(n: number) { return n + 1; }
+      export function main() { return helper(1); }
+    `;
+    expect(extractLocalExportUsages(source)).toEqual(["helper"]);
+  });
+
+  it("detects recursive self-calls", () => {
+    const source = `
+      export function fact(n: number): number {
+        return n <= 1 ? 1 : n * fact(n - 1);
+      }
+    `;
+    expect(extractLocalExportUsages(source)).toEqual(["fact"]);
+  });
+
+  it("ignores property names that match an export", () => {
+    const source = `
+      export const helper = 1;
+      export const obj = { helper: 2 };
+      export const access = ({ x }: { helper: number }) => x;
+    `;
+    expect(extractLocalExportUsages(source)).toEqual([]);
+  });
+
+  it("counts shorthand property values", () => {
+    const source = `
+      export const helper = 1;
+      export function pack() { return { helper }; }
+    `;
+    expect(extractLocalExportUsages(source)).toEqual(["helper"]);
+  });
+
+  it("handles export { name } without counting the clause as a use", () => {
+    const source = `
+      function helper() { return 1; }
+      export { helper };
+    `;
+    expect(extractLocalExportUsages(source)).toEqual([]);
   });
 });

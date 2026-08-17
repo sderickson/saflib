@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildDbPackageFileNav,
   buildModuleFileNav,
   buildPackageSpecTree,
+  dbEntitySelectionFromScope,
+  isDbPackageHiddenModuleStem,
+  isSdkPackageHiddenModuleStem,
   toModuleStem,
 } from "./test-tree.ts";
 
@@ -10,7 +14,129 @@ describe("toModuleStem", () => {
     expect(toModuleStem("a/b.ts")).toBe("a/b");
     expect(toModuleStem("a/b.test.ts")).toBe("a/b");
     expect(toModuleStem("a/b.spec.tsx")).toBe("a/b");
+    expect(toModuleStem("a/b.fake.ts")).toBe("a/b");
     expect(toModuleStem("a/b")).toBe("a/b");
+  });
+});
+
+describe("buildDbPackageFileNav", () => {
+  it("puts entities first and hides schemas/queries modules", () => {
+    const nav = buildDbPackageFileNav(
+      ["matter", "org"],
+      [
+        {
+          packageName: "@pkg/db",
+          filePath: "db/errors/index.ts",
+          name: "MatterNotFoundError",
+          kind: "class",
+        },
+        {
+          packageName: "@pkg/db",
+          filePath: "db/schemas/matter.ts",
+          name: "matterTable",
+          kind: "const",
+        },
+        {
+          packageName: "@pkg/db",
+          filePath: "db/instances/registry.ts",
+          name: "daemonDbManager",
+          kind: "const",
+        },
+        {
+          packageName: "@pkg/db",
+          filePath: "db/queries/matter/create.ts",
+          name: "createMatter",
+          kind: "function",
+        },
+      ],
+      [],
+      "@pkg/db",
+      "db",
+    );
+
+    expect(nav[0]?.label).toBe("entities");
+    expect(nav[0]?.kind).toBe("dir");
+    expect(nav[0]?.children.map((c) => c.label)).toEqual(["matter", "org"]);
+    expect(nav[0]?.children[0]?.localPath).toBe("entities/matter");
+
+    const labels = nav.slice(1).map((n) => n.label);
+    expect(labels).toContain("errors");
+    expect(labels).toContain("instances");
+    expect(labels).not.toContain("schemas");
+    expect(labels).not.toContain("queries");
+  });
+
+  it("maps entity scopes from the virtual entities/ path", () => {
+    expect(dbEntitySelectionFromScope({ kind: "all" })).toBeUndefined();
+    expect(
+      dbEntitySelectionFromScope({ kind: "dir", localPath: "entities" }),
+    ).toBeNull();
+    expect(
+      dbEntitySelectionFromScope({
+        kind: "file",
+        localPath: "entities/matter",
+      }),
+    ).toBe("matter");
+    expect(
+      dbEntitySelectionFromScope({ kind: "dir", localPath: "errors" }),
+    ).toBeUndefined();
+    expect(isDbPackageHiddenModuleStem("queries/matter/create")).toBe(true);
+    expect(isDbPackageHiddenModuleStem("errors/index")).toBe(false);
+  });
+});
+
+describe("sdk module nav", () => {
+  it("folds *.fake.ts into the request stem and hides request barrels", () => {
+    const nav = buildModuleFileNav(
+      [
+        {
+          packageName: "@pkg/sdk",
+          filePath: "sdk/requests/forms/get.ts",
+          name: "getForm",
+          kind: "function",
+        },
+        {
+          packageName: "@pkg/sdk",
+          filePath: "sdk/requests/forms/get.fake.ts",
+          name: "getFormHandler",
+          kind: "const",
+        },
+        {
+          packageName: "@pkg/sdk",
+          filePath: "sdk/requests/forms/index.fakes.ts",
+          name: "formsFakes",
+          kind: "const",
+        },
+        {
+          packageName: "@pkg/sdk",
+          filePath: "sdk/requests/forms/index.ts",
+          name: "default",
+          kind: "const",
+        },
+      ],
+      [
+        {
+          packageName: "@pkg/sdk",
+          filePath: "sdk/requests/forms/get.test.ts",
+          fullName: "getForm > ok",
+        },
+      ],
+      "@pkg/sdk",
+      "sdk",
+      "",
+      { excludeStem: isSdkPackageHiddenModuleStem },
+    );
+
+    const requests = nav.find((n) => n.label === "requests");
+    const forms = requests?.children.find((c) => c.label === "forms");
+    const labels = (forms?.children ?? []).map((c) => c.label);
+    expect(labels).toEqual(["get"]);
+    expect(forms?.children[0]?.presence).toBe("both");
+    expect(isSdkPackageHiddenModuleStem("requests/forms/index")).toBe(true);
+    expect(isSdkPackageHiddenModuleStem("requests/forms/index.fakes")).toBe(
+      true,
+    );
+    expect(isSdkPackageHiddenModuleStem("requests/forms/get")).toBe(false);
   });
 });
 

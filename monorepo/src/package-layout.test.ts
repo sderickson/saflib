@@ -90,6 +90,63 @@ describe("checkPackageLayout", () => {
     );
   });
 
+  it("allows drizzle.config.ts, schema.ts, index.ts, and client.ts at package root", () => {
+    withTempPkg(
+      {
+        "package.json": JSON.stringify({ name: "@t/p", scripts: {} }),
+        "drizzle.config.ts": "export default {};\n",
+        "schema.ts": "export {};\n",
+        "index.ts": "export {};\n",
+        "client.ts": "export const getClient = () => null;\n",
+        "helper.ts": "export const x = 1;\n",
+      },
+      (dir) => {
+        const issues = checkPackageLayout({ packageDir: dir });
+        const root = issues.filter((i) => i.kindLabel === "root");
+        expect(root.map((i) => i.filePath)).toEqual(["helper.ts"]);
+      },
+    );
+  });
+
+  it("allows root files that are direct package export targets", () => {
+    withTempPkg(
+      {
+        "package.json": JSON.stringify({
+          name: "@t/p",
+          scripts: {},
+          exports: {
+            "./errors": "./errors.ts",
+            "./fakes": "./fakes.ts",
+          },
+        }),
+        "errors.ts": "export class E {}\n",
+        "fakes.ts": "export const handlers = [];\n",
+        "orphan.ts": "export const x = 1;\n",
+      },
+      (dir) => {
+        const issues = checkPackageLayout({ packageDir: dir });
+        const root = issues.filter((i) => i.kindLabel === "root");
+        expect(root.map((i) => i.filePath)).toEqual(["orphan.ts"]);
+      },
+    );
+  });
+
+  it("still flags root test files next to allowed entries", () => {
+    withTempPkg(
+      {
+        "package.json": JSON.stringify({ name: "@t/p", scripts: {} }),
+        "index.ts": "export {};\n",
+        "index.test.ts": "import { describe } from 'vitest';\n",
+        "client.ts": "export {};\n",
+      },
+      (dir) => {
+        const issues = checkPackageLayout({ packageDir: dir });
+        const root = issues.filter((i) => i.kindLabel === "root");
+        expect(root.map((i) => i.filePath)).toEqual(["index.test.ts"]);
+      },
+    );
+  });
+
   it("flags oversized files above default 800", () => {
     const body = Array.from({ length: 801 }, (_, i) => `// ${i}`).join("\n");
     withTempPkg(

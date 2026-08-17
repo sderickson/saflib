@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (same source as `saf-dev-site issues --workdir`), not commit blobs.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP or SDK package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on `saf-dev-site issues --workdir` — not on this Spec package load.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -181,6 +181,7 @@ export interface components {
         DbInventory: components["schemas"]["db-inventory"];
         SpecInventory: components["schemas"]["spec-inventory"];
         PackageIssue: components["schemas"]["package-issue"];
+        IssueCountsByKind: components["schemas"]["issue-counts-by-kind"];
         DbSchemaTable: components["schemas"]["db-schema-table"];
         DbSchemaColumn: components["schemas"]["db-schema-column"];
         /** @description A branch or tag pointer observed at scan time for a commit. */
@@ -197,6 +198,12 @@ export interface components {
             type: "branch" | "tag";
             /** @description True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips. */
             isMainAncestor: boolean;
+        };
+        /** @description Per-kind issue counts for a commit or package (all kinds count as debt). */
+        "issue-counts-by-kind": {
+            "dead-code": number;
+            "oversized-file": number;
+            "package-layout": number;
         };
         /** @description List-friendly commit row — same metadata as Commit, without the nested inventory payloads. Used by GET /commits. */
         "commit-summary": {
@@ -225,6 +232,11 @@ export interface components {
                 testLines: number;
                 exportCount: number;
                 testCaseCount: number;
+                issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+                /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
+                debtCount: number;
+                /** @description True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats. */
+                hasIssueStats: boolean;
             };
         };
         /** @description Analyzed commit metadata — one row per scanned commit. Does not include per-package / export / test-case payloads (see CommitDetail for those). */
@@ -289,6 +301,9 @@ export interface components {
             testLines: number;
             /** @description Count of test files. */
             testFiles: number;
+            issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+            /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
+            debtCount: number;
         };
         /** @description One exported symbol extracted from a source file at a commit. */
         "export-entry": {
@@ -545,6 +560,11 @@ export interface components {
                         filePath: string;
                         repoPath: string;
                     } | null;
+                    /** @description Sibling SDK fake/MSW module (`*.fake.ts`) when present beside the request. */
+                    fake?: {
+                        filePath: string;
+                        repoPath: string;
+                    } | null;
                     /** @description describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses " > " nesting). */
                     handlerTests: {
                         /**
@@ -565,12 +585,16 @@ export interface components {
                         /** @description Repo-relative path for source links. */
                         repoPath: string;
                     }[];
+                    /** @description operationIds this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map. */
+                    enqueues?: string[];
+                    /** @description operationIds or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map. */
+                    enqueuedBy?: string[];
                 }[];
             }[];
         };
         "package-issue": {
             /** @enum {string} */
-            kind: "dead-code" | "same-file-only-export" | "oversized-file" | "package-layout";
+            kind: "dead-code" | "oversized-file" | "package-layout";
             title: string;
             name: string;
             kindLabel: string;
@@ -753,7 +777,7 @@ export interface operations {
                             testCases: components["schemas"]["test-case"][];
                             dbInventory?: components["schemas"]["db-inventory"];
                             specInventory?: components["schemas"]["spec-inventory"];
-                            /** @description Working-tree package-layout and oversized-file findings (matches `saf-dev-site issues --workdir` layout portion). */
+                            /** @description Working-tree package-layout and oversized-file findings (package-local; cheap). Dead-code workdir scans are CLI-only. */
                             layoutIssues?: components["schemas"]["package-issue"][];
                         };
                     };
@@ -853,15 +877,9 @@ export interface operations {
                         analyzed: boolean;
                         /** @description Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
                         productRoot: string;
-                        packages: {
-                            packageName: string;
-                            directory: string;
-                            sourceFiles: number;
-                            sourceLines: number;
-                            prodLines: number;
-                            testLines: number;
-                            testFiles: number;
-                        }[];
+                        /** @description Short branch name for HEAD, or null when detached. */
+                        branch: string | null;
+                        packages: components["schemas"]["package-metrics"][];
                     };
                 };
             };

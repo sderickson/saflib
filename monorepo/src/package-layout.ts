@@ -26,15 +26,30 @@ export interface CheckPackageLayoutOptions {
   maxSourceLines?: number;
 }
 
-function readPackageJson(pkgDir: string): {
+/** In-memory package.json fields used by layout checks. */
+export interface PackageJsonLayoutFields {
   bin?: Record<string, string> | string;
   scripts?: Record<string, string>;
-} {
+  /** Subpath exports map (`"./foo": "./foo.ts"`). */
+  exports?: Record<string, unknown>;
+}
+
+export interface CheckPackageLayoutFromInputsOptions {
+  packageJson: PackageJsonLayoutFields;
+  /** Basename used when `bin` is a string (defaults to `"package"`). */
+  packageDirBasename?: string;
+  /** Repo-relative package directory for repoPath (optional). */
+  packageRepoPath?: string;
+  /** Filenames of .ts/.tsx at package root (not nested). */
+  rootTsFiles?: string[];
+  /** Prod source files with line counts (package-local paths). */
+  sourceFiles?: Array<{ localPath: string; lineCount: number }>;
+  maxSourceLines?: number;
+}
+
+function readPackageJson(pkgDir: string): PackageJsonLayoutFields {
   const text = fs.readFileSync(path.join(pkgDir, "package.json"), "utf8");
-  return JSON.parse(text) as {
-    bin?: Record<string, string> | string;
-    scripts?: Record<string, string>;
-  };
+  return JSON.parse(text) as PackageJsonLayoutFields;
 }
 
 function isUnderBin(rel: string): boolean {
@@ -75,6 +90,53 @@ const SKIP_DIRS = new Set([
   "fixtures",
   "workflows",
 ]);
+
+/**
+ * `.ts` / `.tsx` basenames always allowed at the package root.
+ * Everything else should live in a thematic folder — unless it is a
+ * direct package export target (see {@link isAllowedRootTsFile}).
+ */
+export const ROOT_TS_ALLOWLIST = new Set([
+  /** drizzle-kit requires this at the package root */
+  "drizzle.config.ts",
+  /** drizzle-kit schema barrel (`schema: "./schema.ts"` in drizzle.config) */
+  "schema.ts",
+  /** Package entry / re-export surface */
+  "index.ts",
+  "index.tsx",
+  /** SDK (and similar) HTTP client entry — one file, public `./client` export */
+  "client.ts",
+]);
+
+function exportTargetPath(target: unknown): string | null {
+  if (typeof target === "string") return target.replace(/^\.\//, "");
+  if (target && typeof target === "object" && !Array.isArray(target)) {
+    const rec = target as Record<string, unknown>;
+    for (const key of ["default", "import", "require", "module", "node"]) {
+      const inner = exportTargetPath(rec[key]);
+      if (inner) return inner;
+    }
+  }
+  return null;
+}
+
+/**
+ * Root source file is allowed when allowlisted, or when `package.json`
+ * exports `./<stem>` → `./<stem>.ts` (public entry, not a junk drawer).
+ */
+export function isAllowedRootTsFile(
+  fileName: string,
+  exportsMap?: Record<string, unknown>,
+): boolean {
+  if (ROOT_TS_ALLOWLIST.has(fileName)) return true;
+  if (!fileName.endsWith(".ts") && !fileName.endsWith(".tsx")) return false;
+  if (fileName.endsWith(".d.ts")) return false;
+  if (isTestOrFixtureFileName(fileName)) return false;
+  if (!exportsMap) return false;
+  const stem = fileName.replace(/\.tsx?$/, "");
+  const target = exportTargetPath(exportsMap[`./${stem}`]);
+  return target === fileName;
+}
 
 function isTestOrFixtureFileName(name: string): boolean {
   return (
@@ -117,29 +179,22 @@ function countLines(text: string): number {
 }
 
 /**
- * Check bin/scripts layout conventions, no root-level TS, and oversized files.
+ * Layout + oversized checks from already-loaded inputs (git commit / FS).
  */
-export function checkPackageLayout(
-  options: CheckPackageLayoutOptions,
+export function checkPackageLayoutFromInputs(
+  options: CheckPackageLayoutFromInputsOptions,
 ): PackageLayoutIssue[] {
-  const pkgDir = options.packageDir;
   const repoBase = (options.packageRepoPath ?? "").replace(/\/+$/, "");
   const maxLines = options.maxSourceLines ?? DEFAULT_MAX_SOURCE_LINES;
   const issues: PackageLayoutIssue[] = [];
   const repoPathFor = (local: string) =>
     repoBase ? `${repoBase}/${local}` : local;
 
-  let pj: ReturnType<typeof readPackageJson>;
-  try {
-    pj = readPackageJson(pkgDir);
-  } catch {
-    return issues;
-  }
+  const pj = options.packageJson;
+  const basename = options.packageDirBasename ?? "package";
 
   const bins: Record<string, string> =
-    typeof pj.bin === "string"
-      ? { [path.basename(pkgDir)]: pj.bin }
-      : (pj.bin ?? {});
+    typeof pj.bin === "string" ? { [basename]: pj.bin } : (pj.bin ?? {});
 
   for (const [name, target] of Object.entries(bins)) {
     const rel = target.replace(/^\.\//, "");
@@ -181,48 +236,32 @@ export function checkPackageLayout(
     }
   }
 
-  // No source/test/fixture TS at package root — put modules in thematic folders.
-  try {
-    for (const e of fs.readdirSync(pkgDir, { withFileTypes: true })) {
-      if (!e.isFile()) continue;
-      const name = e.name;
-      if (
-        (name.endsWith(".ts") || name.endsWith(".tsx")) &&
-        !name.endsWith(".d.ts")
-      ) {
-        issues.push({
-          kind: "package-layout",
-          title: "Package layout",
-          name: `${name} at package root (move into a thematic folder)`,
-          kindLabel: "root",
-          filePath: name,
-          repoPath: repoPathFor(name),
-        });
-      }
+  for (const name of options.rootTsFiles ?? []) {
+    if (
+      (name.endsWith(".ts") || name.endsWith(".tsx")) &&
+      !name.endsWith(".d.ts") &&
+      !isAllowedRootTsFile(name, pj.exports)
+    ) {
+      issues.push({
+        kind: "package-layout",
+        title: "Package layout",
+        name: `${name} at package root (move into a thematic folder)`,
+        kindLabel: "root",
+        filePath: name,
+        repoPath: repoPathFor(name),
+      });
     }
-  } catch {
-    // ignore
   }
 
-  const sources: string[] = [];
-  walkSourceFiles(pkgDir, sources);
-  for (const abs of sources) {
-    const local = path.relative(pkgDir, abs).split(path.sep).join("/");
-    let text: string;
-    try {
-      text = fs.readFileSync(abs, "utf8");
-    } catch {
-      continue;
-    }
-    const lines = countLines(text);
-    if (lines > maxLines) {
+  for (const src of options.sourceFiles ?? []) {
+    if (src.lineCount > maxLines) {
       issues.push({
         kind: "oversized-file",
         title: "Oversized file",
-        name: `${local} (${lines} LoC > ${maxLines})`,
+        name: `${src.localPath} (${src.lineCount} LoC > ${maxLines})`,
         kindLabel: "file",
-        filePath: local,
-        repoPath: repoPathFor(local),
+        filePath: src.localPath,
+        repoPath: repoPathFor(src.localPath),
       });
     }
   }
@@ -232,4 +271,58 @@ export function checkPackageLayout(
       a.filePath.localeCompare(b.filePath) || a.name.localeCompare(b.name),
   );
   return issues;
+}
+
+/**
+ * Check bin/scripts layout conventions, no root-level TS, and oversized files.
+ */
+export function checkPackageLayout(
+  options: CheckPackageLayoutOptions,
+): PackageLayoutIssue[] {
+  const pkgDir = options.packageDir;
+  let pj: PackageJsonLayoutFields;
+  try {
+    pj = readPackageJson(pkgDir);
+  } catch {
+    return [];
+  }
+
+  const rootTsFiles: string[] = [];
+  try {
+    for (const e of fs.readdirSync(pkgDir, { withFileTypes: true })) {
+      if (!e.isFile()) continue;
+      const name = e.name;
+      if (
+        (name.endsWith(".ts") || name.endsWith(".tsx")) &&
+        !name.endsWith(".d.ts")
+      ) {
+        rootTsFiles.push(name);
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  const sources: string[] = [];
+  walkSourceFiles(pkgDir, sources);
+  const sourceFiles: Array<{ localPath: string; lineCount: number }> = [];
+  for (const abs of sources) {
+    const local = path.relative(pkgDir, abs).split(path.sep).join("/");
+    let text: string;
+    try {
+      text = fs.readFileSync(abs, "utf8");
+    } catch {
+      continue;
+    }
+    sourceFiles.push({ localPath: local, lineCount: countLines(text) });
+  }
+
+  return checkPackageLayoutFromInputs({
+    packageJson: pj,
+    packageDirBasename: path.basename(pkgDir),
+    packageRepoPath: options.packageRepoPath,
+    rootTsFiles,
+    sourceFiles,
+    maxSourceLines: options.maxSourceLines,
+  });
 }

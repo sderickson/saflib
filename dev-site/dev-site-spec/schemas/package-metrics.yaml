@@ -29,6 +29,13 @@ properties:
     type: integer
     minimum: 0
     description: Count of test files.
+  issueCountsByKind:
+    $ref: "./issue-counts-by-kind.yaml"
+  debtCount:
+    type: integer
+    minimum: 0
+    description: >
+      Sum of all issue kinds (dead-code + oversized-file + package-layout).
 required:
   - packageName
   - directory
@@ -37,3 +44,5 @@ required:
   - prodLines
   - testLines
   - testFiles
+  - issueCountsByKind
+  - debtCount

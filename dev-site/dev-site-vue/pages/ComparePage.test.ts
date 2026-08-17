@@ -6,6 +6,10 @@ import type { DevSiteResponseBody } from "@saflib/dev-site-spec";
 import ComparePage from "./ComparePage.vue";
 import { router } from "./test_router";
 import { mountTestApp } from "../test-app";
+import {
+  packageMetricsFixture,
+  summaryMetricsFixture,
+} from "../test-fixtures.ts";
 
 type ListResponse = DevSiteResponseBody["listCommits"][200];
 type DiffResponse = DevSiteResponseBody["diffCommits"][200];
@@ -24,7 +28,7 @@ const mockList: ListResponse = {
       analyzerVersion: "1",
       computedAt: "2026-01-02T01:00:00.000Z",
       status: "complete",
-      summaryMetrics: {
+      summaryMetrics: summaryMetricsFixture({
         packageCount: 1,
         sourceFiles: 1,
         sourceLines: 20,
@@ -32,7 +36,7 @@ const mockList: ListResponse = {
         testLines: 5,
         exportCount: 2,
         testCaseCount: 2,
-      },
+      }),
     },
     {
       hash: FROM,
@@ -43,7 +47,7 @@ const mockList: ListResponse = {
       analyzerVersion: "1",
       computedAt: "2026-01-01T01:00:00.000Z",
       status: "complete",
-      summaryMetrics: {
+      summaryMetrics: summaryMetricsFixture({
         packageCount: 1,
         sourceFiles: 1,
         sourceLines: 10,
@@ -51,7 +55,7 @@ const mockList: ListResponse = {
         testLines: 0,
         exportCount: 1,
         testCaseCount: 1,
-      },
+      }),
     },
   ],
   nextCursor: null,
@@ -66,7 +70,7 @@ const mockDiff: DiffResponse = {
       removed: [],
       changed: [
         {
-          before: {
+          before: packageMetricsFixture({
             packageName: "@fixture/root",
             directory: "",
             sourceFiles: 1,
@@ -74,8 +78,8 @@ const mockDiff: DiffResponse = {
             prodLines: 10,
             testLines: 0,
             testFiles: 0,
-          },
-          after: {
+          }),
+          after: packageMetricsFixture({
             packageName: "@fixture/root",
             directory: "",
             sourceFiles: 1,
@@ -83,7 +87,7 @@ const mockDiff: DiffResponse = {
             prodLines: 15,
             testLines: 5,
             testFiles: 1,
-          },
+          }),
         },
       ],
     },

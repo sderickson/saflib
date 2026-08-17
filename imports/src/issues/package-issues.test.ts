@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { collectPackageIssues } from "./package-issues.ts";
+import {
+  collectPackageIssues,
+  countIssuesByKind,
+  debtCountFromIssueCounts,
+} from "./package-issues.ts";
 
 describe("collectPackageIssues", () => {
   it("lists card exports with empty usedBy as dead code", () => {
@@ -42,7 +46,7 @@ describe("collectPackageIssues", () => {
     expect(issues[0]!.filePath).toBe("b.ts");
   });
 
-  it("lists same-file-only exports", () => {
+  it("ignores same-file-only exports (not an issue)", () => {
     const issues = collectPackageIssues(
       {
         packageName: "@pkg",
@@ -63,10 +67,7 @@ describe("collectPackageIssues", () => {
       },
       { packageDirectory: "pkg" },
     );
-
-    expect(issues).toHaveLength(1);
-    expect(issues[0]!.kind).toBe("same-file-only-export");
-    expect(issues[0]!.name).toBe("helper");
+    expect(issues).toEqual([]);
   });
 
   it("lists unused db queries", () => {
@@ -140,5 +141,20 @@ describe("collectPackageIssues", () => {
       "oversized-file",
       "package-layout",
     ]);
+  });
+});
+
+describe("debt helpers", () => {
+  it("sums all tracked kinds as debt", () => {
+    const counts = countIssuesByKind([
+      { kind: "dead-code" },
+      { kind: "package-layout" },
+    ]);
+    expect(counts).toEqual({
+      "dead-code": 1,
+      "oversized-file": 0,
+      "package-layout": 1,
+    });
+    expect(debtCountFromIssueCounts(counts)).toBe(2);
   });
 });

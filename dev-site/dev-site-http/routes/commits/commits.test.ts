@@ -125,6 +125,13 @@ describe("commits routes", () => {
     expect(response.body.commits[0].summaryMetrics).toMatchObject({
       exportCount: 2,
       testCaseCount: 2,
+      debtCount: expect.any(Number),
+      hasIssueStats: true,
+      issueCountsByKind: {
+        "dead-code": expect.any(Number),
+        "oversized-file": expect.any(Number),
+        "package-layout": expect.any(Number),
+      },
     });
   });
 

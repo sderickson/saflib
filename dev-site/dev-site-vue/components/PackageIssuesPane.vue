@@ -6,7 +6,7 @@
     <div class="pane-scroll">
       <div class="issues-cli mb-4">
         <div class="text-caption text-medium-emphasis mb-1">
-          Same list via CLI (working tree — no DB scan required):
+          Deeper working-tree scan (seconds; not used for this panel):
         </div>
         <div class="issues-cli__row">
           <code class="issues-cli__cmd">{{ cliCommand }}</code>
@@ -28,7 +28,8 @@
       <section v-else-if="issues.length" class="issues">
         <h3 class="issues__heading">Package issues</h3>
         <p class="issues__hint">
-          Dead code and layout findings. Triage guide:
+          Dead code from this commit’s import graph, plus live layout/LoC.
+          Triage guide:
           <code>saflib/dev-tools/docs/package-issues.md</code>
           (un-export, split tested helpers, scripts/bin CLI, delete, or fix the
           tool). Also: <code>analyze-package</code>.
@@ -88,6 +89,9 @@ const { data, isLoading, error } = useCommitPackage(
 const issues = computed(() => {
   const d = data.value?.packageDetail;
   if (!d) return [];
+  // Commit graph for dead code (already paid for Spec) + live layoutIssues.
+  // Full `saf-dev-site issues --workdir` re-parses the product tree (~seconds)
+  // and stays CLI-only so Spec stays fast.
   return collectPackageIssues(d, {
     packageDirectory: props.packageDirectory,
     productRoot: props.productRoot ?? "",

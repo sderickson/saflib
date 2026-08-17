@@ -1,21 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { commitHealth } from "./health.ts";
 import type { CommitSummary } from "@saflib/dev-site-spec";
+import { summaryMetricsFixture } from "./test-fixtures.ts";
 
 function summary(
   sourceLines: number,
   testLines: number,
 ): Pick<CommitSummary, "summaryMetrics"> {
   return {
-    summaryMetrics: {
-      packageCount: 1,
-      sourceFiles: 1,
+    summaryMetrics: summaryMetricsFixture({
       sourceLines,
-      testFiles: testLines > 0 ? 1 : 0,
       testLines,
-      exportCount: 0,
-      testCaseCount: 0,
-    },
+      testFiles: testLines > 0 ? 1 : 0,
+    }),
   };
 }
 

@@ -71,6 +71,9 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     schema: path.join(sourceDir, "schemas/__group-name__.ts"),
+    // Must sit next to `schemas/` so CopyStepMachine's shared prefix is
+    // `templates/` — otherwise `__group-name__.ts` is copied to the package
+    // root and queries cannot import `../../schemas/<table>.ts`.
     schemaIndex: path.join(sourceDir, "schema.ts"),
   },
 

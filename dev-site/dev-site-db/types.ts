@@ -8,6 +8,10 @@ export type {
   PackageMetricsEntity,
 } from "./schemas/package-metrics.ts";
 export type {
+  PackageIssueKind,
+  PackageIssueStatsEntity,
+} from "./schemas/package-issue-stats.ts";
+export type {
   BlobFactEntity,
   BlobExportFact,
   BlobImportFact,
@@ -30,6 +34,11 @@ export type InsertAnalyzedCommitParams = Omit<
 
 export type InsertPackageMetricsParams = Omit<
   import("./schemas/package-metrics.ts").PackageMetricsEntity,
+  "id"
+>;
+
+export type InsertPackageIssueStatsParams = Omit<
+  import("./schemas/package-issue-stats.ts").PackageIssueStatsEntity,
   "id"
 >;
 

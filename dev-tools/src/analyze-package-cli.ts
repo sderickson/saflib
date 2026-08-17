@@ -165,6 +165,7 @@ async function analyzeOnePackage(opts: {
       packageDirectory: root.directory,
       isTest: isTestPath(rel),
       imports: specialty.imports,
+      localExportUsages: specialty.localExportUsages,
     });
   }
 
@@ -200,7 +201,7 @@ async function analyzeOnePackage(opts: {
 const program = new Command()
   .name("analyze-package")
   .description(
-    "Run package layout, LoC, exports, and dead-code / same-file-only checks",
+    "Run package layout, LoC, exports, and dead-code checks",
   )
   .requiredOption("--package <name>", "Workspace package name")
   .option("--root <dir>", "Monorepo root (default: auto-detect)")

@@ -56,6 +56,18 @@ properties:
       testCaseCount:
         type: integer
         minimum: 0
+      issueCountsByKind:
+        $ref: "./issue-counts-by-kind.yaml"
+      debtCount:
+        type: integer
+        minimum: 0
+        description: >
+          Sum of all issue kinds (dead-code + oversized-file + package-layout).
+      hasIssueStats:
+        type: boolean
+        description: >
+          True when package_issue_stats were computed for this commit (including
+          a zero-debt sentinel). False for commits scanned before issue stats.
     required:
       - packageCount
       - sourceFiles
@@ -64,6 +76,9 @@ properties:
       - testLines
       - exportCount
       - testCaseCount
+      - issueCountsByKind
+      - debtCount
+      - hasIssueStats
 required:
   - hash
   - parentHashes

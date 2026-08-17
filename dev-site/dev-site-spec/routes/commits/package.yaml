@@ -10,9 +10,10 @@ getCommitPackage:
     `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also
     includes `specInventory` (OpenAPI schemas + REST resources). For `-http`
     packages, `specInventory` is the sibling `-spec` triangle join (route cards)
-    while exports/tests remain the HTTP package's own source modules.
+    while exports/tests remain the HTTP or SDK package's own source modules.
     `layoutIssues` are live working-tree layout/LoC findings for the package
-    directory (same source as `saf-dev-site issues --workdir`), not commit blobs.
+    directory (cheap; package-local). Full dead-code workdir scans stay on
+    `saf-dev-site issues --workdir` — not on this Spec package load.
   parameters:
     - name: hash
       in: path
@@ -81,7 +82,7 @@ getCommitPackage:
                     type: array
                     description: >
                       Working-tree package-layout and oversized-file findings
-                      (matches `saf-dev-site issues --workdir` layout portion).
+                      (package-local; cheap). Dead-code workdir scans are CLI-only.
                     items:
                       $ref: "../../schemas/package-issue.yaml"
     "404":

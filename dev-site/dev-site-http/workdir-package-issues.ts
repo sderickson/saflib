@@ -154,6 +154,7 @@ export async function collectWorkdirPackageIssues(
       packageDirectory: importerRoot.directory,
       isTest: isTestSourcePath(repoPath, fileName),
       imports: specialty.imports,
+      localExportUsages: specialty.localExportUsages,
     });
   }
 

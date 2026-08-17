@@ -4,6 +4,12 @@
  */
 export {
   collectPackageIssues,
+  countIssuesByKind,
+  debtCountFromIssueCounts,
+  emptyIssueCountsByKind,
+  DEBT_ISSUE_KINDS,
+  PACKAGE_ISSUE_KINDS,
+  type IssueCountsByKind,
   type PackageIssue,
   type PackageIssueKind,
   type PackageDetailForIssues,

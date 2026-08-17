@@ -27,6 +27,7 @@ export {
   fileFactFromSource,
   specialtyExports,
   specialtyImports,
+  specialtyLocalExportUsages,
   specialtyTables,
   specialtyTestCases,
   type FactStore,

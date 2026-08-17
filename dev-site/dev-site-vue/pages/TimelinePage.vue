@@ -30,6 +30,14 @@
           {{ scanResult.failed.length }}.
         </v-alert>
 
+        <DebtTrendChart
+          v-if="commits && commits.length > 0"
+          class="mb-4"
+          :commits="commits"
+          :head-hash="checkout?.hash ?? null"
+          :current-branch="checkout?.branch ?? null"
+        />
+
         <v-data-table
           v-if="commits && commits.length > 0"
           :headers="headers"
@@ -53,6 +61,21 @@
 
           <template #[`item.authoredAt`]="{ item }">
             {{ formatDateTime(item.authoredAt) }}
+          </template>
+
+          <template #[`item.debt`]="{ item }">
+            <v-tooltip location="top">
+              <template #activator="{ props: tip }">
+                <span v-bind="tip">{{ item.summaryMetrics.debtCount }}</span>
+              </template>
+              <span>
+                dead {{ item.summaryMetrics.issueCountsByKind["dead-code"] }} ·
+                oversized
+                {{ item.summaryMetrics.issueCountsByKind["oversized-file"] }} ·
+                layout
+                {{ item.summaryMetrics.issueCountsByKind["package-layout"] }}
+              </span>
+            </v-tooltip>
           </template>
 
           <template #[`item.summaryMetrics`]="{ item }">
@@ -84,8 +107,9 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useCommits, useScanMutation } from "../requests/queries";
+import { useCheckout, useCommits, useScanMutation } from "../requests/queries";
 import { commitHealth } from "../health";
+import DebtTrendChart from "../components/DebtTrendChart.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -106,6 +130,7 @@ const headers = [
   { title: "Hash", key: "hash", sortable: false },
   { title: "Message", key: "message", sortable: false },
   { title: "Authored", key: "authoredAt", sortable: false },
+  { title: "Debt", key: "debt", sortable: false },
   { title: "Metrics", key: "summaryMetrics", sortable: false },
   { title: "Actions", key: "actions", sortable: false },
 ];
@@ -114,7 +139,10 @@ const {
   data: listData,
   isLoading,
   error: listError,
-} = useCommits(props.subdomain, { limit: 50 });
+} = useCommits(props.subdomain, { limit: 200 });
+
+const { data: checkoutData } = useCheckout(props.subdomain);
+const checkout = computed(() => checkoutData.value);
 
 const commits = computed(() => listData.value?.commits ?? []);
 

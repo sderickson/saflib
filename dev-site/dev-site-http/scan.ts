@@ -10,10 +10,17 @@ import type { ReturnsError } from "@saflib/monorepo";
 import { makeSubsystemReporters } from "@saflib/node";
 
 import { analyzeCommit, ANALYZER_VERSION } from "./analyze-commit.ts";
+import { computeCommitIssueStats } from "./compute-commit-issue-stats.ts";
 
 import { insert } from "@saflib/dev-site-db/queries/analyzed-commits/insert";
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
+import { list as listAnalyzedCommits } from "@saflib/dev-site-db/queries/analyzed-commits/list";
 import { insertMany } from "@saflib/dev-site-db/queries/package-metrics/insert-many";
+import { listByCommit as listPackageMetrics } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
+import { insertMany as insertIssueStats } from "@saflib/dev-site-db/queries/package-issue-stats/insert-many";
+import { deleteByCommit as deleteIssueStats } from "@saflib/dev-site-db/queries/package-issue-stats/delete-by-commit";
+import { listByCommit as listIssueStats } from "@saflib/dev-site-db/queries/package-issue-stats/list-by-commit";
+
 export interface ScanOptions {
   repoRoot: string;
   /** Limit analysis to this path prefix (e.g. `products`). */
@@ -45,6 +52,12 @@ export interface ScanResult {
   failed: ScanFailure[];
 }
 
+export interface RecomputeIssueStatsResult {
+  recomputed: string[];
+  skipped: string[];
+  failed: ScanFailure[];
+}
+
 export type ScanError = GitCommandError;
 
 function shortHash(hash: string): string {
@@ -53,6 +66,41 @@ function shortHash(hash: string): string {
 
 function firstLine(message: string): string {
   return message.split("\n")[0] ?? message;
+}
+
+async function persistIssueStatsForCommit(
+  dbKey: DbKey,
+  commitHash: string,
+  options: {
+    repoRoot: string;
+    productRoot?: string;
+    mainRef: string;
+    packages?: Array<{ packageName: string; directory: string }>;
+  },
+): Promise<ReturnsError<void, GitCommandError>> {
+  const stats = await computeCommitIssueStats(dbKey, commitHash, {
+    repoRoot: options.repoRoot,
+    productRoot: options.productRoot,
+    mainRef: options.mainRef,
+    packages: options.packages,
+  });
+  if (stats.error) return { error: stats.error };
+
+  await deleteIssueStats(dbKey, commitHash);
+  const rows =
+    stats.result.length > 0
+      ? stats.result.map((row) => ({ ...row, commitHash }))
+      : [
+          {
+            commitHash,
+            // Sentinel so list APIs can tell "computed, zero issues" from "never computed".
+            packageName: "__meta__",
+            kind: "dead-code" as const,
+            count: 0,
+          },
+        ];
+  await insertIssueStats(dbKey, rows);
+  return { result: undefined };
 }
 
 async function persistCommit(
@@ -91,6 +139,17 @@ async function persistCommit(
     dbKey,
     snap.packageMetrics.map((m) => ({ ...m, commitHash: commit.hash })),
   );
+
+  const issuePersist = await persistIssueStatsForCommit(dbKey, commit.hash, {
+    repoRoot: options.repoRoot,
+    productRoot: options.productRoot,
+    mainRef: options.mainRef,
+    packages: snap.packageMetrics.map((m) => ({
+      packageName: m.packageName,
+      directory: m.directory,
+    })),
+  });
+  if (issuePersist.error) return { error: issuePersist.error };
 
   return { result: undefined };
 }
@@ -294,4 +353,122 @@ export async function scanCommits(
     `Scan finished in ${Date.now() - runStarted}ms: scanned=${scanned.length} skipped=${skipped.length} failed=${failed.length}`,
   );
   return { result: { scanned, skipped, failed } };
+}
+
+/**
+ * Recompute `package_issue_stats` for already-analyzed commits (backfill / analyzer bumps).
+ * Skips commits that already have issue rows unless `force` is set.
+ */
+export async function recomputeIssueStats(
+  dbKey: DbKey,
+  options: {
+    repoRoot: string;
+    productRoot?: string;
+    mainRef?: string;
+    /** Only this commit (must already be analyzed). */
+    commitHash?: string;
+    /** Max commits to recompute this run (newest first). */
+    limit?: number;
+    /** Replace existing issue stats even when present. */
+    force?: boolean;
+  },
+): Promise<ReturnsError<RecomputeIssueStatsResult, ScanError>> {
+  const { log: scanLog } = makeSubsystemReporters("http", "scan");
+  const mainRef = options.mainRef ?? "main";
+  const recomputed: string[] = [];
+  const skipped: string[] = [];
+  const failed: ScanFailure[] = [];
+  const runStarted = Date.now();
+
+  const targets: string[] = [];
+  if (options.commitHash) {
+    const existing = await getByHash(dbKey, options.commitHash);
+    if (!existing.result) {
+      return {
+        result: {
+          recomputed: [],
+          skipped: [],
+          failed: [
+            {
+              hash: options.commitHash,
+              message: "Commit not analyzed yet — run scan first",
+            },
+          ],
+        },
+      };
+    }
+    targets.push(options.commitHash);
+  } else {
+    let cursor: string | undefined;
+    const limit = options.limit ?? 50;
+    while (targets.length < limit) {
+      const page = await listAnalyzedCommits(dbKey, {
+        cursor,
+        limit: Math.min(50, limit - targets.length),
+      });
+      if (page.error) {
+        return {
+          result: {
+            recomputed,
+            skipped,
+            failed: [
+              ...failed,
+              { hash: cursor ?? "", message: page.error.message },
+            ],
+          },
+        };
+      }
+      for (const c of page.result.commits) {
+        targets.push(c.hash);
+        if (targets.length >= limit) break;
+      }
+      if (!page.result.nextCursor || page.result.commits.length === 0) break;
+      cursor = page.result.nextCursor;
+    }
+  }
+
+  scanLog.info(
+    `Recompute issue stats: ${targets.length} commit(s)` +
+      (options.force ? " (force)" : " (skip if present)") +
+      ` productRoot=${options.productRoot ?? ""}`,
+  );
+
+  for (let i = 0; i < targets.length; i++) {
+    const hash = targets[i]!;
+    const label = `${i + 1}/${targets.length} ${shortHash(hash)}`;
+    if (!options.force) {
+      const existingStats = await listIssueStats(dbKey, hash);
+      if ((existingStats.result?.length ?? 0) > 0) {
+        skipped.push(hash);
+        scanLog.info(`Skip ${label} — issue stats already present`);
+        continue;
+      }
+    }
+
+    const metrics = (await listPackageMetrics(dbKey, hash)).result ?? [];
+    scanLog.info(`Recomputing ${label}`);
+    const started = Date.now();
+    const outcome = await persistIssueStatsForCommit(dbKey, hash, {
+      repoRoot: options.repoRoot,
+      productRoot: options.productRoot,
+      mainRef,
+      packages: metrics.map((m) => ({
+        packageName: m.packageName,
+        directory: m.directory,
+      })),
+    });
+    const ms = Date.now() - started;
+    if (outcome.error) {
+      failed.push({ hash, message: outcome.error.message });
+      scanLog.warn(`Failed ${label} after ${ms}ms: ${outcome.error.message}`);
+      continue;
+    }
+    recomputed.push(hash);
+    scanLog.info(`Done ${label} in ${ms}ms`);
+  }
+
+  scanLog.info(
+    `Recompute finished in ${Date.now() - runStarted}ms: recomputed=${recomputed.length} skipped=${skipped.length} failed=${failed.length}`,
+  );
+  return { result: { recomputed, skipped, failed } };
 }

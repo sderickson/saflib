@@ -10,6 +10,12 @@ describe("buildPackageDirTree", () => {
       {
         packageName: "@example/billing-db",
         directory: "products/billing/service/db",
+        debtCount: 2,
+        issueCountsByKind: {
+          "dead-code": 2,
+          "oversized-file": 0,
+          "package-layout": 0,
+        },
       },
       {
         packageName: "@example/billing-http",
@@ -30,6 +36,7 @@ describe("buildPackageDirTree", () => {
     expect(db?.kind).toBe("package");
     expect(db?.packageName).toBe("@example/billing-db");
     expect(db?.packageKind).toBe("db");
+    expect(db?.debtCount).toBe(2);
   });
 });
 

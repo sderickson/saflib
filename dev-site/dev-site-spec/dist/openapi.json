@@ -185,7 +185,7 @@
         "tags": [
           "no-auth"
         ],
-        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (same source as `saf-dev-site issues --workdir`), not commit blobs.\n",
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP or SDK package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on `saf-dev-site issues --workdir` — not on this Spec package load.\n",
         "parameters": [
           {
             "name": "hash",
@@ -275,7 +275,7 @@
                         },
                         "layoutIssues": {
                           "type": "array",
-                          "description": "Working-tree package-layout and oversized-file findings (matches `saf-dev-site issues --workdir` layout portion).\n",
+                          "description": "Working-tree package-layout and oversized-file findings (package-local; cheap). Dead-code workdir scans are CLI-only.\n",
                           "items": {
                             "$ref": "#/components/schemas/package-issue"
                           }
@@ -427,6 +427,7 @@
                     "authoredAt",
                     "analyzed",
                     "productRoot",
+                    "branch",
                     "packages"
                   ],
                   "properties": {
@@ -447,42 +448,15 @@
                       "type": "string",
                       "description": "Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths.\n"
                     },
+                    "branch": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Short branch name for HEAD, or null when detached."
+                    },
                     "packages": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "required": [
-                          "packageName",
-                          "directory",
-                          "sourceFiles",
-                          "sourceLines",
-                          "prodLines",
-                          "testLines",
-                          "testFiles"
-                        ],
-                        "properties": {
-                          "packageName": {
-                            "type": "string"
-                          },
-                          "directory": {
-                            "type": "string"
-                          },
-                          "sourceFiles": {
-                            "type": "integer"
-                          },
-                          "sourceLines": {
-                            "type": "integer"
-                          },
-                          "prodLines": {
-                            "type": "integer"
-                          },
-                          "testLines": {
-                            "type": "integer"
-                          },
-                          "testFiles": {
-                            "type": "integer"
-                          }
-                        }
+                        "$ref": "#/components/schemas/package-metrics"
                       }
                     }
                   }
@@ -711,6 +685,9 @@
       "PackageIssue": {
         "$ref": "#/components/schemas/package-issue"
       },
+      "IssueCountsByKind": {
+        "$ref": "#/components/schemas/issue-counts-by-kind"
+      },
       "DbSchemaTable": {
         "$ref": "#/components/schemas/db-schema-table"
       },
@@ -743,6 +720,29 @@
           "name",
           "type",
           "isMainAncestor"
+        ]
+      },
+      "issue-counts-by-kind": {
+        "type": "object",
+        "description": "Per-kind issue counts for a commit or package (all kinds count as debt).",
+        "properties": {
+          "dead-code": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "oversized-file": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "package-layout": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "dead-code",
+          "oversized-file",
+          "package-layout"
         ]
       },
       "commit-summary": {
@@ -820,6 +820,18 @@
               "testCaseCount": {
                 "type": "integer",
                 "minimum": 0
+              },
+              "issueCountsByKind": {
+                "$ref": "#/components/schemas/issue-counts-by-kind"
+              },
+              "debtCount": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Sum of all issue kinds (dead-code + oversized-file + package-layout).\n"
+              },
+              "hasIssueStats": {
+                "type": "boolean",
+                "description": "True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats.\n"
               }
             },
             "required": [
@@ -829,7 +841,10 @@
               "testFiles",
               "testLines",
               "exportCount",
-              "testCaseCount"
+              "testCaseCount",
+              "issueCountsByKind",
+              "debtCount",
+              "hasIssueStats"
             ]
           }
         },
@@ -950,6 +965,14 @@
             "type": "integer",
             "minimum": 0,
             "description": "Count of test files."
+          },
+          "issueCountsByKind": {
+            "$ref": "#/components/schemas/issue-counts-by-kind"
+          },
+          "debtCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Sum of all issue kinds (dead-code + oversized-file + package-layout).\n"
           }
         },
         "required": [
@@ -959,7 +982,9 @@
           "sourceLines",
           "prodLines",
           "testLines",
-          "testFiles"
+          "testFiles",
+          "issueCountsByKind",
+          "debtCount"
         ]
       },
       "export-entry": {
@@ -1736,6 +1761,23 @@
                           }
                         }
                       },
+                      "fake": {
+                        "type": "object",
+                        "nullable": true,
+                        "description": "Sibling SDK fake/MSW module (`*.fake.ts`) when present beside the request.\n",
+                        "required": [
+                          "filePath",
+                          "repoPath"
+                        ],
+                        "properties": {
+                          "filePath": {
+                            "type": "string"
+                          },
+                          "repoPath": {
+                            "type": "string"
+                          }
+                        }
+                      },
                       "handlerTests": {
                         "type": "array",
                         "description": "describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses \" > \" nesting).\n",
@@ -1791,6 +1833,20 @@
                             }
                           }
                         }
+                      },
+                      "enqueues": {
+                        "type": "array",
+                        "description": "operationIds this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map.\n",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "enqueuedBy": {
+                        "type": "array",
+                        "description": "operationIds or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map.\n",
+                        "items": {
+                          "type": "string"
+                        }
                       }
                     }
                   }
@@ -1815,7 +1871,6 @@
             "type": "string",
             "enum": [
               "dead-code",
-              "same-file-only-export",
               "oversized-file",
               "package-layout"
             ]

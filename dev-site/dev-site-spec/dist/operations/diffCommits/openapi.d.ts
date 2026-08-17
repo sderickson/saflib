@@ -88,6 +88,15 @@ export interface components {
             testLines: number;
             /** @description Count of test files. */
             testFiles: number;
+            issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+            /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
+            debtCount: number;
+        };
+        /** @description Per-kind issue counts for a commit or package (all kinds count as debt). */
+        "issue-counts-by-kind": {
+            "dead-code": number;
+            "oversized-file": number;
+            "package-layout": number;
         };
         /** @description One exported symbol extracted from a source file at a commit. */
         "export-entry": {

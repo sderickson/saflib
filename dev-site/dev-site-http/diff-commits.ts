@@ -17,6 +17,13 @@ import type { RepoReadOptions } from "./get-commit.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
+import { listByCommit as listIssueStats } from "@saflib/dev-site-db/queries/package-issue-stats/list-by-commit";
+import {
+  debtCountFromIssueCounts,
+  emptyIssueCountsByKind,
+  type IssueCountsByKind,
+  type PackageIssueKind,
+} from "./package-issues.ts";
 export type CommitDiff = components["schemas"]["commit-diff"];
 export type PackageMetrics = components["schemas"]["package-metrics"];
 export type ExportEntry = components["schemas"]["export-entry"];
@@ -40,7 +47,8 @@ function metricsEqual(a: PackageMetrics, b: PackageMetrics): boolean {
     a.prodLines === b.prodLines &&
     a.testLines === b.testLines &&
     a.testFiles === b.testFiles &&
-    a.directory === b.directory
+    a.directory === b.directory &&
+    a.debtCount === b.debtCount
   );
 }
 
@@ -90,15 +98,31 @@ function diffLists<T>(
   return { added, removed };
 }
 
-function toPackageMetrics(m: {
-  packageName: string;
-  directory: string;
-  sourceFiles: number;
-  sourceLines: number;
-  prodLines: number;
-  testLines: number;
-  testFiles: number;
-}): PackageMetrics {
+function issueCountsByPackage(
+  rows: Array<{ packageName: string; kind: string; count: number }>,
+): Map<string, IssueCountsByKind> {
+  const byPackage = new Map<string, IssueCountsByKind>();
+  for (const row of rows) {
+    const kind = row.kind as PackageIssueKind;
+    const pkg = byPackage.get(row.packageName) ?? emptyIssueCountsByKind();
+    if (kind in pkg) pkg[kind] += row.count;
+    byPackage.set(row.packageName, pkg);
+  }
+  return byPackage;
+}
+
+function toPackageMetrics(
+  m: {
+    packageName: string;
+    directory: string;
+    sourceFiles: number;
+    sourceLines: number;
+    prodLines: number;
+    testLines: number;
+    testFiles: number;
+  },
+  issueCountsByKind: IssueCountsByKind = emptyIssueCountsByKind(),
+): PackageMetrics {
   return {
     packageName: m.packageName,
     directory: m.directory,
@@ -107,6 +131,8 @@ function toPackageMetrics(m: {
     prodLines: m.prodLines,
     testLines: m.testLines,
     testFiles: m.testFiles,
+    issueCountsByKind,
+    debtCount: debtCountFromIssueCounts(issueCountsByKind),
   };
 }
 
@@ -127,16 +153,24 @@ export async function diffCommits(
   if (fromCommit.error) return { error: fromCommit.error };
   if (toCommit.error) return { error: toCommit.error };
 
-  const [fromMetricsRes, toMetricsRes, fromSymbols, toSymbols] =
+  const [fromMetricsRes, toMetricsRes, fromSymbols, toSymbols, fromIssues, toIssues] =
     await Promise.all([
       listByCommit(dbKey, fromHash),
       listByCommit(dbKey, toHash),
       assembleCommitSymbols(dbKey, fromHash, repo),
       assembleCommitSymbols(dbKey, toHash, repo),
+      listIssueStats(dbKey, fromHash),
+      listIssueStats(dbKey, toHash),
     ]);
 
-  const fromMetrics = fromMetricsRes.result!.map(toPackageMetrics);
-  const toMetrics = toMetricsRes.result!.map(toPackageMetrics);
+  const fromIssueMap = issueCountsByPackage(fromIssues.result ?? []);
+  const toIssueMap = issueCountsByPackage(toIssues.result ?? []);
+  const fromMetrics = fromMetricsRes.result!.map((m) =>
+    toPackageMetrics(m, fromIssueMap.get(m.packageName)),
+  );
+  const toMetrics = toMetricsRes.result!.map((m) =>
+    toPackageMetrics(m, toIssueMap.get(m.packageName)),
+  );
 
   const beforePkgs = new Map(fromMetrics.map((m) => [packageKey(m), m]));
   const afterPkgs = new Map(toMetrics.map((m) => [packageKey(m), m]));
