@@ -5,7 +5,7 @@ import {
 } from "./specialty.ts";
 
 /** Bump when specialty shape or extractors change incompatibly. */
-export const ANALYZER_VERSION = "8";
+export const ANALYZER_VERSION = "9";
 
 /**
  * Content-addressed parse result for one file.

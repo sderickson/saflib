@@ -6,7 +6,10 @@ export type ExportKind =
   | "type"
   | "const"
   | "enum"
-  | "variable";
+  | "variable"
+  | "component"
+  | "prop"
+  | "emit";
 
 /** One exported symbol found by {@link extractExports}. */
 export interface ExportEntry {

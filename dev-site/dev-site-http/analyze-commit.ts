@@ -9,6 +9,7 @@ import type { DbKey } from "@saflib/drizzle";
 import type { AnalyzedCommitRef, BlobFactEntity, InsertBlobFactParams, InsertPackageMetricsParams } from "@saflib/dev-site-db/types";
 import {
   blobFactExports,
+  blobFactImports,
   blobFactTestCases,
 } from "@saflib/dev-site-db/types";
 
@@ -28,6 +29,7 @@ import {
   packageForPath,
   packageRootsFromPackageJsonPaths,
   parsePackageName,
+  sdkRequestFromSpecifier,
 } from "./classify.ts";
 import { linkTestSubjects } from "./link-test-subjects.ts";
 
@@ -350,6 +352,13 @@ export async function assembleCommitSymbols(
   };
 }
 
+export interface PackageSdkRequestImport {
+  /** Repo-relative importer path. */
+  filePath: string;
+  sdkPackageName: string;
+  requestStem: string;
+}
+
 /**
  * Like {@link assembleCommitSymbols} but only for one package — much cheaper
  * for the checkout package panel (skips blob-fact work for other packages).
@@ -361,7 +370,12 @@ export async function assemblePackageSymbols(
   options: AnalyzeCommitOptions,
 ): Promise<
   ReturnsError<
-    { exports: AnalyzedExport[]; testCases: AnalyzedTestCase[] },
+    {
+      exports: AnalyzedExport[];
+      testCases: AnalyzedTestCase[];
+      hasVue: boolean;
+      sdkRequestImports: PackageSdkRequestImport[];
+    },
     AnalyzeCommitError
   >
 > {
@@ -394,7 +408,9 @@ export async function assemblePackageSymbols(
   );
   const targetRoot = roots.find((r) => r.packageName === packageName);
   if (!targetRoot) {
-    return { result: { exports: [], testCases: [] } };
+    return {
+      result: { exports: [], testCases: [], hasVue: false, sdkRequestImports: [] },
+    };
   }
 
   const underPackage = (path: string) => {
@@ -416,10 +432,13 @@ export async function assemblePackageSymbols(
 
   const exportsOut: AnalyzedExport[] = [];
   const testCasesOut: AnalyzedTestCase[] = [];
+  const sdkRequestImports: PackageSdkRequestImport[] = [];
+  let hasVue = false;
 
   for (const entry of sourceEntries) {
     const fact = facts.get(entry.blobHash);
     if (!fact) continue;
+    if (entry.path.endsWith(".vue")) hasVue = true;
     const fileName = entry.path.split("/").pop() ?? entry.path;
     const isTest = isTestSourcePath(entry.path, fileName);
     if (isTest) {
@@ -446,6 +465,15 @@ export async function assemblePackageSymbols(
           docstring: exp.docstring ?? null,
         });
       }
+      for (const imp of blobFactImports(fact)) {
+        const parsed = sdkRequestFromSpecifier(imp.specifier);
+        if (!parsed) continue;
+        sdkRequestImports.push({
+          filePath: entry.path,
+          sdkPackageName: parsed.sdkPackageName,
+          requestStem: parsed.requestStem,
+        });
+      }
     }
   }
 
@@ -459,5 +487,12 @@ export async function assemblePackageSymbols(
     `${a.filePath}\0${a.fullName}`.localeCompare(`${b.filePath}\0${b.fullName}`),
   );
 
-  return { result: { exports: exportsOut, testCases: linkedTests } };
+  return {
+    result: {
+      exports: exportsOut,
+      testCases: linkedTests,
+      hasVue,
+      sdkRequestImports,
+    },
+  };
 }

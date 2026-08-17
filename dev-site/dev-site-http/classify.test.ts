@@ -11,6 +11,8 @@ import {
   looksLikeSpecPackage,
   looksLikeHttpPackage,
   looksLikeSdkPackage,
+  looksLikeSpaPackage,
+  sdkRequestFromSpecifier,
 } from "./classify.ts";
 
 describe("classify", () => {
@@ -115,6 +117,22 @@ describe("classify", () => {
       expect(
         looksLikeSdkPackage("@pathclerk/daemon-http", "daemon/service/http"),
       ).toBe(false);
+      expect(
+        looksLikeSpaPackage("@pathclerk/daemon-account-spa", "daemon/clients/account"),
+      ).toBe(true);
+      expect(
+        looksLikeSpaPackage("@saflib/dev-site-vue", "saflib/dev-site/dev-site-vue"),
+      ).toBe(true);
+      expect(looksLikeSpaPackage("@pathclerk/daemon-sdk", "daemon/service/sdk")).toBe(
+        false,
+      );
+      expect(
+        sdkRequestFromSpecifier("@pathclerk/daemon-sdk/requests/orgs/list"),
+      ).toEqual({
+        sdkPackageName: "@pathclerk/daemon-sdk",
+        requestStem: "orgs/list",
+      });
+      expect(sdkRequestFromSpecifier("./ChooseOrg.logic.ts")).toBeNull();
     });
   });
 });

@@ -7,6 +7,8 @@ import {
   extractImports,
   extractLocalExportUsages,
   extractTestCases,
+  extractVueSfc,
+  isVueSfc,
   type ExportKind,
 } from "@saflib/parser";
 
@@ -108,18 +110,45 @@ export function countSourceLines(text: string): number {
 
 /** Build FileSpecialty from source text via @saflib/parser extractors. */
 export function buildFileSpecialty(source: string): FileSpecialty {
-  const exports = extractExports(source).map((e) => ({
+  const vue = isVueSfc(source) ? extractVueSfc(source) : null;
+  const parseSource = vue ? vue.script : source;
+
+  const exports = extractExports(parseSource).map((e) => ({
     name: e.name,
     kind: e.kind,
     signature: e.signature,
     docstring: e.docstring,
   }));
-  const imports = extractImports(source).map((i) => ({
+  if (vue) {
+    exports.push({
+      name: "default",
+      kind: "component",
+      signature: "(vue component)",
+      docstring: null,
+    });
+    for (const p of vue.props) {
+      exports.push({
+        name: p.name,
+        kind: p.kind,
+        signature: p.signature,
+        docstring: p.docstring,
+      });
+    }
+    for (const e of vue.emits) {
+      exports.push({
+        name: e.name,
+        kind: e.kind,
+        signature: e.signature,
+        docstring: e.docstring,
+      });
+    }
+  }
+  const imports = extractImports(parseSource).map((i) => ({
     specifier: i.specifier,
     names: i.names,
   }));
-  const localExportUsages = extractLocalExportUsages(source);
-  const tables = extractDrizzleTables(source).map((t) => ({
+  const localExportUsages = extractLocalExportUsages(parseSource);
+  const tables = extractDrizzleTables(parseSource).map((t) => ({
     exportName: t.exportName,
     tableName: t.tableName,
     docstring: t.docstring,
@@ -133,7 +162,7 @@ export function buildFileSpecialty(source: string): FileSpecialty {
   if (tables.length > 0) {
     return { kind: "sql-table", exports, imports, localExportUsages, tables };
   }
-  const testCases = extractTestCases(source).map((t) => ({
+  const testCases = extractTestCases(parseSource).map((t) => ({
     fullName: t.fullName,
   }));
   if (testCases.length > 0) {

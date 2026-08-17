@@ -199,6 +199,39 @@ export function looksLikeSdkPackage(
   );
 }
 
+/** Heuristic: npm name / directory looks like a Vue SPA or `-vue` package. */
+export function looksLikeSpaPackage(
+  packageName: string,
+  directory: string = "",
+): boolean {
+  const name = packageName.toLowerCase();
+  const dir = directory.replace(/\\/g, "/").toLowerCase();
+  return (
+    name.endsWith("-vue") ||
+    name.endsWith("-spa") ||
+    name.includes("-vue-") ||
+    name.includes("-spa-") ||
+    dir.includes("/clients/") ||
+    /(^|\/)clients\//.test(dir)
+  );
+}
+
+/**
+ * `@scope/foo-sdk/requests/orgs/list` → SDK package + request stem.
+ * Returns null for non-SDK request specifiers.
+ */
+export function sdkRequestFromSpecifier(specifier: string): {
+  sdkPackageName: string;
+  requestStem: string;
+} | null {
+  const m = /^((?:@[^/]+\/)?[^/]+)\/requests\/(.+)$/.exec(specifier);
+  if (!m) return null;
+  const sdkPackageName = m[1]!;
+  if (!sdkPackageName.endsWith("-sdk")) return null;
+  const requestStem = m[2]!.replace(/\.(tsx?|jsx?|mjs|cjs)$/, "");
+  return { sdkPackageName, requestStem };
+}
+
 /** Heuristic: npm name / directory looks like an OpenAPI `-spec` package. */
 export function looksLikeSpecPackage(
   packageName: string,

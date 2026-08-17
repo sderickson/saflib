@@ -14,6 +14,7 @@ import {
   looksLikeDbPackage,
   looksLikeHttpPackage,
   looksLikeSdkPackage,
+  looksLikeSpaPackage,
   looksLikeSpecPackage,
 } from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
@@ -156,6 +157,8 @@ export async function getCommitPackage(
   const isSpec = looksLikeSpecPackage(metrics.packageName, metrics.directory);
   const isHttp = looksLikeHttpPackage(metrics.packageName, metrics.directory);
   const isSdk = looksLikeSdkPackage(metrics.packageName, metrics.directory);
+  const isSpa = looksLikeSpaPackage(metrics.packageName, metrics.directory);
+  const hasVue = symbols.result?.hasVue ?? false;
   if (isDb) {
     const inv = await assemblePackageDbInventory(
       dbKey,
@@ -181,6 +184,28 @@ export async function getCommitPackage(
     // Join sibling -spec routes so HTTP/SDK panes can show PackageRouteCards
     // while still presenting handlers/ or requests/ as a normal source package.
     const specName = siblingSpecPackageName(packageName);
+    if (specName) {
+      const inv = await assemblePackageSpecInventory(
+        dbKey,
+        hash,
+        specName,
+        repoOpts,
+      );
+      if (!inv.error) {
+        specInventory = inv.result;
+        annotateJobsIfConfigured(specInventory);
+      }
+    }
+  } else if (isSpa || hasVue) {
+    // Join the product `-spec` whose SDK request modules this SPA/Vue package
+    // actually imports, so bundle views can show loader routes.
+    const counts = new Map<string, number>();
+    for (const imp of symbols.result?.sdkRequestImports ?? []) {
+      const specName = siblingSpecPackageName(imp.sdkPackageName);
+      if (!specName) continue;
+      counts.set(specName, (counts.get(specName) ?? 0) + 1);
+    }
+    const specName = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
     if (specName) {
       const inv = await assemblePackageSpecInventory(
         dbKey,

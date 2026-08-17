@@ -156,6 +156,7 @@ const isSelected = (node: TestFileNavNode) => {
 
 const navIcon = (node: TestFileNavNode): string => {
   if (node.kind === "dir") return "mdi-folder-outline";
+  if (node.hasVueComponent) return "mdi-vuejs";
   if (node.presence === "test") return "mdi-test-tube";
   if (!node.hasCardExports) return "mdi-circle-small";
   if (node.presence === "both") return "mdi-file-document-outline";
@@ -164,6 +165,11 @@ const navIcon = (node: TestFileNavNode): string => {
 
 const navTitle = (node: TestFileNavNode): string => {
   if (node.kind === "dir") return "Directory";
+  if (node.hasVueComponent) {
+    return node.loadableAsync
+      ? "Vue component (async)"
+      : "Vue component";
+  }
   if (node.presence === "test") return "Test only";
   if (!node.hasCardExports) {
     return node.presence === "both"

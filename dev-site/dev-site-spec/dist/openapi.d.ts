@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP or SDK package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on `saf-dev-site issues --workdir` — not on this Spec package load.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP or SDK package's own source modules. For Vue SPA / `-vue` packages, `specInventory` is the product `-spec` joined through SDK request imports so Spec can show loader routes on a component bundle. `layoutIssues` are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on `saf-dev-site issues --workdir` — not on this Spec package load.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -326,7 +326,7 @@ export interface components {
              * @description Declaration kind (mirrors `@saflib/parser`'s ExportKind).
              * @enum {string}
              */
-            kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable";
+            kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable" | "component" | "prop" | "emit";
             /**
              * @description Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.
              * @example (repoRoot: string, options?: LogOptions)
