@@ -37,7 +37,7 @@ export const SOURCE_EXTS = new Set([
   ".cjs",
 ]);
 
-/** Heuristic: *.test.* / *.spec.* / *.fixtures.*, or under testing/ / tests/ / __tests__/. */
+/** Heuristic: *.test.* / *.spec.* / *.fixture(s).* / *.test-helpers.*, or under testing/ / tests/ / __tests__/. */
 export function isTestSourcePath(relPosix: string, fileName: string): boolean {
   const lower = fileName.toLowerCase();
   if (
@@ -50,7 +50,11 @@ export function isTestSourcePath(relPosix: string, fileName: string): boolean {
     lower.endsWith(".spec.js") ||
     lower.endsWith(".spec.jsx") ||
     lower.endsWith(".fixtures.ts") ||
-    lower.endsWith(".fixtures.tsx")
+    lower.endsWith(".fixtures.tsx") ||
+    lower.endsWith(".fixture.ts") ||
+    lower.endsWith(".fixture.tsx") ||
+    lower.endsWith(".test-helpers.ts") ||
+    lower.endsWith(".test-helpers.tsx")
   ) {
     return true;
   }

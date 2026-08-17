@@ -13,7 +13,10 @@ import {
   type PackageIssue,
   type UsedByImporterUnit,
 } from "@saflib/imports";
-import { checkPackageLayout } from "@saflib/monorepo";
+import {
+  checkPackageLayout,
+  listPackageJsonExportTargetFiles,
+} from "@saflib/monorepo";
 import {
   EXCLUDE_DIRS,
   isSourcePath,
@@ -93,10 +96,19 @@ export async function collectWorkdirPackageIssues(
     (p) => p === "package.json" || p.endsWith("/package.json"),
   );
   const nameByPath = new Map<string, string>();
+  const exportsByPkgJson = new Map<string, Record<string, unknown> | string>();
   for (const pkgPath of packageJsonPaths) {
     const text = await readFile(path.join(repoRoot, pkgPath), "utf-8");
     const name = parsePackageName(text);
     if (name) nameByPath.set(pkgPath, name);
+    try {
+      const parsed = JSON.parse(text) as {
+        exports?: Record<string, unknown> | string;
+      };
+      if (parsed.exports) exportsByPkgJson.set(pkgPath, parsed.exports);
+    } catch {
+      // ignore malformed package.json; layout check will also fail open
+    }
   }
   const roots = packageRootsFromPackageJsonPaths(packageJsonPaths, nameByPath);
   const targetRoot = roots.find((r) => r.packageName === packageName);
@@ -166,6 +178,10 @@ export async function collectWorkdirPackageIssues(
   );
 
   const directory = targetRoot.directory;
+  const pkgJsonPath = directory ? `${directory}/package.json` : "package.json";
+  const publicExportFilePaths = listPackageJsonExportTargetFiles(
+    exportsByPkgJson.get(pkgJsonPath),
+  ).map((rel) => (directory ? `${directory}/${rel}` : rel));
   const layoutIssues: PackageIssue[] = includeLayout
     ? checkPackageLayout({
         packageDir: path.join(repoRoot, directory || "."),
@@ -192,6 +208,7 @@ export async function collectWorkdirPackageIssues(
         usedBy: usedByMap.get(exportUsedByKey(e.filePath, e.name)) ?? [],
       })),
       layoutIssues,
+      publicExportFilePaths,
     },
     { packageDirectory: directory, productRoot },
   );

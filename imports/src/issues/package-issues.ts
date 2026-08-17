@@ -109,6 +109,11 @@ export interface PackageDetailForIssues {
    * Merged into the returned list so Spec UI and `--workdir` CLI share one collector.
    */
   layoutIssues?: PackageIssue[];
+  /**
+   * Repo-relative files that `package.json` `exports` (SPA `main.ts`,
+   * `./test-app`, …). Skipped for dead-code — they are public API.
+   */
+  publicExportFilePaths?: string[];
 }
 
 /**
@@ -144,8 +149,10 @@ export function collectPackageIssues(
       }
     }
   } else {
+    const publicFiles = new Set(detail.publicExportFilePaths ?? []);
     for (const exp of detail.exports ?? []) {
       if (!CARD_EXPORT_KINDS.has(exp.kind)) continue;
+      if (publicFiles.has(exp.filePath)) continue;
       const local = packageLocalPath(
         exp.filePath,
         packageDirectory,

@@ -73,6 +73,7 @@ export {
   DEFAULT_MAX_SOURCE_LINES,
   ROOT_TS_ALLOWLIST,
   isAllowedRootTsFile,
+  listPackageJsonExportTargetFiles,
   type CheckPackageLayoutOptions,
   type CheckPackageLayoutFromInputsOptions,
   type PackageJsonLayoutFields,

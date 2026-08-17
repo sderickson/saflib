@@ -16,9 +16,9 @@ Do **not** blindly delete exports. Triage each item.
    public surface.
 
 2. **Tested helper only used in that file (+ tests)** — unit tests import the export  
-   → **Split into its own module**; production parent imports the leaf.  
+   → **Backend / shared libs:** split into its own module; production parent imports the leaf.  
    Rule of thumb: *if it has a focused unit test, it deserves its own file.*  
-   That also creates a real non-test importer so the issue clears.
+   → **Vue SPA `.logic.ts` next to a component:** do **not** split each function into its own file (Spec folds companions into one bundle). Either use the helper from the Vue (or sibling) or **delete** it and its tests.
 
 3. **CLI / validate / generate entrypoint** — only called from `*.test.ts` or nowhere  
    → Put under `scripts/` and wire `package.json` via `saf-ts-run ./scripts/…`, **or** under `bin/` with a `package.json` `bin` entry.  
@@ -27,10 +27,12 @@ Do **not** blindly delete exports. Triage each item.
 4. **Truly unused** — no production and no meaningful test surface  
    → **Delete** (and drop tests that only existed for it).
 
-5. **Shared test fixture** — name it `*.fixtures.ts` (not scanned for dead-code / LoC).  
-   Do **not** invent a fake prod caller.
+5. **Shared test fixture** — name it `*.fixtures.ts` (backend) or `*.fixture.ts` (Playwright page objects).  
+   `*.test-helpers.ts` is also skipped. Do **not** invent a fake prod caller.
 
-6. **False positive** — real prod importers exist but Issues still flags  
+6. **Package `exports` file** — `"."` / `./test-app` / `./strings` targets are public API, not dead-code.
+
+7. **False positive** — real prod importers exist but Issues still flags  
    → **Fix the tool**, usually:
    - `package.json` **exports remaps** (`"./foo": "./bar/lib.ts"`) so graph keys don't match import targets — prefer disk-path imports (`…/bar/lib`) and drop remaps
    - dynamic `import()`, or code under excluded dirs
@@ -41,7 +43,7 @@ Do **not** blindly delete exports. Triage each item.
 | Kind | Typical fix |
 | --- | --- |
 | `oversized-file` (>800 LoC) | Split into folders/modules; don't silence without splitting |
-| `package-layout` | No `.ts` at package root except allowlisted entry/config files (`index.ts`, `client.ts`, `drizzle.config.ts`) **or** files that are direct package exports (`./name` → `./name.ts`); `bin` → `./bin/…`; `saf-ts-run` → `./scripts/` or `./bin/`; ban `node --experimental-strip-types` in scripts |
+| `package-layout` | No `.ts` at package root except allowlisted entry/config files (`index.ts`, `client.ts`, `drizzle.config.ts`, Vue SPA `main.ts` / `router.ts` / `vite.config.ts` / `vitest.config.ts` / `playwright.config.ts`) **or** files that are direct package exports (`"."` → `./main.ts`, `./name` → `./name.ts`); `bin` → `./bin/…`; `saf-ts-run` → `./scripts/` or `./bin/`; ban `node --experimental-strip-types` in scripts |
 | exports remaps | Make import path = file path; `saf-imports exports check` / `analyze-package` |
 
 ## Verify
