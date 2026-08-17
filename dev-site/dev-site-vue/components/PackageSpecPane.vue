@@ -29,6 +29,7 @@
           <TestFileNav
             :nodes="fileNav"
             :selected="scope"
+            :vue-bundles="vueBundles"
             @select="setScope"
           />
         </div>
@@ -79,6 +80,23 @@
             Can be loaded <strong>async</strong>
           </p>
 
+          <div v-if="vueModels.length" class="surface-block">
+            <h4 class="surface-block__title">Models</h4>
+            <table class="surface-table">
+              <tbody>
+                <tr v-for="m in vueModels" :key="'model-' + m.name">
+                  <th>{{ m.name }}</th>
+                  <td>
+                    <code v-if="m.signature">{{ m.signature }}</code>
+                    <span v-if="m.docstring" class="surface-table__doc">{{
+                      m.docstring
+                    }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <div v-if="vueProps.length" class="surface-block">
             <h4 class="surface-block__title">Props</h4>
             <table class="surface-table">
@@ -127,6 +145,7 @@
                   :operation="normalizeOp(op)"
                   :route-repo-path="routeRepoPath(op.yamlPath)"
                   :open-file="openFile"
+                  through-files
                 />
               </li>
             </ul>
@@ -139,6 +158,7 @@
           />
           <p
             v-else-if="
+              !vueModels.length &&
               !vueProps.length &&
               !vueEmits.length &&
               !scopedRoutes.length &&
@@ -156,7 +176,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useCommitPackage, useFirstRepoFile } from "../requests/queries";
+import { useCommitPackage, useScopeSummary } from "../requests/queries";
 import {
   buildModuleFileNav,
   buildPackageSpecTree,
@@ -167,11 +187,7 @@ import {
   toVueBundleStem,
   type TestScope,
 } from "../test-tree";
-import {
-  extractLeadingJsDocProse,
-  fileScopeDocCandidates,
-  shortenMarkdownSummary,
-} from "../scope-docs";
+import { scopeDocListPrefix } from "../scope-docs";
 import { repoPathPrefix } from "../repo-paths";
 import { openSource } from "../source-links";
 import TestTree from "./TestTree.vue";
@@ -250,34 +266,27 @@ const selectedModule = computed(() => {
   );
 });
 
-const scopeDocPaths = computed(() => {
-  const prefix = pkgPrefix.value;
-  const s = scope.value;
-  if (s.kind === "all") return [] as string[];
-  if (s.kind === "dir") {
-    const base = [prefix, s.localPath].filter(Boolean).join("/");
-    return [`${base}/README.md`, `${base}/readme.md`];
-  }
-  const stemRepo = [prefix, toModuleStem(s.localPath)].filter(Boolean).join("/");
-  return fileScopeDocCandidates(stemRepo);
-});
+const scopeDocPrefix = computed(() =>
+  scopeDocListPrefix({
+    kind: scope.value.kind,
+    pkgPrefix: pkgPrefix.value,
+    localPath: scope.value.kind === "all" ? "" : scope.value.localPath,
+    moduleStem:
+      scope.value.kind === "file"
+        ? vueBundles.value
+          ? toVueBundleStem(scope.value.localPath)
+          : toModuleStem(scope.value.localPath)
+        : "",
+  }),
+);
 
-const {
-  data: scopeDocFile,
-  isLoading: scopeDocLoading,
-} = useFirstRepoFile(props.subdomain, () => ({
-  ref: props.commitHash,
-  paths: scopeDocPaths.value,
-}));
-
-const scopeSummary = computed(() => {
-  const file = scopeDocFile.value;
-  if (!file?.content) return null;
-  if (file.path.toLowerCase().endsWith(".md")) {
-    return shortenMarkdownSummary(file.content);
-  }
-  return extractLeadingJsDocProse(file.content);
-});
+const { summary: scopeSummary, isLoading: scopeDocLoading } = useScopeSummary(
+  props.subdomain,
+  () => ({
+    ref: props.commitHash,
+    prefix: scopeDocPrefix.value,
+  }),
+);
 
 const missingScopeHint = computed(() => {
   if (scope.value.kind === "dir") {
@@ -332,6 +341,9 @@ const bundleExports = computed(() => {
   });
 });
 
+const vueModels = computed(() =>
+  bundleExports.value.filter((e) => e.kind === "model"),
+);
 const vueProps = computed(() =>
   bundleExports.value.filter((e) => e.kind === "prop"),
 );

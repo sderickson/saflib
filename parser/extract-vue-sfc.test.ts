@@ -102,4 +102,23 @@ defineEmits(["click", "update:modelValue"]);
     expect(props[0]!.signature).toContain("String");
     expect(emits.map((e) => e.name)).toEqual(["click", "update:modelValue"]);
   });
+
+  it("extracts defineModel binding name, type, and required", () => {
+    const source = `
+<template><input /></template>
+<script setup lang="ts">
+import type { ProfileContactFieldsValues } from "./types.ts";
+
+const contact = defineModel<ProfileContactFieldsValues>({ required: true });
+const title = defineModel<string>("title");
+defineModel<boolean>();
+</script>
+`;
+    const { models } = extractVueSfc(source);
+    expect(models.map((m) => m.name)).toEqual(["contact", "title", "modelValue"]);
+    expect(models[0]!.kind).toBe("model");
+    expect(models[0]!.signature).toBe("ProfileContactFieldsValues, required");
+    expect(models[1]!.signature).toBe("string");
+    expect(models[2]!.signature).toBe("boolean");
+  });
 });

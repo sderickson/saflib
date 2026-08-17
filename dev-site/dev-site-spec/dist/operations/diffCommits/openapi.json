@@ -358,7 +358,8 @@
               "variable",
               "component",
               "prop",
-              "emit"
+              "emit",
+              "model"
             ]
           },
           "signature": {

@@ -6,6 +6,7 @@ import {
   dbEntitySelectionFromScope,
   isDbPackageHiddenModuleStem,
   isSdkPackageHiddenModuleStem,
+  packageHasVueFiles,
   toModuleStem,
 } from "./test-tree.ts";
 
@@ -17,6 +18,39 @@ describe("toModuleStem", () => {
     expect(toModuleStem("a/b.fake.ts")).toBe("a/b");
     expect(toModuleStem("a/b.vue")).toBe("a/b");
     expect(toModuleStem("a/b")).toBe("a/b");
+  });
+});
+
+describe("packageHasVueFiles", () => {
+  it("detects .vue and colocated Vue role files", () => {
+    expect(
+      packageHasVueFiles(
+        [
+          {
+            packageName: "@p",
+            filePath: "spa/Foo.logic.ts",
+            name: "x",
+            kind: "function",
+          },
+        ],
+        [],
+        "@p",
+      ),
+    ).toBe(true);
+    expect(
+      packageHasVueFiles(
+        [
+          {
+            packageName: "@p",
+            filePath: "spa/log.ts",
+            name: "log",
+            kind: "function",
+          },
+        ],
+        [],
+        "@p",
+      ),
+    ).toBe(false);
   });
 });
 
@@ -349,6 +383,101 @@ describe("vue bundle nav", () => {
     expect(labels).not.toContain("title");
     const logic = cards.find((c) => c.label === "homeViewMode");
     expect(logic?.children.some((c) => c.label === "list")).toBe(true);
+  });
+
+  it("folds *.logic.ts companions even when the .vue file is missing from exports", () => {
+    const nav = buildModuleFileNav(
+      [
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.logic.ts",
+          name: "initialSameAsMobileChecked",
+          kind: "function",
+        },
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.strings.ts",
+          name: "profile_contact_fields",
+          kind: "const",
+        },
+      ],
+      [
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.logic.test.ts",
+          fullName: "initialSameAsMobileChecked > starts checked when phones match",
+        },
+      ],
+      "@pkg/spa",
+      "spa",
+      "",
+      { vueBundles: true },
+    );
+    const fields = nav
+      .find((n) => n.label === "components")
+      ?.children.find((c) => c.label === "profile-contact-fields")
+      ?.children.map((c) => c.label);
+    expect(fields).toEqual(["ProfileContactFields"]);
+  });
+
+  it("nests describe(functionName) tests under the matching logic export", () => {
+    const cards = buildPackageSpecTree(
+      [
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.vue",
+          name: "default",
+          kind: "component",
+        },
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.vue",
+          name: "contact",
+          kind: "model",
+        },
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.logic.ts",
+          name: "initialSameAsMobileChecked",
+          kind: "function",
+        },
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.strings.ts",
+          name: "profile_contact_fields",
+          kind: "const",
+        },
+      ],
+      [
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.logic.test.ts",
+          fullName:
+            "initialSameAsMobileChecked > starts checked when phones match",
+          subjectName: "initialSameAsMobileChecked",
+        },
+      ],
+      "@pkg/spa",
+      "spa",
+      "",
+      {
+        kind: "file",
+        localPath: "components/profile-contact-fields/ProfileContactFields",
+      },
+      { vueBundles: true },
+    );
+    expect(cards.map((c) => c.label)).toEqual(["initialSameAsMobileChecked"]);
+    expect(cards[0]!.children.map((c) => c.label)).toEqual([
+      "starts checked when phones match",
+    ]);
   });
 });
 

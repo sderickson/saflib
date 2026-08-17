@@ -9,7 +9,8 @@ export type ExportKind =
   | "variable"
   | "component"
   | "prop"
-  | "emit";
+  | "emit"
+  | "model";
 
 /** One exported symbol found by {@link extractExports}. */
 export interface ExportEntry {

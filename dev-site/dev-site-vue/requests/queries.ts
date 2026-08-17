@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import type { MaybeRefOrGetter } from "vue";
-import { toValue } from "vue";
+import { computed, toValue } from "vue";
 import createClient from "openapi-fetch";
 import type {
   paths,
@@ -8,6 +8,7 @@ import type {
   DevSiteRequestBody,
 } from "@saflib/dev-site-spec";
 import { TanstackError, handleClientMethod, createSafClient } from "@saflib/sdk";
+import { pickScopeDocFile, summarizeScopeDoc } from "../scope-docs.ts";
 
 /**
  * Create an openapi-fetch client for the dev-site API.
@@ -163,12 +164,18 @@ export function useRepoFiles(
     ref: string;
     prefix?: string;
     ext?: string | string[];
+    content?: boolean;
   }>,
 ) {
   const client = createDevSiteClient(subdomain);
   return useQuery<DevSiteResponseBody["listRepoFiles"][200], TanstackError>({
     queryKey: ["dev-site", "repo-files", params],
-    enabled: () => Boolean(toValue(params).ref),
+    enabled: () => {
+      const p = toValue(params);
+      if (!p.ref) return false;
+      if (p.content) return Boolean(p.prefix);
+      return true;
+    },
     queryFn: () => {
       const p = toValue(params);
       const ext = p.ext
@@ -183,12 +190,32 @@ export function useRepoFiles(
               ref: p.ref,
               prefix: p.prefix,
               ext,
+              content: p.content || undefined,
             },
           },
         }),
       );
     },
   });
+}
+
+/**
+ * One prefix list (with contents) → README / leading JSDoc for the Spec header.
+ */
+export function useScopeSummary(
+  subdomain: string,
+  params: MaybeRefOrGetter<{ ref: string; prefix: string }>,
+) {
+  const filesQuery = useRepoFiles(subdomain, () => {
+    const p = toValue(params);
+    return { ref: p.ref, prefix: p.prefix, content: true };
+  });
+  const summary = computed(() => {
+    const prefix = toValue(params).prefix;
+    const files = filesQuery.data.value?.files ?? [];
+    return summarizeScopeDoc(pickScopeDocFile(files, prefix));
+  });
+  return { summary, isLoading: filesQuery.isLoading };
 }
 
 export function useRepoFile(
@@ -218,39 +245,3 @@ export function useRepoFile(
   });
 }
 
-/**
- * Try several repo paths at a commit; return the first file that exists.
- * Used for adjacent-source / README fallbacks where 404 is expected.
- */
-export function useFirstRepoFile(
-  subdomain: string,
-  params: MaybeRefOrGetter<{ ref: string; paths: string[] }>,
-) {
-  const client = createDevSiteClient(subdomain);
-  return useQuery<
-    DevSiteResponseBody["getRepoFile"][200] | null,
-    TanstackError
-  >({
-    queryKey: ["dev-site", "repo-file-first", params],
-    enabled: () => {
-      const p = toValue(params);
-      return Boolean(p.ref && p.paths.length);
-    },
-    queryFn: async () => {
-      const p = toValue(params);
-      for (const path of p.paths) {
-        try {
-          return await handleClientMethod(
-            client.GET("/api/repo/file", {
-              params: { query: { ref: p.ref, path } },
-            }),
-          );
-        } catch (err) {
-          if (err instanceof TanstackError && err.status === 404) continue;
-          throw err;
-        }
-      }
-      return null;
-    },
-  });
-}

@@ -142,6 +142,14 @@ export function buildFileSpecialty(source: string): FileSpecialty {
         docstring: e.docstring,
       });
     }
+    for (const m of vue.models) {
+      exports.push({
+        name: m.name,
+        kind: m.kind,
+        signature: m.signature,
+        docstring: m.docstring,
+      });
+    }
   }
   const imports = extractImports(parseSource).map((i) => ({
     specifier: i.specifier,

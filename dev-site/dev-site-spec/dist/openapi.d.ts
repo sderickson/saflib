@@ -133,7 +133,7 @@ export interface paths {
         };
         /**
          * List files at a commit
-         * @description List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Used for browsing docs and source without checking out.
+         * @description List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Prefix matches the exact path, descendants (`docs` matches `docs/guide.md`), and files sharing the stem (`src/Foo` matches `src/Foo.ts`, `src/Foo.vue`, `src/Foo.test.ts` — not `src/FooAsync.vue`). Used for browsing docs and source without checking out.
          */
         get: operations["listRepoFiles"];
         put?: never;
@@ -326,7 +326,7 @@ export interface components {
              * @description Declaration kind (mirrors `@saflib/parser`'s ExportKind).
              * @enum {string}
              */
-            kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable" | "component" | "prop" | "emit";
+            kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable" | "component" | "prop" | "emit" | "model";
             /**
              * @description Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.
              * @example (repoRoot: string, options?: LogOptions)
@@ -899,10 +899,12 @@ export interface operations {
             query: {
                 /** @description Commit hash (or other tree-ish) to list. */
                 ref: string;
-                /** @description Optional path prefix (repo-relative). Matches exact path or descendants (`docs` matches `docs` and `docs/guide.md`). */
+                /** @description Optional path prefix (repo-relative). Matches exact path, descendants (`docs` matches `docs` and `docs/guide.md`), and stem siblings (`src/Foo` matches `src/Foo.ts` and `src/Foo.test.ts`). */
                 prefix?: string;
                 /** @description Optional file extension filter (e.g. `.md`). May be repeated (`ext=.md&ext=.txt`) or comma-separated (`ext=.md,.txt`). */
                 ext?: string[];
+                /** @description When true, include UTF-8 `content` for each matching file. Requires `prefix` so the whole tree is not dumped. */
+                content?: boolean;
             };
             header?: never;
             path?: never;
@@ -920,10 +922,21 @@ export interface operations {
                         files: {
                             /** @description Path relative to the repo root. */
                             path: string;
-                            /** @description Git blob object hash. */
+                            /** @description Git blob object hash. Empty string for working-tree-only files at HEAD that are not in the commit tree. */
                             blobHash: string;
+                            /** @description UTF-8 file text when `content=true`. */
+                            content?: string;
                         }[];
                     };
+                };
+            };
+            /** @description Invalid query (content=true requires prefix) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
                 };
             };
             /** @description Git command failed */

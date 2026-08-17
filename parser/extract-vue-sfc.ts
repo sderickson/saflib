@@ -32,16 +32,17 @@ export interface VueSfcSurface {
   script: string;
   props: ExportEntry[];
   emits: ExportEntry[];
+  models: ExportEntry[];
 }
 
 /**
- * Extract `<script>` text plus `defineProps` / `defineEmits` members as
- * `prop` / `emit` export entries (syntactic only).
+ * Extract `<script>` text plus `defineProps` / `defineEmits` / `defineModel`
+ * members as `prop` / `emit` / `model` export entries (syntactic only).
  */
 export function extractVueSfc(source: string): VueSfcSurface {
   const script = extractVueScript(source);
   if (!script.trim()) {
-    return { script: "", props: [], emits: [] };
+    return { script: "", props: [], emits: [], models: [] };
   }
 
   const sf = ts.createSourceFile(
@@ -55,8 +56,10 @@ export function extractVueSfc(source: string): VueSfcSurface {
   const typeDecls = collectTypeDecls(sf);
   const props: ExportEntry[] = [];
   const emits: ExportEntry[] = [];
+  const models: ExportEntry[] = [];
   const seenProps = new Set<string>();
   const seenEmits = new Set<string>();
+  const seenModels = new Set<string>();
 
   const visit = (node: ts.Node): void => {
     if (ts.isCallExpression(node)) {
@@ -76,12 +79,20 @@ export function extractVueSfc(source: string): VueSfcSurface {
           emits.push(entry);
         }
       }
+      const defineModelCall = unwrapNamedCall(node, "defineModel");
+      if (defineModelCall) {
+        const entry = memberFromDefineModel(sf, defineModelCall);
+        if (entry && !seenModels.has(entry.name)) {
+          seenModels.add(entry.name);
+          models.push(entry);
+        }
+      }
     }
     ts.forEachChild(node, visit);
   };
   visit(sf);
 
-  return { script, props, emits };
+  return { script, props, emits, models };
 }
 
 function unwrapNamedCall(
@@ -140,6 +151,72 @@ function membersFromDefineProps(
     return propsFromRuntimeObject(sf, arg);
   }
   return [];
+}
+
+function variableNameForCall(call: ts.CallExpression): string | null {
+  let p: ts.Node | undefined = call.parent;
+  while (
+    p &&
+    (ts.isAsExpression(p) ||
+      ts.isParenthesizedExpression(p) ||
+      ts.isSatisfiesExpression(p) ||
+      ts.isNonNullExpression(p))
+  ) {
+    p = p.parent;
+  }
+  if (p && ts.isVariableDeclaration(p) && ts.isIdentifier(p.name)) {
+    return p.name.text;
+  }
+  return null;
+}
+
+function objectLiteralRequired(init: ts.Expression | undefined): boolean {
+  if (!init || !ts.isObjectLiteralExpression(init)) return false;
+  const req = init.properties.find(
+    (p): p is ts.PropertyAssignment =>
+      ts.isPropertyAssignment(p) && propertyNameText(p.name) === "required",
+  );
+  return Boolean(req && req.initializer.kind === ts.SyntaxKind.TrueKeyword);
+}
+
+function statementContaining(node: ts.Node): ts.Node {
+  let n: ts.Node | undefined = node;
+  while (n && n.parent && !ts.isSourceFile(n.parent)) {
+    if (ts.isVariableStatement(n) || ts.isExpressionStatement(n)) return n;
+    n = n.parent;
+  }
+  return node;
+}
+
+function memberFromDefineModel(
+  sf: ts.SourceFile,
+  call: ts.CallExpression,
+): ExportEntry | null {
+  const parts: string[] = [];
+  if (call.typeArguments?.[0]) {
+    parts.push(compact(call.typeArguments[0].getText(sf)));
+  }
+
+  const args = [...call.arguments];
+  let modelName: string | null = null;
+  if (
+    args[0] &&
+    (ts.isStringLiteral(args[0]) || ts.isNoSubstitutionTemplateLiteral(args[0]))
+  ) {
+    modelName = args[0].text;
+    args.shift();
+  }
+  if (objectLiteralRequired(args[0])) parts.push("required");
+
+  if (!modelName) modelName = variableNameForCall(call);
+  if (!modelName) modelName = "modelValue";
+
+  return {
+    name: modelName,
+    kind: "model",
+    signature: parts.length ? parts.join(", ") : null,
+    docstring: leadingDocstring(sf, statementContaining(call)),
+  };
 }
 
 function membersFromDefineEmits(

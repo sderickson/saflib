@@ -120,13 +120,11 @@ export function packageHasVueFiles(
   tests: TestCaseLike[],
   packageName: string,
 ): boolean {
+  const vueish = (filePath: string) =>
+    filePath.endsWith(".vue") || VUE_ROLE_SUFFIX_RE.test(toModuleStem(filePath));
   return (
-    exports.some(
-      (e) => e.packageName === packageName && e.filePath.endsWith(".vue"),
-    ) ||
-    tests.some(
-      (t) => t.packageName === packageName && t.filePath.endsWith(".vue"),
-    )
+    exports.some((e) => e.packageName === packageName && vueish(e.filePath)) ||
+    tests.some((t) => t.packageName === packageName && vueish(t.filePath))
   );
 }
 

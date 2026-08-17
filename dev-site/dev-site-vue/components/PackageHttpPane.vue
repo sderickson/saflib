@@ -112,7 +112,7 @@
 
 <script setup lang="ts">
 import { computed, watch } from "vue";
-import { useCommitPackage, useFirstRepoFile } from "../requests/queries";
+import { useCommitPackage, useScopeSummary } from "../requests/queries";
 import {
   buildModuleFileNav,
   buildPackageSpecTree,
@@ -121,11 +121,7 @@ import {
   type TestFileNavNode,
   type TestScope,
 } from "../test-tree";
-import {
-  extractLeadingJsDocProse,
-  fileScopeDocCandidates,
-  shortenMarkdownSummary,
-} from "../scope-docs";
+import { scopeDocListPrefix } from "../scope-docs";
 import { repoPathPrefix } from "../repo-paths";
 import { openSource } from "../source-links";
 import TestTree from "./TestTree.vue";
@@ -266,34 +262,25 @@ const selectedModule = computed(() => {
   return findModuleNavNode(fileNav.value, scope.value.localPath);
 });
 
-const scopeDocPaths = computed(() => {
-  const prefix = pkgPrefix.value;
-  const s = scope.value;
-  if (s.kind === "all") return [] as string[];
-  if (s.kind === "dir") {
-    const base = [prefix, s.localPath].filter(Boolean).join("/");
-    return [`${base}/README.md`, `${base}/readme.md`];
-  }
-  const stemRepo = [prefix, toModuleStem(s.localPath)].filter(Boolean).join("/");
-  return fileScopeDocCandidates(stemRepo);
-});
+const scopeDocPrefix = computed(() =>
+  scopeDocListPrefix({
+    kind: scope.value.kind,
+    pkgPrefix: pkgPrefix.value,
+    localPath: scope.value.kind === "all" ? "" : scope.value.localPath,
+    moduleStem:
+      scope.value.kind === "file"
+        ? toModuleStem(scope.value.localPath)
+        : "",
+  }),
+);
 
-const {
-  data: scopeDocFile,
-  isLoading: scopeDocLoading,
-} = useFirstRepoFile(props.subdomain, () => ({
-  ref: props.commitHash,
-  paths: scopeDocPaths.value,
-}));
-
-const scopeSummary = computed(() => {
-  const file = scopeDocFile.value;
-  if (!file?.content) return null;
-  if (file.path.toLowerCase().endsWith(".md")) {
-    return shortenMarkdownSummary(file.content);
-  }
-  return extractLeadingJsDocProse(file.content);
-});
+const { summary: scopeSummary, isLoading: scopeDocLoading } = useScopeSummary(
+  props.subdomain,
+  () => ({
+    ref: props.commitHash,
+    prefix: scopeDocPrefix.value,
+  }),
+);
 
 const missingScopeHint = computed(() => {
   if (scope.value.kind === "dir") {

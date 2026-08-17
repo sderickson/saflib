@@ -5,8 +5,10 @@ listRepoFiles:
     - no-auth
   description: >
     List blob paths at a commit (git ls-tree), optionally filtered by path
-    prefix and/or file extension(s). Used for browsing docs and source without
-    checking out.
+    prefix and/or file extension(s). Prefix matches the exact path, descendants
+    (`docs` matches `docs/guide.md`), and files sharing the stem
+    (`src/Foo` matches `src/Foo.ts`, `src/Foo.vue`, `src/Foo.test.ts` — not
+    `src/FooAsync.vue`). Used for browsing docs and source without checking out.
   parameters:
     - name: ref
       in: query
@@ -20,8 +22,9 @@ listRepoFiles:
       schema:
         type: string
       description: >
-        Optional path prefix (repo-relative). Matches exact path or descendants
-        (`docs` matches `docs` and `docs/guide.md`).
+        Optional path prefix (repo-relative). Matches exact path, descendants
+        (`docs` matches `docs` and `docs/guide.md`), and stem siblings
+        (`src/Foo` matches `src/Foo.ts` and `src/Foo.test.ts`).
     - name: ext
       in: query
       required: false
@@ -34,6 +37,14 @@ listRepoFiles:
       description: >
         Optional file extension filter (e.g. `.md`). May be repeated
         (`ext=.md&ext=.txt`) or comma-separated (`ext=.md,.txt`).
+    - name: content
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: >
+        When true, include UTF-8 `content` for each matching file. Requires
+        `prefix` so the whole tree is not dumped.
   responses:
     "200":
       description: Matching files at the ref
@@ -57,7 +68,18 @@ listRepoFiles:
                       description: Path relative to the repo root.
                     blobHash:
                       type: string
-                      description: Git blob object hash.
+                      description: >
+                        Git blob object hash. Empty string for working-tree-only
+                        files at HEAD that are not in the commit tree.
+                    content:
+                      type: string
+                      description: UTF-8 file text when `content=true`.
+    "400":
+      description: Invalid query (content=true requires prefix)
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
     "500":
       description: Git command failed
       content:

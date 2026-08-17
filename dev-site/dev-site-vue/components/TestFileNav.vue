@@ -51,6 +51,7 @@
 import { inject, provide, shallowRef, watch, type ShallowRef } from "vue";
 import {
   toModuleStem,
+  toVueBundleStem,
   type TestFileNavNode,
   type TestScope,
 } from "../test-tree";
@@ -71,6 +72,8 @@ const props = defineProps<{
    * start collapsed. The root folder itself stays expanded.
    */
   collapseDirsUnder?: string;
+  /** Match selected stems using Vue companion grouping. */
+  vueBundles?: boolean;
 }>();
 
 defineEmits<{
@@ -148,10 +151,10 @@ const isSelected = (node: TestFileNavNode) => {
   if (props.selected.kind === "dir") {
     return node.kind === "dir" && props.selected.localPath === node.localPath;
   }
-  return (
-    node.kind === "file" &&
-    toModuleStem(props.selected.localPath) === node.localPath
-  );
+  const stem = props.vueBundles
+    ? toVueBundleStem(props.selected.localPath)
+    : toModuleStem(props.selected.localPath);
+  return node.kind === "file" && node.localPath === stem;
 };
 
 const navIcon = (node: TestFileNavNode): string => {

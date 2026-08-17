@@ -27,6 +27,7 @@ properties:
       - component
       - prop
       - emit
+      - model
   signature:
     type: string
     nullable: true
