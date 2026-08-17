@@ -123,7 +123,7 @@ export function buildFileSpecialty(source: string): FileSpecialty {
     exports.push({
       name: "default",
       kind: "component",
-      signature: "(vue component)",
+      signature: vue.rootTag ? `<${vue.rootTag}>` : "(vue component)",
       docstring: null,
     });
     for (const p of vue.props) {

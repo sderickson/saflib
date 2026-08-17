@@ -80,55 +80,66 @@
             Can be loaded <strong>async</strong>
           </p>
 
-          <div v-if="vueModels.length" class="surface-block">
-            <h4 class="surface-block__title">Models</h4>
-            <table class="surface-table">
+          <div v-if="showVueSurface" class="surface-block">
+            <h4 class="surface-block__title">Component</h4>
+            <table v-if="vueRootTag" class="surface-table">
               <tbody>
-                <tr v-for="m in vueModels" :key="'model-' + m.name">
-                  <th>{{ m.name }}</th>
+                <tr>
+                  <th>root</th>
                   <td>
-                    <code v-if="m.signature">{{ m.signature }}</code>
-                    <span v-if="m.docstring" class="surface-table__doc">{{
-                      m.docstring
-                    }}</span>
+                    <code>&lt;{{ vueRootTag }}&gt;</code>
                   </td>
                 </tr>
               </tbody>
             </table>
-          </div>
-
-          <div v-if="vueProps.length" class="surface-block">
-            <h4 class="surface-block__title">Props</h4>
-            <table class="surface-table">
-              <tbody>
-                <tr v-for="p in vueProps" :key="'prop-' + p.name">
-                  <th>{{ p.name }}</th>
-                  <td>
-                    <code v-if="p.signature">{{ p.signature }}</code>
-                    <span v-if="p.docstring" class="surface-table__doc">{{
-                      p.docstring
-                    }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div v-if="vueEmits.length" class="surface-block">
-            <h4 class="surface-block__title">Emits</h4>
-            <table class="surface-table">
-              <tbody>
-                <tr v-for="e in vueEmits" :key="'emit-' + e.name">
-                  <th>{{ e.name }}</th>
-                  <td>
-                    <code v-if="e.signature">{{ e.signature }}</code>
-                    <span v-if="e.docstring" class="surface-table__doc">{{
-                      e.docstring
-                    }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <template v-if="vueModels.length">
+              <h5 class="surface-block__subtitle">Models</h5>
+              <table class="surface-table">
+                <tbody>
+                  <tr v-for="m in vueModels" :key="'model-' + m.name">
+                    <th>{{ m.name }}</th>
+                    <td>
+                      <code v-if="m.signature">{{ m.signature }}</code>
+                      <span v-if="m.docstring" class="surface-table__doc">{{
+                        m.docstring
+                      }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
+            <template v-if="vueProps.length">
+              <h5 class="surface-block__subtitle">Props</h5>
+              <table class="surface-table">
+                <tbody>
+                  <tr v-for="p in vueProps" :key="'prop-' + p.name">
+                    <th>{{ p.name }}</th>
+                    <td>
+                      <code v-if="p.signature">{{ p.signature }}</code>
+                      <span v-if="p.docstring" class="surface-table__doc">{{
+                        p.docstring
+                      }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
+            <template v-if="vueEmits.length">
+              <h5 class="surface-block__subtitle">Emits</h5>
+              <table class="surface-table">
+                <tbody>
+                  <tr v-for="e in vueEmits" :key="'emit-' + e.name">
+                    <th>{{ e.name }}</th>
+                    <td>
+                      <code v-if="e.signature">{{ e.signature }}</code>
+                      <span v-if="e.docstring" class="surface-table__doc">{{
+                        e.docstring
+                      }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
           </div>
 
           <div v-if="scopedRoutes.length" class="routes-block">
@@ -158,9 +169,7 @@
           />
           <p
             v-else-if="
-              !vueModels.length &&
-              !vueProps.length &&
-              !vueEmits.length &&
+              !showVueSurface &&
               !scopedRoutes.length &&
               !selectedModule?.loadableAsync
             "
@@ -341,6 +350,16 @@ const bundleExports = computed(() => {
   });
 });
 
+const vueComponent = computed(() =>
+  bundleExports.value.find(
+    (e) => e.kind === "component" && !/Async\.vue$/i.test(e.filePath),
+  ),
+);
+const vueRootTag = computed(() => {
+  const sig = vueComponent.value?.signature;
+  if (!sig || sig === "(vue component)") return null;
+  return sig.replace(/^<|>$/g, "");
+});
 const vueModels = computed(() =>
   bundleExports.value.filter((e) => e.kind === "model"),
 );
@@ -349,6 +368,13 @@ const vueProps = computed(() =>
 );
 const vueEmits = computed(() =>
   bundleExports.value.filter((e) => e.kind === "emit"),
+);
+const showVueSurface = computed(
+  () =>
+    Boolean(vueRootTag.value) ||
+    vueModels.value.length > 0 ||
+    vueProps.value.length > 0 ||
+    vueEmits.value.length > 0,
 );
 
 interface SpecUsedBy {
@@ -596,6 +622,14 @@ const openFile = (path: string) => {
   display: flex;
   align-items: baseline;
   gap: 0.4rem;
+}
+.surface-block__subtitle {
+  margin: 0.7rem 0 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), 0.45);
 }
 .routes-block__count {
   font-weight: 400;

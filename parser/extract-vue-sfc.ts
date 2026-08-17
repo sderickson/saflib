@@ -33,6 +33,20 @@ export interface VueSfcSurface {
   props: ExportEntry[];
   emits: ExportEntry[];
   models: ExportEntry[];
+  /** First element tag inside the SFC `<template>` (`v-dialog`, `div`, …). */
+  rootTag: string | null;
+}
+
+/**
+ * First tag name in the SFC's root `<template>` block, skipping comments
+ * and whitespace. `null` when the template is empty or absent.
+ */
+export function extractVueRootTag(source: string): string | null {
+  const m = source.match(/<template\b[^>]*>([\s\S]*?)<\/template>/i);
+  if (!m) return null;
+  const body = (m[1] ?? "").replace(/<!--[\s\S]*?-->/g, "");
+  const tag = /^\s*<([A-Za-z][\w:.-]*)/.exec(body);
+  return tag?.[1] ?? null;
 }
 
 /**
@@ -41,8 +55,9 @@ export interface VueSfcSurface {
  */
 export function extractVueSfc(source: string): VueSfcSurface {
   const script = extractVueScript(source);
+  const rootTag = extractVueRootTag(source);
   if (!script.trim()) {
-    return { script: "", props: [], emits: [], models: [] };
+    return { script: "", props: [], emits: [], models: [], rootTag };
   }
 
   const sf = ts.createSourceFile(
@@ -92,7 +107,7 @@ export function extractVueSfc(source: string): VueSfcSurface {
   };
   visit(sf);
 
-  return { script, props, emits, models };
+  return { script, props, emits, models, rootTag };
 }
 
 function unwrapNamedCall(

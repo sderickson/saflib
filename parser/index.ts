@@ -6,6 +6,7 @@ export { extractLocalExportUsages } from "./extract-local-export-usages.ts";
 export {
   extractVueSfc,
   extractVueScript,
+  extractVueRootTag,
   isVueSfc,
 } from "./extract-vue-sfc.ts";
 export type { VueSfcSurface } from "./extract-vue-sfc.ts";

@@ -121,4 +121,20 @@ defineModel<boolean>();
     expect(models[1]!.signature).toBe("string");
     expect(models[2]!.signature).toBe("boolean");
   });
+
+  it("reads the first template tag as rootTag", () => {
+    expect(extractVueSfc(listSfc).rootTag).toBe("div");
+    const dialog = `
+<template>
+  <!-- settings -->
+  <v-dialog :model-value="open">
+    <v-card />
+  </v-dialog>
+</template>
+<script setup>
+defineProps<{ open: boolean }>();
+</script>
+`;
+    expect(extractVueSfc(dialog).rootTag).toBe("v-dialog");
+  });
 });
