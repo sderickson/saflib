@@ -150,14 +150,24 @@ export function collectPackageIssues(
     }
   } else {
     const publicFiles = new Set(detail.publicExportFilePaths ?? []);
+    const publicLocals = new Set<string>();
+    for (const p of publicFiles) {
+      publicLocals.add(packageLocalPath(p, packageDirectory, productRoot));
+    }
     for (const exp of detail.exports ?? []) {
       if (!CARD_EXPORT_KINDS.has(exp.kind)) continue;
-      if (publicFiles.has(exp.filePath)) continue;
       const local = packageLocalPath(
         exp.filePath,
         packageDirectory,
         productRoot,
       );
+      if (
+        publicFiles.has(exp.filePath) ||
+        publicFiles.has(local) ||
+        publicLocals.has(local)
+      ) {
+        continue;
+      }
       if (!exp.usedBy || exp.usedBy.length === 0) {
         issues.push({
           kind: "dead-code",

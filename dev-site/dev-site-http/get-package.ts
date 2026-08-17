@@ -1,6 +1,11 @@
 import type { DbKey } from "@saflib/drizzle";
-import { checkPackageLayout, type ReturnsError } from "@saflib/monorepo";
+import {
+  checkPackageLayout,
+  listPackageJsonExportTargetFiles,
+  type ReturnsError,
+} from "@saflib/monorepo";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
+import fs from "node:fs";
 import path from "node:path";
 
 import { assemblePackageSymbols } from "./analyze-commit.ts";
@@ -68,6 +73,30 @@ function collectLiveLayoutIssues(
   }));
 }
 
+/**
+ * Repo-relative files from live `package.json` `exports` (`main.ts`, `test-app.ts`).
+ * Same skip list as `saf-dev-site issues --workdir` so Spec Issues matches CLI.
+ */
+function collectPublicExportFilePaths(
+  repoRoot: string,
+  productRoot: string | undefined,
+  packageDirectory: string,
+): string[] {
+  const packageRepoPath = joinRepoPath(productRoot, packageDirectory);
+  const pkgJsonPath = path.join(repoRoot, packageRepoPath || ".", "package.json");
+  let parsed: { exports?: Record<string, unknown> | string };
+  try {
+    parsed = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8")) as {
+      exports?: Record<string, unknown> | string;
+    };
+  } catch {
+    return [];
+  }
+  return listPackageJsonExportTargetFiles(parsed.exports).map((rel) =>
+    joinRepoPath(packageRepoPath, rel),
+  );
+}
+
 export interface CommitPackageDetail {
   commitHash: string;
   packageName: string;
@@ -104,6 +133,11 @@ export interface CommitPackageDetail {
    * dedicated Issues fetch — not on every Spec package load.
    */
   layoutIssues?: PackageIssue[];
+  /**
+   * Files targeted by live `package.json` `exports`. Spec Issues skips these
+   * for dead-code (SPA `main.ts` / `test-app.ts` are public API).
+   */
+  publicExportFilePaths?: string[];
 }
 
 export type GetCommitPackageError = AnalyzedCommitNotFoundError;
@@ -240,6 +274,11 @@ export async function getCommitPackage(
     repo.productRoot,
     metrics.directory,
   );
+  const publicExportFilePaths = collectPublicExportFilePaths(
+    repo.repoRoot,
+    repo.productRoot,
+    metrics.directory,
+  );
 
   return {
     result: {
@@ -282,6 +321,7 @@ export async function getCommitPackage(
       ...(dbInventory ? { dbInventory } : {}),
       ...(specInventory ? { specInventory } : {}),
       ...(layoutIssues.length ? { layoutIssues } : {}),
+      ...(publicExportFilePaths.length ? { publicExportFilePaths } : {}),
     },
   };
 }

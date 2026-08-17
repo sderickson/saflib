@@ -87,6 +87,14 @@ getCommitPackage:
                       (package-local; cheap). Dead-code workdir scans are CLI-only.
                     items:
                       $ref: "../../schemas/package-issue.yaml"
+                  publicExportFilePaths:
+                    type: array
+                    description: >
+                      Repo-relative files from live package.json `exports`
+                      (SPA main.ts, test-app.ts). Spec Issues skips these for
+                      dead-code so the panel matches `saf-dev-site issues --workdir`.
+                    items:
+                      type: string
     "404":
       description: Commit or package not found
       content:

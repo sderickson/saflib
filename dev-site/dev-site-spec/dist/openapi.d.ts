@@ -779,6 +779,8 @@ export interface operations {
                             specInventory?: components["schemas"]["spec-inventory"];
                             /** @description Working-tree package-layout and oversized-file findings (package-local; cheap). Dead-code workdir scans are CLI-only. */
                             layoutIssues?: components["schemas"]["package-issue"][];
+                            /** @description Repo-relative files from live package.json `exports` (SPA main.ts, test-app.ts). Spec Issues skips these for dead-code so the panel matches `saf-dev-site issues --workdir`. */
+                            publicExportFilePaths?: string[];
                         };
                     };
                 };

@@ -106,6 +106,13 @@
                           "items": {
                             "$ref": "#/components/schemas/package-issue"
                           }
+                        },
+                        "publicExportFilePaths": {
+                          "type": "array",
+                          "description": "Repo-relative files from live package.json `exports` (SPA main.ts, test-app.ts). Spec Issues skips these for dead-code so the panel matches `saf-dev-site issues --workdir`.\n",
+                          "items": {
+                            "type": "string"
+                          }
                         }
                       }
                     }

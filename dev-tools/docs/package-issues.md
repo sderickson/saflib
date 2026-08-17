@@ -31,6 +31,7 @@ Do **not** blindly delete exports. Triage each item.
    `*.test-helpers.ts` is also skipped. Do **not** invent a fake prod caller.
 
 6. **Package `exports` file** — `"."` / `./test-app` / `./strings` targets are public API, not dead-code.
+   Spec Issues, `saf-dev-site issues --workdir`, and commit issue stats share this skip.
 
 7. **False positive** — real prod importers exist but Issues still flags  
    → **Fix the tool**, usually:
