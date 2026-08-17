@@ -99,6 +99,8 @@ const SKIP_DIRS = new Set([
 export const ROOT_TS_ALLOWLIST = new Set([
   /** drizzle-kit requires this at the package root */
   "drizzle.config.ts",
+  /** drizzle-kit schema barrel (`schema: "./schema.ts"` in drizzle.config) */
+  "schema.ts",
   /** Package entry / re-export surface */
   "index.ts",
   "index.tsx",

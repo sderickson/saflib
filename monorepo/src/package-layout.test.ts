@@ -90,11 +90,12 @@ describe("checkPackageLayout", () => {
     );
   });
 
-  it("allows drizzle.config.ts, index.ts, and client.ts at package root", () => {
+  it("allows drizzle.config.ts, schema.ts, index.ts, and client.ts at package root", () => {
     withTempPkg(
       {
         "package.json": JSON.stringify({ name: "@t/p", scripts: {} }),
         "drizzle.config.ts": "export default {};\n",
+        "schema.ts": "export {};\n",
         "index.ts": "export {};\n",
         "client.ts": "export const getClient = () => null;\n",
         "helper.ts": "export const x = 1;\n",
