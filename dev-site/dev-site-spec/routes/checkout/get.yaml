@@ -5,7 +5,18 @@ getCheckout:
     - no-auth
   description: >
     Resolve git HEAD and report whether that commit has been analyzed, plus
-    package metrics when it has. Used by the Current checkout UI.
+    package metrics when it has. Also reports local branch compare candidates
+    and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`).
+    Used by the Current checkout UI.
+  parameters:
+    - name: compareRef
+      in: query
+      required: false
+      schema:
+        type: string
+      description: >
+        Local branch name to take the merge-base against. Defaults to the
+        server `main` ref.
   responses:
     "200":
       description: Checkout status
@@ -21,6 +32,7 @@ getCheckout:
               - productRoot
               - branch
               - packages
+              - compareCandidates
             properties:
               hash:
                 type: string
@@ -45,6 +57,22 @@ getCheckout:
                 type: array
                 items:
                   $ref: "../../schemas/package-metrics.yaml"
+              compareCandidates:
+                type: array
+                description: >
+                  Local branch names that can be used as `compareRef` (current
+                  branch omitted; configured main ref always included when it
+                  exists).
+                items:
+                  type: string
+              compare:
+                $ref: "../../schemas/checkout-compare.yaml"
+    "400":
+      description: compareRef is not a valid git object.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
     "500":
       description: Git command failed
       content:

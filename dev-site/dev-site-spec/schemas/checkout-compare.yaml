@@ -1,0 +1,26 @@
+type: object
+description: >
+  Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode.
+required:
+  - againstRef
+  - mergeBaseHash
+  - mergeBaseAnalyzed
+  - mergeBaseMessage
+  - mergeBaseAuthoredAt
+properties:
+  againstRef:
+    type: string
+    description: Branch/ref HEAD was compared against (e.g. `main`).
+  mergeBaseHash:
+    type: string
+    description: Full hash of `git merge-base(HEAD, againstRef)`.
+  mergeBaseAnalyzed:
+    type: boolean
+    description: True when that fork-point commit has an analysis snapshot.
+  mergeBaseMessage:
+    type: string
+    description: Subject of the fork-point commit.
+  mergeBaseAuthoredAt:
+    type: string
+    format: date-time
+    description: Author date of the fork-point commit.

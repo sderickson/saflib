@@ -12,7 +12,18 @@
         "tags": [
           "no-auth"
         ],
-        "description": "Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Used by the Current checkout UI.\n",
+        "description": "Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`). Used by the Current checkout UI.\n",
+        "parameters": [
+          {
+            "name": "compareRef",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Local branch name to take the merge-base against. Defaults to the server `main` ref.\n"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Checkout status",
@@ -27,7 +38,8 @@
                     "analyzed",
                     "productRoot",
                     "branch",
-                    "packages"
+                    "packages",
+                    "compareCandidates"
                   ],
                   "properties": {
                     "hash": {
@@ -57,8 +69,28 @@
                       "items": {
                         "$ref": "#/components/schemas/package-metrics"
                       }
+                    },
+                    "compareCandidates": {
+                      "type": "array",
+                      "description": "Local branch names that can be used as `compareRef` (current branch omitted; configured main ref always included when it exists).\n",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "compare": {
+                      "$ref": "#/components/schemas/checkout-compare"
                     }
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "compareRef is not a valid git object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
                 }
               }
             }
@@ -161,6 +193,40 @@
           "oversized-file",
           "package-layout"
         ]
+      },
+      "checkout-compare": {
+        "type": "object",
+        "description": "Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode.\n",
+        "required": [
+          "againstRef",
+          "mergeBaseHash",
+          "mergeBaseAnalyzed",
+          "mergeBaseMessage",
+          "mergeBaseAuthoredAt"
+        ],
+        "properties": {
+          "againstRef": {
+            "type": "string",
+            "description": "Branch/ref HEAD was compared against (e.g. `main`)."
+          },
+          "mergeBaseHash": {
+            "type": "string",
+            "description": "Full hash of `git merge-base(HEAD, againstRef)`."
+          },
+          "mergeBaseAnalyzed": {
+            "type": "boolean",
+            "description": "True when that fork-point commit has an analysis snapshot."
+          },
+          "mergeBaseMessage": {
+            "type": "string",
+            "description": "Subject of the fork-point commit."
+          },
+          "mergeBaseAuthoredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Author date of the fork-point commit."
+          }
+        }
       },
       "error": {
         "type": "object",

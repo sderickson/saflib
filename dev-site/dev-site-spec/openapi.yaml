@@ -71,4 +71,6 @@ components:
       $ref: "./schemas/db-schema-table.yaml"
     DbSchemaColumn:
       $ref: "./schemas/db-schema-column.yaml"
+    CheckoutCompare:
+      $ref: "./schemas/checkout-compare.yaml"
     # END WORKFLOW AREA

@@ -83,6 +83,12 @@ describe("checkout routes", () => {
       branch: "main",
     });
     expect(response.body.message).toContain("init");
+    expect(response.body.compareCandidates).toEqual(["main"]);
+    expect(response.body.compare).toMatchObject({
+      againstRef: "main",
+      mergeBaseHash: headHash,
+      mergeBaseAnalyzed: false,
+    });
   });
 
   it("GET /api/checkout includes packages after scan", async () => {
@@ -107,5 +113,40 @@ describe("checkout routes", () => {
         "package-layout": expect.any(Number),
       },
     });
+    expect(response.body.compare).toMatchObject({
+      againstRef: "main",
+      mergeBaseHash: headHash,
+      mergeBaseAnalyzed: true,
+    });
+  });
+
+  it("GET /api/checkout reports merge-base for a feature branch", async () => {
+    git(repoRoot, ["checkout", "-b", "feature"]);
+    writeFileSync(join(repoRoot, "src/b.ts"), "export const b = 2;\n");
+    git(repoRoot, ["add", "src/b.ts"]);
+    git(repoRoot, ["commit", "-m", "feature"]);
+    const featureHead = git(repoRoot, ["rev-parse", "HEAD"]);
+
+    const response = await request(lease.app).get(
+      "/api/checkout?compareRef=main",
+    );
+    expect(response.status).toBe(200);
+    expect(response.body.hash).toBe(featureHead);
+    expect(response.body.branch).toBe("feature");
+    expect(response.body.compareCandidates).toEqual(["main"]);
+    expect(response.body.compare).toMatchObject({
+      againstRef: "main",
+      mergeBaseHash: headHash,
+      mergeBaseAnalyzed: false,
+    });
+
+    git(repoRoot, ["checkout", "main"]);
+  });
+
+  it("GET /api/checkout returns 400 for an unknown compareRef", async () => {
+    const response = await request(lease.app).get(
+      "/api/checkout?compareRef=no-such-branch",
+    );
+    expect(response.status).toBe(400);
   });
 });

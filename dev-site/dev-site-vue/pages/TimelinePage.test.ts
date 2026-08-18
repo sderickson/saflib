@@ -73,6 +73,7 @@ const mockCheckout: CheckoutResponse = {
   productRoot: "",
   branch: "main",
   packages: [],
+  compareCandidates: ["main"],
 };
 
 const handlers = [

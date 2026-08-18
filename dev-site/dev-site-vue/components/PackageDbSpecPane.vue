@@ -45,7 +45,10 @@
               :key="e.entity"
               class="entity-block"
             >
-              <h3 class="entity-block__title">{{ e.entity }}</h3>
+              <h3 class="entity-block__title">
+                {{ e.entity }}
+                <ChangeChip :change="e.change" />
+              </h3>
 
               <div v-if="e.table" class="table-card">
                 <div class="table-card__head">
@@ -78,10 +81,16 @@
                     v-for="c in e.table.columns"
                     :key="c.sqlName"
                     class="table-card__col"
+                    :class="{
+                      'table-card__col--added': c.change === 'added',
+                      'table-card__col--removed': c.change === 'removed',
+                      'table-card__col--modified': c.change === 'modified',
+                    }"
                   >
                     <div class="table-card__col-main">
                       <code>{{ c.sqlName }}</code>
                       <span class="text-medium-emphasis">{{ c.typeKind }}</span>
+                      <ChangeChip :change="c.change" />
                     </div>
                     <p v-if="c.docstring" class="table-card__col-doc">
                       {{ c.docstring }}
@@ -178,7 +187,8 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useCommitPackage, useScopeSummary } from "../requests/queries.ts";
+import { useScopeSummary } from "../requests/queries.ts";
+import { useComparedPackageDetail } from "../package-compare.ts";
 import {
   buildDbPackageFileNav,
   buildPackageSpecTree,
@@ -190,12 +200,23 @@ import {
   type TestScope,
   type TestTreeNode,
 } from "../test-tree.ts";
+import {
+  dbColumnKey,
+  exportIdentityKey,
+  filterFileNav,
+  pickChangedItems,
+  pruneEmptySpecTree,
+  tagSpecTree,
+  testIdentityKey,
+  unionByKey,
+} from "../package-change-overlay.ts";
 import { scopeDocListPrefix } from "../scope-docs.ts";
 import { repoPathPrefix } from "../repo-paths.ts";
 import { openSource } from "../source-links.ts";
 import ResizableColumns from "./ResizableColumns.vue";
 import TestFileNav from "./TestFileNav.vue";
 import TestTree from "./TestTree.vue";
+import ChangeChip from "./ChangeChip.vue";
 
 interface DbQuery {
   fileName: string;
@@ -220,16 +241,19 @@ interface DbEntity {
       sqlName: string;
       typeKind: string;
       docstring?: string | null;
+      change?: "added" | "removed" | "modified";
     }>;
   } | null;
   usedByPackages: string[];
   queries: DbQuery[];
+  change?: "added" | "removed" | "modified";
 }
 
 const props = withDefaults(
   defineProps<{
     subdomain: string;
     commitHash: string;
+    compareFromHash?: string;
     packageName: string;
     packageDirectory: string;
     productRoot: string;
@@ -253,16 +277,89 @@ const setScope = (next: TestScope) => {
   emit("update:scope", next);
 };
 
-const { data, isLoading, error } = useCommitPackage(
+const {
+  isLoading,
+  error,
+  overlay,
+  detail,
+  beforeDetail,
+  afterDetail,
+} = useComparedPackageDetail(
   props.subdomain,
   () => props.commitHash,
   () => props.packageName,
+  {
+    compareFromHash: () => props.compareFromHash,
+    productRoot: () => props.productRoot,
+  },
 );
 
-const detail = computed(() => data.value?.packageDetail);
-const entities = computed(
-  () => (detail.value?.dbInventory?.entities ?? []) as DbEntity[],
+const allExports = computed(() =>
+  unionByKey(
+    beforeDetail.value?.exports ?? [],
+    afterDetail.value?.exports ?? detail.value?.exports ?? [],
+    exportIdentityKey,
+  ),
 );
+const allTests = computed(() =>
+  unionByKey(
+    beforeDetail.value?.testCases ?? [],
+    afterDetail.value?.testCases ?? detail.value?.testCases ?? [],
+    testIdentityKey,
+  ),
+);
+const specExports = computed(() => {
+  if (!overlay.value) return allExports.value;
+  return pickChangedItems(
+    beforeDetail.value?.exports ?? [],
+    afterDetail.value?.exports ?? [],
+    exportIdentityKey,
+    overlay.value.exports,
+  );
+});
+const specTests = computed(() => {
+  if (!overlay.value) return allTests.value;
+  return pickChangedItems(
+    beforeDetail.value?.testCases ?? [],
+    afterDetail.value?.testCases ?? [],
+    testIdentityKey,
+    overlay.value.tests,
+  );
+});
+
+const rawEntities = computed(() => {
+  const before = (beforeDetail.value?.dbInventory?.entities ?? []) as DbEntity[];
+  const after = (afterDetail.value?.dbInventory?.entities ??
+    detail.value?.dbInventory?.entities ??
+    []) as DbEntity[];
+  return { before, after };
+});
+
+const entities = computed(() => {
+  const { before, after } = rawEntities.value;
+  if (!overlay.value) return unionByKey(before, after, (e) => e.entity);
+  return pickChangedItems(
+    before,
+    after,
+    (e) => e.entity,
+    overlay.value.dbEntities,
+  ).map((entity) => {
+    const b = before.find((e) => e.entity === entity.entity);
+    const a = after.find((e) => e.entity === entity.entity);
+    const beforeCols = b?.table?.columns ?? [];
+    const afterCols = a?.table?.columns ?? [];
+    const columns = pickChangedItems(
+      beforeCols,
+      afterCols,
+      (c) => dbColumnKey(entity.entity, c.sqlName),
+      overlay.value!.dbColumns,
+    );
+    return {
+      ...entity,
+      table: entity.table ? { ...entity.table, columns } : entity.table,
+    };
+  });
+});
 
 const entitySelection = computed(() =>
   dbEntitySelectionFromScope(scope.value),
@@ -288,16 +385,16 @@ const visibleEntities = computed(() => {
 });
 
 const fileNav = computed(() => {
-  const d = detail.value;
-  if (!d) return [];
-  return buildDbPackageFileNav(
+  const nav = buildDbPackageFileNav(
     entities.value.map((e) => e.entity),
-    d.exports ?? [],
-    d.testCases ?? [],
-    d.packageName,
+    allExports.value,
+    allTests.value,
+    props.packageName,
     props.packageDirectory,
     props.productRoot ?? "",
   );
+  if (!overlay.value) return nav;
+  return filterFileNav(nav, overlay.value.modules);
 });
 
 const pkgPrefix = computed(() =>
@@ -326,7 +423,12 @@ const scopeDocPrefix = computed(() => {
 const { summary: scopeSummary, isLoading: scopeDocLoading } = useScopeSummary(
   props.subdomain,
   () => ({
-    ref: props.commitHash,
+    ref:
+      overlay.value &&
+      scope.value.kind === "file" &&
+      overlay.value.modules[toModuleStem(scope.value.localPath)] === "removed"
+        ? (props.compareFromHash ?? props.commitHash)
+        : props.commitHash,
     prefix: scopeDocPrefix.value,
   }),
 );
@@ -351,17 +453,17 @@ const scopePresenceLabel = computed(() => {
 
 const moduleSpecTree = computed(() => {
   if (!showModulePanel.value) return [];
-  const d = detail.value;
-  if (!d) return [];
-  return buildPackageSpecTree(
-    d.exports ?? [],
-    d.testCases ?? [],
-    d.packageName,
+  const tree = buildPackageSpecTree(
+    specExports.value,
+    specTests.value,
+    props.packageName,
     props.packageDirectory,
     props.productRoot ?? "",
     scope.value,
     { excludeStem: isDbPackageHiddenModuleStem },
   );
+  if (!overlay.value) return tree;
+  return pruneEmptySpecTree(tagSpecTree(tree, overlay.value));
 });
 
 const scopeFileName = computed(() => {
@@ -425,7 +527,7 @@ function queryMatchesTestFile(q: DbQuery, fileNode: TestTreeNode): boolean {
  * suite-shaped cards; orphan suites keep their own cards.
  */
 function specCardsFor(entity: DbEntity): TestTreeNode[] {
-  const cases = (detail.value?.testCases ?? []).filter((t) => {
+  const cases = specTests.value.filter((t) => {
     const needle = `/queries/${entity.entity}/`;
     return (
       t.filePath.includes(needle) ||
@@ -493,7 +595,9 @@ function specCardsFor(entity: DbEntity): TestTreeNode[] {
     cards.push(suite);
   }
 
-  return cards;
+  return overlay.value
+    ? pruneEmptySpecTree(tagSpecTree(cards, overlay.value))
+    : cards;
 }
 
 function openFile(path: string) {
@@ -555,6 +659,10 @@ function openFile(path: string) {
   font-size: 1rem;
   font-weight: 600;
   margin: 0 0 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
 }
 .table-card {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
@@ -612,6 +720,18 @@ function openFile(path: string) {
   margin: 0.15rem 0 0;
   font-size: 0.8125rem;
   color: rgba(var(--v-theme-on-surface), 0.65);
+}
+.table-card__col--added {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-success));
+  padding-left: 0.5rem;
+}
+.table-card__col--removed {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-error));
+  padding-left: 0.5rem;
+}
+.table-card__col--modified {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
+  padding-left: 0.5rem;
 }
 .scope-header {
   margin-bottom: 0.75rem;

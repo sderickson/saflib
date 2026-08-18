@@ -113,7 +113,7 @@ export interface paths {
         };
         /**
          * Current checkout (HEAD) analysis status
-         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Used by the Current checkout UI.
+         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`). Used by the Current checkout UI.
          */
         get: operations["getCheckout"];
         put?: never;
@@ -184,6 +184,7 @@ export interface components {
         IssueCountsByKind: components["schemas"]["issue-counts-by-kind"];
         DbSchemaTable: components["schemas"]["db-schema-table"];
         DbSchemaColumn: components["schemas"]["db-schema-column"];
+        CheckoutCompare: components["schemas"]["checkout-compare"];
         /** @description A branch or tag pointer observed at scan time for a commit. */
         "commit-ref": {
             /**
@@ -603,6 +604,22 @@ export interface components {
             /** @description Repo-relative path for open-source links */
             repoPath: string;
         };
+        /** @description Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode. */
+        "checkout-compare": {
+            /** @description Branch/ref HEAD was compared against (e.g. `main`). */
+            againstRef: string;
+            /** @description Full hash of `git merge-base(HEAD, againstRef)`. */
+            mergeBaseHash: string;
+            /** @description True when that fork-point commit has an analysis snapshot. */
+            mergeBaseAnalyzed: boolean;
+            /** @description Subject of the fork-point commit. */
+            mergeBaseMessage: string;
+            /**
+             * Format: date-time
+             * @description Author date of the fork-point commit.
+             */
+            mergeBaseAuthoredAt: string;
+        };
         login: {
             /** @enum {string} */
             event: "login";
@@ -858,7 +875,10 @@ export interface operations {
     };
     getCheckout: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Local branch name to take the merge-base against. Defaults to the server `main` ref. */
+                compareRef?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -882,7 +902,19 @@ export interface operations {
                         /** @description Short branch name for HEAD, or null when detached. */
                         branch: string | null;
                         packages: components["schemas"]["package-metrics"][];
+                        /** @description Local branch names that can be used as `compareRef` (current branch omitted; configured main ref always included when it exists). */
+                        compareCandidates: string[];
+                        compare?: components["schemas"]["checkout-compare"];
                     };
+                };
+            };
+            /** @description compareRef is not a valid git object. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
                 };
             };
             /** @description Git command failed */

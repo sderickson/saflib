@@ -24,6 +24,9 @@
           class="file-nav__row"
           :class="{
             'file-nav__row--selected': isSelected(node),
+            'file-nav__row--added': node.change === 'added',
+            'file-nav__row--removed': node.change === 'removed',
+            'file-nav__row--modified': node.change === 'modified',
           }"
           @click="$emit('select', { kind: node.kind, localPath: node.localPath })"
         >
@@ -34,6 +37,7 @@
             :title="navTitle(node)"
           />
           <span class="file-nav__label">{{ node.label }}</span>
+          <ChangeChip :change="node.change" />
         </button>
       </div>
       <TestFileNav
@@ -55,6 +59,7 @@ import {
   type TestFileNavNode,
   type TestScope,
 } from "../test-tree";
+import ChangeChip from "./ChangeChip.vue";
 
 const COLLAPSE_KEY = Symbol("test-file-nav-collapse");
 
@@ -243,6 +248,15 @@ const navTitle = (node: TestFileNavNode): string => {
 }
 .file-nav__row--selected {
   background: rgba(var(--v-theme-primary), 0.12);
+}
+.file-nav__row--added {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-success));
+}
+.file-nav__row--removed {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-error));
+}
+.file-nav__row--modified {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
 }
 .file-nav__label {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

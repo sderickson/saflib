@@ -1,7 +1,15 @@
 <template>
   <ul class="test-tree" :class="{ 'test-tree--root': depth === 0 }">
     <li v-for="node in nodes" :key="node.id" class="test-tree__item">
-      <article v-if="node.kind === 'suite'" class="suite-card">
+      <article
+        v-if="node.kind === 'suite'"
+        class="suite-card"
+        :class="{
+          'suite-card--added': node.change === 'added',
+          'suite-card--removed': node.change === 'removed',
+          'suite-card--modified': node.change === 'modified',
+        }"
+      >
         <header class="suite-card__head">
           <a
             v-if="node.subjectFilePath"
@@ -12,6 +20,7 @@
             {{ node.label }}
           </a>
           <span v-else class="suite-card__name">{{ node.label }}</span>
+          <ChangeChip :change="node.change" />
           <span
             v-if="isUnusedExport(node)"
             class="suite-card__unused"
@@ -52,13 +61,19 @@
 
         <div class="suite-card__tests">
           <ul v-if="testLeaves(node).length" class="suite-card__cases">
-            <li
-              v-for="t in testLeaves(node)"
-              :key="t.id"
-              class="suite-card__case"
-            >
-              {{ t.label }}
-            </li>
+              <li
+                v-for="t in testLeaves(node)"
+                :key="t.id"
+                class="suite-card__case"
+                :class="{
+                  'suite-card__case--added': t.change === 'added',
+                  'suite-card__case--removed': t.change === 'removed',
+                  'suite-card__case--modified': t.change === 'modified',
+                }"
+              >
+                {{ t.label }}
+                <ChangeChip :change="t.change" />
+              </li>
           </ul>
           <TestTree
             v-if="nestedSuites(node).length"
@@ -108,6 +123,7 @@
 
 <script setup lang="ts">
 import type { TestTreeNode } from "../test-tree";
+import ChangeChip from "./ChangeChip.vue";
 
 withDefaults(
   defineProps<{
@@ -189,13 +205,14 @@ const isUnusedExport = (node: TestTreeNode) =>
   padding-left: 0.5rem;
 }
 
-.suite-card {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.14);
-  border-radius: 8px;
-  background: rgba(var(--v-theme-surface), 1);
-  overflow: hidden;
-  max-width: 44rem;
-  margin-bottom: 0.65rem;
+.suite-card--added {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-success));
+}
+.suite-card--removed {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-error));
+}
+.suite-card--modified {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
 }
 .suite-card__head {
   display: flex;
@@ -279,10 +296,22 @@ const isUnusedExport = (node: TestTreeNode) =>
 }
 .suite-card__case {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0.28rem 0 0.28rem 0.9rem;
   font-size: 0.875rem;
   line-height: 1.35;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+}
+.suite-card__case--added {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-success));
+}
+.suite-card__case--removed {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-error));
+}
+.suite-card__case--modified {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
 }
 .suite-card__case:last-child {
   border-bottom: 0;
