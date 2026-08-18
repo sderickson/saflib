@@ -1,5 +1,8 @@
 {
   "name": "template-package-cron",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Cron service for the __service-name__ service",
   "type": "module",
   "exports": {

@@ -1,5 +1,8 @@
 {
   "name": "@saflib/express",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Shared Express.js utilities for SAF services",
   "type": "module",
   "scripts": {

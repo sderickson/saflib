@@ -30,11 +30,20 @@
             <span>All</span>
           </button>
           <ul class="entity-nav">
-            <li v-for="e in entities" :key="e.key" class="entity-nav__item">
+            <li
+              v-for="e in entities"
+              :key="e.key"
+              class="entity-nav__item"
+            >
               <button
                 type="button"
                 class="entity-nav__row"
-                :class="{ 'entity-nav__row--selected': selectedKey === e.key }"
+                :class="{
+                  'entity-nav__row--selected': selectedKey === e.key,
+                  'entity-nav__row--added': e.change === 'added',
+                  'entity-nav__row--removed': e.change === 'removed',
+                  'entity-nav__row--modified': e.change === 'modified',
+                }"
                 :title="presenceTitle(e.presence)"
                 @click="selectedKey = e.key"
               >
@@ -44,6 +53,7 @@
                   class="entity-nav__icon"
                 />
                 <span class="entity-nav__label">{{ e.label }}</span>
+                <ChangeChip :change="e.change" />
               </button>
             </li>
           </ul>
@@ -58,6 +68,7 @@
         >
           <h3 class="entity-block__title">
             {{ e.label }}
+            <ChangeChip :change="e.change" />
             <span class="entity-block__presence">{{ presenceTitle(e.presence) }}</span>
           </h3>
 
@@ -121,10 +132,16 @@
                 v-for="c in e.schema.properties"
                 :key="c.name"
                 class="table-card__col"
+                :class="{
+                  'table-card__col--added': c.change === 'added',
+                  'table-card__col--removed': c.change === 'removed',
+                  'table-card__col--modified': c.change === 'modified',
+                }"
               >
                 <div class="table-card__col-main">
                   <code>{{ c.name }}</code>
                   <span class="text-medium-emphasis">{{ c.typeKind }}</span>
+                  <ChangeChip :change="c.change" />
                 </div>
                 <p v-if="c.docstring" class="table-card__col-doc">
                   {{ c.docstring }}
@@ -158,7 +175,13 @@
             <li
               v-for="op in e.operations"
               :key="op.operationId + op.method + op.path"
+              :class="{
+                'op-list__item--added': op.change === 'added',
+                'op-list__item--removed': op.change === 'removed',
+                'op-list__item--modified': op.change === 'modified',
+              }"
             >
+              <ChangeChip :change="op.change" />
               <PackageRouteCard
                 :operation="normalizeOp(op)"
                 :route-repo-path="repoPath(op.yamlPath)"
@@ -185,9 +208,17 @@ import PackageRouteCard, {
   type RouteCardOperation,
 } from "./PackageRouteCard.vue";
 import ResizableColumns from "./ResizableColumns.vue";
-import { useCommitPackage } from "../requests/queries.ts";
+import ChangeChip from "./ChangeChip.vue";
+import { useComparedPackageDetail } from "../package-compare.ts";
 import { openSource } from "../source-links.ts";
 import { repoPathPrefix } from "../repo-paths.ts";
+import {
+  pickChangedItems,
+  specOperationKey,
+  specPropertyKey,
+  unionByKey,
+  type PathRename,
+} from "../package-change-overlay.ts";
 
 type SpecPresence = "object" | "routes" | "both";
 
@@ -219,6 +250,7 @@ interface SpecEntity {
       name: string;
       typeKind: string;
       docstring?: string | null;
+      change?: "added" | "removed" | "modified";
     }>;
     usedBy: SpecUsedBy[];
     referencedByOperations: string[];
@@ -241,12 +273,16 @@ interface SpecEntity {
     usedBy: SpecUsedBy[];
     enqueues?: string[];
     enqueuedBy?: string[];
+    change?: "added" | "removed" | "modified";
   }>;
+  change?: "added" | "removed" | "modified";
 }
 
 const props = defineProps<{
   subdomain: string;
   commitHash: string;
+  compareFromHash?: string;
+  pathRenames?: PathRename[];
   packageName: string;
   packageDirectory: string;
   productRoot: string;
@@ -257,16 +293,71 @@ const props = defineProps<{
 
 const selectedKey = ref<string | null>(null);
 
-const { data, isLoading, error } = useCommitPackage(
+const {
+  isLoading,
+  error,
+  overlay,
+  detail,
+  beforeDetail,
+  afterDetail,
+} = useComparedPackageDetail(
   props.subdomain,
   () => props.commitHash,
   () => props.packageName,
+  {
+    compareFromHash: () => props.compareFromHash,
+    productRoot: () => props.productRoot,
+    pathRenames: () => props.pathRenames,
+  },
 );
 
-const detail = computed(() => data.value?.packageDetail);
-const entities = computed(
-  () => (detail.value?.specInventory?.entities ?? []) as SpecEntity[],
-);
+const rawEntities = computed(() => {
+  const before = (beforeDetail.value?.specInventory?.entities ??
+    []) as SpecEntity[];
+  const after = (afterDetail.value?.specInventory?.entities ??
+    detail.value?.specInventory?.entities ??
+    []) as SpecEntity[];
+  return { before, after };
+});
+
+const entities = computed(() => {
+  const { before, after } = rawEntities.value;
+  if (!overlay.value) return unionByKey(before, after, (e) => e.key);
+  return pickChangedItems(
+    before,
+    after,
+    (e) => e.key,
+    overlay.value.specEntities,
+  ).map((entity) => {
+    const b = before.find((e) => e.key === entity.key);
+    const a = after.find((e) => e.key === entity.key);
+    const beforeProps = b?.schema?.properties ?? [];
+    const afterProps = a?.schema?.properties ?? [];
+    const properties = overlay.value
+      ? pickChangedItems(
+          beforeProps,
+          afterProps,
+          (p) => specPropertyKey(entity.key, p.name),
+          overlay.value.specProperties,
+        )
+      : afterProps;
+    const operations = overlay.value
+      ? pickChangedItems(
+          b?.operations ?? [],
+          a?.operations ?? [],
+          specOperationKey,
+          overlay.value.specOperations,
+        )
+      : entity.operations;
+    return {
+      ...entity,
+      schema: entity.schema
+        ? { ...entity.schema, properties }
+        : entity.schema,
+      operations,
+    };
+  });
+});
 
 const visibleEntities = computed(() => {
   if (selectedKey.value == null) return entities.value;
@@ -394,6 +485,15 @@ function openFile(path: string) {
 .entity-nav__row--selected {
   background: rgba(var(--v-theme-primary), 0.12);
 }
+.entity-nav__row--added {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-success));
+}
+.entity-nav__row--removed {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-error));
+}
+.entity-nav__row--modified {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
+}
 .entity-nav__label {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.75rem;
@@ -492,6 +592,18 @@ function openFile(path: string) {
   font-size: 0.8125rem;
   color: rgba(var(--v-theme-on-surface), 0.65);
 }
+.table-card__col--added {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-success));
+  padding-left: 0.5rem;
+}
+.table-card__col--removed {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-error));
+  padding-left: 0.5rem;
+}
+.table-card__col--modified {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
+  padding-left: 0.5rem;
+}
 .resource-hint {
   font-size: 0.8125rem;
   color: rgba(var(--v-theme-on-surface), 0.6);
@@ -503,5 +615,21 @@ function openFile(path: string) {
   padding: 0;
   display: grid;
   gap: 0.65rem;
+}
+.op-list__item--added,
+.op-list__item--removed,
+.op-list__item--modified {
+  display: grid;
+  gap: 0.35rem;
+  padding-left: 0.5rem;
+}
+.op-list__item--added {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-success));
+}
+.op-list__item--removed {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-error));
+}
+.op-list__item--modified {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
 }
 </style>

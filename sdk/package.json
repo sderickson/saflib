@@ -1,5 +1,8 @@
 {
   "name": "@saflib/sdk",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "For creating service-specific SDK packages",
   "type": "module",
   "exports": {

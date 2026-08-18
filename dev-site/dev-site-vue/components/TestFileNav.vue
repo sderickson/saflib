@@ -24,6 +24,10 @@
           class="file-nav__row"
           :class="{
             'file-nav__row--selected': isSelected(node),
+            'file-nav__row--added': node.change === 'added',
+            'file-nav__row--removed': node.change === 'removed',
+            'file-nav__row--modified': node.change === 'modified',
+            'file-nav__row--moved': node.change === 'moved',
           }"
           @click="$emit('select', { kind: node.kind, localPath: node.localPath })"
         >
@@ -34,6 +38,7 @@
             :title="navTitle(node)"
           />
           <span class="file-nav__label">{{ node.label }}</span>
+          <ChangeChip :change="node.change" />
         </button>
       </div>
       <TestFileNav
@@ -55,6 +60,7 @@ import {
   type TestFileNavNode,
   type TestScope,
 } from "../test-tree";
+import ChangeChip from "./ChangeChip.vue";
 
 const COLLAPSE_KEY = Symbol("test-file-nav-collapse");
 
@@ -167,20 +173,21 @@ const navIcon = (node: TestFileNavNode): string => {
 };
 
 const navTitle = (node: TestFileNavNode): string => {
-  if (node.kind === "dir") return "Directory";
-  if (node.hasVueComponent) {
-    return node.loadableAsync
+  let title = "Source only";
+  if (node.kind === "dir") title = "Directory";
+  else if (node.hasVueComponent) {
+    title = node.loadableAsync
       ? "Vue component (async)"
       : "Vue component";
-  }
-  if (node.presence === "test") return "Test only";
-  if (!node.hasCardExports) {
-    return node.presence === "both"
-      ? "Types/constants + colocated test"
-      : "Source only (no functions)";
-  }
-  if (node.presence === "both") return "Source + colocated test";
-  return "Source only";
+  } else if (node.presence === "test") title = "Test only";
+  else if (!node.hasCardExports) {
+    title =
+      node.presence === "both"
+        ? "Types/constants + colocated test"
+        : "Source only (no functions)";
+  } else if (node.presence === "both") title = "Source + colocated test";
+  if (node.movedFrom) return `Moved from ${node.movedFrom} · ${title}`;
+  return title;
 };
 </script>
 
@@ -243,6 +250,18 @@ const navTitle = (node: TestFileNavNode): string => {
 }
 .file-nav__row--selected {
   background: rgba(var(--v-theme-primary), 0.12);
+}
+.file-nav__row--added {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-success));
+}
+.file-nav__row--removed {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-error));
+}
+.file-nav__row--modified {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
+}
+.file-nav__row--moved {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-info));
 }
 .file-nav__label {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

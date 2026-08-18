@@ -1,0 +1,49 @@
+type: object
+description: >
+  Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode.
+required:
+  - againstRef
+  - mergeBaseHash
+  - mergeBaseAnalyzed
+  - mergeBaseMessage
+  - mergeBaseAuthoredAt
+  - renames
+properties:
+  againstRef:
+    type: string
+    description: Branch/ref HEAD was compared against (e.g. `main`).
+  mergeBaseHash:
+    type: string
+    description: Full hash of `git merge-base(HEAD, againstRef)`.
+  mergeBaseAnalyzed:
+    type: boolean
+    description: True when that fork-point commit has an analysis snapshot.
+  mergeBaseMessage:
+    type: string
+    description: Subject of the fork-point commit.
+  mergeBaseAuthoredAt:
+    type: string
+    format: date-time
+    description: Author date of the fork-point commit.
+  renames:
+    type: array
+    description: >
+      File rename pairs from the fork point to HEAD (`git diff --find-renames`).
+      Used by Checkout compare to show moved modules instead of remove+add.
+    items:
+      type: object
+      required:
+        - fromPath
+        - toPath
+      properties:
+        fromPath:
+          type: string
+          description: Path at the fork-point commit.
+        toPath:
+          type: string
+          description: Path at HEAD.
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Git rename similarity (0-100).

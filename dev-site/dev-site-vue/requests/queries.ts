@@ -86,22 +86,37 @@ export function useCommitPackage(
   subdomain: string,
   hash: MaybeRefOrGetter<string>,
   packageName: MaybeRefOrGetter<string>,
+  options: { allowMissing?: MaybeRefOrGetter<boolean> } = {},
 ) {
   const client = createDevSiteClient(subdomain);
-  return useQuery<DevSiteResponseBody["getCommitPackage"][200], TanstackError>({
+  return useQuery<
+    DevSiteResponseBody["getCommitPackage"][200] | null,
+    TanstackError
+  >({
     queryKey: ["dev-site", "commit-package", hash, packageName],
     enabled: () => Boolean(toValue(hash) && toValue(packageName)),
-    queryFn: () => {
-      return handleClientMethod(
-        client.GET("/api/commits/{hash}/packages/{packageName}", {
-          params: {
-            path: {
-              hash: toValue(hash),
-              packageName: toValue(packageName),
+    queryFn: async () => {
+      try {
+        return await handleClientMethod(
+          client.GET("/api/commits/{hash}/packages/{packageName}", {
+            params: {
+              path: {
+                hash: toValue(hash),
+                packageName: toValue(packageName),
+              },
             },
-          },
-        }),
-      );
+          }),
+        );
+      } catch (err) {
+        if (
+          toValue(options.allowMissing) &&
+          err instanceof TanstackError &&
+          err.status === 404
+        ) {
+          return null;
+        }
+        throw err;
+      }
     },
   });
 }
@@ -146,15 +161,28 @@ export function useScanMutation(subdomain: string) {
       queryClient.invalidateQueries({ queryKey: ["dev-site", "checkout"] });
       queryClient.invalidateQueries({ queryKey: ["dev-site", "commit"] });
       queryClient.invalidateQueries({ queryKey: ["dev-site", "commit-package"] });
+      queryClient.invalidateQueries({ queryKey: ["dev-site", "diff"] });
     },
   });
 }
 
-export function useCheckout(subdomain: string) {
+export function useCheckout(
+  subdomain: string,
+  compareRef: MaybeRefOrGetter<string | undefined> = undefined,
+) {
   const client = createDevSiteClient(subdomain);
   return useQuery<DevSiteResponseBody["getCheckout"][200], TanstackError>({
-    queryKey: ["dev-site", "checkout"],
-    queryFn: () => handleClientMethod(client.GET("/api/checkout")),
+    queryKey: ["dev-site", "checkout", compareRef],
+    queryFn: () => {
+      const ref = toValue(compareRef);
+      return handleClientMethod(
+        client.GET("/api/checkout", {
+          params: {
+            query: ref ? { compareRef: ref } : {},
+          },
+        }),
+      );
+    },
   });
 }
 

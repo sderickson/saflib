@@ -1,5 +1,8 @@
 {
   "name": "@saflib/jobs",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Async jobs runtime, HTTP surfaces, and enqueue client",
   "private": true,
   "type": "module",

@@ -1,5 +1,8 @@
 {
   "name": "@saflib/processes",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Templates and workflows for building and maintaining SAF projects",
   "type": "module",
   "exports": {

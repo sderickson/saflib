@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP or SDK package's own source modules. For Vue SPA / `-vue` packages, `specInventory` is the product `-spec` joined through SDK request imports so Spec can show loader routes on a component bundle. `layoutIssues` are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on `saf-dev-site issues --workdir` — not on this Spec package load.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes dbInventory (drizzle tables + query dirs). For spec packages, also includes specInventory (OpenAPI schemas + REST resources). For http and sdk packages, specInventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, specInventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layoutIssues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -113,7 +113,7 @@ export interface paths {
         };
         /**
          * Current checkout (HEAD) analysis status
-         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Used by the Current checkout UI.
+         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`). Used by the Current checkout UI.
          */
         get: operations["getCheckout"];
         put?: never;
@@ -184,6 +184,7 @@ export interface components {
         IssueCountsByKind: components["schemas"]["issue-counts-by-kind"];
         DbSchemaTable: components["schemas"]["db-schema-table"];
         DbSchemaColumn: components["schemas"]["db-schema-column"];
+        CheckoutCompare: components["schemas"]["checkout-compare"];
         /** @description A branch or tag pointer observed at scan time for a commit. */
         "commit-ref": {
             /**
@@ -291,6 +292,11 @@ export interface components {
              * @example saflib/git
              */
             directory: string;
+            /**
+             * @description Package layer kind. From package.json saf.kind when set, otherwise inferred from a unique identifier dependency such as @saflib/drizzle (db), @saflib/express (http), @saflib/openapi (spec), @saflib/sdk (sdk), or @saflib/vue (spa).
+             * @enum {string}
+             */
+            kind?: "db" | "http" | "spec" | "spa" | "sdk" | "lib" | "integration" | "other";
             /** @description Count of source files (excluding tests). */
             sourceFiles: number;
             /** @description Total lines across source files. */
@@ -503,9 +509,9 @@ export interface components {
             /** @description Repo-relative path for source links. */
             repoPath: string;
         };
-        /** @description OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. Operations include triangle links to sibling `-http` handlers and `-sdk` requests when present. Also attached to `-http` package detail (sibling join) for the HTTP Spec pane. */
+        /** @description OpenAPI inventory for one spec package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. Operations include links to HTTP handlers and SDK requests from packages that depend on this spec. Also attached to http package detail for the HTTP Spec pane. */
         "spec-inventory": {
-            /** @description Repo-relative directory of the `-spec` package this inventory was built from (used for route YAML source links when shown from an `-http` pane). */
+            /** @description Repo-relative directory of the spec package this inventory was built from (used for route YAML source links when shown from an http pane). */
             packageDirectory?: string;
             /** @description Flat alphabetical list of object / both / routes entities. */
             entities: {
@@ -602,6 +608,31 @@ export interface components {
             filePath: string;
             /** @description Repo-relative path for open-source links */
             repoPath: string;
+        };
+        /** @description Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode. */
+        "checkout-compare": {
+            /** @description Branch/ref HEAD was compared against (e.g. `main`). */
+            againstRef: string;
+            /** @description Full hash of `git merge-base(HEAD, againstRef)`. */
+            mergeBaseHash: string;
+            /** @description True when that fork-point commit has an analysis snapshot. */
+            mergeBaseAnalyzed: boolean;
+            /** @description Subject of the fork-point commit. */
+            mergeBaseMessage: string;
+            /**
+             * Format: date-time
+             * @description Author date of the fork-point commit.
+             */
+            mergeBaseAuthoredAt: string;
+            /** @description File rename pairs from the fork point to HEAD (`git diff --find-renames`). Used by Checkout compare to show moved modules instead of remove+add. */
+            renames: {
+                /** @description Path at the fork-point commit. */
+                fromPath: string;
+                /** @description Path at HEAD. */
+                toPath: string;
+                /** @description Git rename similarity (0-100). */
+                score?: number;
+            }[];
         };
         login: {
             /** @enum {string} */
@@ -858,7 +889,10 @@ export interface operations {
     };
     getCheckout: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Local branch name to take the merge-base against. Defaults to the server `main` ref. */
+                compareRef?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -882,7 +916,19 @@ export interface operations {
                         /** @description Short branch name for HEAD, or null when detached. */
                         branch: string | null;
                         packages: components["schemas"]["package-metrics"][];
+                        /** @description Local branch names that can be used as `compareRef` (current branch omitted; configured main ref always included when it exists). */
+                        compareCandidates: string[];
+                        compare?: components["schemas"]["checkout-compare"];
                     };
+                };
+            };
+            /** @description compareRef is not a valid git object. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
                 };
             };
             /** @description Git command failed */

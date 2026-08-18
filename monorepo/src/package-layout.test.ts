@@ -43,6 +43,31 @@ describe("isAllowedRootTsFile", () => {
 });
 
 describe("checkPackageLayoutFromInputs", () => {
+  it("flags mixed drizzle/express/openapi identifier deps", () => {
+    const issues = checkPackageLayoutFromInputs({
+      packageJson: {
+        name: "@scope/mixed",
+        dependencies: {
+          "@saflib/drizzle": "*",
+          "@saflib/express": "*",
+        },
+      },
+    });
+    expect(issues.map((i) => i.kindLabel)).toEqual(["kind"]);
+    expect(issues[0]?.name).toContain("@saflib/drizzle");
+    expect(issues[0]?.name).toContain("@saflib/express");
+  });
+
+  it("does not flag a unique identifier dep", () => {
+    const issues = checkPackageLayoutFromInputs({
+      packageJson: {
+        name: "@scope/db",
+        dependencies: { "@saflib/drizzle": "*" },
+      },
+    });
+    expect(issues.filter((i) => i.kindLabel === "kind")).toEqual([]);
+  });
+
   it("does not flag SPA root boot/config files", () => {
     const issues = checkPackageLayoutFromInputs({
       packageJson: {

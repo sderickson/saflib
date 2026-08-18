@@ -33,6 +33,8 @@ export interface TestTreeNode {
     filePath: string;
     repoPath: string;
   }> | null;
+  /** Present in Checkout compare mode. */
+  change?: "added" | "removed" | "modified" | "moved";
 }
 
 /** Colocated source/test pairing for Spec nav. */
@@ -63,6 +65,10 @@ export interface TestFileNavNode {
   sourceRepoPath?: string | null;
   /** Repo path to the colocated test file when present. */
   testRepoPath?: string | null;
+  /** Present in Checkout compare mode for file (module) nodes. */
+  change?: "added" | "removed" | "modified" | "moved";
+  /** Previous module stem when `change` is `moved`. */
+  movedFrom?: string;
 }
 
 export type TestScope =
@@ -82,6 +88,7 @@ export interface ExportLike {
     filePath: string;
     repoPath: string;
   }> | null;
+  change?: "added" | "removed" | "modified" | "moved";
 }
 
 const TEST_SUFFIX_RE = /\.(test|spec)\.(tsx?|jsx?|mjs|cjs)$/i;
@@ -218,7 +225,7 @@ function addSuitesAndLeaf(fileNode: TestTreeNode, t: TestCaseLike): void {
     node = ensureChild(node, suite, "suite");
     attachSubjectToSuite(node, t, suite);
   }
-  ensureChild(node, leaf, "test");
+  ensureChild(node, leaf, "test", t.filePath);
 }
 
 function packageTests(

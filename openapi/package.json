@@ -1,5 +1,8 @@
 {
   "name": "@saflib/openapi",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Shared dependencies for generating OpenAPI specs in SAF projects",
   "type": "module",
   "main": "./index.ts",

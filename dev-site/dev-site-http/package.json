@@ -1,5 +1,8 @@
 {
   "name": "@saflib/dev-site-http",
+  "saf": {
+    "kind": "http"
+  },
   "description": "Dev-site orchestration — scan/store/diff static analysis + Express routes + saf-dev-site CLI",
   "type": "module",
   "exports": {

@@ -1,5 +1,8 @@
 {
   "name": "@saflib/backup-cron",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Cron service for the backup service",
   "type": "module",
   "exports": {

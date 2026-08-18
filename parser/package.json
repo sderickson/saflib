@@ -1,5 +1,8 @@
 {
   "name": "@saflib/parser",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Syntactic TypeScript helpers — extractExports / extractTestCases / extractDrizzleTables (no type-checker)",
   "private": true,
   "type": "module",

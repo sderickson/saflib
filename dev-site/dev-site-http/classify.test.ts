@@ -7,11 +7,6 @@ import {
   packageRootsFromPackageJsonPaths,
   packageForPath,
   parsePackageName,
-  looksLikeDbPackage,
-  looksLikeSpecPackage,
-  looksLikeHttpPackage,
-  looksLikeSdkPackage,
-  looksLikeSpaPackage,
   sdkRequestFromSpecifier,
 } from "./classify.ts";
 
@@ -21,13 +16,17 @@ describe("classify", () => {
       expect(isSourcePath("src/foo.ts")).toBe(true);
       expect(isSourcePath("pkg/Bar.vue")).toBe(true);
       expect(isSourcePath("a.js")).toBe(true);
+      expect(isSourcePath("pkg/spec/openapi.yaml")).toBe(true);
+      expect(isSourcePath("pkg/spec/routes/billing/get.yaml")).toBe(true);
     });
 
-    it("rejects node_modules, dist, .d.ts, and dotfiles", () => {
+    it("rejects node_modules, dist, .d.ts, lockfiles, and dotfiles", () => {
       expect(isSourcePath("node_modules/x/a.ts")).toBe(false);
       expect(isSourcePath("pkg/dist/a.ts")).toBe(false);
+      expect(isSourcePath("pkg/dist/openapi.yaml")).toBe(false);
       expect(isSourcePath("src/a.d.ts")).toBe(false);
       expect(isSourcePath(".hidden/a.ts")).toBe(false);
+      expect(isSourcePath("pnpm-lock.yaml")).toBe(false);
     });
   });
 
@@ -100,45 +99,12 @@ describe("classify", () => {
     });
   });
 
-  describe("looksLikeSpecPackage / looksLikeDbPackage / looksLikeHttpPackage / looksLikeSdkPackage", () => {
-    it("detects -spec, -db, -http, and -sdk naming", () => {
+  describe("sdkRequestFromSpecifier", () => {
+    it("parses package/requests/stem specifiers", () => {
       expect(
-        looksLikeSpecPackage("@pathclerk/daemon-spec", "daemon/service/spec"),
-      ).toBe(true);
-      expect(
-        looksLikeSpecPackage("@saflib/dev-site-spec", "saflib/dev-site/dev-site-spec"),
-      ).toBe(true);
-      expect(looksLikeSpecPackage("@pathclerk/daemon-db", "daemon/service/db")).toBe(
-        false,
-      );
-      expect(looksLikeDbPackage("@pathclerk/daemon-db", "daemon/service/db")).toBe(
-        true,
-      );
-      expect(
-        looksLikeHttpPackage("@pathclerk/daemon-http", "daemon/service/http"),
-      ).toBe(true);
-      expect(
-        looksLikeHttpPackage("@pathclerk/daemon-spec", "daemon/service/spec"),
-      ).toBe(false);
-      expect(
-        looksLikeSdkPackage("@pathclerk/daemon-sdk", "daemon/service/sdk"),
-      ).toBe(true);
-      expect(
-        looksLikeSdkPackage("@pathclerk/daemon-http", "daemon/service/http"),
-      ).toBe(false);
-      expect(
-        looksLikeSpaPackage("@pathclerk/daemon-account-spa", "daemon/clients/account"),
-      ).toBe(true);
-      expect(
-        looksLikeSpaPackage("@saflib/dev-site-vue", "saflib/dev-site/dev-site-vue"),
-      ).toBe(true);
-      expect(looksLikeSpaPackage("@pathclerk/daemon-sdk", "daemon/service/sdk")).toBe(
-        false,
-      );
-      expect(
-        sdkRequestFromSpecifier("@pathclerk/daemon-sdk/requests/orgs/list"),
+        sdkRequestFromSpecifier("@scope/billing/requests/orgs/list"),
       ).toEqual({
-        sdkPackageName: "@pathclerk/daemon-sdk",
+        sdkPackageName: "@scope/billing",
         requestStem: "orgs/list",
       });
       expect(sdkRequestFromSpecifier("./ChooseOrg.logic.ts")).toBeNull();

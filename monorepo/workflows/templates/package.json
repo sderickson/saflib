@@ -1,5 +1,8 @@
 {
   "name": "template-package",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "TODO: Add package description",
   "private": true,
   "type": "module",

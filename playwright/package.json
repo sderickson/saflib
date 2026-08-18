@@ -1,5 +1,8 @@
 {
   "name": "@saflib/playwright",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Playwright testing utilities for SAF applications",
   "private": true,
   "type": "module",

@@ -76,7 +76,13 @@
               <li
                 v-for="op in scopedRoutes"
                 :key="op.operationId + op.method + op.path"
+                :class="{
+                  'routes-block__item--added': op.change === 'added',
+                  'routes-block__item--removed': op.change === 'removed',
+                  'routes-block__item--modified': op.change === 'modified',
+                }"
               >
+                <ChangeChip :change="op.change" />
                 <PackageRouteCard
                   :operation="normalizeOp(op)"
                   :route-repo-path="routeRepoPath(op.yamlPath)"
@@ -112,7 +118,8 @@
 
 <script setup lang="ts">
 import { computed, watch } from "vue";
-import { useCommitPackage, useScopeSummary } from "../requests/queries";
+import { useScopeSummary } from "../requests/queries";
+import { useComparedPackageDetail } from "../package-compare";
 import {
   buildModuleFileNav,
   buildPackageSpecTree,
@@ -121,6 +128,17 @@ import {
   type TestFileNavNode,
   type TestScope,
 } from "../test-tree";
+import {
+  exportIdentityKey,
+  filterFileNav,
+  pickChangedItems,
+  pruneEmptySpecTree,
+  specOperationKey,
+  tagSpecTree,
+  testIdentityKey,
+  unionByKey,
+  type PathRename,
+} from "../package-change-overlay";
 import { scopeDocListPrefix } from "../scope-docs";
 import { repoPathPrefix } from "../repo-paths";
 import { openSource } from "../source-links";
@@ -130,6 +148,7 @@ import PackageRouteCard, {
   type RouteCardOperation,
 } from "./PackageRouteCard.vue";
 import ResizableColumns from "./ResizableColumns.vue";
+import ChangeChip from "./ChangeChip.vue";
 
 interface SpecFileRef {
   filePath: string;
@@ -163,12 +182,15 @@ interface SpecOperation {
   usedBy: SpecUsedBy[];
   enqueues?: string[];
   enqueuedBy?: string[];
+  change?: "added" | "removed" | "modified";
 }
 
 const props = withDefaults(
   defineProps<{
     subdomain: string;
     commitHash: string;
+    compareFromHash?: string;
+    pathRenames?: PathRename[];
     packageName: string;
     packageDirectory: string;
     productRoot?: string;
@@ -192,38 +214,83 @@ const setScope = (next: TestScope) => {
   emit("update:scope", next);
 };
 
-const { data, isLoading, error } = useCommitPackage(
+const {
+  isLoading,
+  error,
+  overlay,
+  detail,
+  beforeDetail,
+  afterDetail,
+} = useComparedPackageDetail(
   props.subdomain,
   () => props.commitHash,
   () => props.packageName,
+  {
+    compareFromHash: () => props.compareFromHash,
+    productRoot: () => props.productRoot,
+    pathRenames: () => props.pathRenames,
+  },
 );
-
-const detail = computed(() => data.value?.packageDetail);
 
 const pkgPrefix = computed(() =>
   repoPathPrefix(props.productRoot, props.packageDirectory),
 );
 
 const specPkgPrefix = computed(() => {
-  const dir = detail.value?.specInventory?.packageDirectory as
-    | string
-    | undefined;
+  const dir = (
+    afterDetail.value?.specInventory ??
+    beforeDetail.value?.specInventory ??
+    detail.value?.specInventory
+  )?.packageDirectory as string | undefined;
   if (!dir) return "";
   return repoPathPrefix(props.productRoot, dir);
 });
 
+const allExports = computed(() =>
+  unionByKey(
+    beforeDetail.value?.exports ?? [],
+    afterDetail.value?.exports ?? detail.value?.exports ?? [],
+    exportIdentityKey,
+  ),
+);
+const allTests = computed(() =>
+  unionByKey(
+    beforeDetail.value?.testCases ?? [],
+    afterDetail.value?.testCases ?? detail.value?.testCases ?? [],
+    testIdentityKey,
+  ),
+);
+const specExports = computed(() => {
+  if (!overlay.value) return allExports.value;
+  return pickChangedItems(
+    beforeDetail.value?.exports ?? [],
+    afterDetail.value?.exports ?? [],
+    exportIdentityKey,
+    overlay.value.exports,
+  );
+});
+const specTests = computed(() => {
+  if (!overlay.value) return allTests.value;
+  return pickChangedItems(
+    beforeDetail.value?.testCases ?? [],
+    afterDetail.value?.testCases ?? [],
+    testIdentityKey,
+    overlay.value.tests,
+  );
+});
+
 const fileNav = computed(() => {
-  const d = detail.value;
-  if (!d) return [];
-  return pruneEmptyIndexModules(
+  const nav = pruneEmptyIndexModules(
     buildModuleFileNav(
-      d.exports ?? [],
-      d.testCases,
-      d.packageName,
+      allExports.value,
+      allTests.value,
+      props.packageName,
       props.packageDirectory,
       props.productRoot ?? "",
     ),
   );
+  if (!overlay.value) return nav;
+  return filterFileNav(nav, overlay.value.modules, overlay.value.movedFrom);
 });
 
 /** Prefer `handlers/` when landing with no selection. */
@@ -274,10 +341,18 @@ const scopeDocPrefix = computed(() =>
   }),
 );
 
+const scopeDocRef = computed(() => {
+  if (!overlay.value || scope.value.kind !== "file") return props.commitHash;
+  const stem = toModuleStem(scope.value.localPath);
+  return overlay.value.modules[stem] === "removed"
+    ? (props.compareFromHash ?? props.commitHash)
+    : props.commitHash;
+});
+
 const { summary: scopeSummary, isLoading: scopeDocLoading } = useScopeSummary(
   props.subdomain,
   () => ({
-    ref: props.commitHash,
+    ref: scopeDocRef.value,
     prefix: scopeDocPrefix.value,
   }),
 );
@@ -301,27 +376,38 @@ const scopePresenceLabel = computed(() => {
 });
 
 const specTree = computed(() => {
-  const d = detail.value;
-  if (!d) return [];
-  return buildPackageSpecTree(
-    d.exports ?? [],
-    d.testCases,
-    d.packageName,
+  const tree = buildPackageSpecTree(
+    specExports.value,
+    specTests.value,
+    props.packageName,
     props.packageDirectory,
     props.productRoot ?? "",
     scope.value,
   );
+  if (!overlay.value) return tree;
+  return pruneEmptySpecTree(tagSpecTree(tree, overlay.value));
 });
 
 const allOperations = computed((): SpecOperation[] => {
-  const entities = detail.value?.specInventory?.entities ?? [];
-  const ops: SpecOperation[] = [];
-  for (const e of entities) {
-    for (const op of e.operations ?? []) {
-      ops.push(op as SpecOperation);
-    }
+  const beforeOps: SpecOperation[] = [];
+  const afterOps: SpecOperation[] = [];
+  for (const e of beforeDetail.value?.specInventory?.entities ?? []) {
+    for (const op of e.operations ?? []) beforeOps.push(op as SpecOperation);
   }
-  return ops.sort((a, b) => {
+  for (const e of afterDetail.value?.specInventory?.entities ??
+    detail.value?.specInventory?.entities ??
+    []) {
+    for (const op of e.operations ?? []) afterOps.push(op as SpecOperation);
+  }
+  const merged = overlay.value
+    ? pickChangedItems(
+        beforeOps,
+        afterOps,
+        specOperationKey,
+        overlay.value.specOperations,
+      )
+    : unionByKey(beforeOps, afterOps, specOperationKey);
+  return merged.sort((a, b) => {
     const ha = a.handler?.filePath ?? a.routeStem ?? a.path;
     const hb = b.handler?.filePath ?? b.routeStem ?? b.path;
     return (
@@ -501,5 +587,21 @@ function openFile(path: string) {
   padding: 0;
   display: grid;
   gap: 0.65rem;
+}
+.routes-block__item--added,
+.routes-block__item--removed,
+.routes-block__item--modified {
+  display: grid;
+  gap: 0.35rem;
+  padding-left: 0.5rem;
+}
+.routes-block__item--added {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-success));
+}
+.routes-block__item--removed {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-error));
+}
+.routes-block__item--modified {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
 }
 </style>

@@ -12,3 +12,15 @@ export function formatLoc(n: number): string {
 export function formatLocPair(sourceLines: number, testLines: number): string {
   return `${formatLoc(sourceLines)}/${formatLoc(testLines)}`;
 }
+
+/** Signed delta for compare mode (`+12`, `−4`, `0`). */
+export function formatLocSigned(delta: number): string {
+  if (delta === 0) return "0";
+  const mag = formatLoc(Math.abs(delta));
+  return delta > 0 ? `+${mag}` : `−${mag}`;
+}
+
+/** Checkout compare pair: `+12/−2` source/test vs fork. */
+export function formatLocChangePair(sourceDelta: number, testDelta: number): string {
+  return `${formatLocSigned(sourceDelta)}/${formatLocSigned(testDelta)}`;
+}

@@ -3,13 +3,14 @@
  * Layout/oversized use commit-scoped inputs (not the live working tree).
  */
 import type { DbKey } from "@saflib/drizzle";
-import type { ReturnsError } from "@saflib/monorepo";
 import {
   checkPackageLayoutFromInputs,
+  classifySafPackage,
   DEFAULT_MAX_SOURCE_LINES,
   listPackageJsonExportTargetFiles,
   type PackageJsonLayoutFields,
   type PackageLayoutIssue,
+  type ReturnsError,
 } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
 import { listTree, readBlobs } from "@saflib/git";
@@ -41,7 +42,6 @@ import {
   packageForPath,
   packageRootsFromPackageJsonPaths,
   parsePackageName,
-  looksLikeDbPackage,
 } from "./classify.ts";
 import { assemblePackageDbInventory } from "./assemble-package-db-inventory.ts";
 import {
@@ -76,12 +76,7 @@ function packageLocalFromRepo(
 
 function parsePackageJsonFields(text: string): PackageJsonLayoutFields | null {
   try {
-    const parsed = JSON.parse(text) as PackageJsonLayoutFields;
-    return {
-      bin: parsed.bin,
-      scripts: parsed.scripts,
-      exports: parsed.exports,
-    };
+    return JSON.parse(text) as PackageJsonLayoutFields;
   } catch {
     return null;
   }
@@ -262,7 +257,7 @@ export async function computeCommitIssueStats(
       repoPath: i.repoPath,
     }));
 
-    const isDb = looksLikeDbPackage(pkg.packageName, pkg.directory);
+    const isDb = classifySafPackage(pj).kind === "db";
     let dbInventory:
       | {
           entities: Array<{

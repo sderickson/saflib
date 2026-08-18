@@ -1,5 +1,8 @@
 {
   "name": "@saflib/product",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Package for product workflows",
   "private": true,
   "type": "module",

@@ -3,23 +3,16 @@ import { classifyPackageKind, PACKAGE_KIND_SURFACES } from "./package-kind.ts";
 import { buildPackageTestTree, buildTestFileNav } from "./test-tree.ts";
 
 describe("classifyPackageKind", () => {
-  it("classifies common saflib suffixes", () => {
-    expect(classifyPackageKind("@saflib/dev-site-db", "saflib/dev-site/dev-site-db")).toBe(
-      "db",
-    );
-    expect(
-      classifyPackageKind("@saflib/dev-site-http", "saflib/dev-site/dev-site-http"),
-    ).toBe("http");
-    expect(
-      classifyPackageKind("@saflib/dev-site-spec", "saflib/dev-site/dev-site-spec"),
-    ).toBe("spec");
-    expect(
-      classifyPackageKind("@saflib/dev-site-vue", "saflib/dev-site/dev-site-vue"),
-    ).toBe("spa");
-    expect(classifyPackageKind("@saflib/backup-sdk", "saflib/backup/backup-sdk")).toBe(
-      "sdk",
-    );
-    expect(classifyPackageKind("@saflib/git", "saflib/git")).toBe("lib");
+  it("coerces API kind strings", () => {
+    expect(classifyPackageKind("db")).toBe("db");
+    expect(classifyPackageKind("http")).toBe("http");
+    expect(classifyPackageKind("spec")).toBe("spec");
+    expect(classifyPackageKind("sdk")).toBe("sdk");
+    expect(classifyPackageKind("spa")).toBe("spa");
+    expect(classifyPackageKind("lib")).toBe("lib");
+    expect(classifyPackageKind("integration")).toBe("integration");
+    expect(classifyPackageKind(undefined)).toBe("other");
+    expect(classifyPackageKind("nope")).toBe("other");
   });
 
   it("lists future surfaces per kind", () => {

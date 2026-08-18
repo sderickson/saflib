@@ -24,9 +24,59 @@
         >
           {{ checkout.analyzed ? "analyzed" : "not analyzed" }}
         </v-chip>
+        <v-switch
+          :model-value="compareMode"
+          hide-details
+          density="compact"
+          color="primary"
+          class="checkout-strip__compare"
+          label="Compare"
+          @update:model-value="toggleCompare"
+        />
+        <v-select
+          v-if="compareMode"
+          :model-value="compareRef"
+          :items="checkout.compareCandidates"
+          density="compact"
+          hide-details
+          variant="outlined"
+          class="checkout-strip__ref"
+          @update:model-value="setCompareRef"
+        />
+        <v-chip
+          v-if="compareMode && checkout.compare"
+          size="x-small"
+          variant="tonal"
+          :color="checkout.compare.mergeBaseAnalyzed ? 'success' : 'warning'"
+          class="checkout-strip__chip"
+        >
+          fork {{ shortHash(checkout.compare.mergeBaseHash) }}
+          ·
+          {{ checkout.compare.mergeBaseAnalyzed ? "analyzed" : "not analyzed" }}
+        </v-chip>
+        <v-btn
+          v-if="compareMode && checkout.compare && !checkout.compare.mergeBaseAnalyzed"
+          color="primary"
+          size="small"
+          variant="flat"
+          :loading="isScanning"
+          :disabled="isScanning"
+          @click="scanForkPoint"
+        >
+          Scan fork point
+        </v-btn>
       </div>
 
-      <div v-if="checkout.analyzed" class="checkout-body">
+      <div v-if="checkout.analyzed && isEmptyCompare" class="checkout-unscanned">
+        <p class="checkout-unscanned__title">Nothing unique on this checkout</p>
+        <p class="checkout-unscanned__body">
+          HEAD is the fork point of
+          <code>{{ checkout.compare?.againstRef }}</code>
+          — there are no commits unique to this branch to compare.
+        </p>
+      </div>
+
+      <div v-else-if="checkout.analyzed" class="checkout-body">
         <ResizableColumns
           storage-key="dev-site.checkout.packagesWidth"
           :default-left="200"
@@ -35,6 +85,19 @@
         >
           <template #left>
             <div class="checkout-col checkout-col--packages">
+              <v-alert
+                v-if="compareMode && checkout.compare && !checkout.compare.mergeBaseAnalyzed"
+                type="info"
+                density="compact"
+                variant="tonal"
+                class="mb-2"
+              >
+                Scan the fork point
+                <code>{{ shortHash(checkout.compare.mergeBaseHash) }}</code>
+                ({{ firstLine(checkout.compare.mergeBaseMessage) }})
+                to filter this tree to added, removed, and modified packages.
+              </v-alert>
+              <v-progress-linear v-if="isLoadingDiff" indeterminate class="mb-2" />
               <PackageDirTree
                 :nodes="dirTree"
                 :selected-package-name="selectedPackageName"
@@ -54,6 +117,14 @@
                   <span class="pkg-head__name" :title="selectedPkg.packageName">
                     {{ selectedPkg.packageName }}
                   </span>
+                  <span
+                    v-if="locDeltaText"
+                    class="pkg-head__delta"
+                    :title="'Source/test LOC vs fork point'"
+                  >
+                    {{ locDeltaText }}
+                  </span>
+                  <ChangeChip :change="selectedPkg.change" />
                   <v-chip
                     size="x-small"
                     variant="tonal"
@@ -106,6 +177,8 @@
                     v-if="tab === 'spec' && selectedPkg.kind === 'db'"
                     :subdomain="subdomain"
                     :commit-hash="checkout.hash"
+                    :compare-from-hash="compareFromHash"
+                    :path-renames="pathRenames"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -119,6 +192,8 @@
                     v-else-if="tab === 'spec' && selectedPkg.kind === 'spec'"
                     :subdomain="subdomain"
                     :commit-hash="checkout.hash"
+                    :compare-from-hash="compareFromHash"
+                    :path-renames="pathRenames"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -130,6 +205,8 @@
                     v-else-if="tab === 'spec' && selectedPkg.kind === 'http'"
                     :subdomain="subdomain"
                     :commit-hash="checkout.hash"
+                    :compare-from-hash="compareFromHash"
+                    :path-renames="pathRenames"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -143,6 +220,8 @@
                     v-else-if="tab === 'spec' && selectedPkg.kind === 'sdk'"
                     :subdomain="subdomain"
                     :commit-hash="checkout.hash"
+                    :compare-from-hash="compareFromHash"
+                    :path-renames="pathRenames"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -156,6 +235,8 @@
                     v-else-if="tab === 'spec'"
                     :subdomain="subdomain"
                     :commit-hash="checkout.hash"
+                    :compare-from-hash="compareFromHash"
+                    :path-renames="pathRenames"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -169,7 +250,7 @@
                     v-else-if="tab === 'docs'"
                     ref="docsPane"
                     :subdomain="subdomain"
-                    :commit-hash="checkout.hash"
+                    :commit-hash="paneCommitHash"
                     :package-directory="selectedPkg.directory"
                     :package-name="selectedPkg.packageName"
                     :product-root="checkout.productRoot"
@@ -182,7 +263,7 @@
                   <PackageIssuesPane
                     v-else
                     :subdomain="subdomain"
-                    :commit-hash="checkout.hash"
+                    :commit-hash="paneCommitHash"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -192,6 +273,12 @@
                   />
                 </div>
               </template>
+              <p
+                v-else-if="compareReady && !visibleRows.length"
+                class="text-body-2 text-medium-emphasis pa-3"
+              >
+                No package changes versus the fork point.
+              </p>
               <p v-else class="text-body-2 text-medium-emphasis pa-3">
                 Select a package.
               </p>
@@ -224,7 +311,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useCheckout, useCommitPackage, useRepoFile, useScanMutation } from "../requests/queries";
+import {
+  useCheckout,
+  useCommitDiff,
+  useCommitPackage,
+  useRepoFile,
+  useScanMutation,
+} from "../requests/queries";
 import { classifyPackageKind } from "../package-kind";
 import {
   buildPackageDirTree,
@@ -238,9 +331,14 @@ import {
 import { parsePackageDescription } from "../scope-docs";
 import { collectPackageIssues } from "../package-issues";
 import { repoPathPrefix } from "../repo-paths";
-import { formatLocPair } from "../format-loc";
+import { formatLocChangePair, formatLocPair } from "../format-loc";
 import type { TestScope } from "../test-tree";
 import { toModuleStem } from "../test-tree";
+import {
+  filterPackageDirTree,
+  packageChangesFromDiff,
+  type ChangeKind,
+} from "../package-change-overlay";
 import PackageDirTree from "../components/PackageDirTree.vue";
 import PackageDocsPane from "../components/PackageDocsPane.vue";
 import PackageSpecPane from "../components/PackageSpecPane.vue";
@@ -250,6 +348,7 @@ import PackageHttpPane from "../components/PackageHttpPane.vue";
 import PackageSdkPane from "../components/PackageSdkPane.vue";
 import PackageIssuesPane from "../components/PackageIssuesPane.vue";
 import ResizableColumns from "../components/ResizableColumns.vue";
+import ChangeChip from "../components/ChangeChip.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -270,12 +369,18 @@ const router = useRouter();
 
 const docsPane = ref<{ openDoc: (path: string) => void } | null>(null);
 
+const compareRef = computed(() => {
+  const q = route.query.compare;
+  return typeof q === "string" && q ? q : undefined;
+});
+const compareMode = computed(() => Boolean(compareRef.value));
+
 const {
   data: checkout,
   isLoading,
   error,
   refetch,
-} = useCheckout(props.subdomain);
+} = useCheckout(props.subdomain, compareRef);
 
 const {
   mutate: scan,
@@ -283,18 +388,116 @@ const {
   error: scanError,
 } = useScanMutation(props.subdomain);
 
-const packageRows = computed(() =>
-  (checkout.value?.packages ?? []).map((p) => ({
-    ...p,
-    kind: classifyPackageKind(p.packageName, p.directory),
-    size: classifyPackageSize({
-      sourceLines: p.sourceLines,
-      testFiles: p.testFiles,
-    }),
-  })),
+const compareReady = computed(() => {
+  const c = checkout.value;
+  return Boolean(
+    compareMode.value &&
+      c?.analyzed &&
+      c.compare?.mergeBaseAnalyzed &&
+      c.compare.mergeBaseHash !== c.hash,
+  );
+});
+
+const isEmptyCompare = computed(() => {
+  const c = checkout.value;
+  return Boolean(
+    compareMode.value && c?.compare && c.compare.mergeBaseHash === c.hash,
+  );
+});
+
+const compareFromHash = computed(() =>
+  compareReady.value ? checkout.value?.compare?.mergeBaseHash : undefined,
 );
 
-const dirTree = computed(() => buildPackageDirTree(packageRows.value));
+const pathRenames = computed(
+  () => checkout.value?.compare?.renames ?? [],
+);
+
+const {
+  data: diffData,
+  isLoading: isLoadingDiff,
+} = useCommitDiff(
+  props.subdomain,
+  () => (compareReady.value ? checkout.value?.compare?.mergeBaseHash ?? "" : ""),
+  () => (compareReady.value ? checkout.value?.hash ?? "" : ""),
+);
+
+const changeByPackage = computed((): Record<string, ChangeKind> => {
+  const diff = diffData.value?.commitDiff;
+  if (!compareReady.value || !diff) return {};
+  return packageChangesFromDiff(diff);
+});
+
+const mapPackageRow = (
+  p: {
+    packageName: string;
+    directory: string;
+    kind?: string;
+    sourceLines: number;
+    testLines: number;
+    testFiles: number;
+    debtCount?: number;
+    issueCountsByKind?: {
+      "dead-code": number;
+      "oversized-file": number;
+      "package-layout": number;
+    };
+    sourceFiles?: number;
+    prodLines?: number;
+  },
+  change?: ChangeKind,
+  locDelta?: { source: number; test: number },
+) => ({
+  ...p,
+  kind: classifyPackageKind(p.kind),
+  size: classifyPackageSize({
+    sourceLines: p.sourceLines,
+    testFiles: p.testFiles,
+  }),
+  change,
+  locDelta,
+});
+
+const headRows = computed(() =>
+  (checkout.value?.packages ?? []).map((p) => mapPackageRow(p)),
+);
+
+const visibleRows = computed(() => {
+  if (!compareReady.value) return headRows.value;
+  const changes = changeByPackage.value;
+  const byName = new Map(headRows.value.map((p) => [p.packageName, p]));
+  const removed = diffData.value?.commitDiff?.packageMetrics.removed ?? [];
+  const changed = diffData.value?.commitDiff?.packageMetrics.changed ?? [];
+  const rows = [];
+  for (const [name, change] of Object.entries(changes)) {
+    const head = byName.get(name);
+    const gone = removed.find((p) => p.packageName === name);
+    const src = head ?? gone;
+    if (!src) continue;
+    let locDelta: { source: number; test: number } | undefined;
+    if (change === "added") {
+      locDelta = { source: src.sourceLines, test: src.testLines };
+    } else if (change === "removed") {
+      locDelta = { source: -src.sourceLines, test: -src.testLines };
+    } else {
+      const pair = changed.find((c) => c.after.packageName === name);
+      locDelta = pair
+        ? {
+            source: pair.after.sourceLines - pair.before.sourceLines,
+            test: pair.after.testLines - pair.before.testLines,
+          }
+        : { source: 0, test: 0 };
+    }
+    rows.push(mapPackageRow(src, change, locDelta));
+  }
+  return rows.sort((a, b) => a.directory.localeCompare(b.directory));
+});
+
+const dirTree = computed(() => {
+  const tree = buildPackageDirTree(visibleRows.value);
+  if (!compareReady.value) return tree;
+  return filterPackageDirTree(tree, changeByPackage.value);
+});
 
 const selectedPackageName = computed(() => {
   const q = route.query.package;
@@ -302,12 +505,25 @@ const selectedPackageName = computed(() => {
 });
 
 const selectedPkg = computed(() =>
-  packageRows.value.find((p) => p.packageName === selectedPackageName.value),
+  visibleRows.value.find((p) => p.packageName === selectedPackageName.value),
 );
+
+const locDeltaText = computed(() => {
+  const d = selectedPkg.value?.locDelta;
+  if (!d || (d.source === 0 && d.test === 0)) return "";
+  return `${formatLocChangePair(d.source, d.test)} LOC`;
+});
+
+const paneCommitHash = computed(() => {
+  if (selectedPkg.value?.change === "removed") {
+    return checkout.value?.compare?.mergeBaseHash ?? "";
+  }
+  return checkout.value?.analyzed ? checkout.value.hash : "";
+});
 
 const { data: packageDetailData } = useCommitPackage(
   props.subdomain,
-  () => (checkout.value?.analyzed ? checkout.value.hash : ""),
+  paneCommitHash,
   () => selectedPackageName.value,
 );
 
@@ -373,16 +589,16 @@ const setSpecScope = (scope: TestScope) => {
 };
 
 const packageJsonPath = computed(() => {
-  if (!selectedPkg.value || !checkout.value?.analyzed) return "";
+  if (!selectedPkg.value || !paneCommitHash.value) return "";
   const prefix = repoPathPrefix(
-    checkout.value.productRoot,
+    checkout.value?.productRoot ?? "",
     selectedPkg.value.directory,
   );
   return prefix ? `${prefix}/package.json` : "package.json";
 });
 
 const { data: packageJsonFile } = useRepoFile(props.subdomain, () => ({
-  ref: checkout.value?.analyzed ? checkout.value.hash : "",
+  ref: paneCommitHash.value,
   path: packageJsonPath.value,
 }));
 
@@ -393,16 +609,17 @@ const packageDescription = computed(() => {
 });
 
 watch(
-  [checkout, selectedPackageName],
+  [checkout, selectedPackageName, visibleRows, isEmptyCompare],
   () => {
-    if (!checkout.value?.analyzed || !packageRows.value.length) return;
+    if (!checkout.value?.analyzed || isEmptyCompare.value) return;
+    if (!visibleRows.value.length) return;
     if (
       selectedPackageName.value &&
-      packageRows.value.some((p) => p.packageName === selectedPackageName.value)
+      visibleRows.value.some((p) => p.packageName === selectedPackageName.value)
     ) {
       return;
     }
-    const first = packageRows.value[0];
+    const first = visibleRows.value[0];
     if (first) {
       replaceQuery({ package: first.packageName });
     }
@@ -439,6 +656,31 @@ const scanThisCommit = () => {
   );
 };
 
+const scanForkPoint = () => {
+  const hash = checkout.value?.compare?.mergeBaseHash;
+  if (!hash) return;
+  scan({ commitHash: hash }, { onSuccess: () => refetch() });
+};
+
+const toggleCompare = (on: unknown) => {
+  if (!on) {
+    replaceQuery({ compare: undefined });
+    return;
+  }
+  const ref =
+    compareRef.value ||
+    checkout.value?.compare?.againstRef ||
+    checkout.value?.compareCandidates?.[0] ||
+    "main";
+  replaceQuery({ compare: ref });
+};
+
+const setCompareRef = (value: unknown) => {
+  if (typeof value === "string" && value) {
+    replaceQuery({ compare: value });
+  }
+};
+
 const shortHash = (hash: string) => hash.slice(0, 10);
 const firstLine = (message: string) => message.split("\n")[0] ?? message;
 const formatDateTime = (dateTimeString: string): string => {
@@ -468,11 +710,19 @@ const formatDateTime = (dateTimeString: string): string => {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.65rem;
   padding: 0.35rem 0.75rem;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   font-size: 0.75rem;
   min-width: 0;
+}
+.checkout-strip__compare {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.checkout-strip__ref {
+  flex: 0 0 9rem;
 }
 .checkout-strip__hash {
   flex: 0 0 auto;
@@ -553,6 +803,13 @@ const formatDateTime = (dateTimeString: string): string => {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: min(28rem, 55vw);
+}
+.pkg-head__delta {
+  flex: 0 0 auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.7);
 }
 .pkg-head__meta {
   font-size: 0.7rem;

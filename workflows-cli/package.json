@@ -1,5 +1,8 @@
 {
   "name": "@saflib/workflows-cli",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Project-specific workflows using @saflib/workflows",
   "private": true,
   "type": "module",

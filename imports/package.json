@@ -1,5 +1,8 @@
 {
   "name": "@saflib/imports",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "SAF import-graph measurement and enforcement tooling",
   "private": true,
   "type": "module",

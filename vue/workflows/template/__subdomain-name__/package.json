@@ -1,5 +1,8 @@
 {
   "name": "template-package-spa",
+  "saf": {
+    "kind": "spa"
+  },
   "private": true,
   "type": "module",
   "exports": {

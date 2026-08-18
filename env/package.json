@@ -1,5 +1,8 @@
 {
   "name": "@saflib/env",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Specify, share, and enforce environment variables",
   "private": true,
   "type": "module",

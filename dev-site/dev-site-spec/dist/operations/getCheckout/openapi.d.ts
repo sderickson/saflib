@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Current checkout (HEAD) analysis status
-         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Used by the Current checkout UI.
+         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`). Used by the Current checkout UI.
          */
         get: operations["getCheckout"];
         put?: never;
@@ -40,6 +40,11 @@ export interface components {
              * @example saflib/git
              */
             directory: string;
+            /**
+             * @description Package layer kind. From package.json saf.kind when set, otherwise inferred from a unique identifier dependency such as @saflib/drizzle (db), @saflib/express (http), @saflib/openapi (spec), @saflib/sdk (sdk), or @saflib/vue (spa).
+             * @enum {string}
+             */
+            kind?: "db" | "http" | "spec" | "spa" | "sdk" | "lib" | "integration" | "other";
             /** @description Count of source files (excluding tests). */
             sourceFiles: number;
             /** @description Total lines across source files. */
@@ -59,6 +64,31 @@ export interface components {
             "dead-code": number;
             "oversized-file": number;
             "package-layout": number;
+        };
+        /** @description Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode. */
+        "checkout-compare": {
+            /** @description Branch/ref HEAD was compared against (e.g. `main`). */
+            againstRef: string;
+            /** @description Full hash of `git merge-base(HEAD, againstRef)`. */
+            mergeBaseHash: string;
+            /** @description True when that fork-point commit has an analysis snapshot. */
+            mergeBaseAnalyzed: boolean;
+            /** @description Subject of the fork-point commit. */
+            mergeBaseMessage: string;
+            /**
+             * Format: date-time
+             * @description Author date of the fork-point commit.
+             */
+            mergeBaseAuthoredAt: string;
+            /** @description File rename pairs from the fork point to HEAD (`git diff --find-renames`). Used by Checkout compare to show moved modules instead of remove+add. */
+            renames: {
+                /** @description Path at the fork-point commit. */
+                fromPath: string;
+                /** @description Path at HEAD. */
+                toPath: string;
+                /** @description Git rename similarity (0-100). */
+                score?: number;
+            }[];
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
@@ -80,7 +110,10 @@ export type $defs = Record<string, never>;
 export interface operations {
     getCheckout: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Local branch name to take the merge-base against. Defaults to the server `main` ref. */
+                compareRef?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -104,7 +137,19 @@ export interface operations {
                         /** @description Short branch name for HEAD, or null when detached. */
                         branch: string | null;
                         packages: components["schemas"]["package-metrics"][];
+                        /** @description Local branch names that can be used as `compareRef` (current branch omitted; configured main ref always included when it exists). */
+                        compareCandidates: string[];
+                        compare?: components["schemas"]["checkout-compare"];
                     };
+                };
+            };
+            /** @description compareRef is not a valid git object. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
                 };
             };
             /** @description Git command failed */

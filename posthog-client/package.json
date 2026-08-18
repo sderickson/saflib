@@ -1,5 +1,8 @@
 {
   "name": "@saflib/posthog-client",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Posthog for web clients",
   "private": true,
   "type": "module",

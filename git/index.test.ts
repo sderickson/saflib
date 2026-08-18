@@ -12,6 +12,8 @@ import { execFileSync } from "node:child_process";
 import {
   GitCommandError,
   isAncestor,
+  mergeBase,
+  listRenames,
   listRefs,
   listTree,
   log,
@@ -143,6 +145,26 @@ describe("@saflib/git", () => {
     });
   });
 
+  describe("mergeBase", () => {
+    it("returns the earlier commit when the later one is a descendant", () => {
+      const { result, error } = mergeBase(repoRoot, commit1, commit3);
+      expect(error).toBeUndefined();
+      expect(result).toBe(commit1);
+    });
+
+    it("returns the commit itself when both sides are the same", () => {
+      const { result, error } = mergeBase(repoRoot, commit3, commit3);
+      expect(error).toBeUndefined();
+      expect(result).toBe(commit3);
+    });
+
+    it("returns GitCommandError for a missing ref", () => {
+      const { result, error } = mergeBase(repoRoot, "HEAD", "no-such-ref");
+      expect(result).toBeUndefined();
+      expect(error).toBeInstanceOf(GitCommandError);
+    });
+  });
+
   describe("readBlob", () => {
     it("returns exact file contents for a blob hash", () => {
       const tree = listTree(repoRoot, commit3);
@@ -206,5 +228,79 @@ describe("@saflib/git", () => {
       expect(result!.get(uni.blobHash)).toBe("café 日本語 🎉\n");
       expect(result!.get(a.blobHash)).toBe("alpha\nbeta\n");
     });
+  });
+});
+
+describe("mergeBase diverging branches", () => {
+  let repoRoot: string;
+  let fork: string;
+
+  beforeAll(() => {
+    repoRoot = mkdtempSync(join(tmpdir(), "saflib-git-merge-base-"));
+    git(repoRoot, ["init"]);
+    git(repoRoot, ["checkout", "-b", "main"]);
+    writeFileSync(join(repoRoot, "a.txt"), "a\n");
+    git(repoRoot, ["add", "a.txt"]);
+    git(repoRoot, ["commit", "-m", "root"]);
+    fork = git(repoRoot, ["rev-parse", "HEAD"]);
+
+    git(repoRoot, ["checkout", "-b", "feature"]);
+    writeFileSync(join(repoRoot, "feat.txt"), "f\n");
+    git(repoRoot, ["add", "feat.txt"]);
+    git(repoRoot, ["commit", "-m", "feature"]);
+
+    git(repoRoot, ["checkout", "main"]);
+    writeFileSync(join(repoRoot, "main.txt"), "m\n");
+    git(repoRoot, ["add", "main.txt"]);
+    git(repoRoot, ["commit", "-m", "main forward"]);
+  });
+
+  afterAll(() => {
+    rmSync(repoRoot, { recursive: true, force: true });
+  });
+
+  it("returns the fork point of feature vs main", () => {
+    const { result, error } = mergeBase(repoRoot, "feature", "main");
+    expect(error).toBeUndefined();
+    expect(result).toBe(fork);
+  });
+});
+
+describe("listRenames", () => {
+  let repoRoot: string;
+  let before: string;
+  let after: string;
+
+  beforeAll(() => {
+    repoRoot = mkdtempSync(join(tmpdir(), "saflib-git-renames-"));
+    git(repoRoot, ["init"]);
+    git(repoRoot, ["checkout", "-b", "main"]);
+    mkdirSync(join(repoRoot, "src"));
+    writeFileSync(join(repoRoot, "src/old.ts"), "export const n = 1;\n");
+    git(repoRoot, ["add", "src/old.ts"]);
+    git(repoRoot, ["commit", "-m", "add old.ts"]);
+    before = git(repoRoot, ["rev-parse", "HEAD"]);
+
+    git(repoRoot, ["mv", "src/old.ts", "src/new.ts"]);
+    git(repoRoot, ["commit", "-m", "rename old.ts to new.ts"]);
+    after = git(repoRoot, ["rev-parse", "HEAD"]);
+  });
+
+  afterAll(() => {
+    rmSync(repoRoot, { recursive: true, force: true });
+  });
+
+  it("returns git find-renames pairs", () => {
+    const { result, error } = listRenames(repoRoot, before, after);
+    expect(error).toBeUndefined();
+    expect(result).toEqual([
+      { fromPath: "src/old.ts", toPath: "src/new.ts", score: 100 },
+    ]);
+  });
+
+  it("returns an empty list when nothing was renamed", () => {
+    const { result, error } = listRenames(repoRoot, before, before);
+    expect(error).toBeUndefined();
+    expect(result).toEqual([]);
   });
 });

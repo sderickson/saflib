@@ -20,12 +20,15 @@ export interface PackageDirNode {
   sourceLines?: number;
   testLines?: number;
   directory?: string;
+  /** Present in Checkout compare mode for package nodes. */
+  change?: "added" | "removed" | "modified" | "moved";
   children: PackageDirNode[];
 }
 
 export interface PackageDirInput {
   packageName: string;
   directory: string;
+  kind?: PackageKind | string;
   sourceLines?: number;
   testLines?: number;
   testFiles?: number;
@@ -58,7 +61,7 @@ export function buildPackageDirTree(
 
     const packageFields = {
       packageName: pkg.packageName,
-      packageKind: classifyPackageKind(pkg.packageName, pkg.directory),
+      packageKind: classifyPackageKind(pkg.kind),
       packageSize: classifyPackageSize({
         sourceLines: pkg.sourceLines ?? 0,
         testFiles: pkg.testFiles,

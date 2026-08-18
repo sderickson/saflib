@@ -8,6 +8,10 @@
           'pkg-tree__row--package': node.kind === 'package',
           'pkg-tree__row--selected':
             node.kind === 'package' && node.packageName === selectedPackageName,
+          'pkg-tree__row--added': node.change === 'added',
+          'pkg-tree__row--removed': node.change === 'removed',
+          'pkg-tree__row--modified': node.change === 'modified',
+          'pkg-tree__row--moved': node.change === 'moved',
         }"
         @click="onClick(node)"
       >
@@ -22,6 +26,7 @@
           :title="node.kind === 'package' ? node.packageKind : undefined"
         />
         <span class="pkg-tree__label">{{ node.label }}</span>
+        <ChangeChip v-if="node.kind === 'package'" :change="node.change" />
         <span v-if="node.kind === 'package'" class="pkg-tree__meta">
           <v-tooltip location="end">
             <template #activator="{ props: tip }">
@@ -55,6 +60,7 @@ import {
   debtTooltipText,
 } from "../package-debt";
 import { emptyIssueCountsByKind } from "../package-issues";
+import ChangeChip from "./ChangeChip.vue";
 
 defineProps<{
   nodes: PackageDirNode[];
@@ -121,6 +127,18 @@ const debtTip = (node: PackageDirNode) =>
 }
 .pkg-tree__row--selected {
   background: rgba(var(--v-theme-primary), 0.12);
+}
+.pkg-tree__row--added {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-success));
+}
+.pkg-tree__row--removed {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-error));
+}
+.pkg-tree__row--modified {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
+}
+.pkg-tree__row--moved {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-info));
 }
 .pkg-tree__label {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
