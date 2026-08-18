@@ -34,7 +34,7 @@ export interface TestTreeNode {
     repoPath: string;
   }> | null;
   /** Present in Checkout compare mode. */
-  change?: "added" | "removed" | "modified";
+  change?: "added" | "removed" | "modified" | "moved";
 }
 
 /** Colocated source/test pairing for Spec nav. */
@@ -66,7 +66,9 @@ export interface TestFileNavNode {
   /** Repo path to the colocated test file when present. */
   testRepoPath?: string | null;
   /** Present in Checkout compare mode for file (module) nodes. */
-  change?: "added" | "removed" | "modified";
+  change?: "added" | "removed" | "modified" | "moved";
+  /** Previous module stem when `change` is `moved`. */
+  movedFrom?: string;
 }
 
 export type TestScope =
@@ -86,7 +88,7 @@ export interface ExportLike {
     filePath: string;
     repoPath: string;
   }> | null;
-  change?: "added" | "removed" | "modified";
+  change?: "added" | "removed" | "modified" | "moved";
 }
 
 const TEST_SUFFIX_RE = /\.(test|spec)\.(tsx?|jsx?|mjs|cjs)$/i;

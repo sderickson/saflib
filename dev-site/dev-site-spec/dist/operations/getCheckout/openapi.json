@@ -202,7 +202,8 @@
           "mergeBaseHash",
           "mergeBaseAnalyzed",
           "mergeBaseMessage",
-          "mergeBaseAuthoredAt"
+          "mergeBaseAuthoredAt",
+          "renames"
         ],
         "properties": {
           "againstRef": {
@@ -225,6 +226,33 @@
             "type": "string",
             "format": "date-time",
             "description": "Author date of the fork-point commit."
+          },
+          "renames": {
+            "type": "array",
+            "description": "File rename pairs from the fork point to HEAD (`git diff --find-renames`). Used by Checkout compare to show moved modules instead of remove+add.\n",
+            "items": {
+              "type": "object",
+              "required": [
+                "fromPath",
+                "toPath"
+              ],
+              "properties": {
+                "fromPath": {
+                  "type": "string",
+                  "description": "Path at the fork-point commit."
+                },
+                "toPath": {
+                  "type": "string",
+                  "description": "Path at HEAD."
+                },
+                "score": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Git rename similarity (0-100)."
+                }
+              }
+            }
           }
         }
       },

@@ -8,6 +8,7 @@
           'suite-card--added': node.change === 'added',
           'suite-card--removed': node.change === 'removed',
           'suite-card--modified': node.change === 'modified',
+          'suite-card--moved': node.change === 'moved',
         }"
       >
         <header class="suite-card__head">
@@ -69,6 +70,7 @@
                   'suite-card__case--added': t.change === 'added',
                   'suite-card__case--removed': t.change === 'removed',
                   'suite-card__case--modified': t.change === 'modified',
+                  'suite-card__case--moved': t.change === 'moved',
                 }"
               >
                 {{ t.label }}
@@ -214,6 +216,9 @@ const isUnusedExport = (node: TestTreeNode) =>
 .suite-card--modified {
   box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
 }
+.suite-card--moved {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-info));
+}
 .suite-card__head {
   display: flex;
   align-items: center;
@@ -312,6 +317,9 @@ const isUnusedExport = (node: TestTreeNode) =>
 }
 .suite-card__case--modified {
   box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
+}
+.suite-card__case--moved {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-info));
 }
 .suite-card__case:last-child {
   border-bottom: 0;

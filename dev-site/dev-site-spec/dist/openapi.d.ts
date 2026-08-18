@@ -619,6 +619,15 @@ export interface components {
              * @description Author date of the fork-point commit.
              */
             mergeBaseAuthoredAt: string;
+            /** @description File rename pairs from the fork point to HEAD (`git diff --find-renames`). Used by Checkout compare to show moved modules instead of remove+add. */
+            renames: {
+                /** @description Path at the fork-point commit. */
+                fromPath: string;
+                /** @description Path at HEAD. */
+                toPath: string;
+                /** @description Git rename similarity (0-100). */
+                score?: number;
+            }[];
         };
         login: {
             /** @enum {string} */

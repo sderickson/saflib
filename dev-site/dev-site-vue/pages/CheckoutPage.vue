@@ -117,6 +117,13 @@
                   <span class="pkg-head__name" :title="selectedPkg.packageName">
                     {{ selectedPkg.packageName }}
                   </span>
+                  <span
+                    v-if="locDeltaText"
+                    class="pkg-head__delta"
+                    :title="'Source/test LOC vs fork point'"
+                  >
+                    {{ locDeltaText }}
+                  </span>
                   <ChangeChip :change="selectedPkg.change" />
                   <v-chip
                     size="x-small"
@@ -171,6 +178,7 @@
                     :subdomain="subdomain"
                     :commit-hash="checkout.hash"
                     :compare-from-hash="compareFromHash"
+                    :path-renames="pathRenames"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -185,6 +193,7 @@
                     :subdomain="subdomain"
                     :commit-hash="checkout.hash"
                     :compare-from-hash="compareFromHash"
+                    :path-renames="pathRenames"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -197,6 +206,7 @@
                     :subdomain="subdomain"
                     :commit-hash="checkout.hash"
                     :compare-from-hash="compareFromHash"
+                    :path-renames="pathRenames"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -211,6 +221,7 @@
                     :subdomain="subdomain"
                     :commit-hash="checkout.hash"
                     :compare-from-hash="compareFromHash"
+                    :path-renames="pathRenames"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -225,6 +236,7 @@
                     :subdomain="subdomain"
                     :commit-hash="checkout.hash"
                     :compare-from-hash="compareFromHash"
+                    :path-renames="pathRenames"
                     :package-name="selectedPkg.packageName"
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
@@ -319,7 +331,7 @@ import {
 import { parsePackageDescription } from "../scope-docs";
 import { collectPackageIssues } from "../package-issues";
 import { repoPathPrefix } from "../repo-paths";
-import { formatLocPair } from "../format-loc";
+import { formatLocChangePair, formatLocPair } from "../format-loc";
 import type { TestScope } from "../test-tree";
 import { toModuleStem } from "../test-tree";
 import {
@@ -397,6 +409,10 @@ const compareFromHash = computed(() =>
   compareReady.value ? checkout.value?.compare?.mergeBaseHash : undefined,
 );
 
+const pathRenames = computed(
+  () => checkout.value?.compare?.renames ?? [],
+);
+
 const {
   data: diffData,
   isLoading: isLoadingDiff,
@@ -429,6 +445,7 @@ const mapPackageRow = (
     prodLines?: number;
   },
   change?: ChangeKind,
+  locDelta?: { source: number; test: number },
 ) => ({
   ...p,
   kind: classifyPackageKind(p.packageName, p.directory),
@@ -437,6 +454,7 @@ const mapPackageRow = (
     testFiles: p.testFiles,
   }),
   change,
+  locDelta,
 });
 
 const headRows = computed(() =>
@@ -448,13 +466,28 @@ const visibleRows = computed(() => {
   const changes = changeByPackage.value;
   const byName = new Map(headRows.value.map((p) => [p.packageName, p]));
   const removed = diffData.value?.commitDiff?.packageMetrics.removed ?? [];
+  const changed = diffData.value?.commitDiff?.packageMetrics.changed ?? [];
   const rows = [];
   for (const [name, change] of Object.entries(changes)) {
     const head = byName.get(name);
     const gone = removed.find((p) => p.packageName === name);
     const src = head ?? gone;
     if (!src) continue;
-    rows.push(mapPackageRow(src, change));
+    let locDelta: { source: number; test: number } | undefined;
+    if (change === "added") {
+      locDelta = { source: src.sourceLines, test: src.testLines };
+    } else if (change === "removed") {
+      locDelta = { source: -src.sourceLines, test: -src.testLines };
+    } else {
+      const pair = changed.find((c) => c.after.packageName === name);
+      locDelta = pair
+        ? {
+            source: pair.after.sourceLines - pair.before.sourceLines,
+            test: pair.after.testLines - pair.before.testLines,
+          }
+        : { source: 0, test: 0 };
+    }
+    rows.push(mapPackageRow(src, change, locDelta));
   }
   return rows.sort((a, b) => a.directory.localeCompare(b.directory));
 });
@@ -473,6 +506,12 @@ const selectedPackageName = computed(() => {
 const selectedPkg = computed(() =>
   visibleRows.value.find((p) => p.packageName === selectedPackageName.value),
 );
+
+const locDeltaText = computed(() => {
+  const d = selectedPkg.value?.locDelta;
+  if (!d || (d.source === 0 && d.test === 0)) return "";
+  return `${formatLocChangePair(d.source, d.test)} LOC`;
+});
 
 const paneCommitHash = computed(() => {
   if (selectedPkg.value?.change === "removed") {
@@ -763,6 +802,13 @@ const formatDateTime = (dateTimeString: string): string => {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: min(28rem, 55vw);
+}
+.pkg-head__delta {
+  flex: 0 0 auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.7);
 }
 .pkg-head__meta {
   font-size: 0.7rem;

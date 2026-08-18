@@ -42,6 +42,7 @@ function checkoutFixture(
       mergeBaseAnalyzed: false,
       mergeBaseMessage: "fork parent",
       mergeBaseAuthoredAt: "2026-01-01T00:00:00.000Z",
+      renames: [],
     },
     ...partial,
   };
@@ -129,6 +130,7 @@ describe("CheckoutPage compare package tree", () => {
               mergeBaseAnalyzed: true,
               mergeBaseMessage: "fork parent",
               mergeBaseAuthoredAt: "2026-01-01T00:00:00.000Z",
+              renames: [],
             },
           }),
         ),
@@ -191,5 +193,19 @@ describe("CheckoutPage compare package tree", () => {
     });
     expect(wrapper.text()).toContain("removed");
     expect(wrapper.text()).toContain("changed");
+  });
+
+  it("shows source/test LOC delta next to the selected package name", async () => {
+    await router.push({
+      path: "/checkout",
+      query: { compare: "main", package: "@demo/keep" },
+    });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("+10/+5 LOC");
+    });
+    expect(wrapper.get(".pkg-head__name").text()).toBe("@demo/keep");
   });
 });

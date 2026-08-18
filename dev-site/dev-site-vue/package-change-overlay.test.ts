@@ -182,6 +182,122 @@ describe("diffPackageDetails", () => {
     ).toBe("modified");
   });
 
+  it("collapses git path renames into moved instead of remove+add", () => {
+    const overlay = diffPackageDetails(
+      detail({
+        exports: [
+          {
+            packageName: pkg,
+            filePath: "lib/a.ts",
+            name: "foo",
+            kind: "function",
+            signature: "(): void",
+            docstring: "same",
+          },
+        ],
+        testCases: [
+          {
+            packageName: pkg,
+            filePath: "lib/a.test.ts",
+            fullName: "foo > works",
+          },
+        ],
+      }),
+      detail({
+        exports: [
+          {
+            packageName: pkg,
+            filePath: "lib/b.ts",
+            name: "foo",
+            kind: "function",
+            signature: "(): void",
+            docstring: "same",
+          },
+        ],
+        testCases: [
+          {
+            packageName: pkg,
+            filePath: "lib/b.test.ts",
+            fullName: "foo > works",
+          },
+        ],
+      }),
+      {
+        pathRenames: [
+          { fromPath: "lib/a.ts", toPath: "lib/b.ts" },
+          { fromPath: "lib/a.test.ts", toPath: "lib/b.test.ts" },
+        ],
+      },
+    );
+    expect(
+      overlay.exports[exportIdentityKey({
+        filePath: "lib/a.ts",
+        name: "foo",
+        kind: "function",
+      })],
+    ).toBeUndefined();
+    expect(
+      overlay.exports[exportIdentityKey({
+        filePath: "lib/b.ts",
+        name: "foo",
+        kind: "function",
+      })],
+    ).toBe("moved");
+    expect(
+      overlay.tests[testIdentityKey({
+        filePath: "lib/a.test.ts",
+        fullName: "foo > works",
+      })],
+    ).toBeUndefined();
+    expect(
+      overlay.tests[testIdentityKey({
+        filePath: "lib/b.test.ts",
+        fullName: "foo > works",
+      })],
+    ).toBe("moved");
+    expect(overlay.modules["a"]).toBeUndefined();
+    expect(overlay.modules["b"]).toBe("moved");
+    expect(overlay.movedFrom["b"]).toBe("a");
+  });
+
+  it("marks a renamed export modified when its signature also changed", () => {
+    const overlay = diffPackageDetails(
+      detail({
+        exports: [
+          {
+            packageName: pkg,
+            filePath: "lib/a.ts",
+            name: "foo",
+            kind: "function",
+            signature: "(): void",
+          },
+        ],
+      }),
+      detail({
+        exports: [
+          {
+            packageName: pkg,
+            filePath: "lib/b.ts",
+            name: "foo",
+            kind: "function",
+            signature: "(): number",
+          },
+        ],
+      }),
+      { pathRenames: [{ fromPath: "lib/a.ts", toPath: "lib/b.ts" }] },
+    );
+    expect(
+      overlay.exports[exportIdentityKey({
+        filePath: "lib/b.ts",
+        name: "foo",
+        kind: "function",
+      })],
+    ).toBe("modified");
+    expect(overlay.modules["a"]).toBeUndefined();
+    expect(overlay.modules["b"]).toBe("modified");
+    expect(overlay.movedFrom["b"]).toBeUndefined();
+  });
+
   it("marks schema properties added/removed/modified on typeKind or docstring", () => {
     const overlay = diffPackageDetails(
       detail({
@@ -309,6 +425,34 @@ describe("filterFileNav", () => {
     expect(filtered[0]?.localPath).toBe("src");
     expect(filtered[0]?.children.map((c) => c.localPath)).toEqual(["src/a"]);
     expect(filtered[0]?.children[0]?.change).toBe("added");
+  });
+
+  it("attaches movedFrom on renamed stems", () => {
+    const nav: TestFileNavNode[] = [
+      {
+        id: "file:src/a",
+        label: "a",
+        kind: "file",
+        localPath: "src/a",
+        children: [],
+      },
+      {
+        id: "file:src/b",
+        label: "b",
+        kind: "file",
+        localPath: "src/b",
+        children: [],
+      },
+    ];
+    const filtered = filterFileNav(
+      nav,
+      { "src/b": "moved" },
+      { "src/b": "src/a" },
+    );
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0]?.localPath).toBe("src/b");
+    expect(filtered[0]?.change).toBe("moved");
+    expect(filtered[0]?.movedFrom).toBe("src/a");
   });
 });
 

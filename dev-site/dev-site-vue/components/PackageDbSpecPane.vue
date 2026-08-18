@@ -209,6 +209,7 @@ import {
   tagSpecTree,
   testIdentityKey,
   unionByKey,
+  type PathRename,
 } from "../package-change-overlay.ts";
 import { scopeDocListPrefix } from "../scope-docs.ts";
 import { repoPathPrefix } from "../repo-paths.ts";
@@ -254,6 +255,7 @@ const props = withDefaults(
     subdomain: string;
     commitHash: string;
     compareFromHash?: string;
+    pathRenames?: PathRename[];
     packageName: string;
     packageDirectory: string;
     productRoot: string;
@@ -291,6 +293,7 @@ const {
   {
     compareFromHash: () => props.compareFromHash,
     productRoot: () => props.productRoot,
+    pathRenames: () => props.pathRenames,
   },
 );
 
@@ -394,7 +397,7 @@ const fileNav = computed(() => {
     props.productRoot ?? "",
   );
   if (!overlay.value) return nav;
-  return filterFileNav(nav, overlay.value.modules);
+  return filterFileNav(nav, overlay.value.modules, overlay.value.movedFrom);
 });
 
 const pkgPrefix = computed(() =>

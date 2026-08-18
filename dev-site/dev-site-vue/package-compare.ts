@@ -6,6 +6,7 @@ import {
   emptyOverlay,
   type OverlayPackageDetail,
   type PackageChangeOverlay,
+  type PathRename,
 } from "./package-change-overlay.ts";
 
 /**
@@ -20,6 +21,7 @@ export function useComparedPackageDetail(
   options: {
     compareFromHash?: MaybeRefOrGetter<string | undefined>;
     productRoot?: MaybeRefOrGetter<string | undefined>;
+    pathRenames?: MaybeRefOrGetter<PathRename[] | undefined>;
   } = {},
 ) {
   const compareFromHash = () => toValue(options.compareFromHash);
@@ -64,6 +66,7 @@ export function useComparedPackageDetail(
     if (isLoading.value) return emptyOverlay();
     return diffPackageDetails(beforeDetail.value, afterDetail.value, {
       productRoot: toValue(options.productRoot) ?? "",
+      pathRenames: toValue(options.pathRenames) ?? [],
     });
   });
 

@@ -13,6 +13,7 @@ import {
   GitCommandError,
   isAncestor,
   mergeBase,
+  listRenames,
   listRefs,
   listTree,
   log,
@@ -262,5 +263,44 @@ describe("mergeBase diverging branches", () => {
     const { result, error } = mergeBase(repoRoot, "feature", "main");
     expect(error).toBeUndefined();
     expect(result).toBe(fork);
+  });
+});
+
+describe("listRenames", () => {
+  let repoRoot: string;
+  let before: string;
+  let after: string;
+
+  beforeAll(() => {
+    repoRoot = mkdtempSync(join(tmpdir(), "saflib-git-renames-"));
+    git(repoRoot, ["init"]);
+    git(repoRoot, ["checkout", "-b", "main"]);
+    mkdirSync(join(repoRoot, "src"));
+    writeFileSync(join(repoRoot, "src/old.ts"), "export const n = 1;\n");
+    git(repoRoot, ["add", "src/old.ts"]);
+    git(repoRoot, ["commit", "-m", "add old.ts"]);
+    before = git(repoRoot, ["rev-parse", "HEAD"]);
+
+    git(repoRoot, ["mv", "src/old.ts", "src/new.ts"]);
+    git(repoRoot, ["commit", "-m", "rename old.ts to new.ts"]);
+    after = git(repoRoot, ["rev-parse", "HEAD"]);
+  });
+
+  afterAll(() => {
+    rmSync(repoRoot, { recursive: true, force: true });
+  });
+
+  it("returns git find-renames pairs", () => {
+    const { result, error } = listRenames(repoRoot, before, after);
+    expect(error).toBeUndefined();
+    expect(result).toEqual([
+      { fromPath: "src/old.ts", toPath: "src/new.ts", score: 100 },
+    ]);
+  });
+
+  it("returns an empty list when nothing was renamed", () => {
+    const { result, error } = listRenames(repoRoot, before, before);
+    expect(error).toBeUndefined();
+    expect(result).toEqual([]);
   });
 });

@@ -21,7 +21,7 @@ export interface PackageDirNode {
   testLines?: number;
   directory?: string;
   /** Present in Checkout compare mode for package nodes. */
-  change?: "added" | "removed" | "modified";
+  change?: "added" | "removed" | "modified" | "moved";
   children: PackageDirNode[];
 }
 

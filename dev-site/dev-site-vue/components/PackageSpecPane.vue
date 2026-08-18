@@ -239,6 +239,7 @@ import {
   tagSpecTree,
   testIdentityKey,
   unionByKey,
+  type PathRename,
 } from "../package-change-overlay";
 import { scopeDocListPrefix } from "../scope-docs";
 import { repoPathPrefix } from "../repo-paths";
@@ -257,6 +258,7 @@ const props = withDefaults(
     commitHash: string;
     /** Merge-base commit when Checkout compare mode is on. */
     compareFromHash?: string;
+    pathRenames?: PathRename[];
     packageName: string;
     packageDirectory: string;
     productRoot?: string;
@@ -296,6 +298,7 @@ const {
   {
     compareFromHash: () => props.compareFromHash,
     productRoot: () => props.productRoot,
+    pathRenames: () => props.pathRenames,
   },
 );
 
@@ -350,7 +353,7 @@ const fileNav = computed(() => {
     { vueBundles: vueBundles.value },
   );
   if (!overlay.value) return nav;
-  return filterFileNav(nav, overlay.value.modules);
+  return filterFileNav(nav, overlay.value.modules, overlay.value.movedFrom);
 });
 
 const selectedModule = computed(() => {

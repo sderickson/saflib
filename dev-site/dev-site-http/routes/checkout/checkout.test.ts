@@ -89,6 +89,7 @@ describe("checkout routes", () => {
       mergeBaseHash: headHash,
       mergeBaseAnalyzed: false,
     });
+    expect(response.body.compare.renames).toEqual([]);
   });
 
   it("GET /api/checkout includes packages after scan", async () => {
@@ -118,6 +119,7 @@ describe("checkout routes", () => {
       mergeBaseHash: headHash,
       mergeBaseAnalyzed: true,
     });
+    expect(response.body.compare.renames).toEqual([]);
   });
 
   it("GET /api/checkout reports merge-base for a feature branch", async () => {
@@ -139,6 +141,23 @@ describe("checkout routes", () => {
       mergeBaseHash: headHash,
       mergeBaseAnalyzed: false,
     });
+    expect(response.body.compare.renames).toEqual([]);
+
+    git(repoRoot, ["checkout", "main"]);
+  });
+
+  it("GET /api/checkout includes git find-renames pairs vs the fork point", async () => {
+    git(repoRoot, ["checkout", "-b", "renames"]);
+    git(repoRoot, ["mv", "src/a.ts", "src/moved.ts"]);
+    git(repoRoot, ["commit", "-m", "move a"]);
+
+    const response = await request(lease.app).get(
+      "/api/checkout?compareRef=main",
+    );
+    expect(response.status).toBe(200);
+    expect(response.body.compare.renames).toEqual([
+      { fromPath: "src/a.ts", toPath: "src/moved.ts", score: 100 },
+    ]);
 
     git(repoRoot, ["checkout", "main"]);
   });

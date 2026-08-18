@@ -11,6 +11,7 @@
           'pkg-tree__row--added': node.change === 'added',
           'pkg-tree__row--removed': node.change === 'removed',
           'pkg-tree__row--modified': node.change === 'modified',
+          'pkg-tree__row--moved': node.change === 'moved',
         }"
         @click="onClick(node)"
       >
@@ -135,6 +136,9 @@ const debtTip = (node: PackageDirNode) =>
 }
 .pkg-tree__row--modified {
   box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
+}
+.pkg-tree__row--moved {
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-info));
 }
 .pkg-tree__label {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

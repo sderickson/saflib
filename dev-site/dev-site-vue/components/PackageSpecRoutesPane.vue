@@ -217,6 +217,7 @@ import {
   specOperationKey,
   specPropertyKey,
   unionByKey,
+  type PathRename,
 } from "../package-change-overlay.ts";
 
 type SpecPresence = "object" | "routes" | "both";
@@ -281,6 +282,7 @@ const props = defineProps<{
   subdomain: string;
   commitHash: string;
   compareFromHash?: string;
+  pathRenames?: PathRename[];
   packageName: string;
   packageDirectory: string;
   productRoot: string;
@@ -305,6 +307,7 @@ const {
   {
     compareFromHash: () => props.compareFromHash,
     productRoot: () => props.productRoot,
+    pathRenames: () => props.pathRenames,
   },
 );
 

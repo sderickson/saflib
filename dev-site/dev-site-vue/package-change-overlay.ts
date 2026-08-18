@@ -10,11 +10,14 @@ import {
   type TestTreeNode,
 } from "./test-tree.ts";
 
-export type ChangeKind = "added" | "removed" | "modified";
+export type ChangeKind = "added" | "removed" | "modified" | "moved";
 
-export function changeColor(kind: ChangeKind): "success" | "error" | "warning" {
+export function changeColor(
+  kind: ChangeKind,
+): "success" | "error" | "warning" | "info" {
   if (kind === "added") return "success";
   if (kind === "removed") return "error";
+  if (kind === "moved") return "info";
   return "warning";
 }
 
@@ -78,6 +81,13 @@ export interface PackageChangeOverlay {
   specProperties: Record<string, ChangeKind>;
   dbEntities: Record<string, ChangeKind>;
   dbColumns: Record<string, ChangeKind>;
+  /** New module stem → old stem when git renamed the file(s). */
+  movedFrom: Record<string, string>;
+}
+
+export interface PathRename {
+  fromPath: string;
+  toPath: string;
 }
 
 export interface CommitDiffLike {
@@ -117,6 +127,7 @@ export function emptyOverlay(): PackageChangeOverlay {
     specProperties: {},
     dbEntities: {},
     dbColumns: {},
+    movedFrom: {},
   };
 }
 
@@ -149,6 +160,51 @@ export function dbColumnKey(entity: string, sqlName: string): string {
 
 function sameText(a: string | null | undefined, b: string | null | undefined): boolean {
   return (a ?? null) === (b ?? null);
+}
+
+function renameMap(renames: PathRename[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const r of renames) {
+    if (r.fromPath && r.toPath && r.fromPath !== r.toPath) {
+      map.set(r.fromPath, r.toPath);
+    }
+  }
+  return map;
+}
+
+function findOldPath(
+  oldToNew: Map<string, string>,
+  newPath: string,
+): string | undefined {
+  for (const [from, to] of oldToNew) {
+    if (to === newPath) return from;
+  }
+  return undefined;
+}
+
+function collapsePathRenames<T extends { filePath: string }>(
+  overlayMap: Record<string, ChangeKind>,
+  before: T[],
+  after: T[],
+  keyOf: (item: T) => string,
+  oldToNew: Map<string, string>,
+  isModified?: (before: T, after: T) => boolean,
+): void {
+  if (!oldToNew.size) return;
+  const afterByKey = new Map(after.map((item) => [keyOf(item), item]));
+  for (const beforeItem of before) {
+    const newPath = oldToNew.get(beforeItem.filePath);
+    if (!newPath) continue;
+    const oldKey = keyOf(beforeItem);
+    const rewritten = { ...beforeItem, filePath: newPath };
+    const newKey = keyOf(rewritten);
+    const afterItem = afterByKey.get(newKey);
+    if (!afterItem) continue;
+    delete overlayMap[oldKey];
+    overlayMap[newKey] = isModified?.(beforeItem, afterItem)
+      ? "modified"
+      : "moved";
+  }
 }
 
 function identityDiff<T>(
@@ -251,7 +307,7 @@ export function packageChangesFromDiff(
 export function diffPackageDetails(
   before: OverlayPackageDetail | null | undefined,
   after: OverlayPackageDetail | null | undefined,
-  options: { productRoot?: string } = {},
+  options: { productRoot?: string; pathRenames?: PathRename[] } = {},
 ): PackageChangeOverlay {
   const overlay = emptyOverlay();
   const emptyBefore = isEmptyDetail(before);
@@ -266,6 +322,7 @@ export function diffPackageDetails(
   const afterExports = after?.exports ?? [];
   const beforeTests = before?.testCases ?? [];
   const afterTests = after?.testCases ?? [];
+  const oldToNew = renameMap(options.pathRenames ?? []);
 
   overlay.exports = identityDiff(
     beforeExports,
@@ -278,6 +335,28 @@ export function diffPackageDetails(
     beforeTests,
     afterTests,
     testIdentityKey,
+    (b, a) =>
+      !sameText(b.subjectName, a.subjectName) ||
+      !sameText(b.subjectSignature, a.subjectSignature) ||
+      !sameText(b.subjectDocstring, a.subjectDocstring) ||
+      !sameText(b.subjectFilePath, a.subjectFilePath) ||
+      !sameText(b.subjectConfidence, a.subjectConfidence),
+  );
+  collapsePathRenames(
+    overlay.exports,
+    beforeExports,
+    afterExports,
+    exportIdentityKey,
+    oldToNew,
+    (b, a) =>
+      !sameText(b.signature, a.signature) || !sameText(b.docstring, a.docstring),
+  );
+  collapsePathRenames(
+    overlay.tests,
+    beforeTests,
+    afterTests,
+    testIdentityKey,
+    oldToNew,
     (b, a) =>
       !sameText(b.subjectName, a.subjectName) ||
       !sameText(b.subjectSignature, a.subjectSignature) ||
@@ -322,6 +401,18 @@ export function diffPackageDetails(
       if (hit) change = rollupChange(change, hit);
     }
     if (change) overlay.modules[stem] = change;
+  }
+  for (const [newKey, kind] of Object.entries(overlay.exports)) {
+    if (kind !== "moved" && kind !== "modified") continue;
+    const parts = newKey.split("\0");
+    const newPath = parts[0] ?? "";
+    const oldPath = findOldPath(oldToNew, newPath);
+    if (!oldPath) continue;
+    const newStem = stemOf(newPath);
+    const oldStem = stemOf(oldPath);
+    if (newStem !== oldStem && overlay.modules[newStem] === "moved") {
+      overlay.movedFrom[newStem] = oldStem;
+    }
   }
 
   const beforeSpec = before?.specInventory?.entities ?? [];
@@ -501,16 +592,22 @@ export function filterPackageDirTree(
 export function filterFileNav(
   nodes: TestFileNavNode[],
   changeByStem: Record<string, ChangeKind>,
+  movedFrom: Record<string, string> = {},
 ): TestFileNavNode[] {
   const out: TestFileNavNode[] = [];
   for (const node of nodes) {
     if (node.kind === "file") {
       const change = changeByStem[node.localPath];
       if (!change) continue;
-      out.push({ ...node, change, children: [] });
+      out.push({
+        ...node,
+        change,
+        movedFrom: change === "moved" ? movedFrom[node.localPath] : undefined,
+        children: [],
+      });
       continue;
     }
-    const children = filterFileNav(node.children, changeByStem);
+    const children = filterFileNav(node.children, changeByStem, movedFrom);
     const self = changeByStem[node.localPath];
     if (!children.length && !self) continue;
     out.push({ ...node, change: self, children });

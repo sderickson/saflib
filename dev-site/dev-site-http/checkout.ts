@@ -5,6 +5,7 @@ import {
   currentBranch,
   listRefs,
   mergeBase,
+  listRenames,
   GitCommandError,
 } from "@saflib/git";
 import type { ReturnsError } from "@saflib/monorepo";
@@ -31,12 +32,19 @@ export interface CheckoutPackage {
   debtCount: number;
 }
 
+export interface CheckoutPathRename {
+  fromPath: string;
+  toPath: string;
+  score?: number;
+}
+
 export interface CheckoutCompare {
   againstRef: string;
   mergeBaseHash: string;
   mergeBaseAnalyzed: boolean;
   mergeBaseMessage: string;
   mergeBaseAuthoredAt: string;
+  renames: CheckoutPathRename[];
 }
 
 export interface CheckoutStatus {
@@ -105,6 +113,7 @@ async function resolveCompare(
   }
 
   const existing = await getByHash(dbKey, tip.hash);
+  const renamed = listRenames(options.repoRoot, mb.result, "HEAD");
   return {
     result: {
       againstRef,
@@ -112,6 +121,7 @@ async function resolveCompare(
       mergeBaseAnalyzed: Boolean(existing.result),
       mergeBaseMessage: tip.subject,
       mergeBaseAuthoredAt: tip.authoredAt,
+      renames: renamed.result ?? [],
     },
   };
 }
