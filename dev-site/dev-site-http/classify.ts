@@ -35,6 +35,9 @@ export const SOURCE_EXTS = new Set([
   ".jsx",
   ".mjs",
   ".cjs",
+  /** Authored OpenAPI (and similar) YAML; generated output is under `dist/`. */
+  ".yaml",
+  ".yml",
 ]);
 
 /** Heuristic: *.test.* / *.spec.* / *.fixture(s).* / *.test-helpers.*, or under testing/ / tests/ / __tests__/. */

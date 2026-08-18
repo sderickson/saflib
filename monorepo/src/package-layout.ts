@@ -42,7 +42,7 @@ export interface CheckPackageLayoutFromInputsOptions {
   packageRepoPath?: string;
   /** Filenames of .ts/.tsx at package root (not nested). */
   rootTsFiles?: string[];
-  /** Prod source files with line counts (package-local paths). */
+  /** Prod source files with line counts (package-local paths; `.ts`/`.tsx`/`.yaml`/`.yml`). */
   sourceFiles?: Array<{ localPath: string; lineCount: number }>;
   maxSourceLines?: number;
 }
@@ -192,7 +192,10 @@ function walkSourceFiles(dir: string, out: string[]) {
       walkSourceFiles(full, out);
     } else if (
       e.isFile() &&
-      (e.name.endsWith(".ts") || e.name.endsWith(".tsx")) &&
+      (e.name.endsWith(".ts") ||
+        e.name.endsWith(".tsx") ||
+        e.name.endsWith(".yaml") ||
+        e.name.endsWith(".yml")) &&
       !e.name.endsWith(".d.ts") &&
       !isTestOrFixtureFileName(e.name)
     ) {

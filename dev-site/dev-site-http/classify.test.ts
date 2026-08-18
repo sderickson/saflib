@@ -21,13 +21,19 @@ describe("classify", () => {
       expect(isSourcePath("src/foo.ts")).toBe(true);
       expect(isSourcePath("pkg/Bar.vue")).toBe(true);
       expect(isSourcePath("a.js")).toBe(true);
+      expect(isSourcePath("daemon/service/spec/openapi.yaml")).toBe(true);
+      expect(isSourcePath("daemon/service/spec/routes/matters/core/get.yaml")).toBe(
+        true,
+      );
     });
 
-    it("rejects node_modules, dist, .d.ts, and dotfiles", () => {
+    it("rejects node_modules, dist, .d.ts, lockfiles, and dotfiles", () => {
       expect(isSourcePath("node_modules/x/a.ts")).toBe(false);
       expect(isSourcePath("pkg/dist/a.ts")).toBe(false);
+      expect(isSourcePath("pkg/dist/openapi.yaml")).toBe(false);
       expect(isSourcePath("src/a.d.ts")).toBe(false);
       expect(isSourcePath(".hidden/a.ts")).toBe(false);
+      expect(isSourcePath("pnpm-lock.yaml")).toBe(false);
     });
   });
 
