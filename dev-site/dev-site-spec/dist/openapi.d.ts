@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP or SDK package's own source modules. For Vue SPA / `-vue` packages, `specInventory` is the product `-spec` joined through SDK request imports so Spec can show loader routes on a component bundle. `layoutIssues` are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on `saf-dev-site issues --workdir` — not on this Spec package load.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes dbInventory (drizzle tables + query dirs). For spec packages, also includes specInventory (OpenAPI schemas + REST resources). For http and sdk packages, specInventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, specInventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layoutIssues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -292,6 +292,11 @@ export interface components {
              * @example saflib/git
              */
             directory: string;
+            /**
+             * @description Package layer kind. From package.json saf.kind when set, otherwise inferred from a unique identifier dependency such as @saflib/drizzle (db), @saflib/express (http), @saflib/openapi (spec), @saflib/sdk (sdk), or @saflib/vue (spa).
+             * @enum {string}
+             */
+            kind?: "db" | "http" | "spec" | "spa" | "sdk" | "lib" | "integration" | "other";
             /** @description Count of source files (excluding tests). */
             sourceFiles: number;
             /** @description Total lines across source files. */
@@ -504,9 +509,9 @@ export interface components {
             /** @description Repo-relative path for source links. */
             repoPath: string;
         };
-        /** @description OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. Operations include triangle links to sibling `-http` handlers and `-sdk` requests when present. Also attached to `-http` package detail (sibling join) for the HTTP Spec pane. */
+        /** @description OpenAPI inventory for one spec package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. Operations include links to HTTP handlers and SDK requests from packages that depend on this spec. Also attached to http package detail for the HTTP Spec pane. */
         "spec-inventory": {
-            /** @description Repo-relative directory of the `-spec` package this inventory was built from (used for route YAML source links when shown from an `-http` pane). */
+            /** @description Repo-relative directory of the spec package this inventory was built from (used for route YAML source links when shown from an http pane). */
             packageDirectory?: string;
             /** @description Flat alphabetical list of object / both / routes entities. */
             entities: {

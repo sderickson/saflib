@@ -1,5 +1,8 @@
 {
   "name": "@saflib/utils",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Utility functions for SAF monorepo",
   "private": true,
   "type": "module",

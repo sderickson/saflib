@@ -3,6 +3,10 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import {
+  classifySafPackage,
+  type SafPackageJson,
+} from "./package-kind.ts";
 
 export const DEFAULT_MAX_SOURCE_LINES = 800;
 
@@ -27,7 +31,7 @@ export interface CheckPackageLayoutOptions {
 }
 
 /** In-memory package.json fields used by layout checks. */
-export interface PackageJsonLayoutFields {
+export interface PackageJsonLayoutFields extends SafPackageJson {
   bin?: Record<string, string> | string;
   scripts?: Record<string, string>;
   /** Subpath exports map (`"./foo": "./foo.ts"`). */
@@ -228,6 +232,18 @@ export function checkPackageLayoutFromInputs(
 
   const pj = options.packageJson;
   const basename = options.packageDirBasename ?? "package";
+
+  const mixed = classifySafPackage(pj).mixedIdentifiers;
+  if (mixed.length > 0) {
+    issues.push({
+      kind: "package-layout",
+      title: "Package layout",
+      name: `depends on multiple layer identifiers (${mixed.join(", ")}) — a package should be one of db, http, or spec`,
+      kindLabel: "kind",
+      filePath: "package.json",
+      repoPath: repoPathFor("package.json"),
+    });
+  }
 
   const bins: Record<string, string> =
     typeof pj.bin === "string" ? { [basename]: pj.bin } : (pj.bin ?? {});

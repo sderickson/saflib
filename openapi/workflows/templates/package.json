@@ -1,5 +1,8 @@
 {
   "name": "template-package-spec",
+  "saf": {
+    "kind": "spec"
+  },
   "description": "API specs for the __service-name__ service",
   "type": "module",
   "exports": {

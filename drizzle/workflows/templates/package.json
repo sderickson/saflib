@@ -1,5 +1,8 @@
 {
   "name": "template-package-db",
+  "saf": {
+    "kind": "db"
+  },
   "description": "Database package for __service-name__.",
   "private": true,
   "type": "module",

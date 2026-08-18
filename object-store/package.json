@@ -1,5 +1,8 @@
 {
   "name": "@saflib/object-store",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Object store library for file storage operations",
   "private": true,
   "type": "module",

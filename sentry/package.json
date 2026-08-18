@@ -1,5 +1,8 @@
 {
   "name": "@saflib/sentry",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Sentry for Node.js services and Vite client builds",
   "private": true,
   "type": "module",

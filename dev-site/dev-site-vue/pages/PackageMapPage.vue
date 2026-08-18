@@ -62,10 +62,7 @@ const pkgMeta = computed(() =>
 
 const kind = computed<PackageKind | null>(() => {
   if (!pkgMeta.value) return null;
-  return classifyPackageKind(
-    pkgMeta.value.packageName,
-    pkgMeta.value.directory,
-  );
+  return classifyPackageKind(pkgMeta.value.kind);
 });
 
 const upcomingSurfaces = computed(() =>

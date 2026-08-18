@@ -1,5 +1,8 @@
 {
   "name": "@saflib/git",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Thin git plumbing wrappers (log / ls-tree / cat-file) — no checkout required",
   "private": true,
   "type": "module",

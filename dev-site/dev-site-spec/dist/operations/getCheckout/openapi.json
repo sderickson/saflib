@@ -125,6 +125,20 @@
             "description": "Package directory relative to the analyzed product root.",
             "example": "saflib/git"
           },
+          "kind": {
+            "type": "string",
+            "description": "Package layer kind. From package.json saf.kind when set, otherwise inferred from a unique identifier dependency such as @saflib/drizzle (db), @saflib/express (http), @saflib/openapi (spec), @saflib/sdk (sdk), or @saflib/vue (spa).\n",
+            "enum": [
+              "db",
+              "http",
+              "spec",
+              "spa",
+              "sdk",
+              "lib",
+              "integration",
+              "other"
+            ]
+          },
           "sourceFiles": {
             "type": "integer",
             "minimum": 0,

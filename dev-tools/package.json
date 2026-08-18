@@ -1,5 +1,8 @@
 {
   "name": "@saflib/dev-tools",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Tools for software development",
   "private": true,
   "type": "module",

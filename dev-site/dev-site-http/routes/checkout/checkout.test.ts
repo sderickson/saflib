@@ -107,6 +107,7 @@ describe("checkout routes", () => {
     expect(response.body.packages.length).toBeGreaterThan(0);
     expect(response.body.packages[0].packageName).toBe("@fixture/root");
     expect(response.body.packages[0]).toMatchObject({
+      kind: "other",
       debtCount: expect.any(Number),
       issueCountsByKind: {
         "dead-code": expect.any(Number),

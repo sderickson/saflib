@@ -1,9 +1,10 @@
 /**
- * Assemble OpenAPI schemas + REST resources for one `-spec` package,
- * joined to sibling `-http` handlers and `-sdk` requests by route stem.
+ * Assemble OpenAPI schemas + REST resources for one spec package,
+ * joined to HTTP handlers and SDK requests that depend on it.
  */
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/monorepo";
+import { classifySafPackage, parseSafPackageJson } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
 import { listTree, readBlobs } from "@saflib/git";
 import { blobFactImports, blobFactTestCases } from "@saflib/dev-site-db/types";
@@ -19,6 +20,10 @@ import {
   moduleTargetFromImport,
   packageLocalPath,
 } from "./import-resolution.ts";
+import {
+  packagesDependingOn,
+  type PackageManifest,
+} from "./package-manifests.ts";
 import {
   buildSpecInventoryFromFiles,
   type PackageSpecInventory,
@@ -69,29 +74,22 @@ function specTargetFromImport(
   return null;
 }
 
-/** `@foo/bar-spec` → `{ http: "@foo/bar-http", sdk: "@foo/bar-sdk" }`. */
-export function siblingServicePackageNames(specPackageName: string): {
-  http: string | null;
-  sdk: string | null;
+/** HTTP/SDK packages that depend on this spec package. */
+export function servicePackageNamesForSpec(
+  specPackageName: string,
+  manifests: Parameters<typeof packagesDependingOn>[0],
+): {
+  http: string[];
+  sdk: string[];
 } {
-  if (!specPackageName.endsWith("-spec")) {
-    return { http: null, sdk: null };
-  }
-  const base = specPackageName.slice(0, -"-spec".length);
-  return { http: `${base}-http`, sdk: `${base}-sdk` };
-}
-
-/** `@foo/bar-http` or `@foo/bar-sdk` → `@foo/bar-spec`. */
-export function siblingSpecPackageName(
-  servicePackageName: string,
-): string | null {
-  if (servicePackageName.endsWith("-http")) {
-    return `${servicePackageName.slice(0, -"-http".length)}-spec`;
-  }
-  if (servicePackageName.endsWith("-sdk")) {
-    return `${servicePackageName.slice(0, -"-sdk".length)}-spec`;
-  }
-  return null;
+  return {
+    http: packagesDependingOn(manifests, specPackageName, "http").map(
+      (m) => m.packageName,
+    ),
+    sdk: packagesDependingOn(manifests, specPackageName, "sdk").map(
+      (m) => m.packageName,
+    ),
+  };
 }
 
 function handlerTestStem(filePath: string, stem: string): boolean {
@@ -192,13 +190,33 @@ export async function assemblePackageSpecInventory(
 
   const inventory = buildSpecInventoryFromFiles(files, "openapi.yaml");
 
-  const siblings = siblingServicePackageNames(packageName);
-  const httpRoot = siblings.http
-    ? roots.find((r) => r.packageName === siblings.http)
-    : undefined;
-  const sdkRoot = siblings.sdk
-    ? roots.find((r) => r.packageName === siblings.sdk)
-    : undefined;
+  const manifests: PackageManifest[] = [];
+  for (const entry of packageJsonEntries) {
+    const text = pkgBlobs.result.get(entry.blobHash);
+    if (text === undefined) continue;
+    const json = parseSafPackageJson(text);
+    const name = nameByPath.get(entry.path);
+    if (!json || !name) continue;
+    const directory =
+      entry.path === "package.json"
+        ? ""
+        : entry.path.slice(0, -"/package.json".length);
+    const classified = classifySafPackage({ ...json, name });
+    manifests.push({
+      packageName: name,
+      directory,
+      json,
+      kind: classified.kind,
+      mixedIdentifiers: classified.mixedIdentifiers,
+    });
+  }
+  const services = servicePackageNamesForSpec(packageName, manifests);
+  const httpRoots = services.http
+    .map((name) => roots.find((r) => r.packageName === name))
+    .filter((r): r is NonNullable<typeof r> => Boolean(r));
+  const sdkRoots = services.sdk
+    .map((name) => roots.find((r) => r.packageName === name))
+    .filter((r): r is NonNullable<typeof r> => Boolean(r));
 
   const handlerByStem = new Map<string, SpecInventoryFileRef>();
   /** Test file repo paths keyed by route stem (resolved to specs after blob facts). */
@@ -206,7 +224,7 @@ export async function assemblePackageSpecInventory(
     string,
     Array<{ path: string; blobHash: string }>
   >();
-  if (httpRoot) {
+  for (const httpRoot of httpRoots) {
     for (const entry of tree) {
       if (!underPackage(entry.path, httpRoot.directory)) continue;
       const local = relativeToPackage(entry.path, httpRoot.directory);
@@ -244,7 +262,7 @@ export async function assemblePackageSpecInventory(
 
   const requestByStem = new Map<string, SpecInventoryFileRef>();
   const fakeByStem = new Map<string, SpecInventoryFileRef>();
-  if (sdkRoot) {
+  for (const sdkRoot of sdkRoots) {
     for (const entry of tree) {
       if (!underPackage(entry.path, sdkRoot.directory)) continue;
       const local = relativeToPackage(entry.path, sdkRoot.directory);
@@ -388,7 +406,7 @@ export async function assemblePackageSpecInventory(
         }
       }
 
-      if (sdkRoot) {
+      for (const sdkRoot of sdkRoots) {
         const mod = moduleTargetFromImport(
           sdkRoot.packageName,
           sdkRoot.directory,
@@ -419,6 +437,7 @@ export async function assemblePackageSpecInventory(
               }
               pkgs.add(importerPkg);
             }
+            break;
           }
         }
       }

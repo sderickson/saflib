@@ -1,5 +1,8 @@
 {
   "name": "template-package-http",
+  "saf": {
+    "kind": "http"
+  },
   "description": "HTTP server for the __service-name__ service",
   "type": "module",
   "exports": {

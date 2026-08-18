@@ -1,5 +1,8 @@
 {
   "name": "@saflib/node",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Reusable Node.js utilities",
   "private": true,
   "type": "module",

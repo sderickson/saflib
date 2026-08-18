@@ -10,6 +10,7 @@ describe("buildPackageDirTree", () => {
       {
         packageName: "@example/billing-db",
         directory: "products/billing/service/db",
+        kind: "db",
         debtCount: 2,
         issueCountsByKind: {
           "dead-code": 2,

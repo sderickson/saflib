@@ -1,5 +1,8 @@
 {
   "name": "@saflib/notify",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "In-process change-event pub/sub and SSE stream helpers",
   "private": true,
   "type": "module",

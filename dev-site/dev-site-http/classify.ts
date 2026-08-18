@@ -1,6 +1,6 @@
 /**
- * Classification heuristics for inventory-style package/file categorization.
- * Applied to git-tree paths (no checkout) so historical commits classify the same way.
+ * File/path helpers for inventory (git-tree paths, no checkout).
+ * Package *kind* lives in `@saflib/monorepo` (`saf.kind` / identifier deps).
  */
 
 export const EXCLUDE_DIRS = new Set([
@@ -158,74 +158,9 @@ export function parsePackageName(packageJsonText: string): string | undefined {
   }
 }
 
-/** Heuristic: npm name / directory looks like a drizzle db package. */
-export function looksLikeDbPackage(
-  packageName: string,
-  directory: string = "",
-): boolean {
-  const name = packageName.toLowerCase();
-  const dir = directory.replace(/\\/g, "/").toLowerCase();
-  return (
-    name.endsWith("-db") ||
-    name.includes("-db-") ||
-    /\/[^/]*-db$/.test(dir) ||
-    dir.endsWith("/service/db") ||
-    /(^|\/)db$/.test(dir)
-  );
-}
-
-/** Heuristic: npm name / directory looks like an Express `-http` package. */
-export function looksLikeHttpPackage(
-  packageName: string,
-  directory: string = "",
-): boolean {
-  const name = packageName.toLowerCase();
-  const dir = directory.replace(/\\/g, "/").toLowerCase();
-  return (
-    name.endsWith("-http") ||
-    name.includes("-http-") ||
-    /\/[^/]*-http$/.test(dir) ||
-    dir.endsWith("/service/http") ||
-    /(^|\/)http$/.test(dir)
-  );
-}
-
-/** Heuristic: npm name / directory looks like a TanStack `-sdk` package. */
-export function looksLikeSdkPackage(
-  packageName: string,
-  directory: string = "",
-): boolean {
-  const name = packageName.toLowerCase();
-  const dir = directory.replace(/\\/g, "/").toLowerCase();
-  return (
-    name.endsWith("-sdk") ||
-    name.includes("-sdk-") ||
-    /\/[^/]*-sdk$/.test(dir) ||
-    dir.endsWith("/service/sdk") ||
-    /(^|\/)sdk$/.test(dir)
-  );
-}
-
-/** Heuristic: npm name / directory looks like a Vue SPA or `-vue` package. */
-export function looksLikeSpaPackage(
-  packageName: string,
-  directory: string = "",
-): boolean {
-  const name = packageName.toLowerCase();
-  const dir = directory.replace(/\\/g, "/").toLowerCase();
-  return (
-    name.endsWith("-vue") ||
-    name.endsWith("-spa") ||
-    name.includes("-vue-") ||
-    name.includes("-spa-") ||
-    dir.includes("/clients/") ||
-    /(^|\/)clients\//.test(dir)
-  );
-}
-
 /**
- * `@scope/foo-sdk/requests/orgs/list` → SDK package + request stem.
- * Returns null for non-SDK request specifiers.
+ * `@scope/pkg/requests/orgs/list` → SDK package + request stem.
+ * Returns null when the specifier is not a `requests/` subpath import.
  */
 export function sdkRequestFromSpecifier(specifier: string): {
   sdkPackageName: string;
@@ -233,24 +168,6 @@ export function sdkRequestFromSpecifier(specifier: string): {
 } | null {
   const m = /^((?:@[^/]+\/)?[^/]+)\/requests\/(.+)$/.exec(specifier);
   if (!m) return null;
-  const sdkPackageName = m[1]!;
-  if (!sdkPackageName.endsWith("-sdk")) return null;
   const requestStem = m[2]!.replace(/\.(tsx?|jsx?|mjs|cjs)$/, "");
-  return { sdkPackageName, requestStem };
-}
-
-/** Heuristic: npm name / directory looks like an OpenAPI `-spec` package. */
-export function looksLikeSpecPackage(
-  packageName: string,
-  directory: string = "",
-): boolean {
-  const name = packageName.toLowerCase();
-  const dir = directory.replace(/\\/g, "/").toLowerCase();
-  return (
-    name.endsWith("-spec") ||
-    name.includes("-spec-") ||
-    /\/[^/]*-spec$/.test(dir) ||
-    dir.endsWith("/service/spec") ||
-    /(^|\/)spec$/.test(dir)
-  );
+  return { sdkPackageName: m[1]!, requestStem };
 }

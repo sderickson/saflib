@@ -1,5 +1,8 @@
 {
   "name": "@saflib/grpc",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "gRPC servicer utilities",
   "private": true,
   "type": "module",

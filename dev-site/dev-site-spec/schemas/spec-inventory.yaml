@@ -1,17 +1,17 @@
 type: object
 description: >
-  OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or
+  OpenAPI inventory for one spec package — business objects (schemas/) and/or
   REST resources (routes/), linked by normalized name stems. Operations include
-  triangle links to sibling `-http` handlers and `-sdk` requests when present.
-  Also attached to `-http` package detail (sibling join) for the HTTP Spec pane.
+  links to HTTP handlers and SDK requests from packages that depend on this spec.
+  Also attached to http package detail for the HTTP Spec pane.
 required:
   - entities
 properties:
   packageDirectory:
     type: string
     description: >
-      Repo-relative directory of the `-spec` package this inventory was built
-      from (used for route YAML source links when shown from an `-http` pane).
+      Repo-relative directory of the spec package this inventory was built
+      from (used for route YAML source links when shown from an http pane).
   entities:
     type: array
     description: Flat alphabetical list of object / both / routes entities.

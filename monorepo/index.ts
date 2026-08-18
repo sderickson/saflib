@@ -81,6 +81,18 @@ export {
   type PackageLayoutIssueKind,
 } from "./src/package-layout.ts";
 
+export {
+  PACKAGE_KINDS,
+  PACKAGE_KIND_IDENTIFIERS,
+  classifySafPackage,
+  hasSdkRequestsExport,
+  isPackageKind,
+  parseSafPackageJson,
+  type PackageKind,
+  type PackageKindClassification,
+  type SafPackageJson,
+} from "./src/package-kind.ts";
+
 // Hack so TS doesn't complain about dirname and filename
 declare global {
   interface ImportMeta {

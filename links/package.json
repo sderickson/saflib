@@ -1,5 +1,8 @@
 {
   "name": "@saflib/links",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Simple library for defining and working with links across subdomains, clients, and services",
   "private": true,
   "type": "module",

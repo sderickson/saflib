@@ -1,5 +1,8 @@
 {
   "name": "@saflib/vitest",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Library common testing dependencies and helpers",
   "type": "module",
   "exports": {

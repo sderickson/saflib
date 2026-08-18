@@ -15,23 +15,20 @@ import {
   exportUsedByKey,
   type ExportUsedBy,
 } from "./assemble-export-used-by.ts";
-import {
-  looksLikeDbPackage,
-  looksLikeHttpPackage,
-  looksLikeSdkPackage,
-  looksLikeSpaPackage,
-  looksLikeSpecPackage,
-} from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
 import type { PackageDbInventory } from "./assemble-package-db-inventory.ts";
 import {
   assemblePackageSpecInventory,
-  siblingSpecPackageName,
   type PackageSpecInventory,
 } from "./assemble-package-spec-inventory.ts";
 import type { PackageIssue } from "./package-issues.ts";
 import { annotateSpecInventoryJobEdges } from "./annotate-spec-inventory-jobs.ts";
 import { devSiteHttpStorage } from "./context.ts";
+import {
+  loadPackageManifests,
+  manifestByPackageName,
+  specPackageNamesFromDeps,
+} from "./package-manifests.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
@@ -185,13 +182,19 @@ export async function getCommitPackage(
   const rawExports = symbols.result?.exports ?? [];
   const testCases = symbols.result?.testCases ?? [];
 
+  const manifestsRes = loadPackageManifests(repo.repoRoot, hash);
+  const manifests = manifestsRes.result ?? [];
+  const byName = manifestByPackageName(manifests);
+  const pkgManifest = byName.get(packageName);
+  const kind = pkgManifest?.kind ?? "other";
+
   let dbInventory: PackageDbInventory | undefined;
   let specInventory: PackageSpecInventory | undefined;
-  const isDb = looksLikeDbPackage(metrics.packageName, metrics.directory);
-  const isSpec = looksLikeSpecPackage(metrics.packageName, metrics.directory);
-  const isHttp = looksLikeHttpPackage(metrics.packageName, metrics.directory);
-  const isSdk = looksLikeSdkPackage(metrics.packageName, metrics.directory);
-  const isSpa = looksLikeSpaPackage(metrics.packageName, metrics.directory);
+  const isDb = kind === "db";
+  const isSpec = kind === "spec";
+  const isHttp = kind === "http";
+  const isSdk = kind === "sdk";
+  const isSpa = kind === "spa";
   const hasVue = symbols.result?.hasVue ?? false;
   if (isDb) {
     const inv = await assemblePackageDbInventory(
@@ -215,9 +218,7 @@ export async function getCommitPackage(
       annotateJobsIfConfigured(specInventory);
     }
   } else if (isHttp || isSdk) {
-    // Join sibling -spec routes so HTTP/SDK panes can show PackageRouteCards
-    // while still presenting handlers/ or requests/ as a normal source package.
-    const specName = siblingSpecPackageName(packageName);
+    const specName = specPackageNamesFromDeps(byName, pkgManifest)[0];
     if (specName) {
       const inv = await assemblePackageSpecInventory(
         dbKey,
@@ -231,13 +232,12 @@ export async function getCommitPackage(
       }
     }
   } else if (isSpa || hasVue) {
-    // Join the product `-spec` whose SDK request modules this SPA/Vue package
-    // actually imports, so bundle views can show loader routes.
     const counts = new Map<string, number>();
     for (const imp of symbols.result?.sdkRequestImports ?? []) {
-      const specName = siblingSpecPackageName(imp.sdkPackageName);
-      if (!specName) continue;
-      counts.set(specName, (counts.get(specName) ?? 0) + 1);
+      const sdkManifest = byName.get(imp.sdkPackageName);
+      for (const specName of specPackageNamesFromDeps(byName, sdkManifest)) {
+        counts.set(specName, (counts.get(specName) ?? 0) + 1);
+      }
     }
     const specName = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
     if (specName) {

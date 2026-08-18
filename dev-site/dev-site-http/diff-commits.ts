@@ -12,8 +12,11 @@ import {
   assemblePackageDbInventory,
   flattenInventoryTables,
 } from "./assemble-package-db-inventory.ts";
-import { looksLikeDbPackage } from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
+import {
+  loadPackageManifests,
+  manifestByPackageName,
+} from "./package-manifests.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
@@ -200,8 +203,19 @@ export async function diffCommits(
   const testDiff = diffLists(fromTests, toTests, testCaseKey);
 
   const dbPkgNames = new Set<string>();
-  for (const m of [...fromMetrics, ...toMetrics]) {
-    if (looksLikeDbPackage(m.packageName, m.directory)) {
+  const [fromManifests, toManifests] = [
+    loadPackageManifests(repo.repoRoot, fromHash),
+    loadPackageManifests(repo.repoRoot, toHash),
+  ];
+  const fromByName = manifestByPackageName(fromManifests.result ?? []);
+  const toByName = manifestByPackageName(toManifests.result ?? []);
+  for (const m of fromMetrics) {
+    if (fromByName.get(m.packageName)?.kind === "db") {
+      dbPkgNames.add(m.packageName);
+    }
+  }
+  for (const m of toMetrics) {
+    if (toByName.get(m.packageName)?.kind === "db") {
       dbPkgNames.add(m.packageName);
     }
   }

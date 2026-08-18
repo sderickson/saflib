@@ -1,5 +1,8 @@
 {
   "name": "@saflib/saflib",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Full-featured web application framework using my preferred libraries and services.",
   "type": "module",
   "scripts": {

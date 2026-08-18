@@ -432,6 +432,7 @@ const mapPackageRow = (
   p: {
     packageName: string;
     directory: string;
+    kind?: string;
     sourceLines: number;
     testLines: number;
     testFiles: number;
@@ -448,7 +449,7 @@ const mapPackageRow = (
   locDelta?: { source: number; test: number },
 ) => ({
   ...p,
-  kind: classifyPackageKind(p.packageName, p.directory),
+  kind: classifyPackageKind(p.kind),
   size: classifyPackageSize({
     sourceLines: p.sourceLines,
     testFiles: p.testFiles,

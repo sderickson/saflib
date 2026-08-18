@@ -1,5 +1,8 @@
 {
   "name": "@saflib/analytics-service",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Server-side analytics abstraction (PostHog) with in-memory implementation for tests",
   "private": true,
   "type": "module",

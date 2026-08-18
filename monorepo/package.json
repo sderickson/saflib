@@ -1,5 +1,8 @@
 {
   "name": "@saflib/monorepo",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Library and docs for projects which use the SAF monorepo structure and conventions",
   "type": "module",
   "exports": {
@@ -9,7 +12,8 @@
     "./eslint.config.js": "./eslint.config.js",
     "./dev": "./dev.ts",
     "./workspace": "./src/workspace.ts",
-    "./package-layout": "./src/package-layout.ts"
+    "./package-layout": "./src/package-layout.ts",
+    "./package-kind": "./src/package-kind.ts"
   },
   "scripts": {
     "test": "vitest run",

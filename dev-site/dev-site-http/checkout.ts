@@ -8,12 +8,16 @@ import {
   listRenames,
   GitCommandError,
 } from "@saflib/git";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { PackageKind, ReturnsError } from "@saflib/monorepo";
 import {
   debtCountFromIssueCounts,
   emptyIssueCountsByKind,
   type IssueCountsByKind,
 } from "./package-issues.ts";
+import {
+  loadPackageManifests,
+  manifestByRepoDirectory,
+} from "./package-manifests.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
@@ -23,6 +27,7 @@ import { rollupIssueCounts } from "./issue-stats-rollup.ts";
 export interface CheckoutPackage {
   packageName: string;
   directory: string;
+  kind?: PackageKind;
   sourceFiles: number;
   sourceLines: number;
   prodLines: number;
@@ -191,6 +196,8 @@ export async function getCheckoutStatus(
   const metrics = (await listByCommit(dbKey, tip.hash)).result!;
   const issueRows = (await listIssueStats(dbKey, tip.hash)).result ?? [];
   const { byPackage } = rollupIssueCounts(issueRows);
+  const manifestsRes = loadPackageManifests(options.repoRoot, tip.hash);
+  const byDir = manifestByRepoDirectory(manifestsRes.result ?? []);
 
   return {
     result: {
@@ -205,9 +212,15 @@ export async function getCheckoutStatus(
       packages: metrics.map((m) => {
         const issueCountsByKind =
           byPackage.get(m.packageName) ?? emptyIssueCountsByKind();
+        const repoDir = [productRoot, m.directory]
+          .map((p) => p.replace(/^\/+|\/+$/g, ""))
+          .filter(Boolean)
+          .join("/");
+        const kind = byDir.get(repoDir)?.kind ?? "other";
         return {
           packageName: m.packageName,
           directory: m.directory,
+          kind,
           sourceFiles: m.sourceFiles,
           sourceLines: m.sourceLines,
           prodLines: m.prodLines,
