@@ -1,0 +1,45 @@
+import common.Caddyfile
+
+# Recipes client subdomains → vite dev server
+
+http://docker.localhost {
+	import spa /base-static-root /index.html
+}
+
+http://auth.docker.localhost {
+	reverse_proxy clients:5173
+}
+
+http://app.docker.localhost {
+	reverse_proxy clients:5173
+}
+
+http://admin.docker.localhost {
+	reverse_proxy clients:5173
+}
+
+http://account.docker.localhost {
+	reverse_proxy clients:5173
+}
+
+# Base API
+
+http://api.docker.localhost {
+	import cors docker.localhost
+	@public_monolith path /health /dev/logs /dev/logs/stream
+	handle @public_monolith {
+		reverse_proxy base-monolith:3001 {
+			import reverse_proxy_common
+		}
+	}
+	import kratos-api-proxy base-monolith:3001
+}
+
+# Kratos public API
+
+http://kratos.docker.localhost {
+	import cors docker.localhost
+	reverse_proxy kratos:4433 {
+		import reverse_proxy_common
+	}
+}

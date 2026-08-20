@@ -11,7 +11,11 @@ import {
   type ParsePackageNameOutput,
 } from "@saflib/workflows";
 import { kebabCaseToPascalCase, kebabCaseToSnakeCase } from "@saflib/utils";
-import { templatesCopyRoot } from "@saflib/templates";
+import {
+  templatesProductRoot,
+  templatesDeployRoot,
+  templatesScaffoldRoot,
+} from "@saflib/templates";
 import path from "node:path";
 
 const input = [
@@ -32,36 +36,94 @@ interface InitProductWorkflowContext extends ParsePackageNameOutput {
   domainName: string;
 }
 
-const SOURCE_PACKAGE_PREFIX = "@saflib/templates";
-const SOURCE_PRODUCT_NAME = "templates";
+/** Frozen golden-product name under saflib (`saflib/base`). */
+const SOURCE_PRODUCT_NAME = "base";
+const SOURCE_PACKAGE_PREFIX = `@saflib/${SOURCE_PRODUCT_NAME}`;
 const SOURCE_DOMAIN = "example.com";
+
+/**
+ * Rewrite saflib-root volume mounts (`../..:/app` + anonymous node_modules)
+ * to the product-beside-saflib shape (product clients/sdk + `saflib/`).
+ * Context stays `../..`.
+ */
+function toProductMonorepoDevCompose(
+  content: string,
+  productName: string,
+): string {
+  const productMounts = [
+    `      - ../../${productName}/clients/:/app/${productName}/clients/`,
+    `      - ../../saflib/:/app/saflib/`,
+    `      - ../../${productName}/service/sdk/:/app/${productName}/service/sdk/`,
+  ].join("\n");
+  const monolithMounts = [
+    `      - ../../${productName}/service/db/data:/app/${productName}/service/db/data`,
+    `      - ../../${productName}/service/cron/data:/app/${productName}/service/cron/data`,
+  ].join("\n");
+
+  let out = content.replace(
+    /volumes:\n(?:[ \t]*#[^\n]*\n)*[ \t]*- \.\.\/\.\.:\/app\n[ \t]*- \/app\/node_modules\n([ \t]*command: npm run dev)/,
+    `volumes:\n${productMounts}\n$1`,
+  );
+  out = out.replace(
+    new RegExp(
+      `(  ${productName}-monolith:[\\s\\S]*?volumes:\\n)(?:[ \\t]*#[^\\n]*\\n)*[ \\t]*- \\.\\.\\/\\.\\.:\\/app\\n[ \\t]*- \\/app\\/node_modules\\n`,
+    ),
+    `$1${monolithMounts}\n`,
+  );
+  return out;
+}
 
 function makeProductInitLineReplace(context: InitProductWorkflowContext) {
   const placeholderReplace = makeLineReplace(context);
   const dockerFrom = `saflib-${SOURCE_PRODUCT_NAME}`;
   const dockerTo = `${context.organizationName}-${context.productName}`;
+  const pascal = kebabCaseToPascalCase(context.productName);
+  const snakeUpper = kebabCaseToSnakeCase(context.productName).toUpperCase();
+  const sourcePascal = kebabCaseToPascalCase(SOURCE_PRODUCT_NAME);
+  const sourceSnakeUpper =
+    kebabCaseToSnakeCase(SOURCE_PRODUCT_NAME).toUpperCase();
 
   return (line: string) => {
-    const preserveWorkflowsTemplatesExclude = line.includes(
-      "workflows/templates",
-    );
+    // Never rewrite workflow template paths or the thin @saflib/templates package.
+    if (
+      line.includes("workflows/templates") ||
+      line.includes("@saflib/templates") ||
+      line.includes("saflib/templates/")
+    ) {
+      return placeholderReplace(line);
+    }
+
     let out = placeholderReplace(line);
     out = out.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
     out = out
       .split("@saflib/deploy")
       .join(`@${context.organizationName}/deploy`);
-    out = out.split("@saflib/example").join(`@${context.organizationName}/${context.organizationName}`);
     out = out.split(dockerFrom).join(dockerTo);
     out = out.split(SOURCE_DOMAIN).join(context.domainName);
-    if (!preserveWorkflowsTemplatesExclude) {
-      // Frozen package/image fragments that still use the source product name
-      // (e.g. saflib-templates-*, TEMPLATES_*, TemplatesLayout leftovers).
-      const pascal = kebabCaseToPascalCase(context.productName);
-      const snakeUpper = kebabCaseToSnakeCase(context.productName).toUpperCase();
-      out = out.split(SOURCE_PRODUCT_NAME).join(context.productName);
-      out = out.split("Templates").join(pascal);
-      out = out.split("TEMPLATES").join(snakeUpper);
-    }
+
+    // Path / token renames — avoid bare "base" (database, based, …).
+    out = out.replaceAll(`/${SOURCE_PRODUCT_NAME}/`, `/${context.productName}/`);
+    out = out.replaceAll(
+      `./${SOURCE_PRODUCT_NAME}/`,
+      `./${context.productName}/`,
+    );
+    out = out.replaceAll(`${SOURCE_PRODUCT_NAME}-`, `${context.productName}-`);
+    out = out.replaceAll(
+      `/${SOURCE_PRODUCT_NAME}-`,
+      `/${context.productName}-`,
+    );
+    out = out.replaceAll(`${sourceSnakeUpper}_`, `${snakeUpper}_`);
+    out = out.replaceAll(sourcePascal, pascal);
+
+    out = out.replace(
+      new RegExp(`\\b${SOURCE_PRODUCT_NAME}\\b`, "g"),
+      context.productName,
+    );
+    out = out.replace(
+      new RegExp(`\\b${sourceSnakeUpper}\\b`, "g"),
+      snakeUpper,
+    );
+
     return out;
   };
 }
@@ -92,9 +154,8 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     };
   },
 
-  templateFiles: {
-    all: templatesCopyRoot,
-  },
+  // Copied via per-step templateFiles overrides (product, deploy, scaffold).
+  templateFiles: {},
 
   docFiles: {},
 
@@ -128,10 +189,35 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,
-      targetDir: context.cwd,
+      targetDir: path.join(context.cwd, context.productName),
+      templateFiles: { product: templatesProductRoot },
       lineReplace: makeProductInitLineReplace(context),
     })),
-    // Product templates may include repo-root CI; never keep them in @saflib/saflib.
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.productName,
+      targetDir: path.join(context.cwd, "deploy"),
+      templateFiles: { deploy: templatesDeployRoot },
+      lineReplace: makeProductInitLineReplace(context),
+    })),
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.productName,
+      targetDir: context.cwd,
+      templateFiles: { scaffold: templatesScaffoldRoot },
+      lineReplace: makeProductInitLineReplace(context),
+    })),
+    // Golden product compose mounts the whole saflib root; rewrite for product-beside-saflib.
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(
+        context.cwd,
+        context.productName,
+        "dev",
+        "docker-compose.yaml",
+      ),
+      description: "Rewrite base/dev compose volumes for product monorepo layout",
+      transform: (content: string) =>
+        toProductMonorepoDevCompose(content, context.productName),
+    })),
+    // Product scaffold may include repo-root CI; never keep them in @saflib/saflib.
     step(
       CommandStepMachine,
       () => ({

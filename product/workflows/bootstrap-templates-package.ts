@@ -1,7 +1,7 @@
 /**
  * One-shot bootstrap (already run). Kept for history only — the source of truth is
- * now `saflib/templates/templates/{deploy,__product-name__}/`. Do not re-run without
- * updating destinations to that layout.
+ * now `saflib/base/` + `saflib/deploy/` (see `@saflib/templates` copy-root).
+ * Do not re-run without updating destinations to that layout.
  */
 import {
   mkdirSync,

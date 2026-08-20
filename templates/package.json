@@ -3,7 +3,7 @@
   "saf": {
     "kind": "lib"
   },
-  "description": "Baseline SAF product (apps, auth, admin, account, static site, service) used as the copy source for product/init.",
+  "description": "Path helpers for the golden SAF product at saflib/base (and deploy/), used as the copy source for product/init.",
   "private": true,
   "type": "module",
   "exports": {

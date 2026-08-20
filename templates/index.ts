@@ -1,20 +1,35 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-/** Root of the `@saflib/templates` package. */
-export const templatesPackageRoot = path.dirname(fileURLToPath(import.meta.url));
+const templatesPackageRoot = path.dirname(fileURLToPath(import.meta.url));
+const saflibRoot = path.resolve(templatesPackageRoot, "..");
+
+/** Root of the `@saflib/templates` package (path helpers only). */
+export { templatesPackageRoot };
+
+/** Saflib monorepo root (parent of `base/`, `deploy/`, library packages). */
+export const templatesSaflibRoot = saflibRoot;
 
 /**
- * Copy source that mirrors a product monorepo layout:
- * `deploy/`, `__product-name__/`, optional root `package.json`, `.github/`.
+ * Golden product tree (`clients`, `service`, `dev`, `plans`).
+ * product/init copies this to `<productName>/`.
  */
-export const templatesCopyRoot = path.join(templatesPackageRoot, "templates");
+export const templatesProductRoot = path.join(saflibRoot, "base");
 
-/** Product subtree inside the copy source (`clients`, `service`, `dev`, …). */
-export const templatesProductRoot = path.join(
-  templatesCopyRoot,
-  "__product-name__",
+/** Deploy tree copied to `./deploy` by product/init. */
+export const templatesDeployRoot = path.join(saflibRoot, "deploy");
+
+/** Optional CI scaffold (`.github`) for new product monorepos. */
+export const templatesScaffoldRoot = path.join(
+  templatesPackageRoot,
+  "scaffold",
 );
 
-/** @deprecated Prefer {@link templatesCopyRoot}. */
-export const templatesRoot = templatesCopyRoot;
+/**
+ * @deprecated Prefer {@link templatesProductRoot} — init now copies product,
+ * deploy, and scaffold as separate roots.
+ */
+export const templatesCopyRoot = templatesProductRoot;
+
+/** @deprecated Prefer {@link templatesProductRoot}. */
+export const templatesRoot = templatesProductRoot;

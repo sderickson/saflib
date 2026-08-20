@@ -1,0 +1,21 @@
+{
+  "name": "@saflib/base-service-common",
+  "description": "Shared types and utilities for the base service",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "@saflib/secret-store": "*"
+  },
+  "sideEffects": false
+}

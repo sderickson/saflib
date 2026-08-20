@@ -26,6 +26,54 @@
       "path": "./backup/backup-spec"
     },
     {
+      "path": "./base/clients/account"
+    },
+    {
+      "path": "./base/clients/admin"
+    },
+    {
+      "path": "./base/clients/app"
+    },
+    {
+      "path": "./base/clients/auth"
+    },
+    {
+      "path": "./base/clients/common"
+    },
+    {
+      "path": "./base/clients/links"
+    },
+    {
+      "path": "./base/clients/root"
+    },
+    {
+      "path": "./base/dev"
+    },
+    {
+      "path": "./base/plans"
+    },
+    {
+      "path": "./base/service/common"
+    },
+    {
+      "path": "./base/service/db"
+    },
+    {
+      "path": "./base/service/http"
+    },
+    {
+      "path": "./base/service/kratos-handlers"
+    },
+    {
+      "path": "./base/service/monolith"
+    },
+    {
+      "path": "./base/service/sdk"
+    },
+    {
+      "path": "./base/service/spec"
+    },
+    {
       "path": "./commander"
     },
     {
@@ -156,57 +204,6 @@
     },
     {
       "path": "./templates"
-    },
-    {
-      "path": "./templates/templates/__product-name__/clients/account"
-    },
-    {
-      "path": "./templates/templates/__product-name__/clients/admin"
-    },
-    {
-      "path": "./templates/templates/__product-name__/clients/app"
-    },
-    {
-      "path": "./templates/templates/__product-name__/clients/auth"
-    },
-    {
-      "path": "./templates/templates/__product-name__/clients/common"
-    },
-    {
-      "path": "./templates/templates/__product-name__/clients/links"
-    },
-    {
-      "path": "./templates/templates/__product-name__/clients/root"
-    },
-    {
-      "path": "./templates/templates/__product-name__/dev"
-    },
-    {
-      "path": "./templates/templates/__product-name__/plans"
-    },
-    {
-      "path": "./templates/templates/__product-name__/service/common"
-    },
-    {
-      "path": "./templates/templates/__product-name__/service/db"
-    },
-    {
-      "path": "./templates/templates/__product-name__/service/http"
-    },
-    {
-      "path": "./templates/templates/__product-name__/service/kratos-handlers"
-    },
-    {
-      "path": "./templates/templates/__product-name__/service/monolith"
-    },
-    {
-      "path": "./templates/templates/__product-name__/service/sdk"
-    },
-    {
-      "path": "./templates/templates/__product-name__/service/spec"
-    },
-    {
-      "path": "./templates/templates/deploy"
     },
     {
       "path": "./utils"

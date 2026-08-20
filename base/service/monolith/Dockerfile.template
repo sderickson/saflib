@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:labs
+FROM node:24-slim
+
+RUN npm install -g npm@11.14.1
+
+WORKDIR /app
+
+#{ copy_packages }#
+RUN npm ci --omit=dev
+#{ copy_src }#
+
+WORKDIR /app/base/service/monolith
+
+COPY ./deploy/templates/env.defaults /etc/base/env.defaults
+COPY ./deploy/scripts/apply-env-defaults.sh /usr/local/bin/apply-env-defaults.sh
+RUN chmod +x /usr/local/bin/apply-env-defaults.sh
+
+ENTRYPOINT ["/usr/local/bin/apply-env-defaults.sh"]
+CMD ["npm", "start"]
+

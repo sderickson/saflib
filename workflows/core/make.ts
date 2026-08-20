@@ -131,12 +131,14 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             console.log("-------------------------------------------------");
           }
 
+          const stepInput = step.input({ context });
           return {
-            ...step.input({ context }),
+            ...stepInput,
             // don't need checklist; the machine will compose their own
             workflowId: context.workflowId,
             runMode: context.runMode,
-            templateFiles: context.templateFiles,
+            // Allow a step to override workflow-level templateFiles (e.g. product/init).
+            templateFiles: stepInput.templateFiles ?? context.templateFiles,
             copiedFiles: context.copiedFiles,
             docFiles: context.docFiles,
             agentConfig: context.agentConfig,
