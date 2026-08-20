@@ -9,15 +9,25 @@ import {
   CommandStepMachine,
   getPackageName,
 } from "@saflib/workflows";
+import {
+  kebabCaseToPascalCase,
+  kebabCaseToSnakeCase,
+} from "@saflib/utils";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
+const clientsRoot = path.join(templatesProductRoot, "clients");
 const staticSubdomainDir = path.join(
-  import.meta.dirname,
-  "template",
+  clientsRoot,
   "__static-subdomain-name__",
 );
-const linksDir = path.join(import.meta.dirname, "template", "links");
-const commonDir = path.join(import.meta.dirname, "template", "common");
+const linksStub = path.join(
+  clientsRoot,
+  "links",
+  "__subdomain-name__-links.ts",
+);
+/** Upserts the subdomain-links workflow area into an existing links package. */
+const linksIndex = path.join(clientsRoot, "links", "index.ts");
 
 const input = [
   {
@@ -44,6 +54,27 @@ interface AddStaticSiteWorkflowContext extends ParsePackageNameOutput {
   serviceSdkName: string;
 }
 
+function makeAddStaticSiteLineReplace(context: AddStaticSiteWorkflowContext) {
+  const lineReplace = makeLineReplace(context);
+  const productPascal = kebabCaseToPascalCase(context.productName);
+  const productSnake = kebabCaseToSnakeCase(context.productName);
+
+  return (line: string) => {
+    let out = line;
+    // Golden static stub uses concrete @saflib/base-* names.
+    out = out.split("@saflib/base-clients-common").join(context.commonPackageName);
+    out = out.split("@saflib/base-links").join(context.linksPackageName);
+    out = out.split("@saflib/base-sdk").join(context.serviceSdkName);
+    out = out.split("@saflib/base-spec").join(context.serviceSpecName);
+    out = out
+      .split("@saflib/base-__static-subdomain-name__-static")
+      .join(context.staticPackageName);
+    out = out.split("BaseLayout").join(`${productPascal}Layout`);
+    out = out.split("base_common_strings").join(`${productSnake}_common_strings`);
+    return lineReplace(out);
+  };
+}
+
 export const AddStaticSiteWorkflowDefinition = defineWorkflow<
   typeof input,
   AddStaticSiteWorkflowContext
@@ -64,7 +95,7 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
     const currentPackageName = getPackageName(input.cwd);
     const currentPackageOrgName =
       "@" + parsePackageName(currentPackageName).organizationName;
-    const staticSubdomainName = `${input.subdomainName}`;
+    const staticSubdomainName = input.subdomainName;
     const staticPackageName = `${currentPackageOrgName}/${input.productName}-${staticSubdomainName}-static`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-links`;
     const commonPackageName = `${currentPackageOrgName}/${input.productName}-clients-common`;
@@ -88,11 +119,13 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
     };
   },
 
+  // Only the static site stub + links area upsert. product/init owns common
+  // and the rest of the links package.
   templateFiles: {
     packageJson: path.join(staticSubdomainDir, "package.json"),
     staticSite: staticSubdomainDir,
-    linksPackage: linksDir,
-    commonPackage: commonDir,
+    linksStub,
+    linksIndex,
   },
 
   docFiles: {},
@@ -102,25 +135,11 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CopyStepMachine, ({ context }) => {
-      const lineReplace = makeLineReplace(context);
-
-      const wrappedLineReplace = (line: string) => {
-        line = line.replace(
-          "template-package-clients-common",
-          context.commonPackageName,
-        );
-        line = line.replace("template-package-spec", context.serviceSpecName);
-        line = line.replace("template-package-links", context.linksPackageName);
-        line = line.replace("template-package-sdk", context.serviceSdkName);
-        return lineReplace(line);
-      };
-      return {
-        name: context.serviceName,
-        targetDir: context.targetDir,
-        lineReplace: wrappedLineReplace,
-      };
-    }),
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.serviceName,
+      targetDir: context.targetDir,
+      lineReplace: makeAddStaticSiteLineReplace(context),
+    })),
 
     step(CdStepMachine, ({ context }) => ({
       path: path.dirname(context.copiedFiles!.packageJson),
@@ -129,12 +148,6 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
-    })),
-
-    // seems to not be there when you need it when you build in docker, so install it here
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["install", "@vue/tsconfig"],
     })),
 
     step(CdStepMachine, ({ context }) => ({
@@ -153,13 +166,9 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       ],
     })),
 
-    // TODO: I think it would be better to automate this somehow... than to lean on the agent.
-    // step(PromptStepMachine, () => ({
-    //   promptText: `Update the root level deploy/ to incorporate the new static site.
-
-    //   * Update build.sh to build the new static site client docker images.
-    //   * Update Dockerfile.prod to use those images to build the static files and incorporate them into the caddy image.`,
-    // })),
+    // TODO: automate Caddy + docker image wiring (dev/build-images.sh,
+    // deploy/local-scripts/build.sh, Dockerfile.prod) the way add-spa
+    // appends CLIENT_SUBDOMAINS — static sites are not Vite SPAs.
   ],
 });
 

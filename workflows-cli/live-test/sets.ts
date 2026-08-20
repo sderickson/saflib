@@ -20,7 +20,11 @@ import {
   AddSdkQueryWorkflowDefinition,
   AddSdkMutationWorkflowDefinition,
 } from "@saflib/sdk/workflows";
-import { AddSpaViewWorkflowDefinition } from "@saflib/vue/workflows";
+import {
+  AddSpaViewWorkflowDefinition,
+  AddStaticSiteWorkflowDefinition,
+  AddE2eTestWorkflowDefinition,
+} from "@saflib/vue/workflows";
 
 /** Disposable product from product/init — never committed. */
 export const LIVE_TEST_PRODUCT = "tmp";
@@ -184,6 +188,38 @@ export const liveTestSets: LiveTestSet[] = [
       step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
         path: "./pages/todos-list",
         urlPath: "/todos",
+      })),
+    ],
+  },
+  {
+    name: "static-site",
+    description: "vue/add-static-site (docs VitePress site)",
+    typecheck: ["clients/links"],
+    assertFiles: [
+      "clients/docs/package.json",
+      "clients/docs/content/index.md",
+      "clients/docs/.vitepress/theme/components/StaticSiteLayout.vue",
+    ],
+    steps: [
+      step(CdStepMachine, () => ({
+        path: ".",
+      })),
+      step(makeWorkflowMachine(AddStaticSiteWorkflowDefinition), () => ({
+        productName: LIVE_TEST_PRODUCT,
+        subdomainName: "docs",
+      })),
+    ],
+  },
+  {
+    name: "e2e",
+    description: "vue/add-e2e-test (app SPA smoke spec)",
+    assertFiles: ["clients/app/e2e/smoke.spec.ts"],
+    steps: [
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}/clients/app`,
+      })),
+      step(makeWorkflowMachine(AddE2eTestWorkflowDefinition), () => ({
+        path: "./e2e/smoke.spec.ts",
       })),
     ],
   },

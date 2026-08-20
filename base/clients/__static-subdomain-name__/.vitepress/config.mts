@@ -6,8 +6,8 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  title: "__Product Name__",
-  description: "Static __subdomain-name__ site for __Product Name__",
+  title: "Base",
+  description: "Static __subdomain-name__ site for Base",
   srcDir: "./content",
   vite: {
     ssr: {

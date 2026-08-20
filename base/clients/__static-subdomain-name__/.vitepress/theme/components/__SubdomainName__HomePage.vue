@@ -3,10 +3,10 @@
     <v-row class="align-center mb-10" density="comfortable">
       <v-col cols="12" md="6" class="order-2 order-md-1">
         <h1 class="text-h3 text-md-h2 font-weight-medium my-8">
-          __Product Name__
+          Base
         </h1>
         <p class="text-h6 text-medium-emphasis font-weight-regular mb-5">
-          Welcome to __Product Name__.
+          Welcome to the __subdomain-name__ site.
         </p>
       </v-col>
     </v-row>

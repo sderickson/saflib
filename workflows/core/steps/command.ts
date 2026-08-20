@@ -83,7 +83,9 @@ export function isScriptModeValidationCommand(
       script === "typecheck" ||
       script === "test" ||
       script === "test:watch" ||
-      script === "test:coverage"
+      script === "test:coverage" ||
+      script === "test:e2e" ||
+      script === "test:e2e:ui"
     ) {
       return true;
     }

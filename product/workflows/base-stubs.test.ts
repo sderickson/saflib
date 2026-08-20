@@ -18,6 +18,8 @@ const stubPaths = [
   "service/sdk/requests/__group-name__/__query-name__.ts",
   "service/sdk/requests/__group-name__/__mutation-name__.ts",
   "clients/__subdomain-name__/__group-name__/__TargetName__.vue",
+  "clients/__subdomain-name__/e2e/__target-name__/__target-name__.spec.ts",
+  "clients/__static-subdomain-name__/package.json",
   "clients/links/__subdomain-name__-links.ts",
 ] as const;
 

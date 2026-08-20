@@ -1,6 +1,6 @@
 import type { Theme } from "vitepress";
 import { createVuetify } from "vuetify";
-import { vuetifyConfig } from "template-package-clients-common/vuetify-config";
+import { vuetifyConfig } from "@saflib/base-clients-common/vuetify-config";
 import "@mdi/font/css/materialdesignicons.css";
 import "vuetify/styles";
 import "./style.css";

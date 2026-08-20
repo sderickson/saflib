@@ -12,6 +12,9 @@ describe("isScriptModeValidationCommand", () => {
       true,
     );
     expect(isScriptModeValidationCommand("npm", ["run", "test"])).toBe(true);
+    expect(isScriptModeValidationCommand("npm", ["run", "test:e2e"])).toBe(
+      true,
+    );
     expect(isScriptModeValidationCommand("npm", ["install"])).toBe(false);
     expect(
       isScriptModeValidationCommand("npm", ["exec", "saf-specs", "generate"]),

@@ -1,7 +1,7 @@
 import { test as base } from "@playwright/test";
 // import { getUniqueId } from "@saflib/playwright";
 // TODO: Import the product fixture from the common package
-// Example: import { productNameFixture } from "product-name-clients-common/fixtures";
+// Example: import { templatesFixture } from "@saflib/base-clients-common/fixtures";
 
 // TODO: Import any page fixtures needed for this test, usually from the same package
 
@@ -9,7 +9,7 @@ import { test as base } from "@playwright/test";
 type __TargetName__Fixtures = {
   // TODO: Add fixture properties here
   // Example:
-  // productName: productNameFixture;
+  // templates: typeof templatesFixture;
   // somePage: SomePageFixture;
 };
 
@@ -17,20 +17,20 @@ type __TargetName__Fixtures = {
 const test = base.extend<__TargetName__Fixtures>({
   // TODO: Add fixture definitions here
   // Example:
-  // productName: productNameFixture,
+  // templates: templatesFixture,
   // somePage: somePageFixture,
 });
 
 // @ts-expect-error - TODO: Update to what fixtures are actually used
 test("__target-name__", async ({ page }) => {
   // TODO: Destructure fixtures from the test parameter, e.g.:
-  // async ({ productName, somePage }) => {
+  // async ({ templates, somePage }) => {
   // TODO: Implement the test workflow
   // Example:
   // const uniqueId = getUniqueId();
   //
-  // await productName.step("Step description", async () => {
+  // await templates.step("Step description", async () => {
   //   // Test implementation, then assert any product events that were fired.
-  //   await productName.assertEvent("event-name");
+  //   await templates.assertEvent("event-name");
   // });
 });
