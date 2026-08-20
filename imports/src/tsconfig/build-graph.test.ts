@@ -25,8 +25,8 @@ describe("buildReferenceGraph", () => {
       return; // artifact absent — same as CI
     }
     expect(isGitIgnoredPackageDirectory(deployDir)).toBe(true);
-    expect(skippedMeta).toContain("@saflib/deploy");
-    expect([...graph.keys()]).not.toContain("@saflib/deploy");
+    expect(skippedMeta).toContain("@__organization-name__/deploy");
+    expect([...graph.keys()]).not.toContain("@__organization-name__/deploy");
   });
 });
 

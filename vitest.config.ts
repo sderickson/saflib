@@ -13,6 +13,8 @@ export default defineConfig({
       // Packages under tmp/ are tested by workflow-script CI / live-test.
       "!tmp/**",
       "tmp/**/vitest.config.{ts,js,mts,mjs}",
+      // gRPC scaffold packages still depend on deleted template-package-* names.
+      "!grpc/**/workflows/*-templates/**",
       // END WORKFLOW AREA
     ],
   },

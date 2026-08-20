@@ -260,10 +260,10 @@ describe("export patterns", () => {
     const index = buildPackageIndex(root);
     const from = path.join(
       root,
-      "saflib/express/workflows/templates/handlers/foo/handler.ts",
+      "saflib/base/service/http/handlers/foo/handler.ts",
     );
     const result = resolveSpecifier(
-      "template-package-http/handlers/__group-name__/index",
+      "@saflib/base-http/handlers/__group-name__/index",
       from,
       index,
     );
