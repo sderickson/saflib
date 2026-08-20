@@ -1,0 +1,16 @@
+{
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "outDir": "./dist/types/node",
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force"
+  },
+  "include": ["vite.config.ts"],
+  "exclude": ["dist"]
+}

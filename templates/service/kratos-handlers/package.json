@@ -1,0 +1,19 @@
+{
+  "name": "@saflib/templates-kratos-handlers",
+  "description": "Shared Kratos webhook handlers for templates (email courier callbacks + action handler)",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@saflib/node": "*",
+    "@saflib/ory-kratos": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*"
+  },
+  "scripts": {
+    "typecheck": "tsc -b"
+  },
+  "sideEffects": false
+}

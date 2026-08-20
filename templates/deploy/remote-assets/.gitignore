@@ -1,0 +1,5 @@
+.env.kratos.secrets
+
+# BEGIN WORKFLOW AREA env-secrets FOR product/init
+.env.templates.secrets
+# END WORKFLOW AREA

@@ -1,0 +1,23 @@
+openapi: 3.0.0
+info:
+  title: templates API
+  version: 1.0.0
+  description: API specification for the templates service
+
+paths:
+  # BEGIN WORKFLOW AREA route-paths FOR openapi/route
+
+
+
+  # END WORKFLOW AREA
+
+components:
+  schemas:
+    Error:
+      $ref: "./schemas/error.yaml"
+    ProductEvent:
+      $ref: "./events/index.yaml"
+    # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
+
+
+    # END WORKFLOW AREA

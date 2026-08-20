@@ -155,6 +155,60 @@
       "path": "./service"
     },
     {
+      "path": "./templates"
+    },
+    {
+      "path": "./templates/clients/account"
+    },
+    {
+      "path": "./templates/clients/admin"
+    },
+    {
+      "path": "./templates/clients/app"
+    },
+    {
+      "path": "./templates/clients/auth"
+    },
+    {
+      "path": "./templates/clients/common"
+    },
+    {
+      "path": "./templates/clients/links"
+    },
+    {
+      "path": "./templates/clients/root"
+    },
+    {
+      "path": "./templates/deploy"
+    },
+    {
+      "path": "./templates/dev"
+    },
+    {
+      "path": "./templates/plans"
+    },
+    {
+      "path": "./templates/service/common"
+    },
+    {
+      "path": "./templates/service/db"
+    },
+    {
+      "path": "./templates/service/http"
+    },
+    {
+      "path": "./templates/service/kratos-handlers"
+    },
+    {
+      "path": "./templates/service/monolith"
+    },
+    {
+      "path": "./templates/service/sdk"
+    },
+    {
+      "path": "./templates/service/spec"
+    },
+    {
       "path": "./utils"
     },
     {

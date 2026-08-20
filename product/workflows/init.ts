@@ -1,25 +1,17 @@
 import {
   defineWorkflow,
   step,
-  makeWorkflowMachine,
   CopyStepMachine,
-  makeLineReplace,
   CommandStepMachine,
   TransformFileStepMachine,
   CdStepMachine,
   getPackageName,
   parsePackageName,
   type ParsePackageNameOutput,
-  PromptStepMachine,
 } from "@saflib/workflows";
-import {
-  AddSpaWorkflowDefinition,
-  // AddSpaViewWorkflowDefinition,
-  AddStaticSiteWorkflowDefinition,
-} from "@saflib/vue/workflows";
-import { InitServiceWorkflowDefinition } from "@saflib/service/workflows";
+import { kebabCaseToPascalCase, kebabCaseToSnakeCase } from "@saflib/utils";
+import { templatesRoot } from "@saflib/templates";
 import path from "node:path";
-// import { IdentityInitWorkflowDefinition } from "@saflib/identity/workflows";
 
 const input = [
   {
@@ -34,15 +26,37 @@ const input = [
   },
 ] as const;
 
-/**
- * TODO:
- * - figure out how to make links between spas and pages get added more consistently.
- *   Maybe start with a left nav, auto-add pages there, and add spas to top nav?
- */
-
 interface InitProductWorkflowContext extends ParsePackageNameOutput {
   productName: string;
   domainName: string;
+}
+
+const SOURCE_PACKAGE_PREFIX = "@saflib/templates";
+const SOURCE_PRODUCT_NAME = "templates";
+const SOURCE_DOMAIN = "example.com";
+
+function makeProductInitLineReplace(context: InitProductWorkflowContext) {
+  const pascal = kebabCaseToPascalCase(context.productName);
+  const snakeUpper = kebabCaseToSnakeCase(context.productName).toUpperCase();
+  const dockerFrom = `saflib-${SOURCE_PRODUCT_NAME}`;
+  const dockerTo = `${context.organizationName}-${context.productName}`;
+
+  return (line: string) => {
+    const preserveWorkflowsTemplatesExclude = line.includes(
+      "workflows/templates",
+    );
+    let out = line;
+    out = out.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
+    out = out.split("@saflib/deploy").join(`@${context.organizationName}/deploy`);
+    out = out.split(dockerFrom).join(dockerTo);
+    out = out.split(SOURCE_DOMAIN).join(context.domainName);
+    out = out.split("Templates").join(pascal);
+    out = out.split("TEMPLATES").join(snakeUpper);
+    if (!preserveWorkflowsTemplatesExclude) {
+      out = out.split(SOURCE_PRODUCT_NAME).join(context.productName);
+    }
+    return out;
+  };
 }
 
 export const InitProductWorkflowDefinition = defineWorkflow<
@@ -72,7 +86,12 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    all: path.join(import.meta.dirname, "templates/"),
+    clients: path.join(templatesRoot, "clients"),
+    service: path.join(templatesRoot, "service"),
+    dev: path.join(templatesRoot, "dev"),
+    plans: path.join(templatesRoot, "plans"),
+    deploy: path.join(templatesRoot, "deploy"),
+    github: path.join(templatesRoot, ".github"),
   },
 
   docFiles: {},
@@ -81,7 +100,8 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     allowPaths: ({ context }) => [
       `**/${context.productName}/clients/**`,
       `./package.json`,
-      `**/${context.productName}/service/${context.productName}-service/**`,
+      `**/${context.productName}/service/**`,
+      `./deploy/**`,
     ],
     commitEachStep: true,
   },
@@ -104,50 +124,31 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["exec", "prettier", "--", "package.json", "--write"],
     })),
-    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-      name: `${context.sharedPackagePrefix}-service`,
-      path: `./${context.productName}/service`,
-    })),
-    step(
-      makeWorkflowMachine(AddStaticSiteWorkflowDefinition),
-      ({ context }) => ({
-        productName: context.productName,
-        subdomainName: "root",
-      }),
-    ),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "admin",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "app",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "auth",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "account",
-    })),
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,
-      targetDir: context.cwd,
-      lineReplace: makeLineReplace(context),
+      targetDir: path.join(context.cwd, context.productName),
+      lineReplace: makeProductInitLineReplace(context),
     })),
-    // Product templates may include repo-root CI workflows; never keep them in @saflib/saflib.
+    step(CommandStepMachine, ({ context }) => ({
+      command: "mv",
+      args: [`./${context.productName}/deploy`, `./deploy`],
+    })),
     step(
       CommandStepMachine,
-      () => ({
+      ({ context }) => ({
+        command: "mv",
+        args: [`./${context.productName}/.github`, `./.github`],
+      }),
+      {
+        skipIf: ({ context }) =>
+          getPackageName(context.cwd) === "@saflib/saflib",
+      },
+    ),
+    step(
+      CommandStepMachine,
+      ({ context }) => ({
         command: "rm",
-        args: [
-          "-rf",
-          ".github/workflows/playwright.yml",
-          ".github/workflows/typecheck.yml",
-          ".github/workflows/push.yml",
-          ".github/actions/setup-node-deps",
-        ],
+        args: ["-rf", `./${context.productName}/.github`],
       }),
       {
         skipIf: ({ context }) =>
@@ -155,21 +156,12 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       },
     ),
     step(CommandStepMachine, ({ context }) => ({
-      command: "rm",
-      args: [
-        "-rf",
-        `./${context.productName}/service/${context.productName}-service`,
-      ],
-    })),
-
-    step(CommandStepMachine, ({ context }) => ({
       command: "mv",
       args: [
         `./deploy/remote-assets/env.${context.productName}.secrets`,
         `./deploy/remote-assets/.env.${context.productName}.secrets`,
       ],
     })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
@@ -194,20 +186,6 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       command: "touch",
       args: ["./.env"],
     })),
-
-    step(CdStepMachine, ({ context }) => ({
-      path: `./${context.productName}/clients/auth`,
-    })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["install", "@saflib/ory-kratos-spa", "@saflib/ory-kratos-sdk"],
-    })),
-    step(PromptStepMachine, ({ context }) => ({
-      prompt: `Integrate @saflib/ory-kratos-spa with the ${context.productName} auth SPA. Basically:
-* have router.ts import and use createKratosAuthRouter from @saflib/ory-kratos-spa/router
-* have strings.ts import the strings from @saflib/ory-kratos-spa/strings and spread them into auth_strings
-* have test-app.ts import and re-export @saflib/ory-kratos-sdk/fakes as testAppHandlers`,
-    })),
     step(CdStepMachine, ({ context }) => ({
       path: context.cwd,
     })),
@@ -222,14 +200,6 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         "--write",
       ],
     })),
-    step(CdStepMachine, ({ context }) => ({
-      path: `./${context.productName}/clients/auth`,
-    })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "typecheck"],
-    })),
-
     step(CdStepMachine, () => ({
       path: `./deploy`,
     })),

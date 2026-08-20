@@ -1,0 +1,21 @@
+{
+  "name": "@saflib/templates-plans",
+  "description": "Plans for the templates service",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@saflib/monorepo": "*"
+  },
+  "sideEffects": false
+}

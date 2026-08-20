@@ -1,0 +1,16 @@
+{
+  "name": "@saflib/templates-links",
+  "description": "Links for the templates app client",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@saflib/links": "*"
+  },
+  "scripts": {
+    "typecheck": "tsc -b"
+  },
+  "sideEffects": false
+}

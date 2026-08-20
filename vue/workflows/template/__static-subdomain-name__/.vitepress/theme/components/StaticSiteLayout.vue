@@ -6,5 +6,5 @@
 
 <script setup lang="ts">
 import { Content } from "vitepress";
-import __ProductName__Layout from "template-package-clients-common/components/__product-name__-layout";
+import { __ProductName__Layout } from "template-package-clients-common/components";
 </script>
