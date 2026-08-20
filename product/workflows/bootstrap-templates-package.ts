@@ -1,7 +1,7 @@
 /**
- * One-shot bootstrap: materialize @saflib/templates from current per-package
- * workflow templates. Not the long-term source of truth — after this lands,
- * the templates package is edited in place.
+ * One-shot bootstrap (already run). Kept for history only — the source of truth is
+ * now `saflib/templates/templates/{deploy,__product-name__}/`. Do not re-run without
+ * updating destinations to that layout.
  */
 import {
   mkdirSync,

@@ -7,10 +7,11 @@ import {
   CdStepMachine,
   getPackageName,
   parsePackageName,
+  makeLineReplace,
   type ParsePackageNameOutput,
 } from "@saflib/workflows";
 import { kebabCaseToPascalCase, kebabCaseToSnakeCase } from "@saflib/utils";
-import { templatesRoot } from "@saflib/templates";
+import { templatesCopyRoot } from "@saflib/templates";
 import path from "node:path";
 
 const input = [
@@ -36,8 +37,7 @@ const SOURCE_PRODUCT_NAME = "templates";
 const SOURCE_DOMAIN = "example.com";
 
 function makeProductInitLineReplace(context: InitProductWorkflowContext) {
-  const pascal = kebabCaseToPascalCase(context.productName);
-  const snakeUpper = kebabCaseToSnakeCase(context.productName).toUpperCase();
+  const placeholderReplace = makeLineReplace(context);
   const dockerFrom = `saflib-${SOURCE_PRODUCT_NAME}`;
   const dockerTo = `${context.organizationName}-${context.productName}`;
 
@@ -45,15 +45,22 @@ function makeProductInitLineReplace(context: InitProductWorkflowContext) {
     const preserveWorkflowsTemplatesExclude = line.includes(
       "workflows/templates",
     );
-    let out = line;
+    let out = placeholderReplace(line);
     out = out.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
-    out = out.split("@saflib/deploy").join(`@${context.organizationName}/deploy`);
+    out = out
+      .split("@saflib/deploy")
+      .join(`@${context.organizationName}/deploy`);
+    out = out.split("@saflib/example").join(`@${context.organizationName}/${context.organizationName}`);
     out = out.split(dockerFrom).join(dockerTo);
     out = out.split(SOURCE_DOMAIN).join(context.domainName);
-    out = out.split("Templates").join(pascal);
-    out = out.split("TEMPLATES").join(snakeUpper);
     if (!preserveWorkflowsTemplatesExclude) {
+      // Frozen package/image fragments that still use the source product name
+      // (e.g. saflib-templates-*, TEMPLATES_*, TemplatesLayout leftovers).
+      const pascal = kebabCaseToPascalCase(context.productName);
+      const snakeUpper = kebabCaseToSnakeCase(context.productName).toUpperCase();
       out = out.split(SOURCE_PRODUCT_NAME).join(context.productName);
+      out = out.split("Templates").join(pascal);
+      out = out.split("TEMPLATES").join(snakeUpper);
     }
     return out;
   };
@@ -86,22 +93,17 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    clients: path.join(templatesRoot, "clients"),
-    service: path.join(templatesRoot, "service"),
-    dev: path.join(templatesRoot, "dev"),
-    plans: path.join(templatesRoot, "plans"),
-    deploy: path.join(templatesRoot, "deploy"),
-    github: path.join(templatesRoot, ".github"),
+    all: templatesCopyRoot,
   },
 
   docFiles: {},
 
   versionControl: {
     allowPaths: ({ context }) => [
-      `**/${context.productName}/clients/**`,
+      `**/${context.productName}/**`,
       `./package.json`,
-      `**/${context.productName}/service/**`,
       `./deploy/**`,
+      `./.github/**`,
     ],
     commitEachStep: true,
   },
@@ -126,29 +128,21 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,
-      targetDir: path.join(context.cwd, context.productName),
+      targetDir: context.cwd,
       lineReplace: makeProductInitLineReplace(context),
     })),
-    step(CommandStepMachine, ({ context }) => ({
-      command: "mv",
-      args: [`./${context.productName}/deploy`, `./deploy`],
-    })),
+    // Product templates may include repo-root CI; never keep them in @saflib/saflib.
     step(
       CommandStepMachine,
-      ({ context }) => ({
-        command: "mv",
-        args: [`./${context.productName}/.github`, `./.github`],
-      }),
-      {
-        skipIf: ({ context }) =>
-          getPackageName(context.cwd) === "@saflib/saflib",
-      },
-    ),
-    step(
-      CommandStepMachine,
-      ({ context }) => ({
+      () => ({
         command: "rm",
-        args: ["-rf", `./${context.productName}/.github`],
+        args: [
+          "-rf",
+          ".github/workflows/playwright.yml",
+          ".github/workflows/typecheck.yml",
+          ".github/workflows/push.yml",
+          ".github/actions/setup-node-deps",
+        ],
       }),
       {
         skipIf: ({ context }) =>

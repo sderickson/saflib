@@ -1,7 +1,6 @@
 {
-  "extends": "@saflib/monorepo/tsconfig.json",
-  "include": [
-    "index.ts"
+  "extends": [
+    "@saflib/vue/tsconfig.app.json"
   ],
   "compilerOptions": {
     "rootDir": ".",
@@ -10,9 +9,14 @@
     "noEmit": false,
     "emitDeclarationOnly": true,
     "types": [
-      "node"
+      "vite/client"
     ]
   },
+  "include": [
+    ".vitepress/theme/**/*.ts",
+    ".vitepress/theme/**/*.vue",
+    "assets.d.ts"
+  ],
   "exclude": [
     "node_modules",
     "dist/types",
@@ -23,5 +27,19 @@
     "workflows/templates/**",
     "**/workflows/template/**",
     "**/workflows/templates/**"
+  ],
+  "references": [
+    {
+      "path": "../../../../../links"
+    },
+    {
+      "path": "../../../../../vue"
+    },
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../links"
+    }
   ]
 }

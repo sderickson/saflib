@@ -158,55 +158,55 @@
       "path": "./templates"
     },
     {
-      "path": "./templates/clients/account"
+      "path": "./templates/templates/__product-name__/clients/account"
     },
     {
-      "path": "./templates/clients/admin"
+      "path": "./templates/templates/__product-name__/clients/admin"
     },
     {
-      "path": "./templates/clients/app"
+      "path": "./templates/templates/__product-name__/clients/app"
     },
     {
-      "path": "./templates/clients/auth"
+      "path": "./templates/templates/__product-name__/clients/auth"
     },
     {
-      "path": "./templates/clients/common"
+      "path": "./templates/templates/__product-name__/clients/common"
     },
     {
-      "path": "./templates/clients/links"
+      "path": "./templates/templates/__product-name__/clients/links"
     },
     {
-      "path": "./templates/clients/root"
+      "path": "./templates/templates/__product-name__/clients/root"
     },
     {
-      "path": "./templates/deploy"
+      "path": "./templates/templates/__product-name__/dev"
     },
     {
-      "path": "./templates/dev"
+      "path": "./templates/templates/__product-name__/plans"
     },
     {
-      "path": "./templates/plans"
+      "path": "./templates/templates/__product-name__/service/common"
     },
     {
-      "path": "./templates/service/common"
+      "path": "./templates/templates/__product-name__/service/db"
     },
     {
-      "path": "./templates/service/db"
+      "path": "./templates/templates/__product-name__/service/http"
     },
     {
-      "path": "./templates/service/http"
+      "path": "./templates/templates/__product-name__/service/kratos-handlers"
     },
     {
-      "path": "./templates/service/kratos-handlers"
+      "path": "./templates/templates/__product-name__/service/monolith"
     },
     {
-      "path": "./templates/service/monolith"
+      "path": "./templates/templates/__product-name__/service/sdk"
     },
     {
-      "path": "./templates/service/sdk"
+      "path": "./templates/templates/__product-name__/service/spec"
     },
     {
-      "path": "./templates/service/spec"
+      "path": "./templates/templates/deploy"
     },
     {
       "path": "./utils"
