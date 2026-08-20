@@ -1,7 +1,7 @@
 import { test as base } from "@playwright/test";
 // import { getUniqueId } from "@saflib/playwright";
 // TODO: Import the product fixture from the common package
-// Example: import { templatesFixture } from "@saflib/base-clients-common/fixtures";
+// Example: import { baseFixture } from "@saflib/base-clients-common/fixtures";
 
 // TODO: Import any page fixtures needed for this test, usually from the same package
 
@@ -9,7 +9,7 @@ import { test as base } from "@playwright/test";
 type __TargetName__Fixtures = {
   // TODO: Add fixture properties here
   // Example:
-  // templates: typeof templatesFixture;
+  // templates: typeof baseFixture;
   // somePage: SomePageFixture;
 };
 
@@ -17,7 +17,7 @@ type __TargetName__Fixtures = {
 const test = base.extend<__TargetName__Fixtures>({
   // TODO: Add fixture definitions here
   // Example:
-  // templates: templatesFixture,
+  // templates: baseFixture,
   // somePage: somePageFixture,
 });
 

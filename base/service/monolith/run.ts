@@ -9,6 +9,7 @@ import {
   courierCallbacks,
   makeKratosActionHandler,
 } from "@saflib/base-kratos-handlers";
+import { initializeDependencies } from "@saflib/base-service-common/dependencies";
 
 validateEnv(process.env, envSchema);
 setServiceName("base");
@@ -16,6 +17,8 @@ setServiceName("base");
 addLokiTransport();
 initSentry();
 collectSystemMetrics();
+
+await initializeDependencies();
 
 startOryKratosService({
   courierCallbacks,

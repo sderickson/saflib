@@ -1,4 +1,4 @@
 export {
-  TemplatesFixture,
-  templatesFixture,
-} from "./templates";
+  BaseFixture,
+  baseFixture,
+} from "./base";

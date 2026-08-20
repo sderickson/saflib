@@ -2,3 +2,6 @@
 export * from "./schemas/__group-name__.ts";
 // END WORKFLOW AREA
 
+// BEGIN WORKFLOW AREA offshoot-schema-exports FOR drizzle/init
+export * from "@saflib/base-__offshoot-name__-db/schemas/__offshoot-name__";
+// END WORKFLOW AREA

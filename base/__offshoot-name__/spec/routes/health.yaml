@@ -1,0 +1,10 @@
+get__OffshootName__Health:
+  operationId: get__OffshootName__Health
+  summary: Health check for the __offshoot-name__ offshoot
+  responses:
+    "200":
+      description: Offshoot is reachable
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/health.yaml"

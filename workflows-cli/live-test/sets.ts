@@ -26,6 +26,7 @@ import {
   AddE2eTestWorkflowDefinition,
 } from "@saflib/vue/workflows";
 import { ServiceAddStoreWorkflowDefinition } from "@saflib/service/workflows";
+import { DrizzleInitWorkflowDefinition } from "@saflib/drizzle/workflows";
 
 /** Disposable product from product/init — never committed. */
 export const LIVE_TEST_PRODUCT = "tmp";
@@ -288,6 +289,39 @@ export const liveTestSets: LiveTestSet[] = [
       })),
     ],
   },
+  {
+    name: "offshoot",
+    description:
+      "drizzle/init offshoot db (dossier) woven into service/db — Phase 5 vertical slice",
+    typecheck: ["dossier/db", "service/db"],
+    assertFiles: [
+      "dossier/db/package.json",
+      "dossier/db/schemas/dossier.ts",
+      "service/db/schema.ts",
+    ],
+    steps: [
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}`,
+      })),
+      step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), () => ({
+        name: "dossier",
+      })),
+      // Cd is always relative to the live-test original cwd (saflib/), not process.cwd().
+      step(CdStepMachine, () => ({
+        path: ".",
+      })),
+      step(CommandStepMachine, () => ({
+        command: "node",
+        args: [
+          "--experimental-strip-types",
+          "--disable-warning=ExperimentalWarning",
+          "./workflows-cli/live-test/assert-contains.ts",
+          `${LIVE_TEST_PRODUCT}/service/db/schema.ts`,
+          "@saflib/tmp-dossier-db/schemas/dossier",
+        ],
+      })),
+    ],
+  },
 ];
 
 export function getLiveTestSet(name: string): LiveTestSet | undefined {
@@ -312,7 +346,6 @@ export function setupLiveTestSteps(): LiveTestStep[] {
     step(makeWorkflowMachine(InitProductWorkflowDefinition), () => ({
       name: LIVE_TEST_PRODUCT,
       domain: "temporary.com",
-      productOnly: true,
     })),
   ];
 }
@@ -331,7 +364,8 @@ export function teardownLiveTestSteps(): LiveTestStep[] {
         ".github/workflows/typecheck.yml",
         ".github/workflows/push.yml",
         ".github/actions/setup-node-deps",
-        "deploy",
+        // Never delete saflib/deploy — that is the golden deploy tree.
+        // product/init with productOnly:false upserts into it in place.
       ],
     })),
     step(CommandStepMachine, () => ({

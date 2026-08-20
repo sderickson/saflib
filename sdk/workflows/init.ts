@@ -4,35 +4,27 @@ import {
   CdStepMachine,
   defineWorkflow,
   step,
-  type ParsePackageNameOutput,
-  parsePackageName,
-  makeLineReplace,
+  TransformFileStepMachine,
+  type OffshootInitContext,
+  resolveOffshootInitContext,
+  makeOffshootLineReplace,
 } from "@saflib/workflows";
+import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const offshootSdkRoot = path.join(offshootStubRoot, "sdk");
+const parentFakesLive = path.join(templatesProductRoot, "service/sdk/fakes.ts");
 
 const input = [
   {
     name: "name",
     description:
-      "The name of the SDK package to create (e.g., 'user-sdk' or 'analytics-sdk')",
-    exampleValue: "example-sdk",
-  },
-  {
-    name: "path",
-    description:
-      "The path to the target directory for the SDK package (e.g., './clients/example')",
-    exampleValue: "./clients/example",
+      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/sdk and weaves fakes into the parent sdk package.",
+    exampleValue: "dossier",
   },
 ] as const;
 
-interface SdkInitWorkflowContext extends ParsePackageNameOutput {
-  targetDir: string;
-  relDir: string;
-  reversePath: string;
-  productName: string;
-}
+interface SdkInitWorkflowContext extends OffshootInitContext {}
 
 export const SdkInitWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -40,46 +32,31 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
 >({
   id: "sdk/init",
 
-  description: "Create an Tanstack/Vue SDK package",
+  description:
+    "Scaffold an offshoot SDK package and weave its fake handlers into the parent sdk",
 
-  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
+  checklistDescription: ({ offshootPackageName }) =>
+    `Init offshoot sdk ${offshootPackageName}.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
-  context: ({ input }) => {
-    const targetDir = path.join(input.cwd, input.path);
-    const relDir = path.relative(input.cwd, targetDir);
-    const numDirs = relDir.split(path.sep).length;
-    const reversePath = "../".repeat(numDirs).slice(0, -1);
-    const parsePathResult = parsePackageName(input.name, {
-      requiredSuffix: "-sdk",
-    });
-    const ctx: SdkInitWorkflowContext = {
-      ...parsePathResult,
-      targetDir,
-      relDir,
-      reversePath,
-      productName: parsePathResult.serviceName,
-    };
-    return ctx;
-  },
+  context: ({ input }) =>
+    resolveOffshootInitContext({
+      cwd: input.cwd,
+      offshootName: input.name,
+      layer: "sdk",
+    }),
 
   templateFiles: {
-    public: path.join(sourceDir, "public"),
-    client: path.join(sourceDir, "client.ts"),
-    fakes: path.join(sourceDir, "fakes.ts"),
-    i18n: path.join(sourceDir, "i18n.ts"),
-    indexTest: path.join(sourceDir, "index.test.ts"),
-    packageJson: path.join(sourceDir, "package.json"),
-    router: path.join(sourceDir, "router.ts"),
-    strings: path.join(sourceDir, "strings.ts"),
-    testApp: path.join(sourceDir, "test-app.ts"),
-    testing: path.join(sourceDir, "testing.ts"),
-    tsconfig: path.join(sourceDir, "tsconfig.json"),
-    typedFake: path.join(sourceDir, "typed-fake.ts"),
-    vitestConfig: path.join(sourceDir, "vitest.config.js"),
+    fakes: path.join(offshootSdkRoot, "fakes.ts"),
+    index: path.join(offshootSdkRoot, "index.ts"),
+    packageJson: path.join(offshootSdkRoot, "package.json"),
+    tsconfig: path.join(offshootSdkRoot, "tsconfig.json"),
+    vitestConfig: path.join(offshootSdkRoot, "vitest.config.js"),
+    test: path.join(offshootSdkRoot, "index.test.ts"),
+    parentFakes: parentFakesLive,
   },
 
   docFiles: {
@@ -88,9 +65,32 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: "",
+      name: context.offshootName,
       targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
+      templateFiles: {
+        offshootSdk: offshootSdkRoot,
+      },
+      lineReplace: makeOffshootLineReplace(context),
+    })),
+
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.offshootName,
+      targetDir: context.parentDir,
+      templateFiles: {
+        parentFakes: parentFakesLive,
+      },
+      lineReplace: makeOffshootLineReplace(context),
+    })),
+
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(context.parentDir, "package.json"),
+      description: `Add ${context.offshootPackageName} dependency to parent sdk`,
+      transform: (content: string) => {
+        const pkg = JSON.parse(content);
+        pkg.dependencies = pkg.dependencies ?? {};
+        pkg.dependencies[context.offshootPackageName] = "*";
+        return JSON.stringify(pkg, null, 2) + "\n";
+      },
     })),
 
     step(CdStepMachine, ({ context }) => ({
@@ -104,7 +104,7 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["test"],
+      args: ["run", "typecheck"],
     })),
   ],
 });

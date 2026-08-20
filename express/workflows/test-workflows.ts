@@ -1,4 +1,4 @@
-import { ExpressInitWorkflowDefinition as ExpressInitWorkflowDefinition } from "./init.ts";
+import { ExpressInitWorkflowDefinition } from "./init.ts";
 import { AddHandlerWorkflowDefinition } from "./add-handler.ts";
 
 import {
@@ -19,13 +19,17 @@ const input = [] as const;
 
 interface TestExpressWorkflowsContext {}
 
+/**
+ * Manual integration check for openapi + express offshoot inits.
+ * Expects cwd to be a product root already created by product/init.
+ */
 const TestExpressWorkflowsDefinition = defineWorkflow<
   typeof input,
   TestExpressWorkflowsContext
 >({
   id: "express/test-workflows",
   description:
-    "Run all @saflib/express workflows with @saflib/openapi integration",
+    "Run openapi/init + express/init offshoot workflows (product root cwd)",
   input,
   context: () => ({}),
   sourceUrl: import.meta.url,
@@ -35,64 +39,50 @@ const TestExpressWorkflowsDefinition = defineWorkflow<
     step(PromptStepMachine, () => ({
       promptText: `Go over the test goals.
 
-      This is a test of the @saflib/express workflows integrated with @saflib/openapi.
+      This exercises domain offshoot inits against an existing product (from product/init):
 
-      The test goals are:
-      - Initialize a new API spec package (test-spec)
-      - Add a schema to the spec (users schema)
-      - Add a route to the spec (list users route)
-      - Initialize a new HTTP service package (test-http)
-      - Add a handler for the route we created in the spec
-      - Test the complete API functionality
-      - Clean up`,
+      - openapi/init for offshoot "demo" (spec + weave)
+      - openapi/schema + openapi/route inside the offshoot spec
+      - express/init for offshoot "demo" (http + weave)
+      - express/add-handler inside the offshoot http package`,
     })),
 
-    // Initialize the API spec package
     step(makeWorkflowMachine(OpenapiInitWorkflowDefinition), () => ({
-      name: "@test/test-spec",
-      path: "./test-spec",
+      name: "demo",
     })),
 
-    // Add a users schema to the spec
     step(CdStepMachine, () => ({
-      path: "test-spec",
+      path: "demo/spec",
     })),
     step(makeWorkflowMachine(OpenApiSchemaWorkflowDefinition), () => ({
       name: "user",
     })),
-
-    // Add a list users route to the spec
     step(makeWorkflowMachine(OpenApiRouteWorkflowDefinition), () => ({
       path: "routes/users/list.yaml",
       urlPath: "/users",
       method: "get",
     })),
 
-    // Go back to parent directory and initialize HTTP service
     step(CdStepMachine, () => ({
-      path: ".",
+      path: "../..",
     })),
     step(makeWorkflowMachine(ExpressInitWorkflowDefinition), () => ({
-      name: "@test/test-http",
-      path: "./test-http",
+      name: "demo",
     })),
 
-    // Add a handler for the list users route
     step(CdStepMachine, () => ({
-      path: "test-http",
+      path: "demo/http",
     })),
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
       path: "./handlers/users/list.ts",
     })),
 
     step(PromptStepMachine, () => ({
-      promptText: `Check that everything looks good. Consider any difficulties you had while running the above workflows and changes you might make to the definitions.
+      promptText: `Check that everything looks good.
 
-      The test should have created:
-      - test-spec/ with users schema and list users route
-      - test-http/ with a handler for the list users route
-      - Both packages should have generated TypeScript types
-      - The HTTP service should be able to handle the route defined in the spec`,
+      Expected:
+      - demo/spec with users schema + list route, woven into service/spec/openapi.yaml
+      - demo/http with a users list handler, woven into service/http/http.ts`,
     })),
   ],
 });

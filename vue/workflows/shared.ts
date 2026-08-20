@@ -9,7 +9,6 @@ import {
 import {
   templatesProductRoot,
   templatesDeployRoot,
-  templatesSaflibRoot,
 } from "@saflib/templates";
 
 export const clientsRoot = path.join(templatesProductRoot, "clients");
@@ -25,18 +24,9 @@ export const devRoot = path.join(templatesProductRoot, "dev");
 export const caddyDev = path.join(devRoot, "caddy-config", "Caddyfile");
 
 /**
- * Deploy template tree. Prefer `saflib/deploy/` when present; until then fall
- * back to `product/workflows/templates/deploy` (same as product/init source).
+ * Deploy template tree at `saflib/deploy/` (`templatesDeployRoot`).
  */
-export const deployTemplatesRoot = existsSync(templatesDeployRoot)
-  ? templatesDeployRoot
-  : path.join(
-      templatesSaflibRoot,
-      "product",
-      "workflows",
-      "templates",
-      "deploy",
-    );
+export const deployTemplatesRoot = templatesDeployRoot;
 
 export const deployProductCaddy = path.join(
   deployTemplatesRoot,

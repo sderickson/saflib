@@ -4,32 +4,27 @@ import {
   step,
   CommandStepMachine,
   CdStepMachine,
-  type ParsePackageNameOutput,
-  parsePackageName,
-  makeLineReplace,
+  TransformFileStepMachine,
+  type OffshootInitContext,
+  resolveOffshootInitContext,
+  makeOffshootLineReplace,
 } from "@saflib/workflows";
+import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const offshootHttpRoot = path.join(offshootStubRoot, "http");
+const parentHttpLive = path.join(templatesProductRoot, "service/http/http.ts");
 
 const input = [
   {
     name: "name",
     description:
-      "The name of the HTTP service package to create (e.g., 'user-http' or 'analytics-http')",
-    exampleValue: "example-http",
-  },
-  {
-    name: "path",
-    description:
-      "The path to the target directory for the HTTP service package (e.g., './services/example')",
-    exampleValue: "./services/example",
+      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/http and mounts its router on the parent http package.",
+    exampleValue: "dossier",
   },
 ] as const;
 
-interface ExpressInitWorkflowContext extends ParsePackageNameOutput {
-  targetDir: string;
-}
+interface ExpressInitWorkflowContext extends OffshootInitContext {}
 
 export const ExpressInitWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -37,30 +32,31 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
 >({
   id: "express/init",
 
-  description: "Create an Express HTTP service package",
+  description:
+    "Scaffold an offshoot Express http package and weave its router into the parent http app",
 
-  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
+  checklistDescription: ({ offshootPackageName }) =>
+    `Init offshoot http ${offshootPackageName}.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
-  context: ({ input }) => {
-    return {
-      ...parsePackageName(input.name, {
-        requiredSuffix: "-http",
-      }),
-      targetDir: path.join(input.cwd, input.path),
-    };
-  },
+  context: ({ input }) =>
+    resolveOffshootInitContext({
+      cwd: input.cwd,
+      offshootName: input.name,
+      layer: "http",
+    }),
 
   templateFiles: {
-    http: path.join(sourceDir, "http.ts"),
-    packageJson: path.join(sourceDir, "package.json"),
-    tsconfig: path.join(sourceDir, "tsconfig.json"),
-    vitestConfig: path.join(sourceDir, "vitest.config.js"),
-    test: path.join(sourceDir, "index.test.ts"),
-    slimRouteTest: path.join(sourceDir, "testing/slim-route-test.ts"),
+    http: path.join(offshootHttpRoot, "http.ts"),
+    index: path.join(offshootHttpRoot, "index.ts"),
+    packageJson: path.join(offshootHttpRoot, "package.json"),
+    tsconfig: path.join(offshootHttpRoot, "tsconfig.json"),
+    vitestConfig: path.join(offshootHttpRoot, "vitest.config.js"),
+    test: path.join(offshootHttpRoot, "index.test.ts"),
+    parentHttp: parentHttpLive,
   },
 
   docFiles: {
@@ -69,9 +65,32 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: "",
+      name: context.offshootName,
       targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
+      templateFiles: {
+        offshootHttp: offshootHttpRoot,
+      },
+      lineReplace: makeOffshootLineReplace(context),
+    })),
+
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.offshootName,
+      targetDir: context.parentDir,
+      templateFiles: {
+        parentHttp: parentHttpLive,
+      },
+      lineReplace: makeOffshootLineReplace(context),
+    })),
+
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(context.parentDir, "package.json"),
+      description: `Add ${context.offshootPackageName} dependency to parent http`,
+      transform: (content: string) => {
+        const pkg = JSON.parse(content);
+        pkg.dependencies = pkg.dependencies ?? {};
+        pkg.dependencies[context.offshootPackageName] = "*";
+        return JSON.stringify(pkg, null, 2) + "\n";
+      },
     })),
 
     step(CdStepMachine, ({ context }) => ({
@@ -85,7 +104,7 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["test"],
+      args: ["run", "typecheck"],
     })),
   ],
 });

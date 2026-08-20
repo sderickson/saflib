@@ -26,6 +26,16 @@ export const templatesScaffoldRoot = path.join(
 );
 
 /**
+ * Golden domain offshoot stubs (db / spec / http / sdk).
+ * Skipped by product/init (skipSourceGlobs for __…__ paths);
+ * copied by domain offshoot init workflows.
+ */
+export const offshootStubRoot = path.join(
+  templatesProductRoot,
+  "__offshoot-name__",
+);
+
+/**
  * @deprecated Prefer {@link templatesProductRoot} — init now copies product,
  * deploy, and scaffold as separate roots.
  */

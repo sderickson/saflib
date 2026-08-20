@@ -2,6 +2,9 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
+      "path": "../../../cron/cron"
+    },
+    {
       "path": "../../../express"
     },
     {
@@ -9,6 +12,9 @@
     },
     {
       "path": "../common"
+    },
+    {
+      "path": "../cron"
     },
     {
       "path": "../db"

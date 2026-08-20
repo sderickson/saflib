@@ -21,6 +21,7 @@
     "@saflib/cron-spec": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
+    "@saflib/utils": "*",
     "cron": "^4.3.0"
   },
   "devDependencies": {

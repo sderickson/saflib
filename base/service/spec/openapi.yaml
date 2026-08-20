@@ -11,6 +11,12 @@ paths:
       $ref: "./routes/__group-name__/__target-name__.yaml#/__operationId__"
   # END WORKFLOW AREA
 
+  # BEGIN WORKFLOW AREA offshoot-paths FOR openapi/init
+  /__offshoot-name__/health:
+    get:
+      $ref: "../../__offshoot-name__/spec/routes/health.yaml#/get__OffshootName__Health"
+  # END WORKFLOW AREA
+
 components:
   schemas:
     Error:
@@ -20,4 +26,9 @@ components:
     # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
     __TargetName__:
       $ref: "./schemas/__target-name__.yaml"
+    # END WORKFLOW AREA
+
+    # BEGIN WORKFLOW AREA offshoot-schemas FOR openapi/init
+    __OffshootName__Health:
+      $ref: "../../__offshoot-name__/spec/schemas/health.yaml"
     # END WORKFLOW AREA

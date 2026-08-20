@@ -7,7 +7,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { typedEnv } from "@saflib/env";
 import {
   baseServiceStorage,
-  type TemplatesServiceContext,
+  type BaseServiceContext,
 } from "@saflib/base-service-common/context";
 // BEGIN WORKFLOW AREA job-imports FOR cron/add-job
 import { __groupName__Jobs } from "./jobs/__group-name__/index.ts";
@@ -46,7 +46,7 @@ export function getBaseCronDbKey(): DbKey {
 }
 
 export const runBaseCron = (
-  context: TemplatesServiceContext,
+  context: BaseServiceContext,
   enqueueJob: CronEnqueuer,
 ) => {
   return baseServiceStorage.run(context, () =>

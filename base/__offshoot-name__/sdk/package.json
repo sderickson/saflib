@@ -1,0 +1,28 @@
+{
+  "name": "@saflib/base-__offshoot-name__-sdk",
+  "saf": {
+    "kind": "sdk"
+  },
+  "description": "Offshoot TanStack fakes for Base __offshoot-name__; woven into parent sdk",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./fakes": "./fakes.ts",
+    "./requests/*": "./requests/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/sdk": "*",
+    "msw": "^2.11.3"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

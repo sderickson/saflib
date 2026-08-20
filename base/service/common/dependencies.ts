@@ -1,4 +1,7 @@
-import { configureSecretStore } from "./secrets.ts";
+import { configureSecretStore, getSecretStore } from "./secrets.ts";
+// BEGIN WORKFLOW AREA integration-imports FOR integrations/init
+import { configure__IntegrationName__ } from "@saflib/base-__integration-name__-integration";
+// END WORKFLOW AREA
 
 let initialized = false;
 
@@ -8,19 +11,15 @@ let initialized = false;
  *
  * Idempotent — safe to call from multiple entry points (HTTP, cron, CLI).
  * Must be awaited before serving requests.
- *
- * Add integration configuration here as you add integrations, e.g.:
- *
- * ```ts
- * import { configure(IntegrationName) } from "template-integration";
- * // ... inside initializeDependencies:
- * await configure(IntegrationName)(getSecretStore());
- * ```
  */
 export async function initializeDependencies(): Promise<void> {
   if (initialized) return;
 
   configureSecretStore();
+
+  // BEGIN WORKFLOW AREA integration-configure FOR integrations/init
+  await configure__IntegrationName__(getSecretStore());
+  // END WORKFLOW AREA
 
   initialized = true;
 }

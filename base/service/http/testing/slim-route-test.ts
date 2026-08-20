@@ -3,13 +3,13 @@ import type { DbKey } from "@saflib/drizzle";
 import { baseDb } from "@saflib/base-db/instances";
 import {
   createBaseHttpApp,
-  type TemplatesHttpAppLease,
+  type BaseHttpAppLease,
   type HttpRouterMount,
 } from "../http.ts";
 
 export type SlimRouteTestContext = {
   app: Express;
-  lease: TemplatesHttpAppLease;
+  lease: BaseHttpAppLease;
   dbKey: DbKey;
 };
 
@@ -49,6 +49,6 @@ export function acquireRouterSlimRouteTestMulti(
   });
 }
 
-export function releaseSlimRouteTest(lease: TemplatesHttpAppLease): void {
+export function releaseSlimRouteTest(lease: BaseHttpAppLease): void {
   baseDb.disconnect(lease.baseDbKey);
 }

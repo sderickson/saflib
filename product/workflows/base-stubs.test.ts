@@ -24,25 +24,61 @@ const stubPaths = [
   "service/email/emails/__target-name__.ts",
   "service/cron/jobs/__group-name__/__target-name__.ts",
   "service/integrations/__integration-name__/calls/__target-name__.ts",
+  "packages/__package-name__/package.json",
+  "packages/__package-name__/__target-name__.ts",
+  "packages/__package-name__/bin/__group-name__/index.ts",
+  "packages/__package-name__/workflows/__target-name__.ts",
+  "packages/__package-name__/env.schema.json",
+  // Phase 5 domain offshoot golden packages
+  "__offshoot-name__/db/package.json",
+  "__offshoot-name__/db/schemas/__offshoot-name__.ts",
+  "__offshoot-name__/spec/package.json",
+  "__offshoot-name__/spec/openapi.yaml",
+  "__offshoot-name__/http/package.json",
+  "__offshoot-name__/http/http.ts",
+  "__offshoot-name__/sdk/package.json",
+  "__offshoot-name__/sdk/fakes.ts",
 ] as const;
 
 /** Live hosts whose workflow areas must contain stub tokens (not emptied). */
 const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   {
     rel: "service/spec/openapi.yaml",
-    mustInclude: ["__group-name__", "__target-name__"],
+    mustInclude: [
+      "__group-name__",
+      "__target-name__",
+      "__offshoot-name__",
+      "offshoot-paths",
+      "offshoot-schemas",
+    ],
   },
   {
     rel: "service/db/schema.ts",
-    mustInclude: ["__group-name__"],
+    mustInclude: [
+      "__group-name__",
+      "@saflib/base-__offshoot-name__-db",
+      "offshoot-schema-exports",
+    ],
   },
   {
     rel: "service/http/http.ts",
-    mustInclude: ["__group-name__", "create__GroupName__Router"],
+    mustInclude: [
+      "__group-name__",
+      "create__GroupName__Router",
+      "@saflib/base-__offshoot-name__-http",
+      "create__OffshootName__Router",
+      "createCronRouter",
+      "getBaseCronDbKey",
+    ],
   },
   {
     rel: "service/sdk/fakes.ts",
-    mustInclude: ["__group-name__", "__groupName__FakeHandlers"],
+    mustInclude: [
+      "__group-name__",
+      "__groupName__FakeHandlers",
+      "@saflib/base-__offshoot-name__-sdk",
+      "__offshootName__FakeHandlers",
+    ],
   },
   {
     rel: "clients/__subdomain-name__/router.ts",
@@ -85,6 +121,18 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   },
   {
     rel: "service/integrations/__integration-name__/index.ts",
+    mustInclude: ["__targetName__"],
+  },
+  {
+    rel: "service/common/dependencies.ts",
+    mustInclude: ["configure__IntegrationName__", "__integration-name__"],
+  },
+  {
+    rel: "service/monolith/index.ts",
+    mustInclude: ["runBaseCron"],
+  },
+  {
+    rel: "packages/__package-name__/index.ts",
     mustInclude: ["__targetName__"],
   },
 ];

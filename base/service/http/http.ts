@@ -8,12 +8,18 @@ import type { DbKey } from "@saflib/drizzle";
 import { baseDb } from "@saflib/base-db/instances";
 import {
   baseServiceStorage,
-  type TemplatesServiceContextOptions,
+  type BaseServiceContextOptions,
   makeContext,
 } from "@saflib/base-service-common/context";
+import { createCronRouter } from "@saflib/cron";
+import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
 
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
 import { create__GroupName__Router } from "./handlers/__group-name__/index.ts";
+// END WORKFLOW AREA
+
+// BEGIN WORKFLOW AREA offshoot-router-imports FOR express/init
+import { create__OffshootName__Router } from "@saflib/base-__offshoot-name__-http";
 // END WORKFLOW AREA
 
 export type HttpRouterMount = {
@@ -21,16 +27,15 @@ export type HttpRouterMount = {
   createRouter: () => Router;
 };
 
-export type CreateTemplatesHttpAppOptions =
-  TemplatesServiceContextOptions & {
-    /**
-     * Slim route tests mount one or more production routers. When omitted, every
-     * product router from the workflow area below is mounted (monolith / smoke).
-     */
-    mounts?: HttpRouterMount[];
-  };
+export type CreateBaseHttpAppOptions = BaseServiceContextOptions & {
+  /**
+   * Slim route tests mount one or more production routers. When omitted, every
+   * product router from the workflow area below is mounted (monolith / smoke).
+   */
+  mounts?: HttpRouterMount[];
+};
 
-export type TemplatesHttpAppLease = {
+export type BaseHttpAppLease = {
   app: express.Express;
   baseDbKey: DbKey;
 };
@@ -39,6 +44,9 @@ function defaultRouterMounts(): HttpRouterMount[] {
   return [
     // BEGIN WORKFLOW AREA default-router-mounts FOR express/add-handler
     { kind: "router", createRouter: create__GroupName__Router },
+    // END WORKFLOW AREA
+    // BEGIN WORKFLOW AREA offshoot-router-mounts FOR express/init
+    { kind: "router", createRouter: create__OffshootName__Router },
     // END WORKFLOW AREA
   ];
 }
@@ -51,8 +59,8 @@ function defaultRouterMounts(): HttpRouterMount[] {
  * Use default mounts only for monolith smoke tests (`index.test.ts`) or `*.integration.test.ts`.
  */
 export function createBaseHttpApp(
-  options: CreateTemplatesHttpAppOptions = {},
-): TemplatesHttpAppLease {
+  options: CreateBaseHttpAppOptions = {},
+): BaseHttpAppLease {
   let dbKey = options.baseDbKey;
   if (!dbKey) {
     dbKey = baseDb.connect();
@@ -83,6 +91,18 @@ export function createBaseHttpApp(
   // BEGIN WORKFLOW AREA app-use-routes FOR express/add-handler
 
 
+  // END WORKFLOW AREA
+
+  // Cron admin API after product routers (terminator middleware on /cron only).
+  // BEGIN WORKFLOW AREA cron-router FOR cron/init
+  app.use(
+    createCronRouter({
+      dbKey: getBaseCronDbKey(),
+      jobs: baseJobs,
+      // Ticks enqueue via runBaseCron in the monolith; router is admin-only.
+      enqueueJob: async () => ({}),
+    }),
+  );
   // END WORKFLOW AREA
 
   app.use(createErrorMiddleware());

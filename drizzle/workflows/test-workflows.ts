@@ -17,12 +17,16 @@ const input = [] as const;
 
 interface TestDrizzleWorkflowsContext {}
 
+/**
+ * Manual check for drizzle/init offshoot + incremental add-* inside the offshoot.
+ * Expects cwd to be a product root already created by product/init.
+ */
 const TestDrizzleWorkflowsDefinition = defineWorkflow<
   typeof input,
   TestDrizzleWorkflowsContext
 >({
   id: "drizzle/test-workflows",
-  description: "Run all @saflib/drizzle workflows",
+  description: "Run drizzle offshoot init + schema/query workflows",
   input,
   context: () => ({}),
   sourceUrl: import.meta.url,
@@ -32,21 +36,17 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
     step(PromptStepMachine, () => ({
       promptText: `Go over the test goals.
 
-      This is a test of the @saflib/drizzle workflows.
+      This exercises drizzle/init against an existing product (from product/init):
 
-      The test goals are:
-      - Initialize a new database package
-      - Update the schema with a new table
-      - Add a query to interact with the new table
-      - Test the database functionality
+      - drizzle/init for offshoot "demo" (db package + weave into service/db)
+      - drizzle/update-schema + drizzle/add-query inside the offshoot db
       - Clean up`,
     })),
     step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), () => ({
-      path: "./test-db",
-      name: "test-db",
+      name: "demo",
     })),
     step(CdStepMachine, () => ({
-      path: "./test-db",
+      path: "./demo/db",
     })),
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
       path: "./schemas/users.ts",
@@ -62,7 +62,7 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
       args: ["test"],
     })),
     step(PromptStepMachine, () => ({
-      promptText: `Check that everything looks good. Consider any difficulties you had while running the above workflows and changes you might make to the definitions.`,
+      promptText: `Check that demo/db exists, is woven into service/db/schema.ts, and queries work.`,
     })),
   ],
 });

@@ -4,32 +4,30 @@ import {
   step,
   CdStepMachine,
   CommandStepMachine,
-  type ParsePackageNameOutput,
-  parsePackageName,
-  makeLineReplace,
+  TransformFileStepMachine,
+  type OffshootInitContext,
+  resolveOffshootInitContext,
+  makeOffshootLineReplace,
 } from "@saflib/workflows";
+import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const offshootDbRoot = path.join(offshootStubRoot, "db");
+const parentSchemaLive = path.join(
+  templatesProductRoot,
+  "service/db/schema.ts",
+);
 
 const input = [
   {
     name: "name",
     description:
-      "The name of the database package to create (e.g., 'user-db' or 'analytics-db')",
-    exampleValue: "@example-org/example-db",
-  },
-  {
-    name: "path",
-    description:
-      "The path to the target directory for the database package (e.g., './services/example-db')",
-    exampleValue: "./services/example-service/example-db",
+      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/db and weaves into the parent db package.",
+    exampleValue: "dossier",
   },
 ] as const;
 
-interface DrizzleInitWorkflowContext extends ParsePackageNameOutput {
-  targetDir: string;
-}
+interface DrizzleInitWorkflowContext extends OffshootInitContext {}
 
 export const DrizzleInitWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -37,47 +35,67 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
 >({
   id: "drizzle/init",
 
-  description: "Create a Drizzle/SQLite database package",
+  description:
+    "Scaffold an offshoot db package and weave its schemas into the parent db (no second monolith)",
 
-  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
+  checklistDescription: ({ offshootPackageName }) =>
+    `Init offshoot db ${offshootPackageName}.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
-  context: ({ input }) => {
-    return {
-      ...parsePackageName(input.name, { requiredSuffix: "-db" }),
-      targetDir: path.join(input.cwd, input.path),
-    };
-  },
+  context: ({ input }) =>
+    resolveOffshootInitContext({
+      cwd: input.cwd,
+      offshootName: input.name,
+      layer: "db",
+    }),
 
   templateFiles: {
-    packageJson: path.join(sourceDir, "package.json"),
-    drizzleConfig: path.join(sourceDir, "drizzle.config.ts"),
-    schema: path.join(sourceDir, "schema.ts"),
-    instances: path.join(sourceDir, "instances.ts"),
-    errors: path.join(sourceDir, "errors.ts"),
-    types: path.join(sourceDir, "types.ts"),
-    tsconfig: path.join(sourceDir, "tsconfig.json"),
-    vitestConfig: path.join(sourceDir, "vitest.config.js"),
-    gitignore: path.join(sourceDir, ".gitignore"),
-    test: path.join(sourceDir, "index.test.ts"),
+    packageJson: path.join(offshootDbRoot, "package.json"),
+    schema: path.join(offshootDbRoot, "schema.ts"),
+    seedSchema: path.join(offshootDbRoot, "schemas/__offshoot-name__.ts"),
+    errors: path.join(offshootDbRoot, "errors.ts"),
+    types: path.join(offshootDbRoot, "types.ts"),
+    tsconfig: path.join(offshootDbRoot, "tsconfig.json"),
+    vitestConfig: path.join(offshootDbRoot, "vitest.config.js"),
+    test: path.join(offshootDbRoot, "index.test.ts"),
+    parentSchema: parentSchemaLive,
   },
 
   docFiles: {
     overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
   },
 
-  versionControl: {
-    allowPaths: ["./migrations/**", "./data/.gitkeep"],
-  },
-
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: "", // needed?
+      name: context.offshootName,
       targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
+      templateFiles: {
+        offshootDb: offshootDbRoot,
+      },
+      lineReplace: makeOffshootLineReplace(context),
+    })),
+
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.offshootName,
+      targetDir: context.parentDir,
+      templateFiles: {
+        parentSchema: parentSchemaLive,
+      },
+      lineReplace: makeOffshootLineReplace(context),
+    })),
+
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(context.parentDir, "package.json"),
+      description: `Add ${context.offshootPackageName} dependency to parent db`,
+      transform: (content: string) => {
+        const pkg = JSON.parse(content);
+        pkg.dependencies = pkg.dependencies ?? {};
+        pkg.dependencies[context.offshootPackageName] = "*";
+        return JSON.stringify(pkg, null, 2) + "\n";
+      },
     })),
 
     step(CdStepMachine, ({ context }) => ({
@@ -91,28 +109,7 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["install", "drizzle-orm"],
-    })),
-
-    // initialize drizzle sqlite migrations
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "generate"],
-    })),
-
-    // make a data dir
-    step(CommandStepMachine, () => ({
-      command: "mkdir",
-      args: ["-p", "data"],
-    })),
-    step(CommandStepMachine, () => ({
-      command: "touch",
-      args: ["data/.gitkeep"],
-    })),
-
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["test"],
+      args: ["run", "typecheck"],
     })),
   ],
 });

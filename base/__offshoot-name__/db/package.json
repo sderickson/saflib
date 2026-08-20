@@ -1,0 +1,28 @@
+{
+  "name": "@saflib/base-__offshoot-name__-db",
+  "saf": {
+    "kind": "db"
+  },
+  "description": "Offshoot schemas for Base __offshoot-name__; composed into the parent db SQLite",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./errors": "./errors.ts",
+    "./types": "./types.ts",
+    "./schema": "./schema.ts",
+    "./schemas/*": "./schemas/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/drizzle": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

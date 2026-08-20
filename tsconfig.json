@@ -26,6 +26,18 @@
       "path": "./backup/backup-spec"
     },
     {
+      "path": "./base/__offshoot-name__/db"
+    },
+    {
+      "path": "./base/__offshoot-name__/http"
+    },
+    {
+      "path": "./base/__offshoot-name__/sdk"
+    },
+    {
+      "path": "./base/__offshoot-name__/spec"
+    },
+    {
       "path": "./base/clients/__static-subdomain-name__"
     },
     {
@@ -54,6 +66,9 @@
     },
     {
       "path": "./base/dev"
+    },
+    {
+      "path": "./base/packages/__package-name__"
     },
     {
       "path": "./base/plans"

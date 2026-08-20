@@ -9,29 +9,35 @@ import {
   makeLineReplace,
   parsePackageName,
   type ParsePackageNameOutput,
+  getPackageName,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
+import { existsSync } from "node:fs";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const integrationStubRoot = path.join(
+  templatesProductRoot,
+  "service/integrations/__integration-name__",
+);
+const dependenciesLive = path.join(
+  templatesProductRoot,
+  "service/common/dependencies.ts",
+);
 
 const input = [
   {
     name: "name",
     description:
-      "The npm package name for the integration (e.g., '@myorg/myapp-stripe')",
-    exampleValue: "@example/example-integration",
-  },
-  {
-    name: "path",
-    description:
-      "Relative path to the integration directory (e.g., 'services/integrations/stripe')",
-    exampleValue: "services/integrations/example-integration",
+      "Kebab-case integration name (e.g. 'stripe'). Creates service/integrations/{name} and weaves configure into common/dependencies.",
+    exampleValue: "stripe",
   },
 ] as const;
 
 interface InitIntegrationContext extends ParsePackageNameOutput {
   integrationName: string;
   targetDir: string;
+  parentDir: string;
+  productRoot: string;
 }
 
 export const InitIntegrationWorkflowDefinition = defineWorkflow<
@@ -41,7 +47,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
   id: "integrations/init",
 
   description:
-    "Initialize a new third-party integration package with client, env schema, mock, and test script",
+    "Initialize a third-party integration from the base stub and weave configure into service dependencies",
 
   checklistDescription: ({ packageName }) =>
     `Initialize ${packageName} integration package.`,
@@ -55,28 +61,54 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
   },
 
   context: ({ input }) => {
-    const pathParts = input.path.split("/").filter(Boolean);
-    const integrationName = pathParts[pathParts.length - 1];
-    return {
-      ...parsePackageName(input.name),
+    const integrationName = input.name;
+    const parentDir = path.resolve(
+      input.cwd,
+      path.join("service", "common"),
+    );
+    const productRoot = path.dirname(path.dirname(parentDir));
+    const targetDir = path.join(
+      productRoot,
+      "service",
+      "integrations",
       integrationName,
-      targetDir: path.join(input.cwd, input.path),
+    );
+
+    let org = "saflib";
+    let productName = path.basename(productRoot);
+    if (existsSync(path.join(parentDir, "package.json"))) {
+      const parsed = parsePackageName(getPackageName(parentDir), {
+        requiredSuffix: "-service-common",
+        silentError: true,
+      });
+      if (parsed.organizationName) org = parsed.organizationName;
+      if (parsed.serviceName) productName = parsed.serviceName;
+    }
+
+    const packageName = `@${org}/${productName}-${integrationName}-integration`;
+
+    return {
+      ...parsePackageName(packageName),
+      integrationName,
+      targetDir,
+      parentDir,
+      productRoot,
+      serviceName: productName,
     };
   },
 
   templateFiles: {
-    packageJson: path.join(sourceDir, "package.json"),
-    envSchema: path.join(sourceDir, "env.schema.json"),
-    // envFile: path.join(sourceDir, ".env"),
-    client: path.join(sourceDir, "client.ts"),
-    clientMocks: path.join(sourceDir, "client.mocks.ts"),
-    index: path.join(sourceDir, "index.ts"),
-    test: path.join(sourceDir, "index.test.ts"),
-    gitignore: path.join(sourceDir, ".gitignore"),
-    tsconfig: path.join(sourceDir, "tsconfig.json"),
-    vitestConfig: path.join(sourceDir, "vitest.config.js"),
-    callsPing: path.join(sourceDir, "calls/ping.ts"),
-    binPing: path.join(sourceDir, "bin/ping.ts"),
+    packageJson: path.join(integrationStubRoot, "package.json"),
+    envSchema: path.join(integrationStubRoot, "env.schema.json"),
+    envFile: path.join(integrationStubRoot, "env.ts"),
+    client: path.join(integrationStubRoot, "client.ts"),
+    clientMocks: path.join(integrationStubRoot, "client.mocks.ts"),
+    index: path.join(integrationStubRoot, "index.ts"),
+    test: path.join(integrationStubRoot, "index.test.ts"),
+    tsconfig: path.join(integrationStubRoot, "tsconfig.json"),
+    vitestConfig: path.join(integrationStubRoot, "vitest.config.js"),
+    callsPing: path.join(integrationStubRoot, "calls/ping.ts"),
+    binPing: path.join(integrationStubRoot, "bin/ping.ts"),
   },
 
   docFiles: {
@@ -89,14 +121,31 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
       return {
         name: context.integrationName,
         targetDir: context.targetDir,
+        // Expansion stubs belong to integrations/add-call.
+        skipSourceGlobs: ["**/__target-name__*"],
         lineReplace: (line: string) => {
           let result = line;
-          if (result.includes("template-integration")) {
-            result = result.replaceAll(
-              "template-integration",
-              context.packageName,
-            );
-          }
+          result = result
+            .split("@saflib/base-__integration-name__-integration")
+            .join(context.packageName);
+          return baseReplace(result);
+        },
+      };
+    }),
+
+    step(CopyStepMachine, ({ context }) => {
+      const baseReplace = makeLineReplace(context);
+      return {
+        name: context.integrationName,
+        targetDir: context.parentDir,
+        templateFiles: {
+          dependencies: dependenciesLive,
+        },
+        lineReplace: (line: string) => {
+          let result = line;
+          result = result
+            .split("@saflib/base-__integration-name__-integration")
+            .join(context.packageName);
           return baseReplace(result);
         },
       };

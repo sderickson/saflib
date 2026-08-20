@@ -6,7 +6,7 @@ import { createObjectStore } from "@saflib/object-store";
 import type { ObjectStore } from "@saflib/object-store";
 // END WORKFLOW AREA
 
-export interface TemplatesServiceContext {
+export interface BaseServiceContext {
   baseDbKey: DbKey;
   // BEGIN WORKFLOW AREA storeProperties FOR service/add-store
   __storeName__: ObjectStore;
@@ -14,9 +14,9 @@ export interface TemplatesServiceContext {
 }
 
 export const baseServiceStorage =
-  new AsyncLocalStorage<TemplatesServiceContext>();
+  new AsyncLocalStorage<BaseServiceContext>();
 
-export interface TemplatesServiceContextOptions {
+export interface BaseServiceContextOptions {
   baseDbKey?: DbKey;
   // BEGIN WORKFLOW AREA storeOptions FOR service/add-store
   __storeName__?: ObjectStore;
@@ -24,8 +24,8 @@ export interface TemplatesServiceContextOptions {
 }
 
 export const makeContext = (
-  options: TemplatesServiceContextOptions = {},
-): TemplatesServiceContext => {
+  options: BaseServiceContextOptions = {},
+): BaseServiceContext => {
   const dbKey = options.baseDbKey ?? baseDb.connect();
   // BEGIN WORKFLOW AREA storeInit FOR service/add-store
   const __storeName__ =
