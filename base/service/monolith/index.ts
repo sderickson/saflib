@@ -4,7 +4,9 @@ import { baseDb } from "@saflib/base-db/instances";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { makeContext } from "@saflib/base-service-common/context";
+// BEGIN WORKFLOW AREA cron-imports FOR cron/init
 import { runBaseCron } from "@saflib/base-cron";
+// END WORKFLOW AREA
 
 export function startBaseService() {
   const { log, logError } = makeSubsystemReporters("init", "main");

@@ -11,8 +11,10 @@ import {
   type BaseServiceContextOptions,
   makeContext,
 } from "@saflib/base-service-common/context";
+// BEGIN WORKFLOW AREA cron-imports FOR cron/init
 import { createCronRouter } from "@saflib/cron";
 import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
+// END WORKFLOW AREA
 
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
 import { create__GroupName__Router } from "./handlers/__group-name__/index.ts";

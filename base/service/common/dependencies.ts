@@ -1,5 +1,6 @@
-import { configureSecretStore, getSecretStore } from "./secrets.ts";
+import { configureSecretStore } from "./secrets.ts";
 // BEGIN WORKFLOW AREA integration-imports FOR integrations/init
+import { getSecretStore } from "./secrets.ts";
 import { configure__IntegrationName__ } from "@saflib/base-__integration-name__-integration";
 // END WORKFLOW AREA
 

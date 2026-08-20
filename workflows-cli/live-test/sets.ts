@@ -372,6 +372,12 @@ export function teardownLiveTestSteps(): LiveTestStep[] {
         `deploy/remote-assets/.env.${LIVE_TEST_PRODUCT}.secrets`,
       ],
     })),
+    // product/init upserts into golden deploy workflow areas in place; restore
+    // tracked deploy files so live-test does not accumulate tmp pollution.
+    step(CommandStepMachine, () => ({
+      command: "git",
+      args: ["checkout", "--", "deploy"],
+    })),
     step(CommandStepMachine, () => ({
       command: "node",
       args: [
