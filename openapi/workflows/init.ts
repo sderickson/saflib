@@ -22,7 +22,7 @@ const input = [
   {
     name: "name",
     description:
-      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/spec and weaves $refs into the parent openapi.yaml.",
+      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/spec and weaves path $refs into the parent openapi.yaml.",
     exampleValue: "dossier",
   },
 ] as const;
@@ -36,7 +36,7 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
   id: "openapi/init",
 
   description:
-    "Scaffold an offshoot OpenAPI package and weave path/schema $refs into the parent spec",
+    "Scaffold an offshoot OpenAPI package and weave path $refs into the parent spec",
 
   checklistDescription: ({ offshootPackageName }) =>
     `Init offshoot spec ${offshootPackageName}.`,

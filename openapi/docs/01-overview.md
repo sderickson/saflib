@@ -8,10 +8,19 @@ SAF uses [OpenAPI](https://www.openapis.org/what-is-openapi) to define and gener
 
 Packages using `@saflib/openapi` can generate:
 
-- TypeScript types
-- JSON schemas
-- API docs
+- TypeScript types (`dist/openapi.d.ts` and per-operation/schema fragments)
+- JSON schemas (`dist/openapi.json`) for runtime validation
 
+HTML API docs are served by `@saflib/dev-site`, not by `saf-specs generate`.
+
+Cross-package schema `$ref`s use a SAF `pkg:` convention resolved at generate time:
+
+```yaml
+schema:
+  $ref: "pkg:@scope/product-offshoot-spec/openapi.yaml#/components/schemas/Widget"
+```
+
+Do not re-list offshoot schemas under a parent `components.schemas` just to make `$ref`s work — reference the offshoot package instead. Generated parent schema fragments re-export offshoot types so existing `…-spec/schemas/Name` imports keep the correct type identity.
 For conventions on designing routes and schemas (URL structure, batch endpoints, binary responses, nullable fields, etc.), see [API Design](./02-api-design.md).
 
 For OpenAPI operation tags used by middleware and the job queue (`site-admin-only`, `background`, …), see [Operation tags](./03-tags.md).
@@ -65,17 +74,13 @@ Or invoke the bin directly:
 saf-specs generate
 ```
 
-To generate HTML docs as well, run
-
-```bash
-saf-specs generate --html
-```
-
 From outside the package (or in agent workflows), use `npm exec`:
 
 ```bash
 npm exec saf-specs generate
 ```
+
+(`--html` is deprecated and ignored; use `@saflib/dev-site` for docs.)
 
 ### `events/`
 

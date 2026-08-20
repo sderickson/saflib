@@ -3,9 +3,12 @@ import { addNewLinesToString } from "@saflib/utils";
 import { execFileSync } from "child_process";
 import { getSafReporters } from "@saflib/node";
 import { errorSchema } from "@saflib/openapi/error";
-import { mkdirSync, readdirSync, rmSync, writeFileSync } from "fs";
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import { resolvePackageBin } from "./resolve-bin.ts";
+import { rewritePkgRefs } from "./resolve-pkg-refs.ts";
+import { bundleOpenApiToJson } from "./bundle-openapi.ts";
+import { rewriteExternalSchemaTypes } from "./rewrite-external-types.ts";
 
 /**
  * Clear codegen outputs under `-o` while preserving `types/` (composite `tsc -b`
@@ -25,61 +28,73 @@ export const addGenerateCommand = (program: Command) => {
     .command("generate")
     .description(
       addNewLinesToString(
-        "Generate OpenAPI types, JSON bundle, and HTML documentation",
+        "Generate OpenAPI types, JSON bundle, and per-operation/schema fragments",
       ),
     )
     .option("-f, --file <file>", "OpenAPI spec file path", "./openapi.yaml")
     .option("-o, --output <dir>", "Output directory", "./dist")
-    .option("-h, --html", "Also generate HTML documentation")
+    .option(
+      "-h, --html",
+      "Deprecated: HTML docs are served by @saflib/dev-site (ignored)",
+    )
     .action(async (options) => {
       const { log } = getSafReporters();
 
       const { file, output } = options;
-      const outputDir = path.resolve(process.cwd(), output);
+      const cwd = process.cwd();
+      const outputDir = path.resolve(cwd, output);
 
       clearGeneratedOutput(outputDir);
 
-      mkdirSync(path.join(process.cwd(), "./schemas"), { recursive: true });
+      mkdirSync(path.join(cwd, "./schemas"), { recursive: true });
 
-      writeFileSync(
-        path.join(process.cwd(), "./schemas/error.yaml"),
-        errorSchema,
-      );
-
-      const openapiTypescriptBin = resolvePackageBin("openapi-typescript");
-      const redoclyBin = resolvePackageBin("@redocly/cli", "redocly");
-
-      log.info("Generating OpenAPI types...");
-      execFileSync(
-        openapiTypescriptBin,
-        [file, "-o", `${output}/openapi.d.ts`],
-        { stdio: "inherit" },
-      );
-
-      log.info("Generating JSON bundle...");
-      execFileSync(
-        redoclyBin,
-        ["bundle", file, "--ext", "json", "--output", `${output}/openapi.json`],
-        { stdio: "inherit" },
-      );
+      writeFileSync(path.join(cwd, "./schemas/error.yaml"), errorSchema);
 
       if (options.html) {
-        log.info("Generating HTML documentation...");
-        execFileSync(
-          redoclyBin,
-          ["build-docs", file, `--output=${output}/index.html`],
-          { stdio: "inherit" },
+        log.warn(
+          "--html is deprecated; use @saflib/dev-site for API docs instead of Redocly HTML.",
         );
       }
 
-      log.info("Generating per-operation and schema fragments...");
-      const {
-        generateOperationFragments,
-        generateSchemaFragments,
-      } = await import("./generate-fragments.ts");
-      await generateOperationFragments(outputDir);
-      generateSchemaFragments(outputDir);
+      log.info("Resolving pkg: $refs...");
+      const resolved = rewritePkgRefs({ entryFile: file, cwd });
+      try {
+        const openapiTypescriptBin = resolvePackageBin("openapi-typescript");
+        const dtsPath = path.join(outputDir, "openapi.d.ts");
+        const jsonPath = path.join(outputDir, "openapi.json");
 
-      log.info("✅ OpenAPI generation completed successfully!");
+        log.info("Generating OpenAPI types...");
+        execFileSync(
+          openapiTypescriptBin,
+          [resolved.rewrittenEntryPath, "-o", dtsPath],
+          { stdio: "inherit" },
+        );
+
+        if (resolved.externalSchemas.size > 0) {
+          log.info(
+            `Rewriting ${resolved.externalSchemas.size} cross-package schema type(s)...`,
+          );
+          const dts = readFileSync(dtsPath, "utf8");
+          writeFileSync(
+            dtsPath,
+            rewriteExternalSchemaTypes(dts, resolved.externalSchemas),
+          );
+        }
+
+        log.info("Generating JSON bundle...");
+        await bundleOpenApiToJson(resolved.rewrittenEntryPath, jsonPath);
+
+        log.info("Generating per-operation and schema fragments...");
+        const {
+          generateOperationFragments,
+          generateSchemaFragments,
+        } = await import("./generate-fragments.ts");
+        await generateOperationFragments(outputDir);
+        generateSchemaFragments(outputDir, resolved.externalSchemas);
+
+        log.info("✅ OpenAPI generation completed successfully!");
+      } finally {
+        resolved.cleanup();
+      }
     });
 };

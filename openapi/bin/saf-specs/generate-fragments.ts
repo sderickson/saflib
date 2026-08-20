@@ -72,8 +72,21 @@ export function canonicalSchemaFragmentNames(schemaNames: string[]): string[] {
   return [...byLower.values()].sort((a, b) => a.localeCompare(b));
 }
 
-function writeSchemaIndex(schemaDir: string, schemaName: string): void {
+function writeSchemaIndex(
+  schemaDir: string,
+  schemaName: string,
+  external?: { packageName: string; schemaName: string },
+): void {
   const typeName = schemaTypeExportName(schemaName);
+  if (external) {
+    const exportName = schemaTypeExportName(external.schemaName);
+    const line =
+      exportName === typeName
+        ? `export type { ${exportName} } from "${external.packageName}/schemas/${external.schemaName}";\n`
+        : `export type { ${exportName} as ${typeName} } from "${external.packageName}/schemas/${external.schemaName}";\n`;
+    writeFileSync(path.join(schemaDir, "index.ts"), line);
+    return;
+  }
   writeFileSync(
     path.join(schemaDir, "index.ts"),
     `import type { components } from "../../openapi.d.ts";
@@ -145,21 +158,28 @@ export async function generateOperationFragments(outputDir: string): Promise<num
   return entries.length;
 }
 
-export function generateSchemaFragments(outputDir: string): number {
+export function generateSchemaFragments(
+  outputDir: string,
+  externalSchemas: Map<
+    string,
+    { packageName: string; schemaName: string }
+  > = new Map(),
+): number {
   const { log } = getSafReporters();
   const bundledJsonPath = path.join(outputDir, "openapi.json");
   const bundled = JSON.parse(readFileSync(bundledJsonPath, "utf8")) as OpenApiDoc;
 
-  const schemaNames = canonicalSchemaFragmentNames(
-    Object.keys(bundled.components?.schemas ?? {}),
-  );
+  const schemaNames = canonicalSchemaFragmentNames([
+    ...Object.keys(bundled.components?.schemas ?? {}),
+    ...externalSchemas.keys(),
+  ]);
   const schemasRoot = path.join(outputDir, "schemas");
   mkdirSync(schemasRoot, { recursive: true });
 
   for (const schemaName of schemaNames) {
     const schemaDir = path.join(schemasRoot, schemaName);
     mkdirSync(schemaDir, { recursive: true });
-    writeSchemaIndex(schemaDir, schemaName);
+    writeSchemaIndex(schemaDir, schemaName, externalSchemas.get(schemaName));
   }
 
   log.info(`Generated ${schemaNames.length} schema export stubs.`);
