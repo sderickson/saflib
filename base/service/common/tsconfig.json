@@ -24,13 +24,22 @@
   },
   "references": [
     {
+      "path": "../../../drizzle"
+    },
+    {
       "path": "../../../monorepo"
     },
     {
       "path": "../../../node"
     },
     {
+      "path": "../../../object-store"
+    },
+    {
       "path": "../../../secret-store"
+    },
+    {
+      "path": "../db"
     }
   ]
 }

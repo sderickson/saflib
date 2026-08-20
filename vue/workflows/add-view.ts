@@ -5,26 +5,19 @@ import {
   step,
   parsePath,
   type ParsePathOutput,
-  makeLineReplace,
   type ParsePackageNameOutput,
   parsePackageName,
   getPackageName,
   CommandStepMachine,
   PromptStepMachine,
 } from "@saflib/workflows";
-import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
+import { clientsRoot, linksStub, makeBasePackageLineReplace } from "./shared.ts";
 
-const clientsRoot = path.join(templatesProductRoot, "clients");
 const spaStubDir = path.join(clientsRoot, "__subdomain-name__");
 const pageDir = path.join(spaStubDir, "__group-name__");
 /** Live SPA area hosts — CopyStep upserts stub lines. */
 const packageDir = spaStubDir;
-const linksStub = path.join(
-  clientsRoot,
-  "links",
-  "__subdomain-name__-links.ts",
-);
 
 const input = [
   {
@@ -146,24 +139,24 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       );
       const linksPackageName = `${productPrefix}-links`;
       const commonPackageName = `${productPrefix}-clients-common`;
-      const productSnake = productPrefix.includes("/")
-        ? productPrefix.split("/").pop()!.replace(/-/g, "_")
-        : productPrefix.replace(/-/g, "_");
+      // sharedPackagePrefix is like @org/product-app; product name is last segment without spa subdomain.
+      const productName =
+        productPrefix.includes("/")
+          ? productPrefix.split("/").pop()!
+          : productPrefix;
 
-      const defaultLineReplace = makeLineReplace(context);
-      const lineReplace = (line: string) => {
-        let out = defaultLineReplace(line).replace("././", "./");
-        out = out.split("@saflib/base-clients-common").join(commonPackageName);
-        out = out.split("@saflib/base-links").join(linksPackageName);
-        out = out
-          .split("base_common_strings")
-          .join(`${productSnake}_common_strings`);
-        return out;
-      };
+      const lineReplace = makeBasePackageLineReplace({
+        ...context,
+        productName,
+        commonPackageName,
+        linksPackageName,
+      });
+      const wrappedLineReplace = (line: string) =>
+        lineReplace(line).replace("././", "./");
       return {
         name: context.targetName,
         targetDir: context.targetDir,
-        lineReplace,
+        lineReplace: wrappedLineReplace,
         templateFiles,
       };
     }),

@@ -1,9 +1,7 @@
-import { describe, expect, it } from "vitest";
-import {
-  AddSpaWorkflowDefinition,
-  appendCommaSeparatedEnvValue,
-} from "./add-spa.ts";
+import { appendCommaSeparatedEnvValue } from "./shared.ts";
+import { AddSpaWorkflowDefinition } from "./add-spa.ts";
 import { runWorkflow } from "@saflib/workflows";
+import { describe, expect, it } from "vitest";
 
 describe("add-spa", () => {
   it("should successfully dry run", async () => {

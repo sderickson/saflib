@@ -1,0 +1,16 @@
+{
+  "name": "@saflib/base-email",
+  "description": "Email templates for the base product",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./emails/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/email": "*"
+  },
+  "sideEffects": false
+}

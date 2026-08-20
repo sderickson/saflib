@@ -21,6 +21,9 @@ const stubPaths = [
   "clients/__subdomain-name__/e2e/__target-name__/__target-name__.spec.ts",
   "clients/__static-subdomain-name__/package.json",
   "clients/links/__subdomain-name__-links.ts",
+  "service/email/emails/__target-name__.ts",
+  "service/cron/jobs/__group-name__/__target-name__.ts",
+  "service/integrations/__integration-name__/calls/__target-name__.ts",
 ] as const;
 
 /** Live hosts whose workflow areas must contain stub tokens (not emptied). */
@@ -71,6 +74,18 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   {
     rel: "dev/Dockerfile.template",
     mustInclude: ["__static-subdomain-name__"],
+  },
+  {
+    rel: "service/common/context.ts",
+    mustInclude: ["__storeName__"],
+  },
+  {
+    rel: "service/cron/cron.ts",
+    mustInclude: ["__groupName__Jobs"],
+  },
+  {
+    rel: "service/integrations/__integration-name__/index.ts",
+    mustInclude: ["__targetName__"],
   },
 ];
 

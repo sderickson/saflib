@@ -1,0 +1,27 @@
+{
+  "extends": [
+    "@saflib/dev-tools/tsconfig.app.json"
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./dist/types",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "noEmit": false,
+    "emitDeclarationOnly": true
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist/types",
+    "e2e",
+    "playwright-report",
+    "test-results"
+  ],
+  "references": [
+    {
+      "path": "../../../email/email"
+    }
+  ]
+}

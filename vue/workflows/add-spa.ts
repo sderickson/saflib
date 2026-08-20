@@ -4,77 +4,25 @@ import {
   step,
   type ParsePackageNameOutput,
   parsePackageName,
-  makeLineReplace,
   CdStepMachine,
   CommandStepMachine,
   TransformFileStepMachine,
   getPackageName,
 } from "@saflib/workflows";
-import {
-  kebabCaseToPascalCase,
-  kebabCaseToSnakeCase,
-  kebabCaseToCamelCase,
-} from "@saflib/utils";
-import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
-import { existsSync } from "node:fs";
+import {
+  appendCommaSeparatedEnvValue,
+  caddyDev,
+  clientsRoot,
+  deployProductCaddy,
+  linksIndex,
+  linksStub,
+  makeBasePackageLineReplace,
+  skipIfMissingDeploy,
+} from "./shared.ts";
 
-/**
- * Append `value` to a `KEY=a,b,c` line if missing. Leaves other lines unchanged.
- * Preserves a leading empty slot (`,auth,...`) used for the root domain.
- */
-export function appendCommaSeparatedEnvValue(
-  content: string,
-  key: string,
-  value: string,
-): string {
-  const prefix = `${key}=`;
-  return content
-    .split("\n")
-    .map((line) => {
-      const trimmed = line.trimStart();
-      if (!trimmed.startsWith(prefix)) {
-        return line;
-      }
-      const indent = line.slice(0, line.length - trimmed.length);
-      const current = trimmed.slice(prefix.length);
-      const tokens = current === "" ? [] : current.split(",");
-      if (tokens.includes(value)) {
-        return line;
-      }
-      return `${indent}${prefix}${current},${value}`;
-    })
-    .join("\n");
-}
-
-const clientsRoot = path.join(templatesProductRoot, "clients");
 const subdomainDir = path.join(clientsRoot, "__subdomain-name__");
 const buildShimDir = path.join(clientsRoot, "build", "__subdomain-name__");
-const linksStub = path.join(
-  clientsRoot,
-  "links",
-  "__subdomain-name__-links.ts",
-);
-/** Upserts the subdomain-links workflow area into an existing links package. */
-const linksIndex = path.join(clientsRoot, "links", "index.ts");
-
-const devRoot = path.join(templatesProductRoot, "dev");
-const caddyDev = path.join(devRoot, "caddy-config", "Caddyfile");
-
-/** Deploy tree templates (until `saflib/deploy/` is restored). */
-const deployTemplatesRoot = path.join(
-  templatesProductRoot,
-  "..",
-  "product",
-  "workflows",
-  "templates",
-  "deploy",
-);
-const deployProductCaddy = path.join(
-  deployTemplatesRoot,
-  "caddy",
-  "__product-name__.Caddyfile",
-);
 
 const input = [
   {
@@ -98,30 +46,6 @@ interface AddSpaWorkflowContext extends ParsePackageNameOutput {
   commonPackageName: string;
   serviceSpecName: string;
   serviceSdkName: string;
-}
-
-function makeAddSpaLineReplace(context: AddSpaWorkflowContext) {
-  const lineReplace = makeLineReplace(context);
-  const productPascal = kebabCaseToPascalCase(context.productName);
-  const productSnake = kebabCaseToSnakeCase(context.productName);
-
-  return (line: string) => {
-    let out = line;
-    // Golden SPA / links stubs use concrete @saflib/base-* names.
-    out = out.split("@saflib/base-clients-common").join(context.commonPackageName);
-    out = out.split("@saflib/base-links").join(context.linksPackageName);
-    out = out.split("@saflib/base-sdk").join(context.serviceSdkName);
-    out = out.split("@saflib/base-spec").join(context.serviceSpecName);
-    out = out
-      .split("@saflib/base-__subdomain-name__-spa")
-      .join(context.spaPackageName);
-    out = out.split("DynamicBaseLayout").join(`Dynamic${productPascal}Layout`);
-    out = out.split("base_common_strings").join(`${productSnake}_common_strings`);
-    out = out.split("baseServiceFakeHandlers").join(
-      `${kebabCaseToCamelCase(context.productName)}ServiceFakeHandlers`,
-    );
-    return lineReplace(out);
-  };
 }
 
 export const AddSpaWorkflowDefinition = defineWorkflow<
@@ -187,7 +111,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,
       targetDir: context.targetDir,
-      lineReplace: makeAddSpaLineReplace(context),
+      lineReplace: makeBasePackageLineReplace(context),
       // View / e2e expansion stubs live under the SPA stub but belong to
       // add-view / add-e2e-test — not a new SPA package.
       skipSourceGlobs: ["**/__group-name__/**", "**/e2e/**"],
@@ -205,7 +129,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       templateFiles: {
         caddyDev,
       },
-      lineReplace: makeAddSpaLineReplace(context),
+      lineReplace: makeBasePackageLineReplace(context),
     })),
 
     // Upsert SPA host into deploy product Caddyfile when deploy/ exists.
@@ -217,12 +141,9 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
         templateFiles: {
           deployProductCaddy,
         },
-        lineReplace: makeAddSpaLineReplace(context),
+        lineReplace: makeBasePackageLineReplace(context),
       }),
-      {
-        skipIf: ({ context }) =>
-          !existsSync(path.join(context.cwd, "deploy", "caddy")),
-      },
+      { skipIf: skipIfMissingDeploy("caddy") },
     ),
 
     step(TransformFileStepMachine, ({ context }) => ({

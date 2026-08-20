@@ -11,15 +11,19 @@ import {
   parsePath,
   makeLineReplace,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const emailStub = path.join(
+  templatesProductRoot,
+  "service/email/emails/__target-name__.ts",
+);
 
 const input = [
   {
     name: "path",
     description:
-      "Path of the new email template (e.g. './email-templates/weekly-report.ts')",
+      "Path of the new email template (e.g. './emails/weekly-report.ts')",
     exampleValue: "./emails/example-email.ts",
   },
 ] as const;
@@ -52,7 +56,7 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    template: path.join(sourceDir, "./emails/__target-name__.ts"),
+    template: emailStub,
   },
 
   docFiles: {},

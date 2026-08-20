@@ -13,8 +13,11 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/base-db": "*",
+    "@saflib/drizzle": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
+    "@saflib/object-store": "*",
     "@saflib/secret-store": "*"
   },
   "sideEffects": false

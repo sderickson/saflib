@@ -62,10 +62,19 @@
       "path": "./base/service/common"
     },
     {
+      "path": "./base/service/cron"
+    },
+    {
       "path": "./base/service/db"
     },
     {
+      "path": "./base/service/email"
+    },
+    {
       "path": "./base/service/http"
+    },
+    {
+      "path": "./base/service/integrations/__integration-name__"
     },
     {
       "path": "./base/service/kratos-handlers"

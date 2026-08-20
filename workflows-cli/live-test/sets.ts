@@ -25,6 +25,7 @@ import {
   AddStaticSiteWorkflowDefinition,
   AddE2eTestWorkflowDefinition,
 } from "@saflib/vue/workflows";
+import { ServiceAddStoreWorkflowDefinition } from "@saflib/service/workflows";
 
 /** Disposable product from product/init — never committed. */
 export const LIVE_TEST_PRODUCT = "tmp";
@@ -256,6 +257,34 @@ export const liveTestSets: LiveTestSet[] = [
       })),
       step(makeWorkflowMachine(AddE2eTestWorkflowDefinition), () => ({
         path: "./e2e/smoke.spec.ts",
+      })),
+    ],
+  },
+  {
+    name: "store",
+    description: "service/add-store (uploads ObjectStore on common context)",
+    typecheck: ["service/common"],
+    assertFiles: ["service/common/context.ts"],
+    steps: [
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}/service/common`,
+      })),
+      step(makeWorkflowMachine(ServiceAddStoreWorkflowDefinition), () => ({
+        name: "uploads",
+      })),
+      step(CdStepMachine, () => ({
+        path: ".",
+      })),
+      step(CommandStepMachine, () => ({
+        command: "node",
+        args: [
+          "--experimental-strip-types",
+          "--disable-warning=ExperimentalWarning",
+          "./workflows-cli/live-test/assert-contains.ts",
+          `${LIVE_TEST_PRODUCT}/service/common/context.ts`,
+          "uploads",
+          "createObjectStore",
+        ],
       })),
     ],
   },

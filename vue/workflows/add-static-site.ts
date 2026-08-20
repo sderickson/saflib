@@ -4,57 +4,35 @@ import {
   step,
   type ParsePackageNameOutput,
   parsePackageName,
-  makeLineReplace,
   CdStepMachine,
   CommandStepMachine,
   getPackageName,
 } from "@saflib/workflows";
-import {
-  kebabCaseToPascalCase,
-  kebabCaseToSnakeCase,
-} from "@saflib/utils";
-import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
-import { existsSync } from "node:fs";
+import {
+  caddyDev,
+  clientsRoot,
+  deployProductCaddy,
+  deployTemplatesRoot,
+  linksIndex,
+  linksStub,
+  makeBasePackageLineReplace,
+  skipIfMissingDeploy,
+  devRoot,
+} from "./shared.ts";
 
-const clientsRoot = path.join(templatesProductRoot, "clients");
 const staticSubdomainDir = path.join(
   clientsRoot,
   "__static-subdomain-name__",
 );
-const linksStub = path.join(
-  clientsRoot,
-  "links",
-  "__subdomain-name__-links.ts",
-);
-/** Upserts the subdomain-links workflow area into an existing links package. */
-const linksIndex = path.join(clientsRoot, "links", "index.ts");
-
-const devRoot = path.join(templatesProductRoot, "dev");
-const caddyDev = path.join(devRoot, "caddy-config", "Caddyfile");
 const buildImages = path.join(devRoot, "build-images.sh");
 const devDockerfile = path.join(devRoot, "Dockerfile.template");
-
-/** Deploy tree templates (until `saflib/deploy/` is restored). */
-const deployTemplatesRoot = path.join(
-  templatesProductRoot,
-  "..",
-  "product",
-  "workflows",
-  "templates",
-  "deploy",
-);
 const deployBuildSh = path.join(
   deployTemplatesRoot,
   "local-scripts",
   "build.sh",
 );
 const deployProdDockerfile = path.join(deployTemplatesRoot, "Dockerfile.prod");
-const deployProductCaddy = path.join(
-  deployTemplatesRoot,
-  "caddy",
-  "__product-name__.Caddyfile",
-);
 
 const input = [
   {
@@ -81,37 +59,6 @@ interface AddStaticSiteWorkflowContext extends ParsePackageNameOutput {
   serviceSdkName: string;
   /** Docker image prefix, e.g. `saflib-tmp` (matches product/init rewrite of `saflib-base`). */
   dockerImagePrefix: string;
-}
-
-function makeAddStaticSiteLineReplace(context: AddStaticSiteWorkflowContext) {
-  const lineReplace = makeLineReplace(context);
-  const productPascal = kebabCaseToPascalCase(context.productName);
-  const productSnake = kebabCaseToSnakeCase(context.productName);
-
-  return (line: string) => {
-    let out = line;
-    // Golden static stub uses concrete @saflib/base-* names and base/ paths.
-    out = out.split("@saflib/base-clients-common").join(context.commonPackageName);
-    out = out.split("@saflib/base-links").join(context.linksPackageName);
-    out = out.split("@saflib/base-sdk").join(context.serviceSdkName);
-    out = out.split("@saflib/base-spec").join(context.serviceSpecName);
-    out = out
-      .split("@saflib/base-__static-subdomain-name__-static")
-      .join(context.staticPackageName);
-    out = out.split("BaseLayout").join(`${productPascal}Layout`);
-    out = out.split("base_common_strings").join(`${productSnake}_common_strings`);
-    // Dev docker / Caddy paths and tags still say `base` / `saflib-base` in golden stubs.
-    out = out.split("saflib-base-").join(`${context.dockerImagePrefix}-`);
-    out = out.split("/app/base/").join(`/app/${context.productName}/`);
-    out = out.split("./base/").join(`./${context.productName}/`);
-    out = out
-      .split("/srv/base-static-")
-      .join(`/srv/${context.productName}-static-`);
-    out = out
-      .split("/base-static-")
-      .join(`/${context.productName}-static-`);
-    return lineReplace(out);
-  };
 }
 
 export const AddStaticSiteWorkflowDefinition = defineWorkflow<
@@ -177,10 +124,9 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,
       targetDir: context.targetDir,
-      lineReplace: makeAddStaticSiteLineReplace(context),
+      lineReplace: makeBasePackageLineReplace(context),
     })),
 
-    // Upsert Caddy host into product dev Caddyfile (filled stub in golden base).
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,
       targetDir: path.join(
@@ -192,11 +138,9 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       templateFiles: {
         caddyDev,
       },
-      lineReplace: makeAddStaticSiteLineReplace(context),
+      lineReplace: makeBasePackageLineReplace(context),
     })),
 
-    // Upsert docker build/COPY into product dev stack (filled stubs in golden base;
-    // `npm run dev` always runs `saf-docker generate` first).
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,
       targetDir: path.join(context.cwd, context.productName, "dev"),
@@ -204,10 +148,9 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
         buildImages,
         devDockerfile,
       },
-      lineReplace: makeAddStaticSiteLineReplace(context),
+      lineReplace: makeBasePackageLineReplace(context),
     })),
 
-    // Upsert deploy docker builds when deploy/ exists.
     step(
       CopyStepMachine,
       ({ context }) => ({
@@ -216,12 +159,9 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
         templateFiles: {
           deployBuildSh,
         },
-        lineReplace: makeAddStaticSiteLineReplace(context),
+        lineReplace: makeBasePackageLineReplace(context),
       }),
-      {
-        skipIf: ({ context }) =>
-          !existsSync(path.join(context.cwd, "deploy", "local-scripts")),
-      },
+      { skipIf: skipIfMissingDeploy("local-scripts") },
     ),
 
     step(
@@ -232,12 +172,9 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
         templateFiles: {
           deployProdDockerfile,
         },
-        lineReplace: makeAddStaticSiteLineReplace(context),
+        lineReplace: makeBasePackageLineReplace(context),
       }),
-      {
-        skipIf: ({ context }) =>
-          !existsSync(path.join(context.cwd, "deploy", "Dockerfile.prod")),
-      },
+      { skipIf: skipIfMissingDeploy("Dockerfile.prod") },
     ),
 
     step(
@@ -248,12 +185,9 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
         templateFiles: {
           deployProductCaddy,
         },
-        lineReplace: makeAddStaticSiteLineReplace(context),
+        lineReplace: makeBasePackageLineReplace(context),
       }),
-      {
-        skipIf: ({ context }) =>
-          !existsSync(path.join(context.cwd, "deploy", "caddy")),
-      },
+      { skipIf: skipIfMissingDeploy("caddy") },
     ),
 
     step(CdStepMachine, ({ context }) => ({
