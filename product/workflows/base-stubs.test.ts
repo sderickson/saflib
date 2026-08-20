@@ -12,11 +12,13 @@ import { templatesProductRoot } from "@saflib/templates";
 const stubPaths = [
   "service/spec/routes/__group-name__/__target-name__.yaml",
   "service/spec/schemas/__target-name__.yaml",
+  "service/spec/events/__target_name__.yaml",
   "service/db/schemas/__group-name__.ts",
   "service/db/queries/__group-name__/__target-name__.ts",
   "service/http/handlers/__group-name__/index.ts",
   "service/sdk/requests/__group-name__/__query-name__.ts",
   "service/sdk/requests/__group-name__/__mutation-name__.ts",
+  "service/sdk/__group-name__/__TargetName__.vue",
   "clients/__subdomain-name__/__group-name__/__TargetName__.vue",
   "clients/__subdomain-name__/e2e/__target-name__/__target-name__.spec.ts",
   "clients/__static-subdomain-name__/package.json",
@@ -51,6 +53,14 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
       "offshoot-paths",
       "offshoot-schemas",
     ],
+  },
+  {
+    rel: "service/spec/events/index.yaml",
+    mustInclude: ["__target_name__"],
+  },
+  {
+    rel: "service/sdk/strings.ts",
+    mustInclude: ["__full_name__", "__group-name__", "__TargetName__"],
   },
   {
     rel: "service/db/schema.ts",

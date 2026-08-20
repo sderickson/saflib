@@ -9,8 +9,9 @@ import {
   makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
+import { templatesProductRoot } from "@saflib/templates";
 
-const sourceDir = path.join(import.meta.dirname, "common-templates");
+const sourceDir = path.join(templatesProductRoot, "service", "common");
 
 const input = [
   {
