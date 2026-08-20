@@ -1,7 +1,5 @@
 {
-  "extends": [
-    "@saflib/dev-tools/tsconfig.app.json"
-  ],
+  "extends": "@saflib/monorepo/tsconfig.json",
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "./dist/types",
@@ -9,9 +7,7 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "include": [
-    "./**/*.ts"
-  ],
+  "include": ["./**/*.ts"],
   "exclude": [
     "node_modules",
     "dist/types",

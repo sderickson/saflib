@@ -36,7 +36,7 @@ export const deployProductCaddy = path.join(
 
 /** Skip a step when `./deploy/<rel>` is missing (e.g. productOnly init). */
 export function skipIfMissingDeploy(...relParts: string[]) {
-  return ({ context }: { context: { cwd: string } }) =>
+  return <C extends { cwd: string }>({ context }: { context: C }) =>
     !existsSync(path.join(context.cwd, "deploy", ...relParts));
 }
 
@@ -90,9 +90,11 @@ export type BasePackageLineReplaceContext = {
  * apply standard `__placeholder__` interpolation via `makeLineReplace`.
  */
 export function makeBasePackageLineReplace(
-  context: BasePackageLineReplaceContext & Record<string, unknown>,
+  context: BasePackageLineReplaceContext,
 ): (line: string) => string {
-  const lineReplace = makeLineReplace(context);
+  const lineReplace = makeLineReplace(
+    context as BasePackageLineReplaceContext & Record<string, unknown>,
+  );
   const productPascal = kebabCaseToPascalCase(context.productName);
   const productSnake = kebabCaseToSnakeCase(context.productName);
 

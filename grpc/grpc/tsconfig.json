@@ -13,7 +13,10 @@
     "workflows/template/**",
     "workflows/templates/**",
     "**/workflows/template/**",
-    "**/workflows/templates/**"
+    "**/workflows/templates/**",
+    "workflows/client-templates/**",
+    "workflows/proto-templates/**",
+    "workflows/server-templates/**"
   ],
   "compilerOptions": {
     "rootDir": ".",
