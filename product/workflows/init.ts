@@ -29,11 +29,18 @@ const input = [
     description: "Domain of the new product",
     exampleValue: "example.com",
   },
+  {
+    name: "productOnly",
+    type: "flag" as const,
+    description:
+      "Copy only the golden product tree (skip deploy/scaffold/kratos). Used by CI smoke tests.",
+  },
 ] as const;
 
 interface InitProductWorkflowContext extends ParsePackageNameOutput {
   productName: string;
   domainName: string;
+  productOnly: boolean;
 }
 
 /** Frozen golden-product name under saflib (`saflib/base`). */
@@ -158,6 +165,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       packageName: "PACKAGE_NAME_UNUSED",
       serviceName: input.name,
       domainName: input.domain,
+      productOnly: input.productOnly ?? false,
     };
   },
 
@@ -203,18 +211,26 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       // Both globs: dir trees (`__/…`) and stub filenames (`__…__-links.ts`).
       skipSourceGlobs: ["**/__*__/**", "**/__*__*"],
     })),
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.productName,
-      targetDir: path.join(context.cwd, "deploy"),
-      templateFiles: { deploy: templatesDeployRoot },
-      lineReplace: makeProductInitLineReplace(context),
-    })),
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.productName,
-      targetDir: context.cwd,
-      templateFiles: { scaffold: templatesScaffoldRoot },
-      lineReplace: makeProductInitLineReplace(context),
-    })),
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
+        name: context.productName,
+        targetDir: path.join(context.cwd, "deploy"),
+        templateFiles: { deploy: templatesDeployRoot },
+        lineReplace: makeProductInitLineReplace(context),
+      }),
+      { skipIf: ({ context }) => context.productOnly },
+    ),
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
+        name: context.productName,
+        targetDir: context.cwd,
+        templateFiles: { scaffold: templatesScaffoldRoot },
+        lineReplace: makeProductInitLineReplace(context),
+      }),
+      { skipIf: ({ context }) => context.productOnly },
+    ),
     // Golden product compose mounts the whole saflib root; rewrite for product-beside-saflib.
     step(TransformFileStepMachine, ({ context }) => ({
       filePath: path.join(
@@ -242,16 +258,21 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       }),
       {
         skipIf: ({ context }) =>
+          context.productOnly ||
           getPackageName(context.cwd) !== "@saflib/saflib",
       },
     ),
-    step(CommandStepMachine, ({ context }) => ({
-      command: "mv",
-      args: [
-        `./deploy/remote-assets/env.${context.productName}.secrets`,
-        `./deploy/remote-assets/.env.${context.productName}.secrets`,
-      ],
-    })),
+    step(
+      CommandStepMachine,
+      ({ context }) => ({
+        command: "mv",
+        args: [
+          `./deploy/remote-assets/env.${context.productName}.secrets`,
+          `./deploy/remote-assets/.env.${context.productName}.secrets`,
+        ],
+      }),
+      { skipIf: ({ context }) => context.productOnly },
+    ),
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
@@ -290,17 +311,29 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         "--write",
       ],
     })),
-    step(CdStepMachine, () => ({
-      path: `./deploy`,
-    })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "regen-kratos-secrets"],
-    })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "generate"],
-    })),
+    step(
+      CdStepMachine,
+      () => ({
+        path: `./deploy`,
+      }),
+      { skipIf: ({ context }) => context.productOnly },
+    ),
+    step(
+      CommandStepMachine,
+      () => ({
+        command: "npm",
+        args: ["run", "regen-kratos-secrets"],
+      }),
+      { skipIf: ({ context }) => context.productOnly },
+    ),
+    step(
+      CommandStepMachine,
+      () => ({
+        command: "npm",
+        args: ["run", "generate"],
+      }),
+      { skipIf: ({ context }) => context.productOnly },
+    ),
   ],
 });
 

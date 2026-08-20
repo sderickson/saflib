@@ -76,25 +76,33 @@ export const CopyStepMachine = setup({
       throw new Error("templateFiles is required");
     }
     const templateKeys = Object.values(input.templateFiles);
-    let sharedPrefixIndex = 0;
-    for (let i = 0; i < templateKeys[0].length; i++) {
-      let allMatch = true;
-      for (let j = 0; j < templateKeys.length; j++) {
-        if (templateKeys[j][i] !== templateKeys[0][i]) {
-          allMatch = false;
+    let sharedPrefix: string;
+    if (templateKeys.length === 1) {
+      // Single source: use the directory itself (or the file's parent). The
+      // common-prefix loop below would drop the last character of a solo path.
+      const only = templateKeys[0];
+      sharedPrefix = fs.statSync(only).isDirectory() ? only : path.dirname(only);
+    } else {
+      let sharedPrefixIndex = 0;
+      for (let i = 0; i < templateKeys[0].length; i++) {
+        let allMatch = true;
+        for (let j = 0; j < templateKeys.length; j++) {
+          if (templateKeys[j][i] !== templateKeys[0][i]) {
+            allMatch = false;
+            break;
+          }
+        }
+        sharedPrefixIndex = i;
+        if (!allMatch) {
           break;
         }
       }
-      sharedPrefixIndex = i;
-      if (!allMatch) {
-        break;
-      }
-    }
 
-    // Fix cases where the shared prefix includes a filename, or a partial filename
-    let sharedPrefix = templateKeys[0].slice(0, sharedPrefixIndex);
-    if (!fs.existsSync(sharedPrefix) || fs.statSync(sharedPrefix).isFile()) {
-      sharedPrefix = path.dirname(sharedPrefix);
+      // Fix cases where the shared prefix includes a filename, or a partial filename
+      sharedPrefix = templateKeys[0].slice(0, sharedPrefixIndex);
+      if (!fs.existsSync(sharedPrefix) || fs.statSync(sharedPrefix).isFile()) {
+        sharedPrefix = path.dirname(sharedPrefix);
+      }
     }
 
     // Flatten template entries which are directories

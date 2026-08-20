@@ -60,6 +60,9 @@
       "path": "../processes"
     },
     {
+      "path": "../product"
+    },
+    {
       "path": "../sdk"
     },
     {

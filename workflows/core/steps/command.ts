@@ -43,6 +43,13 @@ export interface CommandStepInput {
    * The message to show to the agent if the command fails.
    */
   errorPrompt?: string;
+
+  /**
+   * When true, run this command even in script mode if it would otherwise be
+   * treated as a skipped validation command (typecheck/test). Use from CI
+   * harnesses that intentionally typecheck after scaffolding.
+   */
+  forceInScript?: boolean;
 }
 
 /**
@@ -53,12 +60,42 @@ export interface CommandStepContext extends WorkflowContext {
   args: string[];
   errorPrompt?: string;
   ignoreError?: boolean;
+  forceInScript?: boolean;
   shouldContinue?: boolean;
 }
 
 const messageForContext = (ctx: CommandStepContext) => {
   return `The command \`${ctx.command} ${ctx.args.join(" ")}\` failed.\nCWD: ${ctx.cwd}.\n${ctx.errorPrompt ? `\n${ctx.errorPrompt}` : ""}`;
 };
+
+/**
+ * In script mode, skip agent-loop validation commands. Mechanical steps
+ * (install, saf-specs generate, prettier, …) still run; typecheck/test of
+ * unfinished scaffolds is asserted separately by CI harnesses when needed.
+ */
+export function isScriptModeValidationCommand(
+  command: string,
+  args: string[],
+): boolean {
+  if (command === "npm" && args[0] === "run") {
+    const script = args[1] ?? "";
+    if (
+      script === "typecheck" ||
+      script === "test" ||
+      script === "test:watch" ||
+      script === "test:coverage"
+    ) {
+      return true;
+    }
+  }
+  if (command === "npx" && args[0] === "tsc") {
+    return true;
+  }
+  if (command === "vitest" || command === "vue-tsc") {
+    return true;
+  }
+  return false;
+}
 
 /**
  * Runs a shell command as part of a workflow. Stops the workflow if the command fails.
@@ -78,6 +115,13 @@ export const CommandStepMachine = setup({
       async ({ input }: { input: CommandStepContext }) => {
         if (input.runMode === "dry" || input.runMode === "checklist") {
           return `Skipped because mode is ${input.runMode}.`;
+        }
+        if (
+          input.runMode === "script" &&
+          !input.forceInScript &&
+          isScriptModeValidationCommand(input.command, input.args)
+        ) {
+          return `Skipped validation command in script mode: ${input.command} ${input.args.join(" ")}`;
         }
         let tries = 0;
         while (true) {
@@ -122,6 +166,7 @@ export const CommandStepMachine = setup({
       args: input.args || [],
       errorPrompt: input.promptOnError ?? input.errorPrompt ?? "",
       ignoreError: input.ignoreError,
+      forceInScript: input.forceInScript,
     };
   },
   initial: "printBefore",
