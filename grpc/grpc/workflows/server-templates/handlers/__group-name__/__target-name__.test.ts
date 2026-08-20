@@ -2,7 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import {
   makeContext,
   __serviceName__ServiceStorage,
-} from "template-package-service-common/context";
+} from "@saflib/base-service-common/context";
 import { testContext, safContextStorage } from "@saflib/node";
 import { handle__TargetName__ } from "./__target-name__.ts";
 import { __TargetName__Request } from "template-package-grpc-proto";

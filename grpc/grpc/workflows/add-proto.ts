@@ -8,11 +8,11 @@ import {
   parsePath,
   parsePackageName,
   getPackageName,
-  makeLineReplace,
   type ParsePathOutput,
   type ParsePackageNameOutput,
 } from "@saflib/workflows";
 import path from "node:path";
+import { makeGrpcLineReplace } from "./shared.ts";
 
 const sourceDir = path.join(
   import.meta.dirname,
@@ -74,7 +74,7 @@ export const AddProtoWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.targetName,
       targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
+      lineReplace: makeGrpcLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

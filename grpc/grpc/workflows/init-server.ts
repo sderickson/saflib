@@ -6,9 +6,9 @@ import {
   CdStepMachine,
   type ParsePackageNameOutput,
   parsePackageName,
-  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
+import { makeGrpcLineReplace } from "./shared.ts";
 
 const sourceDir = path.join(import.meta.dirname, "server-templates");
 
@@ -71,7 +71,7 @@ export const InitGrpcServerWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: "",
       targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
+      lineReplace: makeGrpcLineReplace(context),
     })),
 
     step(CdStepMachine, ({ context }) => ({

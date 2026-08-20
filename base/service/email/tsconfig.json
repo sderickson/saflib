@@ -7,13 +7,19 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "include": ["./**/*.ts"],
+  "include": [
+    "./**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "dist/types",
     "e2e",
     "playwright-report",
-    "test-results"
+    "test-results",
+    "workflows/template/**",
+    "workflows/templates/**",
+    "**/workflows/template/**",
+    "**/workflows/templates/**"
   ],
   "references": [
     {
