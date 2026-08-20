@@ -9,6 +9,25 @@ import {
 } from "../../../strings.ts";
 import { resolveTemplateWorkflowAreas } from "./inline/index.ts";
 
+/** Copied as-is — never run lineReplace / workflow-area transforms. */
+const BINARY_EXTENSIONS = new Set([
+  ".sqlite",
+  ".db",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".ico",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".eot",
+  ".pdf",
+  ".zip",
+  ".gz",
+]);
+
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyStepContext }) => {
     const { name, filesToCopy, runMode, lineReplace, copiedFiles, workflowId, flags } =
@@ -27,7 +46,15 @@ export const renameNextFile = fromPromise(
       return { fileName: targetFileName };
     }
 
+    if (BINARY_EXTENSIONS.has(path.extname(targetPath).toLowerCase())) {
+      return { fileName: targetFileName };
+    }
+
     const content = await readFile(targetPath, "utf-8");
+    // Null bytes → binary mislabeled; leave untouched.
+    if (content.includes("\0")) {
+      return { fileName: targetFileName };
+    }
 
     try {
       const contentLines = content.split("\n");

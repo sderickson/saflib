@@ -1,0 +1,25 @@
+{
+  "name": "@saflib/base-__static-subdomain-name__-static",
+  "description": "Static __subdomain-name__ site for Base using VitePress + Vuetify",
+  "type": "module",
+  "scripts": {
+    "typecheck": "vue-tsc --incremental -p tsconfig.typecheck.json",
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "@saflib/links": "*",
+    "@saflib/vue": "*",
+    "@saflib/base-clients-common": "*",
+    "@saflib/base-links": "*",
+    "@vue/tsconfig": "^0.9.1",
+    "sass": "^1.93.2",
+    "vite-plugin-vuetify": "^2.1.3",
+    "vitepress": "^1.6.3",
+    "vue": "^3.5.13",
+    "vuetify": "^4.1.6"
+  },
+  "sideEffects": false
+}

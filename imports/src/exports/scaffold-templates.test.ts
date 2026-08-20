@@ -13,12 +13,13 @@ function readTemplatePackageJson(relativePath: string) {
 }
 
 describe("scaffold template import-graph defaults", () => {
+  // Golden product packages under saflib/base (former workflows/templates).
   const patternExportTemplates = [
-    "saflib/sdk/workflows/templates/package.json",
-    "saflib/drizzle/workflows/templates/package.json",
-    "saflib/service/workflows/common-templates/package.json",
-    "saflib/express/workflows/templates/package.json",
-    "saflib/vue/workflows/template/common/package.json",
+    "saflib/base/service/sdk/package.json",
+    "saflib/base/service/db/package.json",
+    "saflib/base/service/common/package.json",
+    "saflib/base/service/http/package.json",
+    "saflib/base/clients/common/package.json",
   ];
 
   for (const templatePath of patternExportTemplates) {
@@ -33,29 +34,31 @@ describe("scaffold template import-graph defaults", () => {
     });
   }
 
-  it("sdk template marks client.ts as side-effectful", () => {
-    const pkg = readTemplatePackageJson("saflib/sdk/workflows/templates/package.json");
+  it("sdk package marks client.ts as side-effectful", () => {
+    const pkg = readTemplatePackageJson(
+      "saflib/base/service/sdk/package.json",
+    );
     expect(pkg.sideEffects).toEqual(["./client.ts"]);
   });
 
-  it("vue client build template marks CSS as side-effectful", () => {
+  it("vue client build package marks CSS as side-effectful", () => {
     const pkg = readTemplatePackageJson(
-      "saflib/vue/workflows/template/build/package.json",
+      "saflib/base/clients/build/package.json",
     );
     expect(pkg.sideEffects).toEqual(["**/*.css", "**/*.scss"]);
   });
 
-  it("openapi spec template exposes dist fragment patterns", () => {
+  it("openapi spec package exposes dist fragment patterns", () => {
     const pkg = readTemplatePackageJson(
-      "saflib/openapi/workflows/templates/package.json",
+      "saflib/base/service/spec/package.json",
     );
     expect(pkg.exports?.["./operations/*"]).toBeDefined();
     expect(pkg.exports?.["./schemas/*"]).toBeDefined();
   });
 
-  it("integrations template exports mocks subpath", () => {
+  it("integrations stub exports mocks subpath", () => {
     const pkg = readTemplatePackageJson(
-      "saflib/integrations/workflows/templates/package.json",
+      "saflib/base/service/integrations/__integration-name__/package.json",
     );
     expect(pkg.exports?.["./mocks"]).toBe("./client.mocks.ts");
     expect(pkg.sideEffects).toBe(false);

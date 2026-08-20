@@ -12,16 +12,19 @@ import {
   getPackageName,
   makeLineReplace,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const integrationStubRoot = path.join(
+  templatesProductRoot,
+  "service/integrations/__integration-name__",
+);
 
 const input = [
   {
     name: "path",
-    description:
-      "Path of the new call (e.g., './calls/parse-file.ts')",
+    description: "Path of the new call (e.g., './calls/parse-file.ts')",
     exampleValue: "./calls/example-call.ts",
   },
 ] as const;
@@ -65,10 +68,10 @@ export const AddCallWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    call: path.join(sourceDir, "calls/__target-name__.ts"),
-    callMocks: path.join(sourceDir, "calls/__target-name__.mocks.ts"),
-    bin: path.join(sourceDir, "bin/__target-name__.ts"),
-    index: path.join(sourceDir, "index.ts"),
+    call: path.join(integrationStubRoot, "calls/__target-name__.ts"),
+    callMocks: path.join(integrationStubRoot, "calls/__target-name__.mocks.ts"),
+    bin: path.join(integrationStubRoot, "bin/__target-name__.ts"),
+    index: path.join(integrationStubRoot, "index.ts"),
   },
 
   docFiles: {
@@ -89,6 +92,9 @@ export const AddCallWorkflowDefinition = defineWorkflow<
               context.packageName,
             );
           }
+          result = result
+            .split("@saflib/base-__integration-name__-integration")
+            .join(context.packageName);
           return baseReplace(result);
         },
       };

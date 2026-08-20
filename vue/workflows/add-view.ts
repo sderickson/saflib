@@ -5,7 +5,6 @@ import {
   step,
   parsePath,
   type ParsePathOutput,
-  makeLineReplace,
   type ParsePackageNameOutput,
   parsePackageName,
   getPackageName,
@@ -13,16 +12,12 @@ import {
   PromptStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
+import { clientsRoot, linksStub, makeBasePackageLineReplace } from "./shared.ts";
 
-const pageDir = path.join(
-  import.meta.dirname,
-  "template/__subdomain-name__/__group-name__",
-);
-const packageDir = path.join(
-  import.meta.dirname,
-  "template/__subdomain-name__",
-);
-const linksDir = path.join(import.meta.dirname, "template", "links");
+const spaStubDir = path.join(clientsRoot, "__subdomain-name__");
+const pageDir = path.join(spaStubDir, "__group-name__");
+/** Live SPA area hosts — CopyStep upserts stub lines. */
+const packageDir = spaStubDir;
 
 const input = [
   {
@@ -44,6 +39,7 @@ interface AddSpaViewWorkflowContext
     ParsePackageNameOutput {
   targetDir: string;
   fullName: string;
+  subdomainName: string;
 }
 
 export const AddSpaViewWorkflowDefinition = defineWorkflow<
@@ -109,10 +105,11 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     vue: path.join(pageDir, "__TargetName__.vue"),
     async: path.join(pageDir, "__TargetName__Async.vue"),
     strings: path.join(pageDir, "__TargetName__.strings.ts"),
+    fixture: path.join(pageDir, "__TargetName__.fixture.ts"),
     stringsIndex: path.join(packageDir, "strings.ts"),
+    fixturesIndex: path.join(packageDir, "fixtures.ts"),
     router: path.join(packageDir, "router.ts"),
-
-    linksPackage: linksDir,
+    links: linksStub,
   },
 
   docFiles: {
@@ -127,23 +124,40 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
   steps: [
     step(CopyStepMachine, ({ context }) => {
       let templateFiles = context.templateFiles;
-      if (context.groupName !== "pages") {
-        // remove "router.ts" from the template files
-        templateFiles = {
-          ...templateFiles,
-        };
+      // Only pages get a router entry; dialogs stay out of the SPA route table.
+      if (
+        !context.groupName.startsWith("pages/") &&
+        context.groupName !== "pages"
+      ) {
+        templateFiles = { ...templateFiles };
         delete templateFiles.router;
       }
 
-      // bit of a bandaid to replace valid but extraneous import syntax from root level imports
-      const defaultLineReplace = makeLineReplace(context);
-      const lineReplace = (line: string) => {
-        return defaultLineReplace(line).replace("././", "./");
-      };
+      const productPrefix = context.sharedPackagePrefix.replace(
+        new RegExp(`-${context.subdomainName}$`),
+        "",
+      );
+      const linksPackageName = `${productPrefix}-links`;
+      const commonPackageName = `${productPrefix}-clients-common`;
+      // sharedPackagePrefix is like @org/product-app; product name is last segment without spa subdomain.
+      const productName =
+        productPrefix.includes("/")
+          ? productPrefix.split("/").pop()!
+          : productPrefix;
+
+      const lineReplace = makeBasePackageLineReplace({
+        ...context,
+        productName,
+        commonPackageName,
+        linksPackageName,
+        spaPackageName: context.packageName,
+      });
+      const wrappedLineReplace = (line: string) =>
+        lineReplace(line).replace("././", "./");
       return {
         name: context.targetName,
         targetDir: context.targetDir,
-        lineReplace,
+        lineReplace: wrappedLineReplace,
         templateFiles,
       };
     }),
@@ -158,7 +172,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       * Take the data from the loader, assert that it's loaded, and render the page.
       * Do not add any sort of loading state or skeleton; that's the job of the "Async" component (and \`AsyncPage\` for query errors). Sub-components should receive **values to render** (e.g. lists, labels), not query \`isPending\`/\`isError\` or raw query objects—unless you have deliberately split loading (JIT) and documented it.
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.
-      * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text. If copy needs runtime values, use vue-i18n placeholders in the string (\`{name}\`, not \`{{name}}\`) and call \`t(strings.key, { name: value })\` — see **Interpolation** in ${context.docFiles?.i18n}.
+      * Import and use the "useReverseT" function from this SPA's \`i18n\` package export (not a relative \`../i18n\`), and use t(strings.key) instead of strings.key for all text. If copy needs runtime values, use vue-i18n placeholders in the string (\`{name}\`, not \`{{name}}\`) and call \`t(strings.key, { name: value })\` — see **Interpolation** in ${context.docFiles?.i18n}.
       
       For more information, see ${context.docFiles?.components} and ${context.docFiles?.i18n}.`,
     })),

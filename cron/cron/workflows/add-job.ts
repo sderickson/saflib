@@ -12,9 +12,10 @@ import {
   type ParsePackageNameOutput,
   CommandStepMachine,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "./templates");
+const cronRoot = path.join(templatesProductRoot, "service/cron");
 
 const input = [
   {
@@ -62,10 +63,10 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    job: path.join(sourceDir, "jobs/__group-name__/__target-name__.ts"),
-    test: path.join(sourceDir, "jobs/__group-name__/__target-name__.test.ts"),
-    index: path.join(sourceDir, "jobs/__group-name__/index.ts"),
-    cron: path.join(sourceDir, "cron.ts"),
+    job: path.join(cronRoot, "jobs/__group-name__/__target-name__.ts"),
+    test: path.join(cronRoot, "jobs/__group-name__/__target-name__.test.ts"),
+    index: path.join(cronRoot, "jobs/__group-name__/index.ts"),
+    cron: path.join(cronRoot, "cron.ts"),
   },
 
   docFiles: {
@@ -94,7 +95,7 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       promptText: `Add the new job to the rest of the package.
       
       * Make sure it's included in the adjacent index.ts file.
-      * Make sure those jobs are included in the root cron.ts file.
+      * Make sure those jobs are included in the root cron.ts file (workflow areas should already upsert imports/map spreads).
       * Ensure \`runCron\` / \`createCronRouter\` receive a required \`enqueueJob\` (e.g. \`makeCronEnqueuer\` from \`@saflib/jobs\`).
       * Add the matching \`cron:{jobName}\` trigger-map edge in the jobs package if applicable.`,
     })),

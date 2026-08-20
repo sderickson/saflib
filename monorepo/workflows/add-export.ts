@@ -8,8 +8,9 @@ import {
   makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
+import { templatesProductRoot } from "@saflib/templates";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const sourceDir = path.join(templatesProductRoot, "packages", "__package-name__");
 
 const input = [
   {
@@ -78,6 +79,18 @@ export const AddExportWorkflowDefinition = defineWorkflow<
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       targetDir: context.targetDir,
+      templateFiles: {
+        export: path.join(sourceDir, "__target-name__.ts"),
+        test: path.join(sourceDir, "__target-name__.test.ts"),
+      },
+      lineReplace: makeLineReplace(context),
+    })),
+
+    step(CopyStepMachine, ({ context }) => ({
+      targetDir: context.cwd,
+      templateFiles: {
+        index: path.join(sourceDir, "index.ts"),
+      },
       lineReplace: makeLineReplace(context),
     })),
 
@@ -97,7 +110,7 @@ export const AddExportWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add the ${context.targetName} export to the package's index.ts file. Import and export the new functionality from ${context.exportPath}.`,
+      promptText: `Confirm \`index.ts\` exports \`${context.targetName}\` (workflow area upsert from the golden package). If this package predates that area, add the export manually from ${context.exportPath}.`,
     })),
 
     step(CommandStepMachine, () => ({

@@ -11,11 +11,12 @@ import {
   type ParsePackageNameOutput,
   CommandStepMachine,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
 const sourceDir = path.join(
-  import.meta.dirname,
-  "template/__subdomain-name__/e2e/__target-name__",
+  templatesProductRoot,
+  "clients/__subdomain-name__/e2e/__target-name__",
 );
 
 const input = [
@@ -27,9 +28,7 @@ const input = [
 ] as const;
 
 interface AddE2eTestWorkflowContext
-  extends ParsePathOutput, ParsePackageNameOutput {
-  targetDir: string;
-}
+  extends ParsePathOutput, ParsePackageNameOutput {}
 
 export const AddE2eTestWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -48,7 +47,6 @@ export const AddE2eTestWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(input.cwd, input.path);
     return {
       ...parsePath(input.path, {
         requiredPrefix: "./e2e/",
@@ -59,7 +57,6 @@ export const AddE2eTestWorkflowDefinition = defineWorkflow<
         silentError: true, // so checklists don't error
         requiredSuffix: ["-spa", "-sdk"],
       }),
-      targetDir,
     };
   },
 

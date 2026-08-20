@@ -20,6 +20,9 @@
       "path": "../node"
     },
     {
+      "path": "../templates"
+    },
+    {
       "path": "../utils"
     }
   ],

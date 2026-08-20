@@ -14,10 +14,14 @@ import {
   CdStepMachine,
 } from "@saflib/workflows";
 import { kebabCaseToCamelCase, kebabCaseToPascalCase } from "@saflib/utils";
+import { templatesProductRoot } from "@saflib/templates";
 import { ServiceAddStoreWorkflowDefinition } from "@saflib/service/workflows/add-store";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const httpRoot = path.join(templatesProductRoot, "service", "http");
+const handlerDir = path.join(httpRoot, "handlers", "__group-name__");
+/** Live http.ts — router areas hold the stub; CopyStep upserts them. */
+const httpLive = path.join(httpRoot, "http.ts");
 
 const input = [
   {
@@ -89,11 +93,11 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    handler: path.join(sourceDir, "handlers/__group-name__/__target-name__.ts"),
-    test: path.join(sourceDir, "handlers/__group-name__/__target-name__.test.ts"),
-    index: path.join(sourceDir, "handlers/__group-name__/index.ts"),
-    http: path.join(sourceDir, "http.ts"),
-    helpers: path.join(sourceDir, "handlers/__group-name__/_helpers.ts"),
+    handler: path.join(handlerDir, "__target-name__.ts"),
+    test: path.join(handlerDir, "__target-name__.test.ts"),
+    index: path.join(handlerDir, "index.ts"),
+    helpers: path.join(handlerDir, "_helpers.ts"),
+    http: httpLive,
   },
 
   docFiles: {
@@ -128,12 +132,27 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       path: ".",
     })),
 
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.targetName,
-      targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
-      flags: { upload: context.upload, download: context.download },
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      const lineReplace = makeLineReplace(context);
+      return {
+        name: context.targetName,
+        targetDir: context.targetDir,
+        flags: { upload: context.upload, download: context.download },
+        lineReplace: (line: string) => {
+          let out = line;
+          out = out
+            .split("@saflib/base-spec")
+            .join(`${context.sharedPackagePrefix}-spec`);
+          out = out
+            .split("@saflib/base-db")
+            .join(`${context.sharedPackagePrefix}-db`);
+          out = out
+            .split("@saflib/base-service-common")
+            .join(`${context.sharedPackagePrefix}-service-common`);
+          return lineReplace(out);
+        },
+      };
+    }),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "handler",

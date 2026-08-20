@@ -32,5 +32,8 @@
     "typescript-eslint": "^8.0.0",
     "prettier": "^3.0.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "dependencies": {
+    "@saflib/templates": "*"
+  }
 }

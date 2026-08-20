@@ -10,9 +10,15 @@ import {
   type ParsePackageNameOutput,
   UpdateStepMachine,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "common-templates");
+const contextTemplate = path.join(
+  templatesProductRoot,
+  "service",
+  "common",
+  "context.ts",
+);
 
 const input = [
   {
@@ -63,7 +69,7 @@ export const ServiceAddStoreWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    context: path.join(sourceDir, "context.ts"),
+    context: contextTemplate,
   },
 
   docFiles: {},

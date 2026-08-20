@@ -18,15 +18,15 @@ describe("buildReferenceGraph", () => {
     }
   });
 
-  it("skips gitignored workspace packages (matches CI clean checkout)", () => {
+  it("includes tracked golden deploy package in the graph", () => {
     const { graph, skippedMeta } = buildReferenceGraph();
     const deployDir = path.join(import.meta.dirname, "../../../deploy");
     if (!fs.existsSync(path.join(deployDir, "package.json"))) {
       return; // artifact absent — same as CI
     }
-    expect(isGitIgnoredPackageDirectory(deployDir)).toBe(true);
-    expect(skippedMeta).toContain("@saflib/deploy");
-    expect([...graph.keys()]).not.toContain("@saflib/deploy");
+    expect(isGitIgnoredPackageDirectory(deployDir)).toBe(false);
+    expect(skippedMeta).not.toContain("@__organization-name__/deploy");
+    expect([...graph.keys()]).toContain("@__organization-name__/deploy");
   });
 });
 

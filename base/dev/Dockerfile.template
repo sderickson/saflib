@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:labs
+
+# Requires a local tag first: saflib/base-dev `build-images.sh`
+# builds static-root (in parallel with monolith/clients) before compose.
+# Logged-out base marketing site — same base image as deploy (base/clients/root).
+FROM saflib-base-static-root:latest AS static-root-builder
+RUN npm run build
+
+# BEGIN WORKFLOW AREA static-site-builders FOR vue/add-static-site
+FROM saflib-base-__static-subdomain-name__-static:latest AS __static-subdomain-name__-static-builder
+RUN npm run build
+# END WORKFLOW AREA
+
+# Monorepo install once — workspace closure of saflib/base-dev (base static builds for this stack).
+FROM node:24-slim AS deps
+
+RUN npm install -g npm@11.14.1
+
+WORKDIR /app
+
+#{ copy_packages }#
+RUN npm ci --omit=dev
+
+#{ copy_src }#
+
+FROM caddy:2.11.3
+COPY --from=static-root-builder /app/base/clients/root/.vitepress/dist /srv/base-static-root
+# BEGIN WORKFLOW AREA static-site-assets FOR vue/add-static-site
+COPY --from=__static-subdomain-name__-static-builder /app/base/clients/__static-subdomain-name__/.vitepress/dist /srv/base-static-__static-subdomain-name__
+# END WORKFLOW AREA

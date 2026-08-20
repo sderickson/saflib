@@ -10,9 +10,19 @@ import {
   parsePath,
   makeLineReplace,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+/** Spec package inside the golden product — route stub + live openapi.yaml. */
+const specRoot = path.join(templatesProductRoot, "service", "spec");
+const routeStub = path.join(
+  specRoot,
+  "routes",
+  "__group-name__",
+  "__target-name__.yaml",
+);
+/** Live openapi.yaml — route-paths area holds the stub; CopyStep upserts it. */
+const openapiLive = path.join(specRoot, "openapi.yaml");
 
 const input = [
   {
@@ -92,11 +102,8 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    route: path.join(sourceDir, "routes/__group-name__/__target-name__.yaml"),
-    openapi: path.join(sourceDir, "openapi.yaml"),
-    distTypes: path.join(sourceDir, "dist/openapi.d.ts"),
-    distJson: path.join(sourceDir, "dist/openapi.json"),
-    index: path.join(sourceDir, "index.ts"),
+    route: routeStub,
+    openapi: openapiLive,
   },
 
   docFiles: {
@@ -122,9 +129,10 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
       `,
     })),
 
+    // CopyStep upserts the path stub from live openapi.yaml; merge duplicate path keys.
     step(TransformFileStepMachine, ({ context }) => ({
       filePath: path.join(context.targetDir, "openapi.yaml"),
-      description: `Merge ${context.method.toUpperCase()} ${context.urlPath} into openapi.yaml paths`,
+      description: `Merge duplicate path keys for ${context.method.toUpperCase()} ${context.urlPath}`,
       transform: (content: string) => mergeOpenApiRoute(content),
     })),
 
@@ -141,14 +149,8 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
 });
 
 /**
- * Merges a route entry into the openapi.yaml paths section, handling duplicate
- * path keys that occur when the CopyStepMachine's workflow area inserts a new
- * block for the same URL path (different method).
- *
- * Scans lines between the route-paths workflow area markers. If the urlPath
- * already exists, the new method+$ref is added under the existing path key and
- * the duplicate path key block is removed. If it doesn't exist, the content is
- * left as-is (already inserted by CopyStepMachine).
+ * Merges duplicate path keys in the route-paths workflow area (same URL,
+ * different methods) after CopyStep upserts a new path block from the stub.
  */
 export function mergeOpenApiRoute(content: string): string {
   const lines = content.split("\n");
@@ -156,7 +158,7 @@ export function mergeOpenApiRoute(content: string): string {
     l.includes("BEGIN WORKFLOW AREA route-paths FOR openapi/route"),
   );
   const areaEnd = lines.findIndex(
-    (l) => l.includes("END WORKFLOW AREA") && lines.indexOf(l) > areaStart,
+    (l, i) => i > areaStart && l.includes("END WORKFLOW AREA"),
   );
   if (areaStart === -1 || areaEnd === -1) {
     return content;
@@ -166,7 +168,6 @@ export function mergeOpenApiRoute(content: string): string {
   const methodIndent = "    ";
   const refIndent = "      ";
 
-  // Parse path blocks within the workflow area
   interface PathBlock {
     urlPath: string;
     methods: { method: string; ref: string }[];
@@ -176,35 +177,35 @@ export function mergeOpenApiRoute(content: string): string {
 
   for (let i = areaStart + 1; i < areaEnd; i++) {
     const line = lines[i];
-    // Match a path key like "  /recipes:" or "  /recipes/{id}:"
     const pathMatch = line.match(/^(\s{2})(\/.+):$/);
     if (pathMatch) {
       current = { urlPath: pathMatch[2], methods: [] };
       blocks.push(current);
       continue;
     }
-    // Match a method key like "    get:" or "    post:"
     const methodMatch = line.match(/^\s{4}(\w+):$/);
     if (methodMatch && current) {
       const nextLine = lines[i + 1] || "";
       const refMatch = nextLine.match(/^\s+\$ref:\s*"(.+)"$/);
       if (refMatch) {
         current.methods.push({ method: methodMatch[1], ref: refMatch[1] });
-        i++; // skip the $ref line
+        i++;
       }
       continue;
     }
   }
 
-  // Merge duplicate path keys
   const merged = new Map<string, { method: string; ref: string }[]>();
   for (const block of blocks) {
     const existing = merged.get(block.urlPath) || [];
-    existing.push(...block.methods);
+    for (const m of block.methods) {
+      if (!existing.some((e) => e.method === m.method)) {
+        existing.push(m);
+      }
+    }
     merged.set(block.urlPath, existing);
   }
 
-  // Rebuild the area content
   const newAreaLines: string[] = [];
   for (const [urlPath, methods] of merged) {
     newAreaLines.push(`${pathIndent}${urlPath}:`);
@@ -214,11 +215,9 @@ export function mergeOpenApiRoute(content: string): string {
     }
   }
 
-  // Replace the area content
-  const result = [
+  return [
     ...lines.slice(0, areaStart + 1),
     ...newAreaLines,
     ...lines.slice(areaEnd),
-  ];
-  return result.join("\n");
+  ].join("\n");
 }

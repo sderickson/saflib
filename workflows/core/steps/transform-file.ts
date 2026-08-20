@@ -6,7 +6,7 @@ import type {
 } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 import { workflowActions, workflowActors, logInfo } from "../xstate.ts";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 /**
@@ -27,6 +27,12 @@ export interface TransformFileStepInput {
    * Description for the checklist output (e.g., "Add workspace entry to package.json").
    */
   description?: string;
+
+  /**
+   * If true and the file does not exist, skip without error (useful for optional
+   * product files such as deploy env templates).
+   */
+  skipIfMissing?: boolean;
 }
 
 /**
@@ -36,6 +42,7 @@ export interface TransformFileStepContext extends WorkflowContext {
   filePath: string;
   transform: (content: string) => string;
   description: string;
+  skipIfMissing: boolean;
 }
 
 /**
@@ -60,6 +67,9 @@ export const TransformFileStepMachine = setup({
         if (input.runMode === "dry" || input.runMode === "checklist") {
           return;
         }
+        if (input.skipIfMissing && !existsSync(input.filePath)) {
+          return;
+        }
         const content = readFileSync(input.filePath, "utf-8");
         const updated = input.transform(content);
         writeFileSync(input.filePath, updated, "utf-8");
@@ -78,6 +88,7 @@ export const TransformFileStepMachine = setup({
       filePath: resolvedPath,
       transform: input.transform,
       description: input.description ?? `Transform ${input.filePath}`,
+      skipIfMissing: input.skipIfMissing ?? false,
     };
   },
   states: {

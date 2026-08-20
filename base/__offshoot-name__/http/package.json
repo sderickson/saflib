@@ -1,0 +1,28 @@
+{
+  "name": "@saflib/base-__offshoot-name__-http",
+  "saf": {
+    "kind": "http"
+  },
+  "description": "Offshoot Express router for Base __offshoot-name__; mounted by parent http",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./http": "./http.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/express": "*",
+    "@saflib/monorepo": "*",
+    "express": "^5.0.0"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@types/express": "5.0.6"
+  },
+  "sideEffects": false
+}

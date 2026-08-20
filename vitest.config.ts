@@ -10,16 +10,11 @@ export default defineConfig({
     projects: [
       // BEGIN WORKFLOW AREA test-product-dependencies FOR product/init
       "*/**/vitest.config.{ts,js,mts,mjs}",
-      // Workflow templates copied into tmp/ use different relative depths than
-      // their source paths under saflib; those packages are tested by workflow-script CI.
-      "!cron/cron/workflows/templates/**",
-      "!integrations/workflows/templates/**",
-      "!express/workflows/templates/**",
-      "!sdk/workflows/templates/**",
-      "!service/workflows/service-templates/**",
-      "!vue/workflows/template/**",
+      // Packages under tmp/ are tested by workflow-script CI / live-test.
       "!tmp/**",
       "tmp/**/vitest.config.{ts,js,mts,mjs}",
+      // gRPC scaffold packages still depend on deleted template-package-* names.
+      "!grpc/**/workflows/*-templates/**",
       // END WORKFLOW AREA
     ],
   },

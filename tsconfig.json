@@ -26,6 +26,84 @@
       "path": "./backup/backup-spec"
     },
     {
+      "path": "./base/__offshoot-name__/db"
+    },
+    {
+      "path": "./base/__offshoot-name__/http"
+    },
+    {
+      "path": "./base/__offshoot-name__/sdk"
+    },
+    {
+      "path": "./base/__offshoot-name__/spec"
+    },
+    {
+      "path": "./base/clients/__static-subdomain-name__"
+    },
+    {
+      "path": "./base/clients/__subdomain-name__"
+    },
+    {
+      "path": "./base/clients/account"
+    },
+    {
+      "path": "./base/clients/admin"
+    },
+    {
+      "path": "./base/clients/app"
+    },
+    {
+      "path": "./base/clients/auth"
+    },
+    {
+      "path": "./base/clients/common"
+    },
+    {
+      "path": "./base/clients/links"
+    },
+    {
+      "path": "./base/clients/root"
+    },
+    {
+      "path": "./base/dev"
+    },
+    {
+      "path": "./base/packages/__package-name__"
+    },
+    {
+      "path": "./base/plans"
+    },
+    {
+      "path": "./base/service/common"
+    },
+    {
+      "path": "./base/service/cron"
+    },
+    {
+      "path": "./base/service/db"
+    },
+    {
+      "path": "./base/service/email"
+    },
+    {
+      "path": "./base/service/http"
+    },
+    {
+      "path": "./base/service/integrations/__integration-name__"
+    },
+    {
+      "path": "./base/service/kratos-handlers"
+    },
+    {
+      "path": "./base/service/monolith"
+    },
+    {
+      "path": "./base/service/sdk"
+    },
+    {
+      "path": "./base/service/spec"
+    },
+    {
       "path": "./commander"
     },
     {
@@ -39,6 +117,9 @@
     },
     {
       "path": "./cron/cron-vue"
+    },
+    {
+      "path": "./deploy"
     },
     {
       "path": "./dev-site/dev-site-db"
@@ -153,6 +234,9 @@
     },
     {
       "path": "./service"
+    },
+    {
+      "path": "./templates"
     },
     {
       "path": "./utils"

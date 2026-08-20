@@ -16,10 +16,14 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/templates": "*",
+    "@saflib/utils": "*",
+    "@saflib/workflows": "*"
+  },
   "devDependencies": {
-    "@saflib/vitest": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/vitest": "*"
   },
   "sideEffects": false
 }

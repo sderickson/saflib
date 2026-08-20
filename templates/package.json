@@ -1,0 +1,17 @@
+{
+  "name": "@saflib/templates",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Path helpers for the golden SAF product at saflib/base (and deploy/), used as the copy source for product/init.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {},
+  "sideEffects": false
+}

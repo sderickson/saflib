@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@saflib/grpc": "*",
-    "template-package-service-common": "*",
-    "template-package-db": "*",
+    "@saflib/base-service-common": "*",
+    "@saflib/base-db": "*",
     "template-package-grpc-proto": "*"
   },
   "devDependencies": {

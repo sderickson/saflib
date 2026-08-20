@@ -1,0 +1,82 @@
+# Dev stack for the base product (sibling of saflib library packages).
+# Compose / build context is the saflib monorepo root (`../..` from this directory).
+# product/init rewrites the `../..:/app` volume to product + saflib mounts.
+services:
+  caddy:
+    depends_on:
+      - clients
+    image: saflib-base-dev-caddy:latest
+    build:
+      context: ../..
+      dockerfile: ./base/dev/Dockerfile
+    ports:
+      - 80:80
+    volumes:
+      - ./caddy-config:/etc/caddy/
+      - caddy_data:/data
+      - caddy_config:/config
+
+  clients:
+    image: saflib-base-clients:latest
+    build:
+      context: ../..
+      dockerfile: ./base/clients/build/Dockerfile
+    env_file:
+      - ./env.dev
+    volumes:
+      # Entire saflib monorepo at /app (packages are siblings of base/, not under /app/saflib).
+      # Anonymous volume keeps the image's Linux node_modules (host bind would overwrite with Darwin).
+      - ../..:/app
+      - /app/node_modules
+    command: npm run dev
+
+  base-monolith:
+    image: saflib-base-monolith:latest
+    volumes:
+      - ../..:/app
+      - /app/node_modules
+    build:
+      context: ../..
+      dockerfile: base/service/monolith/Dockerfile
+    env_file:
+      - ./env.dev
+      - ./.env
+
+  kratos-migrate:
+    image: oryd/kratos:v26.2.0
+    # SQL applied lines flood compose logs; keep output only on failure.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        /usr/bin/kratos migrate sql -e --yes > /tmp/kratos-migrate.log 2>&1
+        status=$$?
+        if [ $$status -ne 0 ]; then
+          cat /tmp/kratos-migrate.log >&2
+          exit $$status
+        fi
+        echo "kratos-migrate: ok"
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+      - LOG_LEVEL=warn
+    volumes:
+      # Persists SQLite (identities, sessions, flows) across container restarts
+      - ./kratos/data:/var/lib/sqlite
+      - ./kratos:/etc/config/kratos
+
+  kratos:
+    image: oryd/kratos:v26.2.0
+    depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
+    command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    env_file:
+      - ./env.kratos.config
+    volumes:
+      - ./kratos/data:/var/lib/sqlite
+      - ./kratos:/etc/config/kratos
+
+volumes:
+  caddy_data:
+  caddy_config:

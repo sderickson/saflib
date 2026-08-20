@@ -1,0 +1,58 @@
+// @ts-nocheck — scaffold placeholders until sdk/add-query or sdk/add-mutation copies this file.
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import { handleClientMethod } from "@saflib/sdk";
+import { getClient } from "../../client.ts";
+import type { RequestBody as __mutationName____GroupName__RequestBody } from "template-package-spec/operations/__operationId__";
+
+// BEGIN ONCE WORKFLOW AREA instructions FOR sdk/add-mutation IF upload
+/*
+To upload a file with a tanstack mutation, you'll need to modify the logic
+below to be something like this:
+
+const formData = new FormData();
+// append the File
+formData.append("file", file);
+// append any other request body fields
+formData.append("category", category);
+// use "as any" to override tanstack not liking it
+const res = await handleClientMethod(
+  getClient().POST("/file-upload", {
+    body: formData as any, // hack...
+  }),
+);
+ */
+// END WORKFLOW AREA
+
+// BEGIN ONCE WORKFLOW AREA instructions FOR sdk/add-mutation IF download
+/*
+For binary (download) responses, use fetch directly to get arrayBuffer() or blob(),
+then return it. Build the URL from getProtocol(), getHost(), and the path; include
+credentials and CSRF token like other mutations. On !response.ok, parse JSON error
+body when available and throw TanstackError. Return new Blob([arrayBuffer], { type })
+or the arrayBuffer as appropriate.
+ */
+// END WORKFLOW AREA
+
+export const use__MutationName____GroupName__Mutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (
+      // @ts-ignore TODO: update params to match the route
+      data: __mutationName____GroupName__RequestBody["__operationId__"],
+    ) => {
+      return handleClientMethod(
+        // @ts-ignore TODO: update params to match the route
+        getClient().__METHOD__(
+          // @ts-ignore TODO: update params to match the route
+          "__url-path__",
+          // @ts-ignore TODO: update params to match the route
+          { body: data },
+        ),
+      );
+    },
+    onSuccess: () => {
+      // TODO: Update to invalidate the correct query key
+      queryClient.invalidateQueries({ queryKey: ["__group-name__"] });
+    },
+  });
+};

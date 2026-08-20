@@ -1,6 +1,19 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "references": [],
+  "references": [
+    {
+      "path": "../monorepo"
+    },
+    {
+      "path": "../templates"
+    },
+    {
+      "path": "../utils"
+    },
+    {
+      "path": "../workflows"
+    }
+  ],
   "compilerOptions": {
     "outDir": "./dist/types",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
@@ -13,6 +26,7 @@
     "e2e",
     "playwright-report",
     "test-results",
+    "workflows/bootstrap-templates-package.ts",
     "workflows/template/**",
     "workflows/templates/**",
     "**/workflows/template/**",

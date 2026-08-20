@@ -1,0 +1,21 @@
+openapi: 3.0.0
+info:
+  title: base __offshoot-name__ API
+  version: 1.0.0
+  description: Offshoot OpenAPI paths and schemas; parent service-spec composes via $ref
+
+paths:
+  # BEGIN WORKFLOW AREA route-paths FOR openapi/route
+  /__offshoot-name__/health:
+    get:
+      $ref: "./routes/health.yaml#/get__OffshootName__Health"
+  # END WORKFLOW AREA
+
+components:
+  schemas:
+    Error:
+      $ref: "./schemas/error.yaml"
+    # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
+    __OffshootName__Health:
+      $ref: "./schemas/health.yaml"
+    # END WORKFLOW AREA

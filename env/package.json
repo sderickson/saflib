@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@saflib/monorepo": "*",
+    "@saflib/templates": "*",
     "ajv": "^8.17.1"
   },
   "devDependencies": {

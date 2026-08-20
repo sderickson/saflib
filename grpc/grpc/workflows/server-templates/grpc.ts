@@ -1,12 +1,12 @@
-import { __serviceName__Db } from "template-package-db/instances";
-import { __serviceName__ServiceStorage } from "template-package-service-common/context";
+import { __serviceName__Db } from "@saflib/base-db/instances";
+import { __serviceName__ServiceStorage } from "@saflib/base-service-common/context";
 import { makeGrpcServerContextWrapper, addSafContext } from "@saflib/grpc";
 import * as grpc from "@grpc/grpc-js";
 import {
   __ServiceName__HealthService,
   __ServiceName__HealthServiceDefinition,
 } from "./handlers/health/index.ts";
-import type { __ServiceName__ServiceContextOptions } from "template-package-service-common/context";
+import type { __ServiceName__ServiceContextOptions } from "@saflib/base-service-common/context";
 
 /**
  * Starts the gRPC server for the template-package service.

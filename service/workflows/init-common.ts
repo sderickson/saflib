@@ -9,8 +9,9 @@ import {
   makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
+import { templatesProductRoot } from "@saflib/templates";
 
-const sourceDir = path.join(import.meta.dirname, "common-templates");
+const sourceDir = path.join(templatesProductRoot, "service", "common");
 
 const input = [
   {
@@ -31,13 +32,18 @@ interface InitCommonWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
 }
 
+/**
+ * @deprecated Prefer product/init (copies base service/common) and domain
+ * offshoot init workflows. Offshoots reuse the parent common package.
+ */
 export const InitCommonWorkflowDefinition = defineWorkflow<
   typeof input,
   InitCommonWorkflowContext
 >({
   id: "service/init-common",
 
-  description: "Create a shared service package",
+  description:
+    "[deprecated] Create a shared service-common package — prefer product/init",
 
   checklistDescription: ({ packageName }) => `Init ${packageName}.`,
 

@@ -7,10 +7,11 @@ import {
   type ParsePathOutput,
   type ParsePackageNameOutput,
   getPackageName,
-  makeLineReplace,
+  parsePath,
+  parsePackageName,
 } from "@saflib/workflows";
 import path from "node:path";
-import { parsePath, parsePackageName } from "@saflib/workflows";
+import { makeGrpcLineReplace } from "./shared.ts";
 
 const sourceDir = path.join(
   import.meta.dirname,
@@ -71,7 +72,7 @@ export const AddGrpcServerHandlerWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.targetName,
       targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
+      lineReplace: makeGrpcLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

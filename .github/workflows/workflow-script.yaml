@@ -1,4 +1,4 @@
-name: Workflows in Script Mode
+name: Workflow live-test
 
 on:
   pull_request:
@@ -6,8 +6,9 @@ on:
       - main
 
 jobs:
-  workflow-integration-test:
+  live-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
       - name: Setup Node.js
@@ -18,10 +19,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Main test. If this fails, one of the workflows is broken.
-      - name: Run Workflow Integration Test
-        run: npm exec saf-workflow run-scripts ./workflows-cli/test-all-workflows.ts
+      # Copy base → tmp, run each live-test set (script mode), typecheck per set, delete tmp.
+      - name: Run workflow live-test
+        run: npm run live-test --workspace=@saflib/workflows-cli
 
-      # just for debugging, checking all the files that got added/changed
-      - name: Git status
+      - name: Git status (should be clean of tmp/)
+        if: always()
         run: git status -uall

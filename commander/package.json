@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@saflib/node": "*",
+    "@saflib/templates": "*",
     "commander": "^14.0.0",
     "winston": "^3.11.0"
   },

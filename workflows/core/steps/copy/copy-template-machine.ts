@@ -14,8 +14,34 @@ import type { CopyStepContext, CopyStepInput } from "./types.ts";
 import { parseCopiedFiles } from "./helpers.ts";
 import path from "node:path";
 import fs, { readdirSync, statSync } from "node:fs";
+import { minimatch } from "minimatch";
 
 export type { CopyStepInput };
+
+/** Always skipped when expanding directory template sources. */
+const DEFAULT_SKIP_SOURCE_GLOBS = [
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/playwright-report/**",
+  "**/test-results/**",
+];
+
+function shouldSkipSourcePath(
+  fullPath: string,
+  input: CopyStepInput,
+): boolean {
+  const normalized = fullPath.split(path.sep).join("/");
+  const globs = [
+    ...DEFAULT_SKIP_SOURCE_GLOBS,
+    ...(input.skipSourceGlobs ?? []),
+  ];
+  // `dot: true` so stubs like `__subdomain-name__/.gitignore` match `**/__*__/**`
+  // (minimatch ignores dotfiles by default).
+  if (globs.some((pattern) => minimatch(normalized, pattern, { dot: true }))) {
+    return true;
+  }
+  return input.skipSourcePath?.(fullPath) ?? false;
+}
 
 /**
  * Copies all `templateFiles` to the given directory, performing string replacements for directories, file names, and file contents.
@@ -50,25 +76,33 @@ export const CopyStepMachine = setup({
       throw new Error("templateFiles is required");
     }
     const templateKeys = Object.values(input.templateFiles);
-    let sharedPrefixIndex = 0;
-    for (let i = 0; i < templateKeys[0].length; i++) {
-      let allMatch = true;
-      for (let j = 0; j < templateKeys.length; j++) {
-        if (templateKeys[j][i] !== templateKeys[0][i]) {
-          allMatch = false;
+    let sharedPrefix: string;
+    if (templateKeys.length === 1) {
+      // Single source: use the directory itself (or the file's parent). The
+      // common-prefix loop below would drop the last character of a solo path.
+      const only = templateKeys[0];
+      sharedPrefix = fs.statSync(only).isDirectory() ? only : path.dirname(only);
+    } else {
+      let sharedPrefixIndex = 0;
+      for (let i = 0; i < templateKeys[0].length; i++) {
+        let allMatch = true;
+        for (let j = 0; j < templateKeys.length; j++) {
+          if (templateKeys[j][i] !== templateKeys[0][i]) {
+            allMatch = false;
+            break;
+          }
+        }
+        sharedPrefixIndex = i;
+        if (!allMatch) {
           break;
         }
       }
-      sharedPrefixIndex = i;
-      if (!allMatch) {
-        break;
-      }
-    }
 
-    // Fix cases where the shared prefix includes a filename, or a partial filename
-    let sharedPrefix = templateKeys[0].slice(0, sharedPrefixIndex);
-    if (!fs.existsSync(sharedPrefix) || fs.statSync(sharedPrefix).isFile()) {
-      sharedPrefix = path.dirname(sharedPrefix);
+      // Fix cases where the shared prefix includes a filename, or a partial filename
+      sharedPrefix = templateKeys[0].slice(0, sharedPrefixIndex);
+      if (!fs.existsSync(sharedPrefix) || fs.statSync(sharedPrefix).isFile()) {
+        sharedPrefix = path.dirname(sharedPrefix);
+      }
     }
 
     // Flatten template entries which are directories
@@ -87,7 +121,7 @@ export const CopyStepMachine = setup({
         for (const file of files) {
           if (file.isFile()) {
             const fullPath = path.join(file.parentPath, file.name);
-            if (fullPath.includes("/node_modules/")) {
+            if (shouldSkipSourcePath(fullPath, input)) {
               continue;
             }
             templateFiles[`${templateFileKey}-${i++}`] = fullPath;

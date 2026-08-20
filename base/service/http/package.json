@@ -1,0 +1,32 @@
+{
+  "name": "@saflib/base-http",
+  "saf": {
+    "kind": "http"
+  },
+  "description": "HTTP server for the base service",
+  "type": "module",
+  "exports": {
+    "./http": "./http.ts",
+    "./testing/slim-route-test": "./testing/slim-route-test.ts",
+    "./handlers/*": "./handlers/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/base-cron": "*",
+    "@saflib/base-db": "*",
+    "@saflib/base-service-common": "*",
+    "@saflib/base-spec": "*",
+    "@saflib/cron": "*",
+    "@saflib/express": "*",
+    "@saflib/monorepo": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

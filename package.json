@@ -14,8 +14,7 @@
   "author": "Scott Erickson <sderickson@gmail.com>",
   "license": "MIT",
   "workspaces": [
-    "/**",
-    "tmp/**"
+    "/**"
   ],
   "devDependencies": {
     "@saflib/vue": "*",
@@ -46,6 +45,6 @@
     "./../ory-kratos-sdk/index.ts",
     "./../ory-kratos-sdk/vitest.config.js",
     "./../ory-kratos-sdk/vue-query-register.ts",
-    "./../sdk/workflows/templates/client.ts"
+    "./base/service/sdk/client.ts"
   ]
 }

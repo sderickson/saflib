@@ -4,20 +4,36 @@ import {
   step,
   type ParsePackageNameOutput,
   parsePackageName,
-  makeLineReplace,
   CdStepMachine,
   CommandStepMachine,
   getPackageName,
 } from "@saflib/workflows";
 import path from "node:path";
+import {
+  caddyDev,
+  clientsRoot,
+  deployProductCaddy,
+  deployTemplatesRoot,
+  linksIndex,
+  linksStub,
+  makeBasePackageLineReplace,
+  skipIfMissingDeploy,
+  resolveDeployDir,
+  devRoot,
+} from "./shared.ts";
 
 const staticSubdomainDir = path.join(
-  import.meta.dirname,
-  "template",
+  clientsRoot,
   "__static-subdomain-name__",
 );
-const linksDir = path.join(import.meta.dirname, "template", "links");
-const commonDir = path.join(import.meta.dirname, "template", "common");
+const buildImages = path.join(devRoot, "build-images.sh");
+const devDockerfile = path.join(devRoot, "Dockerfile.template");
+const deployBuildSh = path.join(
+  deployTemplatesRoot,
+  "local-scripts",
+  "build.sh",
+);
+const deployProdDockerfile = path.join(deployTemplatesRoot, "Dockerfile.prod");
 
 const input = [
   {
@@ -42,6 +58,8 @@ interface AddStaticSiteWorkflowContext extends ParsePackageNameOutput {
   commonPackageName: string;
   serviceSpecName: string;
   serviceSdkName: string;
+  /** Docker image prefix, e.g. `saflib-tmp` (matches product/init rewrite of `saflib-base`). */
+  dockerImagePrefix: string;
 }
 
 export const AddStaticSiteWorkflowDefinition = defineWorkflow<
@@ -62,9 +80,9 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const targetDir = path.join(input.cwd, input.productName, "clients");
     const currentPackageName = getPackageName(input.cwd);
-    const currentPackageOrgName =
-      "@" + parsePackageName(currentPackageName).organizationName;
-    const staticSubdomainName = `${input.subdomainName}`;
+    const parsed = parsePackageName(currentPackageName);
+    const currentPackageOrgName = "@" + parsed.organizationName;
+    const staticSubdomainName = input.subdomainName;
     const staticPackageName = `${currentPackageOrgName}/${input.productName}-${staticSubdomainName}-static`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-links`;
     const commonPackageName = `${currentPackageOrgName}/${input.productName}-clients-common`;
@@ -85,14 +103,16 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       serviceSpecName,
       serviceSdkName,
       serviceName: input.productName,
+      dockerImagePrefix: `${parsed.organizationName}-${input.productName}`,
     };
   },
 
+  // Clients stub + links area. Dev/deploy Caddy/docker use per-step overrides.
   templateFiles: {
     packageJson: path.join(staticSubdomainDir, "package.json"),
     staticSite: staticSubdomainDir,
-    linksPackage: linksDir,
-    commonPackage: commonDir,
+    linksStub,
+    linksIndex,
   },
 
   docFiles: {},
@@ -102,25 +122,74 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CopyStepMachine, ({ context }) => {
-      const lineReplace = makeLineReplace(context);
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.serviceName,
+      targetDir: context.targetDir,
+      lineReplace: makeBasePackageLineReplace(context),
+    })),
 
-      const wrappedLineReplace = (line: string) => {
-        line = line.replace(
-          "template-package-clients-common",
-          context.commonPackageName,
-        );
-        line = line.replace("template-package-spec", context.serviceSpecName);
-        line = line.replace("template-package-links", context.linksPackageName);
-        line = line.replace("template-package-sdk", context.serviceSdkName);
-        return lineReplace(line);
-      };
-      return {
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.serviceName,
+      targetDir: path.join(
+        context.cwd,
+        context.productName,
+        "dev",
+        "caddy-config",
+      ),
+      templateFiles: {
+        caddyDev,
+      },
+      lineReplace: makeBasePackageLineReplace(context),
+    })),
+
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.serviceName,
+      targetDir: path.join(context.cwd, context.productName, "dev"),
+      templateFiles: {
+        buildImages,
+        devDockerfile,
+      },
+      lineReplace: makeBasePackageLineReplace(context),
+    })),
+
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
         name: context.serviceName,
-        targetDir: context.targetDir,
-        lineReplace: wrappedLineReplace,
-      };
-    }),
+        targetDir: path.join(resolveDeployDir(context.cwd), "local-scripts"),
+        templateFiles: {
+          deployBuildSh,
+        },
+        lineReplace: makeBasePackageLineReplace(context),
+      }),
+      { skipIf: skipIfMissingDeploy("local-scripts") },
+    ),
+
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
+        name: context.serviceName,
+        targetDir: resolveDeployDir(context.cwd),
+        templateFiles: {
+          deployProdDockerfile,
+        },
+        lineReplace: makeBasePackageLineReplace(context),
+      }),
+      { skipIf: skipIfMissingDeploy("Dockerfile.prod") },
+    ),
+
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
+        name: context.serviceName,
+        targetDir: path.join(resolveDeployDir(context.cwd), "caddy"),
+        templateFiles: {
+          deployProductCaddy,
+        },
+        lineReplace: makeBasePackageLineReplace(context),
+      }),
+      { skipIf: skipIfMissingDeploy("caddy") },
+    ),
 
     step(CdStepMachine, ({ context }) => ({
       path: path.dirname(context.copiedFiles!.packageJson),
@@ -129,12 +198,6 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
-    })),
-
-    // seems to not be there when you need it when you build in docker, so install it here
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["install", "@vue/tsconfig"],
     })),
 
     step(CdStepMachine, ({ context }) => ({
@@ -152,14 +215,6 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
         "--write",
       ],
     })),
-
-    // TODO: I think it would be better to automate this somehow... than to lean on the agent.
-    // step(PromptStepMachine, () => ({
-    //   promptText: `Update the root level deploy/ to incorporate the new static site.
-
-    //   * Update build.sh to build the new static site client docker images.
-    //   * Update Dockerfile.prod to use those images to build the static files and incorporate them into the caddy image.`,
-    // })),
   ],
 });
 

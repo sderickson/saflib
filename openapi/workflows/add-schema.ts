@@ -11,10 +11,14 @@ import {
   makeLineReplace,
   getPackageName,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const specRoot = path.join(templatesProductRoot, "service", "spec");
+const schemaStub = path.join(specRoot, "schemas", "__target-name__.yaml");
+/** Live openapi.yaml — schema-components area holds the stub; CopyStep upserts it. */
+const openapiLive = path.join(specRoot, "openapi.yaml");
 
 const input = [
   {
@@ -59,10 +63,8 @@ export const OpenApiSchemaWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    schema: path.join(sourceDir, "./schemas/__target-name__.yaml"),
-    error: path.join(sourceDir, "./schemas/error.yaml"),
-    openapi: path.join(sourceDir, "openapi.yaml"),
-    index: path.join(sourceDir, "index.ts"),
+    schema: schemaStub,
+    openapi: openapiLive,
   },
 
   docFiles: {},

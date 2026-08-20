@@ -7,15 +7,19 @@ import {
   type ParsePathOutput,
   parsePath,
   parsePackageName,
-  // checkPackageDependency,
   getPackageName,
   type ParsePackageNameOutput,
   makeLineReplace,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const dbRoot = path.join(templatesProductRoot, "service", "db");
+const queryDir = path.join(dbRoot, "queries", "__group-name__");
+/** Anchors sharedPrefix at db/ (package already has these from product/init). */
+const typesLive = path.join(dbRoot, "types.ts");
+const errorsLive = path.join(dbRoot, "errors.ts");
 
 const input = [
   {
@@ -45,8 +49,6 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    // maybe later?
-    // checkPackageDependency(input.cwd, "@saflib/drizzle");
     let packageName = "@mock/package-db";
     if (existsSync(path.join(input.cwd, "package.json"))) {
       packageName = getPackageName(input.cwd);
@@ -66,13 +68,10 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    query: path.join(sourceDir, "queries/__group-name__/__target-name__.ts"),
-    test: path.join(
-      sourceDir,
-      "queries/__group-name__/__target-name__.test.ts",
-    ),
-    types: path.join(sourceDir, "types.ts"),
-    errors: path.join(sourceDir, "errors.ts"),
+    query: path.join(queryDir, "__target-name__.ts"),
+    test: path.join(queryDir, "__target-name__.test.ts"),
+    types: typesLive,
+    errors: errorsLive,
   },
 
   docFiles: {
@@ -81,11 +80,21 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.targetName,
-      targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      const lineReplace = makeLineReplace(context);
+      return {
+        name: context.targetName,
+        targetDir: context.targetDir,
+        lineReplace: (line: string) => {
+          let out = line;
+          out = out
+            .split("baseDbManager")
+            .join(`${context.serviceName}DbManager`);
+          out = out.split("baseDb").join(`${context.serviceName}Db`);
+          return lineReplace(out);
+        },
+      };
+    }),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "query",

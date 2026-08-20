@@ -1,0 +1,11 @@
+.VPContent {
+  background: rgb(var(--v-theme-background));
+}
+
+.root-home a {
+  text-decoration: none;
+}
+
+.root-home a:hover {
+  text-decoration: underline;
+}

@@ -24,6 +24,22 @@ export interface CopyStepInput {
    * Passed to template resolution so that BEGIN...IF flag...ELSE...END areas choose the correct branch.
    */
   flags?: Record<string, boolean>;
+
+  /**
+   * When walking directory template sources, skip files matching these
+   * minimatch globs (matched against the absolute path with `/` separators).
+   * Always combined with built-in skips for node_modules, dist, etc.
+   *
+   * Example (product/init): globs that match paths containing `__…__` segments
+   * so expansion stubs stay in the golden product only.
+   */
+  skipSourceGlobs?: string[];
+
+  /**
+   * When walking directory template sources, skip files whose absolute path
+   * returns true. Prefer {@link skipSourceGlobs} when a pattern is enough.
+   */
+  skipSourcePath?: (fullPath: string) => boolean;
 }
 
 /**
