@@ -17,6 +17,7 @@ import {
 } from "@saflib/utils";
 import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
+import { existsSync } from "node:fs";
 
 /**
  * Append `value` to a `KEY=a,b,c` line if missing. Leaves other lines unchanged.
@@ -56,6 +57,24 @@ const linksStub = path.join(
 );
 /** Upserts the subdomain-links workflow area into an existing links package. */
 const linksIndex = path.join(clientsRoot, "links", "index.ts");
+
+const devRoot = path.join(templatesProductRoot, "dev");
+const caddyDev = path.join(devRoot, "caddy-config", "Caddyfile");
+
+/** Deploy tree templates (until `saflib/deploy/` is restored). */
+const deployTemplatesRoot = path.join(
+  templatesProductRoot,
+  "..",
+  "product",
+  "workflows",
+  "templates",
+  "deploy",
+);
+const deployProductCaddy = path.join(
+  deployTemplatesRoot,
+  "caddy",
+  "__product-name__.Caddyfile",
+);
 
 const input = [
   {
@@ -149,6 +168,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
 
   // Only SPA + the few clients/ files add-spa adjusts. product/init owns
   // build package scaffolding, common, and the rest of links.
+  // Dev/deploy Caddy upserts use per-step templateFiles overrides.
   templateFiles: {
     packageJson: path.join(subdomainDir, "package.json"),
     spa: subdomainDir,
@@ -168,7 +188,42 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       name: context.serviceName,
       targetDir: context.targetDir,
       lineReplace: makeAddSpaLineReplace(context),
+      // View / e2e expansion stubs live under the SPA stub but belong to
+      // add-view / add-e2e-test — not a new SPA package.
+      skipSourceGlobs: ["**/__group-name__/**", "**/e2e/**"],
     })),
+
+    // Upsert SPA host into product dev Caddyfile.
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.serviceName,
+      targetDir: path.join(
+        context.cwd,
+        context.productName,
+        "dev",
+        "caddy-config",
+      ),
+      templateFiles: {
+        caddyDev,
+      },
+      lineReplace: makeAddSpaLineReplace(context),
+    })),
+
+    // Upsert SPA host into deploy product Caddyfile when deploy/ exists.
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
+        name: context.serviceName,
+        targetDir: path.join(context.cwd, "deploy", "caddy"),
+        templateFiles: {
+          deployProductCaddy,
+        },
+        lineReplace: makeAddSpaLineReplace(context),
+      }),
+      {
+        skipIf: ({ context }) =>
+          !existsSync(path.join(context.cwd, "deploy", "caddy")),
+      },
+    ),
 
     step(TransformFileStepMachine, ({ context }) => ({
       filePath: path.join(

@@ -8,4 +8,4 @@ WORKDIR /app
 RUN npm ci --omit=dev
 #{ copy_src }#
 
-WORKDIR /app/__product-name__/clients/__static-subdomain-name__
+WORKDIR /app/base/clients/__static-subdomain-name__

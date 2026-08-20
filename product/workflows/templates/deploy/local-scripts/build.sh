@@ -64,6 +64,9 @@ docker_build ./__product-name__/clients/root/Dockerfile \
   -t "$CONTAINER_REGISTRY/__organization-name__-__product-name__-root:latest" &
 pids+=($!)
 
+# BEGIN WORKFLOW AREA build-static-sites FOR vue/add-static-site
+# END WORKFLOW AREA
+
 # BEGIN WORKFLOW AREA build-product-dependencies FOR product/init
 docker_build ./__product-name__/service/monolith/Dockerfile \
   -t __organization-name__-__product-name__-monolith:latest \

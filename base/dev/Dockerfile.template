@@ -6,6 +6,9 @@
 FROM saflib-base-static-root:latest AS static-root-builder
 RUN npm run build
 
+# BEGIN WORKFLOW AREA static-site-builders FOR vue/add-static-site
+# END WORKFLOW AREA
+
 # Monorepo install once — workspace closure of saflib/base-dev (base static builds for this stack).
 FROM node:24-slim AS deps
 
@@ -20,3 +23,5 @@ RUN npm ci --omit=dev
 
 FROM caddy:2.11.3
 COPY --from=static-root-builder /app/base/clients/root/.vitepress/dist /srv/base-static-root
+# BEGIN WORKFLOW AREA static-site-assets FOR vue/add-static-site
+# END WORKFLOW AREA

@@ -208,6 +208,42 @@ export const liveTestSets: LiveTestSet[] = [
         productName: LIVE_TEST_PRODUCT,
         subdomainName: "docs",
       })),
+      step(CdStepMachine, () => ({
+        path: ".",
+      })),
+      step(CommandStepMachine, () => ({
+        command: "node",
+        args: [
+          "--experimental-strip-types",
+          "--disable-warning=ExperimentalWarning",
+          "./workflows-cli/live-test/assert-contains.ts",
+          `${LIVE_TEST_PRODUCT}/dev/caddy-config/Caddyfile`,
+          "docs.docker.localhost",
+          "/tmp-static-docs",
+        ],
+      })),
+      step(CommandStepMachine, () => ({
+        command: "node",
+        args: [
+          "--experimental-strip-types",
+          "--disable-warning=ExperimentalWarning",
+          "./workflows-cli/live-test/assert-contains.ts",
+          `${LIVE_TEST_PRODUCT}/dev/build-images.sh`,
+          "./tmp/clients/docs/Dockerfile",
+          "saflib-tmp-docs-static",
+        ],
+      })),
+      step(CommandStepMachine, () => ({
+        command: "node",
+        args: [
+          "--experimental-strip-types",
+          "--disable-warning=ExperimentalWarning",
+          "./workflows-cli/live-test/assert-contains.ts",
+          `${LIVE_TEST_PRODUCT}/dev/Dockerfile.template`,
+          "docs-static-builder",
+          "/srv/tmp-static-docs",
+        ],
+      })),
     ],
   },
   {

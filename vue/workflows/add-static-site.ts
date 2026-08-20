@@ -15,6 +15,7 @@ import {
 } from "@saflib/utils";
 import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
+import { existsSync } from "node:fs";
 
 const clientsRoot = path.join(templatesProductRoot, "clients");
 const staticSubdomainDir = path.join(
@@ -28,6 +29,45 @@ const linksStub = path.join(
 );
 /** Upserts the subdomain-links workflow area into an existing links package. */
 const linksIndex = path.join(clientsRoot, "links", "index.ts");
+
+const devRoot = path.join(templatesProductRoot, "dev");
+const caddyDev = path.join(devRoot, "caddy-config", "Caddyfile");
+const buildImagesAreaSource = path.join(
+  devRoot,
+  "workflow-area-sources",
+  "build-images.sh",
+);
+const devDockerfileAreaSource = path.join(
+  devRoot,
+  "workflow-area-sources",
+  "Dockerfile.template",
+);
+
+/** Deploy tree templates (until `saflib/deploy/` is restored). */
+const deployTemplatesRoot = path.join(
+  templatesProductRoot,
+  "..",
+  "product",
+  "workflows",
+  "templates",
+  "deploy",
+);
+const deployBuildAreaSource = path.join(
+  deployTemplatesRoot,
+  "workflow-area-sources",
+  "local-scripts",
+  "build.sh",
+);
+const deployDockerfileAreaSource = path.join(
+  deployTemplatesRoot,
+  "workflow-area-sources",
+  "Dockerfile.prod",
+);
+const deployProductCaddy = path.join(
+  deployTemplatesRoot,
+  "caddy",
+  "__product-name__.Caddyfile",
+);
 
 const input = [
   {
@@ -52,6 +92,8 @@ interface AddStaticSiteWorkflowContext extends ParsePackageNameOutput {
   commonPackageName: string;
   serviceSpecName: string;
   serviceSdkName: string;
+  /** Docker image prefix, e.g. `saflib-tmp` (matches product/init rewrite of `saflib-base`). */
+  dockerImagePrefix: string;
 }
 
 function makeAddStaticSiteLineReplace(context: AddStaticSiteWorkflowContext) {
@@ -61,7 +103,7 @@ function makeAddStaticSiteLineReplace(context: AddStaticSiteWorkflowContext) {
 
   return (line: string) => {
     let out = line;
-    // Golden static stub uses concrete @saflib/base-* names.
+    // Golden static stub uses concrete @saflib/base-* names and base/ paths.
     out = out.split("@saflib/base-clients-common").join(context.commonPackageName);
     out = out.split("@saflib/base-links").join(context.linksPackageName);
     out = out.split("@saflib/base-sdk").join(context.serviceSdkName);
@@ -71,6 +113,16 @@ function makeAddStaticSiteLineReplace(context: AddStaticSiteWorkflowContext) {
       .join(context.staticPackageName);
     out = out.split("BaseLayout").join(`${productPascal}Layout`);
     out = out.split("base_common_strings").join(`${productSnake}_common_strings`);
+    // Dev docker / Caddy paths and tags still say `base` / `saflib-base` in golden stubs.
+    out = out.split("saflib-base-").join(`${context.dockerImagePrefix}-`);
+    out = out.split("/app/base/").join(`/app/${context.productName}/`);
+    out = out.split("./base/").join(`./${context.productName}/`);
+    out = out
+      .split("/srv/base-static-")
+      .join(`/srv/${context.productName}-static-`);
+    out = out
+      .split("/base-static-")
+      .join(`/${context.productName}-static-`);
     return lineReplace(out);
   };
 }
@@ -93,8 +145,8 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const targetDir = path.join(input.cwd, input.productName, "clients");
     const currentPackageName = getPackageName(input.cwd);
-    const currentPackageOrgName =
-      "@" + parsePackageName(currentPackageName).organizationName;
+    const parsed = parsePackageName(currentPackageName);
+    const currentPackageOrgName = "@" + parsed.organizationName;
     const staticSubdomainName = input.subdomainName;
     const staticPackageName = `${currentPackageOrgName}/${input.productName}-${staticSubdomainName}-static`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-links`;
@@ -116,11 +168,11 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       serviceSpecName,
       serviceSdkName,
       serviceName: input.productName,
+      dockerImagePrefix: `${parsed.organizationName}-${input.productName}`,
     };
   },
 
-  // Only the static site stub + links area upsert. product/init owns common
-  // and the rest of the links package.
+  // Clients stub + links area. Dev/deploy Caddy/docker use per-step overrides.
   templateFiles: {
     packageJson: path.join(staticSubdomainDir, "package.json"),
     staticSite: staticSubdomainDir,
@@ -140,6 +192,82 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       targetDir: context.targetDir,
       lineReplace: makeAddStaticSiteLineReplace(context),
     })),
+
+    // Upsert Caddy host into product dev Caddyfile (filled stub in golden base).
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.serviceName,
+      targetDir: path.join(
+        context.cwd,
+        context.productName,
+        "dev",
+        "caddy-config",
+      ),
+      templateFiles: {
+        caddyDev,
+      },
+      lineReplace: makeAddStaticSiteLineReplace(context),
+    })),
+
+    // Upsert docker build/COPY via area-source files (live base files stay empty
+    // so base/dev does not build the expansion stub).
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.serviceName,
+      targetDir: path.join(context.cwd, context.productName, "dev"),
+      templateFiles: {
+        buildImages: buildImagesAreaSource,
+        devDockerfile: devDockerfileAreaSource,
+      },
+      lineReplace: makeAddStaticSiteLineReplace(context),
+    })),
+
+    // Upsert deploy docker builds when deploy/ exists (area-source files).
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
+        name: context.serviceName,
+        targetDir: path.join(context.cwd, "deploy", "local-scripts"),
+        templateFiles: {
+          deployBuildSh: deployBuildAreaSource,
+        },
+        lineReplace: makeAddStaticSiteLineReplace(context),
+      }),
+      {
+        skipIf: ({ context }) =>
+          !existsSync(path.join(context.cwd, "deploy", "local-scripts")),
+      },
+    ),
+
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
+        name: context.serviceName,
+        targetDir: path.join(context.cwd, "deploy"),
+        templateFiles: {
+          deployProdDockerfile: deployDockerfileAreaSource,
+        },
+        lineReplace: makeAddStaticSiteLineReplace(context),
+      }),
+      {
+        skipIf: ({ context }) =>
+          !existsSync(path.join(context.cwd, "deploy", "Dockerfile.prod")),
+      },
+    ),
+
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
+        name: context.serviceName,
+        targetDir: path.join(context.cwd, "deploy", "caddy"),
+        templateFiles: {
+          deployProductCaddy,
+        },
+        lineReplace: makeAddStaticSiteLineReplace(context),
+      }),
+      {
+        skipIf: ({ context }) =>
+          !existsSync(path.join(context.cwd, "deploy", "caddy")),
+      },
+    ),
 
     step(CdStepMachine, ({ context }) => ({
       path: path.dirname(context.copiedFiles!.packageJson),
@@ -165,10 +293,6 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
         "--write",
       ],
     })),
-
-    // TODO: automate Caddy + docker image wiring (dev/build-images.sh,
-    // deploy/local-scripts/build.sh, Dockerfile.prod) the way add-spa
-    // appends CLIENT_SUBDOMAINS — static sites are not Vite SPAs.
   ],
 });
 

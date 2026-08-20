@@ -26,6 +26,18 @@
 	import __product-name__-spa /account/index.html
 }
 
+# BEGIN WORKFLOW AREA client-subdomains FOR vue/add-spa
+{$__PRODUCT_NAME___PROTOCOL}://__subdomain-name__.{$__PRODUCT_NAME___DOMAIN} {
+	import __product-name__-spa /__subdomain-name__/index.html
+}
+# END WORKFLOW AREA
+
+# BEGIN WORKFLOW AREA static-subdomains FOR vue/add-static-site
+{$__PRODUCT_NAME___PROTOCOL}://__static-subdomain-name__.{$__PRODUCT_NAME___DOMAIN} {
+	import static-site /__product-name__-__static-subdomain-name__
+}
+# END WORKFLOW AREA
+
 # API subdomains
 
 {$__PRODUCT_NAME___PROTOCOL}://__product-name__.{$__PRODUCT_NAME___DOMAIN} {

@@ -28,6 +28,12 @@ http://__subdomain-name__.docker.localhost {
 }
 # END WORKFLOW AREA
 
+# BEGIN WORKFLOW AREA static-subdomains FOR vue/add-static-site
+http://__static-subdomain-name__.docker.localhost {
+	import static-site /base-static-__static-subdomain-name__
+}
+# END WORKFLOW AREA
+
 # Base API
 
 http://api.docker.localhost {
