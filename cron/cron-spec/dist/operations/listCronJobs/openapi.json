@@ -1,0 +1,149 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "listCronJobs",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/cron/jobs": {
+      "get": {
+        "summary": "List all cron jobs",
+        "operationId": "listCronJobs",
+        "tags": [
+          "cron",
+          "site-admin-only"
+        ],
+        "security": [
+          {
+            "scopes": [
+              "cron:read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of cron jobs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/job_settings"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing authentication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions (requires cron:read).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "job_settings": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true,
+            "description": "Unique identifier for the job setting."
+          },
+          "jobName": {
+            "type": "string",
+            "description": "The unique name of the cron job."
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the job is enabled to run."
+          },
+          "enabledBy": {
+            "type": "string",
+            "nullable": true,
+            "description": "Kratos identity id of the admin who last enabled the job. Null for pre-migration rows until re-enabled. Ticks skip when enabled with null.\n"
+          },
+          "lastRunAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Timestamp of the last time the job ran."
+          },
+          "lastRunStatus": {
+            "type": "string",
+            "enum": [
+              "success",
+              "fail",
+              "running",
+              "timed out",
+              null
+            ],
+            "nullable": true,
+            "description": "Status of the last job run."
+          },
+          "schedule": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true,
+            "description": "Cron schedule string from the registered JobsMap (e.g. `*/15 * * * *`)."
+          },
+          "runsNextAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "description": "Next scheduled tick when the job is enabled; null when disabled or schedule is unknown.\n"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Timestamp when the job setting was created."
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Timestamp when the job setting was last updated."
+          }
+        },
+        "required": [
+          "jobName",
+          "enabled"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

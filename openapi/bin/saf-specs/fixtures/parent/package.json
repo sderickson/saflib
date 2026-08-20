@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/parent-spec",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@fixture/offshoot-spec": "*"
+  }
+}
