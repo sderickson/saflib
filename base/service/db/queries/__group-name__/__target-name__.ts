@@ -1,4 +1,5 @@
-import { __serviceName__DbManager } from "../../instances.ts";
+// @ts-nocheck — scaffold placeholders until drizzle/add-query copies this file.
+import { baseDbManager } from "../../instances.ts";
 import { StubError } from "../../errors.ts";
 // TODO: import your actual types
 import type { StubParams, StubEntity } from "../../types.ts";
@@ -15,7 +16,7 @@ export const __targetName____GroupName__ = queryWrapper(
     dbKey: DbKey,
     params: StubParams,
   ): Promise<ReturnsError<StubEntity, __TargetName____GroupName__Error>> => {
-    const db = __serviceName__DbManager.get(dbKey)!;
+    const db = baseDbManager.get(dbKey)!;
     // TODO: replace this logic with your actual logic
     // For reference, this is standard "create" logic
     const result = await db

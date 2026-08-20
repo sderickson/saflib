@@ -30,8 +30,8 @@ export interface CopyStepInput {
    * minimatch globs (matched against the absolute path with `/` separators).
    * Always combined with built-in skips for node_modules, dist, etc.
    *
-   * Example (product/init): `["**/__*__/**", "**/__*__*"]` to leave expansion
-   * stubs in the golden product only.
+   * Example (product/init): globs that match paths containing `__…__` segments
+   * so expansion stubs stay in the golden product only.
    */
   skipSourceGlobs?: string[];
 

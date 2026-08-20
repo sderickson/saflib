@@ -1,21 +1,22 @@
+// @ts-nocheck — scaffold placeholders until drizzle/add-query copies this file.
 import { describe, it, expect, beforeAll, afterAll, beforeEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
-import { __serviceName__DbManager } from "../../instances.ts";
+import { baseDbManager } from "../../instances.ts";
 import { __targetName____GroupName__ } from "./__target-name__.ts";
 
 describe("__targetName____GroupName__", () => {
   let dbKey: DbKey;
 
   beforeAll(() => {
-    dbKey = __serviceName__DbManager.connect();
+    dbKey = baseDbManager.connect();
   });
 
   afterAll(() => {
-    __serviceName__DbManager.disconnect(dbKey);
+    baseDbManager.disconnect(dbKey);
   });
 
   beforeEach(() => {
-    __serviceName__DbManager.clearAllTablesForTests(dbKey);
+    baseDbManager.clearAllTablesForTests(dbKey);
   });
 
   // TODO: unskip this test

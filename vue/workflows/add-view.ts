@@ -12,17 +12,19 @@ import {
   CommandStepMachine,
   PromptStepMachine,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
-const pageDir = path.join(
-  import.meta.dirname,
-  "template/__subdomain-name__/__group-name__",
+const clientsRoot = path.join(templatesProductRoot, "clients");
+const spaStubDir = path.join(clientsRoot, "__subdomain-name__");
+const pageDir = path.join(spaStubDir, "__group-name__");
+/** Live SPA area hosts — CopyStep upserts stub lines. */
+const packageDir = spaStubDir;
+const linksStub = path.join(
+  clientsRoot,
+  "links",
+  "__subdomain-name__-links.ts",
 );
-const packageDir = path.join(
-  import.meta.dirname,
-  "template/__subdomain-name__",
-);
-const linksDir = path.join(import.meta.dirname, "template", "links");
 
 const input = [
   {
@@ -44,6 +46,7 @@ interface AddSpaViewWorkflowContext
     ParsePackageNameOutput {
   targetDir: string;
   fullName: string;
+  subdomainName: string;
 }
 
 export const AddSpaViewWorkflowDefinition = defineWorkflow<
@@ -109,10 +112,11 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     vue: path.join(pageDir, "__TargetName__.vue"),
     async: path.join(pageDir, "__TargetName__Async.vue"),
     strings: path.join(pageDir, "__TargetName__.strings.ts"),
+    fixture: path.join(pageDir, "__TargetName__.fixture.ts"),
     stringsIndex: path.join(packageDir, "strings.ts"),
+    fixturesIndex: path.join(packageDir, "fixtures.ts"),
     router: path.join(packageDir, "router.ts"),
-
-    linksPackage: linksDir,
+    links: linksStub,
   },
 
   docFiles: {
@@ -127,18 +131,34 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
   steps: [
     step(CopyStepMachine, ({ context }) => {
       let templateFiles = context.templateFiles;
-      if (context.groupName !== "pages") {
-        // remove "router.ts" from the template files
-        templateFiles = {
-          ...templateFiles,
-        };
+      // Only pages get a router entry; dialogs stay out of the SPA route table.
+      if (
+        !context.groupName.startsWith("pages/") &&
+        context.groupName !== "pages"
+      ) {
+        templateFiles = { ...templateFiles };
         delete templateFiles.router;
       }
 
-      // bit of a bandaid to replace valid but extraneous import syntax from root level imports
+      const productPrefix = context.sharedPackagePrefix.replace(
+        new RegExp(`-${context.subdomainName}$`),
+        "",
+      );
+      const linksPackageName = `${productPrefix}-links`;
+      const commonPackageName = `${productPrefix}-clients-common`;
+      const productSnake = productPrefix.includes("/")
+        ? productPrefix.split("/").pop()!.replace(/-/g, "_")
+        : productPrefix.replace(/-/g, "_");
+
       const defaultLineReplace = makeLineReplace(context);
       const lineReplace = (line: string) => {
-        return defaultLineReplace(line).replace("././", "./");
+        let out = defaultLineReplace(line).replace("././", "./");
+        out = out.split("@saflib/base-clients-common").join(commonPackageName);
+        out = out.split("@saflib/base-links").join(linksPackageName);
+        out = out
+          .split("base_common_strings")
+          .join(`${productSnake}_common_strings`);
+        return out;
       };
       return {
         name: context.targetName,

@@ -35,7 +35,9 @@ function shouldSkipSourcePath(
     ...DEFAULT_SKIP_SOURCE_GLOBS,
     ...(input.skipSourceGlobs ?? []),
   ];
-  if (globs.some((pattern) => minimatch(normalized, pattern))) {
+  // `dot: true` so stubs like `__subdomain-name__/.gitignore` match `**/__*__/**`
+  // (minimatch ignores dotfiles by default).
+  if (globs.some((pattern) => minimatch(normalized, pattern, { dot: true }))) {
     return true;
   }
   return input.skipSourcePath?.(fullPath) ?? false;

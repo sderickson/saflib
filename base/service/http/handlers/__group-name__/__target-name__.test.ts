@@ -1,7 +1,8 @@
+// @ts-nocheck — scaffold placeholders until express/add-handler copies this file.
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import request from "supertest";
 import { makeUserHeaders } from "@saflib/express";
-import type { RequestBody as __targetName____GroupName__RequestBody } from "template-package-spec/operations/__operationId__";
+import type { RequestBody as __targetName____GroupName__RequestBody } from "@saflib/base-spec/operations/__operationId__";
 import {
   acquireRouterSlimRouteTest,
   releaseSlimRouteTest,

@@ -12,9 +12,13 @@ import {
   makeLineReplace,
   PromptStepMachine,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const sdkRoot = path.join(templatesProductRoot, "service", "sdk");
+const requestDir = path.join(sdkRoot, "requests", "__group-name__");
+/** Live fakes.ts — areas hold the stub group; CopyStep upserts them. */
+const fakesLive = path.join(sdkRoot, "fakes.ts");
 
 const input = [
   {
@@ -79,21 +83,12 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    indexFakes: path.join(sourceDir, "requests/__group-name__/index.fakes.ts"),
-    mocks: path.join(sourceDir, "requests/__group-name__/mocks.ts"),
-    templateFile: path.join(
-      sourceDir,
-      "requests/__group-name__/__query-name__.ts",
-    ),
-    templateFileFake: path.join(
-      sourceDir,
-      "requests/__group-name__/__query-name__.fake.ts",
-    ),
-    templateFileTest: path.join(
-      sourceDir,
-      "requests/__group-name__/__query-name__.test.ts",
-    ),
-    rootFakes: path.join(sourceDir, "fakes.ts"),
+    indexFakes: path.join(requestDir, "index.fakes.ts"),
+    mocks: path.join(requestDir, "mocks.ts"),
+    templateFile: path.join(requestDir, "__query-name__.ts"),
+    templateFileFake: path.join(requestDir, "__query-name__.fake.ts"),
+    templateFileTest: path.join(requestDir, "__query-name__.test.ts"),
+    rootFakes: fakesLive,
   },
 
   docFiles: {
@@ -101,11 +96,22 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.targetName,
-      targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      const lineReplace = makeLineReplace(context);
+      return {
+        name: context.targetName,
+        targetDir: context.targetDir,
+        lineReplace: (line: string) => {
+          let out = line;
+          // Golden stubs use concrete baseHandler from @saflib/base-sdk.
+          out = out.split("baseHandler").join(`${context.serviceName}Handler`);
+          out = out
+            .split("@saflib/base-spec")
+            .join(`${context.sharedPackagePrefix}-spec`);
+          return lineReplace(out);
+        },
+      };
+    }),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFile",

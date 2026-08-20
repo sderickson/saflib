@@ -28,11 +28,10 @@
   },
   "devDependencies": {
     "@saflib/dev-tools": "*",
+    "@saflib/templates": "*",
     "@saflib/vitest": "*",
     "@saflib/workflows": "*",
     "msw": "^2.0.0"
   },
-  "sideEffects": [
-    "./../../workflows/templates/client.ts"
-  ]
+  "sideEffects": []
 }

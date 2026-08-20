@@ -18,7 +18,6 @@
     "dist/types",
     "playwright-report",
     "test-results",
-    "**/__group-name__/**",
     "workflows/template/**",
     "workflows/templates/**",
     "**/workflows/template/**",
