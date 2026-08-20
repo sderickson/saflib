@@ -15,6 +15,8 @@ import {
   templatesProductRoot,
   templatesDeployRoot,
   templatesScaffoldRoot,
+  resolveDeployDir,
+  getDeployDirName,
 } from "@saflib/templates";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
@@ -208,7 +210,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     allowPaths: ({ context }) => [
       `**/${context.productName}/**`,
       `./package.json`,
-      `./deploy/**`,
+      `./${getDeployDirName()}/**`,
       `./.github/**`,
     ],
     commitEachStep: true,
@@ -243,12 +245,24 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
     step(
       CopyStepMachine,
-      ({ context }) => ({
-        name: context.productName,
-        targetDir: path.join(context.cwd, "deploy"),
-        templateFiles: { deploy: templatesDeployRoot },
-        lineReplace: makeProductInitLineReplace(context),
-      }),
+      ({ context }) => {
+        const deployTarget = resolveDeployDir(context.cwd);
+        if (
+          path.resolve(templatesDeployRoot) === path.resolve(deployTarget)
+        ) {
+          throw new Error(
+            `Refusing to upsert deploy onto its own golden tree (${deployTarget}). ` +
+              `Set SAF_DEPLOY_DIR to a disposable directory (e.g. tmp-deploy) when ` +
+              `running product/init from the saflib repo root.`,
+          );
+        }
+        return {
+          name: context.productName,
+          targetDir: deployTarget,
+          templateFiles: { deploy: templatesDeployRoot },
+          lineReplace: makeProductInitLineReplace(context),
+        };
+      },
       { skipIf: ({ context }) => context.productOnly },
     ),
     step(
@@ -297,8 +311,16 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       ({ context }) => ({
         command: "mv",
         args: [
-          `./deploy/remote-assets/env.${context.productName}.secrets`,
-          `./deploy/remote-assets/.env.${context.productName}.secrets`,
+          path.join(
+            resolveDeployDir(context.cwd),
+            "remote-assets",
+            `env.${context.productName}.secrets`,
+          ),
+          path.join(
+            resolveDeployDir(context.cwd),
+            "remote-assets",
+            `.env.${context.productName}.secrets`,
+          ),
         ],
       }),
       { skipIf: ({ context }) => context.productOnly },
@@ -360,7 +382,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(
       CdStepMachine,
       () => ({
-        path: `./deploy`,
+        path: `./${getDeployDirName()}`,
       }),
       { skipIf: ({ context }) => context.productOnly },
     ),

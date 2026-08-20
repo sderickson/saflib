@@ -61,6 +61,9 @@ async function main(): Promise<void> {
 
   process.chdir(saflibRoot);
 
+  // Keep golden saflib/deploy/ read-only; init/add-* write here instead.
+  process.env.SAF_DEPLOY_DIR = "tmp-deploy";
+
   const log = createWorkflowLogger();
   setupWorkflowContext({
     logger: log,

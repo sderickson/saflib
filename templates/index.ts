@@ -16,8 +16,24 @@ export const templatesSaflibRoot = saflibRoot;
  */
 export const templatesProductRoot = path.join(saflibRoot, "base");
 
-/** Deploy tree copied to `./deploy` by product/init. */
+/** Deploy tree copied to `./deploy` by product/init (or `$SAF_DEPLOY_DIR`). */
 export const templatesDeployRoot = path.join(saflibRoot, "deploy");
+
+/**
+ * Runtime deploy directory name relative to the workflow cwd.
+ * Defaults to `deploy`. Set `SAF_DEPLOY_DIR` (e.g. `tmp-deploy`) when the
+ * cwd is the saflib repo itself so product/init and add-* do not upsert into
+ * the golden {@link templatesDeployRoot}.
+ */
+export function getDeployDirName(): string {
+  const override = process.env.SAF_DEPLOY_DIR?.trim();
+  return override && override.length > 0 ? override : "deploy";
+}
+
+/** Absolute path to the active deploy tree under `cwd`. */
+export function resolveDeployDir(cwd: string): string {
+  return path.join(cwd, getDeployDirName());
+}
 
 /** Optional CI scaffold (`.github`) for new product monorepos. */
 export const templatesScaffoldRoot = path.join(

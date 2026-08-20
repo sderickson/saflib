@@ -31,6 +31,12 @@ import { DrizzleInitWorkflowDefinition } from "@saflib/drizzle/workflows";
 /** Disposable product from product/init — never committed. */
 export const LIVE_TEST_PRODUCT = "tmp";
 
+/**
+ * Disposable deploy tree for live-test (`SAF_DEPLOY_DIR`). Golden `saflib/deploy/`
+ * stays read-only; product/init and add-* upsert here instead.
+ */
+export const LIVE_TEST_DEPLOY = "tmp-deploy";
+
 export type LiveTestContext = Record<string, never>;
 
 export type LiveTestStep = WorkflowStep<LiveTestContext, AnyStateMachine>;
@@ -360,23 +366,12 @@ export function teardownLiveTestSteps(): LiveTestStep[] {
       args: [
         "-rf",
         LIVE_TEST_PRODUCT,
+        LIVE_TEST_DEPLOY,
         ".github/workflows/playwright.yml",
         ".github/workflows/typecheck.yml",
         ".github/workflows/push.yml",
         ".github/actions/setup-node-deps",
-        // Never delete saflib/deploy — that is the golden deploy tree.
-        // Clean only live-test product pollution upserted into it.
-        `deploy/${LIVE_TEST_PRODUCT}`,
-        `deploy/caddy/${LIVE_TEST_PRODUCT}.Caddyfile`,
-        `deploy/env.${LIVE_TEST_PRODUCT}.prod-local`,
-        `deploy/remote-assets/.env.${LIVE_TEST_PRODUCT}.secrets`,
       ],
-    })),
-    // product/init upserts into golden deploy workflow areas in place; restore
-    // tracked deploy files so live-test does not accumulate tmp pollution.
-    step(CommandStepMachine, () => ({
-      command: "git",
-      args: ["checkout", "--", "deploy"],
     })),
     step(CommandStepMachine, () => ({
       command: "node",

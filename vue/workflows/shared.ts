@@ -9,6 +9,8 @@ import {
 import {
   templatesProductRoot,
   templatesDeployRoot,
+  resolveDeployDir,
+  getDeployDirName,
 } from "@saflib/templates";
 
 export const clientsRoot = path.join(templatesProductRoot, "clients");
@@ -34,11 +36,13 @@ export const deployProductCaddy = path.join(
   "__product-name__.Caddyfile",
 );
 
-/** Skip a step when `./deploy/<rel>` is missing (e.g. productOnly init). */
+/** Skip a step when the active deploy tree (see `SAF_DEPLOY_DIR`) is missing a path. */
 export function skipIfMissingDeploy(...relParts: string[]) {
   return <C extends { cwd: string }>({ context }: { context: C }) =>
-    !existsSync(path.join(context.cwd, "deploy", ...relParts));
+    !existsSync(path.join(resolveDeployDir(context.cwd), ...relParts));
 }
+
+export { resolveDeployDir, getDeployDirName };
 
 /**
  * Append `value` to a `KEY=a,b,c` line if missing. Leaves other lines unchanged.

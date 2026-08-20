@@ -19,6 +19,8 @@ import {
   linksStub,
   makeBasePackageLineReplace,
   skipIfMissingDeploy,
+  resolveDeployDir,
+  getDeployDirName,
 } from "./shared.ts";
 
 const subdomainDir = path.join(clientsRoot, "__subdomain-name__");
@@ -137,7 +139,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       CopyStepMachine,
       ({ context }) => ({
         name: context.serviceName,
-        targetDir: path.join(context.cwd, "deploy", "caddy"),
+        targetDir: path.join(resolveDeployDir(context.cwd), "caddy"),
         templateFiles: {
           deployProductCaddy,
         },
@@ -164,12 +166,11 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
 
     step(TransformFileStepMachine, ({ context }) => ({
       filePath: path.join(
-        context.cwd,
-        "deploy",
+        resolveDeployDir(context.cwd),
         `env.${context.productName}.prod-local`,
       ),
       skipIfMissing: true,
-      description: `Add ${context.subdomainName} to CLIENT_SUBDOMAINS in deploy/env.${context.productName}.prod-local`,
+      description: `Add ${context.subdomainName} to CLIENT_SUBDOMAINS in ${getDeployDirName()}/env.${context.productName}.prod-local`,
       transform: (content: string) =>
         appendCommaSeparatedEnvValue(
           content,

@@ -18,6 +18,7 @@ import {
   linksStub,
   makeBasePackageLineReplace,
   skipIfMissingDeploy,
+  resolveDeployDir,
   devRoot,
 } from "./shared.ts";
 
@@ -155,7 +156,7 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       CopyStepMachine,
       ({ context }) => ({
         name: context.serviceName,
-        targetDir: path.join(context.cwd, "deploy", "local-scripts"),
+        targetDir: path.join(resolveDeployDir(context.cwd), "local-scripts"),
         templateFiles: {
           deployBuildSh,
         },
@@ -168,7 +169,7 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       CopyStepMachine,
       ({ context }) => ({
         name: context.serviceName,
-        targetDir: path.join(context.cwd, "deploy"),
+        targetDir: resolveDeployDir(context.cwd),
         templateFiles: {
           deployProdDockerfile,
         },
@@ -181,7 +182,7 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       CopyStepMachine,
       ({ context }) => ({
         name: context.serviceName,
-        targetDir: path.join(context.cwd, "deploy", "caddy"),
+        targetDir: path.join(resolveDeployDir(context.cwd), "caddy"),
         templateFiles: {
           deployProductCaddy,
         },
