@@ -8,7 +8,13 @@ import {
   parsePath,
   makeLineReplace,
 } from "@saflib/workflows";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "path";
+
+const dbRoot = path.join(templatesProductRoot, "service", "db");
+const schemaStub = path.join(dbRoot, "schemas", "__group-name__.ts");
+/** Live schema.ts — schema-exports area holds the stub; CopyStep upserts it. */
+const schemaIndexLive = path.join(dbRoot, "schema.ts");
 
 const input = [
   {
@@ -29,8 +35,6 @@ const input = [
     exampleValue: "false",
   },
 ] as const;
-
-const sourceDir = path.join(import.meta.dirname, "templates");
 
 interface UpdateSchemaWorkflowContext extends ParsePathOutput {
   file: boolean;
@@ -70,11 +74,8 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    schema: path.join(sourceDir, "schemas/__group-name__.ts"),
-    // Must sit next to `schemas/` so CopyStepMachine's shared prefix is
-    // `templates/` — otherwise `__group-name__.ts` is copied to the package
-    // root and queries cannot import `../../schemas/<table>.ts`.
-    schemaIndex: path.join(sourceDir, "schema.ts"),
+    schema: schemaStub,
+    schemaIndex: schemaIndexLive,
   },
 
   docFiles: {

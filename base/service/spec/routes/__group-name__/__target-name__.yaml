@@ -1,0 +1,77 @@
+# TODO: Replace this example route with actual route definition for your API.
+# The top-level key should be the operationId (e.g., "listUsers", "createUser", etc.)
+
+__operationId__:
+  summary: "TODO: Brief description of what this operation does"
+  operationId: "__operationId__"
+
+  # TODO: Update request parameters (if any)
+  parameters:
+    - name: "todo"
+      in: "path" # or "query"
+      required: true
+      schema:
+        type: "string"
+      description: "todo"
+
+  # TODO: Update request body (if any)
+  requestBody:
+    required: true
+    content:
+      # BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/route IF upload
+      multipart/form-data:
+        schema:
+          type: object
+          required:
+            - file
+          properties:
+            file:
+              type: string
+              format: binary
+              description: The file to upload
+            foo:
+              $ref: "../../schemas/todo.yaml"
+      # ELSE
+      application/json:
+        # TODO: Update to an appropriate schema reference
+        schema:
+          $ref: "../../schemas/todo.yaml"
+      # END WORKFLOW AREA
+
+  # TODO: Update response definitions. Include 400 only for dynamic/business-rule failures (not for OpenAPI validation). You do not need to include 5xx.
+  responses:
+    "200":
+      description: "todo"
+      content:
+        # BEGIN ONCE WORKFLOW AREA responseContent FOR openapi/route IF download
+        application/octet-stream:
+          schema:
+            type: string
+            format: binary
+        # ELSE
+        application/json:
+          schema:
+            # TODO: Update to an appropriate schema reference
+            $ref: "../../schemas/todo.yaml"
+        # END WORKFLOW AREA
+
+    "401":
+      description: "Unauthorized - missing or invalid auth headers, or not logged in."
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "403":
+      description: "Forbidden - user does not have required privileges."
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "404":
+      description: "Not Found"
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

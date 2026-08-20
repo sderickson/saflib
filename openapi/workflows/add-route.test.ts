@@ -50,7 +50,6 @@ describe("mergeOpenApiRoute", () => {
     expect(result).toContain('      $ref: "routes/recipes/list.yaml"');
     expect(result).toContain("    post:");
     expect(result).toContain('      $ref: "routes/recipes/create.yaml"');
-    // Single path key for /recipes (no duplicate "  /recipes:" line before post)
     const recipesSection = result.slice(
       result.indexOf("  /recipes:"),
       result.indexOf("  /other:"),

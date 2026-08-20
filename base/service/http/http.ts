@@ -13,7 +13,7 @@ import {
 } from "@saflib/base-service-common/context";
 
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
-
+import { create__GroupName__Router } from "./handlers/__group-name__/index.ts";
 // END WORKFLOW AREA
 
 export type HttpRouterMount = {
@@ -38,7 +38,7 @@ export type TemplatesHttpAppLease = {
 function defaultRouterMounts(): HttpRouterMount[] {
   return [
     // BEGIN WORKFLOW AREA default-router-mounts FOR express/add-handler
-
+    { kind: "router", createRouter: create__GroupName__Router },
     // END WORKFLOW AREA
   ];
 }
