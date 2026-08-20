@@ -30,7 +30,8 @@
     "@saflib/xstate": "*"
   },
   "scripts": {
-    "typecheck": "tsc --incremental -p tsconfig.typecheck.json"
+    "typecheck": "tsc --incremental -p tsconfig.typecheck.json",
+    "live-test": "node --experimental-strip-types --disable-warning=ExperimentalWarning ./live-test.ts"
   },
   "sideEffects": false
 }

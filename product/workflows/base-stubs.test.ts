@@ -4,12 +4,10 @@ import path from "node:path";
 import { templatesProductRoot } from "@saflib/templates";
 
 /**
- * Phase 1 vertical slice guardrails for the golden product at `saflib/base`.
+ * Guardrails for expansion stubs in the golden product at `saflib/base`.
  *
- * Checklist runs for each add-* workflow already live in their packages and in
- * `saflib/.github/workflows/workflow-checklist.yaml`. This test catches the
- * failure mode those miss: stubs deleted or live workflow areas emptied so
- * base/dev no longer exercises the expansion points.
+ * Checklist / live-test cover workflow mechanics. This catches stubs deleted or
+ * live workflow areas emptied so base/dev no longer exercises expansion points.
  */
 const stubPaths = [
   "service/spec/routes/__group-name__/__target-name__.yaml",
@@ -59,7 +57,7 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   },
 ];
 
-describe("phase 1 vertical slice (base stubs)", () => {
+describe("golden product expansion stubs", () => {
   it("keeps stub files under templatesProductRoot", () => {
     for (const rel of stubPaths) {
       const abs = path.join(templatesProductRoot, rel);

@@ -1,4 +1,4 @@
-name: Phase 1 vertical-slice workflows
+name: Workflow live-test
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  phase1-vertical-slice:
+  live-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -19,9 +19,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Copy base → tmp, run Phase 1 add-* (script mode), typecheck, delete tmp.
-      - name: Run Phase 1 vertical-slice workflow smoke
-        run: npm exec saf-workflow run-scripts ./workflows-cli/test-phase1-vertical-slice.ts
+      # Copy base → tmp, run each live-test set (script mode), typecheck per set, delete tmp.
+      - name: Run workflow live-test
+        run: npm run live-test --workspace=@saflib/workflows-cli
 
       - name: Git status (should be clean of tmp/)
         if: always()
