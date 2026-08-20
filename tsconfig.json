@@ -119,6 +119,9 @@
       "path": "./cron/cron-vue"
     },
     {
+      "path": "./deploy"
+    },
+    {
       "path": "./dev-site/dev-site-db"
     },
     {

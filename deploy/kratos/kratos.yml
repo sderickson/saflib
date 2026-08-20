@@ -1,0 +1,139 @@
+version: v1.3.1
+
+dsn: sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+
+serve:
+  public:
+    base_url: https://kratos.__domain-name__/
+    cors:
+      enabled: false
+  admin:
+    base_url: http://kratos:4434/
+
+selfservice:
+  default_browser_return_url: https://auth.__domain-name__/
+
+  # Only apex and product hosts (no subdomain wildcard — T-9 open redirect).
+  allowed_return_urls:
+    - https://__domain-name__/
+    - https://app.__domain-name__/
+    - https://admin.__domain-name__/
+    - https://auth.__domain-name__/
+    - https://account.__domain-name__/
+
+  flows:
+    registration:
+      enabled: true
+      style: unified
+      ui_url: https://auth.__domain-name__/registration
+      after:
+        password:
+          hooks:
+            - &kratos_action_webhook
+              hook: web_hook
+              config:
+                url: http://monolith:3000/kratos/action
+                method: POST
+                body: file:///etc/config/kratos/kratos-action-body.jsonnet
+                headers:
+                  Content-Type: application/json
+                response:
+                  ignore: true
+
+    login:
+      ui_url: https://auth.__domain-name__/login
+      after:
+        hooks:
+          - *kratos_action_webhook
+        password:
+          hooks:
+            - *kratos_action_webhook
+
+    recovery:
+      enabled: true
+      ui_url: https://auth.__domain-name__/recovery
+      after:
+        hooks:
+          - *kratos_action_webhook
+
+    settings:
+      ui_url: https://auth.__domain-name__/settings
+      after:
+        profile:
+          hooks:
+            - *kratos_action_webhook
+        password:
+          hooks:
+            - *kratos_action_webhook
+        totp:
+          hooks:
+            - *kratos_action_webhook
+        webauthn:
+          hooks:
+            - *kratos_action_webhook
+        passkey:
+          hooks:
+            - *kratos_action_webhook
+
+    logout:
+      after:
+        default_browser_return_url: https://auth.__domain-name__/
+
+    verification:
+      enabled: true
+      ui_url: https://auth.__domain-name__/verification
+      use: code
+
+  methods:
+    password:
+      enabled: true
+
+session:
+  cookie:
+    domain: .__domain-name__
+    same_site: Lax
+
+identity:
+  default_schema_id: default
+  schemas:
+    - id: default
+      url: file:///etc/config/kratos/identity.schema.json
+
+courier:
+  delivery_strategy: http
+  http:
+    request_config:
+      url: http://monolith:3000/email/kratos-courier
+      method: POST
+      body: file:///etc/config/kratos/courier-body.jsonnet
+      headers:
+        Content-Type: application/json
+
+# https://www.ory.com/docs/guides/integrate-with-ory-cloud-through-webhooks — default allowlist + proxy headers
+clients:
+  web_hook:
+    header_allowlist:
+      - Accept
+      - Accept-Encoding
+      - Accept-Language
+      - Content-Length
+      - Content-Type
+      - Origin
+      - Priority
+      - Referer
+      - Sec-Ch-Ua
+      - Sec-Ch-Ua-Mobile
+      - Sec-Ch-Ua-Platform
+      - Sec-Fetch-Dest
+      - Sec-Fetch-Mode
+      - Sec-Fetch-Site
+      - Sec-Fetch-User
+      - True-Client-Ip
+      - User-Agent
+      - X-Forwarded-For
+      - X-Real-Ip
+      - X-Request-ID
+
+log:
+  level: warning
+  format: text

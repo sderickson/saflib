@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1
+FROM oryd/kratos:v26.2.0
+
+USER root
+COPY ./deploy/kratos/courier-body.jsonnet \
+     ./deploy/kratos/identity.schema.json \
+     ./deploy/kratos/kratos-action-body.jsonnet \
+     ./deploy/kratos/kratos.yml \
+     /etc/config/kratos/
+COPY ./deploy/kratos/env.defaults /etc/__product-name__/env.defaults
+COPY ./deploy/scripts/apply-env-defaults.sh /usr/local/bin/apply-env-defaults.sh
+RUN chmod +x /usr/local/bin/apply-env-defaults.sh \
+    && chown -R 10000:10000 /etc/config/kratos /etc/__product-name__
+
+USER 10000
+
+ENTRYPOINT ["/usr/local/bin/apply-env-defaults.sh", "kratos"]
+CMD ["serve", "-c", "/etc/config/kratos/kratos.yml", "--watch-courier"]

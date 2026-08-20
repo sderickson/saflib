@@ -31,7 +31,11 @@ saf-workflow-status.error.json
 
 # Product init workflow-script artifacts (must not land in saflib repo root)
 /tmp/
-/deploy/
+# Live-test / local product-init pollution under the golden deploy tree
+/deploy/tmp/
+/deploy/caddy/tmp.Caddyfile
+/deploy/env.tmp.*
+/deploy/remote-assets/.env.*.secrets
 .github/workflows/playwright.yml
 .github/workflows/typecheck.yml
 .github/workflows/push.yml

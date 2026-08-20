@@ -365,7 +365,11 @@ export function teardownLiveTestSteps(): LiveTestStep[] {
         ".github/workflows/push.yml",
         ".github/actions/setup-node-deps",
         // Never delete saflib/deploy — that is the golden deploy tree.
-        // product/init with productOnly:false upserts into it in place.
+        // Clean only live-test product pollution upserted into it.
+        `deploy/${LIVE_TEST_PRODUCT}`,
+        `deploy/caddy/${LIVE_TEST_PRODUCT}.Caddyfile`,
+        `deploy/env.${LIVE_TEST_PRODUCT}.prod-local`,
+        `deploy/remote-assets/.env.${LIVE_TEST_PRODUCT}.secrets`,
       ],
     })),
     step(CommandStepMachine, () => ({
