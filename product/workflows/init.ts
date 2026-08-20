@@ -93,7 +93,14 @@ function makeProductInitLineReplace(context: InitProductWorkflowContext) {
       return placeholderReplace(line);
     }
 
-    let out = placeholderReplace(line);
+    // Drop the co-located SPA stub from CLIENT_SUBDOMAINS before placeholder
+    // replace (init has no subdomainName; add-spa appends real names later).
+    let prepared = line;
+    if (/^\s*CLIENT_SUBDOMAINS=/.test(prepared)) {
+      prepared = prepared.replace(/,__subdomain-name__/g, "");
+    }
+
+    let out = placeholderReplace(prepared);
     out = out.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
     out = out
       .split("@saflib/deploy")
@@ -192,6 +199,9 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       targetDir: path.join(context.cwd, context.productName),
       templateFiles: { product: templatesProductRoot },
       lineReplace: makeProductInitLineReplace(context),
+      // Keep expansion stubs (__subdomain-name__, __group-name__, …) in base only.
+      // Both globs: dir trees (`__/…`) and stub filenames (`__…__-links.ts`).
+      skipSourceGlobs: ["**/__*__/**", "**/__*__*"],
     })),
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,

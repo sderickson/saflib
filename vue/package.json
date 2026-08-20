@@ -27,6 +27,7 @@
     "@saflib/links": "*",
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
+    "@saflib/templates": "*",
     "@saflib/utils": "*",
     "@tanstack/vue-query": "^5.85.9",
     "vue": "^3.5.20",

@@ -1,6 +1,6 @@
 import common.Caddyfile
 
-# Recipes client subdomains → vite dev server
+# Client subdomains → vite dev server
 
 http://docker.localhost {
 	import spa /base-static-root /index.html
@@ -21,6 +21,12 @@ http://admin.docker.localhost {
 http://account.docker.localhost {
 	reverse_proxy clients:5173
 }
+
+# BEGIN WORKFLOW AREA client-subdomains FOR vue/add-spa
+http://__subdomain-name__.docker.localhost {
+	reverse_proxy clients:5173
+}
+# END WORKFLOW AREA
 
 # Base API
 

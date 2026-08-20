@@ -7,18 +7,55 @@ import {
   makeLineReplace,
   CdStepMachine,
   CommandStepMachine,
+  TransformFileStepMachine,
   getPackageName,
 } from "@saflib/workflows";
+import {
+  kebabCaseToPascalCase,
+  kebabCaseToSnakeCase,
+  kebabCaseToCamelCase,
+} from "@saflib/utils";
+import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
-const subdomainDir = path.join(
-  import.meta.dirname,
-  "template",
-  "__subdomain-name__",
+/**
+ * Append `value` to a `KEY=a,b,c` line if missing. Leaves other lines unchanged.
+ * Preserves a leading empty slot (`,auth,...`) used for the root domain.
+ */
+export function appendCommaSeparatedEnvValue(
+  content: string,
+  key: string,
+  value: string,
+): string {
+  const prefix = `${key}=`;
+  return content
+    .split("\n")
+    .map((line) => {
+      const trimmed = line.trimStart();
+      if (!trimmed.startsWith(prefix)) {
+        return line;
+      }
+      const indent = line.slice(0, line.length - trimmed.length);
+      const current = trimmed.slice(prefix.length);
+      const tokens = current === "" ? [] : current.split(",");
+      if (tokens.includes(value)) {
+        return line;
+      }
+      return `${indent}${prefix}${current},${value}`;
+    })
+    .join("\n");
+}
+
+const clientsRoot = path.join(templatesProductRoot, "clients");
+const subdomainDir = path.join(clientsRoot, "__subdomain-name__");
+const buildShimDir = path.join(clientsRoot, "build", "__subdomain-name__");
+const linksStub = path.join(
+  clientsRoot,
+  "links",
+  "__subdomain-name__-links.ts",
 );
-const linksDir = path.join(import.meta.dirname, "template", "links");
-const buildDir = path.join(import.meta.dirname, "template", "build");
-const commonDir = path.join(import.meta.dirname, "template", "common");
+/** Upserts the subdomain-links workflow area into an existing links package. */
+const linksIndex = path.join(clientsRoot, "links", "index.ts");
 
 const input = [
   {
@@ -39,10 +76,33 @@ interface AddSpaWorkflowContext extends ParsePackageNameOutput {
   productName: string;
   spaPackageName: string;
   linksPackageName: string;
-  clientsPackageName: string;
   commonPackageName: string;
   serviceSpecName: string;
   serviceSdkName: string;
+}
+
+function makeAddSpaLineReplace(context: AddSpaWorkflowContext) {
+  const lineReplace = makeLineReplace(context);
+  const productPascal = kebabCaseToPascalCase(context.productName);
+  const productSnake = kebabCaseToSnakeCase(context.productName);
+
+  return (line: string) => {
+    let out = line;
+    // Golden SPA / links stubs use concrete @saflib/base-* names.
+    out = out.split("@saflib/base-clients-common").join(context.commonPackageName);
+    out = out.split("@saflib/base-links").join(context.linksPackageName);
+    out = out.split("@saflib/base-sdk").join(context.serviceSdkName);
+    out = out.split("@saflib/base-spec").join(context.serviceSpecName);
+    out = out
+      .split("@saflib/base-__subdomain-name__-spa")
+      .join(context.spaPackageName);
+    out = out.split("DynamicBaseLayout").join(`Dynamic${productPascal}Layout`);
+    out = out.split("base_common_strings").join(`${productSnake}_common_strings`);
+    out = out.split("baseServiceFakeHandlers").join(
+      `${kebabCaseToCamelCase(context.productName)}ServiceFakeHandlers`,
+    );
+    return lineReplace(out);
+  };
 }
 
 export const AddSpaWorkflowDefinition = defineWorkflow<
@@ -66,7 +126,6 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     const currentPackageOrgName =
       "@" + parsePackageName(currentPackageName).organizationName;
     const spaPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-spa`;
-    const clientsPackageName = `${currentPackageOrgName}/${input.productName}-clients`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-links`;
     const commonPackageName = `${currentPackageOrgName}/${input.productName}-clients-common`;
     const serviceSpecName = `${currentPackageOrgName}/${input.productName}-spec`;
@@ -80,7 +139,6 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       productName: input.productName,
       subdomainName: input.subdomainName,
       linksPackageName,
-      clientsPackageName,
       spaPackageName,
       commonPackageName,
       serviceSpecName,
@@ -89,58 +147,60 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     };
   },
 
+  // Only SPA + the few clients/ files add-spa adjusts. product/init owns
+  // build package scaffolding, common, and the rest of links.
   templateFiles: {
-    spa: path.join(subdomainDir, "__SubdomainName__Spa.vue"),
-    envDts: path.join(subdomainDir, "env.d.ts"),
-    fixtures: path.join(subdomainDir, "fixtures.ts"),
-    i18n: path.join(subdomainDir, "i18n.ts"),
-    main: path.join(subdomainDir, "main.ts"),
     packageJson: path.join(subdomainDir, "package.json"),
-    playwrightConfig: path.join(subdomainDir, "playwright.config.ts"),
-    router: path.join(subdomainDir, "router.ts"),
-    strings: path.join(subdomainDir, "strings.ts"),
-    testApp: path.join(subdomainDir, "test-app.ts"),
-    tsconfig: path.join(subdomainDir, "tsconfig.json"),
-    tsconfigApp: path.join(subdomainDir, "tsconfig.app.json"),
-    tsconfigNode: path.join(subdomainDir, "tsconfig.node.json"),
-    vitestConfig: path.join(subdomainDir, "vitest.config.ts"),
-
-    linksPackage: linksDir,
-
-    clientsPackageJson: path.join(buildDir, "package.json"),
-    clientsPackage: buildDir,
-
-    commonPackage: commonDir,
+    spa: subdomainDir,
+    buildShim: buildShimDir,
+    linksStub,
+    linksIndex,
   },
 
   docFiles: {},
 
   versionControl: {
-    allowPaths: ["**/pages/home-page/**"],
+    allowPaths: ["**/pages/home-page/**", "**/home/**"],
   },
 
   steps: [
-    step(CopyStepMachine, ({ context }) => {
-      const lineReplace = makeLineReplace(context);
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.serviceName,
+      targetDir: context.targetDir,
+      lineReplace: makeAddSpaLineReplace(context),
+    })),
 
-      // A couple packages don't use the subdomain, so manually
-      // substitute the package names here.
-      const wrappedLineReplace = (line: string) => {
-        line = line.replace(
-          "template-package-clients-common",
-          context.commonPackageName,
-        );
-        line = line.replace("template-package-spec", context.serviceSpecName);
-        line = line.replace("template-package-links", context.linksPackageName);
-        line = line.replace("template-package-sdk", context.serviceSdkName);
-        return lineReplace(line);
-      };
-      return {
-        name: context.serviceName,
-        targetDir: context.targetDir,
-        lineReplace: wrappedLineReplace,
-      };
-    }),
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(
+        context.cwd,
+        context.productName,
+        "dev",
+        "env.dev",
+      ),
+      description: `Add ${context.subdomainName} to CLIENT_SUBDOMAINS in ${context.productName}/dev/env.dev`,
+      transform: (content: string) =>
+        appendCommaSeparatedEnvValue(
+          content,
+          "CLIENT_SUBDOMAINS",
+          context.subdomainName,
+        ),
+    })),
+
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(
+        context.cwd,
+        "deploy",
+        `env.${context.productName}.prod-local`,
+      ),
+      skipIfMissing: true,
+      description: `Add ${context.subdomainName} to CLIENT_SUBDOMAINS in deploy/env.${context.productName}.prod-local`,
+      transform: (content: string) =>
+        appendCommaSeparatedEnvValue(
+          content,
+          "CLIENT_SUBDOMAINS",
+          context.subdomainName,
+        ),
+    })),
 
     step(CdStepMachine, ({ context }) => ({
       path: path.dirname(context.copiedFiles!.packageJson),
@@ -151,8 +211,9 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       args: ["install"],
     })),
 
+    // Build package already exists from product/init; just register the new SPA.
     step(CdStepMachine, ({ context }) => ({
-      path: path.dirname(context.copiedFiles!.clientsPackageJson),
+      path: path.join(context.targetDir, "build"),
     })),
 
     step(CommandStepMachine, ({ context }) => ({

@@ -14,8 +14,32 @@ import type { CopyStepContext, CopyStepInput } from "./types.ts";
 import { parseCopiedFiles } from "./helpers.ts";
 import path from "node:path";
 import fs, { readdirSync, statSync } from "node:fs";
+import { minimatch } from "minimatch";
 
 export type { CopyStepInput };
+
+/** Always skipped when expanding directory template sources. */
+const DEFAULT_SKIP_SOURCE_GLOBS = [
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/playwright-report/**",
+  "**/test-results/**",
+];
+
+function shouldSkipSourcePath(
+  fullPath: string,
+  input: CopyStepInput,
+): boolean {
+  const normalized = fullPath.split(path.sep).join("/");
+  const globs = [
+    ...DEFAULT_SKIP_SOURCE_GLOBS,
+    ...(input.skipSourceGlobs ?? []),
+  ];
+  if (globs.some((pattern) => minimatch(normalized, pattern))) {
+    return true;
+  }
+  return input.skipSourcePath?.(fullPath) ?? false;
+}
 
 /**
  * Copies all `templateFiles` to the given directory, performing string replacements for directories, file names, and file contents.
@@ -87,7 +111,7 @@ export const CopyStepMachine = setup({
         for (const file of files) {
           if (file.isFile()) {
             const fullPath = path.join(file.parentPath, file.name);
-            if (fullPath.includes("/node_modules/")) {
+            if (shouldSkipSourcePath(fullPath, input)) {
               continue;
             }
             templateFiles[`${templateFileKey}-${i++}`] = fullPath;

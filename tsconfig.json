@@ -26,6 +26,9 @@
       "path": "./backup/backup-spec"
     },
     {
+      "path": "./base/clients/__subdomain-name__"
+    },
+    {
       "path": "./base/clients/account"
     },
     {
