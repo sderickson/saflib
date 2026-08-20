@@ -247,8 +247,12 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       CopyStepMachine,
       ({ context }) => {
         const deployTarget = resolveDeployDir(context.cwd);
+        // checklist/dry never write; keep the step for checklist text.
+        // script/print/run must not upsert onto the golden deploy tree.
         if (
-          path.resolve(templatesDeployRoot) === path.resolve(deployTarget)
+          path.resolve(templatesDeployRoot) === path.resolve(deployTarget) &&
+          context.runMode !== "checklist" &&
+          context.runMode !== "dry"
         ) {
           throw new Error(
             `Refusing to upsert deploy onto its own golden tree (${deployTarget}). ` +
