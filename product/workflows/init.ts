@@ -17,6 +17,36 @@ import {
   templatesScaffoldRoot,
 } from "@saflib/templates";
 import path from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+
+/**
+ * Walk up from `start` and return the outermost directory whose package.json
+ * declares `workspaces`. Nested installs (e.g. saflib inside pathclerk) must
+ * run `npm install` at that root so new product packages get linked.
+ */
+export function findOutermostWorkspaceRoot(start: string): string {
+  let dir = path.resolve(start);
+  let found = dir;
+  while (true) {
+    const pkgPath = path.join(dir, "package.json");
+    if (existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as {
+          workspaces?: unknown;
+        };
+        if (Array.isArray(pkg.workspaces) && pkg.workspaces.length > 0) {
+          found = dir;
+        }
+      } catch {
+        // ignore invalid package.json
+      }
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return found;
+}
 
 const input = [
   {
@@ -273,6 +303,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       }),
       { skipIf: ({ context }) => context.productOnly },
     ),
+    step(CdStepMachine, ({ context }) => ({
+      // Nested monorepos (pathclerk → saflib): install at the outermost
+      // workspace root so new product packages are linked for typecheck.
+      path: findOutermostWorkspaceRoot(context.originalWorkingDirectory),
+    })),
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
@@ -298,7 +333,8 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: ["./.env"],
     })),
     step(CdStepMachine, ({ context }) => ({
-      path: context.cwd,
+      // Cd paths are resolved from originalWorkingDirectory, not the current cwd.
+      path: context.originalWorkingDirectory,
     })),
     step(CommandStepMachine, () => ({
       command: "npm",
@@ -309,6 +345,16 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         "generate",
         "--",
         "--write",
+      ],
+    })),
+    // CopyStep skips dist/; generate OpenAPI types/JSON for each saf.kind=spec package.
+    step(CommandStepMachine, ({ context }) => ({
+      command: "node",
+      args: [
+        "--experimental-strip-types",
+        "--disable-warning=ExperimentalWarning",
+        path.join(import.meta.dirname, "generate-product-specs.ts"),
+        path.join(context.originalWorkingDirectory, context.productName),
       ],
     })),
     step(

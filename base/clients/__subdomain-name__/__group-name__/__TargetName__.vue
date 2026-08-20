@@ -17,7 +17,7 @@
 import type { Identity } from "@ory/client";
 import { __full_name__ as strings } from "./__TargetName__.strings.ts";
 import { use__TargetName__Loader } from "./__TargetName__.loader.ts";
-import { useReverseT } from "../i18n";
+import { useReverseT } from "@saflib/base-__subdomain-name__-spa/i18n";
 
 const { t, lookupTKey } = useReverseT();
 

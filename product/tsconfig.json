@@ -2,6 +2,9 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
+      "path": "../monorepo"
+    },
+    {
       "path": "../templates"
     },
     {

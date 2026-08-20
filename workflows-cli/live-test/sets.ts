@@ -178,7 +178,7 @@ export const liveTestSets: LiveTestSet[] = [
   {
     name: "vue",
     description: "vue/add-view (app SPA todos-list page)",
-    typecheck: ["clients/links"],
+    typecheck: ["clients/links", "clients/app"],
     assertFiles: [
       "clients/app/pages/todos-list/TodosList.vue",
       "clients/app/pages/todos-list/TodosListAsync.vue",

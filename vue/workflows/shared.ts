@@ -83,8 +83,6 @@ export type BasePackageLineReplaceContext = {
    * Also remaps `/app/base/`, `./base/`, and `/…/base-static-` path prefixes.
    */
   dockerImagePrefix?: string;
-  /** Extra context keys for `makeLineReplace` (subdomainName, etc.). */
-  [key: string]: unknown;
 };
 
 /**
@@ -92,7 +90,7 @@ export type BasePackageLineReplaceContext = {
  * apply standard `__placeholder__` interpolation via `makeLineReplace`.
  */
 export function makeBasePackageLineReplace(
-  context: BasePackageLineReplaceContext,
+  context: BasePackageLineReplaceContext & Record<string, unknown>,
 ): (line: string) => string {
   const lineReplace = makeLineReplace(context);
   const productPascal = kebabCaseToPascalCase(context.productName);

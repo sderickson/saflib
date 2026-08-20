@@ -17,13 +17,13 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/monorepo": "*",
     "@saflib/templates": "*",
     "@saflib/utils": "*",
     "@saflib/workflows": "*"
   },
   "devDependencies": {
-    "@saflib/vitest": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/vitest": "*"
   },
   "sideEffects": false
 }

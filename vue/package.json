@@ -20,7 +20,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "vue-tsc --project tsconfig.app.json"
+    "typecheck": "vue-tsc --project tsconfig.app.json",
+    "typecheck:workflows": "tsc --project tsconfig.workflows.json"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",

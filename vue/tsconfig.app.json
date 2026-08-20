@@ -38,6 +38,7 @@
     "e2e",
     "playwright-report",
     "test-results",
+    "workflows/**",
     "workflows/**/*.test.ts",
     "workflows/template/**",
     "workflows/templates/**",

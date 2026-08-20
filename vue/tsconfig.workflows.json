@@ -1,0 +1,26 @@
+{
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "include": ["workflows/**/*.ts"],
+  "exclude": [
+    "workflows/**/*.test.ts",
+    "workflows/template/**",
+    "workflows/templates/**",
+    "**/workflows/template/**",
+    "**/workflows/templates/**",
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "types": ["node"],
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.workflows.tsbuildinfo"
+  },
+  "references": [
+    { "path": "../links" },
+    { "path": "../monorepo" },
+    { "path": "../sdk" },
+    { "path": "../templates" },
+    { "path": "../utils" },
+    { "path": "../workflows" }
+  ]
+}

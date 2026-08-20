@@ -150,6 +150,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
         productName,
         commonPackageName,
         linksPackageName,
+        spaPackageName: context.packageName,
       });
       const wrappedLineReplace = (line: string) =>
         lineReplace(line).replace("././", "./");
@@ -171,7 +172,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       * Take the data from the loader, assert that it's loaded, and render the page.
       * Do not add any sort of loading state or skeleton; that's the job of the "Async" component (and \`AsyncPage\` for query errors). Sub-components should receive **values to render** (e.g. lists, labels), not query \`isPending\`/\`isError\` or raw query objects—unless you have deliberately split loading (JIT) and documented it.
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.
-      * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text. If copy needs runtime values, use vue-i18n placeholders in the string (\`{name}\`, not \`{{name}}\`) and call \`t(strings.key, { name: value })\` — see **Interpolation** in ${context.docFiles?.i18n}.
+      * Import and use the "useReverseT" function from this SPA's \`i18n\` package export (not a relative \`../i18n\`), and use t(strings.key) instead of strings.key for all text. If copy needs runtime values, use vue-i18n placeholders in the string (\`{name}\`, not \`{{name}}\`) and call \`t(strings.key, { name: value })\` — see **Interpolation** in ${context.docFiles?.i18n}.
       
       For more information, see ${context.docFiles?.components} and ${context.docFiles?.i18n}.`,
     })),
