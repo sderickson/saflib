@@ -65,6 +65,10 @@ docker_build ./__product-name__/clients/root/Dockerfile \
 pids+=($!)
 
 # BEGIN WORKFLOW AREA build-static-sites FOR vue/add-static-site
+docker_build ./__product-name__/clients/__static-subdomain-name__/Dockerfile \
+  -t __organization-name__-__product-name__-__static-subdomain-name__-static:latest \
+  -t "$CONTAINER_REGISTRY/__organization-name__-__product-name__-__static-subdomain-name__-static:latest" &
+pids+=($!)
 # END WORKFLOW AREA
 
 # BEGIN WORKFLOW AREA build-product-dependencies FOR product/init

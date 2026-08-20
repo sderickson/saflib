@@ -32,16 +32,8 @@ const linksIndex = path.join(clientsRoot, "links", "index.ts");
 
 const devRoot = path.join(templatesProductRoot, "dev");
 const caddyDev = path.join(devRoot, "caddy-config", "Caddyfile");
-const buildImagesAreaSource = path.join(
-  devRoot,
-  "workflow-area-sources",
-  "build-images.sh",
-);
-const devDockerfileAreaSource = path.join(
-  devRoot,
-  "workflow-area-sources",
-  "Dockerfile.template",
-);
+const buildImages = path.join(devRoot, "build-images.sh");
+const devDockerfile = path.join(devRoot, "Dockerfile.template");
 
 /** Deploy tree templates (until `saflib/deploy/` is restored). */
 const deployTemplatesRoot = path.join(
@@ -52,17 +44,12 @@ const deployTemplatesRoot = path.join(
   "templates",
   "deploy",
 );
-const deployBuildAreaSource = path.join(
+const deployBuildSh = path.join(
   deployTemplatesRoot,
-  "workflow-area-sources",
   "local-scripts",
   "build.sh",
 );
-const deployDockerfileAreaSource = path.join(
-  deployTemplatesRoot,
-  "workflow-area-sources",
-  "Dockerfile.prod",
-);
+const deployProdDockerfile = path.join(deployTemplatesRoot, "Dockerfile.prod");
 const deployProductCaddy = path.join(
   deployTemplatesRoot,
   "caddy",
@@ -208,26 +195,26 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       lineReplace: makeAddStaticSiteLineReplace(context),
     })),
 
-    // Upsert docker build/COPY via area-source files (live base files stay empty
-    // so base/dev does not build the expansion stub).
+    // Upsert docker build/COPY into product dev stack (filled stubs in golden base;
+    // `npm run dev` always runs `saf-docker generate` first).
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,
       targetDir: path.join(context.cwd, context.productName, "dev"),
       templateFiles: {
-        buildImages: buildImagesAreaSource,
-        devDockerfile: devDockerfileAreaSource,
+        buildImages,
+        devDockerfile,
       },
       lineReplace: makeAddStaticSiteLineReplace(context),
     })),
 
-    // Upsert deploy docker builds when deploy/ exists (area-source files).
+    // Upsert deploy docker builds when deploy/ exists.
     step(
       CopyStepMachine,
       ({ context }) => ({
         name: context.serviceName,
         targetDir: path.join(context.cwd, "deploy", "local-scripts"),
         templateFiles: {
-          deployBuildSh: deployBuildAreaSource,
+          deployBuildSh,
         },
         lineReplace: makeAddStaticSiteLineReplace(context),
       }),
@@ -243,7 +230,7 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
         name: context.serviceName,
         targetDir: path.join(context.cwd, "deploy"),
         templateFiles: {
-          deployProdDockerfile: deployDockerfileAreaSource,
+          deployProdDockerfile,
         },
         lineReplace: makeAddStaticSiteLineReplace(context),
       }),

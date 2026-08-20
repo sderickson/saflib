@@ -64,13 +64,15 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
       "__static-subdomain-name__.docker.localhost",
     ],
   },
+  {
+    rel: "dev/build-images.sh",
+    mustInclude: ["__static-subdomain-name__"],
+  },
+  {
+    rel: "dev/Dockerfile.template",
+    mustInclude: ["__static-subdomain-name__"],
+  },
 ];
-
-/** Area-source stubs used by add-static-site CopyStep (live docker files stay empty). */
-const staticSiteAreaSources = [
-  "dev/workflow-area-sources/build-images.sh",
-  "dev/workflow-area-sources/Dockerfile.template",
-] as const;
 
 describe("golden product expansion stubs", () => {
   it("keeps stub files under templatesProductRoot", () => {
@@ -91,15 +93,6 @@ describe("golden product expansion stubs", () => {
           `${rel} should still reference stub token ${token}`,
         ).toBe(true);
       }
-    }
-  });
-
-  it("keeps static-site docker area-source stubs", () => {
-    for (const rel of staticSiteAreaSources) {
-      const abs = path.join(templatesProductRoot, rel);
-      expect(existsSync(abs), `missing area source: ${rel}`).toBe(true);
-      const content = readFileSync(abs, "utf8");
-      expect(content.includes("__static-subdomain-name__")).toBe(true);
     }
   });
 });
