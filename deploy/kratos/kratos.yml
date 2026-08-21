@@ -1,6 +1,7 @@
 version: v1.3.1
 
-dsn: sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+# WAL + busy_timeout: reduce SQLITE_BUSY under parallel e2e / courier contention.
+dsn: sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc&_journal_mode=WAL&_busy_timeout=5000
 
 serve:
   public:
