@@ -3,7 +3,7 @@
  * @module @saflib/playwright
  */
 
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 export * from "./screenshots.ts";
 import {
   convertI18NInterpolationToRegex,
@@ -59,7 +59,8 @@ export const getByString = (page: Page, stringThing: ElementString) => {
 /**
  * The Vuetify select component is a bit tricky with Playwright, so this is a convenience function for choosing an option.
  * Matches when the option label contains `option`, or when `option` contains the visible label
- * (handles truncated dropdown text ending in `…`).
+ * (handles truncated dropdown text ending in `…`). Waits for options to appear after open
+ * (async item sources like form pickers).
  */
 export const chooseVuetifySelectOption = async (
   page: Page,
@@ -68,27 +69,34 @@ export const chooseVuetifySelectOption = async (
 ) => {
   await page.getByRole("combobox").filter({ hasText: label }).click();
 
-  const optionLocators = await page.getByRole("option").all();
-  const texts = await Promise.all(
-    optionLocators.map((locator) => locator.textContent()),
-  );
-
   const needle = option.trim();
-  const matchIndex = texts.findIndex((text) => {
-    const visible = (text ?? "").replace(/\u2026|\.\.\.$/g, "").trim();
-    if (!visible) return false;
-    return visible.includes(needle) || needle.includes(visible);
-  });
+  const listboxOptions = page.getByRole("option");
 
-  if (matchIndex < 0) {
-    const options = texts.map((t) => t ?? "");
-    console.error(
-      `Option not found: ${option}, all options: ${options.join(", ")}`,
-    );
-    throw new Error(
-      `Option not found: ${option}, options: ${options.slice(0, 10).join(", ")}${options.length > 10 ? "..." : ""}`,
-    );
-  }
+  // Items may still be loading when the menu first opens.
+  await listboxOptions.first().waitFor({ state: "visible", timeout: 2_000 });
 
-  await optionLocators[matchIndex]!.click();
+  let matchedLocator = listboxOptions.first();
+  await expect
+    .poll(
+      async () => {
+        const optionLocators = await listboxOptions.all();
+        for (const locator of optionLocators) {
+          const text = (await locator.textContent()) ?? "";
+          const visible = text.replace(/\u2026|\.\.\.$/g, "").trim();
+          if (!visible) continue;
+          if (visible.includes(needle) || needle.includes(visible)) {
+            matchedLocator = locator;
+            return true;
+          }
+        }
+        return false;
+      },
+      {
+        timeout: 2_000,
+        message: `Option not found: ${option}`,
+      },
+    )
+    .toBe(true);
+
+  await matchedLocator.click();
 };
