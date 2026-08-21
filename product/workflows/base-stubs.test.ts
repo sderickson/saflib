@@ -40,6 +40,9 @@ const stubPaths = [
   "__offshoot-name__/http/http.ts",
   "__offshoot-name__/sdk/package.json",
   "__offshoot-name__/sdk/fakes.ts",
+  // vue/add-static-site: live docker areas stay empty; tokens live in stubs
+  "dev/.workflow-stubs/vue-add-static-site/build-images.sh",
+  "dev/.workflow-stubs/vue-add-static-site/Dockerfile.template",
 ] as const;
 
 /** Live hosts whose workflow areas must contain stub tokens (not emptied). */
@@ -51,7 +54,6 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
       "__target-name__",
       "__offshoot-name__",
       "offshoot-paths",
-      "offshoot-schemas",
     ],
   },
   {
@@ -114,11 +116,23 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     ],
   },
   {
+    // Live areas intentionally empty (invalid Docker tags); tokens in .workflow-stubs.
     rel: "dev/build-images.sh",
-    mustInclude: ["__static-subdomain-name__"],
+    mustInclude: ["BEGIN WORKFLOW AREA build-static-sites"],
   },
   {
     rel: "dev/Dockerfile.template",
+    mustInclude: [
+      "BEGIN WORKFLOW AREA static-site-builders",
+      "BEGIN WORKFLOW AREA static-site-assets",
+    ],
+  },
+  {
+    rel: "dev/.workflow-stubs/vue-add-static-site/build-images.sh",
+    mustInclude: ["__static-subdomain-name__"],
+  },
+  {
+    rel: "dev/.workflow-stubs/vue-add-static-site/Dockerfile.template",
     mustInclude: ["__static-subdomain-name__"],
   },
   {

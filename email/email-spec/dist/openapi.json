@@ -5,6 +5,82 @@
     "version": "1.0.0",
     "description": "Strictly for E2E testing, to see what emails are sent in, for example, playwright tests."
   },
+  "components": {
+    "schemas": {
+      "SentEmail": {
+        "$ref": "#/components/schemas/sent-email"
+      },
+      "sent-email": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bcc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subject": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "html": {
+            "type": "string"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "from": {
+            "type": "string"
+          },
+          "timeSent": {
+            "type": "number"
+          },
+          "replyTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "to",
+          "subject",
+          "from"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  },
   "paths": {
     "/email/sent": {
       "get": {
@@ -97,82 +173,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "SentEmail": {
-        "$ref": "#/components/schemas/sent-email"
-      },
-      "sent-email": {
-        "type": "object",
-        "properties": {
-          "to": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "cc": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "bcc": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "subject": {
-            "type": "string"
-          },
-          "text": {
-            "type": "string"
-          },
-          "html": {
-            "type": "string"
-          },
-          "attachments": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "from": {
-            "type": "string"
-          },
-          "timeSent": {
-            "type": "number"
-          },
-          "replyTo": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "to",
-          "subject",
-          "from"
-        ]
-      },
-      "error": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
-          },
-          "message": {
-            "type": "string",
-            "description": "A human-readable description of the error.",
-            "example": "The requested resource could not be found."
           }
         }
       }

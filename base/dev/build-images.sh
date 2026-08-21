@@ -37,9 +37,6 @@ docker_build ./base/clients/root/Dockerfile \
 pids+=($!)
 
 # BEGIN WORKFLOW AREA build-static-sites FOR vue/add-static-site
-docker_build ./base/clients/__static-subdomain-name__/Dockerfile \
-  -t saflib-base-__static-subdomain-name__-static:latest &
-pids+=($!)
 # END WORKFLOW AREA
 
 docker_build ./base/service/monolith/Dockerfile \

@@ -1,0 +1,9 @@
+{
+  "name": "@fixture/offshoot-spec",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./openapi.yaml": "./openapi.yaml",
+    "./schemas/*": "./schemas/*"
+  }
+}

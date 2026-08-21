@@ -55,7 +55,7 @@ services:
         fi
         echo "kratos-migrate: ok"
     environment:
-      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc&_journal_mode=WAL&_busy_timeout=5000
       - LOG_LEVEL=warn
     volumes:
       - /opt/kratos/data:/var/lib/sqlite
@@ -67,7 +67,7 @@ services:
         condition: service_completed_successfully
     command: serve -c /etc/config/kratos/kratos.yml --watch-courier
     environment:
-      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc&_journal_mode=WAL&_busy_timeout=5000
     env_file:
       - ./.env.kratos.secrets
     volumes:

@@ -3,7 +3,7 @@
  * @module @saflib/playwright
  */
 
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 export * from "./screenshots.ts";
 import {
   convertI18NInterpolationToRegex,
@@ -58,6 +58,9 @@ export const getByString = (page: Page, stringThing: ElementString) => {
 
 /**
  * The Vuetify select component is a bit tricky with Playwright, so this is a convenience function for choosing an option.
+ * Matches when the option label contains `option`, or when `option` contains the visible label
+ * (handles truncated dropdown text ending in `…`). Waits for options to appear after open
+ * (async item sources like form pickers).
  */
 export const chooseVuetifySelectOption = async (
   page: Page,
@@ -65,18 +68,35 @@ export const chooseVuetifySelectOption = async (
   option: string,
 ) => {
   await page.getByRole("combobox").filter({ hasText: label }).click();
-  try {
-    await page.getByRole("option", { name: option, exact: true }).click();
-  } catch (error) {
-    const optionPromises = (await page.getByRole("option").all()).map(
-      (option) => option.textContent(),
-    );
-    const options = await Promise.all(optionPromises);
-    console.error(
-      `Option not found: ${option}, all options: ${options.join(", ")}`,
-    );
-    throw new Error(
-      `Option not found: ${option}, options: ${options.slice(0, 10).join(", ")}${options.length > 10 ? "..." : ""}`,
-    );
-  }
+
+  const needle = option.trim();
+  const listboxOptions = page.getByRole("option");
+
+  // Items may still be loading when the menu first opens.
+  await listboxOptions.first().waitFor({ state: "visible", timeout: 2_000 });
+
+  let matchedLocator = listboxOptions.first();
+  await expect
+    .poll(
+      async () => {
+        const optionLocators = await listboxOptions.all();
+        for (const locator of optionLocators) {
+          const text = (await locator.textContent()) ?? "";
+          const visible = text.replace(/\u2026|\.\.\.$/g, "").trim();
+          if (!visible) continue;
+          if (visible.includes(needle) || needle.includes(visible)) {
+            matchedLocator = locator;
+            return true;
+          }
+        }
+        return false;
+      },
+      {
+        timeout: 2_000,
+        message: `Option not found: ${option}`,
+      },
+    )
+    .toBe(true);
+
+  await matchedLocator.click();
 };

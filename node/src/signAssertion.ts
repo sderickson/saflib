@@ -78,7 +78,17 @@ interface AssertionKey {
 }
 
 /**
+ * When Infisical is mocked (`INFISICAL_TOKEN=mock`), the secret store returns
+ * the placeholder `"mock"` for unset secrets. Treat that the same way other
+ * integrations do: a fixed, non-secret key suitable for prod-local / playwright.
+ * Format matches `keyId:base64secret` (`"mock-internal-assertion-secret"`).
+ */
+const MOCK_ASSERTION_KEYS =
+  "mock:" + Buffer.from("mock-internal-assertion-secret").toString("base64");
+
+/**
  * Parses `SAF_INTERNAL_ASSERTION_KEYS`: `keyId:base64secret[,keyId:base64secret]`.
+ * The sentinel value `mock` expands to {@link MOCK_ASSERTION_KEYS}.
  */
 function parseAssertionKeys(raw: string | undefined): AssertionKey[] {
   if (raw == null || raw.trim() === "") {
@@ -87,8 +97,10 @@ function parseAssertionKeys(raw: string | undefined): AssertionKey[] {
     );
   }
 
+  const normalized = raw.trim() === "mock" ? MOCK_ASSERTION_KEYS : raw.trim();
+
   const keys: AssertionKey[] = [];
-  for (const entry of raw.split(",")) {
+  for (const entry of normalized.split(",")) {
     const colon = entry.indexOf(":");
     if (colon <= 0 || colon === entry.length - 1) {
       throw new AssertionKeysConfigError(

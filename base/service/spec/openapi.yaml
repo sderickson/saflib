@@ -27,8 +27,3 @@ components:
     __TargetName__:
       $ref: "./schemas/__target-name__.yaml"
     # END WORKFLOW AREA
-
-    # BEGIN WORKFLOW AREA offshoot-schemas FOR openapi/init
-    __OffshootName__Health:
-      $ref: "../../__offshoot-name__/spec/schemas/health.yaml"
-    # END WORKFLOW AREA

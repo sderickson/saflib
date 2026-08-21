@@ -155,4 +155,12 @@ describe("signAssertion / verifyAssertion", () => {
     expect(() => verifyAssertion("a.b.c.d")).toThrow(AssertionMalformedError);
     expect(() => verifyAssertion("...")).toThrow(AssertionMalformedError);
   });
+
+  it("accepts the mock sentinel (Infisical mock placeholder)", () => {
+    vi.stubEnv("SAF_INTERNAL_ASSERTION_KEYS", "mock");
+    const assertion = makeAssertion();
+    const token = signAssertion(assertion);
+    expect(token.split(".")[2]).toBe("mock");
+    expect(verifyAssertion(token)).toEqual(assertion);
+  });
 });
