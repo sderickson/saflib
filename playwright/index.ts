@@ -58,6 +58,8 @@ export const getByString = (page: Page, stringThing: ElementString) => {
 
 /**
  * The Vuetify select component is a bit tricky with Playwright, so this is a convenience function for choosing an option.
+ * Matches when the option label contains `option`, or when `option` contains the visible label
+ * (handles truncated dropdown text ending in `…`).
  */
 export const chooseVuetifySelectOption = async (
   page: Page,
@@ -65,13 +67,21 @@ export const chooseVuetifySelectOption = async (
   option: string,
 ) => {
   await page.getByRole("combobox").filter({ hasText: label }).click();
-  try {
-    await page.getByRole("option", { name: option, exact: true }).click();
-  } catch (error) {
-    const optionPromises = (await page.getByRole("option").all()).map(
-      (option) => option.textContent(),
-    );
-    const options = await Promise.all(optionPromises);
+
+  const optionLocators = await page.getByRole("option").all();
+  const texts = await Promise.all(
+    optionLocators.map((locator) => locator.textContent()),
+  );
+
+  const needle = option.trim();
+  const matchIndex = texts.findIndex((text) => {
+    const visible = (text ?? "").replace(/\u2026|\.\.\.$/g, "").trim();
+    if (!visible) return false;
+    return visible.includes(needle) || needle.includes(visible);
+  });
+
+  if (matchIndex < 0) {
+    const options = texts.map((t) => t ?? "");
     console.error(
       `Option not found: ${option}, all options: ${options.join(", ")}`,
     );
@@ -79,4 +89,6 @@ export const chooseVuetifySelectOption = async (
       `Option not found: ${option}, options: ${options.slice(0, 10).join(", ")}${options.length > 10 ? "..." : ""}`,
     );
   }
+
+  await optionLocators[matchIndex]!.click();
 };
