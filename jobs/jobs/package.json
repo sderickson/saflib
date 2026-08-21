@@ -22,7 +22,7 @@
     "http-errors": "^2.0.0",
     "@saflib/jobs-db": "*",
     "jobs-spec": "*",
-    "undici": "^6.24.0"
+    "undici": "^7.29.0"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
