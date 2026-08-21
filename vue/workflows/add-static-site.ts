@@ -26,8 +26,14 @@ const staticSubdomainDir = path.join(
   clientsRoot,
   "__static-subdomain-name__",
 );
-const buildImages = path.join(devRoot, "build-images.sh");
-const devDockerfile = path.join(devRoot, "Dockerfile.template");
+const buildImages = path.join(
+  devRoot,
+  ".workflow-stubs/vue-add-static-site/build-images.sh",
+);
+const devDockerfile = path.join(
+  devRoot,
+  ".workflow-stubs/vue-add-static-site/Dockerfile.template",
+);
 const deployBuildSh = path.join(
   deployTemplatesRoot,
   "local-scripts",
