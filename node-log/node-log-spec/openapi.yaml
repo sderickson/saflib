@@ -9,7 +9,7 @@ components:
     DevLogEntry:
       $ref: "./schemas/dev-log-entry.yaml"
     Error:
-      $ref: "./schemas/error.yaml"
+      $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
 paths:
   /dev/logs:

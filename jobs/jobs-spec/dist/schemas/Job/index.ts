@@ -1,3 +1,3 @@
 import type { components } from "../../openapi.d.ts";
 
-export type job = components["schemas"]["job"];
+export type Job = components["schemas"]["Job"];

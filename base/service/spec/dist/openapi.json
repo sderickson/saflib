@@ -1,11 +1,35 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "templates API",
+    "title": "base API",
     "version": "1.0.0",
-    "description": "API specification for the templates service"
+    "description": "API specification for the base service"
   },
-  "paths": null,
+  "paths": {
+    "__url-path__": {
+      "__method__": {
+        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-rrrPwY/routes/__group-name__/__target-name__.yaml#/__operationId__"
+      }
+    },
+    "/__offshoot-name__/health": {
+      "get": {
+        "operationId": "get__OffshootName__Health",
+        "summary": "Health check for the __offshoot-name__ offshoot",
+        "responses": {
+          "200": {
+            "description": "Offshoot is reachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/health"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
   "components": {
     "schemas": {
       "Error": {
@@ -13,6 +37,21 @@
       },
       "ProductEvent": {
         "$ref": "#/components/schemas/index"
+      },
+      "__TargetName__": {
+        "$ref": "#/components/schemas/__target-name__"
+      },
+      "health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          }
+        },
+        "required": [
+          "status"
+        ]
       },
       "error": {
         "type": "object",
@@ -98,6 +137,25 @@
           }
         }
       },
+      "__target_name__": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "__target_name__"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": null
+          }
+        },
+        "required": [
+          "event",
+          "context"
+        ]
+      },
       "index": {
         "type": "object",
         "oneOf": [
@@ -112,6 +170,9 @@
           },
           {
             "$ref": "#/components/schemas/verify_email"
+          },
+          {
+            "$ref": "#/components/schemas/__target_name__"
           }
         ],
         "properties": {
@@ -133,6 +194,44 @@
         },
         "required": [
           "event"
+        ]
+      },
+      "__target-name__": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the template-resource (short id, e.g. from generateShortId)",
+            "example": "K3m9_xR2"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name for the template-resource",
+            "example": "Example Template Resource"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the template-resource",
+            "example": "This is an example template resource"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the template-resource was created",
+            "example": "2023-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the template-resource was last updated",
+            "example": "2023-01-01T00:00:00Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
         ]
       }
     }

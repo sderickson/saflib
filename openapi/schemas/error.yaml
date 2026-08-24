@@ -1,7 +1,7 @@
-# Shared Error Schema. Originates from `@saflib/openapi`, copied by `npm exec saf-specs generate`.
+# Shared Error Schema. Originates from `@saflib/openapi`.
+# Specs should $ref: "pkg:@saflib/openapi/schemas/error.yaml" instead of copying this file.
 # TODO:
 # - Make it strict - no "error" property, just message
-# - Get every spec to use this
 # - Update all errors frontend and backend to use "message"
 type: object
 properties:

@@ -196,7 +196,11 @@ function walkRefs(
   return out;
 }
 
-function collectLocalFiles(entryAbs: string, packageRoot: string): string[] {
+function isUnderNodeModules(filePath: string): boolean {
+  return filePath.split(path.sep).includes("node_modules");
+}
+
+function collectLocalFiles(entryAbs: string): string[] {
   const queue = [entryAbs];
   const seen = new Set<string>();
   const files: string[] = [];
@@ -205,7 +209,7 @@ function collectLocalFiles(entryAbs: string, packageRoot: string): string[] {
     const file = queue.pop()!;
     const resolved = path.resolve(file);
     if (seen.has(resolved)) continue;
-    if (!resolved.startsWith(packageRoot)) continue;
+    if (isUnderNodeModules(resolved)) continue;
     if (!existsSync(resolved)) continue;
     seen.add(resolved);
     files.push(resolved);
@@ -225,7 +229,7 @@ function collectLocalFiles(entryAbs: string, packageRoot: string): string[] {
       const next = path.isAbsolute(resource)
         ? path.resolve(resource)
         : path.resolve(path.dirname(resolved), resource);
-      if (next.startsWith(packageRoot) && !seen.has(next)) {
+      if (!isUnderNodeModules(next) && !seen.has(next)) {
         queue.push(next);
       }
       return ref;
@@ -233,6 +237,18 @@ function collectLocalFiles(entryAbs: string, packageRoot: string): string[] {
   }
 
   return files;
+}
+
+function tempCopyPath(
+  tempDir: string,
+  packageRoot: string,
+  fileAbs: string,
+): string {
+  if (fileAbs === packageRoot || fileAbs.startsWith(packageRoot + path.sep)) {
+    return path.join(tempDir, path.relative(packageRoot, fileAbs));
+  }
+  const rel = fileAbs.replace(/^[A-Za-z]:[\\/]/, "").replace(/^[/\\]+/, "");
+  return path.join(tempDir, "_outside", rel);
 }
 
 /**
@@ -252,14 +268,13 @@ export function rewritePkgRefs(options: {
     rmSync(tempDir, { recursive: true, force: true });
   };
 
-  const localFiles = collectLocalFiles(entryAbs, packageRoot);
+  const localFiles = collectLocalFiles(entryAbs);
   // Always include entry even if parse failed to walk
   if (!localFiles.includes(entryAbs)) localFiles.push(entryAbs);
 
   const originalToTemp = new Map<string, string>();
   for (const fileAbs of localFiles) {
-    const rel = path.relative(packageRoot, fileAbs);
-    originalToTemp.set(fileAbs, path.join(tempDir, rel));
+    originalToTemp.set(fileAbs, tempCopyPath(tempDir, packageRoot, fileAbs));
   }
 
   const rewriteRef = (ref: string, fromFile: string): string => {

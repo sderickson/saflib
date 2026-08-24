@@ -148,6 +148,7 @@ export const CronInitWorkflowDefinition = defineWorkflow<
         http: httpLive,
       },
       lineReplace: makeCronInitLineReplace(context),
+      skipUnlessPathExists: path.join(context.httpDir, "package.json"),
     })),
 
     step(CopyStepMachine, ({ context }) => ({
@@ -157,6 +158,7 @@ export const CronInitWorkflowDefinition = defineWorkflow<
         monolith: monolithLive,
       },
       lineReplace: makeCronInitLineReplace(context),
+      skipUnlessPathExists: path.join(context.monolithDir, "package.json"),
     })),
 
     step(CdStepMachine, ({ context }) => ({

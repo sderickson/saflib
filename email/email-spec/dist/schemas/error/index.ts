@@ -1,3 +1,1 @@
-import type { components } from "../../openapi.d.ts";
-
-export type error = components["schemas"]["error"];
+export type { Error } from "@saflib/openapi/schemas/Error";

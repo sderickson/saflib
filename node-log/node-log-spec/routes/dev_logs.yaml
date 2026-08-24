@@ -36,19 +36,19 @@ listDevLogs:
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
     "403":
       description: Dev logs are only available in development.
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
     "503":
       description: Dev log buffer is not enabled.
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
 streamDevLogs:
   summary: SSE stream of development log entries
@@ -74,16 +74,16 @@ streamDevLogs:
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
     "403":
       description: Dev logs are only available in development.
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
     "503":
       description: Dev log buffer is not enabled.
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

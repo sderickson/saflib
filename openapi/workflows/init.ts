@@ -8,13 +8,10 @@ import {
   type OffshootInitContext,
   resolveOffshootInitContext,
   makeOffshootLineReplace,
+  parentLayerPackageJsonPath,
 } from "@saflib/workflows";
 import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
-
-export function parentSpecPackageJsonPath(parentDir: string): string {
-  return path.join(parentDir, "package.json");
-}
 
 const offshootSpecRoot = path.join(offshootStubRoot, "spec");
 const parentOpenapiLive = path.join(
@@ -57,7 +54,7 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
     }),
 
   versionControl: {
-    allowPaths: ["./dist/**", "./schemas/error.yaml", "./schemas/health.yaml"],
+    allowPaths: ["./dist/**", "./schemas/health.yaml"],
   },
 
   templateFiles: {
@@ -67,7 +64,6 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
     tsconfig: path.join(offshootSpecRoot, "tsconfig.json"),
     healthRoute: path.join(offshootSpecRoot, "routes/health.yaml"),
     healthSchema: path.join(offshootSpecRoot, "schemas/health.yaml"),
-    errorSchema: path.join(offshootSpecRoot, "schemas/error.yaml"),
     parentOpenapi: parentOpenapiLive,
   },
 
@@ -90,11 +86,11 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
         parentOpenapi: parentOpenapiLive,
       },
       lineReplace: makeOffshootLineReplace(context),
-      skipUnlessPathExists: parentSpecPackageJsonPath(context.parentDir),
+      skipUnlessPathExists: parentLayerPackageJsonPath(context.parentDir),
     })),
 
     step(TransformFileStepMachine, ({ context }) => ({
-      filePath: parentSpecPackageJsonPath(context.parentDir),
+      filePath: parentLayerPackageJsonPath(context.parentDir),
       description: `Add ${context.offshootPackageName} dependency to parent spec`,
       skipIfMissing: true,
       transform: (content: string) => {

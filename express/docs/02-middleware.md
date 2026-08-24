@@ -66,7 +66,7 @@ The CORS middleware provides a simple guard to ensure only your site's subdomain
 
 **Type**: Error
 
-Logs 5xx errors and returns all intercepted errors in the [standard error format](https://github.com/sderickson/saflib/blob/37d619bf41fe2922880dee7483b9fb9690d2ee1b/openapi/schemas/error.yaml).
+Logs 5xx errors and returns all intercepted errors in the [standard error format](../../openapi/schemas/error.yaml).
 
 ### `express`
 

@@ -35,18 +35,18 @@ createBackup:
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
     "403":
       description: "Forbidden - user does not have required privileges."
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
     "409":
       description: "Conflict - backup with this ID already exists"
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

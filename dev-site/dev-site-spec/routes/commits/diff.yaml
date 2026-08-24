@@ -37,4 +37,4 @@ diffCommits:
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

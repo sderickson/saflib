@@ -2,7 +2,6 @@ import type { Command } from "commander";
 import { addNewLinesToString } from "@saflib/utils";
 import { execFileSync } from "child_process";
 import { getSafReporters } from "@saflib/node";
-import { errorSchema } from "@saflib/openapi/error";
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import { resolvePackageBin } from "./resolve-bin.ts";
@@ -45,10 +44,6 @@ export const addGenerateCommand = (program: Command) => {
       const outputDir = path.resolve(cwd, output);
 
       clearGeneratedOutput(outputDir);
-
-      mkdirSync(path.join(cwd, "./schemas"), { recursive: true });
-
-      writeFileSync(path.join(cwd, "./schemas/error.yaml"), errorSchema);
 
       if (options.html) {
         log.warn(

@@ -22,6 +22,11 @@ export type OffshootInitContext = {
   offshootPackageName: string;
 };
 
+/** Parent weave host package.json — missing when scaffolding standalone saflib packages. */
+export function parentLayerPackageJsonPath(parentDir: string): string {
+  return path.join(parentDir, "package.json");
+}
+
 /**
  * Resolve offshoot scaffold paths.
  *
