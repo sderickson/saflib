@@ -13,7 +13,7 @@ import { contextFromInput } from "../../utils.ts";
 import type { CopyStepContext, CopyStepInput } from "./types.ts";
 import { parseCopiedFiles } from "./helpers.ts";
 import path from "node:path";
-import fs, { readdirSync, statSync } from "node:fs";
+import fs, { existsSync, readdirSync, statSync } from "node:fs";
 import { minimatch } from "minimatch";
 
 export type { CopyStepInput };
@@ -132,10 +132,24 @@ export const CopyStepMachine = setup({
       }
     }
 
+    let filesToCopy = Object.keys(templateFiles || {});
+    if (input.skipUnlessPathExists) {
+      const requiredPath = input.skipUnlessPathExists.startsWith("/")
+        ? input.skipUnlessPathExists
+        : path.join(input.cwd || process.cwd(), input.skipUnlessPathExists);
+      if (
+        !existsSync(requiredPath) &&
+        input.runMode !== "checklist" &&
+        input.runMode !== "dry"
+      ) {
+        filesToCopy = [];
+      }
+    }
+
     return {
       ...contextFromInput(input),
       templateFiles,
-      filesToCopy: Object.keys(templateFiles || {}),
+      filesToCopy,
       name: input.name,
       targetDir: input.targetDir,
       copiedFiles: input.copiedFiles || {},

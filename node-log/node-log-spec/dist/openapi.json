@@ -1,0 +1,218 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Dev Log API",
+    "version": "1.0.0",
+    "description": "Development-only Winston ring buffer viewer (403 outside development)"
+  },
+  "components": {
+    "schemas": {
+      "DevLogEntry": {
+        "$ref": "#/components/schemas/dev-log-entry"
+      },
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "dev-log-entry": {
+        "type": "object",
+        "description": "A single Winston log entry captured in the in-memory dev ring buffer.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Monotonic id for SSE Last-Event-ID / ?after= pagination."
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "reqId": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          },
+          "subsystem_name": {
+            "type": "string"
+          },
+          "operation_name": {
+            "type": "string"
+          },
+          "meta": {
+            "description": "Extra Winston metadata (JSON-serializable snapshot)."
+          }
+        },
+        "required": [
+          "id",
+          "level",
+          "message"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/dev/logs": {
+      "get": {
+        "summary": "Snapshot of buffered development logs",
+        "operationId": "listDevLogs",
+        "tags": [
+          "dev-logs",
+          "no-auth"
+        ],
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "description": "Return only entries with id greater than this value."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "description": "Maximum number of entries to return (from the tail)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Buffered log entries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/dev-log-entry"
+                      }
+                    }
+                  },
+                  "required": [
+                    "logs"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Dev logs are only available in development.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dev log buffer is not enabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dev/logs/stream": {
+      "get": {
+        "summary": "SSE stream of development log entries",
+        "operationId": "streamDevLogs",
+        "tags": [
+          "dev-logs",
+          "no-auth"
+        ],
+        "parameters": [
+          {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Replay entries with id greater than this value, then stream new entries."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server-sent events (event: log frames with DevLogEntry JSON payloads).",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Last-Event-ID header.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Dev logs are only available in development.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dev log buffer is not enabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

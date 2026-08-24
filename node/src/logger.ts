@@ -7,7 +7,7 @@ import { formatCompactTimestamp } from "./logFormat.ts";
 import {
   createDevLogBufferTransport,
   enableDevLogBuffer,
-} from "./devLogBuffer.ts";
+} from "@saflib/node-log-http";
 
 type WinstonLogger = Logger;
 

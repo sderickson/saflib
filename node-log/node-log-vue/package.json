@@ -1,0 +1,27 @@
+{
+  "name": "@saflib/node-log-vue",
+  "description": "Admin page for viewing development server logs",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/node-log-sdk": "*",
+    "@saflib/node-log-spec": "*",
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*",
+    "@tanstack/vue-query": "*",
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@vue/test-utils": "*",
+    "msw": "*"
+  },
+  "sideEffects": false
+}

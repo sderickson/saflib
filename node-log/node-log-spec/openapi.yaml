@@ -1,0 +1,20 @@
+openapi: 3.0.0
+info:
+  title: Dev Log API
+  version: 1.0.0
+  description: Development-only Winston ring buffer viewer (403 outside development)
+
+components:
+  schemas:
+    DevLogEntry:
+      $ref: "./schemas/dev-log-entry.yaml"
+    Error:
+      $ref: "./schemas/error.yaml"
+
+paths:
+  /dev/logs:
+    get:
+      $ref: "./routes/dev_logs.yaml#/listDevLogs"
+  /dev/logs/stream:
+    get:
+      $ref: "./routes/dev_logs.yaml#/streamDevLogs"

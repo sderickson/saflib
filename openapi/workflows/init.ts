@@ -12,6 +12,10 @@ import {
 import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
+export function parentSpecPackageJsonPath(parentDir: string): string {
+  return path.join(parentDir, "package.json");
+}
+
 const offshootSpecRoot = path.join(offshootStubRoot, "spec");
 const parentOpenapiLive = path.join(
   templatesProductRoot,
@@ -86,11 +90,13 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
         parentOpenapi: parentOpenapiLive,
       },
       lineReplace: makeOffshootLineReplace(context),
+      skipUnlessPathExists: parentSpecPackageJsonPath(context.parentDir),
     })),
 
     step(TransformFileStepMachine, ({ context }) => ({
-      filePath: path.join(context.parentDir, "package.json"),
+      filePath: parentSpecPackageJsonPath(context.parentDir),
       description: `Add ${context.offshootPackageName} dependency to parent spec`,
+      skipIfMissing: true,
       transform: (content: string) => {
         const pkg = JSON.parse(content);
         pkg.dependencies = pkg.dependencies ?? {};

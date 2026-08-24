@@ -7,7 +7,7 @@ import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { healthRouter } from "./health.ts";
-import { createDevLogsRouter } from "../dev-logs-router.ts";
+import { createDevLogsRouter } from "@saflib/node-log-http";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";

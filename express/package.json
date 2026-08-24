@@ -16,6 +16,7 @@
     "@saflib/openapi": "*",
     "@saflib/env": "*",
     "@saflib/node": "*",
+    "@saflib/node-log-http": "*",
     "@saflib/notify": "*",
     "@saflib/templates": "*",
     "@saflib/utils": "*",

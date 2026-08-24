@@ -27,7 +27,8 @@ const stubPaths = [
   "service/cron/jobs/__group-name__/__target-name__.ts",
   "service/integrations/__integration-name__/calls/__target-name__.ts",
   "packages/__package-name__/package.json",
-  "packages/__package-name__/__target-name__.ts",
+  "packages/__package-name__/__group-name__/__target-name__.ts",
+  "packages/__package-name__/__group-name__/__target-name__.test.ts",
   "packages/__package-name__/bin/__group-name__/index.ts",
   "packages/__package-name__/workflows/__target-name__.ts",
   "packages/__package-name__/env.schema.json",
@@ -156,8 +157,8 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     mustInclude: ["runBaseCron"],
   },
   {
-    rel: "packages/__package-name__/index.ts",
-    mustInclude: ["__targetName__"],
+    rel: "packages/__package-name__/package.json",
+    mustInclude: ["__group-name__"],
   },
 ];
 

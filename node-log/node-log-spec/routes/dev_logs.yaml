@@ -1,0 +1,89 @@
+listDevLogs:
+  summary: Snapshot of buffered development logs
+  operationId: listDevLogs
+  tags:
+    - dev-logs
+    - no-auth
+  parameters:
+    - name: after
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+      description: Return only entries with id greater than this value.
+    - name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+      description: Maximum number of entries to return (from the tail).
+  responses:
+    "200":
+      description: Buffered log entries.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              logs:
+                type: array
+                items:
+                  $ref: "../schemas/dev-log-entry.yaml"
+            required:
+              - logs
+    "400":
+      description: Invalid query parameters.
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
+    "403":
+      description: Dev logs are only available in development.
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
+    "503":
+      description: Dev log buffer is not enabled.
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
+
+streamDevLogs:
+  summary: SSE stream of development log entries
+  operationId: streamDevLogs
+  tags:
+    - dev-logs
+    - no-auth
+  parameters:
+    - name: Last-Event-ID
+      in: header
+      schema:
+        type: string
+      description: Replay entries with id greater than this value, then stream new entries.
+  responses:
+    "200":
+      description: "Server-sent events (event: log frames with DevLogEntry JSON payloads)."
+      content:
+        text/event-stream:
+          schema:
+            type: string
+    "400":
+      description: Invalid Last-Event-ID header.
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
+    "403":
+      description: Dev logs are only available in development.
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
+    "503":
+      description: Dev log buffer is not enabled.
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
