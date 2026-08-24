@@ -23,6 +23,21 @@
       "path": "./analytics/analytics-vue"
     },
     {
+      "path": "./audit/audit-db"
+    },
+    {
+      "path": "./audit/audit-http"
+    },
+    {
+      "path": "./audit/audit-sdk"
+    },
+    {
+      "path": "./audit/audit-spec"
+    },
+    {
+      "path": "./audit/audit-vue"
+    },
+    {
       "path": "./backup/backup-cron"
     },
     {
@@ -84,6 +99,9 @@
     },
     {
       "path": "./base/plans"
+    },
+    {
+      "path": "./base/service/audit"
     },
     {
       "path": "./base/service/common"
@@ -164,6 +182,9 @@
       "path": "./email/email-vue"
     },
     {
+      "path": "./env"
+    },
+    {
       "path": "./errors/errors-http"
     },
     {
@@ -174,9 +195,6 @@
     },
     {
       "path": "./errors/errors-vue"
-    },
-    {
-      "path": "./env"
     },
     {
       "path": "./express"

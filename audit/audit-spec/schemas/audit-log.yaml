@@ -1,0 +1,70 @@
+type: object
+description: One row from the append-only audit log (admin API shape).
+required:
+  - id
+  - ts
+  - prevHash
+  - rowHash
+  - schemaVersion
+  - source
+  - eventType
+  - outcome
+  - gitCommitRoot
+  - gitCommitSaflib
+  - env
+properties:
+  id:
+    type: string
+  ts:
+    type: string
+    format: date-time
+  prevHash:
+    type: string
+  rowHash:
+    type: string
+  schemaVersion:
+    type: integer
+  source:
+    type: string
+    enum:
+      - http
+      - cron
+      - kratos
+      - system
+      - webhook
+  actorUserId:
+    type: string
+    nullable: true
+  onBehalfOfUserId:
+    type: string
+    nullable: true
+  authMethod:
+    type: string
+    nullable: true
+  requestId:
+    type: string
+    nullable: true
+  clientIp:
+    type: string
+    nullable: true
+  eventType:
+    type: string
+  resourceType:
+    type: string
+    nullable: true
+  resourceId:
+    type: string
+    nullable: true
+  outcome:
+    type: string
+  gitCommitRoot:
+    type: string
+  gitCommitSaflib:
+    type: string
+  env:
+    type: string
+  details:
+    nullable: true
+    type: object
+    description: Event-specific JSON payload; shape depends on `source`.
+    additionalProperties: true

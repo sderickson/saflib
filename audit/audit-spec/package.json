@@ -1,0 +1,25 @@
+{
+  "name": "@saflib/audit-spec",
+  "description": "OpenAPI specification for hash-chained audit log admin browse",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./operations/*": "./dist/operations/*/index.ts",
+    "./schemas/*": "./dist/schemas/*/index.ts"
+  },
+  "dependencies": {
+    "@saflib/openapi": "*"
+  },
+  "devDependencies": {
+    "openapi-types": "*"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "saf-specs generate -f openapi.yaml -o dist",
+    "typecheck": "tsc -b"
+  },
+  "sideEffects": false
+}

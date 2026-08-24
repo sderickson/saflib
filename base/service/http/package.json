@@ -17,6 +17,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",
     "@saflib/base-service-common": "*",

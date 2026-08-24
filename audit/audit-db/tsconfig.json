@@ -2,28 +2,16 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../audit"
+      "path": "../../drizzle"
     },
     {
-      "path": "../../../cron/cron"
+      "path": "../../env"
     },
     {
-      "path": "../../../express"
+      "path": "../../monorepo"
     },
     {
-      "path": "../../../monorepo"
-    },
-    {
-      "path": "../common"
-    },
-    {
-      "path": "../cron"
-    },
-    {
-      "path": "../db"
-    },
-    {
-      "path": "../spec"
+      "path": "../../node"
     }
   ],
   "compilerOptions": {

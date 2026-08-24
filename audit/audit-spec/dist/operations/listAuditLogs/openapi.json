@@ -1,0 +1,255 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "listAuditLogs",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/audit-logs": {
+      "get": {
+        "summary": "List audit log events (admin)",
+        "description": "Paginated keyset scan of the audit database, ordered by timestamp then id. `headAt` / `tailAt` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.\n",
+        "operationId": "listAuditLogs",
+        "tags": [
+          "site-admin-only"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Only return events with `ts` greater than or equal to this instant (ISO-8601).\n",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Opaque pagination cursor from a previous response's `nextCursor`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size (default 100, max 1000).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "description": "Sort by `ts` then `id`. `desc` returns newest events first (admin UI default).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit events for this page plus table timestamp span.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "auditLogs",
+                    "headAt",
+                    "tailAt",
+                    "nextCursor",
+                    "chainValid"
+                  ],
+                  "properties": {
+                    "auditLogs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/audit-log"
+                      }
+                    },
+                    "headAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true,
+                      "description": "Earliest `ts` in the audit table, if any rows exist."
+                    },
+                    "tailAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true,
+                      "description": "Latest `ts` in the audit table, if any rows exist."
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Pass as `cursor` to fetch the next page, if more rows exist."
+                    },
+                    "chainValid": {
+                      "type": "boolean",
+                      "description": "Whether the full on-disk hash chain verified successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `from`, `cursor`, or `order`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "audit-log": {
+        "type": "object",
+        "description": "One row from the append-only audit log (admin API shape).",
+        "required": [
+          "id",
+          "ts",
+          "prevHash",
+          "rowHash",
+          "schemaVersion",
+          "source",
+          "eventType",
+          "outcome",
+          "gitCommitRoot",
+          "gitCommitSaflib",
+          "env"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "prevHash": {
+            "type": "string"
+          },
+          "rowHash": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "http",
+              "cron",
+              "kratos",
+              "system",
+              "webhook"
+            ]
+          },
+          "actorUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "onBehalfOfUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "authMethod": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "clientIp": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string",
+            "nullable": true
+          },
+          "resourceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "gitCommitRoot": {
+            "type": "string"
+          },
+          "gitCommitSaflib": {
+            "type": "string"
+          },
+          "env": {
+            "type": "string"
+          },
+          "details": {
+            "nullable": true,
+            "type": "object",
+            "description": "Event-specific JSON payload; shape depends on `source`.",
+            "additionalProperties": true
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

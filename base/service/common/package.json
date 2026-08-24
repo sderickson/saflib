@@ -13,6 +13,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/audit-db": "*",
     "@saflib/base-db": "*",
     "@saflib/drizzle": "*",
     "@saflib/monorepo": "*",

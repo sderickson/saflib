@@ -7,6 +7,10 @@ import express, { type Router } from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { baseDb } from "@saflib/base-db/instances";
 import {
+  baseAuditRecorderMiddleware,
+  createBaseAuditRouter,
+} from "@saflib/base-audit";
+import {
   baseServiceStorage,
   type BaseServiceContextOptions,
   makeContext,
@@ -76,7 +80,10 @@ export function createBaseHttpApp(
   );
   app.set("trust proxy", 1);
 
-  const context = makeContext();
+  const context = makeContext({
+    baseDbKey: dbKey,
+    ...(options.auditDbKey !== undefined ? { auditDbKey: options.auditDbKey } : {}),
+  });
   app.use((_req, _res, next) => {
     baseServiceStorage.run(context, () => {
       next();
@@ -84,6 +91,8 @@ export function createBaseHttpApp(
   });
 
   app.use(makeAuthMiddleware());
+
+  app.use(baseAuditRecorderMiddleware());
 
   const mounts = options.mounts ?? defaultRouterMounts();
   for (const mount of mounts) {
@@ -94,6 +103,8 @@ export function createBaseHttpApp(
 
 
   // END WORKFLOW AREA
+
+  app.use(createBaseAuditRouter());
 
   // Cron admin API after product routers (terminator middleware on /cron only).
   // BEGIN WORKFLOW AREA cron-router FOR cron/init

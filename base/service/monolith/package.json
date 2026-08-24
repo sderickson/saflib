@@ -7,6 +7,7 @@
   },
   "exports": {},
   "dependencies": {
+    "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",
     "@saflib/base-http": "*",
