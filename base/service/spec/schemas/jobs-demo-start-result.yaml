@@ -3,4 +3,4 @@ required:
   - job
 properties:
   job:
-    $ref: "../../../../jobs/jobs-spec/schemas/job.yaml"
+    $ref: "pkg:@saflib/jobs-spec/schemas/job.yaml"

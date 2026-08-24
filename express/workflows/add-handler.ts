@@ -97,6 +97,8 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     test: path.join(handlerDir, "__target-name__.test.ts"),
     index: path.join(handlerDir, "index.ts"),
     helpers: path.join(handlerDir, "_helpers.ts"),
+    // Anchor sharedPrefix at httpRoot so handlers keep handlers/<group>/… paths.
+    routers: routersLive,
   },
 
   docFiles: {
@@ -149,24 +151,6 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
           out = out
             .split("@saflib/base-service-common")
             .join(`${context.sharedPackagePrefix}-service-common`);
-          return lineReplace(out);
-        },
-      };
-    }),
-
-    step(CopyStepMachine, ({ context }) => {
-      const lineReplace = makeLineReplace(context);
-      return {
-        name: context.groupName,
-        targetDir: context.targetDir,
-        templateFiles: {
-          routers: routersLive,
-        },
-        lineReplace: (line: string) => {
-          let out = line;
-          out = out
-            .split("@saflib/base-spec")
-            .join(`${context.sharedPackagePrefix}-spec`);
           return lineReplace(out);
         },
       };

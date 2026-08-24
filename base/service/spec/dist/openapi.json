@@ -6,11 +6,6 @@
     "description": "API specification for the base service"
   },
   "paths": {
-    "__url-path__": {
-      "__method__": {
-        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-rFnYP1/routes/__group-name__/__target-name__.yaml#/__operationId__"
-      }
-    },
     "/jobs-demo/start": {
       "post": {
         "summary": "Start the jobs demo chain",
@@ -180,6 +175,11 @@
             }
           }
         }
+      }
+    },
+    "__url-path__": {
+      "__method__": {
+        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-Sf1xOV/routes/__group-name__/__target-name__.yaml#/__operationId__"
       }
     },
     "/__offshoot-name__/health": {

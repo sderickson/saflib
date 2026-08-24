@@ -30,12 +30,12 @@ __operationId__:
               format: binary
               description: The file to upload
             foo:
-              $ref: "../../schemas/todo.yaml"
+              $ref: "../../schemas/__target-name__.yaml"
       # ELSE
       application/json:
         # TODO: Update to an appropriate schema reference
         schema:
-          $ref: "../../schemas/todo.yaml"
+          $ref: "../../schemas/__target-name__.yaml"
       # END WORKFLOW AREA
 
   # TODO: Update response definitions. Include 400 only for dynamic/business-rule failures (not for OpenAPI validation). You do not need to include 5xx.
@@ -52,7 +52,7 @@ __operationId__:
         application/json:
           schema:
             # TODO: Update to an appropriate schema reference
-            $ref: "../../schemas/todo.yaml"
+            $ref: "../../schemas/__target-name__.yaml"
         # END WORKFLOW AREA
 
     "401":
