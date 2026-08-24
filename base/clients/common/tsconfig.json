@@ -28,6 +28,9 @@
       "path": "../../../analytics/analytics-vue"
     },
     {
+      "path": "../../../errors/errors-vue"
+    },
+    {
       "path": "../../../ory-kratos-sdk"
     },
     {

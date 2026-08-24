@@ -1,9 +1,6 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "include": [
-    "**/*.ts",
-    "**/*.json"
-  ],
+  "include": ["**/*.ts", "**/*.json"],
   "exclude": [
     "node_modules",
     "dist/types",
@@ -22,15 +19,5 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "references": [
-    {
-      "path": "../env"
-    },
-    {
-      "path": "../errors/errors-http"
-    },
-    {
-      "path": "../node"
-    }
-  ]
+  "references": [{ "path": "../../openapi" }]
 }

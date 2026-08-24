@@ -9,6 +9,7 @@ import helmet from "helmet";
 import { healthRouter } from "./health.ts";
 import { createDevLogsRouter } from "@saflib/node-log-http";
 import { createAnalyticsRouter } from "@saflib/analytics-http";
+import { createErrorsRouter } from "@saflib/errors-http";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
@@ -77,6 +78,8 @@ export const createGlobalMiddleware = (
     urlencoded({ extended: false }),
     // Product analytics ring buffer (client POST + server record helper).
     createAnalyticsRouter(),
+    // Unified error ring buffer (client, CSP, server exceptions, admin smoke).
+    createErrorsRouter(),
     ...sanitizeMiddleware,
     ...corsMiddleware,
   ];

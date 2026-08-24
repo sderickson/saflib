@@ -21,6 +21,9 @@
       "path": "../analytics/analytics-http"
     },
     {
+      "path": "../errors/errors-http"
+    },
+    {
       "path": "../node"
     },
     {

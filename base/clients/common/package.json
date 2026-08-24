@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "@saflib/analytics-vue": "*",
+    "@saflib/errors-vue": "*",
     "@saflib/vue": "*",
-    "@sentry/vue": "^10.21.0",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/base-spec": "*"
   },

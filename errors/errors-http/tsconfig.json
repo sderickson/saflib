@@ -1,8 +1,7 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
   "include": [
-    "**/*.ts",
-    "**/*.json"
+    "**/*.ts"
   ],
   "exclude": [
     "node_modules",
@@ -16,7 +15,6 @@
     "**/workflows/templates/**"
   ],
   "compilerOptions": {
-    "rootDir": ".",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "outDir": "./dist/types",
     "noEmit": false,
@@ -24,13 +22,10 @@
   },
   "references": [
     {
-      "path": "../env"
+      "path": "../../node"
     },
     {
-      "path": "../errors/errors-http"
-    },
-    {
-      "path": "../node"
+      "path": "../errors-spec"
     }
   ]
 }

@@ -1,0 +1,70 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "postAdminTestError",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/admin/test-error": {
+      "post": {
+        "summary": "Admin-only intentional server error",
+        "description": "Throws an error on the server for verifying error reporting (e.g. Sentry and the admin Errors page). Requires an authenticated site admin.\n",
+        "operationId": "postAdminTestError",
+        "tags": [
+          "errors",
+          "site-admin-only"
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized — missing or invalid auth.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Intentional error for monitoring verification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

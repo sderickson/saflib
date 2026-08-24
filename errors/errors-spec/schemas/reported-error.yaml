@@ -1,0 +1,35 @@
+type: object
+description: A reported error stored in the in-memory ring buffer.
+properties:
+  id:
+    type: integer
+    description: Monotonic id for pagination.
+  kind:
+    type: string
+    enum:
+      - csp-violation
+      - client
+      - server
+      - test
+    description: Error category (CSP ingest, browser client, server exception, admin smoke test).
+  message:
+    type: string
+  stack:
+    type: string
+  metadata:
+    type: object
+    additionalProperties: true
+    description: Scrubbed context (Sentry extras, CSP report, client info, etc.).
+  source:
+    type: string
+    description: Originating surface (SPA name, subsystem, browser, etc.).
+  timestamp:
+    type: string
+    format: date-time
+required:
+  - id
+  - kind
+  - message
+  - metadata
+  - source
+  - timestamp
