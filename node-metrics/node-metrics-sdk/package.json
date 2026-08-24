@@ -1,0 +1,25 @@
+{
+  "name": "@saflib/node-metrics-sdk",
+  "description": "TanStack Query hooks for parsed Prometheus metrics admin viewing",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./requests/*": "./requests/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/node-metrics-spec": "*",
+    "@saflib/sdk": "*",
+    "@tanstack/vue-query": "*",
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

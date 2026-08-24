@@ -37,7 +37,7 @@ export const createInternalMiddleware = (
 ): Handler[] => {
   const { jsonLimit } = options;
   return [
-    metricsMiddleware,
+    ...metricsMiddleware,
     noStoreCacheControl,
     everyRequestLogger,
     json(
@@ -64,7 +64,7 @@ export const createGlobalMiddleware = (
 
   let sanitizeMiddleware: Handler[] = [blockHtml];
   return [
-    metricsMiddleware,
+    ...metricsMiddleware,
     noStoreCacheControl,
     helmet(),
     makeCsrfTokenMiddleware(),

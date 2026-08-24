@@ -98,6 +98,8 @@ Provides two middleware: a global logger for every request (which prints out to 
 
 Provides a router and middleware. The middleware records RED metrics for every route, and the router serves the `/metrics` endpoint in the Prometheus [text format](https://prometheus.io/docs/instrumenting/exposition_formats/#text-format-example).
 
+In **development** (`DEPLOYMENT_NAME=development`), `/metrics` is reachable directly on the monolith port without the forwarded-host gate — use `GET http://localhost:<port>/metrics` while local debugging. In other deployments, requests that arrive with `X-Forwarded-Host` (public edge) receive **403**; scrape from inside the network or via an internal path.
+
 This middleware depends on [express-prom-bundle](https://github.com/jochen-schweizer/express-prom-bundle) since it does exactly what is needed, no more, no less.
 
 ### `openapi.ts`

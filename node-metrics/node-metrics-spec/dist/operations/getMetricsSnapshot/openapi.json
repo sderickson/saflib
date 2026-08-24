@@ -1,0 +1,144 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "getMetricsSnapshot",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/admin/metrics/snapshot": {
+      "get": {
+        "summary": "Snapshot of parsed in-process Prometheus metrics",
+        "operationId": "getMetricsSnapshot",
+        "tags": [
+          "metrics",
+          "site-admin-only"
+        ],
+        "responses": {
+          "200": {
+            "description": "Parsed metric series from the in-process prom-client registry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "metrics": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/metric-snapshot"
+                      }
+                    }
+                  },
+                  "required": [
+                    "metrics"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing authentication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - site admin required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "metric-snapshot": {
+        "type": "object",
+        "description": "A parsed Prometheus metric series at a point in time.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Metric base name (without _bucket/_sum/_count suffixes)."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "counter",
+              "gauge",
+              "histogram"
+            ]
+          },
+          "help": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "value": {
+            "type": "number",
+            "description": "Current value for counter or gauge series."
+          },
+          "buckets": {
+            "type": "array",
+            "description": "Cumulative bucket counts for histogram series (excluding le label).",
+            "items": {
+              "type": "object",
+              "properties": {
+                "le": {
+                  "type": "string",
+                  "description": "Upper bound label value (+Inf for the overflow bucket)."
+                },
+                "count": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "le",
+                "count"
+              ]
+            }
+          },
+          "sum": {
+            "type": "number",
+            "description": "Histogram _sum sample for this label set."
+          },
+          "count": {
+            "type": "number",
+            "description": "Histogram _count sample for this label set."
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "labels"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

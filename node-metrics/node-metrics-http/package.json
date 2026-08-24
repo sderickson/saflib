@@ -1,0 +1,33 @@
+{
+  "name": "@saflib/node-metrics-http",
+  "description": "Prometheus text parsing and Express routes for metrics admin viewing",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./lib/*": "./lib/*.ts",
+    "./express/*": "./express/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/node-metrics-spec": "*",
+    "express": "^5.0.0",
+    "http-errors": "^2.0.0",
+    "prom-client": "^15.0.0"
+  },
+  "devDependencies": {
+    "@saflib/express": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*",
+    "@types/express": "^5.0.0",
+    "@types/http-errors": "^2.0.0",
+    "@types/supertest": "^7.0.0",
+    "supertest": "^7.0.0"
+  },
+  "sideEffects": false
+}

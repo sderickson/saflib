@@ -203,6 +203,18 @@
       "path": "./node-log/node-log-vue"
     },
     {
+      "path": "./node-metrics/node-metrics-http"
+    },
+    {
+      "path": "./node-metrics/node-metrics-sdk"
+    },
+    {
+      "path": "./node-metrics/node-metrics-spec"
+    },
+    {
+      "path": "./node-metrics/node-metrics-vue"
+    },
+    {
       "path": "./notify/notify"
     },
     {

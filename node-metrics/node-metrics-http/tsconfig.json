@@ -1,8 +1,6 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "include": [
-    "**/*.ts"
-  ],
+  "include": ["**/*.ts"],
   "exclude": [
     "node_modules",
     "dist/types",
@@ -20,12 +18,5 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "references": [
-    {
-      "path": "../../sdk"
-    },
-    {
-      "path": "../node-log-spec"
-    }
-  ]
+  "references": [{ "path": "../node-metrics-spec" }]
 }
