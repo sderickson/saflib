@@ -9,19 +9,18 @@ Each package which depends on `@saflib/express` should have the following struct
 ```
 {service-name}-http/
 ├── context.ts
-├── http.ts
-├── routes/
+├── http.ts          # once-only compose (middleware, platform routers, offshoot mounts)
+├── routers.ts       # group-router barrel (express/add-handler); same in offshoots
+├── handlers/
 │   └── {feature-1}/
-│   │   ├── index.ts
-│   │   ├── get-all.test.ts
-│   │   ├── get-all.ts
-│   │   ├── get-by-id.test.ts
-│   │   ├── get-by-id.ts
-│   │   └── ...
-│   ├── {feature-2}/
-│   └── ...
+│       ├── index.ts
+│       ├── get-all.test.ts
+│       ├── get-all.ts
+│       └── ...
 └── package.json
 ```
+
+Main `http.ts` mounts `groupRouterMounts()` from `routers.ts` plus any offshoot barrel routers. Offshoot packages export one `create{Name}Router()` that mounts their own `groupRouterMounts()`.
 
 ## Files and Directories Explained
 

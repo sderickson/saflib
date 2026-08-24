@@ -20,8 +20,8 @@ import path from "node:path";
 
 const httpRoot = path.join(templatesProductRoot, "service", "http");
 const handlerDir = path.join(httpRoot, "handlers", "__group-name__");
-/** Workflow-area upsert source — live http.ts owns concrete wiring. */
-const httpWeaveStub = path.join(httpRoot, ".workflow-stubs", "http.ts");
+/** Live group-router barrel — same contour in main http and offshoots. */
+const routersLive = path.join(httpRoot, "routers.ts");
 
 const input = [
   {
@@ -59,7 +59,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   id: "express/add-handler",
 
   description:
-    "Add a route handler, group router, slim test, and http.ts mount. Run openapi/route and saf-specs generate first.",
+    "Add a route handler, group router, slim test, and routers.ts mount. Run openapi/route and saf-specs generate first.",
 
   checklistDescription: ({ packageName, targetName }) =>
     `Add ${targetName} route handler to ${packageName}.`,
@@ -108,6 +108,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     allowPaths: [
       "**/context.ts",
       "**/common/package.json",
+      "**/routers.ts",
       "**/http.ts",
       "**/package.json",
       "**/testing/slim-route-test.ts",
@@ -159,16 +160,13 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         name: context.groupName,
         targetDir: context.targetDir,
         templateFiles: {
-          http: httpWeaveStub,
+          routers: routersLive,
         },
         lineReplace: (line: string) => {
           let out = line;
           out = out
             .split("@saflib/base-spec")
             .join(`${context.sharedPackagePrefix}-spec`);
-          out = out
-            .split("@saflib/base-__offshoot-name__-http")
-            .join(`${context.sharedPackagePrefix}-__offshoot-name__-http`);
           return lineReplace(out);
         },
       };
@@ -206,9 +204,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       - Do **not** mount \`createScopedMiddleware({ apiSpec: jsonSpec })\` on a router prefix.
       - Products with extra middleware (e.g. org context) use a **product** helper such as \`registerOrgScopedRoute\` that wraps \`createOperationScopedMiddleware\` — do not add that to generic SAF templates.
 
-      **Monolith http.ts:** Add the group's \`create…Router()\` to \`defaultRouterMounts()\` in \`http.ts\` (workflow area). Route handler tests mount the **group router** via \`acquireRouterSlimRouteTest\` in \`testing/slim-route-test.ts\`, not \`create…HttpApp()\` with the full default mount list.
+      **Package routers.ts:** Add the group's \`create…Router()\` to \`groupRouterMounts()\` in \`routers.ts\` (workflow area). Main \`http.ts\` spreads that barrel; offshoot \`http.ts\` mounts it on the offshoot barrel router. Route handler tests mount the **group router** via \`acquireRouterSlimRouteTest\` in \`testing/slim-route-test.ts\`, not \`create…HttpApp()\` with the full default mount list.
 
-      **Router mount order (http.ts):** When wiring routers into \`defaultRouterMounts()\`, list product routers **before** any router that ends with a catch-all 404 (commonly \`createCronRouter\` from \`@saflib/cron\`). Cron's router terminates unmatched paths; routers registered after it never run, so every request looks like a handler 404 even though the handler is correct.
+      **Router mount order (http.ts):** Platform terminators (\`createCronRouter\`, etc.) stay in main \`http.ts\` *after* \`groupRouterMounts()\` / offshoot barrels. Product group routers belong in \`routers.ts\` so they always mount before those terminators.
 
       **OpenAPI schemas and express-openapi-validator:** If integration tests return **500** with message \`"nullable" cannot be used without "type"\`, the bug is in the **spec**, not the handler. \`express-openapi-validator\` rejects properties that use \`nullable: true\` together with \`allOf: [\$ref: …]\` and **no sibling \`type\`**. Fix the adjacent OpenAPI schema (and regenerate the spec package) before debugging the handler:
       - Prefer \`type: string\` / \`type: object\` **plus** \`nullable: true\` with inline constraints, **or** omit \`nullable\` and treat optional fields as omitted when unset (mappers often omit nulls on responses).
@@ -245,7 +243,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         * Make sure to implement proper test cases that cover both success and error scenarios.
         * Do not do any mocking. Databases are in memory, and integrations have fake implementations. Do not use vitest's mock!
         * Do not test 500 or involve OpenAPI validation. Just success and 400 responses which are handled in the implementation.
-        * If a test unexpectedly gets **404** for a route you registered, check \`http.ts\` mount order: routers after \`createCronRouter\` (or any catch-all 404 middleware) never run.
+        * If a test unexpectedly gets **404** for a route you registered, check that the group is in \`routers.ts\` \`groupRouterMounts()\` and that main \`http.ts\` still mounts platform terminators (\`createCronRouter\`) *after* product barrels.
         * If a test unexpectedly gets **500** with \`"nullable" cannot be used without "type"\`, fix the OpenAPI schema in the adjacent \`-spec\` package (see handler-step guidance), rebuild the spec, and re-run — do not treat it as a handler bug.
         * Run tests with "npm run test" in ${context.cwd}.
         * **Default tier:** mount \`create${kebabCaseToPascalCase(context.groupName)}Router\` (the group \`index.ts\` factory) via \`acquireRouterSlimRouteTest\` from \`testing/slim-route-test.ts\`, with \`beforeAll\`/\`afterAll\` and \`releaseSlimRouteTest\` in \`afterAll\`.

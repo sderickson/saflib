@@ -16,7 +16,8 @@ const stubPaths = [
   "service/db/schemas/__group-name__.ts",
   "service/db/queries/__group-name__/__target-name__.ts",
   "service/http/handlers/__group-name__/index.ts",
-  "service/http/.workflow-stubs/http.ts",
+  "service/http/routers.ts",
+  "__offshoot-name__/http/routers.ts",
   "service/sdk/requests/__group-name__/__query-name__.ts",
   "service/sdk/requests/__group-name__/__mutation-name__.ts",
   "service/sdk/__group-name__/__TargetName__.vue",
@@ -75,18 +76,25 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     ],
   },
   {
-    rel: "service/http/.workflow-stubs/http.ts",
+    rel: "service/http/routers.ts",
     mustInclude: [
       "create__GroupName__Router",
-      "create__OffshootName__Router",
-      "default-router-mounts",
+      "router-mounts",
+      "groupRouterMounts",
+    ],
+  },
+  {
+    rel: "__offshoot-name__/http/routers.ts",
+    mustInclude: [
+      "create__GroupName__Router",
+      "router-mounts",
+      "groupRouterMounts",
     ],
   },
   {
     rel: "service/http/http.ts",
     mustInclude: [
-      "__group-name__",
-      "create__GroupName__Router",
+      "groupRouterMounts",
       "@saflib/base-__offshoot-name__-http",
       "create__OffshootName__Router",
       "createCronRouter",

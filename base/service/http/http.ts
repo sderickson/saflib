@@ -20,15 +20,7 @@ import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
 import { createJobsRouter } from "@saflib/jobs";
 import { getBaseJobsDbKey } from "@saflib/base-jobs";
 import { createJobsDemoRouter } from "./handlers/jobs-demo/index.ts";
-
-// BEGIN WORKFLOW AREA cron-imports FOR cron/init
-// END WORKFLOW AREA
-// BEGIN WORKFLOW AREA jobs-router-imports FOR jobs/init
-// END WORKFLOW AREA
-
-// BEGIN WORKFLOW AREA router-imports FOR express/add-handler
-import { create__GroupName__Router } from "./handlers/__group-name__/index.ts";
-// END WORKFLOW AREA
+import { groupRouterMounts } from "./routers.ts";
 
 // BEGIN WORKFLOW AREA offshoot-router-imports FOR express/init
 import { create__OffshootName__Router } from "@saflib/base-__offshoot-name__-http";
@@ -42,7 +34,7 @@ export type HttpRouterMount = {
 export type CreateBaseHttpAppOptions = BaseServiceContextOptions & {
   /**
    * Slim route tests mount one or more production routers. When omitted, every
-   * product router from the workflow area below is mounted (monolith / smoke).
+   * product + offshoot router below is mounted (monolith / smoke).
    */
   mounts?: HttpRouterMount[];
 };
@@ -52,12 +44,15 @@ export type BaseHttpAppLease = {
   baseDbKey: DbKey;
 };
 
+/**
+ * Once-only compose: middleware, baked-in demo/platform routers, and barrels.
+ * New handler groups go in {@link groupRouterMounts} (`routers.ts`).
+ * New offshoots: one import + mount in the `express/init` areas below.
+ */
 function defaultRouterMounts(): HttpRouterMount[] {
   return [
+    ...groupRouterMounts(),
     { kind: "router", createRouter: createJobsDemoRouter },
-    // BEGIN WORKFLOW AREA default-router-mounts FOR express/add-handler
-    { kind: "router", createRouter: create__GroupName__Router },
-    // END WORKFLOW AREA
     // BEGIN WORKFLOW AREA offshoot-router-mounts FOR express/init
     { kind: "router", createRouter: create__OffshootName__Router },
     // END WORKFLOW AREA
@@ -89,7 +84,9 @@ export function createBaseHttpApp(
 
   const context = makeContext({
     baseDbKey: dbKey,
-    ...(options.auditDbKey !== undefined ? { auditDbKey: options.auditDbKey } : {}),
+    ...(options.auditDbKey !== undefined
+      ? { auditDbKey: options.auditDbKey }
+      : {}),
   });
   app.use((_req, _res, next) => {
     baseServiceStorage.run(context, () => {
@@ -123,12 +120,6 @@ export function createBaseHttpApp(
       enqueueJob: async () => ({}),
     }),
   );
-
-  // BEGIN WORKFLOW AREA jobs-router FOR jobs/init
-  // END WORKFLOW AREA
-
-  // BEGIN WORKFLOW AREA cron-router FOR cron/init
-  // END WORKFLOW AREA
 
   app.use(createErrorMiddleware());
 

@@ -14,9 +14,10 @@ import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
 const offshootHttpRoot = path.join(offshootStubRoot, "http");
-const parentHttpWeaveStub = path.join(
+/** Live parent compose file — offshoot import/mount areas only. */
+const parentHttpLive = path.join(
   templatesProductRoot,
-  "service/http/.workflow-stubs/http.ts",
+  "service/http/http.ts",
 );
 
 const input = [
@@ -37,7 +38,7 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
   id: "express/init",
 
   description:
-    "Scaffold an offshoot Express http package and weave its router into the parent http app",
+    "Scaffold an offshoot Express http package and weave its barrel router into the parent http app",
 
   checklistDescription: ({ offshootPackageName }) =>
     `Init offshoot http ${offshootPackageName}.`,
@@ -55,12 +56,13 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     http: path.join(offshootHttpRoot, "http.ts"),
+    routers: path.join(offshootHttpRoot, "routers.ts"),
     index: path.join(offshootHttpRoot, "index.ts"),
     packageJson: path.join(offshootHttpRoot, "package.json"),
     tsconfig: path.join(offshootHttpRoot, "tsconfig.json"),
     vitestConfig: path.join(offshootHttpRoot, "vitest.config.js"),
     test: path.join(offshootHttpRoot, "index.test.ts"),
-    parentHttp: parentHttpWeaveStub,
+    parentHttp: parentHttpLive,
   },
 
   docFiles: {
@@ -75,13 +77,15 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
         offshootHttp: offshootHttpRoot,
       },
       lineReplace: makeOffshootLineReplace(context),
+      // Handler expansion stubs live under service/http; grow with add-handler.
+      skipSourceGlobs: ["**/handlers/__group-name__/**"],
     })),
 
     step(CopyStepMachine, ({ context }) => ({
       name: context.offshootName,
       targetDir: context.parentDir,
       templateFiles: {
-        parentHttp: parentHttpWeaveStub,
+        parentHttp: parentHttpLive,
       },
       lineReplace: makeOffshootLineReplace(context),
       skipUnlessPathExists: parentLayerPackageJsonPath(context.parentDir),
