@@ -12,7 +12,12 @@
     "./audit-write-lock": "./audit-write-lock.ts",
     "./hash-chain": "./hash-chain.ts",
     "./canonicalize": "./canonicalize.ts",
-    "./types": "./types.ts"
+    "./types": "./types.ts",
+    "./seal-audit-db": "./seal-audit-db.ts",
+    "./seal-types": "./seal-types.ts",
+    "./seal-errors": "./seal-errors.ts",
+    "./iso-safe": "./iso-safe.ts",
+    "./prune-sealed": "./prune-sealed.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -26,6 +31,7 @@
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
+    "@mongodb-js/zstd": "^2.0.1",
     "proper-lockfile": "^4.1.2"
   },
   "devDependencies": {

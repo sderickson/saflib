@@ -6,9 +6,9 @@ import { createErrorMiddleware, makeAdminHeaders } from "@saflib/express";
 import { appendAuditEvent } from "@saflib/audit-db/queries/audit-event/append";
 import { auditDb } from "@saflib/audit-db/instances";
 import { clearAuditEventsForTests } from "@saflib/audit-db/queries/audit-event/clear-for-tests";
-import { createAuditRouter } from "./createAuditRouter.ts";
+import { createAuditLogsRouter } from "./createAuditLogsRouter.ts";
 
-describe("createAuditRouter", () => {
+describe("createAuditLogsRouter", () => {
   let dbKey: DbKey;
   let prevDeploymentName: string | undefined;
 
@@ -38,7 +38,7 @@ describe("createAuditRouter", () => {
 
   function makeApp() {
     const app = express();
-    app.use(createAuditRouter({ getAuditDbKey: () => dbKey }));
+    app.use(createAuditLogsRouter({ getAuditDbKey: () => dbKey }));
     app.use(createErrorMiddleware());
     return app;
   }

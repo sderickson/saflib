@@ -15,3 +15,6 @@ paths:
   /audit-logs:
     get:
       $ref: "./routes/audit-logs.yaml#/listAuditLogs"
+  /audit-logs/seal:
+    post:
+      $ref: "./routes/audit-logs/seal.yaml#/sealAuditLog"

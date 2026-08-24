@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ref } from "vue";
 import { stubGlobals } from "@saflib/vue/testing";
 import type { AuditResponseBody } from "@saflib/audit-spec/types";
 import AuditLogPage from "./AuditLogPage.vue";
@@ -36,19 +35,20 @@ const mockAuditLogs: ListAuditLogsResponse = {
   nextCursor: null,
 };
 
-vi.mock("@saflib/audit-sdk/requests/list-audit-logs", async (importOriginal) => {
-  const actual =
-    await importOriginal<
-      typeof import("@saflib/audit-sdk/requests/list-audit-logs")
-    >();
+vi.mock("@saflib/sdk", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@saflib/sdk")>();
   return {
     ...actual,
-    useListAuditLogs: () => ({
-      data: ref(mockAuditLogs),
-      error: ref(null),
-      isLoading: ref(false),
-      refetch: vi.fn(),
+    createSafClient: () => ({
+      GET: vi.fn(async () => ({
+        response: { status: 200 },
+        data: mockAuditLogs,
+      })),
     }),
+    handleClientMethod: async (p: Promise<{ data?: unknown }>) => {
+      const result = await p;
+      return result.data;
+    },
   };
 });
 
@@ -62,8 +62,11 @@ describe("AuditLogPage", () => {
       props: { subdomain: "api" },
     });
 
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("admin.test_error");
+    });
+
     expect(wrapper.text()).toContain("Audit log");
-    expect(wrapper.text()).toContain("admin.test_error");
     expect(wrapper.text()).toContain("user-1");
   });
 });

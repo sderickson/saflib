@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { auditDb } from "@saflib/audit-db/instances";
 import { createAuditRecorder } from "@saflib/audit-http/express/audit-recorder";
-import { createAuditRouter } from "@saflib/audit-http/express/createAuditRouter";
+import { createAuditLogsRouter } from "@saflib/audit-http/express/createAuditLogsRouter";
 import type { DbKey } from "@saflib/drizzle";
 import { typedEnv } from "@saflib/env";
 import {
@@ -57,7 +57,7 @@ export function appendFailClosedBaseHttpAuditIfRequired(
 }
 
 export function createBaseAuditRouter() {
-  return createAuditRouter({
+  return createAuditLogsRouter({
     getAuditDbKey: () => {
       const fromContext = resolveAuditDbKeyFromContext();
       return fromContext ?? getBaseAuditDbKey();

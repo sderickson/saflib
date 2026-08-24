@@ -25,6 +25,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/audit-logs/seal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Seal the active audit database (admin)
+         * @description Snapshot the active DB, verify the hash chain, compress locally, then invoke the product's ship callback (upload + off-system seal report). Clears the active store only after ship succeeds. Requires an authenticated site admin.
+         */
+        post: operations["sealAuditLog"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -66,6 +86,39 @@ export interface components {
              * @example The requested resource could not be found.
              */
             message?: string;
+        };
+        /** @description Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `durationMs` are present. */
+        "audit-seal-result": {
+            /** @enum {string} */
+            status: "sealed" | "skipped";
+            /** @enum {string} */
+            reason?: "empty" | "in_progress";
+            durationMs: number;
+            archive?: {
+                filename: string;
+                sizeBytes: number;
+                sha256Hex: string;
+                /** @description Remote archive identifier (object path, bucket key, etc.). */
+                archiveKey: string;
+                rowCount: number;
+                headHash: string;
+                tailHash: string;
+                /** Format: date-time */
+                firstTs: string;
+                /** Format: date-time */
+                lastTs: string;
+                branchCount?: number;
+            };
+        };
+        "seal-audit-log-response": {
+            auditSealResult: components["schemas"]["audit-seal-result"];
+        };
+        "audit-seal-http-500": {
+            error: {
+                /** @enum {string} */
+                code: "audit_chain_corrupt" | "audit_ship_failed" | "audit_email_failed" | "audit_upload_failed" | "audit_unknown";
+                message: string;
+            };
         };
     };
     responses: never;
@@ -142,6 +195,62 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    sealAuditLog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Seal completed; `auditSealResult.status` is `sealed`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["seal-audit-log-response"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden — admin required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Skipped — empty active DB or concurrent seal (`auditSealResult.status: skipped`). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["seal-audit-log-response"];
+                };
+            };
+            /** @description Seal pipeline failed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["audit-seal-http-500"];
                 };
             };
         };

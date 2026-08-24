@@ -1,0 +1,7 @@
+type: object
+additionalProperties: false
+required:
+  - auditSealResult
+properties:
+  auditSealResult:
+    $ref: "./audit-seal-result.yaml"

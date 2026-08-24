@@ -1,0 +1,41 @@
+sealAuditLog:
+  summary: Seal the active audit database (admin)
+  description: >
+    Snapshot the active DB, verify the hash chain, compress locally, then invoke
+    the product's ship callback (upload + off-system seal report). Clears the active
+    store only after ship succeeds. Requires an authenticated site admin.
+  operationId: sealAuditLog
+  tags:
+    - site-admin-only
+  responses:
+    "200":
+      description: Seal completed; `auditSealResult.status` is `sealed`.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/seal-audit-log-response.yaml"
+    "409":
+      description: >
+        Skipped — empty active DB or concurrent seal (`auditSealResult.status: skipped`).
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/seal-audit-log-response.yaml"
+    "401":
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Forbidden — admin required
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "500":
+      description: Seal pipeline failed
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/audit-seal-http-500.yaml"
