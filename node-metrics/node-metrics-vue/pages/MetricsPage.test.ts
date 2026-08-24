@@ -58,7 +58,8 @@ describe("MetricsPage", () => {
     });
     expect(wrapper.text()).toContain("Metrics");
     expect(wrapper.text()).toContain("http_request_duration_seconds");
-    expect(wrapper.text()).toContain("0.1");
+    expect(wrapper.text()).toContain("method: GET");
+    expect(wrapper.text()).toContain("≤ 0.1");
   });
 
   it("filters metrics by selected name", async () => {
