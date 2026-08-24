@@ -6,9 +6,4 @@ describe("__targetName__", () => {
     const result = __targetName__();
     expect(result).toBe("Hello from __targetName__!");
   });
-
-  // TODO: Add more tests (or replace the above)as needed
-  // it("should handle edge cases", () => {
-  //   // Test implementation here
-  // });
 });

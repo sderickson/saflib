@@ -8,6 +8,7 @@ import {
   makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import { templatesProductRoot } from "@saflib/templates";
 
 const sourceDir = path.join(templatesProductRoot, "packages", "__package-name__");
@@ -22,8 +23,8 @@ const input = [
   {
     name: "path",
     description:
-      "The relative path where the export should be added (e.g., 'src/utils' or 'src/components')",
-    exampleValue: "src/utils",
+      "Relative path under the package for the new module (e.g., 'lib/utils' or 'lib/features/billing'). Must not be the package root.",
+    exampleValue: "lib",
   },
 ] as const;
 
@@ -32,7 +33,14 @@ interface AddExportWorkflowContext {
   path: string;
   targetDir: string;
   exportPath: string;
-  indexPath: string;
+  packageName: string;
+}
+
+function readPackageName(cwd: string): string {
+  const pj = JSON.parse(readFileSync(path.join(cwd, "package.json"), "utf8")) as {
+    name: string;
+  };
+  return pj.name;
 }
 
 export const AddExportWorkflowDefinition = defineWorkflow<
@@ -43,8 +51,8 @@ export const AddExportWorkflowDefinition = defineWorkflow<
 
   description: "Add new exports (functions, classes, interfaces) to packages",
 
-  checklistDescription: ({ targetName, path }) =>
-    `Add ${targetName} export to ${path}.`,
+  checklistDescription: ({ targetName, path: exportPath }) =>
+    `Add ${targetName} export to ${exportPath}.`,
 
   input,
 
@@ -53,43 +61,42 @@ export const AddExportWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const targetDir = path.join(input.cwd, input.path);
     const exportPath = path.join(targetDir, `${input.name}.ts`);
-    const indexPath = path.join(input.cwd, "index.ts");
 
     return {
       targetName: input.name,
       path: input.path,
       targetDir,
       exportPath,
-      indexPath,
+      packageName: readPackageName(input.cwd),
     };
   },
 
   templateFiles: {
-    export: path.join(sourceDir, "__target-name__.ts"),
-    test: path.join(sourceDir, "__target-name__.test.ts"),
+    export: path.join(sourceDir, "lib", "__target-name__.ts"),
+    test: path.join(sourceDir, "lib", "__target-name__.test.ts"),
   },
 
   versionControl: {
     allowPaths: ["./docs/**"],
   },
 
-  // TODO: add documentation file references
   docFiles: {},
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      targetDir: context.targetDir,
-      templateFiles: {
-        export: path.join(sourceDir, "__target-name__.ts"),
-        test: path.join(sourceDir, "__target-name__.test.ts"),
-      },
-      lineReplace: makeLineReplace(context),
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Add export **${context.targetName}** under \`${context.path}/\`.
+
+Rules:
+- Do **not** create or update a root \`index.ts\` barrel.
+- Put implementation in \`${context.path}/${context.targetName}.ts\` (colocated test: \`${context.path}/${context.targetName}.test.ts\` or under \`tests/\` mirroring the folder).
+- If \`${context.path}\` is the package root, stop and re-run with a subfolder (e.g. \`lib\`).`,
     })),
 
     step(CopyStepMachine, ({ context }) => ({
-      targetDir: context.cwd,
+      targetDir: context.targetDir,
       templateFiles: {
-        index: path.join(sourceDir, "index.ts"),
+        export: path.join(sourceDir, "lib", "__target-name__.ts"),
+        test: path.join(sourceDir, "lib", "__target-name__.test.ts"),
       },
       lineReplace: makeLineReplace(context),
     })),
@@ -109,8 +116,22 @@ export const AddExportWorkflowDefinition = defineWorkflow<
       args: ["run", "test"],
     })),
 
+    step(CommandStepMachine, ({ context }) => ({
+      command: "npm",
+      args: [
+        "exec",
+        "saf-imports",
+        "exports",
+        "check",
+        "--package",
+        context.packageName,
+      ],
+    })),
+
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Confirm \`index.ts\` exports \`${context.targetName}\` (workflow area upsert from the golden package). If this package predates that area, add the export manually from ${context.exportPath}.`,
+      promptText: `If \`exports check\` failed because you added a new top-level source folder, extend \`package.json\` \`exports\` with a glob (e.g. \`"./lib/*": "./lib/*.ts"\`) so every module is covered. Re-run:
+
+\`npm exec saf-imports exports check --package ${context.packageName}\``,
     })),
 
     step(CommandStepMachine, () => ({
@@ -119,3 +140,5 @@ export const AddExportWorkflowDefinition = defineWorkflow<
     })),
   ],
 });
+
+export default AddExportWorkflowDefinition;

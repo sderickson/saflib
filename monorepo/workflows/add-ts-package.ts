@@ -67,8 +67,8 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
   templateFiles: {
     packageJson: path.join(sourceDir, "package.json"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
-    index: path.join(sourceDir, "index.ts"),
-    test: path.join(sourceDir, "index.test.ts"),
+    starter: path.join(sourceDir, "lib", "starter.ts"),
+    starterTest: path.join(sourceDir, "tests", "starter.test.ts"),
     vitest: path.join(sourceDir, "vitest.config.js"),
   },
 
@@ -90,13 +90,17 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "packageJson",
-      promptMessage: `The file '${path.join(context.path, "package.json")}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.`,
+      promptMessage: `The file '${path.join(context.path, "package.json")}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.
+
+Keep glob exports (e.g. \`"./lib/*": "./lib/*.ts"\`) — do not add a root \`"."\` barrel. Add more glob keys when you introduce new top-level source folders.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Ensure the new package path '${context.path}' is included in the "workspaces" array in the root \`package.json\`.
       
-      For example: \`"workspaces": ["${context.path}", "other-packages/*"]\``,
+      For example: \`"workspaces": ["${context.path}", "other-packages/*"]\`
+
+      Source modules belong under thematic folders (e.g. \`lib/\`), not at the package root.`,
     })),
 
     step(CdStepMachine, ({ context }) => ({
@@ -132,5 +136,19 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["run", "test"],
     })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "npm",
+      args: [
+        "exec",
+        "saf-imports",
+        "exports",
+        "check",
+        "--package",
+        context.packageName,
+      ],
+    })),
   ],
 });
+
+export default AddTsPackageWorkflowDefinition;

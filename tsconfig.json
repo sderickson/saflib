@@ -230,6 +230,9 @@
       "path": "./secret-store"
     },
     {
+      "path": "./security"
+    },
+    {
       "path": "./sentry"
     },
     {
