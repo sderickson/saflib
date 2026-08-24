@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "generate": "npm run generate --prefix ../../service/db",
     "typecheck": "tsc -b"
   },
   "dependencies": {

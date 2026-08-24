@@ -1,8 +1,8 @@
-// @ts-nocheck — scaffold placeholders until express/add-handler copies handlers here.
+// @ts-nocheck — scaffold until express/add-handler copies handlers here.
 import type { Router } from "express";
 
+// Empty markers — express/add-handler upserts from service/http/routers.ts.
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
-import { create__GroupName__Router } from "./handlers/__group-name__/index.ts";
 // END WORKFLOW AREA
 
 export type GroupRouterMount = {
@@ -12,12 +12,11 @@ export type GroupRouterMount = {
 
 /**
  * Group routers owned by this offshoot http package.
- * Same contour as `service/http/routers.ts` — `express/add-handler` upserts here.
+ * Same area names as service/http/routers.ts so add-handler can upsert.
  */
 export function groupRouterMounts(): GroupRouterMount[] {
   return [
     // BEGIN WORKFLOW AREA router-mounts FOR express/add-handler
-    { kind: "router", createRouter: create__GroupName__Router },
     // END WORKFLOW AREA
   ];
 }

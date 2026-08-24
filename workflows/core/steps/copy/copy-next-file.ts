@@ -87,6 +87,7 @@ export const copyNextFile = fromPromise(
         targetLines,
         targetPath,
         sourcePath,
+        workflowId,
       });
 
       if (runMode === "dry") {

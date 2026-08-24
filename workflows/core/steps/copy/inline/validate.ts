@@ -100,8 +100,19 @@ export function getAreaKey(area: WorkflowAreaInfo): string {
   return `${prefix}${normalizedDefinition}`;
 }
 
+function areaAppliesToWorkflow(
+  area: WorkflowAreaInfo,
+  workflowId: string | undefined,
+): boolean {
+  if (!workflowId) return true;
+  return area.workflowIds.includes(workflowId);
+}
+
 /**
  * Validates that source and target files have matching workflow areas.
+ * When `workflowId` is set, only areas for that workflow are compared — so thinner
+ * packages (e.g. offshoot stubs) can share base service templates without carrying
+ * every parent-only area contour.
  * Throws an error if there are any inconsistencies.
  */
 export function validateWorkflowAreas({
@@ -109,11 +120,13 @@ export function validateWorkflowAreas({
   targetLines,
   targetPath,
   sourcePath,
+  workflowId,
 }: {
   sourceLines: string[];
   targetLines: string[];
   targetPath: string;
   sourcePath: string;
+  workflowId?: string;
 }): void {
   const sourceAreas = extractWorkflowAreas(sourceLines);
   const targetAreas = extractWorkflowAreas(targetLines);
@@ -142,6 +155,7 @@ export function validateWorkflowAreas({
   const targetAreaMap = new Map<string, WorkflowAreaInfo>();
 
   for (const area of sourceAreas) {
+    if (!areaAppliesToWorkflow(area, workflowId)) continue;
     const key = getAreaKey(area);
     if (sourceAreaMap.has(key)) {
       throw new Error(
@@ -152,6 +166,7 @@ export function validateWorkflowAreas({
   }
 
   for (const area of targetAreas) {
+    if (!areaAppliesToWorkflow(area, workflowId)) continue;
     const key = getAreaKey(area);
     if (targetAreaMap.has(key)) {
       throw new Error(
