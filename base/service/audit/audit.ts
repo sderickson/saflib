@@ -1,11 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { auditDb } from "@saflib/audit-db";
-import {
-  createAuditRecorder,
-  createAuditRouter,
-} from "@saflib/audit-http";
+import { auditDb } from "@saflib/audit-db/instances";
+import { createAuditRecorder } from "@saflib/audit-http/express/audit-recorder";
+import { createAuditRouter } from "@saflib/audit-http/express/createAuditRouter";
 import type { DbKey } from "@saflib/drizzle";
 import { typedEnv } from "@saflib/env";
 import {

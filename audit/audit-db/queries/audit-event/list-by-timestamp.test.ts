@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
-import { auditDb } from "../../index.ts";
+import { auditDb } from "../../instances.ts";
 import { appendAuditEvent } from "./append.ts";
 import { listAuditEventsByTimestamp } from "./list-by-timestamp.ts";
 import { InvalidAuditEventCursorError } from "../../errors.ts";

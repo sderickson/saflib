@@ -1,13 +1,10 @@
 import createError from "http-errors";
 import { createHandler } from "./handler.ts";
-import type { AuditResponseBody } from "@saflib/audit-spec";
-import type { AuditEventEntity } from "@saflib/audit-db";
-import {
-  getAuditEventTimestampBounds,
-  InvalidAuditEventCursorError,
-  listAuditEventsByTimestamp,
-  verifyAuditChain,
-} from "@saflib/audit-db";
+import type { AuditResponseBody } from "@saflib/audit-spec/types";
+import type { AuditEventEntity } from "@saflib/audit-db/schemas/audit-event";
+import { getAuditEventTimestampBounds } from "@saflib/audit-db/queries/audit-event/timestamp-bounds";
+import { listAuditEventsByTimestamp } from "@saflib/audit-db/queries/audit-event/list-by-timestamp";
+import { InvalidAuditEventCursorError } from "@saflib/audit-db/errors";
 import { throwError } from "@saflib/monorepo";
 import type { DbKey } from "@saflib/drizzle";
 
@@ -86,7 +83,7 @@ export function createListAuditLogsHandler(
       order = orderRaw;
     }
 
-    const [bounds, listRes, chainRes] = await Promise.all([
+    const [bounds, listRes] = await Promise.all([
       throwError(getAuditEventTimestampBounds(auditDbKey)),
       listAuditEventsByTimestamp(auditDbKey, {
         from,
@@ -94,7 +91,6 @@ export function createListAuditLogsHandler(
         limit,
         ...(order !== undefined ? { order } : {}),
       }),
-      verifyAuditChain(auditDbKey, {}),
     ]);
 
     if (listRes.error) {
@@ -104,20 +100,14 @@ export function createListAuditLogsHandler(
       throw listRes.error;
     }
 
-    if (chainRes.error) {
-      throw chainRes.error;
-    }
-
     const { headAt, tailAt } = bounds;
     const { events, nextCursor } = listRes.result;
-    const chainValid = chainRes.result.valid;
 
     const response: AuditResponseBody["listAuditLogs"][200] = {
       auditLogs: events.map(mapEntityToAuditLog),
       headAt: headAt ? headAt.toISOString() : null,
       tailAt: tailAt ? tailAt.toISOString() : null,
       nextCursor,
-      chainValid,
     };
 
     res.status(200).json(response);

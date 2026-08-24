@@ -4,13 +4,6 @@
       <v-col>
         <div class="d-flex flex-wrap align-center ga-3 mb-4">
           <h1 class="text-h4 mb-0">Audit log</h1>
-          <v-chip
-            size="small"
-            :color="chainValid ? 'success' : 'error'"
-            variant="tonal"
-          >
-            Chain {{ chainValid ? "OK" : "INVALID" }}
-          </v-chip>
           <v-chip size="small" variant="tonal">
             {{ auditLogs.length }} rows
           </v-chip>
@@ -100,8 +93,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { AuditLog } from "@saflib/audit-spec";
-import { useListAuditLogs } from "@saflib/audit-sdk";
+import type { AuditLog } from "@saflib/audit-spec/types";
+import { useListAuditLogs } from "@saflib/audit-sdk/requests/list-audit-logs";
 
 const props = withDefaults(
   defineProps<{
@@ -126,7 +119,6 @@ const { data, error, isLoading, refetch } = useListAuditLogs(props.subdomain, {
 });
 
 const auditLogs = computed(() => data.value?.auditLogs ?? []);
-const chainValid = computed(() => data.value?.chainValid ?? true);
 
 function formatDetails(row: AuditLog): string {
   if (row.details == null) return "—";

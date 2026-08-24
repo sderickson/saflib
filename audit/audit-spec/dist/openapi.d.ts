@@ -114,8 +114,6 @@ export interface operations {
                         tailAt: string | null;
                         /** @description Pass as `cursor` to fetch the next page, if more rows exist. */
                         nextCursor: string | null;
-                        /** @description Whether the full on-disk hash chain verified successfully. */
-                        chainValid: boolean;
                     };
                 };
             };

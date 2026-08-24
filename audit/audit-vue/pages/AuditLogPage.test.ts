@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ref } from "vue";
 import { stubGlobals } from "@saflib/vue/testing";
-import type { AuditResponseBody } from "@saflib/audit-spec";
+import type { AuditResponseBody } from "@saflib/audit-spec/types";
 import AuditLogPage from "./AuditLogPage.vue";
 import { mountTestApp } from "../test-app";
 
@@ -34,11 +34,13 @@ const mockAuditLogs: ListAuditLogsResponse = {
   headAt: "2026-01-01T00:00:00.000Z",
   tailAt: "2026-01-01T00:00:00.000Z",
   nextCursor: null,
-  chainValid: true,
 };
 
-vi.mock("@saflib/audit-sdk", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@saflib/audit-sdk")>();
+vi.mock("@saflib/audit-sdk/requests/list-audit-logs", async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import("@saflib/audit-sdk/requests/list-audit-logs")
+    >();
   return {
     ...actual,
     useListAuditLogs: () => ({
@@ -55,13 +57,12 @@ describe("AuditLogPage", () => {
     stubGlobals();
   });
 
-  it("renders audit rows and chain OK indicator", async () => {
+  it("renders audit rows", async () => {
     const wrapper = mountTestApp(AuditLogPage, {
       props: { subdomain: "api" },
     });
 
     expect(wrapper.text()).toContain("Audit log");
-    expect(wrapper.text()).toContain("Chain OK");
     expect(wrapper.text()).toContain("admin.test_error");
     expect(wrapper.text()).toContain("user-1");
   });

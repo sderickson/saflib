@@ -4,9 +4,15 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
     "./instances": "./instances.ts",
-    "./queries/*": "./queries/*.ts"
+    "./queries/audit-event/*": "./queries/audit-event/*.ts",
+    "./schemas/*": "./schemas/*.ts",
+    "./errors": "./errors.ts",
+    "./paths": "./paths.ts",
+    "./audit-write-lock": "./audit-write-lock.ts",
+    "./hash-chain": "./hash-chain.ts",
+    "./canonicalize": "./canonicalize.ts",
+    "./types": "./types.ts"
   },
   "scripts": {
     "test": "vitest run",

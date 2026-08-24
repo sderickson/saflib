@@ -2,10 +2,8 @@ import type { Handler, Request, Response } from "express";
 import type { OpenApiRequestMetadata } from "express-openapi-validator/dist/framework/types.ts";
 import createError from "http-errors";
 import type { DbKey } from "@saflib/drizzle";
-import {
-  appendAuditEvent,
-  type AuditEventDetails,
-} from "@saflib/audit-db";
+import { appendAuditEvent } from "@saflib/audit-db/queries/audit-event/append";
+import type { AuditEventDetails } from "@saflib/audit-db/schemas/audit-event";
 import type { SafContext } from "@saflib/node";
 import { getSafContext, getSafReporters } from "@saflib/node";
 import type { AuditMapEntry, AuditOutcome } from "./audit-map.ts";

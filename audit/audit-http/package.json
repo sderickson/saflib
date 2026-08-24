@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./express/*": "./express/*.ts"
+    "./express/*": "./express/*"
   },
   "scripts": {
     "test": "vitest run",

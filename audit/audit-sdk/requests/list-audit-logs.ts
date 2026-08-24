@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/vue-query";
 import type { Ref } from "vue";
 import { computed, unref } from "vue";
-import type { AuditResponseBody, paths } from "@saflib/audit-spec";
+import type { AuditResponseBody, paths } from "@saflib/audit-spec/types";
 import { TanstackError, createSafClient, handleClientMethod } from "@saflib/sdk";
 
 export interface UseListAuditLogsOptions {

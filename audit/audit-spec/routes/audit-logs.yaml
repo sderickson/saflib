@@ -52,7 +52,6 @@ listAuditLogs:
               - headAt
               - tailAt
               - nextCursor
-              - chainValid
             properties:
               auditLogs:
                 type: array
@@ -72,9 +71,6 @@ listAuditLogs:
                 type: string
                 nullable: true
                 description: Pass as `cursor` to fetch the next page, if more rows exist.
-              chainValid:
-                type: boolean
-                description: Whether the full on-disk hash chain verified successfully.
 
     "400":
       description: Invalid `from`, `cursor`, or `order`.

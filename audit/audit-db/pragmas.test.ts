@@ -3,7 +3,7 @@ import { existsSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import type { DbKey } from "@saflib/drizzle";
-import { auditDb } from "./index.ts";
+import { auditDb } from "./instances.ts";
 import { auditDbManager } from "./instances.ts";
 
 type SqliteDatabase = import("better-sqlite3").Database;

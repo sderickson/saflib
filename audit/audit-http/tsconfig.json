@@ -1,6 +1,8 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "include": ["**/*.ts"],
+  "include": [
+    "**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "dist/types",
@@ -19,8 +21,23 @@
     "emitDeclarationOnly": true
   },
   "references": [
-    { "path": "../audit-db" },
-    { "path": "../audit-spec" },
-    { "path": "../../node" }
+    {
+      "path": "../../drizzle"
+    },
+    {
+      "path": "../../express"
+    },
+    {
+      "path": "../../monorepo"
+    },
+    {
+      "path": "../../node"
+    },
+    {
+      "path": "../audit-db"
+    },
+    {
+      "path": "../audit-spec"
+    }
   ]
 }

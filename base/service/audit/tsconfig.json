@@ -1,11 +1,21 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
-    { "path": "../../../audit/audit-db" },
-    { "path": "../../../audit/audit-http" },
-    { "path": "../common" },
-    { "path": "../../../drizzle" },
-    { "path": "../../../env" }
+    {
+      "path": "../../../audit/audit-db"
+    },
+    {
+      "path": "../../../audit/audit-http"
+    },
+    {
+      "path": "../../../drizzle"
+    },
+    {
+      "path": "../../../env"
+    },
+    {
+      "path": "../common"
+    }
   ],
   "compilerOptions": {
     "outDir": "./dist/types",
@@ -24,5 +34,8 @@
     "**/workflows/template/**",
     "**/workflows/templates/**"
   ],
-  "include": ["**/*.ts", "**/*.json"]
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ]
 }

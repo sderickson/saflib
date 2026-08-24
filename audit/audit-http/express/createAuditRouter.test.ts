@@ -3,11 +3,9 @@ import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { createErrorMiddleware, makeAdminHeaders } from "@saflib/express";
-import {
-  appendAuditEvent,
-  auditDb,
-  clearAuditEventsForTests,
-} from "@saflib/audit-db";
+import { appendAuditEvent } from "@saflib/audit-db/queries/audit-event/append";
+import { auditDb } from "@saflib/audit-db/instances";
+import { clearAuditEventsForTests } from "@saflib/audit-db/queries/audit-event/clear-for-tests";
 import { createAuditRouter } from "./createAuditRouter.ts";
 
 describe("createAuditRouter", () => {
@@ -45,7 +43,7 @@ describe("createAuditRouter", () => {
     return app;
   }
 
-  it("lists audit rows with chainValid true for a valid chain", async () => {
+  it("lists audit rows for site-admin", async () => {
     const res = await request(makeApp())
       .get("/audit-logs?order=desc")
       .set(makeAdminHeaders("admin-audit-1", "admin@example.com"))
@@ -53,7 +51,6 @@ describe("createAuditRouter", () => {
 
     expect(res.body.auditLogs).toHaveLength(1);
     expect(res.body.auditLogs[0].eventType).toBe("audit.http.test");
-    expect(res.body.chainValid).toBe(true);
     expect(res.body.headAt).toBeTruthy();
     expect(res.body.tailAt).toBeTruthy();
   });
