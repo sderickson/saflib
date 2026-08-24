@@ -8,6 +8,22 @@ import { isTestMode } from "./test-mode.ts";
  */
 export type ProductEventListener<T> = (event: T) => void;
 
+export type ProductEventConnector<T extends ProductEventCommon = ProductEventCommon> =
+  (event: T) => void | Promise<void>;
+
+const productEventConnectors: ProductEventConnector[] = [];
+
+/**
+ * Register an optional sink for {@link commonEventLogger} (PostHog init,
+ * dev backend ring buffer, etc.). Connectors run after built-in globals
+ * (gtag, posthog global, test-mode cookie).
+ */
+export function registerProductEventConnector<
+  T extends ProductEventCommon,
+>(connector: ProductEventConnector<T>): void {
+  productEventConnectors.push(connector as ProductEventConnector);
+}
+
 /**
  * Create centralized object to emit and listen to product events. Provide a product event type to ensure type safety, produced as part of the API spec.
  *
@@ -158,6 +174,14 @@ export const commonEventLogger = <T extends ProductEventCommon>(event: T) => {
       log(`${key}: ${JSON.stringify(value)}`);
     }
     groupEnd();
+  }
+
+  for (const connector of productEventConnectors) {
+    try {
+      void Promise.resolve(connector(event));
+    } catch (error) {
+      console.error("Product event connector failed", error);
+    }
   }
 
   groupEnd();

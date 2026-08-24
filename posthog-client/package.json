@@ -8,7 +8,8 @@
   "type": "module",
   "exports": {
     ".": "./posthog.ts",
-    "./html": "./html.ts"
+    "./html": "./html.ts",
+    "./init": "./init.ts"
   },
   "dependencies": {
     "@saflib/env": "*",

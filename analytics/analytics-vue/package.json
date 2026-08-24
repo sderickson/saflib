@@ -3,7 +3,10 @@
   "description": "Client product event logger and admin events page",
   "private": true,
   "type": "module",
-  "main": "./index.ts",
+  "exports": {
+    "./lib/*": "./lib/*",
+    "./pages/*": "./pages/*"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",

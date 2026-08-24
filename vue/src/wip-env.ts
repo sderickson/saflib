@@ -6,6 +6,8 @@ import type { ImportMetaEnv as _ImportMetaEnv } from "vite/client";
 
 interface ViteEnv {
   NODE_ENV: string;
+  DEV?: boolean;
+  MODE?: string;
 }
 
 /**
@@ -17,4 +19,13 @@ const getViteEnv = () => {
 
 export const isTestEnv = () => {
   return getViteEnv().NODE_ENV === "test";
+};
+
+export const isDevEnv = () => {
+  const env = getViteEnv();
+  return (
+    env.DEV === true ||
+    env.MODE === "development" ||
+    env.NODE_ENV === "development"
+  );
 };

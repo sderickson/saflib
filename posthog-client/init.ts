@@ -1,7 +1,12 @@
+import { posthog } from "posthog-js";
+
 /**
  * Optional PostHog init when `VITE_POSTHOG_PROJECT_API_KEY` is set at build time.
- * Events are always recorded to the backend ring buffer via {@link eventLogger};
- * PostHog forwarding uses the global `posthog` object from {@link @saflib/vue} helpers.
+ *
+ * Product events reach PostHog through {@link @saflib/vue}'s
+ * {@link commonEventLogger}, which calls `globalThis.posthog.capture` when the
+ * client is loaded. Call this once from your SPA `main.ts` (or use
+ * {@link makePosthogScriptTag} in Vite HTML instead).
  */
 export function initPostHogIfConfigured(): void {
   const apiKey = import.meta.env.VITE_POSTHOG_PROJECT_API_KEY;
@@ -20,12 +25,10 @@ export function initPostHogIfConfigured(): void {
     return;
   }
 
-  void import("posthog-js").then(({ default: posthog }) => {
-    posthog.init(apiKey, {
-      api_host: apiHost,
-      capture_pageview: false,
-      persistence: "localStorage+cookie",
-    });
-    console.log("PostHog initialized");
+  posthog.init(apiKey, {
+    api_host: apiHost,
+    capture_pageview: false,
+    persistence: "localStorage+cookie",
   });
+  console.log("PostHog initialized");
 }

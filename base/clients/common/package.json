@@ -29,8 +29,7 @@
     "@saflib/vue": "*",
     "@sentry/vue": "^10.21.0",
     "@saflib/ory-kratos-sdk": "*",
-    "@saflib/base-spec": "*",
-    "posthog-js": "^1.257.0"
+    "@saflib/base-spec": "*"
   },
   "sideEffects": false
 }
