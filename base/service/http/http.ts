@@ -15,9 +15,15 @@ import {
   type BaseServiceContextOptions,
   makeContext,
 } from "@saflib/base-service-common/context";
-// BEGIN WORKFLOW AREA cron-imports FOR cron/init
 import { createCronRouter } from "@saflib/cron";
 import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
+import { createJobsRouter } from "@saflib/jobs";
+import { getBaseJobsDbKey } from "@saflib/base-jobs";
+import { createJobsDemoRouter } from "./handlers/jobs-demo/index.ts";
+
+// BEGIN WORKFLOW AREA cron-imports FOR cron/init
+// END WORKFLOW AREA
+// BEGIN WORKFLOW AREA jobs-router-imports FOR jobs/init
 // END WORKFLOW AREA
 
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
@@ -48,6 +54,7 @@ export type BaseHttpAppLease = {
 
 function defaultRouterMounts(): HttpRouterMount[] {
   return [
+    { kind: "router", createRouter: createJobsDemoRouter },
     // BEGIN WORKFLOW AREA default-router-mounts FOR express/add-handler
     { kind: "router", createRouter: create__GroupName__Router },
     // END WORKFLOW AREA
@@ -99,15 +106,15 @@ export function createBaseHttpApp(
     app.use(mount.createRouter());
   }
 
-  // BEGIN WORKFLOW AREA app-use-routes FOR express/add-handler
-
-
-  // END WORKFLOW AREA
-
   app.use(createBaseAuditRouter());
 
+  app.use(
+    createJobsRouter({
+      dbKey: getBaseJobsDbKey(),
+    }),
+  );
+
   // Cron admin API after product routers (terminator middleware on /cron only).
-  // BEGIN WORKFLOW AREA cron-router FOR cron/init
   app.use(
     createCronRouter({
       dbKey: getBaseCronDbKey(),
@@ -116,6 +123,11 @@ export function createBaseHttpApp(
       enqueueJob: async () => ({}),
     }),
   );
+
+  // BEGIN WORKFLOW AREA jobs-router FOR jobs/init
+  // END WORKFLOW AREA
+
+  // BEGIN WORKFLOW AREA cron-router FOR cron/init
   // END WORKFLOW AREA
 
   app.use(createErrorMiddleware());

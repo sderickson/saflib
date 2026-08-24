@@ -2,16 +2,19 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../audit"
-    },
-    {
       "path": "../../../cron/cron"
     },
     {
       "path": "../../../express"
     },
     {
+      "path": "../../../jobs/jobs"
+    },
+    {
       "path": "../../../monorepo"
+    },
+    {
+      "path": "../audit"
     },
     {
       "path": "../common"
@@ -21,6 +24,9 @@
     },
     {
       "path": "../db"
+    },
+    {
+      "path": "../jobs"
     },
     {
       "path": "../spec"

@@ -24,4 +24,4 @@ startOryKratosService({
   courierCallbacks,
   actionHandler: makeKratosActionHandler(),
 });
-startBaseService();
+await startBaseService();

@@ -13,6 +13,7 @@ import sdkWorkflows from "@saflib/sdk/workflows";
 import serviceWorkflows from "../service/workflows/index.ts";
 import grpcWorkflows from "@saflib/grpc/workflows";
 import cronWorkflows from "@saflib/cron/workflows";
+import jobsWorkflows from "@saflib/jobs/workflows";
 import integrationsWorkflows from "@saflib/integrations/workflows";
 import sentryWorkflows from "@saflib/sentry/workflows";
 import productWorkflows from "@saflib/product/workflows";
@@ -30,6 +31,7 @@ const workflowClasses: WorkflowDefinition[] = [
   ...commanderWorkflows,
   ...grpcWorkflows,
   ...cronWorkflows,
+  ...jobsWorkflows,
   ...integrationsWorkflows,
   ...sentryWorkflows,
   ...sdkWorkflows,

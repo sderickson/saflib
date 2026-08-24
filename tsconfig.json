@@ -122,6 +122,9 @@
       "path": "./base/service/integrations/__integration-name__"
     },
     {
+      "path": "./base/service/jobs"
+    },
+    {
       "path": "./base/service/kratos-handlers"
     },
     {

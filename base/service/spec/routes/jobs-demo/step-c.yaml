@@ -1,0 +1,35 @@
+jobsDemoStepC:
+  summary: Jobs demo chain step C
+  description: Background terminal step that records demo chain completion.
+  operationId: jobsDemoStepC
+  tags:
+    - site-admin-only
+    - background
+    - jobs-demo
+
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          $ref: "../../schemas/jobs-demo-options.yaml"
+
+  responses:
+    "200":
+      description: Demo chain completed.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/jobs-demo-step-result.yaml"
+    "401":
+      description: Unauthorized - missing or invalid auth headers, or not logged in.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Forbidden - user does not have required privileges.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

@@ -13,6 +13,7 @@ import sdkWorkflows from "@saflib/sdk/workflows";
 import serviceWorkflows from "@saflib/service/workflows";
 import grpcWorkflows from "@saflib/grpc/workflows";
 import cronWorkflows from "@saflib/cron/workflows";
+import jobsWorkflows from "@saflib/jobs/workflows";
 import productWorkflows from "@saflib/product/workflows";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
@@ -28,6 +29,7 @@ const workflowClasses: WorkflowDefinition[] = [
   ...commanderWorkflows,
   ...grpcWorkflows,
   ...cronWorkflows,
+  ...jobsWorkflows,
   ...sdkWorkflows,
   ...vueSpaWorkflows,
   ...metaWorkflows,

@@ -14,7 +14,10 @@ import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
 const offshootHttpRoot = path.join(offshootStubRoot, "http");
-const parentHttpLive = path.join(templatesProductRoot, "service/http/http.ts");
+const parentHttpWeaveStub = path.join(
+  templatesProductRoot,
+  "service/http/.workflow-stubs/http.ts",
+);
 
 const input = [
   {
@@ -57,7 +60,7 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
     tsconfig: path.join(offshootHttpRoot, "tsconfig.json"),
     vitestConfig: path.join(offshootHttpRoot, "vitest.config.js"),
     test: path.join(offshootHttpRoot, "index.test.ts"),
-    parentHttp: parentHttpLive,
+    parentHttp: parentHttpWeaveStub,
   },
 
   docFiles: {
@@ -78,7 +81,7 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
       name: context.offshootName,
       targetDir: context.parentDir,
       templateFiles: {
-        parentHttp: parentHttpLive,
+        parentHttp: parentHttpWeaveStub,
       },
       lineReplace: makeOffshootLineReplace(context),
       skipUnlessPathExists: parentLayerPackageJsonPath(context.parentDir),

@@ -35,6 +35,9 @@ services:
     volumes:
       - ../..:/app
       - /app/node_modules
+      - ../../base/service/db/data:/app/base/service/db/data
+      - ../../base/service/cron/data:/app/base/service/cron/data
+      - ../../base/service/jobs/data:/app/base/service/jobs/data
     build:
       context: ../..
       dockerfile: base/service/monolith/Dockerfile

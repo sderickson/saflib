@@ -20,8 +20,8 @@ import path from "node:path";
 
 const httpRoot = path.join(templatesProductRoot, "service", "http");
 const handlerDir = path.join(httpRoot, "handlers", "__group-name__");
-/** Live http.ts — router areas hold the stub; CopyStep upserts them. */
-const httpLive = path.join(httpRoot, "http.ts");
+/** Workflow-area upsert source — live http.ts owns concrete wiring. */
+const httpWeaveStub = path.join(httpRoot, ".workflow-stubs", "http.ts");
 
 const input = [
   {
@@ -97,7 +97,6 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     test: path.join(handlerDir, "__target-name__.test.ts"),
     index: path.join(handlerDir, "index.ts"),
     helpers: path.join(handlerDir, "_helpers.ts"),
-    http: httpLive,
   },
 
   docFiles: {
@@ -149,6 +148,27 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
           out = out
             .split("@saflib/base-service-common")
             .join(`${context.sharedPackagePrefix}-service-common`);
+          return lineReplace(out);
+        },
+      };
+    }),
+
+    step(CopyStepMachine, ({ context }) => {
+      const lineReplace = makeLineReplace(context);
+      return {
+        name: context.groupName,
+        targetDir: context.targetDir,
+        templateFiles: {
+          http: httpWeaveStub,
+        },
+        lineReplace: (line: string) => {
+          let out = line;
+          out = out
+            .split("@saflib/base-spec")
+            .join(`${context.sharedPackagePrefix}-spec`);
+          out = out
+            .split("@saflib/base-__offshoot-name__-http")
+            .join(`${context.sharedPackagePrefix}-__offshoot-name__-http`);
           return lineReplace(out);
         },
       };

@@ -1,0 +1,21 @@
+type: object
+additionalProperties: false
+properties:
+  dedupeKey:
+    type: string
+    nullable: true
+    description: Optional dedupe key forwarded to the enqueued job.
+  concurrencyKey:
+    type: string
+    nullable: true
+    description: Optional concurrency key forwarded to the enqueued job.
+  failuresBeforeSuccess:
+    type: integer
+    minimum: 0
+    description: >
+      For step-b demos: respond 503 this many times before succeeding and
+      enqueueing step-c.
+  payload:
+    type: object
+    additionalProperties: true
+    description: Arbitrary JSON echoed through the demo chain.

@@ -97,6 +97,7 @@ function toProductMonorepoDevCompose(
   const monolithMounts = [
     `      - ../../${productName}/service/db/data:/app/${productName}/service/db/data`,
     `      - ../../${productName}/service/cron/data:/app/${productName}/service/cron/data`,
+    `      - ../../${productName}/service/jobs/data:/app/${productName}/service/jobs/data`,
   ].join("\n");
 
   let out = content.replace(

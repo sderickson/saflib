@@ -20,10 +20,12 @@
     "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",
+    "@saflib/base-jobs": "*",
     "@saflib/base-service-common": "*",
     "@saflib/base-spec": "*",
     "@saflib/cron": "*",
     "@saflib/express": "*",
+    "@saflib/jobs": "*",
     "@saflib/monorepo": "*"
   },
   "devDependencies": {

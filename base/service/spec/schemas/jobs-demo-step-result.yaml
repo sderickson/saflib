@@ -1,0 +1,14 @@
+type: object
+required:
+  - result
+properties:
+  result:
+    type: object
+    additionalProperties: true
+    properties:
+      enqueued:
+        type: string
+        description: operationId enqueued by this step.
+      done:
+        type: boolean
+        description: True when step-c recorded completion.

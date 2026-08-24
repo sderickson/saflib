@@ -5,6 +5,15 @@ info:
   description: API specification for the base service
 
 paths:
+  /jobs-demo/start:
+    post:
+      $ref: "./routes/jobs-demo/start.yaml#/startJobsDemo"
+  /jobs-demo/step-b:
+    post:
+      $ref: "./routes/jobs-demo/step-b.yaml#/jobsDemoStepB"
+  /jobs-demo/step-c:
+    post:
+      $ref: "./routes/jobs-demo/step-c.yaml#/jobsDemoStepC"
   # BEGIN WORKFLOW AREA route-paths FOR openapi/route
   __url-path__:
     __method__:
