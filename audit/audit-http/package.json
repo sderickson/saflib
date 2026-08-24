@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./express/*": "./express/*"
+    "./express/*": "./express/*.ts"
   },
   "scripts": {
     "test": "vitest run",
