@@ -18,6 +18,9 @@
       "path": "../env"
     },
     {
+      "path": "../analytics/analytics-http"
+    },
+    {
       "path": "../node"
     },
     {

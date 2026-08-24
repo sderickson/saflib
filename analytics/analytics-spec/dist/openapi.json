@@ -1,0 +1,209 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Product Analytics API",
+    "version": "1.0.0",
+    "description": "Product event capture and admin viewing via an in-memory ring buffer."
+  },
+  "components": {
+    "schemas": {
+      "ProductEventRecord": {
+        "$ref": "#/components/schemas/product-event-record"
+      },
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "product-event-record": {
+        "type": "object",
+        "description": "A product analytics event stored in the in-memory ring buffer.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Monotonic id for pagination."
+          },
+          "name": {
+            "type": "string",
+            "description": "Product event name (same as productEvent.event)."
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Full product event JSON as recorded."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "client",
+              "server"
+            ],
+            "description": "Whether the event originated from a browser client or server code."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "payload",
+          "source",
+          "timestamp"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/product-events/record": {
+      "post": {
+        "summary": "Record a product analytics event",
+        "operationId": "recordProductEvent",
+        "tags": [
+          "product-events",
+          "no-auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productEvent": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "event": {
+                        "type": "string"
+                      },
+                      "client": {
+                        "type": "string"
+                      },
+                      "view": {
+                        "type": "string"
+                      },
+                      "component": {
+                        "type": "string"
+                      },
+                      "context": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "required": [
+                      "event"
+                    ]
+                  }
+                },
+                "required": [
+                  "productEvent"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Event recorded in the server ring buffer."
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/product-events": {
+      "get": {
+        "summary": "List buffered product events",
+        "operationId": "listProductEvents",
+        "tags": [
+          "product-events",
+          "site-admin-only"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by event name."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Maximum number of entries to return (from the tail)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Buffered product events, newest last within the filtered slice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "productEvents": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/product-event-record"
+                      }
+                    }
+                  },
+                  "required": [
+                    "productEvents"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing authentication.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - site admin required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -11,6 +11,18 @@
       "path": "./analytics-service"
     },
     {
+      "path": "./analytics/analytics-http"
+    },
+    {
+      "path": "./analytics/analytics-sdk"
+    },
+    {
+      "path": "./analytics/analytics-spec"
+    },
+    {
+      "path": "./analytics/analytics-vue"
+    },
+    {
       "path": "./backup/backup-cron"
     },
     {

@@ -45,6 +45,7 @@ export * from "./middleware/multer.ts";
 export { createHandler } from "./handler.ts";
 
 export { createDevLogsRouter } from "@saflib/node-log-http";
+export { createAnalyticsRouter } from "@saflib/analytics-http";
 
 export {
   makeUserHeaders,

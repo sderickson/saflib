@@ -8,6 +8,7 @@ import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { healthRouter } from "./health.ts";
 import { createDevLogsRouter } from "@saflib/node-log-http";
+import { createAnalyticsRouter } from "@saflib/analytics-http";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
@@ -74,6 +75,8 @@ export const createGlobalMiddleware = (
     everyRequestLogger,
     json(jsonLimit ? { limit: jsonLimit } : undefined),
     urlencoded({ extended: false }),
+    // Product analytics ring buffer (client POST + server record helper).
+    createAnalyticsRouter(),
     ...sanitizeMiddleware,
     ...corsMiddleware,
   ];

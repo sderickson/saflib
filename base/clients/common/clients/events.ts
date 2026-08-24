@@ -1,5 +1,4 @@
-import { commonEventLogger, makeProductEventLogger } from "@saflib/vue";
+import { createBackendProductEventLogger } from "@saflib/analytics-vue";
 import type { ProductEvent } from "@saflib/base-spec";
 
-export const eventLogger = makeProductEventLogger<ProductEvent>();
-eventLogger.onProductEvent(commonEventLogger<ProductEvent>);
+export const eventLogger = createBackendProductEventLogger<ProductEvent>();

@@ -1,0 +1,28 @@
+type: object
+description: A product analytics event stored in the in-memory ring buffer.
+properties:
+  id:
+    type: integer
+    description: Monotonic id for pagination.
+  name:
+    type: string
+    description: Product event name (same as productEvent.event).
+  payload:
+    type: object
+    additionalProperties: true
+    description: Full product event JSON as recorded.
+  source:
+    type: string
+    enum:
+      - client
+      - server
+    description: Whether the event originated from a browser client or server code.
+  timestamp:
+    type: string
+    format: date-time
+required:
+  - id
+  - name
+  - payload
+  - source
+  - timestamp
