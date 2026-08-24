@@ -1,38 +1,35 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
   CommandStepMachine,
+  TransformFileStepMachine,
+  parsePath,
   makeLineReplace,
+  type ParsePathOutput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { readFileSync } from "node:fs";
 import { templatesProductRoot } from "@saflib/templates";
+import {
+  resolveExportModulePathLayout,
+  upsertPackageJsonExportsForModule,
+} from "../src/package-exports.ts";
 
 const sourceDir = path.join(templatesProductRoot, "packages", "__package-name__");
+const exportDir = path.join(sourceDir, "__group-name__");
 
 const input = [
   {
-    name: "name",
-    description:
-      "The name of the export to create (e.g., 'myFunction' or 'MyClass')",
-    exampleValue: "myFunction",
-  },
-  {
     name: "path",
     description:
-      "Relative path under the package for the new module (e.g., 'lib/utils' or 'lib/features/billing'). Must not be the package root.",
-    exampleValue: "lib",
+      "Path of the new export module (e.g., './lib/myFunction.ts' or './http/headers.ts')",
+    exampleValue: "./lib/myFunction.ts",
   },
 ] as const;
 
-interface AddExportWorkflowContext {
-  targetName: string;
-  path: string;
-  targetDir: string;
-  exportPath: string;
+interface AddExportWorkflowContext extends ParsePathOutput {
   packageName: string;
 }
 
@@ -51,29 +48,31 @@ export const AddExportWorkflowDefinition = defineWorkflow<
 
   description: "Add new exports (functions, classes, interfaces) to packages",
 
-  checklistDescription: ({ targetName, path: exportPath }) =>
-    `Add ${targetName} export to ${exportPath}.`,
+  checklistDescription: ({ groupName, targetName }) =>
+    `Add ${groupName}/${targetName} export.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(input.cwd, input.path);
-    const exportPath = path.join(targetDir, `${input.name}.ts`);
+    const pathResult = parsePath(input.path, {
+      requiredPrefix: "./",
+      requiredSuffix: ".ts",
+      cwd: input.cwd,
+    });
+    resolveExportModulePathLayout(pathResult.groupName, pathResult.targetName);
 
     return {
-      targetName: input.name,
-      path: input.path,
-      targetDir,
-      exportPath,
+      ...pathResult,
+      targetDir: input.cwd,
       packageName: readPackageName(input.cwd),
     };
   },
 
   templateFiles: {
-    export: path.join(sourceDir, "lib", "__target-name__.ts"),
-    test: path.join(sourceDir, "lib", "__target-name__.test.ts"),
+    export: path.join(exportDir, "__target-name__.ts"),
+    test: path.join(exportDir, "__target-name__.test.ts"),
   },
 
   versionControl: {
@@ -83,22 +82,31 @@ export const AddExportWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   steps: [
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add export **${context.targetName}** under \`${context.path}/\`.
-
-Rules:
-- Do **not** create or update a root \`index.ts\` barrel.
-- Put implementation in \`${context.path}/${context.targetName}.ts\` (colocated test: \`${context.path}/${context.targetName}.test.ts\` or under \`tests/\` mirroring the folder).
-- If \`${context.path}\` is the package root, stop and re-run with a subfolder (e.g. \`lib\`).`,
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.targetName,
+      targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),
     })),
 
-    step(CopyStepMachine, ({ context }) => ({
-      targetDir: context.targetDir,
-      templateFiles: {
-        export: path.join(sourceDir, "lib", "__target-name__.ts"),
-        test: path.join(sourceDir, "lib", "__target-name__.test.ts"),
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: "package.json",
+      description: `Add glob export for ./${resolveExportModulePathLayout(context.groupName, context.targetName).topLevelSegment}/*`,
+      transform: (content: string) => {
+        const pkg = JSON.parse(content) as Parameters<
+          typeof upsertPackageJsonExportsForModule
+        >[0];
+        return (
+          JSON.stringify(
+            upsertPackageJsonExportsForModule(
+              pkg,
+              context.groupName,
+              context.targetName,
+            ),
+            null,
+            2,
+          ) + "\n"
+        );
       },
-      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -126,12 +134,6 @@ Rules:
         "--package",
         context.packageName,
       ],
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `If \`exports check\` failed because you added a new top-level source folder, extend \`package.json\` \`exports\` with a glob (e.g. \`"./lib/*": "./lib/*.ts"\`) so every module is covered. Re-run:
-
-\`npm exec saf-imports exports check --package ${context.packageName}\``,
     })),
 
     step(CommandStepMachine, () => ({

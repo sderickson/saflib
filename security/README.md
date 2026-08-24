@@ -105,7 +105,7 @@ Set `SECURITY_CANARY_KRATOS_EMAIL` and `SECURITY_CANARY_KRATOS_PASSWORD` in CI s
 ## Extending for your product
 
 1. Copy spec **patterns** from `base/security/` — adapt routes, fixtures, and SPA subdomains for `{product}/security/`.
-2. Add product-specific fixtures (registration page, org context, admin bootstrap) in `{product}/security/fixtures/`.
+2. Colocate fixtures with the specs or pages they exercise (e.g. `login.fixture.ts` beside `login.spec.ts`) so they change together.
 3. Update `{product}/security/threat-model.md` — list shipped controls and owner responsibilities.
 4. Wire CI to run `playwright test` on PRs when http/clients/Caddy change.
 
@@ -114,24 +114,3 @@ Set `SECURITY_CANARY_KRATOS_EMAIL` and `SECURITY_CANARY_KRATOS_PASSWORD` in CI s
 When moving beyond env-file secrets and local observability:
 
 - Infisical / Cloudflare / hosted Sentry / PostHog / Grafana / Loki — env-key swap guides belong in product docs; helpers here stay deployment-agnostic.
-
-## Exports
-
-Glob subpath imports only — no root `"."` barrel:
-
-| Import | Module |
-| --- | --- |
-| `@saflib/security/http/headers` | `assertSecurityHeaders`, CSP helpers |
-| `@saflib/security/http/cookies` | Cookie finders and assertions |
-| `@saflib/security/http/cors` | CORS assertions |
-| `@saflib/security/http/csrf` | `getCsrfToken` |
-| `@saflib/security/origins/urls` | Origin URL builders |
-| `@saflib/security/playwright/config` | `createSecurityPlaywrightConfig` |
-| `@saflib/security/playwright/canary-config` | `createSecurityCanaryPlaywrightConfig` |
-| `@saflib/security/playwright/env` | Env presets |
-
-Verify exports after adding modules:
-
-```bash
-npm exec saf-imports exports check --package @saflib/security
-```

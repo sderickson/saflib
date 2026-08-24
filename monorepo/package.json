@@ -13,6 +13,7 @@
     "./dev": "./dev.ts",
     "./workspace": "./src/workspace.ts",
     "./package-layout": "./src/package-layout.ts",
+    "./package-exports": "./src/package-exports.ts",
     "./package-kind": "./src/package-kind.ts"
   },
   "scripts": {
