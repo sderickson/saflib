@@ -9,7 +9,7 @@ import type { JobAuthority, JobAuthorityAssertion, JobRequest } from "@saflib/jo
 import type {
   JobsServiceRequestBody,
   JobsServiceResponseBody,
-} from "jobs-spec";
+} from "@saflib/jobs-spec";
 import { DEFAULT_MAX_ATTEMPTS, REQUEST_SIZE_CAP_BYTES, SPAWN_CAP } from "../../src/constants.ts";
 import { jobsServiceStorage } from "../../src/context.ts";
 import { mapJobToWire } from "../../src/mapJob.ts";

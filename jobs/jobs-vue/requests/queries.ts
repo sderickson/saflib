@@ -4,7 +4,7 @@ import type {
   JobsServiceRequestBody,
   JobsServiceResponseBody,
   paths,
-} from "jobs-spec";
+} from "@saflib/jobs-spec";
 import { TanstackError, handleClientMethod, createSafClient } from "@saflib/sdk";
 
 export type ListJobsQuery = NonNullable<

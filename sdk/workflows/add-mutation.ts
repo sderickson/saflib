@@ -134,7 +134,7 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
         flags: { upload: context.upload, download: context.download },
         lineReplace: (line: string) => {
           let out = line;
-          out = out.split("baseHandler").join(`${context.serviceName}Handler`);
+          // Keep `baseHandler`; only remap the golden spec package name.
           out = out
             .split("@saflib/base-spec")
             .join(`${context.sharedPackagePrefix}-spec`);

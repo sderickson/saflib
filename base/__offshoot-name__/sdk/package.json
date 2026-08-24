@@ -17,6 +17,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/base-__offshoot-name__-spec": "*",
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
     "msw": "^2.11.3"

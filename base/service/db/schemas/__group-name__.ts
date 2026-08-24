@@ -5,9 +5,9 @@ import { generateShortId } from "@saflib/drizzle";
 import { fileMetadataColumns, type FileMetadataFields } from "@saflib/drizzle";
 // END WORKFLOW AREA
 
-// TODO: Any enums should be defined like so
+// TODO: Any enums should be defined like so (keep unexported — name collides across schemas)
 const someEnum = ["foo", "bar"] as const;
-export type SomeEnum = (typeof someEnum)[number];
+type SomeEnum = (typeof someEnum)[number];
 
 // TODO: Replace this example table with actual tables for your database
 export interface __GroupName__Entity

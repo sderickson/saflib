@@ -1,7 +1,7 @@
 import { createHandler } from "@saflib/express";
 import type {
   JobsServiceResponseBody,
-} from "jobs-spec";
+} from "@saflib/jobs-spec";
 
 import type { JobStatus } from "@saflib/jobs-db";
 import { jobsServiceStorage } from "../../src/context.ts";

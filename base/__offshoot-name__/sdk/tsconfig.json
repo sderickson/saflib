@@ -2,10 +2,13 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
+      "path": "../../../monorepo"
+    },
+    {
       "path": "../../../sdk"
     },
     {
-      "path": "../../../monorepo"
+      "path": "../spec"
     }
   ],
   "compilerOptions": {

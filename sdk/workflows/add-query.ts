@@ -103,8 +103,8 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
         targetDir: context.targetDir,
         lineReplace: (line: string) => {
           let out = line;
-          // Golden stubs use concrete baseHandler from @saflib/base-sdk.
-          out = out.split("baseHandler").join(`${context.serviceName}Handler`);
+          // Keep `baseHandler` — sdk packages export that name; only remap the
+          // golden spec package to this package's sibling spec.
           out = out
             .split("@saflib/base-spec")
             .join(`${context.sharedPackagePrefix}-spec`);

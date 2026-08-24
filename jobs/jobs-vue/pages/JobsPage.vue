@@ -186,7 +186,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { Job } from "jobs-spec";
+import type { Job } from "@saflib/jobs-spec";
 import {
   useListJobs,
   useGetJob,

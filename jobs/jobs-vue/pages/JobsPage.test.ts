@@ -7,7 +7,7 @@ import type {
   Job,
   JobsServiceRequestBody,
   JobsServiceResponseBody,
-} from "jobs-spec";
+} from "@saflib/jobs-spec";
 import JobsPage from "./JobsPage.vue";
 import { router } from "./test_router";
 import { mountTestApp } from "../test-app";

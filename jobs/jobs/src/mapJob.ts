@@ -1,5 +1,5 @@
 import type { JobEntity } from "@saflib/jobs-db";
-import type { Job } from "jobs-spec";
+import type { Job } from "@saflib/jobs-spec";
 
 /**
  * Maps a jobs-db row to the wire `Job` (omits heartbeat/updatedAt; strips the

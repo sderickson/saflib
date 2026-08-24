@@ -1,6 +1,6 @@
 import { createInternalCaller, type InternalCaller } from "@saflib/express";
 import { getSafContextWithAuth } from "@saflib/node";
-import type { Job, JobsServiceRequestBody } from "jobs-spec";
+import type { Job, JobsServiceRequestBody } from "@saflib/jobs-spec";
 import createError from "http-errors";
 
 export interface EnqueueParams {
