@@ -61,10 +61,8 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-main>
-      <TopLevelContainer>
-        <slot />
-      </TopLevelContainer>
+    <v-main class="px-4">
+      <slot />
     </v-main>
   </v-app>
 </template>
@@ -78,7 +76,6 @@ import {
   type Link,
   type LinkOptions,
 } from "@saflib/links";
-import { TopLevelContainer } from "@saflib/vue/components";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
 import { useKratosSession } from "@saflib/ory-kratos-sdk";
 import { accountLinks, adminLinks, appLinks } from "@saflib/base-links";

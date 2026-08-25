@@ -1,7 +1,5 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col>
+  <ContentWidth variant="full">
         <h1 class="text-h4 mb-4">Jobs</h1>
 
         <v-row class="mb-4" density="comfortable">
@@ -179,13 +177,12 @@
             </template>
           </v-card-text>
         </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { ContentWidth } from "@saflib/vue/components";
 import type { Job } from "@saflib/jobs-spec";
 import {
   useListJobs,

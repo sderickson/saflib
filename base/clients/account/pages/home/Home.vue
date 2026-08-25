@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <ContentWidth>
     <div class="mb-6">
       <h1 class="text-h4 mb-2">{{ t(home.title) }}</h1>
       <p class="text-body-1 text-medium-emphasis mb-0">
@@ -37,13 +37,14 @@
         <router-view />
       </v-sheet>
     </div>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDisplay } from "vuetify";
+import { ContentWidth } from "@saflib/vue/components";
 import { useReverseT } from "@saflib/base-account-spa/i18n";
 import {
   buildAccountHomeNavItems,

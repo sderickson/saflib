@@ -1,7 +1,5 @@
 <template>
-  <v-container fluid class="errors-page">
-    <v-row>
-      <v-col>
+  <ContentWidth variant="full" class="errors-page">
         <div class="d-flex flex-wrap align-center ga-3 mb-4">
           <h1 class="text-h4 mb-0">Errors</h1>
           <v-chip size="small" variant="tonal">
@@ -74,13 +72,12 @@
         <p v-if="filteredErrors.length === 0" class="errors-empty">
           No reported errors recorded yet.
         </p>
-      </v-col>
-    </v-row>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { ContentWidth } from "@saflib/vue/components";
 import type { ReportedError } from "@saflib/errors-spec";
 import { useListReportedErrors } from "@saflib/errors-sdk";
 

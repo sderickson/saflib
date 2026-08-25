@@ -1,7 +1,5 @@
 <template>
-  <v-container fluid class="metrics-page">
-    <v-row>
-      <v-col>
+  <ContentWidth variant="full" class="metrics-page">
         <div class="d-flex flex-wrap align-center ga-3 mb-4">
           <h1 class="text-h4 mb-0">Metrics</h1>
           <v-chip size="small" variant="tonal">
@@ -158,13 +156,12 @@
         <p v-if="displayRowCount === 0 && !isLoading" class="text-medium-emphasis">
           No metrics match the current filters.
         </p>
-      </v-col>
-    </v-row>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { ContentWidth } from "@saflib/vue/components";
 import type { MetricSnapshot } from "@saflib/node-metrics-spec";
 import { useGetMetricsSnapshot } from "@saflib/node-metrics-sdk";
 import {

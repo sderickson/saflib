@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <ContentWidth>
     <div v-if="lastEmail">
       <v-card class="mb-4">
         <v-card-title>
@@ -53,11 +53,12 @@
     <div v-else>
       <v-alert type="info">{{ strings.no_emails }}</v-alert>
     </div>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { ContentWidth } from "@saflib/vue/components";
 import { last_mock_email_page as strings } from "./LastMockEmailPage.strings.ts";
 import { useLastMockEmailPageLoader } from "./LastMockEmailPage.loader.ts";
 

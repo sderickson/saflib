@@ -1,7 +1,5 @@
 <template>
-  <v-container fluid class="dev-logs-page">
-    <v-row>
-      <v-col>
+  <ContentWidth variant="full" class="dev-logs-page">
         <div class="d-flex flex-wrap align-center ga-3 mb-4">
           <h1 class="text-h4 mb-0">Server Logs</h1>
           <v-chip :color="statusColor" size="small" variant="flat">
@@ -95,13 +93,12 @@
             No log entries yet.
           </p>
         </div>
-      </v-col>
-    </v-row>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, shallowRef, watch } from "vue";
+import { ContentWidth } from "@saflib/vue/components";
 import type { DevLogEntry } from "@saflib/node-log-spec";
 import { useListDevLogs, useStreamDevLogs } from "@saflib/node-log-sdk";
 

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="pa-4">
+  <ContentWidth class="pa-4">
     <h1 class="mt-b">{{ t(strings.title) }}</h1>
     <v-row class="py-4">
       <v-col cols="auto">
@@ -35,10 +35,11 @@
         </v-card>
       </v-col>
     </v-row>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
+import { ContentWidth } from "@saflib/vue/components";
 import { test_utils_page as strings } from "./TestUtilsPage.strings";
 import { setTestMode } from "@saflib/vue";
 import { useReverseT } from "../../i18n";

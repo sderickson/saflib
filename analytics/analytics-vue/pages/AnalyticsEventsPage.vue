@@ -1,7 +1,5 @@
 <template>
-  <v-container fluid class="analytics-events-page">
-    <v-row>
-      <v-col>
+  <ContentWidth variant="full" class="analytics-events-page">
         <div class="d-flex flex-wrap align-center ga-3 mb-4">
           <h1 class="text-h4 mb-0">Product Events</h1>
           <v-chip size="small" variant="tonal">
@@ -63,13 +61,12 @@
         <p v-if="filteredEvents.length === 0" class="events-empty">
           No product events recorded yet.
         </p>
-      </v-col>
-    </v-row>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { ContentWidth } from "@saflib/vue/components";
 import { useListProductEvents } from "@saflib/analytics-sdk";
 
 

@@ -1,32 +1,29 @@
 <template>
-  <v-container class="py-10">
-    <v-row justify="center">
-      <v-col cols="12" md="8">
-        <h1 class="text-h4 mb-2">{{ t(strings.title) }}</h1>
-        <p class="text-body-1 text-medium-emphasis mb-6">
-          {{ t(strings.subtitle) }}
-        </p>
-        <i18n-t
-          v-if="email"
-          scope="global"
-          class="text-body-2 mb-6 d-block"
-          :keypath="lookupTKey(strings.logged_in_as)"
-        >
-          <template #email>{{ email }}</template>
-        </i18n-t>
-        <v-btn color="primary" :href="accountHref" variant="flat">
-          {{ t(strings.account_cta) }}
-        </v-btn>
-        <p class="text-caption text-medium-emphasis mt-2 mb-0">
-          {{ t(strings.account_cta_hint) }}
-        </p>
-      </v-col>
-    </v-row>
-  </v-container>
+  <ContentWidth variant="medium" class="py-10">
+    <h1 class="text-h4 mb-2">{{ t(strings.title) }}</h1>
+    <p class="text-body-1 text-medium-emphasis mb-6">
+      {{ t(strings.subtitle) }}
+    </p>
+    <i18n-t
+      v-if="email"
+      scope="global"
+      class="text-body-2 mb-6 d-block"
+      :keypath="lookupTKey(strings.logged_in_as)"
+    >
+      <template #email>{{ email }}</template>
+    </i18n-t>
+    <v-btn color="primary" :href="accountHref" variant="flat">
+      {{ t(strings.account_cta) }}
+    </v-btn>
+    <p class="text-caption text-medium-emphasis mt-2 mb-0">
+      {{ t(strings.account_cta_hint) }}
+    </p>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { ContentWidth } from "@saflib/vue/components";
 import { linkToHrefWithHost } from "@saflib/links";
 import { accountLinks } from "@saflib/base-links";
 import { kratosEmailFromSession } from "@saflib/ory-kratos-sdk";

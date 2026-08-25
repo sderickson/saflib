@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <ContentWidth>
     <h1 class="text-h4 mb-2">{{ t(strings.title) }}</h1>
     <p class="text-body-1 text-medium-emphasis mb-6">
       {{ t(strings.description) }}
@@ -33,12 +33,13 @@
         formattedUser
       }}</pre>
     </template>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { ContentWidth } from "@saflib/vue/components";
 import { users as strings } from "./Users.strings.ts";
 import { useUsersLoader } from "./Users.loader.ts";
 import { useReverseT } from "@saflib/base-admin-spa/i18n";

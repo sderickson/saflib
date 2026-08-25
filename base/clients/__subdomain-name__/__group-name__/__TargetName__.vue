@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <ContentWidth>
     <h1>{{ t(strings.title) }}</h1>
     <v-text-field v-bind="t(strings.example_input)"></v-text-field>
     <i18n-t
@@ -10,11 +10,12 @@
       <template #email>{{ identity.traits.email }}</template>
     </i18n-t>
     <div v-else>{{ t(strings.not_logged_in) }}</div>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import type { Identity } from "@ory/client";
+import { ContentWidth } from "@saflib/vue/components";
 import { __full_name__ as strings } from "./__TargetName__.strings.ts";
 import { use__TargetName__Loader } from "./__TargetName__.loader.ts";
 import { useReverseT } from "@saflib/base-__subdomain-name__-spa/i18n";

@@ -1,9 +1,9 @@
 <template>
-  <v-container>
+  <ContentWidth>
     <h1>Page Not Found</h1>
-  </v-container>
+  </ContentWidth>
 </template>
 
-<script setup lang="ts"></script>
-
-<style scoped></style>
+<script setup lang="ts">
+import { ContentWidth } from "@saflib/vue/components";
+</script>

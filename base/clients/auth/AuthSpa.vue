@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { DynamicBaseLayout } from "@saflib/base-clients-common/components";
+import { ContentWidth } from "@saflib/vue/components";
 import { configureAuthApp } from "@saflib/ory-kratos-spa";
 
 configureAuthApp();
@@ -7,13 +8,9 @@ configureAuthApp();
 
 <template>
   <DynamicBaseLayout>
-    <v-container class="auth-spa-container py-8 py-md-12" fluid>
-      <v-row justify="center" align="center">
-        <v-col cols="12" sm="10" md="7" lg="5" xl="4">
-          <router-view />
-        </v-col>
-      </v-row>
-    </v-container>
+    <ContentWidth variant="narrow" class="auth-spa-container py-8 py-md-12">
+      <router-view />
+    </ContentWidth>
   </DynamicBaseLayout>
 </template>
 

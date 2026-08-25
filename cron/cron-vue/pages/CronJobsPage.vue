@@ -1,7 +1,5 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col>
+  <ContentWidth variant="full">
         <h1 class="text-h4 mb-4">Cron Jobs</h1>
 
         <v-progress-linear v-if="isLoadingJobs" indeterminate />
@@ -77,13 +75,12 @@
         <p v-else-if="!isLoadingJobs && !jobsError" class="text-body-1">
           No cron jobs found.
         </p>
-      </v-col>
-    </v-row>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { ContentWidth } from "@saflib/vue/components";
 import type { JobSettings } from "@saflib/cron-spec";
 import { useListCronJobs, useUpdateCronJobSettings } from "../requests/queries";
 

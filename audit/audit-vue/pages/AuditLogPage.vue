@@ -1,7 +1,5 @@
 <template>
-  <v-container fluid class="audit-log-page">
-    <v-row>
-      <v-col>
+  <ContentWidth variant="full" class="audit-log-page">
         <h1 class="text-h4 mb-2">Audit log</h1>
         <p v-if="description" class="text-body-1 text-medium-emphasis mb-4">
           {{ description }}
@@ -83,13 +81,12 @@
             Load more
           </v-btn>
         </div>
-      </v-col>
-    </v-row>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import type { AuditLog } from "@saflib/audit-spec/types";
+import { ContentWidth } from "@saflib/vue/components";
 import { useSealAuditLog } from "@saflib/audit-sdk/requests/seal-audit-log";
 import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
 import { showError, showInfo } from "@saflib/vue";

@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <ContentWidth>
     <h1>{{ t(strings.title) }}</h1>
     <p>{{ t(strings.description) }}</p>
 
@@ -18,12 +18,13 @@
     <div class="mt-4">
       <ErrorSmokeWidgets />
     </div>
-  </v-container>
+  </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import ErrorSmokeWidgets from "@saflib/errors-vue/pages/ErrorSmokeWidgets.vue";
 import { getGitHashes } from "@saflib/vue";
+import { ContentWidth } from "@saflib/vue/components";
 import { home as strings } from "./Home.strings.ts";
 import { useHomeLoader } from "./Home.loader.ts";
 import { useReverseT } from "@saflib/base-admin-spa/i18n";
