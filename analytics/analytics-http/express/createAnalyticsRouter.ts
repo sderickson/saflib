@@ -6,9 +6,8 @@ import { createRecordProductEventHandler } from "./record-product-event.ts";
 import { createListProductEventsHandler } from "./list-product-events.ts";
 
 /**
- * Product analytics routes:
+ * Product analytics ingest (always mounted):
  * - `POST /product-events/record` — browser or API client event capture
- * - `GET /admin/product-events` — site-admin ring buffer viewer
  */
 export function createAnalyticsRouter(): Router {
   const router = Router();
@@ -19,9 +18,21 @@ export function createAnalyticsRouter(): Router {
     createRecordProductEventHandler(),
   );
 
+  return router;
+}
+
+/**
+ * Development-only in-memory product event viewer:
+ * - `GET /admin/product-events` — ring buffer listing (PostHog in production)
+ */
+export function createDevAnalyticsRouter(): Router {
+  const router = Router();
+
   router.get(
     "/admin/product-events",
-    ...createOperationScopedMiddleware(listProductEventsOperationJsonSpec),
+    ...createOperationScopedMiddleware(listProductEventsOperationJsonSpec, {
+      enforceAuth: false,
+    }),
     createListProductEventsHandler(),
   );
 

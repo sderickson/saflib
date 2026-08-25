@@ -19,6 +19,10 @@ const PUBLIC_GET_PATHS = new Set([
   "/health",
   "/dev/logs",
   "/dev/logs/stream",
+  "/email/sent",
+  "/admin/metrics/snapshot",
+  "/admin/product-events",
+  "/admin/errors",
 ]);
 
 /**

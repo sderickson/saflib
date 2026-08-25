@@ -4,6 +4,7 @@ import {
   makeAuthMiddleware,
   makeContextMiddleware,
 } from "@saflib/express";
+import { isDevelopmentDeployment } from "@saflib/env";
 import express, { type Router } from "express";
 import type { DbKey } from "@saflib/drizzle";
 import {
@@ -101,10 +102,12 @@ export function createBaseHttpApp(
     });
   });
 
-  // Mock email inspection (GET /email/sent) — before auth gate; scoped OpenAPI middleware handles the route.
-  app.use(
-    createEmailsRouter({ emailService: resolveEmailServiceFromEnv() }),
-  );
+  // Mock email inspection (GET /email/sent) — development only; before auth gate.
+  if (isDevelopmentDeployment()) {
+    app.use(
+      createEmailsRouter({ emailService: resolveEmailServiceFromEnv() }),
+    );
+  }
 
   // Resolve identity into SafContext before the global auth gate / route handlers.
   app.use(makeContextMiddleware());
@@ -123,7 +126,9 @@ export function createBaseHttpApp(
 
   app.use(baseAuditRecorderMiddleware());
 
-  app.use(createMetricsRouter());
+  if (isDevelopmentDeployment()) {
+    app.use(createMetricsRouter());
+  }
 
   const mounts = options.mounts ?? defaultRouterMounts();
   for (const mount of mounts) {

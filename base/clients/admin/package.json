@@ -22,7 +22,6 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@saflib/admin": "*",
     "@saflib/analytics-vue": "*",
     "@saflib/audit-vue": "*",
     "@saflib/base-clients-common": "*",

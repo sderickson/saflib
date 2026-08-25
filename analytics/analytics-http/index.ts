@@ -7,4 +7,4 @@ export {
   type ProductEventSource,
 } from "./lib/productEventBuffer.ts";
 
-export { createAnalyticsRouter } from "./express/createAnalyticsRouter.ts";
+export { createAnalyticsRouter, createDevAnalyticsRouter } from "./express/createAnalyticsRouter.ts";

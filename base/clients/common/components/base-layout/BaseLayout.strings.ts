@@ -6,4 +6,5 @@ export const base_layout = {
   nav_login: "Login",
   nav_sign_up: "Sign Up",
   nav_logout: "Logout",
+  dev_sidebar_title: "Development",
 } as const;

@@ -1,24 +1,37 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { DynamicBaseLayout } from "@saflib/base-clients-common/components";
 import { adminLinks } from "@saflib/base-links";
+import { isDevelopmentDeployment } from "@saflib/vue";
 
 const adminSidebarLinks = [
   { ...adminLinks.home, name: "Home" },
   { ...adminLinks.users, name: "Users" },
   { ...adminLinks.cronJobs, name: "Cron" },
   { ...adminLinks.jobs, name: "Jobs" },
-  { ...adminLinks.emails, name: "Emails" },
-  { ...adminLinks.logs, name: "Logs" },
-  { ...adminLinks.metrics, name: "Metrics" },
-  { ...adminLinks.events, name: "Events" },
-  { ...adminLinks.errors, name: "Errors" },
   { ...adminLinks.audit, name: "Audit" },
-  { ...adminLinks.testUtils, name: "Test utils" },
 ];
+
+const devObservabilitySidebarLinks = computed(() => {
+  if (!isDevelopmentDeployment()) {
+    return [];
+  }
+  return [
+    { ...adminLinks.emails, name: "Emails" },
+    { ...adminLinks.logs, name: "Logs" },
+    { ...adminLinks.metrics, name: "Metrics" },
+    { ...adminLinks.events, name: "Events" },
+    { ...adminLinks.errors, name: "Errors" },
+  ];
+});
 </script>
 
 <template>
-  <DynamicBaseLayout require-auth :sidebar-links="adminSidebarLinks">
+  <DynamicBaseLayout
+    require-auth
+    :sidebar-links="adminSidebarLinks"
+    :dev-sidebar-links="devObservabilitySidebarLinks"
+  >
     <router-view />
   </DynamicBaseLayout>
 </template>

@@ -121,14 +121,6 @@ const sidebarPages: {
       ).toBeVisible();
     },
   },
-  {
-    path: adminLinks.testUtils.path,
-    assert: async (page) => {
-      await expect(
-        page.getByRole("heading", { name: "Test Utils" }),
-      ).toBeVisible();
-    },
-  },
 ];
 
 test("admin navigation smoke", async ({

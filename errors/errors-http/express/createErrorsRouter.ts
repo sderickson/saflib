@@ -38,11 +38,9 @@ const cspReportJsonBody: RequestHandler = (req, res, next) => {
 };
 
 /**
- * Unified error reporting routes:
+ * Unified error reporting ingest (always mounted):
  * - `POST /errors/record` — browser client error capture
  * - `POST /csp-violations` — browser CSP reports → same ring buffer
- * - `POST /admin/test-error` — site-admin smoke test
- * - `GET /admin/errors` — site-admin ring buffer viewer
  */
 export function createErrorsRouter(): Router {
   const router = Router();
@@ -60,15 +58,30 @@ export function createErrorsRouter(): Router {
     createPostCspViolationReportHandler(),
   );
 
+  return router;
+}
+
+/**
+ * Development-only in-memory error viewer and smoke tooling:
+ * - `POST /admin/test-error` — intentional server error
+ * - `GET /admin/errors` — ring buffer listing (Sentry in production)
+ */
+export function createDevErrorsRouter(): Router {
+  const router = Router();
+
   router.post(
     "/admin/test-error",
-    ...createOperationScopedMiddleware(postAdminTestErrorOperationJsonSpec),
+    ...createOperationScopedMiddleware(postAdminTestErrorOperationJsonSpec, {
+      enforceAuth: false,
+    }),
     createPostAdminTestErrorHandler(),
   );
 
   router.get(
     "/admin/errors",
-    ...createOperationScopedMiddleware(listReportedErrorsOperationJsonSpec),
+    ...createOperationScopedMiddleware(listReportedErrorsOperationJsonSpec, {
+      enforceAuth: false,
+    }),
     createListReportedErrorsHandler(),
   );
 

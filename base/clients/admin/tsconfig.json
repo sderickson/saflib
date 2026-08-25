@@ -2,9 +2,6 @@
   "files": [],
   "references": [
     {
-      "path": "../../../admin"
-    },
-    {
       "path": "../../../analytics/analytics-vue"
     },
     {

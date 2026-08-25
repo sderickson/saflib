@@ -15,4 +15,7 @@ export {
   type InitErrorsServerOptions,
 } from "./lib/initErrorsServer.ts";
 
-export { createErrorsRouter } from "./express/createErrorsRouter.ts";
+export {
+  createErrorsRouter,
+  createDevErrorsRouter,
+} from "./express/createErrorsRouter.ts";

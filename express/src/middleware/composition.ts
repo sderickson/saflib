@@ -1,6 +1,7 @@
 import type { ErrorRequestHandler, Handler, RequestHandler } from "express";
 import { json, urlencoded } from "express";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { isDevelopmentDeployment } from "@saflib/env";
 import { corsRouter } from "./cors.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
@@ -8,8 +9,14 @@ import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { healthRouter } from "./health.ts";
 import { createDevLogsRouter } from "@saflib/node-log-http";
-import { createAnalyticsRouter } from "@saflib/analytics-http";
-import { createErrorsRouter } from "@saflib/errors-http";
+import {
+  createAnalyticsRouter,
+  createDevAnalyticsRouter,
+} from "@saflib/analytics-http";
+import {
+  createErrorsRouter,
+  createDevErrorsRouter,
+} from "@saflib/errors-http";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
@@ -65,20 +72,24 @@ export const createGlobalMiddleware = (
   }
 
   let sanitizeMiddleware: Handler[] = [blockHtml];
+  const devObservabilityMiddleware: Handler[] = isDevelopmentDeployment()
+    ? [
+        createDevLogsRouter(),
+        createDevAnalyticsRouter(),
+        createDevErrorsRouter(),
+      ]
+    : [];
   return [
     ...metricsMiddleware,
     noStoreCacheControl,
     helmet(),
     makeCsrfTokenMiddleware(),
     healthRouter,
-    // Development Winston ring buffer (403 unless DEPLOYMENT_NAME=development).
-    createDevLogsRouter(),
+    ...devObservabilityMiddleware,
     everyRequestLogger,
     json(jsonLimit ? { limit: jsonLimit } : undefined),
     urlencoded({ extended: false }),
-    // Product analytics ring buffer (client POST + server record helper).
     createAnalyticsRouter(),
-    // Unified error ring buffer (client, CSP, server exceptions, admin smoke).
     createErrorsRouter(),
     ...sanitizeMiddleware,
     ...corsMiddleware,

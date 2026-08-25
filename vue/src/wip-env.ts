@@ -8,6 +8,7 @@ interface ViteEnv {
   NODE_ENV: string;
   DEV?: boolean;
   MODE?: string;
+  VITE_DEPLOYMENT_NAME?: string;
 }
 
 /**
@@ -28,4 +29,9 @@ export const isDevEnv = () => {
     env.MODE === "development" ||
     env.NODE_ENV === "development"
   );
+};
+
+/** Local development deployment (`DEPLOYMENT_NAME=development`), injected at build time. */
+export const isDevelopmentDeployment = () => {
+  return getViteEnv().VITE_DEPLOYMENT_NAME === "development";
 };

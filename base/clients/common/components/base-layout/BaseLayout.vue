@@ -55,6 +55,17 @@
           :title="link.name"
           variant="text"
         />
+        <template v-if="devSidebarLinks && devSidebarLinks.length > 0">
+          <v-divider class="my-2" />
+          <v-list-subheader>{{ t(base_layout.dev_sidebar_title) }}</v-list-subheader>
+          <v-list-item
+            v-for="link in devSidebarLinks"
+            :key="link.path"
+            :href="toHref(link)"
+            :title="link.name"
+            variant="text"
+          />
+        </template>
       </v-list>
     </v-navigation-drawer>
 
@@ -85,9 +96,15 @@ const props = defineProps<{
   /** When true, redirect to login with `return_to` if the session resolves unauthenticated. */
   requireAuth?: boolean;
   sidebarLinks?: SidebarLink[];
+  /** Development-only observability links (Loki, Prometheus, etc. in production). */
+  devSidebarLinks?: SidebarLink[];
 }>();
 
-const hasSidebar = computed(() => (props.sidebarLinks?.length ?? 0) > 0);
+const hasSidebar = computed(
+  () =>
+    (props.sidebarLinks?.length ?? 0) > 0 ||
+    (props.devSidebarLinks?.length ?? 0) > 0,
+);
 
 const { t } = useReverseT();
 const { data: session, status: sessionStatus } = useKratosSession();

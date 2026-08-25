@@ -4,14 +4,17 @@ import { operationJsonSpec as getMetricsSnapshotOperationJsonSpec } from "@safli
 import { createGetMetricsSnapshotHandler } from "./get-metrics-snapshot.ts";
 
 /**
- * Site-admin route that returns parsed in-process Prometheus metrics.
+ * Development-only route that returns parsed in-process Prometheus metrics
+ * (Prometheus/Grafana in production).
  */
 export function createMetricsRouter(): Router {
   const router = Router();
 
   router.get(
     "/admin/metrics/snapshot",
-    ...createOperationScopedMiddleware(getMetricsSnapshotOperationJsonSpec),
+    ...createOperationScopedMiddleware(getMetricsSnapshotOperationJsonSpec, {
+      enforceAuth: false,
+    }),
     createGetMetricsSnapshotHandler(),
   );
 

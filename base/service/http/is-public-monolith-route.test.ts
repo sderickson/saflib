@@ -19,10 +19,18 @@ describe("isPublicMonolithRoute", () => {
     ).toBe(true);
   });
 
-  it("allows health and dev logs GET", () => {
+  it("allows health, dev logs, and dev observability GET", () => {
     expect(isPublicMonolithRoute(req("GET", "/health"))).toBe(true);
     expect(isPublicMonolithRoute(req("GET", "/dev/logs"))).toBe(true);
     expect(isPublicMonolithRoute(req("GET", "/dev/logs/stream"))).toBe(true);
+    expect(isPublicMonolithRoute(req("GET", "/email/sent"))).toBe(true);
+    expect(isPublicMonolithRoute(req("GET", "/admin/metrics/snapshot"))).toBe(
+      true,
+    );
+    expect(isPublicMonolithRoute(req("GET", "/admin/product-events"))).toBe(
+      true,
+    );
+    expect(isPublicMonolithRoute(req("GET", "/admin/errors"))).toBe(true);
   });
 
   it("denies authenticated product routes", () => {

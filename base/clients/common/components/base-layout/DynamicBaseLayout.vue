@@ -2,7 +2,11 @@
   <!-- Events are rendered here for playwright tests to assert on -->
   <pre class="d-none" data-testid="events">{{ events }}</pre>
 
-  <BaseLayout :require-auth="requireAuth" :sidebar-links="sidebarLinks">
+  <BaseLayout
+    :require-auth="requireAuth"
+    :sidebar-links="sidebarLinks"
+    :dev-sidebar-links="devSidebarLinks"
+  >
     <slot />
   </BaseLayout>
 
@@ -20,5 +24,6 @@ type SidebarLink = Link & { name: string };
 defineProps<{
   requireAuth?: boolean;
   sidebarLinks?: SidebarLink[];
+  devSidebarLinks?: SidebarLink[];
 }>();
 </script>

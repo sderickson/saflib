@@ -6,6 +6,7 @@ import {
 } from "vue-router";
 import { adminLinks } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
+import { isDevelopmentDeployment } from "@saflib/vue";
 import { CronJobsAsync } from "@saflib/cron-vue";
 import { JobsAsync } from "@saflib/jobs-vue";
 import { SentEmailsAsync } from "@saflib/email-vue";
@@ -18,8 +19,32 @@ import { AuditLogsAsync } from "@saflib/audit-vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
 import UsersAsync from "./pages/users/UsersAsync.vue";
 import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
-import TestUtilsAsync from "./pages/test-utils/TestUtilsAsync.vue";
 // END WORKFLOW AREA
+
+const devObservabilityRoutes: RouteRecordRaw[] = isDevelopmentDeployment()
+  ? [
+      {
+        path: adminLinks.emails.path,
+        component: SentEmailsAsync,
+      },
+      {
+        path: adminLinks.logs.path,
+        component: DevLogsAsync,
+      },
+      {
+        path: adminLinks.metrics.path,
+        component: MetricsAsync,
+      },
+      {
+        path: adminLinks.events.path,
+        component: ProductEventsAsync,
+      },
+      {
+        path: adminLinks.errors.path,
+        component: ErrorsAsync,
+      },
+    ]
+  : [];
 
 export const createAdminRouter = (options?: {
   history?: RouterHistory;
@@ -42,33 +67,10 @@ export const createAdminRouter = (options?: {
       path: adminLinks.jobs.path,
       component: JobsAsync,
     },
-    {
-      path: adminLinks.emails.path,
-      component: SentEmailsAsync,
-    },
-    {
-      path: adminLinks.logs.path,
-      component: DevLogsAsync,
-    },
-    {
-      path: adminLinks.metrics.path,
-      component: MetricsAsync,
-    },
-    {
-      path: adminLinks.events.path,
-      component: ProductEventsAsync,
-    },
-    {
-      path: adminLinks.errors.path,
-      component: ErrorsAsync,
-    },
+    ...devObservabilityRoutes,
     {
       path: adminLinks.audit.path,
       component: AuditLogsAsync,
-    },
-    {
-      path: adminLinks.testUtils.path,
-      component: TestUtilsAsync,
     },
     // END WORKFLOW AREA
     { path: "/:pathMatch(.*)*", component: PageNotFound },

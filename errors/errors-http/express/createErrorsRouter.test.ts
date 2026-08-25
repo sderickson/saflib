@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach, beforeAll } from "vitest";
 import express from "express";
 import request from "supertest";
-import {
-  createErrorMiddleware,
-  makeAdminHeaders,
-} from "@saflib/express";
+import { createErrorMiddleware } from "@saflib/express";
 import {
   listReportedErrors,
   recordReportedError,
   resetReportedErrorBufferForTests,
 } from "../lib/reportedErrorBuffer.ts";
 import { installReportedErrorCollector } from "../lib/initErrorsServer.ts";
-import { createErrorsRouter } from "./createErrorsRouter.ts";
+import {
+  createErrorsRouter,
+  createDevErrorsRouter,
+} from "./createErrorsRouter.ts";
 
 describe("createErrorsRouter", () => {
   beforeAll(() => {
@@ -20,18 +20,18 @@ describe("createErrorsRouter", () => {
 
   beforeEach(() => {
     resetReportedErrorBufferForTests();
-    process.env.ADMIN_EMAILS = "admin@example.com";
   });
 
   function makeApp() {
     const app = express();
     app.use(express.json());
     app.use(createErrorsRouter());
+    app.use(createDevErrorsRouter());
     app.use(createErrorMiddleware());
     return app;
   }
 
-  it("records client errors via POST and lists them for site admins", async () => {
+  it("records client errors via POST and lists them without auth", async () => {
     await request(makeApp())
       .post("/errors/record")
       .set("x-requested-with", "XMLHttpRequest")
@@ -53,7 +53,7 @@ describe("createErrorsRouter", () => {
 
     const res = await request(makeApp())
       .get("/admin/errors")
-      .set(makeAdminHeaders("admin-1", "admin@example.com"))
+      .set("x-requested-with", "XMLHttpRequest")
       .expect(200);
 
     expect(res.body.reportedErrors).toHaveLength(2);
@@ -83,7 +83,7 @@ describe("createErrorsRouter", () => {
 
     const res = await request(makeApp())
       .get("/admin/errors")
-      .set(makeAdminHeaders("admin-1", "admin@example.com"))
+      .set("x-requested-with", "XMLHttpRequest")
       .expect(200);
 
     expect(res.body.reportedErrors).toHaveLength(1);
@@ -96,13 +96,13 @@ describe("createErrorsRouter", () => {
   it("records admin test errors as kind test", async () => {
     await request(makeApp())
       .post("/admin/test-error")
-      .set(makeAdminHeaders("admin-1", "admin@example.com"))
+      .set("x-requested-with", "XMLHttpRequest")
       .expect(500);
 
     const res = await request(makeApp())
       .get("/admin/errors")
       .query({ kind: "test" })
-      .set(makeAdminHeaders("admin-1", "admin@example.com"))
+      .set("x-requested-with", "XMLHttpRequest")
       .expect(200);
 
     expect(res.body.reportedErrors).toHaveLength(1);
@@ -126,24 +126,10 @@ describe("createErrorsRouter", () => {
     const res = await request(makeApp())
       .get("/admin/errors")
       .query({ kind: "client" })
-      .set(makeAdminHeaders("admin-1", "admin@example.com"))
+      .set("x-requested-with", "XMLHttpRequest")
       .expect(200);
 
     expect(res.body.reportedErrors).toHaveLength(1);
     expect(res.body.reportedErrors[0].kind).toBe("client");
-  });
-
-  it("returns 403 for non-admin list requests", async () => {
-    await request(makeApp())
-      .get("/admin/errors")
-      .set({
-        "x-user-id": "user-1",
-        "x-user-email": "user@example.com",
-        "x-user-email-verified": "true",
-        "x-user-is-admin": "false",
-        "x-user-mfa-completed": "true",
-        "x-requested-with": "XMLHttpRequest",
-      })
-      .expect(403);
   });
 });

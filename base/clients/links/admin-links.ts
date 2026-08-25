@@ -45,9 +45,5 @@ export const adminLinks: LinkMap = {
     subdomain,
     path: "/audit",
   },
-  testUtils: {
-    subdomain,
-    path: "/test-utils",
-  },
   // END WORKFLOW AREA
 };
