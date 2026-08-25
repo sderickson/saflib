@@ -3,7 +3,9 @@
   "description": "Admin audit log browse page",
   "private": true,
   "type": "module",
+  "main": "./index.ts",
   "exports": {
+    ".": "./index.ts",
     "./pages/*": "./pages/*"
   },
   "scripts": {

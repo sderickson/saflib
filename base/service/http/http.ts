@@ -24,6 +24,7 @@ import { createCronRouter } from "@saflib/cron";
 import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
 import { createJobsRouter } from "@saflib/jobs";
 import { getBaseJobsDbKey } from "@saflib/base-jobs";
+import { createMetricsRouter } from "@saflib/node-metrics-http";
 import { createJobsDemoRouter } from "./handlers/jobs-demo/index.ts";
 import { isPublicMonolithRoute } from "./is-public-monolith-route.ts";
 import { groupRouterMounts } from "./routers.ts";
@@ -121,6 +122,8 @@ export function createBaseHttpApp(
   });
 
   app.use(baseAuditRecorderMiddleware());
+
+  app.use(createMetricsRouter());
 
   const mounts = options.mounts ?? defaultRouterMounts();
   for (const mount of mounts) {

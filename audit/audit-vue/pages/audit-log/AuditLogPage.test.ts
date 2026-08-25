@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { ref } from "vue";
 import { stubGlobals } from "@saflib/vue/testing";
 import type { AuditResponseBody } from "@saflib/audit-spec/types";
 import AuditLogPage from "./AuditLogPage.vue";
-import { mountTestApp } from "../test-app";
+import { mountTestApp } from "../../test-app.ts";
 
 type ListAuditLogsResponse = AuditResponseBody["listAuditLogs"][200];
 
@@ -35,25 +36,22 @@ const mockAuditLogs: ListAuditLogsResponse = {
   nextCursor: null,
 };
 
-vi.mock("@saflib/audit-sdk/client", () => ({
-  getClient: () => ({
-    GET: vi.fn(async () => ({
-      response: { status: 200 },
-      data: mockAuditLogs,
-    })),
+vi.mock("@saflib/audit-sdk/requests/list-audit-logs", () => ({
+  useListAuditLogs: () => ({
+    data: ref(mockAuditLogs),
+    error: ref(null),
+    isLoading: ref(false),
+    isFetching: ref(false),
+    isError: ref(false),
   }),
 }));
 
-vi.mock("@saflib/sdk", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@saflib/sdk")>();
-  return {
-    ...actual,
-    handleClientMethod: async (p: Promise<{ data?: unknown }>) => {
-      const result = await p;
-      return result.data;
-    },
-  };
-});
+vi.mock("@saflib/audit-sdk/requests/seal-audit-log", () => ({
+  useSealAuditLog: () => ({
+    isPending: ref(false),
+    mutateAsync: vi.fn(),
+  }),
+}));
 
 describe("AuditLogPage", () => {
   beforeEach(() => {

@@ -3,7 +3,9 @@
   "description": "Client Sentry init, error smoke widgets, and admin Errors page",
   "private": true,
   "type": "module",
+  "main": "./index.ts",
   "exports": {
+    ".": "./index.ts",
     "./lib/*": "./lib/*",
     "./pages/*": "./pages/*"
   },

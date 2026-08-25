@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ref } from "vue";
 import { stubGlobals } from "@saflib/vue/testing";
 import type { AnalyticsResponseBody } from "@saflib/analytics-spec";
-import AnalyticsEventsPage from "./AnalyticsEventsPage.vue";
-import { mountTestApp } from "../test-app";
+import ProductEventsPage from "./ProductEventsPage.vue";
+import { mountTestApp } from "../../test-app.ts";
 
 type ListProductEventsResponse =
   AnalyticsResponseBody["listProductEvents"][200];
@@ -39,18 +39,19 @@ vi.mock("@saflib/analytics-sdk", async (importOriginal) => {
       data: ref(mockEvents),
       error: ref(null),
       isLoading: ref(false),
+      isFetching: ref(false),
       refetch: vi.fn(),
     }),
   };
 });
 
-describe("AnalyticsEventsPage", () => {
+describe("ProductEventsPage", () => {
   beforeEach(() => {
     stubGlobals();
   });
 
   it("renders client and server events from the list endpoint", async () => {
-    const wrapper = mountTestApp(AnalyticsEventsPage, {
+    const wrapper = mountTestApp(ProductEventsPage, {
       props: {},
     });
 
@@ -60,6 +61,6 @@ describe("AnalyticsEventsPage", () => {
     expect(wrapper.text()).toContain("server_boot");
     expect(wrapper.text()).toContain("client");
     expect(wrapper.text()).toContain("server");
-    expect(wrapper.text()).toContain("Product Events");
+    expect(wrapper.text()).toContain("Product events");
   });
 });

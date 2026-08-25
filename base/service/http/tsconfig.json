@@ -20,6 +20,9 @@
       "path": "../../../monorepo"
     },
     {
+      "path": "../../../node-metrics/node-metrics-http"
+    },
+    {
       "path": "../../../node"
     },
     {

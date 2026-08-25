@@ -30,6 +30,7 @@
     "@saflib/jobs": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
+    "@saflib/node-metrics-http": "*",
     "http-errors": "^2.0.0"
   },
   "devDependencies": {

@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
-import AnalyticsEventsPage from "./AnalyticsEventsPage.vue";
+import ProductEventsPage from "./product-events/ProductEventsPage.vue";
 
 export const router = createRouter({
   history: createWebHistory(),
-  routes: [{ path: "/events", component: AnalyticsEventsPage }],
+  routes: [{ path: "/events", component: ProductEventsPage }],
 });

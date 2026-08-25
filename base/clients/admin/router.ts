@@ -9,15 +9,15 @@ import { PageNotFound } from "@saflib/vue/components";
 import { CronJobsAsync } from "@saflib/cron-vue";
 import { JobsAsync } from "@saflib/jobs-vue";
 import { SentEmailsAsync } from "@saflib/email-vue";
+import { ProductEventsAsync } from "@saflib/analytics-vue";
+import { MetricsAsync } from "@saflib/node-metrics-vue";
+import { ErrorsAsync } from "@saflib/errors-vue";
+import { AuditLogsAsync } from "@saflib/audit-vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 import HomeAsync from "./pages/home/HomeAsync.vue";
 import UsersAsync from "./pages/users/UsersAsync.vue";
 import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
-import MetricsAsync from "./pages/metrics/MetricsAsync.vue";
-import ProductEventsAsync from "./pages/events/ProductEventsAsync.vue";
-import ErrorsAsync from "./pages/errors/ErrorsAsync.vue";
-import AuditLogsAsync from "./pages/audit/AuditLogsAsync.vue";
 import TestUtilsAsync from "./pages/test-utils/TestUtilsAsync.vue";
 // END WORKFLOW AREA
 

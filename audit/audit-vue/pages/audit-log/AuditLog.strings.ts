@@ -1,0 +1,23 @@
+export const audit_log = {
+  documentTitle: "Audit log",
+  title: "Audit log",
+  stored_span: "Stored span:",
+  no_events: "No events in the audit database.",
+  from_label: "From (ISO date-time)",
+  from_hint: "Leave empty for all rows",
+  apply: "Apply",
+  seal: "Seal & ship archive",
+  loaded: "Loaded:",
+  load_more: "Load more",
+  invalid_from: "Invalid start time — use ISO-8601.",
+  columns: {
+    time: "Time",
+    source: "Source",
+    event: "Event",
+    outcome: "Outcome",
+    actor: "Actor",
+    resource: "Resource",
+    request: "Request",
+    details: "Details",
+  },
+};

@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { stubGlobals } from "@saflib/vue/testing";
 import type { ErrorsResponseBody } from "@saflib/errors-spec";
 import ErrorsPage from "./ErrorsPage.vue";
-import { mountTestApp } from "../test-app";
+import { mountTestApp } from "../../test-app.ts";
 
 type ListReportedErrorsResponse =
   ErrorsResponseBody["listReportedErrors"][200];
@@ -46,6 +46,7 @@ vi.mock("@saflib/errors-sdk", async (importOriginal) => {
       data: ref(mockErrors),
       error: ref(null),
       isLoading: ref(false),
+      isFetching: ref(false),
       refetch: vi.fn(),
     }),
   };

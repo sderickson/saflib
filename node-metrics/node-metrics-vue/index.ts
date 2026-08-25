@@ -1,3 +1,3 @@
-import MetricsPage from "./pages/MetricsPage.vue";
+import MetricsAsync from "./pages/metrics/MetricsAsync.vue";
 
-export { MetricsPage };
+export { MetricsAsync };

@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { stubGlobals } from "@saflib/vue/testing";
 import type { MetricsResponseBody } from "@saflib/node-metrics-spec";
 import MetricsPage from "./MetricsPage.vue";
-import { mountTestApp } from "../test-app";
+import { mountTestApp } from "../../test-app.ts";
 
 type SnapshotResponse = MetricsResponseBody["getMetricsSnapshot"][200];
 
@@ -38,6 +38,7 @@ vi.mock("@saflib/node-metrics-sdk", async (importOriginal) => {
       data: ref(mockSnapshot),
       error: ref(null),
       isLoading: ref(false),
+      isFetching: ref(false),
       refetch: vi.fn(),
     }),
   };
