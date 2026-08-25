@@ -32,6 +32,7 @@
     "@saflib/errors-vue": "*",
     "@saflib/links": "*",
     "@saflib/ory-kratos-sdk": "*",
+    "@saflib/sdk": "*",
     "@saflib/vue": "*"
   },
   "sideEffects": [

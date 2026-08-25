@@ -6,7 +6,7 @@ import {
 } from "vue-router";
 import TestUtilsPage from "./pages/test-utils/TestUtilsPage.vue";
 import { LastMockEmailPageAsync } from "@saflib/email-vue";
-import { CronJobsPage } from "@saflib/cron-vue";
+import { CronJobsAsync } from "@saflib/cron-vue";
 
 let router: Router;
 
@@ -35,7 +35,7 @@ export const createAdminRouter = (options: AdminRouterOptions = {}) => {
     },
     {
       path: options?.cronJobsPath || "/cron",
-      component: CronJobsPage,
+      component: CronJobsAsync,
       name: "Cron Jobs",
       props: {
         subdomain: options?.cronJobsSubdomain,

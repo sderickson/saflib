@@ -9,7 +9,8 @@
     "./fixtures": "./fixtures.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts",
-    "./test-app": "./test-app.ts"
+    "./test-app": "./test-app.ts",
+    "./pages/*": "./pages/*"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.2"

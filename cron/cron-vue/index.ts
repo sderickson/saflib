@@ -1,3 +1,4 @@
+import CronJobsAsync from "./pages/CronJobsAsync.vue";
 import CronJobsPage from "./pages/CronJobsPage.vue";
 
-export { CronJobsPage };
+export { CronJobsAsync, CronJobsPage };

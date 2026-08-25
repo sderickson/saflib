@@ -1,7 +1,7 @@
 <template>
-  <CronJobsPage />
+  <CronJobsAsync />
 </template>
 
 <script setup lang="ts">
-import { CronJobsPage } from "@saflib/cron-vue";
+import { CronJobsAsync } from "@saflib/cron-vue";
 </script>

@@ -21,18 +21,21 @@
 
       <template #append>
         <slot name="app-bar-append" />
-        <v-app-bar-nav-icon class="d-md-none mr-4" @click="drawer = !drawer">
-          <v-icon v-if="!drawer">mdi-menu</v-icon>
+        <v-app-bar-nav-icon
+          class="d-md-none mr-4"
+          @click="mobileNavOpen = !mobileNavOpen"
+        >
+          <v-icon v-if="!mobileNavOpen">mdi-menu</v-icon>
           <v-icon v-else>mdi-close</v-icon>
         </v-app-bar-nav-icon>
       </template>
     </v-app-bar>
 
     <v-navigation-drawer
-      v-model="drawer"
+      v-model="mobileNavOpen"
       disable-resize-watcher
       location="top"
-      :width="drawer ? '285' : '0'"
+      :width="mobileNavOpen ? '285' : '0'"
     >
       <v-list-item
         v-for="link in navLinks"
@@ -43,13 +46,7 @@
       />
     </v-navigation-drawer>
 
-    <v-navigation-drawer
-      v-if="sidebarLinks && sidebarLinks.length > 0"
-      location="left"
-      permanent
-      width="200"
-      class="app-sidebar"
-    >
+    <v-navigation-drawer v-if="hasSidebar" permanent width="200">
       <v-list nav>
         <v-list-item
           v-for="link in sidebarLinks"
@@ -61,7 +58,7 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-main class="px-4">
+    <v-main>
       <slot />
     </v-main>
   </v-app>
@@ -90,6 +87,8 @@ const props = defineProps<{
   sidebarLinks?: SidebarLink[];
 }>();
 
+const hasSidebar = computed(() => (props.sidebarLinks?.length ?? 0) > 0);
+
 const { t } = useReverseT();
 const { data: session, status: sessionStatus } = useKratosSession();
 const { isSiteAdmin } = useSiteAdmin();
@@ -114,7 +113,7 @@ watch(
   { immediate: true },
 );
 
-const drawer = ref(false);
+const mobileNavOpen = ref(false);
 
 const mounted = ref(false);
 onMounted(() => {

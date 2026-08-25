@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./useResolvedHref": "./src/useResolvedHref.ts",
     "./components": "./components/index.ts",
+    "./types": "./types.ts",
     "./fixtures": "./fixtures/index.ts",
     "./testing": "./testing/index.ts",
     "./tsconfig.app.json": "./tsconfig.app.base.json",

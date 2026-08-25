@@ -35,7 +35,7 @@ export const accountLinks: LinkMap = {
   verifyEmail: {
     subdomain,
     path: "/verify-email",
-    params: ["return_to"],
+    params: ["return_to", "required"],
   },
   /** Resume an active Kratos verification flow (`?flow=`, optional `?token=`). */
   verification: {

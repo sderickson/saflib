@@ -1,90 +1,80 @@
 <template>
   <ContentWidth variant="full">
-        <h1 class="text-h4 mb-4">Cron Jobs</h1>
+    <h1 class="text-h4 mb-4">{{ strings.title }}</h1>
 
-        <v-progress-linear v-if="isLoadingJobs" indeterminate />
+    <QueryError v-if="updateError" :error="updateError" class="mb-4" />
 
-        <v-alert v-if="jobsError" type="error" class="mb-4">
-          Error loading cron jobs: {{ jobsError.message }}
-        </v-alert>
-
-        <v-alert v-if="updateError" type="error" class="mb-4">
-          Error updating cron job: {{ updateError.message }}
-        </v-alert>
-
-        <v-data-table
-          v-if="jobs && jobs.length > 0"
-          :headers="headers"
-          :items="jobs"
-          item-value="jobName"
-          class="elevation-1"
+    <v-data-table
+      v-if="jobs && jobs.length > 0"
+      :headers="headers"
+      :items="jobs"
+      item-value="jobName"
+      class="elevation-1"
+    >
+      <template #[`item.enabled`]="{ item }">
+        <v-chip :color="item.enabled ? 'success' : 'error'">
+          {{ item.enabled ? "Enabled" : "Disabled" }}
+        </v-chip>
+        <v-chip
+          v-if="item.enabled && !item.enabledBy"
+          color="warning"
+          class="ml-2"
+          size="small"
         >
-          <template #[`item.enabled`]="{ item }">
-            <v-chip :color="item.enabled ? 'success' : 'error'">
-              {{ item.enabled ? "Enabled" : "Disabled" }}
-            </v-chip>
-            <v-chip
-              v-if="item.enabled && !item.enabledBy"
-              color="warning"
-              class="ml-2"
-              size="small"
-            >
-              Re-enable required
-            </v-chip>
-          </template>
+          Re-enable required
+        </v-chip>
+      </template>
 
-          <template #[`item.enabledBy`]="{ item }">
-            <span v-if="item.enabledBy">{{ item.enabledBy }}</span>
-            <span v-else-if="item.enabled" class="text-warning">
-              Missing — re-enable to record authority (job is not running)
-            </span>
-            <span v-else>N/A</span>
-          </template>
+      <template #[`item.enabledBy`]="{ item }">
+        <span v-if="item.enabledBy">{{ item.enabledBy }}</span>
+        <span v-else-if="item.enabled" class="text-warning">
+          Missing — re-enable to record authority (job is not running)
+        </span>
+        <span v-else>N/A</span>
+      </template>
 
-          <template #[`item.lastRunStatus`]="{ item }">
-            <v-chip
-              v-if="item.lastRunStatus"
-              :color="statusColor(item.lastRunStatus)"
-            >
-              {{ item.lastRunStatus }}
-            </v-chip>
-            <span v-else>N/A</span>
-          </template>
+      <template #[`item.lastRunStatus`]="{ item }">
+        <v-chip
+          v-if="item.lastRunStatus"
+          :color="statusColor(item.lastRunStatus)"
+        >
+          {{ item.lastRunStatus }}
+        </v-chip>
+        <span v-else>N/A</span>
+      </template>
 
-          <template #[`item.lastRunAt`]="{ item }">
-            {{ formatDateTime(item.lastRunAt) }}
-          </template>
+      <template #[`item.lastRunAt`]="{ item }">
+        {{ formatDateTime(item.lastRunAt) }}
+      </template>
 
-          <template #[`item.runsNextAt`]="{ item }">
-            {{ formatRunsNext(item) }}
-          </template>
+      <template #[`item.runsNextAt`]="{ item }">
+        {{ formatRunsNext(item) }}
+      </template>
 
-          <template #[`item.actions`]="{ item }">
-            <v-btn
-              size="small"
-              :loading="isUpdating && updatingJobId === item.jobName"
-              :disabled="isUpdating"
-              @click="toggleJobStatus(item.jobName, !item.enabled)"
-            >
-              {{ item.enabled ? "Disable" : "Enable" }}
-            </v-btn>
-          </template>
+      <template #[`item.actions`]="{ item }">
+        <v-btn
+          size="small"
+          :loading="isUpdating && updatingJobId === item.jobName"
+          :disabled="isUpdating"
+          @click="toggleJobStatus(item.jobName, !item.enabled)"
+        >
+          {{ item.enabled ? "Disable" : "Enable" }}
+        </v-btn>
+      </template>
 
-          <template #bottom></template>
-        </v-data-table>
-        <p v-else-if="!isLoadingJobs && !jobsError" class="text-body-1">
-          No cron jobs found.
-        </p>
+      <template #bottom></template>
+    </v-data-table>
+    <p v-else class="text-body-1">{{ strings.empty }}</p>
   </ContentWidth>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { ContentWidth } from "@saflib/vue/components";
+import { computed, ref } from "vue";
+import { ContentWidth, QueryError } from "@saflib/vue/components";
 import type { JobSettings } from "@saflib/cron-spec";
-import { useListCronJobs, useUpdateCronJobSettings } from "../requests/queries";
-
-
+import { useUpdateCronJobSettings } from "../requests/queries.ts";
+import { useCronJobsLoader } from "./CronJobs.loader.ts";
+import { cron_jobs as strings } from "./CronJobs.strings.ts";
 
 const updatingJobId = ref<string | null>(null);
 
@@ -98,11 +88,8 @@ const headers = [
   { title: "Actions", key: "actions", sortable: false },
 ];
 
-const {
-  data: jobs,
-  isLoading: isLoadingJobs,
-  error: jobsError,
-} = useListCronJobs();
+const { jobsQuery } = useCronJobsLoader();
+const jobs = computed(() => jobsQuery.data.value);
 
 const {
   mutate: updateSettings,

@@ -25,18 +25,18 @@ export const createAccountRouter = (options?: {
   const routes: RouteRecordRaw[] = [
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
     {
-      path: accountPathSegment(accountLinks.verifyEmail.path),
+      path: accountLinks.verifyEmail.path,
       component: VerifyEmailAsync,
     },
     {
-      path: accountPathSegment(accountLinks.newVerification.path),
+      path: accountLinks.newVerification.path,
       redirect: (to) => ({
         path: accountLinks.verifyEmail.path,
         query: to.query,
       }),
     },
     {
-      path: accountPathSegment(accountLinks.verification.path),
+      path: accountLinks.verification.path,
       component: EmailVerificationFlowAsync,
     },
     {

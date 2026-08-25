@@ -9,6 +9,10 @@ import type { Router } from "vue-router";
 import { createI18n } from "vue-i18n";
 import { type I18nMessages } from "./strings.ts";
 import { aliases, mdi } from "vuetify/iconsets/mdi";
+import {
+  asyncPageErrorKey,
+  type AsyncPageErrorComponent,
+} from "../async-page-error.ts";
 
 /**
  * Options for createVueApp.
@@ -18,6 +22,8 @@ export interface CreateVueAppOptions {
   vuetifyConfig?: VuetifyOptions;
   callback?: (app: ReturnType<typeof createApp>) => void;
   i18nMessages?: I18nMessages;
+  /** Replaces the default {@link AsyncPageError} in AsyncPage and QueryError. */
+  asyncPageError?: AsyncPageErrorComponent;
 }
 
 const defaultVuetifyConfig: VuetifyOptions = {
@@ -42,13 +48,22 @@ const defaultVuetifyConfig: VuetifyOptions = {
  */
 export const createVueApp = (
   Application: Component,
-  { router, vuetifyConfig, callback, i18nMessages }: CreateVueAppOptions = {},
+  {
+    router,
+    vuetifyConfig,
+    callback,
+    i18nMessages,
+    asyncPageError,
+  }: CreateVueAppOptions = {},
 ) => {
   const vuetify = createVuetify(vuetifyConfig ?? defaultVuetifyConfig);
   const app = createApp(Application);
   app.use(vuetify);
   if (router) {
     app.use(router);
+  }
+  if (asyncPageError) {
+    app.provide(asyncPageErrorKey, asyncPageError);
   }
 
   const queryClient = createTanstackQueryClient();
