@@ -1,27 +1,11 @@
-import { computed, type Ref } from "vue";
+import { computed } from "vue";
 import { useQuery } from "@tanstack/vue-query";
 import { useRoute } from "vue-router";
-import { handleClientMethod } from "@saflib/sdk";
 import {
   kratosEmailFromSession,
   useKratosSession,
 } from "@saflib/ory-kratos-sdk";
-import { getClient } from "../../client.ts";
-
-export const getSentEmails = (userEmail: Ref<string>) => {
-  return {
-    queryKey: computed(() => ["sent-emails", userEmail.value]),
-    queryFn: async () => {
-      const client = getClient();
-      const q = userEmail.value.trim();
-      return handleClientMethod(
-        client.GET("/email/sent", {
-          params: { query: { userEmail: q || undefined } },
-        }),
-      );
-    },
-  };
-};
+import { sentEmailsQueryOptions } from "../../requests/queries.ts";
 
 export function useLastMockEmailPageLoader() {
   const route = useRoute();
@@ -50,7 +34,7 @@ export function useLastMockEmailPageLoader() {
 
   return {
     sentEmailsQuery: useQuery({
-      ...getSentEmails(userEmail),
+      ...sentEmailsQueryOptions(userEmail),
       enabled: sentEmailsEnabled,
     }),
   };

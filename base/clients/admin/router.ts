@@ -8,11 +8,11 @@ import { adminLinks } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
 import { CronJobsAsync } from "@saflib/cron-vue";
 import { JobsAsync } from "@saflib/jobs-vue";
+import { SentEmailsAsync } from "@saflib/email-vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 import HomeAsync from "./pages/home/HomeAsync.vue";
 import UsersAsync from "./pages/users/UsersAsync.vue";
-import EmailsAsync from "./pages/emails/EmailsAsync.vue";
 import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
 import MetricsAsync from "./pages/metrics/MetricsAsync.vue";
 import ProductEventsAsync from "./pages/events/ProductEventsAsync.vue";
@@ -44,7 +44,7 @@ export const createAdminRouter = (options?: {
     },
     {
       path: adminLinks.emails.path,
-      component: EmailsAsync,
+      component: SentEmailsAsync,
     },
     {
       path: adminLinks.logs.path,

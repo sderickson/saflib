@@ -24,6 +24,7 @@
     "@saflib/base-service-common": "*",
     "@saflib/base-spec": "*",
     "@saflib/cron": "*",
+    "@saflib/email": "*",
     "@saflib/express": "*",
     "@saflib/jobs": "*",
     "@saflib/monorepo": "*",

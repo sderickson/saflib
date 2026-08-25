@@ -61,32 +61,15 @@ import { computed } from "vue";
 import { ContentWidth } from "@saflib/vue/components";
 import { last_mock_email_page as strings } from "./LastMockEmailPage.strings.ts";
 import { useLastMockEmailPageLoader } from "./LastMockEmailPage.loader.ts";
+import {
+  formatRecipients,
+  sortSentEmailsNewestFirst,
+} from "../sent-emails/sent-email-display.ts";
 
 const { sentEmailsQuery } = useLastMockEmailPageLoader();
 
 const lastEmail = computed(() => {
-  const emails = sentEmailsQuery.data.value?.slice() || [];
-  emails.sort((a, b) => (b.timeSent || 0) - (a.timeSent || 0));
-  return emails && emails.length > 0 ? emails[0] : null;
+  const emails = sortSentEmailsNewestFirst(sentEmailsQuery.data.value ?? []);
+  return emails.length > 0 ? emails[0] : null;
 });
-
-function formatRecipients(
-  recipients:
-    | string
-    | string[]
-    | { address: string }
-    | { address: string }[]
-    | undefined,
-): string {
-  if (Array.isArray(recipients)) {
-    return recipients
-      .map((r) => (typeof r === "string" ? r : r.address))
-      .join(", ");
-  } else if (typeof recipients === "string") {
-    return recipients;
-  } else if (recipients && recipients.address) {
-    return recipients.address;
-  }
-  return "";
-}
 </script>

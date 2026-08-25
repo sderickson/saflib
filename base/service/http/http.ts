@@ -6,6 +6,7 @@ import {
 } from "@saflib/express";
 import express, { type Router } from "express";
 import type { DbKey } from "@saflib/drizzle";
+import { createEmailsRouter } from "@saflib/email";
 import { baseDb } from "@saflib/base-db/instances";
 import {
   baseAuditRecorderMiddleware,
@@ -95,6 +96,9 @@ export function createBaseHttpApp(
       next();
     });
   });
+
+  // Mock email inspection (GET /email/sent) — before auth gate; scoped OpenAPI middleware handles the route.
+  app.use(createEmailsRouter());
 
   // Resolve identity into SafContext before the global auth gate / route handlers.
   app.use(makeContextMiddleware());
