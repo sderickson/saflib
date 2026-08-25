@@ -6,9 +6,15 @@ import {
 } from "@saflib/sdk";
 import {
   baseVerifyEmailHref,
+  baseMfaSetupHref,
   isEmailVerificationRequiredError,
+  probeBaseMfaRequirement,
   resolveBaseAccessErrorKind,
 } from "./access-error.logic.ts";
+import {
+  LoginFlowCreated,
+  createLoginFlowQueryOptions,
+} from "@saflib/ory-kratos-sdk";
 
 describe("access-error.logic", () => {
   beforeEach(() => {
@@ -45,6 +51,52 @@ describe("access-error.logic", () => {
     expect(href).toContain("/verify-email");
     expect(href).toContain(
       "return_to=http%3A%2F%2Fapp.docker.localhost%2Fhome",
+    );
+  });
+
+  it("builds mfa setup href with return_to", () => {
+    const href = baseMfaSetupHref("http://admin.docker.localhost/cron");
+    expect(href).toContain("/mfa");
+    expect(href).toContain(
+      "return_to=http%3A%2F%2Fadmin.docker.localhost%2Fcron",
+    );
+  });
+
+  it("probes MFA setup vs step-up from AAL2 login flow", async () => {
+    const setupFlow = {
+      id: "flow-setup",
+      ui: { nodes: [{ type: "input", attributes: { node_type: "input", type: "hidden" } }] },
+    };
+    const stepUpFlow = {
+      id: "flow-step",
+      ui: {
+        nodes: [
+          { type: "input", attributes: { node_type: "input", type: "text", name: "totp_code" } },
+        ],
+      },
+    };
+
+    const setupClient = {
+      fetchQuery: vi.fn(async () => new LoginFlowCreated(setupFlow as any)),
+    };
+    const stepUpClient = {
+      fetchQuery: vi.fn(async () => new LoginFlowCreated(stepUpFlow as any)),
+    };
+
+    await expect(probeBaseMfaRequirement(setupClient as any)).resolves.toEqual({
+      kind: "setup",
+      href: baseMfaSetupHref("http://app.docker.localhost/home"),
+    });
+    await expect(probeBaseMfaRequirement(stepUpClient as any)).resolves.toMatchObject({
+      kind: "step_up",
+    });
+    expect(setupClient.fetchQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: createLoginFlowQueryOptions({
+          returnTo: "http://app.docker.localhost/home",
+          aal: "aal2",
+        }).queryKey,
+      }),
     );
   });
 });

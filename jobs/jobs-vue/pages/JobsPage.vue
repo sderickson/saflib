@@ -1,182 +1,176 @@
 <template>
   <ContentWidth variant="full">
-        <h1 class="text-h4 mb-4">Jobs</h1>
+    <h1 class="text-h4 mb-4">Jobs</h1>
 
-        <v-row class="mb-4" density="comfortable">
-          <v-col cols="12" sm="6" md="3">
-            <v-select
-              v-model="statusFilter"
-              :items="statusOptions"
-              label="Status"
-              clearable
-              density="compact"
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" sm="6" md="3">
-            <v-text-field
-              v-model="operationIdFilter"
-              label="Operation"
-              clearable
-              density="compact"
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" sm="6" md="3">
-            <v-text-field
-              v-model="userIdFilter"
-              label="User"
-              clearable
-              density="compact"
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" sm="6" md="3">
-            <v-text-field
-              v-model="originalRequestIdFilter"
-              label="Original Request Id"
-              clearable
-              density="compact"
-              hide-details
-            />
-          </v-col>
-        </v-row>
-
-        <v-row class="mb-4" density="comfortable" align="center">
-          <v-col cols="auto">
-            <v-btn
-              size="small"
-              color="warning"
-              :disabled="!originalRequestIdFilter"
-              :loading="isMassCancelling"
-              @click="massCancelChain"
-            >
-              Mass Cancel Chain
-            </v-btn>
-          </v-col>
-          <v-col cols="auto">
-            <v-btn size="small" variant="text" :disabled="offset === 0" @click="prevPage">
-              Previous
-            </v-btn>
-            <v-btn
-              size="small"
-              variant="text"
-              :disabled="!hasNextPage"
-              @click="nextPage"
-            >
-              Next
-            </v-btn>
-          </v-col>
-        </v-row>
-
-        <v-progress-linear
-          v-if="isLoadingJobs"
-          indeterminate
-          data-testid="jobs-loading"
+    <v-row class="mb-4" density="comfortable">
+      <v-col cols="12" sm="6" md="3">
+        <v-select
+          v-model="statusFilter"
+          :items="statusOptions"
+          label="Status"
+          clearable
+          density="compact"
+          hide-details
         />
+      </v-col>
+      <v-col cols="12" sm="6" md="3">
+        <v-text-field
+          v-model="operationIdFilter"
+          label="Operation"
+          clearable
+          density="compact"
+          hide-details
+        />
+      </v-col>
+      <v-col cols="12" sm="6" md="3">
+        <v-text-field
+          v-model="userIdFilter"
+          label="User"
+          clearable
+          density="compact"
+          hide-details
+        />
+      </v-col>
+      <v-col cols="12" sm="6" md="3">
+        <v-text-field
+          v-model="originalRequestIdFilter"
+          label="Original Request Id"
+          clearable
+          density="compact"
+          hide-details
+        />
+      </v-col>
+    </v-row>
 
-        <v-alert v-if="jobsError" type="error" class="mb-4">
-          Error loading jobs: {{ jobsError.message }}
-        </v-alert>
-
-        <v-alert v-if="mutationError" type="error" class="mb-4">
-          Error updating job: {{ mutationError.message }}
-        </v-alert>
-
-        <v-data-table
-          v-if="jobs && jobs.length > 0"
-          :headers="headers"
-          :items="jobs"
-          item-value="id"
-          class="elevation-1"
-          :items-per-page="pageSize"
-          hide-default-footer
+    <v-row class="mb-4" density="comfortable" align="center">
+      <v-col cols="auto">
+        <v-btn
+          size="small"
+          color="warning"
+          :disabled="!originalRequestIdFilter"
+          :loading="isMassCancelling"
+          @click="massCancelChain"
         >
-          <template #[`item.status`]="{ item }">
-            <v-chip :color="statusColor(item.status)" size="small">
-              {{ item.status }}
-            </v-chip>
-          </template>
+          Mass Cancel Chain
+        </v-btn>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn size="small" variant="text" :disabled="offset === 0" @click="prevPage">
+          Previous
+        </v-btn>
+        <v-btn
+          size="small"
+          variant="text"
+          :disabled="!hasNextPage"
+          @click="nextPage"
+        >
+          Next
+        </v-btn>
+      </v-col>
+    </v-row>
 
-          <template #[`item.createdAt`]="{ item }">
-            {{ formatDateTime(item.createdAt) }}
-          </template>
+    <v-progress-linear
+      v-if="isLoadingJobs"
+      indeterminate
+      data-testid="jobs-loading"
+    />
 
-          <template #[`item.actions`]="{ item }">
-            <v-btn size="small" variant="text" class="me-1" @click="selectJob(item.id)">
-              View
-            </v-btn>
-            <v-btn
-              v-if="canRetry(item.status)"
-              size="small"
-              class="me-1"
-              :loading="isRetrying && actingJobId === item.id"
-              :disabled="isMutating"
-              @click="retryJob(item.id)"
-            >
-              Retry
-            </v-btn>
-            <v-btn
-              v-if="canCancel(item.status)"
-              size="small"
-              color="warning"
-              :loading="isCancelling && actingJobId === item.id"
-              :disabled="isMutating"
-              @click="cancelJob(item.id)"
-            >
-              Cancel
-            </v-btn>
-          </template>
+    <v-alert v-if="mutationError" type="error" class="mb-4">
+      Error updating job: {{ mutationError.message }}
+    </v-alert>
 
-          <template #bottom></template>
-        </v-data-table>
-        <p v-else-if="!isLoadingJobs && !jobsError" class="text-body-1">
-          No jobs found.
-        </p>
+    <v-data-table
+      v-if="jobs.length > 0"
+      :headers="headers"
+      :items="jobs"
+      item-value="id"
+      class="elevation-1"
+      :items-per-page="pageSize"
+      hide-default-footer
+    >
+      <template #[`item.status`]="{ item }">
+        <v-chip :color="statusColor(item.status)" size="small">
+          {{ item.status }}
+        </v-chip>
+      </template>
 
-        <v-card v-if="selectedJobId" class="mt-6 elevation-1">
-          <v-card-title class="d-flex align-center justify-space-between">
-            <span>Job {{ selectedJobId }}</span>
-            <v-btn size="small" variant="text" @click="selectedJobId = null">
-              Close
-            </v-btn>
-          </v-card-title>
-          <v-card-text>
-            <v-progress-linear v-if="isLoadingDetail" indeterminate class="mb-4" />
-            <v-alert v-if="detailError" type="error" class="mb-4">
-              Error loading job: {{ detailError.message }}
-            </v-alert>
-            <template v-if="jobDetail">
-              <h2 class="text-h6 mb-2">Status</h2>
-              <v-chip :color="statusColor(jobDetail.job.status)" class="mb-4" size="small">
-                {{ jobDetail.job.status }}
-              </v-chip>
+      <template #[`item.createdAt`]="{ item }">
+        {{ formatDateTime(item.createdAt) }}
+      </template>
 
-              <h2 class="text-h6 mb-2">Request</h2>
-              <pre class="detail-block mb-4">{{ formatJson(jobDetail.job.request) }}</pre>
+      <template #[`item.actions`]="{ item }">
+        <v-btn size="small" variant="text" class="me-1" @click="selectJob(item.id)">
+          View
+        </v-btn>
+        <v-btn
+          v-if="canRetry(item.status)"
+          size="small"
+          class="me-1"
+          :loading="isRetrying && actingJobId === item.id"
+          :disabled="isMutating"
+          @click="retryJob(item.id)"
+        >
+          Retry
+        </v-btn>
+        <v-btn
+          v-if="canCancel(item.status)"
+          size="small"
+          color="warning"
+          :loading="isCancelling && actingJobId === item.id"
+          :disabled="isMutating"
+          @click="cancelJob(item.id)"
+        >
+          Cancel
+        </v-btn>
+      </template>
 
-              <h2 class="text-h6 mb-2">Result</h2>
-              <pre class="detail-block mb-4">{{ formatJson(jobDetail.job.result) }}</pre>
+      <template #bottom></template>
+    </v-data-table>
+    <p v-else-if="!isLoadingJobs" class="text-body-1">No jobs found.</p>
 
-              <h2 class="text-h6 mb-2">Authority</h2>
-              <pre class="detail-block mb-4">{{ formatJson(jobDetail.job.authority) }}</pre>
+    <v-card v-if="selectedJobId" class="mt-6 elevation-1">
+      <v-card-title class="d-flex align-center justify-space-between">
+        <span>Job {{ selectedJobId }}</span>
+        <v-btn size="small" variant="text" @click="selectedJobId = null">
+          Close
+        </v-btn>
+      </v-card-title>
+      <v-card-text>
+        <v-progress-linear v-if="isLoadingDetail" indeterminate class="mb-4" />
+        <v-alert v-if="detailError" type="error" class="mb-4">
+          Error loading job: {{ detailError.message }}
+        </v-alert>
+        <template v-if="jobDetail">
+          <h2 class="text-h6 mb-2">Status</h2>
+          <v-chip :color="statusColor(jobDetail.job.status)" class="mb-4" size="small">
+            {{ jobDetail.job.status }}
+          </v-chip>
 
-              <h2 class="text-h6 mb-2">Lineage</h2>
-              <pre class="detail-block mb-4">{{
-                formatJson({
-                  originalRequestId: jobDetail.job.originalRequestId,
-                  parentJobId: jobDetail.job.parentJobId,
-                  enqueuedByOperationId: jobDetail.job.enqueuedByOperationId,
-                })
-              }}</pre>
+          <h2 class="text-h6 mb-2">Request</h2>
+          <pre class="detail-block mb-4">{{ formatJson(jobDetail.job.request) }}</pre>
 
-              <h2 class="text-h6 mb-2">Authority Assertion</h2>
-              <pre class="detail-block">{{
-                formatJson(jobDetail.authorityAssertion)
-              }}</pre>
-            </template>
-          </v-card-text>
-        </v-card>
+          <h2 class="text-h6 mb-2">Result</h2>
+          <pre class="detail-block mb-4">{{ formatJson(jobDetail.job.result) }}</pre>
+
+          <h2 class="text-h6 mb-2">Authority</h2>
+          <pre class="detail-block mb-4">{{ formatJson(jobDetail.job.authority) }}</pre>
+
+          <h2 class="text-h6 mb-2">Lineage</h2>
+          <pre class="detail-block mb-4">{{
+            formatJson({
+              originalRequestId: jobDetail.job.originalRequestId,
+              parentJobId: jobDetail.job.parentJobId,
+              enqueuedByOperationId: jobDetail.job.enqueuedByOperationId,
+            })
+          }}</pre>
+
+          <h2 class="text-h6 mb-2">Authority Assertion</h2>
+          <pre class="detail-block">{{
+            formatJson(jobDetail.authorityAssertion)
+          }}</pre>
+        </template>
+      </v-card-text>
+    </v-card>
   </ContentWidth>
 </template>
 
@@ -185,22 +179,23 @@ import { computed, ref } from "vue";
 import { ContentWidth } from "@saflib/vue/components";
 import type { Job } from "@saflib/jobs-spec";
 import {
-  useListJobs,
   useGetJob,
   useRetryJob,
   useCancelJob,
   useCancelJobsByOriginalRequest,
-  type ListJobsQuery,
 } from "../requests/queries";
+import { useJobsPageLoader } from "./Jobs.loader.ts";
 
+const {
+  pageSize,
+  offset,
+  statusFilter,
+  operationIdFilter,
+  userIdFilter,
+  originalRequestIdFilter,
+  jobsQuery,
+} = useJobsPageLoader();
 
-
-const pageSize = 20;
-const offset = ref(0);
-const statusFilter = ref<Job["status"] | null>(null);
-const operationIdFilter = ref("");
-const userIdFilter = ref("");
-const originalRequestIdFilter = ref("");
 const selectedJobId = ref<string | null>(null);
 const actingJobId = ref<string | null>(null);
 
@@ -213,20 +208,6 @@ const statusOptions: Job["status"][] = [
   "cancelled",
 ];
 
-const listFilters = computed<ListJobsQuery>(() => {
-  const filters: ListJobsQuery = {
-    limit: pageSize,
-    offset: offset.value,
-  };
-  if (statusFilter.value) filters.status = statusFilter.value;
-  if (operationIdFilter.value) filters.operationId = operationIdFilter.value;
-  if (userIdFilter.value) filters.userId = userIdFilter.value;
-  if (originalRequestIdFilter.value) {
-    filters.originalRequestId = originalRequestIdFilter.value;
-  }
-  return filters;
-});
-
 const headers = [
   { title: "Id", key: "id", sortable: true },
   { title: "Status", key: "status", sortable: true },
@@ -238,13 +219,8 @@ const headers = [
   { title: "Actions", key: "actions", sortable: false },
 ];
 
-const {
-  data: listData,
-  isLoading: isLoadingJobs,
-  error: jobsError,
-} = useListJobs(listFilters);
-
-const jobs = computed(() => listData.value?.jobs ?? []);
+const isLoadingJobs = computed(() => jobsQuery.isLoading.value);
+const jobs = computed(() => jobsQuery.data.value?.jobs ?? []);
 const hasNextPage = computed(() => jobs.value.length >= pageSize);
 
 const {

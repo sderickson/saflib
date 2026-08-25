@@ -5,9 +5,21 @@ import {
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
   AUTH_ERROR_MFA_REQUIRED,
 } from "@saflib/sdk";
+import type { QueryClient } from "@tanstack/vue-query";
+import {
+  aal2LoginFlowHasMfaMethods,
+  createLoginFlowQueryOptions,
+  LoginFlowCreated,
+  resolveMfaContinueHref,
+} from "@saflib/ory-kratos-sdk";
 import { authLinks, kratosAal2ParamValue } from "@saflib/ory-kratos-sdk/links";
 
 export type BaseAccessErrorKind = "login" | "mfa" | "email" | "payment";
+
+export type BaseMfaProbeResult =
+  | { kind: "setup"; href: string }
+  | { kind: "step_up"; href: string }
+  | { kind: "error" };
 
 function returnToParam(): string | undefined {
   if (typeof window === "undefined") return undefined;
@@ -59,6 +71,44 @@ export function baseVerifyEmailHref(
   return Object.keys(params).length > 0
     ? linkToHrefWithHost(accountLinks.verifyEmail, { params })
     : linkToHrefWithHost(accountLinks.verifyEmail);
+}
+
+export function baseMfaSetupHref(returnTo?: string): string {
+  const rt = returnTo ?? returnToParam();
+  return rt
+    ? linkToHrefWithHost(accountLinks.mfa, { params: { return_to: rt } })
+    : linkToHrefWithHost(accountLinks.mfa);
+}
+
+/**
+ * Probes Kratos AAL2 login flow to distinguish MFA setup vs session step-up.
+ */
+export async function probeBaseMfaRequirement(
+  queryClient: QueryClient,
+): Promise<BaseMfaProbeResult> {
+  const rt = returnToParam();
+  const setupHref = baseMfaSetupHref(rt);
+  try {
+    const result = await queryClient.fetchQuery({
+      ...createLoginFlowQueryOptions({
+        returnTo: rt,
+        aal: kratosAal2ParamValue,
+      }),
+      staleTime: 0,
+    });
+    if (!(result instanceof LoginFlowCreated)) {
+      return { kind: "error" };
+    }
+    if (!aal2LoginFlowHasMfaMethods(result.flow.ui?.nodes)) {
+      return { kind: "setup", href: setupHref };
+    }
+    return {
+      kind: "step_up",
+      href: resolveMfaContinueHref(result.flow, setupHref),
+    };
+  } catch {
+    return { kind: "error" };
+  }
 }
 
 export function baseAccessErrorAction(

@@ -26,6 +26,7 @@ export const accountLinks: LinkMap = {
   mfa: {
     subdomain,
     path: "/mfa",
+    params: ["return_to"],
   },
   sessions: {
     subdomain,
