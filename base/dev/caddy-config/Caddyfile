@@ -3,42 +3,63 @@ import common.Caddyfile
 # Client subdomains → vite dev server
 
 http://docker.localhost {
+	import security-headers
 	import spa /base-static-root /index.html
 }
 
 http://auth.docker.localhost {
-	reverse_proxy clients:5173
+	import security-headers
+	reverse_proxy clients:5173 {
+		import reverse_proxy_common
+	}
 }
 
 http://app.docker.localhost {
-	reverse_proxy clients:5173
+	import security-headers
+	reverse_proxy clients:5173 {
+		import reverse_proxy_common
+	}
 }
 
 http://admin.docker.localhost {
-	reverse_proxy clients:5173
+	import security-headers
+	reverse_proxy clients:5173 {
+		import reverse_proxy_common
+	}
 }
 
 http://account.docker.localhost {
-	reverse_proxy clients:5173
+	import security-headers
+	reverse_proxy clients:5173 {
+		import reverse_proxy_common
+	}
 }
 
 # BEGIN WORKFLOW AREA client-subdomains FOR vue/add-spa
 http://__subdomain-name__.docker.localhost {
-	reverse_proxy clients:5173
+	import security-headers
+	reverse_proxy clients:5173 {
+		import reverse_proxy_common
+	}
 }
 # END WORKFLOW AREA
 
 # BEGIN WORKFLOW AREA static-subdomains FOR vue/add-static-site
 http://__static-subdomain-name__.docker.localhost {
+	import security-headers
 	import static-site /base-static-__static-subdomain-name__
 }
 # END WORKFLOW AREA
 
 # Base API
+# /health, /csp-violations, /user-configs/unsubscribe-marketing, and /dev/logs*
+# hit the monolith directly (skip forward_auth). CSP reports and marketing
+# unsubscribe are intentionally public; /dev/logs* is development-only.
 
 http://api.docker.localhost {
-	import cors docker.localhost
-	@public_monolith path /health /dev/logs /dev/logs/stream
+	import transport-security
+	import cors {$DOMAIN}
+	@public_monolith path /health /csp-violations /user-configs/unsubscribe-marketing /dev/logs /dev/logs/stream
 	handle @public_monolith {
 		reverse_proxy base-monolith:3001 {
 			import reverse_proxy_common
@@ -50,8 +71,15 @@ http://api.docker.localhost {
 # Kratos public API
 
 http://kratos.docker.localhost {
-	import cors docker.localhost
+	import transport-security
+	import cors {$DOMAIN}
 	reverse_proxy kratos:4433 {
 		import reverse_proxy_common
 	}
+}
+
+# Playwright security suite: probe host outside the product cookie/eTLD+1 surface.
+http://evil.localhost {
+	root * /etc/caddy/evil
+	file_server
 }

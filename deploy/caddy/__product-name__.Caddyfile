@@ -7,51 +7,69 @@
 # Client subdomains
 
 {$__PRODUCT_NAME___PROTOCOL}://{$__PRODUCT_NAME___DOMAIN} {
+	import security-headers-marketing
 	import static-site /__product-name__-root
 }
 
 {$__PRODUCT_NAME___PROTOCOL}://auth.{$__PRODUCT_NAME___DOMAIN} {
+	import security-headers
 	import __product-name__-spa /auth/index.html
 }
 
 {$__PRODUCT_NAME___PROTOCOL}://app.{$__PRODUCT_NAME___DOMAIN} {
+	import security-headers
 	import __product-name__-spa /app/index.html
 }
 
 {$__PRODUCT_NAME___PROTOCOL}://admin.{$__PRODUCT_NAME___DOMAIN} {
+	import security-headers
 	import __product-name__-spa /admin/index.html
 }
 
 {$__PRODUCT_NAME___PROTOCOL}://account.{$__PRODUCT_NAME___DOMAIN} {
+	import security-headers
 	import __product-name__-spa /account/index.html
 }
 
 # BEGIN WORKFLOW AREA client-subdomains FOR vue/add-spa
 {$__PRODUCT_NAME___PROTOCOL}://__subdomain-name__.{$__PRODUCT_NAME___DOMAIN} {
+	import security-headers
 	import __product-name__-spa /__subdomain-name__/index.html
 }
 # END WORKFLOW AREA
 
 # BEGIN WORKFLOW AREA static-subdomains FOR vue/add-static-site
 {$__PRODUCT_NAME___PROTOCOL}://__static-subdomain-name__.{$__PRODUCT_NAME___DOMAIN} {
+	import security-headers
 	import static-site /__product-name__-__static-subdomain-name__
 }
 # END WORKFLOW AREA
 
 # API subdomains
+# Public monolith paths skip Kratos forward_auth (health, CSP ingest, marketing unsubscribe).
 
-{$__PRODUCT_NAME___PROTOCOL}://__product-name__.{$__PRODUCT_NAME___DOMAIN} {
+{$__PRODUCT_NAME___PROTOCOL}://api.{$__PRODUCT_NAME___DOMAIN} {
+	import transport-security
 	import cors {$DOMAIN}
+	@public_monolith path /health /csp-violations /user-configs/unsubscribe-marketing
+	handle @public_monolith {
+		reverse_proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST} {
+			import reverse_proxy_common
+		}
+	}
 	import kratos-api-proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST}
 }
 
 {$__PRODUCT_NAME___PROTOCOL}://kratos.{$__PRODUCT_NAME___DOMAIN} {
-	import cors {$__PRODUCT_NAME___DOMAIN}
-	reverse_proxy kratos:4433
+	import transport-security
+	import cors {$DOMAIN}
+	reverse_proxy kratos:4433 {
+		import reverse_proxy_common
+	}
 }
 
 {$__PRODUCT_NAME___PROTOCOL}://grafana.{$__PRODUCT_NAME___DOMAIN} {
-	import cors {$__PRODUCT_NAME___DOMAIN}
+	import cors {$DOMAIN}
 	reverse_proxy grafana:3000 {
 		import reverse_proxy_common
 	}

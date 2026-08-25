@@ -9,10 +9,13 @@ services:
     build:
       context: ../..
       dockerfile: ./base/dev/Dockerfile
+    env_file:
+      - ./env.caddy
     ports:
       - 80:80
     volumes:
       - ./caddy-config:/etc/caddy/
+      - ./caddy-config/evil:/etc/caddy/evil:ro
       - caddy_data:/data
       - caddy_config:/config
 

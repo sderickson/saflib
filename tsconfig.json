@@ -101,6 +101,9 @@
       "path": "./base/plans"
     },
     {
+      "path": "./base/security"
+    },
+    {
       "path": "./base/service/audit"
     },
     {

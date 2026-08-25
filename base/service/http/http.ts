@@ -2,6 +2,7 @@ import {
   createErrorMiddleware,
   createGlobalMiddleware,
   makeAuthMiddleware,
+  makeContextMiddleware,
 } from "@saflib/express";
 import express, { type Router } from "express";
 import type { DbKey } from "@saflib/drizzle";
@@ -20,6 +21,7 @@ import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
 import { createJobsRouter } from "@saflib/jobs";
 import { getBaseJobsDbKey } from "@saflib/base-jobs";
 import { createJobsDemoRouter } from "./handlers/jobs-demo/index.ts";
+import { isPublicMonolithRoute } from "./is-public-monolith-route.ts";
 import { groupRouterMounts } from "./routers.ts";
 
 // BEGIN WORKFLOW AREA offshoot-router-imports FOR express/init
@@ -94,7 +96,20 @@ export function createBaseHttpApp(
     });
   });
 
-  app.use(makeAuthMiddleware());
+  // Resolve identity into SafContext before the global auth gate / route handlers.
+  app.use(makeContextMiddleware());
+
+  const globalAuthMiddleware = makeAuthMiddleware();
+  app.use((req, res, next) => {
+    // Public / no-auth routes skip the early gate so OpenAPI tags on the
+    // operation scoped chain can authorize; keep in sync with Caddy
+    // `@public_monolith` and {@link isPublicMonolithRoute}.
+    if (isPublicMonolithRoute(req)) {
+      next();
+      return;
+    }
+    globalAuthMiddleware(req, res, next);
+  });
 
   app.use(baseAuditRecorderMiddleware());
 

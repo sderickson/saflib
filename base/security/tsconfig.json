@@ -1,0 +1,41 @@
+{
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist/types",
+    "playwright-report",
+    "test-results",
+    "e2e",
+    "workflows/template/**",
+    "workflows/templates/**",
+    "**/workflows/template/**",
+    "**/workflows/templates/**"
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "outDir": "./dist/types",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": [
+      "node"
+    ],
+    "noEmit": false,
+    "emitDeclarationOnly": true
+  },
+  "references": [
+    {
+      "path": "../../ory-kratos-spa"
+    },
+    {
+      "path": "../../playwright"
+    },
+    {
+      "path": "../../security"
+    }
+  ]
+}
