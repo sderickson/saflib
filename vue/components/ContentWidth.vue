@@ -39,7 +39,7 @@ const COLS: Record<
     xxl?: number;
   }
 > = {
-  narrow: { cols: 12, sm: 10, md: 8, lg: 6 },
+  narrow: { cols: 12, sm: 10, md: 8, lg: 6, xl: 4, xxl: 3 },
   medium: { cols: 12, lg: 9, xl: 6 },
   wide: { cols: 12 },
   full: { cols: 12 },
