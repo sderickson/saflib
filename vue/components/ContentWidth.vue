@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-export type ContentWidthVariant = "narrow" | "default" | "wide" | "full";
+export type ContentWidthVariant = "narrow" | "medium" | "wide" | "full";
 
 const props = withDefaults(
   defineProps<{
@@ -23,10 +23,10 @@ const props = withDefaults(
 
 /**
  * Col spans by breakpoint. Pages pick one recipe; layout should not nest another shell.
- * - narrow: centered forms (support, onboarding)
- * - default: readable flows (wizard)
- * - wide: standard v-container width (home, prose)
- * - full: fluid edge-to-edge (tables, integrations)
+ * - narrow: centered forms
+ * - medium: readable flows (wizard)
+ * - wide: standard v-container width (component default)
+ * - full: fluid edge-to-edge
  */
 const COLS: Record<
   ContentWidthVariant,
@@ -40,7 +40,7 @@ const COLS: Record<
   }
 > = {
   narrow: { cols: 12, sm: 10, md: 8, lg: 6 },
-  default: { cols: 12, lg: 9, xl: 6 },
+  medium: { cols: 12, lg: 9, xl: 6 },
   wide: { cols: 12 },
   full: { cols: 12 },
 };
