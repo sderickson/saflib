@@ -6,4 +6,6 @@ export { default as SnackbarQueue } from "./SnackbarQueue.vue";
 export { default as UsPhoneNumberInput } from "./UsPhoneNumberInput.vue";
 export { default as UsPhoneNumberDisplay } from "./UsPhoneNumberDisplay.vue";
 export { default as TopLevelContainer } from "./TopLevelContainer.vue";
+export { default as ContentWidth } from "./ContentWidth.vue";
+export type { ContentWidthVariant } from "./ContentWidth.vue";
 export { default as PageNotFound } from "./PageNotFound.vue";
