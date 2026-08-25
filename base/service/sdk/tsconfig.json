@@ -4,6 +4,9 @@
   ],
   "references": [
     {
+      "path": "../../__offshoot-name__/sdk"
+    },
+    {
       "path": "../../../monorepo"
     },
     {

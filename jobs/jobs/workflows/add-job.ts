@@ -100,11 +100,11 @@ export const JobsAddJobWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add trigger-map entries in ${context.packageName}/jobs.ts (workflow area \`trigger-map\`):
-      * \`${context.callerOperationId}: ["${context.targetOperationId}"]\`
+      promptText: `Add trigger-map entries in ${context.packageName}/jobs.ts:
+      * HTTP edge in workflow area \`trigger-map\` (jobs/add-job): \`${context.callerOperationId}: ["${context.targetOperationId}"]\`
       ${
         context.cronJobName
-          ? `* \`cron:${context.cronJobName}: ["${context.targetOperationId}"]\` (register matching cron job via cron/add-job)`
+          ? `* Prefer \`cron/add-job\` for the \`cron:${context.cronJobName}\` edge (workflow area \`cron-trigger-map\`); or add \`cron:${context.cronJobName}: ["${context.targetOperationId}"]\` here if the cron job already exists`
           : ""
       }
       Implement the background HTTP handler with express/add-handler (background tag).

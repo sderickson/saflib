@@ -47,6 +47,8 @@ describe("baseTriggerMap / baseJobOperations", () => {
     expect(baseTriggerMap.startJobsDemo).toEqual(["jobsDemoStepB"]);
     expect(baseTriggerMap.jobsDemoStepB).toEqual(["jobsDemoStepC"]);
     expect(baseTriggerMap["cron:jobsDemoKick"]).toEqual(["jobsDemoStepB"]);
+    // Template stub for cron/add-job (golden product keeps placeholders registered).
+    expect(baseTriggerMap["cron:__targetName__"]).toEqual(["jobsDemoStepB"]);
   });
 
   it("passes startup validation against the regenerated base OpenAPI spec", () => {

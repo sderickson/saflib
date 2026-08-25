@@ -2,6 +2,9 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
+      "path": "../../__offshoot-name__/db"
+    },
+    {
       "path": "../../../drizzle"
     }
   ],

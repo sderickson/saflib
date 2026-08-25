@@ -24,9 +24,15 @@ import { baseJobs } from "@saflib/base-cron";
 export const baseTriggerMap: TriggerMap = {
   startJobsDemo: ["jobsDemoStepB"],
   jobsDemoStepB: ["jobsDemoStepC"],
+  // HTTP/API callers → background targets (jobs/add-job).
   // BEGIN WORKFLOW AREA trigger-map FOR jobs/add-job
   // END WORKFLOW AREA
   "cron:jobsDemoKick": ["jobsDemoStepB"],
+  // Cron job names → background targets (cron/add-job). Template stub uses the
+  // demo step so the golden product validates; replace operationId when adding.
+  // BEGIN WORKFLOW AREA cron-trigger-map FOR cron/add-job
+  "cron:__targetName__": ["jobsDemoStepB"],
+  // END WORKFLOW AREA
 };
 
 /** Per-target overrides (≤ 120s ceiling). */

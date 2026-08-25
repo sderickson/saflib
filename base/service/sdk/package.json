@@ -26,6 +26,7 @@
     "@testing-library/vue": "^8.1.0"
   },
   "dependencies": {
+    "@saflib/base-__offshoot-name__-sdk": "*",
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
     "@saflib/base-spec": "*",
