@@ -1,3 +1,4 @@
+import { auth_strings as kratos_auth_strings } from "@saflib/ory-kratos-spa/strings";
 import { base_common_strings } from "@saflib/base-clients-common/strings";
 import {
   profile,
@@ -7,6 +8,7 @@ import {
 import { home } from "./pages/home/Home.strings.ts";
 import { home_nav_list } from "./pages/home/HomeNavList.strings.ts";
 import { account_settings_section } from "./pages/account-settings/AccountSettingsSection.strings.ts";
+import { verify_email } from "./pages/email-verification/VerifyEmail.strings.ts";
 
 // BEGIN WORKFLOW AREA string-imports FOR vue/add-view sdk/add-component
 
@@ -14,6 +16,7 @@ import { account_settings_section } from "./pages/account-settings/AccountSettin
 
 export const account_strings = {
   ...base_common_strings,
+  ...kratos_auth_strings,
   // BEGIN WORKFLOW AREA string-object FOR vue/add-view sdk/add-component
   profile,
   profile_intro,
@@ -21,5 +24,6 @@ export const account_strings = {
   home,
   home_nav_list,
   account_settings_section,
+  verify_email,
   // END WORKFLOW AREA
 };

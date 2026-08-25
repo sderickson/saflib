@@ -31,5 +31,23 @@ export const accountLinks: LinkMap = {
     subdomain,
     path: "/sessions",
   },
+  /** Start email verification (creates a Kratos browser flow). */
+  verifyEmail: {
+    subdomain,
+    path: "/verify-email",
+    params: ["return_to"],
+  },
+  /** Resume an active Kratos verification flow (`?flow=`, optional `?token=`). */
+  verification: {
+    subdomain,
+    path: "/verification",
+    params: ["flow", "token", "return_to"],
+  },
+  /** Alias kept for Kratos restart links; redirects to {@link verifyEmail}. */
+  newVerification: {
+    subdomain,
+    path: "/new-verification",
+    params: ["return_to"],
+  },
   // END WORKFLOW AREA
 };

@@ -8,6 +8,8 @@ import { accountLinks } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
+import VerifyEmailAsync from "./pages/email-verification/VerifyEmailAsync.vue";
+import EmailVerificationFlowAsync from "./pages/email-verification/EmailVerificationFlowAsync.vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
 import ProfileAsync from "./pages/profile/ProfileAsync.vue";
 import AccountSettingsSection from "./pages/account-settings/AccountSettingsSection.vue";
@@ -22,6 +24,21 @@ export const createAccountRouter = (options?: {
 }) => {
   const routes: RouteRecordRaw[] = [
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
+    {
+      path: accountPathSegment(accountLinks.verifyEmail.path),
+      component: VerifyEmailAsync,
+    },
+    {
+      path: accountPathSegment(accountLinks.newVerification.path),
+      redirect: (to) => ({
+        path: accountLinks.verifyEmail.path,
+        query: to.query,
+      }),
+    },
+    {
+      path: accountPathSegment(accountLinks.verification.path),
+      component: EmailVerificationFlowAsync,
+    },
     {
       path: accountLinks.home.path,
       component: HomeAsync,
