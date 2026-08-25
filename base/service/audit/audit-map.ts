@@ -6,4 +6,13 @@ import type { AuditMapEntry } from "@saflib/audit-http/express/audit-map";
  *
  * Add entries when shipping routes via `openapi/route` (see workflow guidance).
  */
-export const baseAuditMap: Record<string, AuditMapEntry> = {};
+export const baseAuditMap: Record<string, AuditMapEntry> = {
+  "PUT /user-configs/mine": {
+    eventType: "user_config.update",
+    resourceType: "user_config",
+  },
+  "POST /user-configs/unsubscribe-marketing": {
+    eventType: "user_config.marketing_unsubscribe",
+    resourceType: "user_config",
+  },
+};

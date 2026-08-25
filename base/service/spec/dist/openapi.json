@@ -177,9 +177,224 @@
         }
       }
     },
+    "/user-configs/mine": {
+      "get": {
+        "summary": "Get or lazy-create the caller's user config",
+        "operationId": "getMineUserConfigs",
+        "tags": [],
+        "description": "Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`displayName` empty string, `marketingEmailsOptIn` false, `marketingEmailsOptInAt` null, `termsOfServiceAgreedAt` null) and returns that row.\n**Lazy-create pattern:** empty `user_config` rows are created on first GET (not via a Kratos registration webhook). This keeps Kratos auth-only and the product DB responsible for user-facing prefs.\n",
+        "responses": {
+          "200": {
+            "description": "Caller's user config. Always present after this call (created with defaults when missing).\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "userConfig"
+                  ],
+                  "properties": {
+                    "userConfig": {
+                      "description": "Owner-only preferences for the signed-in user.",
+                      "$ref": "#/components/schemas/user-config"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update the caller's user config",
+        "operationId": "putMineUserConfigs",
+        "tags": [],
+        "description": "Upserts the authenticated user's display name and marketing email preference. Lazy-creates the `user_config` row when missing. `displayName` is trimmed; empty or whitespace-only values are rejected. When `marketingEmailsOptIn` becomes `true`, sets `marketingEmailsOptInAt` to now if newly opted in; when set to `false`, clears `marketingEmailsOptInAt` to null. Pass `termsOfServiceAgreedAt: \"now\"` to record Terms of Service agreement at the server's current time (preserved once set; not overwritten). `userId`, timestamps, and client-supplied ISO values for `marketingEmailsOptInAt` / `termsOfServiceAgreedAt` may be included when echoing a prior GET but are ignored — ownership and timestamps are server-controlled.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "displayName",
+                  "marketingEmailsOptIn"
+                ],
+                "properties": {
+                  "displayName": {
+                    "type": "string",
+                    "maxLength": 80,
+                    "description": "How the user appears to themselves and others. Trimmed server-side; must be non-empty after trim. Max length 80.\n",
+                    "example": "Alex Rivera"
+                  },
+                  "marketingEmailsOptIn": {
+                    "type": "boolean",
+                    "description": "Explicit consent for product/marketing email. When flipped to true, `marketingEmailsOptInAt` is set; when flipped to false, that timestamp is cleared.\n",
+                    "example": false
+                  },
+                  "termsOfServiceAgreedAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Pass the literal string `now` to record Terms of Service agreement using the server clock. Any other value (including ISO timestamps from a prior GET, or null) is ignored. Once recorded, the agreement timestamp is not cleared or overwritten.\n",
+                    "example": "now"
+                  },
+                  "userId": {
+                    "type": "string"
+                  },
+                  "marketingEmailsOptInAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "updatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User config updated (or created then updated).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "userConfig"
+                  ],
+                  "properties": {
+                    "userConfig": {
+                      "description": "Owner-only preferences for the signed-in user after upsert.",
+                      "$ref": "#/components/schemas/user-config"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`displayName` is empty or whitespace-only after trim.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user-configs/unsubscribe-marketing": {
+      "post": {
+        "summary": "Public marketing-email unsubscribe",
+        "operationId": "unsubscribeMarketingEmailsUserConfigs",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Clears marketing email opt-in for the identity matching the given address, when one exists. Always returns **200** with an empty success payload — never reveals whether the email is known, whether a `user_config` row exists, or the prior opt-in state. Tagged `no-auth` (and therefore CSRF-exempt) so unsubscribe links work without a session.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "description": "Address to unsubscribe from marketing email.",
+                    "example": "alex@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Request accepted. Does not indicate whether the email matched an account or whether preferences changed.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body (e.g. missing or malformed email).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "__url-path__": {
       "__method__": {
-        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-Sf1xOV/routes/__group-name__/__target-name__.yaml#/__operationId__"
+        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-TWCzhs/routes/__group-name__/__target-name__.yaml#/__operationId__"
       }
     },
     "/__offshoot-name__/health": {
@@ -208,6 +423,9 @@
       },
       "ProductEvent": {
         "$ref": "#/components/schemas/index"
+      },
+      "UserConfig": {
+        "$ref": "#/components/schemas/user-config"
       },
       "__TargetName__": {
         "$ref": "#/components/schemas/__target-name__"
@@ -561,6 +779,71 @@
               }
             }
           }
+        }
+      },
+      "user-config": {
+        "type": "object",
+        "description": "Product-owned preferences for the signed-in user (owner-only). Keyed by Kratos identity id. Holds display name, marketing email consent, and Terms of Service agreement — not auth traits. Kratos owns identity/credentials/sessions; this resource is the Kratos-minimal product DB pattern.\n",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Kratos identity id of the owning user.",
+            "example": "user_abc123"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "How the user appears to themselves and to others. May be empty after lazy-create until the first save; PUT requires a non-empty trimmed value.\n",
+            "example": "Alex Rivera"
+          },
+          "marketingEmailsOptIn": {
+            "type": "boolean",
+            "description": "Explicit consent for product/marketing email. Defaults to false until the user opts in.\n",
+            "example": false
+          },
+          "marketingEmailsOptInAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketingEmailsOptIn` becomes false).\n",
+            "example": null
+          },
+          "termsOfServiceAgreedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `termsOfServiceAgreedAt: \"now\"`). Once set, later preference updates do not clear or overwrite it.\n",
+            "example": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the user config row was created.",
+            "example": "2026-07-23T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the user config row was last updated.",
+            "example": "2026-07-23T12:30:00Z"
+          }
+        },
+        "required": [
+          "userId",
+          "displayName",
+          "marketingEmailsOptIn",
+          "marketingEmailsOptInAt",
+          "termsOfServiceAgreedAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "example": {
+          "userId": "user_abc123",
+          "displayName": "Alex Rivera",
+          "marketingEmailsOptIn": false,
+          "marketingEmailsOptInAt": null,
+          "termsOfServiceAgreedAt": null,
+          "createdAt": "2026-07-23T00:00:00Z",
+          "updatedAt": "2026-07-23T12:30:00Z"
         }
       },
       "health": {

@@ -26,10 +26,14 @@
     "@saflib/cron": "*",
     "@saflib/express": "*",
     "@saflib/jobs": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "http-errors": "^2.0.0"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@types/http-errors": "^2.0.0",
+    "supertest": "^7.0.0"
   },
   "sideEffects": false
 }

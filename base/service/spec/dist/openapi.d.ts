@@ -66,6 +66,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/user-configs/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get or lazy-create the caller's user config
+         * @description Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`displayName` empty string, `marketingEmailsOptIn` false, `marketingEmailsOptInAt` null, `termsOfServiceAgreedAt` null) and returns that row.
+         *     **Lazy-create pattern:** empty `user_config` rows are created on first GET (not via a Kratos registration webhook). This keeps Kratos auth-only and the product DB responsible for user-facing prefs.
+         */
+        get: operations["getMineUserConfigs"];
+        /**
+         * Update the caller's user config
+         * @description Upserts the authenticated user's display name and marketing email preference. Lazy-creates the `user_config` row when missing. `displayName` is trimmed; empty or whitespace-only values are rejected. When `marketingEmailsOptIn` becomes `true`, sets `marketingEmailsOptInAt` to now if newly opted in; when set to `false`, clears `marketingEmailsOptInAt` to null. Pass `termsOfServiceAgreedAt: "now"` to record Terms of Service agreement at the server's current time (preserved once set; not overwritten). `userId`, timestamps, and client-supplied ISO values for `marketingEmailsOptInAt` / `termsOfServiceAgreedAt` may be included when echoing a prior GET but are ignored — ownership and timestamps are server-controlled.
+         */
+        put: operations["putMineUserConfigs"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user-configs/unsubscribe-marketing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Public marketing-email unsubscribe
+         * @description Clears marketing email opt-in for the identity matching the given address, when one exists. Always returns **200** with an empty success payload — never reveals whether the email is known, whether a `user_config` row exists, or the prior opt-in state. Tagged `no-auth` (and therefore CSRF-exempt) so unsubscribe links work without a session.
+         */
+        post: operations["unsubscribeMarketingEmailsUserConfigs"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "__url-path__": {
         parameters: {
             query?: never;
@@ -105,6 +150,7 @@ export interface components {
     schemas: {
         Error: _Ext0_Error;
         ProductEvent: components["schemas"]["index"];
+        UserConfig: components["schemas"]["user-config"];
         __TargetName__: components["schemas"]["__target-name__"];
         "jobs-demo-options": {
             /** @description Optional dedupe key forwarded to the enqueued job. */
@@ -317,6 +363,59 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /**
+         * @description Product-owned preferences for the signed-in user (owner-only). Keyed by Kratos identity id. Holds display name, marketing email consent, and Terms of Service agreement — not auth traits. Kratos owns identity/credentials/sessions; this resource is the Kratos-minimal product DB pattern.
+         * @example {
+         *       "userId": "user_abc123",
+         *       "displayName": "Alex Rivera",
+         *       "marketingEmailsOptIn": false,
+         *       "marketingEmailsOptInAt": null,
+         *       "termsOfServiceAgreedAt": null,
+         *       "createdAt": "2026-07-23T00:00:00Z",
+         *       "updatedAt": "2026-07-23T12:30:00Z"
+         *     }
+         */
+        "user-config": {
+            /**
+             * @description Kratos identity id of the owning user.
+             * @example user_abc123
+             */
+            userId: string;
+            /**
+             * @description How the user appears to themselves and to others. May be empty after lazy-create until the first save; PUT requires a non-empty trimmed value.
+             * @example Alex Rivera
+             */
+            displayName: string;
+            /**
+             * @description Explicit consent for product/marketing email. Defaults to false until the user opts in.
+             * @example false
+             */
+            marketingEmailsOptIn: boolean;
+            /**
+             * Format: date-time
+             * @description When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketingEmailsOptIn` becomes false).
+             * @example null
+             */
+            marketingEmailsOptInAt: string | null;
+            /**
+             * Format: date-time
+             * @description When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `termsOfServiceAgreedAt: "now"`). Once set, later preference updates do not clear or overwrite it.
+             * @example null
+             */
+            termsOfServiceAgreedAt: string | null;
+            /**
+             * Format: date-time
+             * @description When the user config row was created.
+             * @example 2026-07-23T00:00:00Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description When the user config row was last updated.
+             * @example 2026-07-23T12:30:00Z
+             */
+            updatedAt: string;
+        };
         health: {
             /** @example ok */
             status: string;
@@ -523,6 +622,163 @@ export interface operations {
             };
             /** @description Forbidden - user does not have required privileges. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getMineUserConfigs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Caller's user config. Always present after this call (created with defaults when missing). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Owner-only preferences for the signed-in user. */
+                        userConfig: components["schemas"]["user-config"];
+                    };
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    putMineUserConfigs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description How the user appears to themselves and others. Trimmed server-side; must be non-empty after trim. Max length 80.
+                     * @example Alex Rivera
+                     */
+                    displayName: string;
+                    /**
+                     * @description Explicit consent for product/marketing email. When flipped to true, `marketingEmailsOptInAt` is set; when flipped to false, that timestamp is cleared.
+                     * @example false
+                     */
+                    marketingEmailsOptIn: boolean;
+                    /**
+                     * @description Pass the literal string `now` to record Terms of Service agreement using the server clock. Any other value (including ISO timestamps from a prior GET, or null) is ignored. Once recorded, the agreement timestamp is not cleared or overwritten.
+                     * @example now
+                     */
+                    termsOfServiceAgreedAt?: string | null;
+                    userId?: string;
+                    /** Format: date-time */
+                    marketingEmailsOptInAt?: string | null;
+                    /** Format: date-time */
+                    createdAt?: string;
+                    /** Format: date-time */
+                    updatedAt?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description User config updated (or created then updated). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Owner-only preferences for the signed-in user after upsert. */
+                        userConfig: components["schemas"]["user-config"];
+                    };
+                };
+            };
+            /** @description `displayName` is empty or whitespace-only after trim. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    unsubscribeMarketingEmailsUserConfigs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Address to unsubscribe from marketing email.
+                     * @example alex@example.com
+                     */
+                    email: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Request accepted. Does not indicate whether the email matched an account or whether preferences changed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Invalid request body (e.g. missing or malformed email). */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

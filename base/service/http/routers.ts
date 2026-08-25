@@ -1,7 +1,7 @@
 import type { Router } from "express";
 
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
-import { create__GroupName__Router } from "./handlers/__group-name__/index.ts";
+import { createUserConfigsRouter } from "./handlers/user-configs/index.ts";
 // END WORKFLOW AREA
 
 export type GroupRouterMount = {
@@ -16,7 +16,7 @@ export type GroupRouterMount = {
 export function groupRouterMounts(): GroupRouterMount[] {
   return [
     // BEGIN WORKFLOW AREA router-mounts FOR express/add-handler
-    { kind: "router", createRouter: create__GroupName__Router },
+    { kind: "router", createRouter: createUserConfigsRouter },
     // END WORKFLOW AREA
   ];
 }

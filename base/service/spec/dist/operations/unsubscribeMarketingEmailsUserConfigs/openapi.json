@@ -1,0 +1,84 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "unsubscribeMarketingEmailsUserConfigs",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/user-configs/unsubscribe-marketing": {
+      "post": {
+        "summary": "Public marketing-email unsubscribe",
+        "operationId": "unsubscribeMarketingEmailsUserConfigs",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Clears marketing email opt-in for the identity matching the given address, when one exists. Always returns **200** with an empty success payload — never reveals whether the email is known, whether a `user_config` row exists, or the prior opt-in state. Tagged `no-auth` (and therefore CSRF-exempt) so unsubscribe links work without a session.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "description": "Address to unsubscribe from marketing email.",
+                    "example": "alex@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Request accepted. Does not indicate whether the email matched an account or whether preferences changed.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body (e.g. missing or malformed email).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

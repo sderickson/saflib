@@ -14,6 +14,14 @@ paths:
   /jobs-demo/step-c:
     post:
       $ref: "./routes/jobs-demo/step-c.yaml#/jobsDemoStepC"
+  /user-configs/mine:
+    get:
+      $ref: "./routes/user-configs/get-mine.yaml#/getMineUserConfigs"
+    put:
+      $ref: "./routes/user-configs/put-mine.yaml#/putMineUserConfigs"
+  /user-configs/unsubscribe-marketing:
+    post:
+      $ref: "./routes/user-configs/unsubscribe-marketing.yaml#/unsubscribeMarketingEmailsUserConfigs"
   # BEGIN WORKFLOW AREA route-paths FOR openapi/route
   __url-path__:
     __method__:
@@ -32,6 +40,8 @@ components:
       $ref: "pkg:@saflib/openapi/schemas/error.yaml"
     ProductEvent:
       $ref: "./events/index.yaml"
+    UserConfig:
+      $ref: "./schemas/user-config.yaml"
     # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
     __TargetName__:
       $ref: "./schemas/__target-name__.yaml"

@@ -7,11 +7,8 @@ import {
 import { accountLinks } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
 
-// TODO: remove this log once accountLinks is being used by the routes
-console.log("accountLinks:", accountLinks);
-
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
-
+import ProfileAsync from "./pages/profile/ProfileAsync.vue";
 // END WORKFLOW AREA
 
 export const createAccountRouter = (options?: {
@@ -19,10 +16,10 @@ export const createAccountRouter = (options?: {
 }) => {
   const routes: RouteRecordRaw[] = [
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
-
-
-
-
+    {
+      path: accountLinks.profile.path,
+      component: ProfileAsync,
+    },
     // END WORKFLOW AREA
     { path: "/:pathMatch(.*)*", component: PageNotFound },
   ];
