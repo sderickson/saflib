@@ -51,7 +51,7 @@ describe("AnalyticsEventsPage", () => {
 
   it("renders client and server events from the list endpoint", async () => {
     const wrapper = mountTestApp(AnalyticsEventsPage, {
-      props: { subdomain: "test" },
+      props: {},
     });
 
     await vi.waitFor(() => {

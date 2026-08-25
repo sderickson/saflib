@@ -1,5 +1,5 @@
 <template>
-  <AnalyticsEventsPage subdomain="base" />
+  <AnalyticsEventsPage />
 </template>
 
 <script setup lang="ts">

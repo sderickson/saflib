@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./requests/*": "./requests/*.ts"
+    "./requests/*": "./requests/*.ts",
+    ".": "./client.ts",
+    "./client": "./client.ts"
   },
   "scripts": {
     "test": "vitest run",

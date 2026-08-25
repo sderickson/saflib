@@ -196,9 +196,7 @@ import {
   type ListJobsQuery,
 } from "../requests/queries";
 
-const { subdomain } = defineProps<{
-  subdomain: string;
-}>();
+
 
 const pageSize = 20;
 const offset = ref(0);
@@ -247,7 +245,7 @@ const {
   data: listData,
   isLoading: isLoadingJobs,
   error: jobsError,
-} = useListJobs(subdomain, listFilters);
+} = useListJobs(listFilters);
 
 const jobs = computed(() => listData.value?.jobs ?? []);
 const hasNextPage = computed(() => jobs.value.length >= pageSize);
@@ -256,25 +254,25 @@ const {
   data: jobDetail,
   isLoading: isLoadingDetail,
   error: detailError,
-} = useGetJob(subdomain, selectedJobId);
+} = useGetJob(selectedJobId);
 
 const {
   mutate: retryMutate,
   isPending: isRetrying,
   error: retryError,
-} = useRetryJob(subdomain);
+} = useRetryJob();
 
 const {
   mutate: cancelMutate,
   isPending: isCancelling,
   error: cancelError,
-} = useCancelJob(subdomain);
+} = useCancelJob();
 
 const {
   mutate: massCancelMutate,
   isPending: isMassCancelling,
   error: massCancelError,
-} = useCancelJobsByOriginalRequest(subdomain);
+} = useCancelJobsByOriginalRequest();
 
 const isMutating = computed(
   () => isRetrying.value || isCancelling.value || isMassCancelling.value,

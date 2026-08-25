@@ -87,9 +87,7 @@ import { ref } from "vue";
 import type { JobSettings } from "@saflib/cron-spec";
 import { useListCronJobs, useUpdateCronJobSettings } from "../requests/queries";
 
-const { subdomain } = defineProps<{
-  subdomain: string;
-}>();
+
 
 const updatingJobId = ref<string | null>(null);
 
@@ -107,13 +105,13 @@ const {
   data: jobs,
   isLoading: isLoadingJobs,
   error: jobsError,
-} = useListCronJobs(subdomain);
+} = useListCronJobs();
 
 const {
   mutate: updateSettings,
   isPending: isUpdating,
   error: updateError,
-} = useUpdateCronJobSettings(subdomain);
+} = useUpdateCronJobSettings();
 
 const toggleJobStatus = (jobName: string, enabled: boolean) => {
   updatingJobId.value = jobName;

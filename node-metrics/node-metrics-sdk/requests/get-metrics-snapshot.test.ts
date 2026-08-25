@@ -20,13 +20,13 @@ const mockSnapshot: SnapshotResponse = {
 
 describe("useGetMetricsSnapshot", () => {
   setupMockServer([
-    http.get("http://test.localhost:3000/admin/metrics/snapshot", () =>
+    http.get("http://api.localhost:3000/admin/metrics/snapshot", () =>
       HttpResponse.json(mockSnapshot),
     ),
   ]);
 
   it("fetches the metrics snapshot", async () => {
-    const [query, app] = withVueQuery(() => useGetMetricsSnapshot("test"));
+    const [query, app] = withVueQuery(() => useGetMetricsSnapshot());
     await query.refetch();
     expect(query.data.value?.metrics).toEqual(mockSnapshot.metrics);
     app.unmount();

@@ -1,5 +1,5 @@
 <template>
-  <DevLogsPage subdomain="base" />
+  <DevLogsPage />
 </template>
 
 <script setup lang="ts">

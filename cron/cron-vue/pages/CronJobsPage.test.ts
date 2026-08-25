@@ -64,14 +64,14 @@ const formatDateTime = (dateTimeString: string | null | undefined): string => {
 const handlers = [
   // Default success for listing jobs
   http.get<PathParams, never, ListCronJobsResponse>(
-    "http://test.localhost:3000/cron/jobs",
+    "http://api.localhost:3000/cron/jobs",
     () => {
       return HttpResponse.json(mockJobs);
     },
   ),
   // Default success for updating settings
   http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-    "http://test.localhost:3000/cron/jobs/settings",
+    "http://api.localhost:3000/cron/jobs/settings",
     async ({ request }) => {
       const body = await request.json();
       return HttpResponse.json({
@@ -88,11 +88,9 @@ describe("CronJobsPage", () => {
   const server = setupMockServer(handlers); // Sets up MSW server
 
   const mountComponent = async (waitForData = true) => {
-    await router.push("/cron/jobs?subdomain=test");
+    await router.push("/cron/jobs");
     const wrapper = mountTestApp(CronJobsPage, {
-      propsData: {
-        subdomain: "test",
-      },
+      props: {},
     });
     if (waitForData) {
       await vi.waitFor(() => {
@@ -202,7 +200,7 @@ describe("CronJobsPage", () => {
     let receivedRequestBody: UpdateSettingsRequest | null = null;
     server.use(
       http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-        "http://test.localhost:3000/cron/jobs/settings",
+        "http://api.localhost:3000/cron/jobs/settings",
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({
@@ -245,7 +243,7 @@ describe("CronJobsPage", () => {
     let receivedRequestBody: UpdateSettingsRequest | null = null;
     server.use(
       http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-        "http://test.localhost:3000/cron/jobs/settings",
+        "http://api.localhost:3000/cron/jobs/settings",
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({

@@ -35,16 +35,19 @@ const mockAuditLogs: ListAuditLogsResponse = {
   nextCursor: null,
 };
 
+vi.mock("@saflib/audit-sdk/client", () => ({
+  getClient: () => ({
+    GET: vi.fn(async () => ({
+      response: { status: 200 },
+      data: mockAuditLogs,
+    })),
+  }),
+}));
+
 vi.mock("@saflib/sdk", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@saflib/sdk")>();
   return {
     ...actual,
-    createSafClient: () => ({
-      GET: vi.fn(async () => ({
-        response: { status: 200 },
-        data: mockAuditLogs,
-      })),
-    }),
     handleClientMethod: async (p: Promise<{ data?: unknown }>) => {
       const result = await p;
       return result.data;
@@ -59,7 +62,7 @@ describe("AuditLogPage", () => {
 
   it("renders audit rows", async () => {
     const wrapper = mountTestApp(AuditLogPage, {
-      props: { subdomain: "api" },
+      props: {},
     });
 
     await vi.waitFor(() => {

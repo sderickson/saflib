@@ -1,15 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
-import type { AuditResponseBody, paths } from "@saflib/audit-spec/types";
-import { TanstackError, createSafClient, handleClientMethod } from "@saflib/sdk";
+import type { AuditResponseBody } from "@saflib/audit-spec/types";
+import { TanstackError, handleClientMethod } from "@saflib/sdk";
+import { getClient } from "../client.ts";
 
 export type SealAuditLogMutationResult =
   | AuditResponseBody["sealAuditLog"][200]
   | AuditResponseBody["sealAuditLog"][409];
 
-export async function sealAuditLog(
-  subdomain: string,
-): Promise<SealAuditLogMutationResult> {
-  const client = createSafClient<paths>(subdomain);
+export async function sealAuditLog(): Promise<SealAuditLogMutationResult> {
+  const client = getClient();
   const result = await client.POST("/audit-logs/seal", {});
 
   if (result.response.status === 409) {
@@ -27,11 +26,11 @@ export async function sealAuditLog(
   );
 }
 
-export function useSealAuditLog(subdomain: string) {
+export function useSealAuditLog() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => sealAuditLog(subdomain),
+    mutationFn: () => sealAuditLog(),
     onSuccess: (data) => {
       if (data.auditSealResult.status === "sealed") {
         queryClient.invalidateQueries({ queryKey: ["audit-logs"] });

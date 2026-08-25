@@ -1,5 +1,5 @@
 <template>
-  <JobsPage subdomain="base" />
+  <JobsPage />
 </template>
 
 <script setup lang="ts">

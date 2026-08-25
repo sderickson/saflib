@@ -50,7 +50,7 @@ describe("MetricsPage", () => {
 
   it("renders metric rows from the snapshot endpoint", async () => {
     const wrapper = mountTestApp(MetricsPage, {
-      props: { subdomain: "test" },
+      props: {},
     });
 
     await vi.waitFor(() => {
@@ -64,7 +64,7 @@ describe("MetricsPage", () => {
 
   it("filters metrics by selected name", async () => {
     const wrapper = mountTestApp(MetricsPage, {
-      props: { subdomain: "test" },
+      props: {},
     });
 
     await vi.waitFor(() => {

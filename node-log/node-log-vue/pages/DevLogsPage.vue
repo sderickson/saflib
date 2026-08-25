@@ -105,13 +105,6 @@ import { computed, nextTick, ref, shallowRef, watch } from "vue";
 import type { DevLogEntry } from "@saflib/node-log-spec";
 import { useListDevLogs, useStreamDevLogs } from "@saflib/node-log-sdk";
 
-const props = withDefaults(
-  defineProps<{
-    /** API subdomain (typically `api`). */
-    subdomain?: string;
-  }>(),
-  { subdomain: "api" },
-);
 
 const filter = ref("");
 const levelFilter = ref("all");
@@ -136,7 +129,7 @@ const {
   error: listError,
   isLoading: isLoadingList,
   refetch,
-} = useListDevLogs(props.subdomain);
+} = useListDevLogs();
 
 const initialLogs = shallowRef<DevLogEntry[]>([]);
 watch(
@@ -153,7 +146,7 @@ const {
   errorMessage: streamErrorMessage,
   reconnect,
   clearLocal,
-} = useStreamDevLogs(props.subdomain, {
+} = useStreamDevLogs({
   paused,
   initialLogs,
 });

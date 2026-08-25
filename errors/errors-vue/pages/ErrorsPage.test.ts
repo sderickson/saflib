@@ -58,7 +58,7 @@ describe("ErrorsPage", () => {
 
   it("renders unified client, CSP, and test errors", async () => {
     const wrapper = mountTestApp(ErrorsPage, {
-      props: { subdomain: "test" },
+      props: {},
     });
 
     await vi.waitFor(() => {

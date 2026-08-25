@@ -180,13 +180,6 @@ import {
   type MetricFilter,
 } from "./MetricsPage.logic.ts";
 
-const props = withDefaults(
-  defineProps<{
-    /** API subdomain (typically `api`). */
-    subdomain?: string;
-  }>(),
-  { subdomain: "api" },
-);
 
 const selectedName = ref<string | null>(null);
 const splitLabel = ref<string | null>(null);
@@ -198,7 +191,7 @@ const {
   error,
   isLoading,
   refetch,
-} = useGetMetricsSnapshot(props.subdomain);
+} = useGetMetricsSnapshot();
 
 const metrics = computed<MetricSnapshot[]>(() => data.value?.metrics ?? []);
 

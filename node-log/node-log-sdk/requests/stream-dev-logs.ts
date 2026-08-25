@@ -75,10 +75,7 @@ function mergeEntries(
  * Tails `GET /dev/logs/stream` via fetch + ReadableStream (SSE).
  * Development-only; surfaces connection status for admin UI.
  */
-export function useStreamDevLogs(
-  subdomain: string,
-  options: UseStreamDevLogsOptions = {},
-) {
+export function useStreamDevLogs(options: UseStreamDevLogsOptions = {}) {
   const logs = shallowRef<DevLogEntry[]>(options.initialLogs?.value ?? []);
   const status = ref<DevLogsStreamStatus>("connecting");
   const errorMessage = ref("");
@@ -87,7 +84,7 @@ export function useStreamDevLogs(
   let pending: DevLogEntry[] = [];
   let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
-  const apiBase = getBaseUrl(subdomain);
+  const apiBase = getBaseUrl("api");
 
   function applyEntries(entries: DevLogEntry[]) {
     if (entries.length === 0) return;

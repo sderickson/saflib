@@ -44,7 +44,7 @@ vi.mock("@saflib/node-log-sdk", async (importOriginal) => {
 });
 
 const handlers = [
-  http.get("http://test.localhost:3000/dev/logs", () => {
+  http.get("http://api.localhost:3000/dev/logs", () => {
     return HttpResponse.json(mockLogs);
   }),
 ];
@@ -57,7 +57,7 @@ describe("DevLogsPage", () => {
 
   it("renders log entries from the list endpoint", async () => {
     const wrapper = mountTestApp(DevLogsPage, {
-      props: { subdomain: "test" },
+      props: {},
     });
 
     await vi.waitFor(() => {
@@ -69,7 +69,7 @@ describe("DevLogsPage", () => {
 
   it("filters logs by search text", async () => {
     const wrapper = mountTestApp(DevLogsPage, {
-      props: { subdomain: "test" },
+      props: {},
     });
 
     await vi.waitFor(() => {

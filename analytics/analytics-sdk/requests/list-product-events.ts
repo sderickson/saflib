@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/vue-query";
 import type { Ref } from "vue";
 import { computed, unref } from "vue";
-import type { AnalyticsResponseBody, paths } from "@saflib/analytics-spec";
-import { TanstackError, createSafClient, handleClientMethod } from "@saflib/sdk";
+import type { AnalyticsResponseBody } from "@saflib/analytics-spec";
+import { TanstackError, handleClientMethod } from "@saflib/sdk";
+import { getClient } from "../client.ts";
 
 export interface UseListProductEventsOptions {
   name?: Ref<string | undefined>;
@@ -10,10 +11,9 @@ export interface UseListProductEventsOptions {
 }
 
 export function useListProductEvents(
-  subdomain: string,
   options: UseListProductEventsOptions = {},
 ) {
-  const client = createSafClient<paths>(subdomain);
+  const client = getClient();
   return useQuery<AnalyticsResponseBody["listProductEvents"][200], TanstackError>({
     queryKey: computed(() => [
       "product-events",

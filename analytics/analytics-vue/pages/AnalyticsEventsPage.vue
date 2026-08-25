@@ -72,13 +72,6 @@
 import { computed, ref } from "vue";
 import { useListProductEvents } from "@saflib/analytics-sdk";
 
-const props = withDefaults(
-  defineProps<{
-    /** API subdomain (typically `api`). */
-    subdomain?: string;
-  }>(),
-  { subdomain: "api" },
-);
 
 const nameFilter = ref("");
 
@@ -87,7 +80,7 @@ const {
   error,
   isLoading,
   refetch,
-} = useListProductEvents(props.subdomain);
+} = useListProductEvents();
 
 const productEvents = computed(() => data.value?.productEvents ?? []);
 

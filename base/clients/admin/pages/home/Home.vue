@@ -16,7 +16,7 @@
     </div>
 
     <div class="mt-4">
-      <ErrorSmokeWidgets subdomain="base" />
+      <ErrorSmokeWidgets />
     </div>
   </v-container>
 </template>

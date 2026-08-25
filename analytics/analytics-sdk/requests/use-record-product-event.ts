@@ -3,12 +3,12 @@ import type { AnalyticsRequestBody } from "@saflib/analytics-spec";
 import { TanstackError } from "@saflib/sdk";
 import { recordProductEvent } from "./record-product-event.ts";
 
-export function useRecordProductEvent(subdomain: string) {
+export function useRecordProductEvent() {
   return useMutation<
     void,
     TanstackError,
     AnalyticsRequestBody["recordProductEvent"]
   >({
-    mutationFn: (body) => recordProductEvent(subdomain, body),
+    mutationFn: (body) => recordProductEvent(body),
   });
 }

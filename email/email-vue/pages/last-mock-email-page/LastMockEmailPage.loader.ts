@@ -2,25 +2,17 @@ import { computed, type Ref } from "vue";
 import { useQuery } from "@tanstack/vue-query";
 import { useRoute } from "vue-router";
 import { handleClientMethod } from "@saflib/sdk";
-import { createSafClient } from "@saflib/sdk";
-import type { paths as emailPaths } from "@saflib/email-spec";
 import {
   kratosEmailFromSession,
   useKratosSession,
 } from "@saflib/ory-kratos-sdk";
+import { getClient } from "../../client.ts";
 
-export const getSentEmails = (
-  subdomain: Ref<string>,
-  userEmail: Ref<string>,
-) => {
+export const getSentEmails = (userEmail: Ref<string>) => {
   return {
-    queryKey: computed(() => [
-      "sent-emails",
-      subdomain.value,
-      userEmail.value,
-    ]),
+    queryKey: computed(() => ["sent-emails", userEmail.value]),
     queryFn: async () => {
-      const client = createSafClient<emailPaths>(subdomain.value);
+      const client = getClient();
       const q = userEmail.value.trim();
       return handleClientMethod(
         client.GET("/email/sent", {
@@ -34,14 +26,6 @@ export const getSentEmails = (
 export function useLastMockEmailPageLoader() {
   const route = useRoute();
   const { data: session, status: sessionStatus } = useKratosSession();
-
-  const subdomain = computed(() => {
-    const q = route.query.subdomain;
-    if (typeof q === "string" && q.trim()) {
-      return q.trim();
-    }
-    return "api";
-  });
 
   const userEmail = computed(() => {
     const q = route.query.userEmail;
@@ -66,7 +50,7 @@ export function useLastMockEmailPageLoader() {
 
   return {
     sentEmailsQuery: useQuery({
-      ...getSentEmails(subdomain, userEmail),
+      ...getSentEmails(userEmail),
       enabled: sentEmailsEnabled,
     }),
   };

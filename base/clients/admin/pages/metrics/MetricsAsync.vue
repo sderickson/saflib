@@ -1,5 +1,5 @@
 <template>
-  <MetricsPage subdomain="base" />
+  <MetricsPage />
 </template>
 
 <script setup lang="ts">

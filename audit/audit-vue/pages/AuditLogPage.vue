@@ -94,17 +94,15 @@ import { useSealAuditLog } from "@saflib/audit-sdk/requests/seal-audit-log";
 import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
 import { showError, showInfo } from "@saflib/vue";
 import { computed, onMounted, ref } from "vue";
-import { createSafClient, handleClientMethod } from "@saflib/sdk";
-import type { paths } from "@saflib/audit-spec/types";
+import { handleClientMethod } from "@saflib/sdk";
+import { getClient } from "@saflib/audit-sdk/client";
 
 const props = withDefaults(
   defineProps<{
-    subdomain?: string;
     description?: string;
     sealEnabled?: boolean;
   }>(),
   {
-    subdomain: "api",
     sealEnabled: false,
   },
 );
@@ -120,7 +118,7 @@ const spanTail = ref<string | null>(null);
 const spanChecked = ref(false);
 const loading = ref(false);
 
-const sealMutation = useSealAuditLog(props.subdomain);
+const sealMutation = useSealAuditLog();
 const sealPending = computed(() => sealMutation.isPending.value);
 
 const headers = [
@@ -166,7 +164,7 @@ function parseFromFilter(): { ok: true; from?: string } | { ok: false } {
 async function fetchPage(append: boolean) {
   loading.value = true;
   try {
-    const client = createSafClient<paths>(props.subdomain);
+    const client = getClient();
     const data = await handleClientMethod(
       client.GET("/audit-logs", {
         params: {

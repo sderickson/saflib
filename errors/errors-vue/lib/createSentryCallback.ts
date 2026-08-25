@@ -5,8 +5,6 @@ import { reportClientErrorToBackend } from "./reportClientErrorToBackend.ts";
 export interface SentryCallbackOptions {
   /** SPA or client name recorded as `source`. */
   source?: string;
-  /** API subdomain (typically `api`). */
-  subdomain?: string;
 }
 
 /**
@@ -15,12 +13,11 @@ export interface SentryCallbackOptions {
  */
 export function createSentryCallback(options: SentryCallbackOptions = {}) {
   const source = options.source ?? "client";
-  const subdomain = options.subdomain ?? "api";
 
   return function sentryCallback(app: ReturnType<typeof createApp>) {
     const priorErrorHandler = app.config.errorHandler;
     app.config.errorHandler = (error, instance, info) => {
-      void reportClientErrorToBackend(error, { subdomain, source });
+      void reportClientErrorToBackend(error, { source });
       if (priorErrorHandler) {
         priorErrorHandler(error, instance, info);
       }
@@ -45,7 +42,6 @@ export function createSentryCallback(options: SentryCallbackOptions = {}) {
           event.exception?.values?.[0]?.value ??
           "Unknown client error";
         void reportClientErrorToBackend(new Error(message), {
-          subdomain,
           source,
         });
         return event;

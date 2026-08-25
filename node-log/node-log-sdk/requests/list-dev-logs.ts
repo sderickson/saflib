@@ -2,19 +2,16 @@ import { useQuery } from "@tanstack/vue-query";
 import type { Ref } from "vue";
 import { computed, unref } from "vue";
 import type { DevLogResponseBody } from "@saflib/node-log-spec";
-import type { paths } from "@saflib/node-log-spec";
-import { TanstackError, createSafClient, handleClientMethod } from "@saflib/sdk";
+import { TanstackError, handleClientMethod } from "@saflib/sdk";
+import { getClient } from "../client.ts";
 
 export interface UseListDevLogsOptions {
   after?: Ref<number | undefined>;
   limit?: Ref<number | undefined>;
 }
 
-export function useListDevLogs(
-  subdomain: string,
-  options: UseListDevLogsOptions = {},
-) {
-  const client = createSafClient<paths>(subdomain);
+export function useListDevLogs(options: UseListDevLogsOptions = {}) {
+  const client = getClient();
   return useQuery<DevLogResponseBody["listDevLogs"][200], TanstackError>({
     queryKey: computed(() => [
       "dev-logs",

@@ -23,14 +23,8 @@ import { onMounted, onUnmounted } from "vue";
 import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
 import { showError } from "@saflib/vue";
 
-const props = withDefaults(
-  defineProps<{
-    subdomain?: string;
-  }>(),
-  { subdomain: "api" },
-);
 
-const postTestError = usePostAdminTestErrorMutation(props.subdomain);
+const postTestError = usePostAdminTestErrorMutation();
 
 let expectCspViolationFeedback = false;
 let cspViolationFeedbackTimer: number | undefined;

@@ -1,5 +1,5 @@
 <template>
-  <AuditLogPage subdomain="base" />
+  <AuditLogPage />
 </template>
 
 <script setup lang="ts">

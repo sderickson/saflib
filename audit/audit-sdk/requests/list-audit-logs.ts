@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/vue-query";
 import type { Ref } from "vue";
 import { computed, unref } from "vue";
-import type { AuditResponseBody, paths } from "@saflib/audit-spec/types";
-import { TanstackError, createSafClient, handleClientMethod } from "@saflib/sdk";
+import type { AuditResponseBody } from "@saflib/audit-spec/types";
+import { TanstackError, handleClientMethod } from "@saflib/sdk";
+import { getClient } from "../client.ts";
 
 export interface UseListAuditLogsOptions {
   from?: Ref<string | undefined>;
@@ -11,11 +12,8 @@ export interface UseListAuditLogsOptions {
   order?: Ref<"asc" | "desc" | undefined>;
 }
 
-export function useListAuditLogs(
-  subdomain: string,
-  options: UseListAuditLogsOptions = {},
-) {
-  const client = createSafClient<paths>(subdomain);
+export function useListAuditLogs(options: UseListAuditLogsOptions = {}) {
+  const client = getClient();
   return useQuery<AuditResponseBody["listAuditLogs"][200], TanstackError>({
     queryKey: computed(() => [
       "audit-logs",

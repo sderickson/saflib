@@ -1,5 +1,5 @@
 <template>
-  <CronJobsPage subdomain="base" />
+  <CronJobsPage />
 </template>
 
 <script setup lang="ts">

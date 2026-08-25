@@ -1,5 +1,5 @@
 <template>
-  <ErrorsPage subdomain="base" />
+  <ErrorsPage />
 </template>
 
 <script setup lang="ts">

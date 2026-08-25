@@ -4,9 +4,9 @@ import { computed, unref } from "vue";
 import type {
   ErrorsResponseBody,
   ReportedError,
-  paths,
 } from "@saflib/errors-spec";
-import { TanstackError, createSafClient, handleClientMethod } from "@saflib/sdk";
+import { TanstackError, handleClientMethod } from "@saflib/sdk";
+import { getClient } from "../client.ts";
 
 export type ReportedErrorKind = ReportedError["kind"];
 
@@ -17,10 +17,9 @@ export interface UseListReportedErrorsOptions {
 }
 
 export function useListReportedErrors(
-  subdomain: string,
   options: UseListReportedErrorsOptions = {},
 ) {
-  const client = createSafClient<paths>(subdomain);
+  const client = getClient();
   return useQuery<ErrorsResponseBody["listReportedErrors"][200], TanstackError>({
     queryKey: computed(() => [
       "reported-errors",

@@ -84,13 +84,6 @@ import { computed, ref } from "vue";
 import type { ReportedError } from "@saflib/errors-spec";
 import { useListReportedErrors } from "@saflib/errors-sdk";
 
-const props = withDefaults(
-  defineProps<{
-    /** API subdomain (typically `api`). */
-    subdomain?: string;
-  }>(),
-  { subdomain: "api" },
-);
 
 const kindFilter = ref<ReportedError["kind"] | undefined>();
 const sourceFilter = ref("");
@@ -107,7 +100,7 @@ const {
   error,
   isLoading,
   refetch,
-} = useListReportedErrors(props.subdomain);
+} = useListReportedErrors();
 
 const reportedErrors = computed(() => data.value?.reportedErrors ?? []);
 

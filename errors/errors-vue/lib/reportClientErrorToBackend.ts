@@ -2,8 +2,6 @@ import { recordReportedError } from "@saflib/errors-sdk";
 import type { ErrorsRequestBody } from "@saflib/errors-spec";
 
 export interface ClientErrorReporterOptions {
-  /** API subdomain (typically `api`). */
-  subdomain?: string;
   /** SPA or client name recorded as `source`. */
   source?: string;
 }
@@ -34,10 +32,9 @@ export async function reportClientErrorToBackend(
   error: unknown,
   options: ClientErrorReporterOptions = {},
 ): Promise<void> {
-  const subdomain = options.subdomain ?? "api";
   const source = options.source ?? "client";
   try {
-    await recordReportedError(subdomain, {
+    await recordReportedError({
       reportedError: errorToReportedError(error, source),
     });
   } catch (reportError) {

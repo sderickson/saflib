@@ -23,7 +23,7 @@ export const adminLinks: LinkMap = {
   emails: {
     subdomain,
     path: "/emails",
-    params: ["subdomain", "userEmail"],
+    params: ["userEmail"],
   },
   logs: {
     subdomain,

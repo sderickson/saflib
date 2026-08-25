@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/vue-query";
 import type { MetricsResponseBody } from "@saflib/node-metrics-spec";
-import type { paths } from "@saflib/node-metrics-spec";
-import { TanstackError, createSafClient, handleClientMethod } from "@saflib/sdk";
+import { TanstackError, handleClientMethod } from "@saflib/sdk";
+import { getClient } from "../client.ts";
 
-export function useGetMetricsSnapshot(subdomain: string) {
-  const client = createSafClient<paths>(subdomain);
+export function useGetMetricsSnapshot() {
+  const client = getClient();
   return useQuery<MetricsResponseBody["getMetricsSnapshot"][200], TanstackError>({
     queryKey: ["metrics", "snapshot"],
     queryFn: () =>
