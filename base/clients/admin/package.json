@@ -22,12 +22,23 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@saflib/admin": "*",
+    "@saflib/analytics-vue": "*",
+    "@saflib/audit-vue": "*",
     "@saflib/base-clients-common": "*",
     "@saflib/base-links": "*",
     "@saflib/base-sdk": "*",
-    "@saflib/ory-kratos-sdk": "*",
-    "@saflib/vue": "*",
+    "@saflib/cron-vue": "*",
+    "@saflib/email-vue": "*",
+    "@saflib/errors-vue": "*",
+    "@saflib/jobs-vue": "*",
     "@saflib/links": "*",
+    "@saflib/node-log-vue": "*",
+    "@saflib/node-metrics-vue": "*",
+    "@saflib/ory-kratos-sdk": "*",
+    "@saflib/ory-kratos-spa": "*",
+    "@saflib/playwright": "*",
+    "@saflib/vue": "*",
     "vue-router": "^5.0.0"
   },
   "sideEffects": false

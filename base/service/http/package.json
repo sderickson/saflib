@@ -17,7 +17,6 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@saflib/base-__offshoot-name__-http": "*",
     "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",

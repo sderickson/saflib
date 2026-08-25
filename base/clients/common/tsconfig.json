@@ -40,10 +40,13 @@
       "path": "../../../vue"
     },
     {
-      "path": "../links"
+      "path": "../../service/sdk"
     },
     {
       "path": "../../service/spec"
+    },
+    {
+      "path": "../links"
     }
   ],
   "include": [

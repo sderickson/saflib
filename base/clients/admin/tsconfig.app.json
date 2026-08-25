@@ -25,10 +25,43 @@
   ],
   "references": [
     {
+      "path": "../../../admin"
+    },
+    {
+      "path": "../../../analytics/analytics-vue"
+    },
+    {
+      "path": "../../../audit/audit-vue"
+    },
+    {
+      "path": "../../../cron/cron-vue"
+    },
+    {
+      "path": "../../../email/email-vue"
+    },
+    {
+      "path": "../../../errors/errors-vue"
+    },
+    {
+      "path": "../../../jobs/jobs-vue"
+    },
+    {
       "path": "../../../links"
     },
     {
+      "path": "../../../node-log/node-log-vue"
+    },
+    {
+      "path": "../../../node-metrics/node-metrics-vue"
+    },
+    {
       "path": "../../../ory-kratos-sdk"
+    },
+    {
+      "path": "../../../ory-kratos-spa"
+    },
+    {
+      "path": "../../../playwright"
     },
     {
       "path": "../../../vue"

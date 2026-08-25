@@ -127,6 +127,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/users/by-id": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Look up a Kratos identity by ID (site-admin) */
+        get: operations["getUsersByIdAdmin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/__offshoot-name__/health": {
         parameters: {
             query?: never;
@@ -152,6 +169,7 @@ export interface components {
         ProductEvent: components["schemas"]["index"];
         UserConfig: components["schemas"]["user-config"];
         __TargetName__: components["schemas"]["__target-name__"];
+        KratosIdentity: components["schemas"]["kratos-identity"];
         "jobs-demo-options": {
             /** @description Optional dedupe key forwarded to the enqueued job. */
             dedupeKey?: string | null;
@@ -415,6 +433,25 @@ export interface components {
              * @example 2026-07-23T12:30:00Z
              */
             updatedAt: string;
+        };
+        /** @description Ory Kratos identity as returned by the admin API. Extra fields from Kratos are allowed. `id` is the Kratos identity UUID (not a product `generateShortId`). */
+        "kratos-identity": {
+            /**
+             * Format: uuid
+             * @description Kratos identity id.
+             */
+            id: string;
+            schema_id?: string;
+            traits?: {
+                [key: string]: unknown;
+            };
+            state?: string;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            updated_at?: string;
+        } & {
+            [key: string]: unknown;
         };
         health: {
             /** @example ok */
@@ -779,6 +816,68 @@ export interface operations {
             };
             /** @description Invalid request body (e.g. missing or malformed email). */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getUsersByIdAdmin: {
+        parameters: {
+            query: {
+                /** @description Kratos identity ID */
+                id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully retrieved the identity. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Kratos identity from the admin API. */
+                        identity: components["schemas"]["kratos-identity"];
+                    };
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - admin privileges required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Identity not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Identity service returned an unexpected error. */
+            502: {
                 headers: {
                     [name: string]: unknown;
                 };

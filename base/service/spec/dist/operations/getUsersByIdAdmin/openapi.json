@@ -1,0 +1,143 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "getUsersByIdAdmin",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/admin/users/by-id": {
+      "get": {
+        "summary": "Look up a Kratos identity by ID (site-admin)",
+        "operationId": "getUsersByIdAdmin",
+        "tags": [
+          "site-admin-only"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Kratos identity ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "identity"
+                  ],
+                  "properties": {
+                    "identity": {
+                      "description": "Kratos identity from the admin API.",
+                      "$ref": "#/components/schemas/kratos-identity"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Identity not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Identity service returned an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "kratos-identity": {
+        "type": "object",
+        "description": "Ory Kratos identity as returned by the admin API. Extra fields from Kratos are allowed. `id` is the Kratos identity UUID (not a product `generateShortId`).\n",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Kratos identity id."
+          },
+          "schema_id": {
+            "type": "string"
+          },
+          "traits": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "state": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

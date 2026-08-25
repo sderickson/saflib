@@ -21,7 +21,6 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@saflib/base-__offshoot-name__-db": "*",
     "@saflib/drizzle": "*"
   },
   "devDependencies": {

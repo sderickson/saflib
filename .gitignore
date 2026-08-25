@@ -1,8 +1,6 @@
 **/node_modules
 **/coverage
 **/data/*.sqlite
-**/data/*.sqlite-shm
-**/data/*.sqlite-wal
 **/saf-workflow-status.json
 Dockerfile
 # Editor directories and files

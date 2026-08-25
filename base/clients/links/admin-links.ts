@@ -8,5 +8,46 @@ export const adminLinks: LinkMap = {
     subdomain,
     path: "/",
   },
+  users: {
+    subdomain,
+    path: "/users",
+  },
+  cronJobs: {
+    subdomain,
+    path: "/cron-jobs",
+  },
+  jobs: {
+    subdomain,
+    path: "/jobs",
+  },
+  emails: {
+    subdomain,
+    path: "/emails",
+    params: ["subdomain", "userEmail"],
+  },
+  logs: {
+    subdomain,
+    path: "/logs",
+  },
+  metrics: {
+    subdomain,
+    path: "/metrics",
+  },
+  events: {
+    subdomain,
+    path: "/events",
+  },
+  errors: {
+    subdomain,
+    path: "/errors",
+  },
+  audit: {
+    subdomain,
+    path: "/audit",
+  },
+  testUtils: {
+    subdomain,
+    path: "/test-utils",
+  },
   // END WORKFLOW AREA
 };

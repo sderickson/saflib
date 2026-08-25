@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@saflib/audit-db": "*",
-    "@saflib/base-__integration-name__-integration": "*",
     "@saflib/base-db": "*",
     "@saflib/drizzle": "*",
     "@saflib/monorepo": "*",

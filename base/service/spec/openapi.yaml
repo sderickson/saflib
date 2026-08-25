@@ -22,6 +22,9 @@ paths:
   /user-configs/unsubscribe-marketing:
     post:
       $ref: "./routes/user-configs/unsubscribe-marketing.yaml#/unsubscribeMarketingEmailsUserConfigs"
+  /admin/users/by-id:
+    get:
+      $ref: "./routes/admin/users-by-id.yaml#/getUsersByIdAdmin"
   # BEGIN WORKFLOW AREA route-paths FOR openapi/route
   __url-path__:
     __method__:
@@ -42,6 +45,8 @@ components:
       $ref: "./events/index.yaml"
     UserConfig:
       $ref: "./schemas/user-config.yaml"
+    KratosIdentity:
+      $ref: "./schemas/kratos-identity.yaml"
     # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
     __TargetName__:
       $ref: "./schemas/__target-name__.yaml"

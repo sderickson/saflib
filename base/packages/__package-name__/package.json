@@ -6,9 +6,7 @@
   "description": "TODO: Add package description",
   "private": true,
   "type": "module",
-  "exports": {
-    "./__group-name__/*": "./__group-name__/*.ts"
-  },
+  "exports": {},
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",

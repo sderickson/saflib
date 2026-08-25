@@ -27,6 +27,7 @@
   "dependencies": {
     "@saflib/analytics-vue": "*",
     "@saflib/base-links": "*",
+    "@saflib/base-sdk": "*",
     "@saflib/base-spec": "*",
     "@saflib/errors-vue": "*",
     "@saflib/links": "*",
