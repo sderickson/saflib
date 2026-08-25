@@ -1,5 +1,5 @@
 <template>
-  <v-container :fluid="variant === 'full'" class="content-width">
+  <v-container :fluid="fluid" class="content-width">
     <v-row justify="center">
       <v-col v-bind="colProps">
         <slot />
@@ -11,21 +11,22 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-export type ContentWidthVariant = "narrow" | "default" | "full";
+export type ContentWidthVariant = "narrow" | "default" | "wide" | "full";
 
 const props = withDefaults(
   defineProps<{
     /** Grid width recipe. Pages own this; layout should not nest another shell. */
     variant?: ContentWidthVariant;
   }>(),
-  { variant: "default" },
+  { variant: "wide" },
 );
 
 /**
- * Col spans by breakpoint. `full` is always 12; others clamp on larger screens.
- * - narrow: auth / short forms
- * - default: readable app flows (matches prior wizard shell)
- * - full: tables, logs, dense admin
+ * Col spans by breakpoint. Pages pick one recipe; layout should not nest another shell.
+ * - narrow: centered forms (support, onboarding)
+ * - default: readable flows (wizard)
+ * - wide: standard v-container width (home, prose)
+ * - full: fluid edge-to-edge (tables, integrations)
  */
 const COLS: Record<
   ContentWidthVariant,
@@ -38,10 +39,13 @@ const COLS: Record<
     xxl?: number;
   }
 > = {
-  narrow: { cols: 12, sm: 10, md: 8, lg: 6, xl: 4 },
+  narrow: { cols: 12, sm: 10, md: 8, lg: 6 },
   default: { cols: 12, lg: 9, xl: 6 },
+  wide: { cols: 12 },
   full: { cols: 12 },
 };
 
 const colProps = computed(() => COLS[props.variant]);
+
+const fluid = computed(() => props.variant === "full");
 </script>
