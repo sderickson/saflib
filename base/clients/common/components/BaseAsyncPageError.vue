@@ -2,7 +2,7 @@
   <v-alert
     :type="isEmailGate ? 'warning' : 'error'"
     :variant="isEmailGate ? 'tonal' : undefined"
-    class="my-4"
+    class="ma-4"
   >
     <div>{{ displayMessage }}</div>
     <div v-if="actionCta" class="mt-3">
