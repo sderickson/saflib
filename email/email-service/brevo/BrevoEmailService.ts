@@ -3,7 +3,7 @@ import { getSafReporters } from "@saflib/node";
 import type { EmailService } from "../EmailService.ts";
 import { sentEmails } from "../mock-store.ts";
 import type { EmailOptions, EmailResult } from "../types.ts";
-import { getTo } from "../nodemailer/get-to.ts";
+import { getTo } from "../get-to.ts";
 import { emailOptionsToSendTransacEmail } from "./map-email-options.ts";
 
 /**

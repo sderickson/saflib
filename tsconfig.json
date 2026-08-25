@@ -176,9 +176,6 @@
       "path": "./drizzle"
     },
     {
-      "path": "./email/email"
-    },
-    {
       "path": "./email/email-service"
     },
     {

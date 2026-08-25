@@ -1,4 +1,4 @@
-import type { EmailOptions } from "../types.ts";
+import type { EmailOptions } from "./types.ts";
 
 export function getTo(options: EmailOptions): string[] {
   if (Array.isArray(options.to)) {
@@ -7,7 +7,7 @@ export function getTo(options: EmailOptions): string[] {
   if (typeof options.to === "string") {
     return [options.to];
   }
-  if (options.to && options.to.address) {
+  if (options.to && typeof options.to === "object" && "address" in options.to) {
     return [options.to.address];
   }
   return [];

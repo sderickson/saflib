@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  CommandStepMachine,
   defineWorkflow,
   step,
   type ParsePackageNameOutput,
@@ -66,11 +65,6 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["install", "@saflib/email"],
-    })),
-
     step(CopyStepMachine, ({ context }) => ({
       name: context.targetName,
       targetDir: context.targetDir,

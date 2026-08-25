@@ -23,7 +23,7 @@
   ],
   "references": [
     {
-      "path": "../../../email/email"
+      "path": "../../../email/email-service"
     }
   ]
 }

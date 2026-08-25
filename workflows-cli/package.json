@@ -13,7 +13,7 @@
     "@saflib/commander": "*",
     "@saflib/cron": "*",
     "@saflib/drizzle": "*",
-    "@saflib/email": "*",
+    "@saflib/email-service": "*",
     "@saflib/env": "*",
     "@saflib/express": "*",
     "@saflib/grpc": "*",

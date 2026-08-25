@@ -1,17 +1,14 @@
 import { describe, it, expect } from "vitest";
 import {
   createEmailService,
-  NodemailerEmailService,
+  BrevoEmailService,
   sentEmails,
 } from "./index.ts";
 
 describe("@saflib/email-service", () => {
-  it("exports createEmailService and nodemailer implementation", () => {
-    const svc = createEmailService({
-      type: "nodemailer",
-      transport: "mock",
-    });
-    expect(svc).toBeInstanceOf(NodemailerEmailService);
+  it("exports createEmailService and mock Brevo implementation", () => {
+    const svc = createEmailService("mock");
+    expect(svc).toBeInstanceOf(BrevoEmailService);
     expect(svc.isMocked).toBe(true);
   });
 

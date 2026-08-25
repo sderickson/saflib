@@ -1,34 +1,24 @@
-import type * as nodemailer from "nodemailer";
+export type EmailAddress = string | { name?: string; address: string };
 
-/**
- * Accepted options when sending an email. A subset of what nodemailer accepts.
- * See [Nodemailer docs](https://nodemailer.com/message/) for more details.
- */
-export type EmailOptions = Partial<
-  Pick<
-    nodemailer.SendMailOptions,
-    | "to"
-    | "cc"
-    | "bcc"
-    | "subject"
-    | "text"
-    | "html"
-    | "attachments"
-    | "from"
-    | "replyTo"
-  >
->;
+/** Options for sending a transactional email. */
+export type EmailOptions = {
+  to?: EmailAddress | EmailAddress[];
+  cc?: EmailAddress | EmailAddress[];
+  bcc?: EmailAddress | EmailAddress[];
+  from?: EmailAddress;
+  replyTo?: EmailAddress | EmailAddress[];
+  subject?: string;
+  text?: string | Buffer;
+  html?: string | Buffer;
+  attachments?: readonly Record<string, unknown>[];
+};
 
-/**
- * A record of an email that was sent. Only used for mocking.
- */
+/** A record of an email that was sent. Only used for mocking. */
 export interface SentEmail extends EmailOptions {
   timeSent: number;
 }
 
-/**
- * Result of sending an email. These types match typical SMTP transport responses.
- */
+/** Result of sending an email. */
 export interface EmailResult {
   messageId: string;
   accepted: string[];

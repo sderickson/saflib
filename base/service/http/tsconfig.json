@@ -5,6 +5,9 @@
       "path": "../../../cron/cron"
     },
     {
+      "path": "../../../email/email-service"
+    },
+    {
       "path": "../../../express"
     },
     {
