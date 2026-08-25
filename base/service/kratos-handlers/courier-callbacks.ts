@@ -5,16 +5,22 @@ import type {
   VerificationCodeValidPayload,
 } from "@saflib/ory-kratos";
 
+// TODO: Add an email service integration and send emails here.
+
 async function onVerificationCodeValid(payload: VerificationCodeValidPayload) {
   const { log } = getSafReporters();
   const { user, verificationUrl } = payload;
-  log.info(`Verification code email for ${user.id}: ${verificationUrl}`);
+  if (process.env.NODE_ENV === "development") {
+    log.info(`Verification code email for ${user.email}: ${verificationUrl}`);
+  }
 }
 
 async function onRecoveryCodeValid(payload: RecoveryCodeValidPayload) {
   const { log } = getSafReporters();
   const { user, recoveryCode } = payload;
-  log.info(`Recovery code email for ${user.id}: ${recoveryCode}`);
+  if (process.env.NODE_ENV === "development") {
+    log.info(`Recovery code email for ${user.email}: ${recoveryCode}`);
+  }
 }
 
 export const courierCallbacks: KratosCourierCallbacks = {
