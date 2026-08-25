@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { DynamicBaseLayout } from "@saflib/base-clients-common/components";
-import { useKratosSession } from "@saflib/ory-kratos-sdk";
-const { data: session } = useKratosSession();
-const loggedIn = computed(() => !!session);
+import { linkToHrefWithHost } from "@saflib/links";
+import { accountLinks } from "@saflib/base-links";
+import { configureAuthApp } from "@saflib/ory-kratos-spa";
+
+configureAuthApp({
+  showFlowHeaders: false,
+  postAuthFallbackHref: computed(() =>
+    linkToHrefWithHost(accountLinks.home),
+  ),
+});
 </script>
 
 <template>
-  <DynamicBaseLayout :logged-in="loggedIn">
+  <DynamicBaseLayout require-auth>
     <router-view />
   </DynamicBaseLayout>
 </template>

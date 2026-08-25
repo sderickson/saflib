@@ -26,10 +26,14 @@
   },
   "dependencies": {
     "@saflib/analytics-vue": "*",
+    "@saflib/base-links": "*",
+    "@saflib/base-spec": "*",
     "@saflib/errors-vue": "*",
-    "@saflib/vue": "*",
+    "@saflib/links": "*",
     "@saflib/ory-kratos-sdk": "*",
-    "@saflib/base-spec": "*"
+    "@saflib/vue": "*"
   },
-  "sideEffects": false
+  "sideEffects": [
+    "./clients/events.ts"
+  ]
 }

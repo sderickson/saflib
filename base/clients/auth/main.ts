@@ -4,6 +4,8 @@ import Spa from "./AuthSpa.vue";
 import "vuetify/styles";
 import { createAuthRouter } from "./router.ts";
 import { auth_strings } from "./strings.ts";
+import { createSentryCallback } from "@saflib/base-clients-common/clients/sentry";
+import "@saflib/base-clients-common/clients/events";
 
 export const main = () => {
   setClientName("auth");
@@ -14,5 +16,6 @@ export const main = () => {
     i18nMessages: {
       ...auth_strings,
     },
+    callback: createSentryCallback({ source: "auth" }),
   });
 };

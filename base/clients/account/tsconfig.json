@@ -8,6 +8,9 @@
       "path": "../../../ory-kratos-sdk"
     },
     {
+      "path": "../../../ory-kratos-spa"
+    },
+    {
       "path": "../../../vue"
     },
     {

@@ -1,17 +1,15 @@
 <template>
   <v-app>
     <v-app-bar height="90" class="px-4" v-if="mounted">
-      <!-- Logo -->
       <v-app-bar-title>
-        <a :href="toHref(rootHomeLink)" class="logo-link">
-          {{ base_layout.nav_title }}
+        <a :href="toHref(logoLink)" class="logo-link">
+          {{ t(base_layout.nav_title) }}
         </a>
       </v-app-bar-title>
 
-      <!-- Desktop Navigation Links (hidden on mobile) -->
       <v-toolbar-items class="d-none d-md-block">
         <v-btn
-          v-for="link in links"
+          v-for="link in navLinks"
           :key="link.path"
           variant="text"
           class="text-uppercase font-weight-regular"
@@ -21,7 +19,6 @@
         </v-btn>
       </v-toolbar-items>
 
-      <!-- Mobile Menu Button (hidden on desktop) -->
       <template #append>
         <slot name="app-bar-append" />
         <v-app-bar-nav-icon class="d-md-none mr-4" @click="drawer = !drawer">
@@ -31,7 +28,6 @@
       </template>
     </v-app-bar>
 
-    <!-- Mobile Navigation Drawer -->
     <v-navigation-drawer
       v-model="drawer"
       disable-resize-watcher
@@ -39,12 +35,30 @@
       :width="drawer ? '285' : '0'"
     >
       <v-list-item
-        v-for="link in links"
+        v-for="link in navLinks"
         :key="link.name"
         :title="link.name"
         class="text-uppercase text-center py-4"
         :href="toHref(link)"
       />
+    </v-navigation-drawer>
+
+    <v-navigation-drawer
+      v-if="sidebarLinks && sidebarLinks.length > 0"
+      location="left"
+      permanent
+      width="200"
+      class="app-sidebar"
+    >
+      <v-list nav>
+        <v-list-item
+          v-for="link in sidebarLinks"
+          :key="link.path"
+          :href="toHref(link)"
+          :title="link.name"
+          variant="text"
+        />
+      </v-list>
     </v-navigation-drawer>
 
     <v-main>
@@ -56,28 +70,59 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { base_layout } from "./BaseLayout.strings.ts";
-import { linkToHrefWithHost, type Link, type LinkOptions } from "@saflib/links";
+import {
+  linkToHrefWithHost,
+  navigateToLink,
+  type Link,
+  type LinkOptions,
+} from "@saflib/links";
 import { TopLevelContainer } from "@saflib/vue/components";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
+import { useKratosSession } from "@saflib/ory-kratos-sdk";
+import { accountLinks, adminLinks, appLinks } from "@saflib/base-links";
+import { useSiteAdmin } from "../../composables/useSiteAdmin.ts";
+import { useReverseT } from "../../i18n.ts";
 
-// import other subdomain links here as needed
-// import { appLinks } from "@saflib/base-links";
+type SidebarLink = Link & { name: string };
 
 const props = defineProps<{
-  loggedIn?: boolean;
+  /** When true, redirect to login with `return_to` if the session resolves unauthenticated. */
+  requireAuth?: boolean;
+  sidebarLinks?: SidebarLink[];
 }>();
+
+const { t } = useReverseT();
+const { data: session, status: sessionStatus } = useKratosSession();
+const { isSiteAdmin } = useSiteAdmin();
+
+const isLoggedIn = computed(() => !!session.value);
+
+watch(
+  () =>
+    [props.requireAuth, sessionStatus.value, session.value] as [
+      boolean | undefined,
+      typeof sessionStatus.value,
+      typeof session.value,
+    ],
+  ([requireAuth, status, sess]) => {
+    if (typeof window === "undefined") return;
+    if (!requireAuth || status !== "success") return;
+    if (sess) return;
+    navigateToLink(authLinks.newLogin, {
+      params: { return_to: window.location.href },
+    });
+  },
+  { immediate: true },
+);
 
 const drawer = ref(false);
 
-// Forces a re-render after SSG hydration so links recompute with the real domain.
 const mounted = ref(false);
 onMounted(() => {
   mounted.value = true;
 });
-
-const rootHomeLink: Link = { subdomain: "root", path: "/" };
 
 const toHref = (link: Link, options?: LinkOptions) => {
   void mounted.value;
@@ -86,12 +131,28 @@ const toHref = (link: Link, options?: LinkOptions) => {
 
 type LinkWithName = Link & { name: string };
 
-const links = computed<LinkWithName[]>(() => {
-  return props.loggedIn
-    ? [{ ...authLinks.logout, name: "Logout" }]
-    : [
-        { ...authLinks.newLogin, name: "Login" },
-        { ...authLinks.newRegistration, name: "Sign Up" },
-      ];
+const logoLink = computed<Link>(() =>
+  isLoggedIn.value ? appLinks.home : { subdomain: "root", path: "/" },
+);
+
+const navLinks = computed<LinkWithName[]>(() => {
+  if (!isLoggedIn.value) {
+    return [
+      { ...authLinks.newLogin, name: t(base_layout.nav_login) },
+      { ...authLinks.newRegistration, name: t(base_layout.nav_sign_up) },
+    ];
+  }
+
+  const links: LinkWithName[] = [
+    { ...appLinks.home, name: t(base_layout.nav_app) },
+    { ...accountLinks.home, name: t(base_layout.nav_account) },
+  ];
+
+  if (isSiteAdmin.value) {
+    links.push({ ...adminLinks.home, name: t(base_layout.nav_admin) });
+  }
+
+  links.push({ ...authLinks.logout, name: t(base_layout.nav_logout) });
+  return links;
 });
 </script>

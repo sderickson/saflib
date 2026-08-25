@@ -31,10 +31,16 @@
       "path": "../../../errors/errors-vue"
     },
     {
+      "path": "../../../links"
+    },
+    {
       "path": "../../../ory-kratos-sdk"
     },
     {
       "path": "../../../vue"
+    },
+    {
+      "path": "../links"
     },
     {
       "path": "../../service/spec"

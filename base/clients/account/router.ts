@@ -8,8 +8,14 @@ import { accountLinks } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
+import HomeAsync from "./pages/home/HomeAsync.vue";
 import ProfileAsync from "./pages/profile/ProfileAsync.vue";
+import AccountSettingsSection from "./pages/account-settings/AccountSettingsSection.vue";
 // END WORKFLOW AREA
+
+function accountPathSegment(path: string): string {
+  return path.replace(/^\//, "");
+}
 
 export const createAccountRouter = (options?: {
   history?: RouterHistory;
@@ -17,8 +23,38 @@ export const createAccountRouter = (options?: {
   const routes: RouteRecordRaw[] = [
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
     {
-      path: accountLinks.profile.path,
-      component: ProfileAsync,
+      path: accountLinks.home.path,
+      component: HomeAsync,
+      children: [
+        {
+          path: "",
+          redirect: accountLinks.profile.path,
+        },
+        {
+          path: accountPathSegment(accountLinks.profile.path),
+          component: ProfileAsync,
+        },
+        {
+          path: accountPathSegment(accountLinks.email.path),
+          component: AccountSettingsSection,
+          props: { section: "email" },
+        },
+        {
+          path: accountPathSegment(accountLinks.password.path),
+          component: AccountSettingsSection,
+          props: { section: "password" },
+        },
+        {
+          path: accountPathSegment(accountLinks.mfa.path),
+          component: AccountSettingsSection,
+          props: { section: "totp" },
+        },
+        {
+          path: accountPathSegment(accountLinks.sessions.path),
+          component: AccountSettingsSection,
+          props: { section: "sessions" },
+        },
+      ],
     },
     // END WORKFLOW AREA
     { path: "/:pathMatch(.*)*", component: PageNotFound },

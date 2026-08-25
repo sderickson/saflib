@@ -4,6 +4,8 @@ import Spa from "./AccountSpa.vue";
 import "vuetify/styles";
 import { createAccountRouter } from "./router.ts";
 import { account_strings } from "./strings.ts";
+import { createSentryCallback } from "@saflib/base-clients-common/clients/sentry";
+import "@saflib/base-clients-common/clients/events";
 
 export const main = () => {
   setClientName("account");
@@ -14,5 +16,6 @@ export const main = () => {
     i18nMessages: {
       ...account_strings,
     },
+    callback: createSentryCallback({ source: "account" }),
   });
 };

@@ -7,9 +7,6 @@ import {
 import { adminLinks } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
 
-// TODO: remove this log once adminLinks is being used by the routes
-console.log("adminLinks:", adminLinks);
-
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 
 // END WORKFLOW AREA
@@ -19,10 +16,11 @@ export const createAdminRouter = (options?: {
 }) => {
   const routes: RouteRecordRaw[] = [
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
-
-
-
-
+    // Phase 11 mounts admin pages; home path kept for cross-SPA nav.
+    {
+      path: adminLinks.home.path,
+      component: PageNotFound,
+    },
     // END WORKFLOW AREA
     { path: "/:pathMatch(.*)*", component: PageNotFound },
   ];
