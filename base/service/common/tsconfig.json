@@ -43,6 +43,9 @@
     },
     {
       "path": "../db"
+    },
+    {
+      "path": "../integrations/__integration-name__"
     }
   ]
 }
