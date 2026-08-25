@@ -22,7 +22,7 @@ export interface CreateVueAppOptions {
   vuetifyConfig?: VuetifyOptions;
   callback?: (app: ReturnType<typeof createApp>) => void;
   i18nMessages?: I18nMessages;
-  /** Replaces the default {@link AsyncPageError} in AsyncPage and QueryError. */
+  /** Replaces the default {@link AsyncPageError} in AsyncPage. */
   asyncPageError?: AsyncPageErrorComponent;
 }
 

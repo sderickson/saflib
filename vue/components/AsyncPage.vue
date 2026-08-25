@@ -13,14 +13,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref } from "vue";
+import { computed, ref } from "vue";
 import type { Component } from "vue";
 import type { LoaderQueries } from "../types.ts";
-import {
-  asyncPageErrorKey,
-  type AsyncPageErrorComponent,
-} from "../async-page-error.ts";
-import AsyncPageError from "./AsyncPageError.vue";
+import { useAsyncPageErrorComponent } from "../composables/useAsyncPageErrorComponent.ts";
 
 interface Props {
   loader?: () => LoaderQueries;
@@ -30,10 +26,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const errorComponent = inject<AsyncPageErrorComponent>(
-  asyncPageErrorKey,
-  AsyncPageError,
-);
+const errorComponent = useAsyncPageErrorComponent();
 
 // If pageComponent is an async component, eagerly trigger its loader so the
 // code download runs in parallel with data fetching rather than sequentially

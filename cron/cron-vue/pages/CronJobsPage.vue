@@ -2,8 +2,6 @@
   <ContentWidth variant="full">
     <h1 class="text-h4 mb-4">{{ strings.title }}</h1>
 
-    <QueryError v-if="updateError" :error="updateError" class="mb-4" />
-
     <v-data-table
       v-if="jobs && jobs.length > 0"
       :headers="headers"
@@ -70,10 +68,9 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ContentWidth, QueryError } from "@saflib/vue/components";
+import { ContentWidth } from "@saflib/vue/components";
 import type { JobSettings } from "@saflib/cron-spec";
-import { useUpdateCronJobSettings } from "../requests/queries.ts";
-import { useCronJobsLoader } from "./CronJobs.loader.ts";
+import { useCronJobsPageLoader } from "./CronJobs.loader.ts";
 import { cron_jobs as strings } from "./CronJobs.strings.ts";
 
 const updatingJobId = ref<string | null>(null);
@@ -88,14 +85,10 @@ const headers = [
   { title: "Actions", key: "actions", sortable: false },
 ];
 
-const { jobsQuery } = useCronJobsLoader();
+const { jobsQuery, updateMutation } = useCronJobsPageLoader();
 const jobs = computed(() => jobsQuery.data.value);
 
-const {
-  mutate: updateSettings,
-  isPending: isUpdating,
-  error: updateError,
-} = useUpdateCronJobSettings();
+const { mutate: updateSettings, isPending: isUpdating } = updateMutation;
 
 const toggleJobStatus = (jobName: string, enabled: boolean) => {
   updatingJobId.value = jobName;

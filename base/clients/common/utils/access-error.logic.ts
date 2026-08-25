@@ -61,23 +61,6 @@ export function baseVerifyEmailHref(
     : linkToHrefWithHost(accountLinks.verifyEmail);
 }
 
-export function baseAccessErrorMessage(error: unknown): string | null {
-  const kind = resolveBaseAccessErrorKind(error);
-  if (kind === "email") {
-    return "Email verification is required before you can use this page.";
-  }
-  if (kind === "mfa") {
-    return "This page requires a stronger sign-in (second factor). Continue to step up your session.";
-  }
-  if (kind === "login") {
-    return "Not Logged In";
-  }
-  if (kind === "payment") {
-    return "Payment Required";
-  }
-  return null;
-}
-
 export function baseAccessErrorAction(
   error: unknown,
 ): { label: string; href: string } | null {

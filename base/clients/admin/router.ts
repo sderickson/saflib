@@ -6,11 +6,11 @@ import {
 } from "vue-router";
 import { adminLinks } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
+import { CronJobsAsync } from "@saflib/cron-vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 import HomeAsync from "./pages/home/HomeAsync.vue";
 import UsersAsync from "./pages/users/UsersAsync.vue";
-import CronJobsAsync from "./pages/cron/CronJobsAsync.vue";
 import JobsAsync from "./pages/jobs/JobsAsync.vue";
 import EmailsAsync from "./pages/emails/EmailsAsync.vue";
 import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
