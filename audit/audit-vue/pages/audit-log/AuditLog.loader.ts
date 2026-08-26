@@ -1,4 +1,4 @@
-import { inject, ref, watch, type InjectionKey } from "vue";
+import { inject, ref, watch, type InjectionKey, type Ref } from "vue";
 import type { AuditLog } from "@saflib/audit-spec/types";
 import { useListAuditLogs } from "@saflib/audit-sdk/requests/list-audit-logs";
 import { useSealAuditLog } from "@saflib/audit-sdk/requests/seal-audit-log";
@@ -13,7 +13,21 @@ import { audit_log as strings } from "./AuditLog.strings.ts";
 
 const PAGE_SIZE = 50;
 
-export function useAuditLogsLoader() {
+export type AuditLogsLoader = {
+  fromInput: Ref<string>;
+  rows: Ref<AuditLog[]>;
+  nextCursor: Ref<string | null>;
+  spanHead: Ref<string | null>;
+  spanTail: Ref<string | null>;
+  spanChecked: Ref<boolean>;
+  auditLogsQuery: ReturnType<typeof useListAuditLogs>;
+  loadMorePending: Ref<boolean>;
+  reloadFromStart: () => void;
+  loadMore: () => Promise<void>;
+  sealMutation: ReturnType<typeof useSealAuditLog>;
+};
+
+export function useAuditLogsLoader(): AuditLogsLoader {
   const fromInput = ref("");
   const appliedFrom = ref<string | undefined>(undefined);
   const rows = ref<AuditLog[]>([]);
@@ -110,8 +124,6 @@ export function useAuditLogsLoader() {
     sealMutation,
   };
 }
-
-export type AuditLogsLoader = ReturnType<typeof useAuditLogsLoader>;
 
 export const auditLogsLoaderKey: InjectionKey<AuditLogsLoader> =
   Symbol("auditLogsLoader");

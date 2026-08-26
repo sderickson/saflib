@@ -1,13 +1,15 @@
 import { inject, type InjectionKey } from "vue";
 import { useListReportedErrors } from "@saflib/errors-sdk";
 
-export function useErrorsLoader() {
+export type ErrorsLoader = {
+  errorsQuery: ReturnType<typeof useListReportedErrors>;
+};
+
+export function useErrorsLoader(): ErrorsLoader {
   return {
     errorsQuery: useListReportedErrors(),
   };
 }
-
-export type ErrorsLoader = ReturnType<typeof useErrorsLoader>;
 
 export const errorsLoaderKey: InjectionKey<ErrorsLoader> =
   Symbol("errorsLoader");

@@ -1,13 +1,15 @@
 import { inject, type InjectionKey } from "vue";
 import { useListProductEvents } from "@saflib/analytics-sdk";
 
-export function useProductEventsLoader() {
+export type ProductEventsLoader = {
+  productEventsQuery: ReturnType<typeof useListProductEvents>;
+};
+
+export function useProductEventsLoader(): ProductEventsLoader {
   return {
     productEventsQuery: useListProductEvents(),
   };
 }
-
-export type ProductEventsLoader = ReturnType<typeof useProductEventsLoader>;
 
 export const productEventsLoaderKey: InjectionKey<ProductEventsLoader> =
   Symbol("productEventsLoader");
