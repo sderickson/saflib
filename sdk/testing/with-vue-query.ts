@@ -1,9 +1,9 @@
 import { createApp, type App } from "vue";
 import { VueQueryPlugin, QueryClient } from "@tanstack/vue-query";
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createMemoryHistory } from "vue-router";
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createMemoryHistory(),
   routes: [
     {
       path: "/",

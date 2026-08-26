@@ -82,6 +82,18 @@ export {
 } from "./src/package-layout.ts";
 
 export {
+  exportGlobForTopLevelSegment,
+  prepareNewPackageExports,
+  resolveExportModulePathLayout,
+  stripTemplateExportPlaceholders,
+  upsertExplicitExport,
+  upsertExportGlob,
+  upsertPackageExportForModule,
+  upsertPackageJsonExportsForModule,
+  type ExportModulePathLayout,
+} from "./src/package-exports.ts";
+
+export {
   PACKAGE_KINDS,
   PACKAGE_KIND_IDENTIFIERS,
   classifySafPackage,

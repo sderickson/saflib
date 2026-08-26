@@ -1,11 +1,13 @@
 {
-  "name": "jobs-spec",
+  "name": "@saflib/jobs-spec",
   "description": "API specs for the jobs service",
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./openapi.yaml": "./openapi.yaml",
     "./operations/*": "./dist/operations/*/index.ts",
-    "./schemas/*": "./dist/schemas/*/index.ts"
+    "./schemas/*": "./dist/schemas/*/index.ts",
+    "./schemas/job.yaml": "./schemas/job.yaml"
   },
   "scripts": {
     "build": "saf-specs generate -f openapi.yaml -o dist",

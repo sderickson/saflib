@@ -1,11 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import type { CronRequestBody, CronResponseBody } from "@saflib/cron-spec";
 import { TanstackError, handleClientMethod } from "@saflib/sdk";
-import type { paths } from "@saflib/cron-spec";
-import { createSafClient } from "@saflib/sdk";
+import { getClient } from "../client.ts";
 
-export function useListCronJobs(subdomain: string) {
-  const client = createSafClient<paths>(subdomain);
+export function useListCronJobs() {
+  const client = getClient();
   return useQuery<CronResponseBody["listCronJobs"][200], TanstackError>({
     queryKey: ["cron", "jobs"],
     queryFn: () => {
@@ -14,8 +13,8 @@ export function useListCronJobs(subdomain: string) {
   });
 }
 
-export function useUpdateCronJobSettings(subdomain: string) {
-  const client = createSafClient<paths>(subdomain);
+export function useUpdateCronJobSettings() {
+  const client = getClient();
   const queryClient = useQueryClient();
   return useMutation<
     CronResponseBody["updateCronJobSettings"][200],

@@ -8,12 +8,17 @@ import {
   type OffshootInitContext,
   resolveOffshootInitContext,
   makeOffshootLineReplace,
+  parentLayerPackageJsonPath,
 } from "@saflib/workflows";
 import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
 const offshootHttpRoot = path.join(offshootStubRoot, "http");
-const parentHttpLive = path.join(templatesProductRoot, "service/http/http.ts");
+/** Live parent compose file — offshoot import/mount areas only. */
+const parentHttpLive = path.join(
+  templatesProductRoot,
+  "service/http/http.ts",
+);
 
 const input = [
   {
@@ -33,7 +38,7 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
   id: "express/init",
 
   description:
-    "Scaffold an offshoot Express http package and weave its router into the parent http app",
+    "Scaffold an offshoot Express http package and weave its barrel router into the parent http app",
 
   checklistDescription: ({ offshootPackageName }) =>
     `Init offshoot http ${offshootPackageName}.`,
@@ -51,6 +56,7 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     http: path.join(offshootHttpRoot, "http.ts"),
+    routers: path.join(offshootHttpRoot, "routers.ts"),
     index: path.join(offshootHttpRoot, "index.ts"),
     packageJson: path.join(offshootHttpRoot, "package.json"),
     tsconfig: path.join(offshootHttpRoot, "tsconfig.json"),
@@ -71,6 +77,8 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
         offshootHttp: offshootHttpRoot,
       },
       lineReplace: makeOffshootLineReplace(context),
+      // Handler expansion stubs live under service/http; grow with add-handler.
+      skipSourceGlobs: ["**/handlers/__group-name__/**"],
     })),
 
     step(CopyStepMachine, ({ context }) => ({
@@ -80,11 +88,13 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
         parentHttp: parentHttpLive,
       },
       lineReplace: makeOffshootLineReplace(context),
+      skipUnlessPathExists: parentLayerPackageJsonPath(context.parentDir),
     })),
 
     step(TransformFileStepMachine, ({ context }) => ({
-      filePath: path.join(context.parentDir, "package.json"),
+      filePath: parentLayerPackageJsonPath(context.parentDir),
       description: `Add ${context.offshootPackageName} dependency to parent http`,
+      skipIfMissing: true,
       transform: (content: string) => {
         const pkg = JSON.parse(content);
         pkg.dependencies = pkg.dependencies ?? {};

@@ -72,6 +72,18 @@ export interface BaseMonolithEnvSchema {
   SERVICE_SUBDOMAINS: string;
   BASE_SERVICE_HTTP_HOST: string;
   /**
+   * Filesystem path for the base monolith internal unix-domain socket listener (e.g. /tmp/base-internal.sock). Used by the jobs runtime to deliver work to HTTP handlers.
+   */
+  BASE_SERVICE_INTERNAL_SOCKET?: string;
+  /**
+   * Filesystem path for the base jobs app internal unix-domain socket listener (e.g. /tmp/base-jobs-internal.sock).
+   */
+  BASE_SERVICE_JOBS_SOCKET?: string;
+  /**
+   * Default jobs enqueue client socket path (mirrors BASE_SERVICE_JOBS_SOCKET in dev).
+   */
+  SAF_JOBS_SOCKET?: string;
+  /**
    * The trademark of the product provided at the domain, e.g. 'Hooli Chat'.
    */
   TRADEMARK?: string;

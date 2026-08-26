@@ -1,14 +1,30 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
+    { "path": "../../__offshoot-name__/http" },
     {
       "path": "../../../cron/cron"
+    },
+    {
+      "path": "../../../email/email-service"
     },
     {
       "path": "../../../express"
     },
     {
+      "path": "../../../jobs/jobs"
+    },
+    {
       "path": "../../../monorepo"
+    },
+    {
+      "path": "../../../node-metrics/node-metrics-http"
+    },
+    {
+      "path": "../../../node"
+    },
+    {
+      "path": "../audit"
     },
     {
       "path": "../common"
@@ -18,6 +34,9 @@
     },
     {
       "path": "../db"
+    },
+    {
+      "path": "../jobs"
     },
     {
       "path": "../spec"

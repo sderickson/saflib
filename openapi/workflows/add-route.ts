@@ -9,6 +9,7 @@ import {
   type ParsePathOutput,
   parsePath,
   makeLineReplace,
+  PromptStepMachine,
 } from "@saflib/workflows";
 import { templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
@@ -144,6 +145,32 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npx",
       args: ["tsc", "--noEmit"],
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      prompt: `## Audit map (when this route matters)
+
+Routes are **not** audited by default. If this operation is security- or compliance-relevant, add an entry to the product audit map (e.g. \`saflib/base/service/audit/audit-map.ts\` or \`daemon/service/audit/audit-map.ts\`).
+
+**Key format:** \`"${context.method.toUpperCase()} ${context.urlPath.replace(/\{([^}]+)\}/g, ":$1")}"\` — method in caps, Express-style \`:param\` segments (not \`{param}\`).
+
+**Include in the audit map when the route:**
+- Creates, updates, or deletes durable user/org data
+- Grants or revokes access (roles, site-admin, OAuth tokens, sharing)
+- Runs destructive or irreversible actions (delete matter, cancel job, seal audit log)
+- Is an admin-only or privileged mutation you would want in a forensic timeline
+
+**Skip audit map entries for:**
+- Idempotent reads (GET/list), health checks, static config
+- High-volume webhooks or polling endpoints (unless compliance requires every delivery)
+- Internal-only helpers with no user-visible effect
+
+**Options on each entry:**
+- \`failClosed: true\` — for destructive routes: call \`appendFailClosed*HttpAuditIfRequired\` in the handler **after** the mutation succeeds and **before** sending 2xx; client gets **503** if audit append fails
+- \`alsoEmitFor\` — extra \`resource_type\` rows (same \`event_type\`, shared \`request_id\`)
+- \`outcomeOverride\` — custom status → outcome mapping (rare)
+
+Run the product audit-map unit test after editing the map. See \`audit-map.test.ts\` beside the map file.`,
     })),
   ],
 });

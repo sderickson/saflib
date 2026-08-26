@@ -4,17 +4,19 @@ import registrationAsync from "./RegistrationAsync.vue";
 import {
   mountTestApp,
   createTestRouter,
-  testAppHandlers,
 } from "@saflib/ory-kratos-spa/test-app";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
-import { resetKratosFlowMocks } from "@saflib/ory-kratos-sdk/fakes";
+import {
+  kratosFakeHandlers,
+  resetKratosFlowMocks,
+} from "@saflib/ory-kratos-sdk/fakes";
 
 // Renders the page to capture baseline coverage.
 // Uncovered lines after this indicate logic worth extracting to .logic.ts or composables.
 
 describe("registration", () => {
   stubGlobals();
-  setupMockServer(testAppHandlers);
+  setupMockServer(kratosFakeHandlers);
   afterEach(resetKratosFlowMocks);
 
   it("should render", async () => {

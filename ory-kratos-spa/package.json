@@ -3,13 +3,13 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./strings": "./strings.ts",
+    "./i18n": "./i18n.ts",
+    "./test-app": "./test-app.ts",
     "./router": "./router.ts",
     "./settings": "./settings.ts",
     "./registration": "./registration.ts",
-    "./fixtures": "./fixtures.ts",
-    "./strings": "./strings.ts",
-    "./i18n": "./i18n.ts",
-    "./test-app": "./test-app.ts"
+    "./*": "./*"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.2"

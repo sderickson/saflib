@@ -9,11 +9,13 @@ import {
   baseServiceStorage,
   type BaseServiceContext,
 } from "@saflib/base-service-common/context";
+import { jobsDemoJobs } from "./jobs/jobs-demo/index.ts";
 // BEGIN WORKFLOW AREA job-imports FOR cron/add-job
 import { __groupName__Jobs } from "./jobs/__group-name__/index.ts";
 // END WORKFLOW AREA
 
 export const baseJobs: JobsMap = {
+  ...jobsDemoJobs,
   // BEGIN WORKFLOW AREA job-map FOR cron/add-job
   ...__groupName__Jobs,
   // END WORKFLOW AREA

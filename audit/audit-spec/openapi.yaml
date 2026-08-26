@@ -1,0 +1,20 @@
+openapi: 3.0.0
+info:
+  title: Audit Log API
+  version: 1.0.0
+  description: Hash-chained append-only audit log — admin browse and chain verification.
+
+components:
+  schemas:
+    AuditLog:
+      $ref: "./schemas/audit-log.yaml"
+    Error:
+      $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+paths:
+  /audit-logs:
+    get:
+      $ref: "./routes/audit-logs.yaml#/listAuditLogs"
+  /audit-logs/seal:
+    post:
+      $ref: "./routes/audit-logs/seal.yaml#/sealAuditLog"

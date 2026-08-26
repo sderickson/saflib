@@ -1,0 +1,22 @@
+type: object
+additionalProperties: false
+required:
+  - error
+properties:
+  error:
+    type: object
+    additionalProperties: false
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: string
+        enum:
+          - audit_chain_corrupt
+          - audit_ship_failed
+          - audit_email_failed
+          - audit_upload_failed
+          - audit_unknown
+      message:
+        type: string

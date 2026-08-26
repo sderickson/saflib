@@ -6,6 +6,9 @@ import type { ImportMetaEnv as _ImportMetaEnv } from "vite/client";
 
 interface ViteEnv {
   NODE_ENV: string;
+  DEV?: boolean;
+  MODE?: string;
+  VITE_DEPLOYMENT_NAME?: string;
 }
 
 /**
@@ -17,4 +20,18 @@ const getViteEnv = () => {
 
 export const isTestEnv = () => {
   return getViteEnv().NODE_ENV === "test";
+};
+
+export const isDevEnv = () => {
+  const env = getViteEnv();
+  return (
+    env.DEV === true ||
+    env.MODE === "development" ||
+    env.NODE_ENV === "development"
+  );
+};
+
+/** Local development deployment (`DEPLOYMENT_NAME=development`), injected at build time. */
+export const isDevelopmentDeployment = () => {
+  return getViteEnv().VITE_DEPLOYMENT_NAME === "development";
 };

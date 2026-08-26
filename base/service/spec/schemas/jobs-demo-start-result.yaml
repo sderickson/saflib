@@ -1,0 +1,6 @@
+type: object
+required:
+  - job
+properties:
+  job:
+    $ref: "pkg:@saflib/jobs-spec/schemas/job.yaml"

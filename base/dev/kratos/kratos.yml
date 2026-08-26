@@ -58,7 +58,8 @@ selfservice:
           - *kratos_action_webhook
 
     settings:
-      ui_url: http://auth.docker.localhost/settings
+      ui_url: http://account.docker.localhost/password
+      required_aal: highest_available
       after:
         profile:
           hooks:
@@ -88,8 +89,16 @@ selfservice:
   methods:
     password:
       enabled: true
+    passkey:
+      enabled: false
+    totp:
+      enabled: true
+      config:
+        issuer: Base (Dev)
 
 session:
+  whoami:
+    required_aal: aal1
   cookie:
     domain: .docker.localhost
     same_site: Lax

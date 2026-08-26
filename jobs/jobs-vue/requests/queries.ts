@@ -4,18 +4,16 @@ import type {
   JobsServiceRequestBody,
   JobsServiceResponseBody,
   paths,
-} from "jobs-spec";
-import { TanstackError, handleClientMethod, createSafClient } from "@saflib/sdk";
+} from "@saflib/jobs-spec";
+import { TanstackError, handleClientMethod } from "@saflib/sdk";
+import { getClient } from "../client.ts";
 
 export type ListJobsQuery = NonNullable<
   paths["/jobs"]["get"]["parameters"]["query"]
 >;
 
-export function useListJobs(
-  subdomain: string,
-  filters: MaybeRefOrGetter<ListJobsQuery> = {},
-) {
-  const client = createSafClient<paths>(subdomain);
+export function useListJobs(filters: MaybeRefOrGetter<ListJobsQuery> = {}) {
+  const client = getClient();
   const resolvedFilters = computed(() => toValue(filters));
   return useQuery<JobsServiceResponseBody["listJobs"][200], TanstackError>({
     queryKey: ["jobs", "list", resolvedFilters],
@@ -29,11 +27,8 @@ export function useListJobs(
   });
 }
 
-export function useGetJob(
-  subdomain: string,
-  id: MaybeRefOrGetter<string | null | undefined>,
-) {
-  const client = createSafClient<paths>(subdomain);
+export function useGetJob(id: MaybeRefOrGetter<string | null | undefined>) {
+  const client = getClient();
   const resolvedId = computed(() => toValue(id));
   return useQuery<JobsServiceResponseBody["getJob"][200], TanstackError>({
     queryKey: ["jobs", "get", resolvedId],
@@ -52,8 +47,8 @@ export function useGetJob(
   });
 }
 
-export function useRetryJob(subdomain: string) {
-  const client = createSafClient<paths>(subdomain);
+export function useRetryJob() {
+  const client = getClient();
   const queryClient = useQueryClient();
   return useMutation<
     JobsServiceResponseBody["retryJob"][200],
@@ -73,8 +68,8 @@ export function useRetryJob(subdomain: string) {
   });
 }
 
-export function useCancelJob(subdomain: string) {
-  const client = createSafClient<paths>(subdomain);
+export function useCancelJob() {
+  const client = getClient();
   const queryClient = useQueryClient();
   return useMutation<
     JobsServiceResponseBody["cancelJob"][200],
@@ -94,8 +89,8 @@ export function useCancelJob(subdomain: string) {
   });
 }
 
-export function useCancelJobsByOriginalRequest(subdomain: string) {
-  const client = createSafClient<paths>(subdomain);
+export function useCancelJobsByOriginalRequest() {
+  const client = getClient();
   const queryClient = useQueryClient();
   return useMutation<
     JobsServiceResponseBody["cancelJobsByOriginalRequest"][200],

@@ -2,7 +2,11 @@
   <!-- Events are rendered here for playwright tests to assert on -->
   <pre class="d-none" data-testid="events">{{ events }}</pre>
 
-  <BaseLayout :logged-in="loggedIn">
+  <BaseLayout
+    :require-auth="requireAuth"
+    :sidebar-links="sidebarLinks"
+    :dev-sidebar-links="devSidebarLinks"
+  >
     <slot />
   </BaseLayout>
 
@@ -13,8 +17,13 @@
 import BaseLayout from "./BaseLayout.vue";
 import { events } from "@saflib/vue";
 import { SnackbarQueue } from "@saflib/vue/components";
+import { type Link } from "@saflib/links";
+
+type SidebarLink = Link & { name: string };
 
 defineProps<{
-  loggedIn?: boolean;
+  requireAuth?: boolean;
+  sidebarLinks?: SidebarLink[];
+  devSidebarLinks?: SidebarLink[];
 }>();
 </script>

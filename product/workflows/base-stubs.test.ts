@@ -16,6 +16,8 @@ const stubPaths = [
   "service/db/schemas/__group-name__.ts",
   "service/db/queries/__group-name__/__target-name__.ts",
   "service/http/handlers/__group-name__/index.ts",
+  "service/http/routers.ts",
+  "__offshoot-name__/http/routers.ts",
   "service/sdk/requests/__group-name__/__query-name__.ts",
   "service/sdk/requests/__group-name__/__mutation-name__.ts",
   "service/sdk/__group-name__/__TargetName__.vue",
@@ -27,7 +29,8 @@ const stubPaths = [
   "service/cron/jobs/__group-name__/__target-name__.ts",
   "service/integrations/__integration-name__/calls/__target-name__.ts",
   "packages/__package-name__/package.json",
-  "packages/__package-name__/__target-name__.ts",
+  "packages/__package-name__/__group-name__/__target-name__.ts",
+  "packages/__package-name__/__group-name__/__target-name__.test.ts",
   "packages/__package-name__/bin/__group-name__/index.ts",
   "packages/__package-name__/workflows/__target-name__.ts",
   "packages/__package-name__/env.schema.json",
@@ -39,7 +42,6 @@ const stubPaths = [
   "__offshoot-name__/http/package.json",
   "__offshoot-name__/http/http.ts",
   "__offshoot-name__/sdk/package.json",
-  "__offshoot-name__/sdk/fakes.ts",
   // vue/add-static-site: live docker areas stay empty; tokens live in stubs
   "dev/.workflow-stubs/vue-add-static-site/build-images.sh",
   "dev/.workflow-stubs/vue-add-static-site/Dockerfile.template",
@@ -73,23 +75,26 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     ],
   },
   {
-    rel: "service/http/http.ts",
+    rel: "service/http/routers.ts",
     mustInclude: [
-      "__group-name__",
-      "create__GroupName__Router",
-      "@saflib/base-__offshoot-name__-http",
-      "create__OffshootName__Router",
-      "createCronRouter",
-      "getBaseCronDbKey",
+      "router-imports",
+      "router-mounts",
+      "groupRouterMounts",
     ],
   },
   {
-    rel: "service/sdk/fakes.ts",
+    rel: "__offshoot-name__/http/routers.ts",
     mustInclude: [
-      "__group-name__",
-      "__groupName__FakeHandlers",
-      "@saflib/base-__offshoot-name__-sdk",
-      "__offshootName__FakeHandlers",
+      "router-imports",
+      "router-mounts",
+      "groupRouterMounts",
+    ],
+  },
+  {
+    rel: "service/http/http.ts",
+    mustInclude: [
+      "groupRouterMounts",
+      "createBaseHttpApp",
     ],
   },
   {
@@ -156,10 +161,78 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     mustInclude: ["runBaseCron"],
   },
   {
-    rel: "packages/__package-name__/index.ts",
-    mustInclude: ["__targetName__"],
+    rel: "packages/__package-name__/package.json",
+    mustInclude: ["__group-name__"],
   },
 ];
+
+/**
+ * Product seed that must survive `product/init` emptying other workflows'
+ * areas. Tokens listed here must appear *outside* BEGIN/END WORKFLOW AREA
+ * blocks (init clears non-matching areas).
+ */
+const seedOutsideWorkflowAreas: { rel: string; mustInclude: string[] }[] = [
+  {
+    rel: "service/http/handlers/admin/index.ts",
+    mustInclude: [
+      "getUsersByIdAdminHandler",
+      "createAdminRouter",
+      "/admin/users/by-id",
+    ],
+  },
+  {
+    rel: "service/db/schema.ts",
+    mustInclude: ["./schemas/user-config.ts"],
+  },
+  {
+    rel: "clients/links/app-links.ts",
+    mustInclude: ["home:", 'path: "/"'],
+  },
+  {
+    rel: "clients/links/admin-links.ts",
+    mustInclude: ["home:", "users:", "cronJobs:"],
+  },
+  {
+    rel: "clients/links/account-links.ts",
+    mustInclude: ["home:", "profile:", "verifyEmail:"],
+  },
+  {
+    rel: "clients/links/root-links.ts",
+    mustInclude: ["home:"],
+  },
+  {
+    rel: "clients/app/router.ts",
+    mustInclude: ["HomeAsync", "appLinks.home.path"],
+  },
+  {
+    rel: "clients/app/strings.ts",
+    mustInclude: ["home,"],
+  },
+  {
+    rel: "clients/account/router.ts",
+    mustInclude: ["HomeAsync", "accountLinks.home.path"],
+  },
+  {
+    rel: "clients/account/strings.ts",
+    mustInclude: ["home,", "verify_email,"],
+  },
+  {
+    rel: "clients/admin/router.ts",
+    mustInclude: ["HomeAsync", "adminLinks.home.path"],
+  },
+  {
+    rel: "clients/admin/strings.ts",
+    mustInclude: ["home,", "users,"],
+  },
+];
+
+/** Strip WORKFLOW AREA bodies (comment styles used in TS/YAML). */
+function stripWorkflowAreas(content: string): string {
+  return content.replace(
+    /^[ \t]*(?:\/\/|#)\s*BEGIN WORKFLOW AREA[\s\S]*?^[ \t]*(?:\/\/|#)\s*END WORKFLOW AREA.*$/gm,
+    "",
+  );
+}
 
 describe("golden product expansion stubs", () => {
   it("keeps stub files under templatesProductRoot", () => {
@@ -178,6 +251,20 @@ describe("golden product expansion stubs", () => {
         expect(
           content.includes(token),
           `${rel} should still reference stub token ${token}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("keeps product seed outside other workflows' areas (survives product/init)", () => {
+    for (const { rel, mustInclude } of seedOutsideWorkflowAreas) {
+      const abs = path.join(templatesProductRoot, rel);
+      expect(existsSync(abs), `missing seed host: ${rel}`).toBe(true);
+      const outside = stripWorkflowAreas(readFileSync(abs, "utf8"));
+      for (const token of mustInclude) {
+        expect(
+          outside.includes(token),
+          `${rel}: seed ${JSON.stringify(token)} must sit outside WORKFLOW AREA blocks (product/init empties foreign areas)`,
         ).toBe(true);
       }
     }

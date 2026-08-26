@@ -1,0 +1,17 @@
+openapi: 3.0.0
+info:
+  title: Node Metrics API
+  version: 1.0.0
+  description: Parsed in-process Prometheus metrics for admin browsing
+
+components:
+  schemas:
+    MetricSnapshot:
+      $ref: "./schemas/metric-snapshot.yaml"
+    Error:
+      $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+paths:
+  /admin/metrics/snapshot:
+    get:
+      $ref: "./routes/admin_metrics.yaml#/getMetricsSnapshot"

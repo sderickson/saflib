@@ -1,0 +1,30 @@
+{
+  "name": "@saflib/base-jobs",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Jobs slice for the base golden product",
+  "type": "module",
+  "exports": {
+    ".": "./jobs.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/base-cron": "*",
+    "@saflib/base-service-common": "*",
+    "@saflib/base-spec": "*",
+    "@saflib/drizzle": "*",
+    "@saflib/env": "*",
+    "@saflib/jobs": "*",
+    "@saflib/jobs-db": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

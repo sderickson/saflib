@@ -18,7 +18,16 @@
       "path": "../env"
     },
     {
+      "path": "../analytics/analytics-http"
+    },
+    {
+      "path": "../errors/errors-http"
+    },
+    {
       "path": "../node"
+    },
+    {
+      "path": "../node-log/node-log-http"
     },
     {
       "path": "../notify/notify"

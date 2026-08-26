@@ -7,13 +7,14 @@ import {
 import { type VueWrapper } from "@vue/test-utils";
 import BackupManagerAsync from "./BackupManagerAsync.vue";
 import { backup_manager_page as strings } from "./BackupManager.strings.ts";
-import { mountTestApp, testAppHandlers } from "../../test-app.ts";
+import { mountTestApp } from "../../test-app.ts";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
+import { backupsFakeHandlers } from "../../requests/backups/index.fakes.ts";
 import { backupStubs } from "../../requests/backups/list.fake.ts";
 
 describe("BackupManager", () => {
   stubGlobals();
-  setupMockServer(testAppHandlers);
+  setupMockServer(backupsFakeHandlers);
 
   const getTitle = (wrapper: VueWrapper) => {
     return getElementByString(wrapper, strings.title);

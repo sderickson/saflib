@@ -1,0 +1,43 @@
+{
+  "name": "@saflib/audit-db",
+  "description": "Append-only hash-chained audit database for SAF products.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./instances": "./instances.ts",
+    "./queries/audit-event/*": "./queries/audit-event/*.ts",
+    "./schemas/*": "./schemas/*.ts",
+    "./errors": "./errors.ts",
+    "./paths": "./paths.ts",
+    "./audit-write-lock": "./audit-write-lock.ts",
+    "./hash-chain": "./hash-chain.ts",
+    "./canonicalize": "./canonicalize.ts",
+    "./types": "./types.ts",
+    "./seal-audit-db": "./seal-audit-db.ts",
+    "./seal-types": "./seal-types.ts",
+    "./seal-errors": "./seal-errors.ts",
+    "./iso-safe": "./iso-safe.ts",
+    "./prune-sealed": "./prune-sealed.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "generate": "drizzle-kit generate",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/drizzle": "*",
+    "@saflib/env": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "@mongodb-js/zstd": "^2.0.1",
+    "proper-lockfile": "^4.1.2"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@types/proper-lockfile": "^4.1.4",
+    "drizzle-kit": "*"
+  },
+  "sideEffects": false
+}

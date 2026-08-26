@@ -1,0 +1,43 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "get__OffshootName__Health",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/__offshoot-name__/health": {
+      "get": {
+        "operationId": "get__OffshootName__Health",
+        "summary": "Health check for the __offshoot-name__ offshoot",
+        "responses": {
+          "200": {
+            "description": "Offshoot is reachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/health"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      }
+    }
+  }
+}

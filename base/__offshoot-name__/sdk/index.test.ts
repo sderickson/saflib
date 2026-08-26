@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { __offshootName__FakeHandlers } from "./fakes.ts";
+import { baseHandler } from "./typed-fake.ts";
 
 describe("@saflib/base-__offshoot-name__-sdk", () => {
-  it("exports fake handlers array", () => {
-    expect(Array.isArray(__offshootName__FakeHandlers)).toBe(true);
+  it("exports typed fake base handler", () => {
+    expect(baseHandler).toBeDefined();
   });
 });

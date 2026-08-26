@@ -66,7 +66,7 @@ The CORS middleware provides a simple guard to ensure only your site's subdomain
 
 **Type**: Error
 
-Logs 5xx errors and returns all intercepted errors in the [standard error format](https://github.com/sderickson/saflib/blob/37d619bf41fe2922880dee7483b9fb9690d2ee1b/openapi/schemas/error.yaml).
+Logs 5xx errors and returns all intercepted errors in the [standard error format](../../openapi/schemas/error.yaml).
 
 ### `express`
 
@@ -97,6 +97,8 @@ Provides two middleware: a global logger for every request (which prints out to 
 **Type**: Global
 
 Provides a router and middleware. The middleware records RED metrics for every route, and the router serves the `/metrics` endpoint in the Prometheus [text format](https://prometheus.io/docs/instrumenting/exposition_formats/#text-format-example).
+
+In **development** (`DEPLOYMENT_NAME=development`), `/metrics` is reachable directly on the monolith port without the forwarded-host gate — use `GET http://localhost:<port>/metrics` while local debugging. In other deployments, requests that arrive with `X-Forwarded-Host` (public edge) receive **403**; scrape from inside the network or via an internal path.
 
 This middleware depends on [express-prom-bundle](https://github.com/jochen-schweizer/express-prom-bundle) since it does exactly what is needed, no more, no less.
 

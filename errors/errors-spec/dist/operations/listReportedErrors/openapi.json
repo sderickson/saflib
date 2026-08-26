@@ -1,0 +1,160 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "listReportedErrors",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/admin/errors": {
+      "get": {
+        "summary": "List buffered reported errors",
+        "operationId": "listReportedErrors",
+        "tags": [
+          "errors",
+          "site-admin-only"
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "csp-violation",
+                "client",
+                "server",
+                "test"
+              ]
+            },
+            "description": "Filter by error kind."
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by source (substring match)."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Maximum number of entries to return (from the tail)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Buffered reported errors, newest last within the filtered slice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reportedErrors": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/reported-error"
+                      }
+                    }
+                  },
+                  "required": [
+                    "reportedErrors"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — missing or invalid auth.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — site admin required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "reported-error": {
+        "type": "object",
+        "description": "A reported error stored in the in-memory ring buffer.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Monotonic id for pagination."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "csp-violation",
+              "client",
+              "server",
+              "test"
+            ],
+            "description": "Error category (CSP ingest, browser client, server exception, admin smoke test)."
+          },
+          "message": {
+            "type": "string"
+          },
+          "stack": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Scrubbed context (Sentry extras, CSP report, client info, etc.)."
+          },
+          "source": {
+            "type": "string",
+            "description": "Originating surface (SPA name, subsystem, browser, etc.)."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "message",
+          "metadata",
+          "source",
+          "timestamp"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

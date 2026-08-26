@@ -1,38 +1,43 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
   CommandStepMachine,
+  TransformFileStepMachine,
+  parsePath,
   makeLineReplace,
+  type ParsePathOutput,
 } from "@saflib/workflows";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import { templatesProductRoot } from "@saflib/templates";
+import {
+  resolveExportModulePathLayout,
+  upsertPackageJsonExportsForModule,
+} from "../src/package-exports.ts";
 
 const sourceDir = path.join(templatesProductRoot, "packages", "__package-name__");
+const exportDir = path.join(sourceDir, "__group-name__");
 
 const input = [
   {
-    name: "name",
-    description:
-      "The name of the export to create (e.g., 'myFunction' or 'MyClass')",
-    exampleValue: "myFunction",
-  },
-  {
     name: "path",
     description:
-      "The relative path where the export should be added (e.g., 'src/utils' or 'src/components')",
-    exampleValue: "src/utils",
+      "Path of the new export module (e.g., './lib/myFunction.ts' or './http/headers.ts')",
+    exampleValue: "./lib/myFunction.ts",
   },
 ] as const;
 
-interface AddExportWorkflowContext {
-  targetName: string;
-  path: string;
-  targetDir: string;
-  exportPath: string;
-  indexPath: string;
+interface AddExportWorkflowContext extends ParsePathOutput {
+  packageName: string;
+}
+
+function readPackageName(cwd: string): string {
+  const pj = JSON.parse(readFileSync(path.join(cwd, "package.json"), "utf8")) as {
+    name: string;
+  };
+  return pj.name;
 }
 
 export const AddExportWorkflowDefinition = defineWorkflow<
@@ -43,55 +48,65 @@ export const AddExportWorkflowDefinition = defineWorkflow<
 
   description: "Add new exports (functions, classes, interfaces) to packages",
 
-  checklistDescription: ({ targetName, path }) =>
-    `Add ${targetName} export to ${path}.`,
+  checklistDescription: ({ groupName, targetName }) =>
+    `Add ${groupName}/${targetName} export.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(input.cwd, input.path);
-    const exportPath = path.join(targetDir, `${input.name}.ts`);
-    const indexPath = path.join(input.cwd, "index.ts");
+    const pathResult = parsePath(input.path, {
+      requiredPrefix: "./",
+      requiredSuffix: ".ts",
+      cwd: input.cwd,
+    });
+    resolveExportModulePathLayout(pathResult.groupName, pathResult.targetName);
 
     return {
-      targetName: input.name,
-      path: input.path,
-      targetDir,
-      exportPath,
-      indexPath,
+      ...pathResult,
+      targetDir: input.cwd,
+      packageName: readPackageName(input.cwd),
     };
   },
 
   templateFiles: {
-    export: path.join(sourceDir, "__target-name__.ts"),
-    test: path.join(sourceDir, "__target-name__.test.ts"),
+    export: path.join(exportDir, "__target-name__.ts"),
+    test: path.join(exportDir, "__target-name__.test.ts"),
   },
 
   versionControl: {
     allowPaths: ["./docs/**"],
   },
 
-  // TODO: add documentation file references
   docFiles: {},
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
+      name: context.targetName,
       targetDir: context.targetDir,
-      templateFiles: {
-        export: path.join(sourceDir, "__target-name__.ts"),
-        test: path.join(sourceDir, "__target-name__.test.ts"),
-      },
       lineReplace: makeLineReplace(context),
     })),
 
-    step(CopyStepMachine, ({ context }) => ({
-      targetDir: context.cwd,
-      templateFiles: {
-        index: path.join(sourceDir, "index.ts"),
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: "package.json",
+      description: `Add glob export for ./${resolveExportModulePathLayout(context.groupName, context.targetName).topLevelSegment}/*`,
+      transform: (content: string) => {
+        const pkg = JSON.parse(content) as Parameters<
+          typeof upsertPackageJsonExportsForModule
+        >[0];
+        return (
+          JSON.stringify(
+            upsertPackageJsonExportsForModule(
+              pkg,
+              context.groupName,
+              context.targetName,
+            ),
+            null,
+            2,
+          ) + "\n"
+        );
       },
-      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -109,8 +124,16 @@ export const AddExportWorkflowDefinition = defineWorkflow<
       args: ["run", "test"],
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Confirm \`index.ts\` exports \`${context.targetName}\` (workflow area upsert from the golden package). If this package predates that area, add the export manually from ${context.exportPath}.`,
+    step(CommandStepMachine, ({ context }) => ({
+      command: "npm",
+      args: [
+        "exec",
+        "saf-imports",
+        "exports",
+        "check",
+        "--package",
+        context.packageName,
+      ],
     })),
 
     step(CommandStepMachine, () => ({
@@ -119,3 +142,5 @@ export const AddExportWorkflowDefinition = defineWorkflow<
     })),
   ],
 });
+
+export default AddExportWorkflowDefinition;

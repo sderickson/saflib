@@ -1,0 +1,31 @@
+{
+  "name": "@saflib/security",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Playwright security harness and HTTP helpers for SAF product regression suites",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./http/*": "./http/*.ts",
+    "./origins/*": "./origins/*.ts",
+    "./playwright/*": "./playwright/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -b",
+    "analyze": "analyze-package --package @saflib/security"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.53.2",
+    "@saflib/playwright": "*"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

@@ -1,0 +1,142 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "getMineUserConfigs",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/user-configs/mine": {
+      "get": {
+        "summary": "Get or lazy-create the caller's user config",
+        "operationId": "getMineUserConfigs",
+        "tags": [],
+        "description": "Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`displayName` empty string, `marketingEmailsOptIn` false, `marketingEmailsOptInAt` null, `termsOfServiceAgreedAt` null) and returns that row.\n**Lazy-create pattern:** empty `user_config` rows are created on first GET (not via a Kratos registration webhook). This keeps Kratos auth-only and the product DB responsible for user-facing prefs.\n",
+        "responses": {
+          "200": {
+            "description": "Caller's user config. Always present after this call (created with defaults when missing).\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "userConfig"
+                  ],
+                  "properties": {
+                    "userConfig": {
+                      "description": "Owner-only preferences for the signed-in user.",
+                      "$ref": "#/components/schemas/user-config"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "user-config": {
+        "type": "object",
+        "description": "Product-owned preferences for the signed-in user (owner-only). Keyed by Kratos identity id. Holds display name, marketing email consent, and Terms of Service agreement — not auth traits. Kratos owns identity/credentials/sessions; this resource is the Kratos-minimal product DB pattern.\n",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Kratos identity id of the owning user.",
+            "example": "user_abc123"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "How the user appears to themselves and to others. May be empty after lazy-create until the first save; PUT requires a non-empty trimmed value.\n",
+            "example": "Alex Rivera"
+          },
+          "marketingEmailsOptIn": {
+            "type": "boolean",
+            "description": "Explicit consent for product/marketing email. Defaults to false until the user opts in.\n",
+            "example": false
+          },
+          "marketingEmailsOptInAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketingEmailsOptIn` becomes false).\n",
+            "example": null
+          },
+          "termsOfServiceAgreedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `termsOfServiceAgreedAt: \"now\"`). Once set, later preference updates do not clear or overwrite it.\n",
+            "example": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the user config row was created.",
+            "example": "2026-07-23T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the user config row was last updated.",
+            "example": "2026-07-23T12:30:00Z"
+          }
+        },
+        "required": [
+          "userId",
+          "displayName",
+          "marketingEmailsOptIn",
+          "marketingEmailsOptInAt",
+          "termsOfServiceAgreedAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "example": {
+          "userId": "user_abc123",
+          "displayName": "Alex Rivera",
+          "marketingEmailsOptIn": false,
+          "marketingEmailsOptInAt": null,
+          "termsOfServiceAgreedAt": null,
+          "createdAt": "2026-07-23T00:00:00Z",
+          "updatedAt": "2026-07-23T12:30:00Z"
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

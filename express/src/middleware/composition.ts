@@ -1,13 +1,22 @@
 import type { ErrorRequestHandler, Handler, RequestHandler } from "express";
 import { json, urlencoded } from "express";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { isDevelopmentDeployment } from "@saflib/env";
 import { corsRouter } from "./cors.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { healthRouter } from "./health.ts";
-import { createDevLogsRouter } from "../dev-logs-router.ts";
+import { createDevLogsRouter } from "@saflib/node-log-http";
+import {
+  createAnalyticsRouter,
+  createDevAnalyticsRouter,
+} from "@saflib/analytics-http";
+import {
+  createErrorsRouter,
+  createDevErrorsRouter,
+} from "@saflib/errors-http";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
@@ -37,7 +46,7 @@ export const createInternalMiddleware = (
 ): Handler[] => {
   const { jsonLimit } = options;
   return [
-    metricsMiddleware,
+    ...metricsMiddleware,
     noStoreCacheControl,
     everyRequestLogger,
     json(
@@ -63,17 +72,25 @@ export const createGlobalMiddleware = (
   }
 
   let sanitizeMiddleware: Handler[] = [blockHtml];
+  const devObservabilityMiddleware: Handler[] = isDevelopmentDeployment()
+    ? [
+        createDevLogsRouter(),
+        createDevAnalyticsRouter(),
+        createDevErrorsRouter(),
+      ]
+    : [];
   return [
-    metricsMiddleware,
+    ...metricsMiddleware,
     noStoreCacheControl,
     helmet(),
     makeCsrfTokenMiddleware(),
     healthRouter,
-    // Development Winston ring buffer (403 unless DEPLOYMENT_NAME=development).
-    createDevLogsRouter(),
+    ...devObservabilityMiddleware,
     everyRequestLogger,
     json(jsonLimit ? { limit: jsonLimit } : undefined),
     urlencoded({ extended: false }),
+    createAnalyticsRouter(),
+    createErrorsRouter(),
     ...sanitizeMiddleware,
     ...corsMiddleware,
   ];

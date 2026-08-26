@@ -97,6 +97,7 @@ function toProductMonorepoDevCompose(
   const monolithMounts = [
     `      - ../../${productName}/service/db/data:/app/${productName}/service/db/data`,
     `      - ../../${productName}/service/cron/data:/app/${productName}/service/cron/data`,
+    `      - ../../${productName}/service/jobs/data:/app/${productName}/service/jobs/data`,
   ].join("\n");
 
   let out = content.replace(
@@ -112,7 +113,24 @@ function toProductMonorepoDevCompose(
   return out;
 }
 
-function makeProductInitLineReplace(context: InitProductWorkflowContext) {
+/**
+ * Live-host lines that still point at expansion stubs skipped by
+ * skipSourceGlobs (paths matching __stub-name__). Dropping them keeps
+ * package.json / tsconfig valid after the stub packages themselves are omitted.
+ */
+export function isSkippedStubRefLine(line: string): boolean {
+  if (!/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(line)) return false;
+  // package.json dependency on a skipped stub package
+  if (/^\s*"@[^"]*__[^"]*"\s*:/.test(line)) return true;
+  // tsconfig project reference (single- or multi-line `"path"` entry)
+  if (/"path"\s*:\s*"[^"]*__[^"]*"/.test(line)) return true;
+  if (/^\s*\{\s*"path"\s*:\s*"[^"]*__[^"]*"\s*\}\s*,?\s*$/.test(line)) {
+    return true;
+  }
+  return false;
+}
+
+export function makeProductInitLineReplace(context: InitProductWorkflowContext) {
   const placeholderReplace = makeLineReplace(context);
   const dockerFrom = `saflib-${SOURCE_PRODUCT_NAME}`;
   const dockerTo = `${context.organizationName}-${context.productName}`;
@@ -123,15 +141,6 @@ function makeProductInitLineReplace(context: InitProductWorkflowContext) {
     kebabCaseToSnakeCase(SOURCE_PRODUCT_NAME).toUpperCase();
 
   return (line: string) => {
-    // Never rewrite workflow template paths or the thin @saflib/templates package.
-    if (
-      line.includes("workflows/templates") ||
-      line.includes("@saflib/templates") ||
-      line.includes("saflib/templates/")
-    ) {
-      return placeholderReplace(line);
-    }
-
     // Drop the co-located SPA stub from CLIENT_SUBDOMAINS before placeholder
     // replace (init has no subdomainName; add-spa appends real names later).
     let prepared = line;
@@ -139,8 +148,44 @@ function makeProductInitLineReplace(context: InitProductWorkflowContext) {
       prepared = prepared.replace(/,__subdomain-name__/g, "");
     }
 
-    let out = placeholderReplace(prepared);
-    out = out.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
+    if (isSkippedStubRefLine(prepared)) {
+      return "";
+    }
+
+    // Unknown __tokens__ (migration table names, comments) stay literal —
+    // product/init has no integrationName/groupName/etc.
+    let out: string;
+    try {
+      out = placeholderReplace(prepared);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith("Missing replacement")
+      ) {
+        out = prepared;
+      } else {
+        throw error;
+      }
+    }
+
+    // Generated Dockerfiles list stub package paths for base's own builds;
+    // drop those segments once known tokens (e.g. __product-name__) are filled.
+    if (/^\s*COPY\b/.test(out)) {
+      out = out
+        .split(/\s+/)
+        .filter((tok) => !/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(tok))
+        .join(" ");
+    }
+
+    // Preserve the thin @saflib/templates package name / path (do not treat
+    // "templates" lines as exempt from /base/ → /product/ path renames —
+    // monolith Dockerfiles mention both).
+    const preserveTemplates =
+      out.includes("@saflib/templates") || out.includes("saflib/templates/");
+
+    out = preserveTemplates
+      ? out
+      : out.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
     out = out
       .split("@saflib/deploy")
       .join(`@${context.organizationName}/deploy`);

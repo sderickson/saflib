@@ -4,7 +4,7 @@ import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse, type PathParams } from "msw";
 import type { CronResponseBody, CronRequestBody } from "@saflib/cron-spec"; // Assuming types are available
-import CronJobsPage from "./CronJobsPage.vue";
+import CronJobsAsync from "./CronJobsAsync.vue";
 import { router } from "./test_router";
 import { mountTestApp } from "../test-app";
 type ListCronJobsResponse = CronResponseBody["listCronJobs"][200];
@@ -64,14 +64,14 @@ const formatDateTime = (dateTimeString: string | null | undefined): string => {
 const handlers = [
   // Default success for listing jobs
   http.get<PathParams, never, ListCronJobsResponse>(
-    "http://test.localhost:3000/cron/jobs",
+    "http://api.localhost:3000/cron/jobs",
     () => {
       return HttpResponse.json(mockJobs);
     },
   ),
   // Default success for updating settings
   http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-    "http://test.localhost:3000/cron/jobs/settings",
+    "http://api.localhost:3000/cron/jobs/settings",
     async ({ request }) => {
       const body = await request.json();
       return HttpResponse.json({
@@ -83,21 +83,19 @@ const handlers = [
   ),
 ];
 
-describe("CronJobsPage", () => {
+describe("CronJobsAsync", () => {
   stubGlobals(); // Sets up global mocks (ResizeObserver, location)
   const server = setupMockServer(handlers); // Sets up MSW server
 
   const mountComponent = async (waitForData = true) => {
-    await router.push("/cron/jobs?subdomain=test");
-    const wrapper = mountTestApp(CronJobsPage, {
-      propsData: {
-        subdomain: "test",
-      },
+    await router.push("/cron/jobs");
+    const wrapper = mountTestApp(CronJobsAsync, {
+      props: {},
     });
     if (waitForData) {
       await vi.waitFor(() => {
         expect(
-          wrapper.findComponent({ name: "v-progress-linear" }).exists(),
+          wrapper.findComponent({ name: "v-progress-circular" }).exists(),
         ).toBe(false);
       });
     }
@@ -129,24 +127,24 @@ describe("CronJobsPage", () => {
     return button;
   };
   const getLoadingIndicator = (wrapper: VueWrapper) =>
-    wrapper.findComponent({ name: "v-progress-linear" });
-  const getErrorAlert = (wrapper: VueWrapper) =>
-    wrapper.findComponent({ name: "v-alert" });
+    wrapper.findComponent({ name: "v-progress-circular" });
 
   // --- Tests ---
 
-  it("should render the title and loading indicator initially", async () => {
+  it("should show a loading indicator before data is ready", async () => {
     const wrapper = await mountComponent(false);
-    expect(wrapper.find("h1").text()).toBe("Cron Jobs");
     expect(getLoadingIndicator(wrapper).exists()).toBe(true);
     expect(getTable(wrapper).exists()).toBe(false);
-    expect(getErrorAlert(wrapper).exists()).toBe(false);
+  });
+
+  it("should render the title after loading", async () => {
+    const wrapper = await mountComponent();
+    expect(wrapper.find("h1").text()).toBe("Cron Jobs");
   });
 
   it("should render the table with job data after loading", async () => {
     const wrapper = await mountComponent();
     expect(getLoadingIndicator(wrapper).exists()).toBe(false);
-    expect(getErrorAlert(wrapper).exists()).toBe(false);
 
     const table = getTable(wrapper);
     expect(table.exists()).toBe(true);
@@ -202,7 +200,7 @@ describe("CronJobsPage", () => {
     let receivedRequestBody: UpdateSettingsRequest | null = null;
     server.use(
       http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-        "http://test.localhost:3000/cron/jobs/settings",
+        "http://api.localhost:3000/cron/jobs/settings",
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({
@@ -245,7 +243,7 @@ describe("CronJobsPage", () => {
     let receivedRequestBody: UpdateSettingsRequest | null = null;
     server.use(
       http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-        "http://test.localhost:3000/cron/jobs/settings",
+        "http://api.localhost:3000/cron/jobs/settings",
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({

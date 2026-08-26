@@ -1,0 +1,32 @@
+getMetricsSnapshot:
+  summary: Snapshot of parsed in-process Prometheus metrics
+  operationId: getMetricsSnapshot
+  tags:
+    - metrics
+    - site-admin-only
+  responses:
+    "200":
+      description: Parsed metric series from the in-process prom-client registry.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              metrics:
+                type: array
+                items:
+                  $ref: "../schemas/metric-snapshot.yaml"
+            required:
+              - metrics
+    "401":
+      description: Unauthorized - Invalid or missing authentication.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Forbidden - site admin required.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

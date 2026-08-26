@@ -93,9 +93,9 @@ async function mapAttachments(
   const out: NonNullable<SendTransacEmailRequest["attachment"]> = [];
   for (const att of attachments) {
     if (!att || typeof att !== "object") continue;
-    const filename =
+    const filename: string =
       "filename" in att && att.filename
-        ? att.filename
+        ? String(att.filename)
         : "name" in att && att.name
           ? String(att.name)
           : "attachment";

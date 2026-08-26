@@ -1,3 +1,5 @@
-// Generated types land in ./dist after `npm run build` (saf-specs generate).
-// Keep this module importable before the first generate.
-export {};
+/**
+ * Placeholder until `npm run build` after openapi/init clears route/schema stubs
+ * and generates `./dist`. Product packages replace this with real re-exports.
+ */
+export type paths = Record<string, never>;

@@ -17,16 +17,26 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/base-__offshoot-name__-http": "*",
+    "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",
+    "@saflib/base-jobs": "*",
     "@saflib/base-service-common": "*",
     "@saflib/base-spec": "*",
     "@saflib/cron": "*",
+    "@saflib/email-service": "*",
     "@saflib/express": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/jobs": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "@saflib/node-metrics-http": "*",
+    "http-errors": "^2.0.0"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@types/http-errors": "^2.0.0",
+    "supertest": "^7.0.0"
   },
   "sideEffects": false
 }

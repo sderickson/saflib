@@ -5,10 +5,34 @@
   },
   "references": [
     {
-      "path": "./admin"
+      "path": "./analytics-service"
     },
     {
-      "path": "./analytics-service"
+      "path": "./analytics/analytics-http"
+    },
+    {
+      "path": "./analytics/analytics-sdk"
+    },
+    {
+      "path": "./analytics/analytics-spec"
+    },
+    {
+      "path": "./analytics/analytics-vue"
+    },
+    {
+      "path": "./audit/audit-db"
+    },
+    {
+      "path": "./audit/audit-http"
+    },
+    {
+      "path": "./audit/audit-sdk"
+    },
+    {
+      "path": "./audit/audit-spec"
+    },
+    {
+      "path": "./audit/audit-vue"
     },
     {
       "path": "./backup/backup-cron"
@@ -74,6 +98,12 @@
       "path": "./base/plans"
     },
     {
+      "path": "./base/security"
+    },
+    {
+      "path": "./base/service/audit"
+    },
+    {
       "path": "./base/service/common"
     },
     {
@@ -90,6 +120,9 @@
     },
     {
       "path": "./base/service/integrations/__integration-name__"
+    },
+    {
+      "path": "./base/service/jobs"
     },
     {
       "path": "./base/service/kratos-handlers"
@@ -140,9 +173,6 @@
       "path": "./drizzle"
     },
     {
-      "path": "./email/email"
-    },
-    {
       "path": "./email/email-service"
     },
     {
@@ -153,6 +183,18 @@
     },
     {
       "path": "./env"
+    },
+    {
+      "path": "./errors/errors-http"
+    },
+    {
+      "path": "./errors/errors-sdk"
+    },
+    {
+      "path": "./errors/errors-spec"
+    },
+    {
+      "path": "./errors/errors-vue"
     },
     {
       "path": "./express"
@@ -189,6 +231,30 @@
     },
     {
       "path": "./node"
+    },
+    {
+      "path": "./node-log/node-log-http"
+    },
+    {
+      "path": "./node-log/node-log-sdk"
+    },
+    {
+      "path": "./node-log/node-log-spec"
+    },
+    {
+      "path": "./node-log/node-log-vue"
+    },
+    {
+      "path": "./node-metrics/node-metrics-http"
+    },
+    {
+      "path": "./node-metrics/node-metrics-sdk"
+    },
+    {
+      "path": "./node-metrics/node-metrics-spec"
+    },
+    {
+      "path": "./node-metrics/node-metrics-vue"
     },
     {
       "path": "./notify/notify"
@@ -228,6 +294,9 @@
     },
     {
       "path": "./secret-store"
+    },
+    {
+      "path": "./security"
     },
     {
       "path": "./sentry"

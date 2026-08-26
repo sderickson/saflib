@@ -15,3 +15,4 @@ export * from "./git-hash";
 export * from "./useResolvedHref.ts";
 export * from "./document-title.ts";
 export * from "./useAsyncPageDocumentTitle.ts";
+export { useAsyncPageErrorComponent } from "../composables/useAsyncPageErrorComponent.ts";

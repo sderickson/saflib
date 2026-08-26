@@ -1,5 +1,5 @@
 import { createInternalCaller, type InternalCaller } from "@saflib/express";
-import type { Job, JobsServiceRequestBody } from "jobs-spec";
+import type { Job, JobsServiceRequestBody } from "@saflib/jobs-spec";
 import createError from "http-errors";
 import { cronTriggerKey } from "./operations.ts";
 

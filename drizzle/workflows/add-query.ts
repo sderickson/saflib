@@ -80,21 +80,13 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CopyStepMachine, ({ context }) => {
-      const lineReplace = makeLineReplace(context);
-      return {
-        name: context.targetName,
-        targetDir: context.targetDir,
-        lineReplace: (line: string) => {
-          let out = line;
-          out = out
-            .split("baseDbManager")
-            .join(`${context.serviceName}DbManager`);
-          out = out.split("baseDb").join(`${context.serviceName}Db`);
-          return lineReplace(out);
-        },
-      };
-    }),
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.targetName,
+      targetDir: context.targetDir,
+      // Keep `baseDbManager` / `baseDb` — packages export those names even after
+      // product/offshoot init (only package names are remapped).
+      lineReplace: makeLineReplace(context),
+    })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "query",

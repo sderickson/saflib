@@ -1,0 +1,451 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Audit Log API",
+    "version": "1.0.0",
+    "description": "Hash-chained append-only audit log — admin browse and chain verification."
+  },
+  "components": {
+    "schemas": {
+      "AuditLog": {
+        "$ref": "#/components/schemas/audit-log"
+      },
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "audit-log": {
+        "type": "object",
+        "description": "One row from the append-only audit log (admin API shape).",
+        "required": [
+          "id",
+          "ts",
+          "prevHash",
+          "rowHash",
+          "schemaVersion",
+          "source",
+          "eventType",
+          "outcome",
+          "gitCommitRoot",
+          "gitCommitSaflib",
+          "env"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "prevHash": {
+            "type": "string"
+          },
+          "rowHash": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "http",
+              "cron",
+              "kratos",
+              "system",
+              "webhook"
+            ]
+          },
+          "actorUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "onBehalfOfUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "authMethod": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "clientIp": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string",
+            "nullable": true
+          },
+          "resourceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "gitCommitRoot": {
+            "type": "string"
+          },
+          "gitCommitSaflib": {
+            "type": "string"
+          },
+          "env": {
+            "type": "string"
+          },
+          "details": {
+            "nullable": true,
+            "type": "object",
+            "description": "Event-specific JSON payload; shape depends on `source`.",
+            "additionalProperties": true
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "audit-seal-result": {
+        "type": "object",
+        "description": "Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `durationMs` are present.\n",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "durationMs"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "sealed",
+              "skipped"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "empty",
+              "in_progress"
+            ]
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "archive": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "filename",
+              "sizeBytes",
+              "sha256Hex",
+              "archiveKey",
+              "rowCount",
+              "headHash",
+              "tailHash",
+              "firstTs",
+              "lastTs"
+            ],
+            "properties": {
+              "filename": {
+                "type": "string"
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sha256Hex": {
+                "type": "string",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "archiveKey": {
+                "type": "string",
+                "description": "Remote archive identifier (object path, bucket key, etc.)."
+              },
+              "rowCount": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "headHash": {
+                "type": "string",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "tailHash": {
+                "type": "string",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "firstTs": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "lastTs": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "branchCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      },
+      "seal-audit-log-response": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "auditSealResult"
+        ],
+        "properties": {
+          "auditSealResult": {
+            "$ref": "#/components/schemas/audit-seal-result"
+          }
+        }
+      },
+      "audit-seal-http-500": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "audit_chain_corrupt",
+                  "audit_ship_failed",
+                  "audit_email_failed",
+                  "audit_upload_failed",
+                  "audit_unknown"
+                ]
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/audit-logs": {
+      "get": {
+        "summary": "List audit log events (admin)",
+        "description": "Paginated keyset scan of the audit database, ordered by timestamp then id. `headAt` / `tailAt` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.\n",
+        "operationId": "listAuditLogs",
+        "tags": [
+          "site-admin-only"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Only return events with `ts` greater than or equal to this instant (ISO-8601).\n",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Opaque pagination cursor from a previous response's `nextCursor`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size (default 100, max 1000).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "description": "Sort by `ts` then `id`. `desc` returns newest events first (admin UI default).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit events for this page plus table timestamp span.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "auditLogs",
+                    "headAt",
+                    "tailAt",
+                    "nextCursor"
+                  ],
+                  "properties": {
+                    "auditLogs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/audit-log"
+                      }
+                    },
+                    "headAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true,
+                      "description": "Earliest `ts` in the audit table, if any rows exist."
+                    },
+                    "tailAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true,
+                      "description": "Latest `ts` in the audit table, if any rows exist."
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Pass as `cursor` to fetch the next page, if more rows exist."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `from`, `cursor`, or `order`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audit-logs/seal": {
+      "post": {
+        "summary": "Seal the active audit database (admin)",
+        "description": "Snapshot the active DB, verify the hash chain, compress locally, then invoke the product's ship callback (upload + off-system seal report). Clears the active store only after ship succeeds. Requires an authenticated site admin.\n",
+        "operationId": "sealAuditLog",
+        "tags": [
+          "site-admin-only"
+        ],
+        "responses": {
+          "200": {
+            "description": "Seal completed; `auditSealResult.status` is `sealed`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/seal-audit-log-response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — admin required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Skipped — empty active DB or concurrent seal (`auditSealResult.status: skipped`).\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/seal-audit-log-response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Seal pipeline failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/audit-seal-http-500"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

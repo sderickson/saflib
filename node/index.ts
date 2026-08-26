@@ -8,5 +8,4 @@ export * from "./src/loki.ts";
 export * from "./src/metrics.ts";
 export * from "./src/types.ts";
 export * from "./src/signAssertion.ts";
-export * from "./src/devLogBuffer.ts";
 export * from "./env.ts";

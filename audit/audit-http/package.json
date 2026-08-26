@@ -1,0 +1,33 @@
+{
+  "name": "@saflib/audit-http",
+  "description": "Hash-chained audit HTTP recorder and admin list routes",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./express/*": "./express/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/audit-db": "*",
+    "@saflib/audit-spec": "*",
+    "@saflib/drizzle": "*",
+    "@saflib/express": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "express": "^5.0.0",
+    "http-errors": "^2.0.0"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@types/express": "^5.0.0",
+    "@types/http-errors": "^2.0.0",
+    "@types/supertest": "^7.0.0",
+    "supertest": "^7.0.0"
+  },
+  "sideEffects": false
+}

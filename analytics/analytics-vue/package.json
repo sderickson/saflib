@@ -1,0 +1,32 @@
+{
+  "name": "@saflib/analytics-vue",
+  "description": "Client product event logger and admin events page",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./lib/*": "./lib/*",
+    "./pages/*": "./pages/*"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/analytics-sdk": "*",
+    "@saflib/analytics-spec": "*",
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*",
+    "@tanstack/vue-query": "*",
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@vue/test-utils": "*",
+    "msw": "*"
+  },
+  "sideEffects": false
+}

@@ -2,7 +2,7 @@ import { createHandler } from "@saflib/express";
 import type {
   JobsServiceRequestBody,
   JobsServiceResponseBody,
-} from "jobs-spec";
+} from "@saflib/jobs-spec";
 
 import { jobsServiceStorage } from "../../src/context.ts";
 import { mapJobToWire } from "../../src/mapJob.ts";

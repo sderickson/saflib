@@ -8,8 +8,10 @@ Fakes are built with [Mock Service Worker](https://mswjs.io/) because this inter
 
 SDK packages should export:
 
-- An array of handlers which are the baseline behavior of endpoints to the service.
-- Constants which can be referenced by tests; basically bits of the data that the server returns by default.
-- An object of lists of handlers which are scenarios which can be prepended to the baseline handlers.
+- Per-resource handler arrays from `requests/{resource}/index.fakes.ts` (import only the groups a test needs).
+- Shared mock data and `resetMocks()` from `requests/{resource}/mocks.ts`.
+- Scenario handler lists that can be prepended to the baseline handlers when needed.
+
+Do **not** add a root `fakes.ts` that re-exports every group — that forces every importer to parse the entire fake graph.
 
 This way tests which depend on the SDK can quickly test on some fake data, but also test scenarios such as a user whose email is verified or not verified.

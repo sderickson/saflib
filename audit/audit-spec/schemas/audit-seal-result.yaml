@@ -1,0 +1,70 @@
+# Result of `sealAuditDb`: completed seal with archive metadata, or skip.
+type: object
+description: >
+  Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the
+  sealed time range plus chain/upload metadata. On `skipped`, only `status`,
+  `reason`, and `durationMs` are present.
+additionalProperties: false
+required:
+  - status
+  - durationMs
+properties:
+  status:
+    type: string
+    enum:
+      - sealed
+      - skipped
+  reason:
+    type: string
+    enum:
+      - empty
+      - in_progress
+  durationMs:
+    type: integer
+    minimum: 0
+  archive:
+    type: object
+    additionalProperties: false
+    required:
+      - filename
+      - sizeBytes
+      - sha256Hex
+      - archiveKey
+      - rowCount
+      - headHash
+      - tailHash
+      - firstTs
+      - lastTs
+    properties:
+      filename:
+        type: string
+      sizeBytes:
+        type: integer
+        minimum: 0
+      sha256Hex:
+        type: string
+        minLength: 64
+        maxLength: 64
+      archiveKey:
+        type: string
+        description: Remote archive identifier (object path, bucket key, etc.).
+      rowCount:
+        type: integer
+        minimum: 1
+      headHash:
+        type: string
+        minLength: 64
+        maxLength: 64
+      tailHash:
+        type: string
+        minLength: 64
+        maxLength: 64
+      firstTs:
+        type: string
+        format: date-time
+      lastTs:
+        type: string
+        format: date-time
+      branchCount:
+        type: integer
+        minimum: 0

@@ -1,29 +1,61 @@
 import { startExpressServer } from "@saflib/express";
 import { createBaseHttpApp } from "@saflib/base-http/http";
 import { baseDb } from "@saflib/base-db/instances";
+import { getBaseAuditDbKey } from "@saflib/base-audit";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { makeContext } from "@saflib/base-service-common/context";
-// BEGIN WORKFLOW AREA cron-imports FOR cron/init
 import { runBaseCron } from "@saflib/base-cron";
-// END WORKFLOW AREA
+import {
+  baseJobOperations,
+  baseTriggerMap,
+  getBaseJobsDbKey,
+  runBaseJobs,
+} from "@saflib/base-jobs";
+import { createJobsApp, makeCronEnqueuer } from "@saflib/jobs";
+import { jsonSpec } from "@saflib/base-spec";
 
-export function startBaseService() {
+export async function startBaseService() {
   const { log, logError } = makeSubsystemReporters("init", "main");
   try {
     log.info("Starting up base service...");
     log.info("Connecting to base-db...");
     const dbKey = baseDb.connect({ onDisk: true });
-    const context = makeContext({ baseDbKey: dbKey });
+    const auditDbKey = getBaseAuditDbKey();
+    const context = makeContext({ baseDbKey: dbKey, auditDbKey });
     log.info("base-db connection complete.");
 
+    const jobsSocketPath =
+      (
+        typedEnv as {
+          BASE_SERVICE_JOBS_SOCKET?: string;
+        }
+      ).BASE_SERVICE_JOBS_SOCKET ?? "/tmp/base-jobs-internal.sock";
+    const internalSocketPath =
+      (
+        typedEnv as {
+          BASE_SERVICE_INTERNAL_SOCKET?: string;
+        }
+      ).BASE_SERVICE_INTERNAL_SOCKET ?? "/tmp/base-internal.sock";
+
     log.info("Starting base-cron...");
-    // BEGIN WORKFLOW AREA run-cron FOR cron/init
-    // Without @saflib/jobs in the golden product, ticks no-op enqueue.
-    // Products with jobs should pass makeCronEnqueuer({ jobsSocketPath }).
-    void runBaseCron(context, async () => ({}));
-    // END WORKFLOW AREA
+    await runBaseCron(context, makeCronEnqueuer({ jobsSocketPath }));
     log.info("base-cron startup complete.");
+
+    log.info("Starting base-jobs runtime...");
+    await runBaseJobs(context);
+    log.info("base-jobs runtime startup complete.");
+
+    log.info("Starting base-jobs app...");
+    const jobsApp = createJobsApp({
+      triggerMap: baseTriggerMap,
+      operationConfig: baseJobOperations,
+      apiSpec: jsonSpec,
+      targetSocketPath: internalSocketPath,
+      dbKey: getBaseJobsDbKey(),
+    });
+    startExpressServer(jobsApp, { socketPath: jobsSocketPath });
+    log.info("base-jobs app listening on " + jobsSocketPath);
 
     log.info("Starting base-http...");
     const lease = createBaseHttpApp(context);
@@ -32,6 +64,7 @@ export function startBaseService() {
         typedEnv.BASE_SERVICE_HTTP_HOST.split(":")[1] || "3000",
         10,
       ),
+      socketPath: internalSocketPath,
     });
     log.info("base-http startup complete.");
   } catch (error) {

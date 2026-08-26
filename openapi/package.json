@@ -10,6 +10,9 @@
     ".": "./index.ts",
     "./ajv-formats": "./ajv-formats.ts",
     "./error": "./error.ts",
+    "./openapi.yaml": "./openapi.yaml",
+    "./schemas/Error": "./schemas/Error.ts",
+    "./schemas/error.yaml": "./schemas/error.yaml",
     "./workflows": "./workflows/index.ts"
   },
   "scripts": {

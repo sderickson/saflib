@@ -6,19 +6,27 @@ import {
   makeWorkflowMachine,
   type WorkflowStep,
 } from "@saflib/workflows";
-import { InitProductWorkflowDefinition } from "@saflib/product/workflows";
+import {
+  InitProductWorkflowDefinition,
+} from "@saflib/product/workflows";
 import {
   OpenApiSchemaWorkflowDefinition,
   OpenApiRouteWorkflowDefinition,
+  OpenapiInitWorkflowDefinition,
 } from "@saflib/openapi/workflows";
 import {
   UpdateSchemaWorkflowDefinition,
   AddDrizzleQueryWorkflowDefinition,
+  DrizzleInitWorkflowDefinition,
 } from "@saflib/drizzle/workflows";
-import { AddHandlerWorkflowDefinition } from "@saflib/express/workflows";
+import {
+  AddHandlerWorkflowDefinition,
+  ExpressInitWorkflowDefinition,
+} from "@saflib/express/workflows";
 import {
   AddSdkQueryWorkflowDefinition,
   AddSdkMutationWorkflowDefinition,
+  SdkInitWorkflowDefinition,
 } from "@saflib/sdk/workflows";
 import {
   AddSpaViewWorkflowDefinition,
@@ -26,7 +34,6 @@ import {
   AddE2eTestWorkflowDefinition,
 } from "@saflib/vue/workflows";
 import { ServiceAddStoreWorkflowDefinition } from "@saflib/service/workflows";
-import { DrizzleInitWorkflowDefinition } from "@saflib/drizzle/workflows";
 
 /** Disposable product from product/init — never committed. */
 export const LIVE_TEST_PRODUCT = "tmp";
@@ -298,20 +305,143 @@ export const liveTestSets: LiveTestSet[] = [
   {
     name: "offshoot",
     description:
-      "drizzle/init offshoot db (dossier) woven into service/db — Phase 5 vertical slice",
-    typecheck: ["dossier/db", "service/db"],
+      "Init dossier offshoot (spec/db/http/sdk) + add schema/route/handler/db-query/sdk-query on main and offshoot",
+    typecheck: [
+      "service/spec",
+      "service/db",
+      "service/http",
+      "service/sdk",
+      "dossier/spec",
+      "dossier/db",
+      "dossier/http",
+      "dossier/sdk",
+    ],
     assertFiles: [
       "dossier/db/package.json",
-      "dossier/db/schemas/dossier.ts",
+      "dossier/spec/openapi.yaml",
+      "dossier/http/routers.ts",
+      "dossier/sdk/package.json",
+      "dossier/spec/schemas/item.yaml",
+      "dossier/spec/routes/item/list.yaml",
+      "dossier/db/schemas/item.ts",
+      "dossier/db/queries/item/list.ts",
+      "dossier/http/handlers/item/list.ts",
+      "dossier/sdk/requests/item/list.ts",
+      "service/spec/schemas/note.yaml",
+      "service/spec/routes/note/list.yaml",
+      "service/db/schemas/note.ts",
+      "service/db/queries/note/list.ts",
+      "service/http/handlers/note/list.ts",
+      "service/sdk/requests/note/list.ts",
       "service/db/schema.ts",
     ],
     steps: [
+      // --- scaffold dossier offshoot layers ---
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}`,
+      })),
+      step(makeWorkflowMachine(OpenapiInitWorkflowDefinition), () => ({
+        name: "dossier",
+      })),
       step(CdStepMachine, () => ({
         path: `./${LIVE_TEST_PRODUCT}`,
       })),
       step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), () => ({
         name: "dossier",
       })),
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}`,
+      })),
+      step(makeWorkflowMachine(ExpressInitWorkflowDefinition), () => ({
+        name: "dossier",
+      })),
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}`,
+      })),
+      step(makeWorkflowMachine(SdkInitWorkflowDefinition), () => ({
+        name: "dossier",
+      })),
+
+      // --- main service: schema → route → handler → db query → sdk query ---
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}/service/spec`,
+      })),
+      step(makeWorkflowMachine(OpenApiSchemaWorkflowDefinition), () => ({
+        name: "note",
+      })),
+      step(makeWorkflowMachine(OpenApiRouteWorkflowDefinition), () => ({
+        path: "./routes/note/list.yaml",
+        urlPath: "/notes",
+        method: "get",
+      })),
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}/service/db`,
+      })),
+      step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+        path: "./schemas/note.ts",
+      })),
+      step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
+        path: "./queries/note/list.ts",
+      })),
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}/service/http`,
+      })),
+      step(CommandStepMachine, () => ({
+        command: "npm",
+        args: ["install"],
+      })),
+      step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
+        path: "./handlers/note/list.ts",
+      })),
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}/service/sdk`,
+      })),
+      step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
+        path: "./requests/note/list.ts",
+        urlPath: "/notes",
+        method: "get",
+      })),
+
+      // --- dossier offshoot: same vertical slice ---
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}/dossier/spec`,
+      })),
+      step(makeWorkflowMachine(OpenApiSchemaWorkflowDefinition), () => ({
+        name: "item",
+      })),
+      step(makeWorkflowMachine(OpenApiRouteWorkflowDefinition), () => ({
+        path: "./routes/item/list.yaml",
+        urlPath: "/dossier/items",
+        method: "get",
+      })),
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}/dossier/db`,
+      })),
+      step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+        path: "./schemas/item.ts",
+      })),
+      step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
+        path: "./queries/item/list.ts",
+      })),
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}/dossier/http`,
+      })),
+      step(CommandStepMachine, () => ({
+        command: "npm",
+        args: ["install"],
+      })),
+      step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
+        path: "./handlers/item/list.ts",
+      })),
+      step(CdStepMachine, () => ({
+        path: `./${LIVE_TEST_PRODUCT}/dossier/sdk`,
+      })),
+      step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
+        path: "./requests/item/list.ts",
+        urlPath: "/dossier/items",
+        method: "get",
+      })),
+
       // Cd is always relative to the live-test original cwd (saflib/), not process.cwd().
       step(CdStepMachine, () => ({
         path: ".",
@@ -323,7 +453,7 @@ export const liveTestSets: LiveTestSet[] = [
           "--disable-warning=ExperimentalWarning",
           "./workflows-cli/live-test/assert-contains.ts",
           `${LIVE_TEST_PRODUCT}/service/db/schema.ts`,
-          "@saflib/tmp-dossier-db/schemas/dossier",
+          "@saflib/tmp-dossier-db/schema",
         ],
       })),
     ],

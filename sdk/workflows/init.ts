@@ -8,18 +8,18 @@ import {
   type OffshootInitContext,
   resolveOffshootInitContext,
   makeOffshootLineReplace,
+  parentLayerPackageJsonPath,
 } from "@saflib/workflows";
-import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
+import { offshootStubRoot } from "@saflib/templates";
 import path from "node:path";
 
 const offshootSdkRoot = path.join(offshootStubRoot, "sdk");
-const parentFakesLive = path.join(templatesProductRoot, "service/sdk/fakes.ts");
 
 const input = [
   {
     name: "name",
     description:
-      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/sdk and weaves fakes into the parent sdk package.",
+      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/sdk and registers it on the parent sdk package.",
     exampleValue: "dossier",
   },
 ] as const;
@@ -33,7 +33,7 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
   id: "sdk/init",
 
   description:
-    "Scaffold an offshoot SDK package and weave its fake handlers into the parent sdk",
+    "Scaffold an offshoot SDK package and register it on the parent sdk",
 
   checklistDescription: ({ offshootPackageName }) =>
     `Init offshoot sdk ${offshootPackageName}.`,
@@ -50,13 +50,11 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
     }),
 
   templateFiles: {
-    fakes: path.join(offshootSdkRoot, "fakes.ts"),
     index: path.join(offshootSdkRoot, "index.ts"),
     packageJson: path.join(offshootSdkRoot, "package.json"),
     tsconfig: path.join(offshootSdkRoot, "tsconfig.json"),
     vitestConfig: path.join(offshootSdkRoot, "vitest.config.js"),
     test: path.join(offshootSdkRoot, "index.test.ts"),
-    parentFakes: parentFakesLive,
   },
 
   docFiles: {
@@ -73,18 +71,10 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
       lineReplace: makeOffshootLineReplace(context),
     })),
 
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.offshootName,
-      targetDir: context.parentDir,
-      templateFiles: {
-        parentFakes: parentFakesLive,
-      },
-      lineReplace: makeOffshootLineReplace(context),
-    })),
-
     step(TransformFileStepMachine, ({ context }) => ({
-      filePath: path.join(context.parentDir, "package.json"),
+      filePath: parentLayerPackageJsonPath(context.parentDir),
       description: `Add ${context.offshootPackageName} dependency to parent sdk`,
+      skipIfMissing: true,
       transform: (content: string) => {
         const pkg = JSON.parse(content);
         pkg.dependencies = pkg.dependencies ?? {};

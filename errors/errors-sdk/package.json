@@ -1,0 +1,26 @@
+{
+  "name": "@saflib/errors-sdk",
+  "description": "TanStack Query hooks for error capture and admin viewing",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./requests/*": "./requests/*.ts",
+    "./client": "./client.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/errors-spec": "*",
+    "@saflib/sdk": "*",
+    "@tanstack/vue-query": "*",
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

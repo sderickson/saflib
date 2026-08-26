@@ -30,7 +30,7 @@ To run this workflow automatically, tell the agent to:
 - Handler file (`handlers/<group>/<handler>.ts`)
 - Group router (`handlers/<group>/index.ts`) with per-operation `createOperationScopedMiddleware`
 - Slim route test (`handlers/<group>/<handler>.test.ts`) using `testing/slim-route-test.ts`
-- Updates to `http.ts` `defaultRouterMounts()` workflow area
+- Updates to `routers.ts` `groupRouterMounts()` workflow area (main http and offshoots)
 
 Route handler tests mount the **group router**, not `create…HttpApp()` with every product router. Full app mounts are for `index.test.ts` smoke tests and `*.integration.test.ts` only.
 

@@ -40,6 +40,13 @@ export interface CopyStepInput {
    * returns true. Prefer {@link skipSourceGlobs} when a pattern is enough.
    */
   skipSourcePath?: (fullPath: string) => boolean;
+
+  /**
+   * When set, skip the entire copy step if this path does not exist (resolved
+   * relative to the workflow cwd unless absolute). Useful when parent weave
+   * targets are optional (e.g. standalone saflib packages with no product spec).
+   */
+  skipUnlessPathExists?: string;
 }
 
 /**

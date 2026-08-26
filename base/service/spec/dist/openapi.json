@@ -1,11 +1,504 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "templates API",
+    "title": "base API",
     "version": "1.0.0",
-    "description": "API specification for the templates service"
+    "description": "API specification for the base service"
   },
-  "paths": null,
+  "paths": {
+    "/jobs-demo/start": {
+      "post": {
+        "summary": "Start the jobs demo chain",
+        "description": "Site-admin-only foreground endpoint that enqueues `jobsDemoStepB` with optional demo options (dedupe, concurrency, retry simulation payload).\n",
+        "operationId": "startJobsDemo",
+        "tags": [
+          "site-admin-only",
+          "jobs-demo"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/jobs-demo-options"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Enqueued step-b job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/jobs-demo-start-result"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs-demo/step-b": {
+      "post": {
+        "summary": "Jobs demo chain step B",
+        "description": "Background step that optionally fails N times (503) to demonstrate retries, then enqueues `jobsDemoStepC`.\n",
+        "operationId": "jobsDemoStepB",
+        "tags": [
+          "site-admin-only",
+          "background",
+          "jobs-demo"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/jobs-demo-options"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Enqueued step-c after optional simulated failures.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/jobs-demo-step-result"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Simulated retryable failure (demo only).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs-demo/step-c": {
+      "post": {
+        "summary": "Jobs demo chain step C",
+        "description": "Background terminal step that records demo chain completion.",
+        "operationId": "jobsDemoStepC",
+        "tags": [
+          "site-admin-only",
+          "background",
+          "jobs-demo"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/jobs-demo-options"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Demo chain completed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/jobs-demo-step-result"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user-configs/mine": {
+      "get": {
+        "summary": "Get or lazy-create the caller's user config",
+        "operationId": "getMineUserConfigs",
+        "tags": [],
+        "description": "Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`displayName` empty string, `marketingEmailsOptIn` false, `marketingEmailsOptInAt` null, `termsOfServiceAgreedAt` null) and returns that row.\n**Lazy-create pattern:** empty `user_config` rows are created on first GET (not via a Kratos registration webhook). This keeps Kratos auth-only and the product DB responsible for user-facing prefs.\n",
+        "responses": {
+          "200": {
+            "description": "Caller's user config. Always present after this call (created with defaults when missing).\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "userConfig"
+                  ],
+                  "properties": {
+                    "userConfig": {
+                      "description": "Owner-only preferences for the signed-in user.",
+                      "$ref": "#/components/schemas/user-config"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update the caller's user config",
+        "operationId": "putMineUserConfigs",
+        "tags": [],
+        "description": "Upserts the authenticated user's display name and marketing email preference. Lazy-creates the `user_config` row when missing. `displayName` is trimmed; empty or whitespace-only values are rejected. When `marketingEmailsOptIn` becomes `true`, sets `marketingEmailsOptInAt` to now if newly opted in; when set to `false`, clears `marketingEmailsOptInAt` to null. Pass `termsOfServiceAgreedAt: \"now\"` to record Terms of Service agreement at the server's current time (preserved once set; not overwritten). `userId`, timestamps, and client-supplied ISO values for `marketingEmailsOptInAt` / `termsOfServiceAgreedAt` may be included when echoing a prior GET but are ignored — ownership and timestamps are server-controlled.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "displayName",
+                  "marketingEmailsOptIn"
+                ],
+                "properties": {
+                  "displayName": {
+                    "type": "string",
+                    "maxLength": 80,
+                    "description": "How the user appears to themselves and others. Trimmed server-side; must be non-empty after trim. Max length 80.\n",
+                    "example": "Alex Rivera"
+                  },
+                  "marketingEmailsOptIn": {
+                    "type": "boolean",
+                    "description": "Explicit consent for product/marketing email. When flipped to true, `marketingEmailsOptInAt` is set; when flipped to false, that timestamp is cleared.\n",
+                    "example": false
+                  },
+                  "termsOfServiceAgreedAt": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Pass the literal string `now` to record Terms of Service agreement using the server clock. Any other value (including ISO timestamps from a prior GET, or null) is ignored. Once recorded, the agreement timestamp is not cleared or overwritten.\n",
+                    "example": "now"
+                  },
+                  "userId": {
+                    "type": "string"
+                  },
+                  "marketingEmailsOptInAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "updatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User config updated (or created then updated).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "userConfig"
+                  ],
+                  "properties": {
+                    "userConfig": {
+                      "description": "Owner-only preferences for the signed-in user after upsert.",
+                      "$ref": "#/components/schemas/user-config"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`displayName` is empty or whitespace-only after trim.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user-configs/unsubscribe-marketing": {
+      "post": {
+        "summary": "Public marketing-email unsubscribe",
+        "operationId": "unsubscribeMarketingEmailsUserConfigs",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Clears marketing email opt-in for the identity matching the given address, when one exists. Always returns **200** with an empty success payload — never reveals whether the email is known, whether a `user_config` row exists, or the prior opt-in state. Tagged `no-auth` (and therefore CSRF-exempt) so unsubscribe links work without a session.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "description": "Address to unsubscribe from marketing email.",
+                    "example": "alex@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Request accepted. Does not indicate whether the email matched an account or whether preferences changed.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body (e.g. missing or malformed email).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "__url-path__": {
+      "__method__": {
+        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-L6u6qT/routes/__group-name__/__target-name__.yaml#/__operationId__"
+      }
+    },
+    "/admin/users/by-id": {
+      "get": {
+        "summary": "Look up a Kratos identity by ID (site-admin)",
+        "operationId": "getUsersByIdAdmin",
+        "tags": [
+          "site-admin-only"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Kratos identity ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "identity"
+                  ],
+                  "properties": {
+                    "identity": {
+                      "description": "Kratos identity from the admin API.",
+                      "$ref": "#/components/schemas/kratos-identity"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Identity not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Identity service returned an unexpected error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/__offshoot-name__/health": {
+      "get": {
+        "operationId": "get__OffshootName__Health",
+        "summary": "Health check for the __offshoot-name__ offshoot",
+        "responses": {
+          "200": {
+            "description": "Offshoot is reachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/health"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
   "components": {
     "schemas": {
       "Error": {
@@ -13,6 +506,330 @@
       },
       "ProductEvent": {
         "$ref": "#/components/schemas/index"
+      },
+      "UserConfig": {
+        "$ref": "#/components/schemas/user-config"
+      },
+      "__TargetName__": {
+        "$ref": "#/components/schemas/__target-name__"
+      },
+      "KratosIdentity": {
+        "$ref": "#/components/schemas/kratos-identity"
+      },
+      "jobs-demo-options": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "dedupeKey": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional dedupe key forwarded to the enqueued job."
+          },
+          "concurrencyKey": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional concurrency key forwarded to the enqueued job."
+          },
+          "failuresBeforeSuccess": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "For step-b demos: respond 503 this many times before succeeding and enqueueing step-c.\n"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Arbitrary JSON echoed through the demo chain."
+          }
+        }
+      },
+      "job": {
+        "type": "object",
+        "description": "Wire form of a queued API-call job. CamelCase projection of the `job` row; omits internal columns (`heartbeatAt`, `updatedAt`). Authority is the discriminated evidence grant without the raw enqueue assertion token (detail endpoints may return that separately as `authorityAssertion`).\n",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Short identifier for the job (from generateShortId).",
+            "example": "Jb3k_mN7"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "retrying",
+              "succeeded",
+              "dead",
+              "cancelled"
+            ],
+            "description": "Lifecycle state. `pending`/`retrying` are claimable; `running` is in delivery; `succeeded`/`dead`/`cancelled` are terminal.\n",
+            "example": "pending"
+          },
+          "operationId": {
+            "type": "string",
+            "description": "Target OpenAPI operationId resolved at delivery time.",
+            "example": "jobsDemoStepB"
+          },
+          "request": {
+            "type": "object",
+            "description": "Capped request payload delivered to the target operation (serialized size ≤ 16 KB). Path params, query, and body are optional and substituted into the operation's path template / request.\n",
+            "additionalProperties": false,
+            "properties": {
+              "pathParams": {
+                "type": "object",
+                "description": "Path template substitutions keyed by parameter name.",
+                "additionalProperties": true
+              },
+              "query": {
+                "type": "object",
+                "description": "Query string parameters keyed by name.",
+                "additionalProperties": true
+              },
+              "body": {
+                "description": "JSON request body for the target operation, when any."
+              }
+            },
+            "example": {
+              "body": {
+                "failuresBeforeSuccess": 2
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "description": "Acting user whose authority the job runs under.",
+            "example": "Us7k_pQ2"
+          },
+          "authority": {
+            "description": "Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token.\n",
+            "discriminator": {
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "type": "object",
+                "description": "A user's authenticated request (or an admin action) instigated the chain. Evidence is the originating request id (also in the audit log).\n",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "userId",
+                  "requestId"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "request"
+                    ],
+                    "example": "request"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "User who made the originating request.",
+                    "example": "Us7k_pQ2"
+                  },
+                  "requestId": {
+                    "type": "string",
+                    "description": "Originating request id (e.g. X-Request-ID).",
+                    "example": "r-abc123"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "description": "A webhook arrived for a channel subscription; the importer's creator authorized scanning this channel. Evidence is the importer row.\n",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "userId",
+                  "importerId"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "importer"
+                    ],
+                    "example": "importer"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "Importer creator whose authority is used.",
+                    "example": "Us7k_pQ2"
+                  },
+                  "importerId": {
+                    "type": "string",
+                    "description": "Short id of the importer row that authorized the chain.",
+                    "example": "Im7k_mN2"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "description": "A cron tick fired for an enabled job; the admin who last enabled it is the recorded authority. Evidence is the cron job name.\n",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "userId",
+                  "cronJobName"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "cron"
+                    ],
+                    "example": "cron"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "Admin who enabled the cron job (`enabled_by`).",
+                    "example": "Us7k_pQ2"
+                  },
+                  "cronJobName": {
+                    "type": "string",
+                    "description": "Name of the cron job that enqueued this chain.",
+                    "example": "recoverySweep"
+                  }
+                }
+              }
+            ]
+          },
+          "originalRequestId": {
+            "type": "string",
+            "description": "Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Copied from parent on chained enqueues; joins audit_event.request_id.\n",
+            "example": "r-abc123"
+          },
+          "enqueuedByOperationId": {
+            "type": "string",
+            "description": "Calling operationId that enqueued this job (trigger-map edge).",
+            "example": "startJobsDemo"
+          },
+          "parentJobId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Short id of the job that enqueued this one, or null at the chain root.",
+            "example": null
+          },
+          "runAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Earliest time the job may be claimed for delivery.",
+            "example": "2026-08-06T21:00:00.000Z"
+          },
+          "dedupeKey": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts (pushes runAt, refreshes request) and returns the existing job.\n",
+            "example": "matter:demo-1:claim"
+          },
+          "concurrencyKey": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional key limiting concurrency: at most one running job per key (e.g. `matter:{id}`).\n",
+            "example": "matter:demo-1"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Claim priority; higher values are claimed first. Default 0.",
+            "example": 0
+          },
+          "attempt": {
+            "type": "integer",
+            "description": "Number of delivery attempts consumed so far (0 before first claim).",
+            "example": 0
+          },
+          "maxAttempts": {
+            "type": "integer",
+            "description": "Maximum delivery attempts before the job becomes dead (exhausted).",
+            "example": 5
+          },
+          "result": {
+            "type": "object",
+            "nullable": true,
+            "description": "Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `errorBody` is set only on failure and capped at 8 KB.\n",
+            "additionalProperties": false,
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "description": "HTTP status code from the delivery attempt, when available.",
+                "example": 500
+              },
+              "errorBody": {
+                "type": "string",
+                "nullable": true,
+                "description": "Capped error response body recorded only on failure.",
+                "example": "{\"error\":\"upstream timeout\"}"
+              },
+              "terminalReason": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "exhausted",
+                  "permanent-status",
+                  "rejected-by-endpoint",
+                  "auth-unresolvable",
+                  "cancelled-by-admin",
+                  "cancelled-by-chain",
+                  null
+                ],
+                "description": "Why the job became terminal. Null when the job succeeded or result is from a non-terminal retryable failure mid-flight.\n",
+                "example": "exhausted"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the job row was created.",
+            "example": "2026-08-06T20:59:55.000Z"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the current (or last) delivery attempt started; null if never claimed.",
+            "example": null
+          },
+          "finishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the job reached a terminal status; null while still active.",
+            "example": null
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "operationId",
+          "request",
+          "userId",
+          "authority",
+          "originalRequestId",
+          "enqueuedByOperationId",
+          "parentJobId",
+          "runAt",
+          "dedupeKey",
+          "concurrencyKey",
+          "priority",
+          "attempt",
+          "maxAttempts",
+          "result",
+          "createdAt",
+          "startedAt",
+          "finishedAt"
+        ]
+      },
+      "jobs-demo-start-result": {
+        "type": "object",
+        "required": [
+          "job"
+        ],
+        "properties": {
+          "job": {
+            "$ref": "#/components/schemas/job"
+          }
+        }
       },
       "error": {
         "type": "object",
@@ -27,6 +844,138 @@
             "example": "The requested resource could not be found."
           }
         }
+      },
+      "jobs-demo-step-result": {
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "properties": {
+          "result": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "enqueued": {
+                "type": "string",
+                "description": "operationId enqueued by this step."
+              },
+              "done": {
+                "type": "boolean",
+                "description": "True when step-c recorded completion."
+              }
+            }
+          }
+        }
+      },
+      "user-config": {
+        "type": "object",
+        "description": "Product-owned preferences for the signed-in user (owner-only). Keyed by Kratos identity id. Holds display name, marketing email consent, and Terms of Service agreement — not auth traits. Kratos owns identity/credentials/sessions; this resource is the Kratos-minimal product DB pattern.\n",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Kratos identity id of the owning user.",
+            "example": "user_abc123"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "How the user appears to themselves and to others. May be empty after lazy-create until the first save; PUT requires a non-empty trimmed value.\n",
+            "example": "Alex Rivera"
+          },
+          "marketingEmailsOptIn": {
+            "type": "boolean",
+            "description": "Explicit consent for product/marketing email. Defaults to false until the user opts in.\n",
+            "example": false
+          },
+          "marketingEmailsOptInAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketingEmailsOptIn` becomes false).\n",
+            "example": null
+          },
+          "termsOfServiceAgreedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `termsOfServiceAgreedAt: \"now\"`). Once set, later preference updates do not clear or overwrite it.\n",
+            "example": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the user config row was created.",
+            "example": "2026-07-23T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the user config row was last updated.",
+            "example": "2026-07-23T12:30:00Z"
+          }
+        },
+        "required": [
+          "userId",
+          "displayName",
+          "marketingEmailsOptIn",
+          "marketingEmailsOptInAt",
+          "termsOfServiceAgreedAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "example": {
+          "userId": "user_abc123",
+          "displayName": "Alex Rivera",
+          "marketingEmailsOptIn": false,
+          "marketingEmailsOptInAt": null,
+          "termsOfServiceAgreedAt": null,
+          "createdAt": "2026-07-23T00:00:00Z",
+          "updatedAt": "2026-07-23T12:30:00Z"
+        }
+      },
+      "kratos-identity": {
+        "type": "object",
+        "description": "Ory Kratos identity as returned by the admin API. Extra fields from Kratos are allowed. `id` is the Kratos identity UUID (not a product `generateShortId`).\n",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Kratos identity id."
+          },
+          "schema_id": {
+            "type": "string"
+          },
+          "traits": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "state": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          }
+        },
+        "required": [
+          "status"
+        ]
       },
       "login": {
         "type": "object",
@@ -98,6 +1047,25 @@
           }
         }
       },
+      "__target_name__": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "__target_name__"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": null
+          }
+        },
+        "required": [
+          "event",
+          "context"
+        ]
+      },
       "index": {
         "type": "object",
         "oneOf": [
@@ -112,6 +1080,9 @@
           },
           {
             "$ref": "#/components/schemas/verify_email"
+          },
+          {
+            "$ref": "#/components/schemas/__target_name__"
           }
         ],
         "properties": {
@@ -133,6 +1104,44 @@
         },
         "required": [
           "event"
+        ]
+      },
+      "__target-name__": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the template-resource (short id, e.g. from generateShortId)",
+            "example": "K3m9_xR2"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name for the template-resource",
+            "example": "Example Template Resource"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the template-resource",
+            "example": "This is an example template resource"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the template-resource was created",
+            "example": "2023-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the template-resource was last updated",
+            "example": "2023-01-01T00:00:00Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
         ]
       }
     }

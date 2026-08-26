@@ -77,7 +77,8 @@ export const AddE2eTestWorkflowDefinition = defineWorkflow<
       fileId: "spec",
       promptMessage: `Update **${path.basename(context.copiedFiles!.spec)}** to implement the E2E test workflow:
         
-        * Use fixtures from this package and the adjacent "common" package.
+        * Import page fixtures from co-located paths via the SPA package glob (e.g. \`@scope/pkg/pages/home/Home.fixture.ts\`) or a same-package relative path — never from a root \`@pkg/fixtures\` barrel.
+        * Import shared product helpers from the adjacent "common" package (\`@scope/product-clients-common/fixtures\`).
         * Use the product fixture's step() method to create test steps with automatic screenshot capture.
         * Use utilities from @saflib/playwright, such as getByString to locate elements using i18n strings.
         * Use the product fixture's assertEvent() method to assert that certain event types were fired.

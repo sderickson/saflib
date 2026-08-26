@@ -186,11 +186,14 @@ export function useEvalCreateFlow(callbacks: {
 
 **Scoping note**: Each component that calls a composable gets its own instance with its own local state. This is usually what you want — each sub-component manages its own editing/uploading state independently. However, when multiple siblings need **coordinated state** (e.g. "only one note in edit mode at a time"), the parent should own that coordination state and pass it as a simple prop (like `isEditing: boolean`), while the sub-component still calls its own composable for mutations and other stateful flows.
 
-Composables are tested using `withVueQuery` and `setupMockServer` with the SDK's fake handlers — full integration tests that exercise the state machine and networking without a DOM:
+Composables are tested using `withVueQuery` and `setupMockServer` with the resource-group fake handlers the flow actually calls — full integration tests that exercise the state machine and networking without a DOM:
 
 ```typescript
 // useEvalCreateFlow.test.ts
-setupMockServer(iformServiceFakeHandlers);
+import { evalsFakeHandlers } from "@pathclerk/daemon-sdk/requests/evals/index.fakes";
+import { formsFakeHandlers } from "@pathclerk/daemon-sdk/requests/forms/index.fakes";
+
+setupMockServer([...evalsFakeHandlers, ...formsFakeHandlers]);
 
 it("create without file: creates eval, calls onClose", async () => {
   const [flow, app] = withVueQuery(() => useEvalCreateFlow({ onClose, onCreated }));
@@ -214,7 +217,7 @@ See [testing](./04-testing.md) for more info.
 
 _[Template file](../workflows/template/__subdomain-name__/__group-name__/__TargetName__.fixture.ts)_
 
-A [Playwright Fixture](https://playwright.dev/docs/test-fixtures) provides a consistent, reusable way for Playwright tests to interact with the application. Since the fixture is tightly coupled to the implementation and feature set of a view, it lives in the same directory as the view.
+A [Playwright Fixture](https://playwright.dev/docs/test-fixtures) provides a consistent, reusable way for Playwright tests to interact with the application. Since the fixture is tightly coupled to the implementation and feature set of a view, it lives in the same directory as the view (`*.fixture.ts`). Tests import that file via the SPA package glob (e.g. `@scope/pkg/pages/.../Page.fixture.ts`) or a same-package relative path — do not re-export page fixtures from a root `fixtures.ts` barrel.
 
 ## Sub-Components
 

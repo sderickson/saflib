@@ -4,7 +4,6 @@ import { makeLineReplace } from "@saflib/workflows";
 import {
   kebabCaseToPascalCase,
   kebabCaseToSnakeCase,
-  kebabCaseToCamelCase,
 } from "@saflib/utils";
 import {
   templatesProductRoot,
@@ -129,9 +128,6 @@ export function makeBasePackageLineReplace(
     out = out
       .split("base_common_strings")
       .join(`${productSnake}_common_strings`);
-    out = out.split("baseServiceFakeHandlers").join(
-      `${kebabCaseToCamelCase(context.productName)}ServiceFakeHandlers`,
-    );
     if (context.dockerImagePrefix) {
       out = out
         .split("saflib-base-")

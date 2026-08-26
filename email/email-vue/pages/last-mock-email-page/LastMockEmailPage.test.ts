@@ -36,7 +36,7 @@ const handlers = [
   http.get("http://kratos.localhost:3000/sessions/whoami", () => {
     return HttpResponse.json(null, { status: 401 });
   }),
-  http.get("http://app.localhost:3000/email/sent", () => {
+  http.get("http://api.localhost:3000/email/sent", () => {
     return HttpResponse.json(mockEmails);
   }),
 ];
@@ -48,7 +48,7 @@ describe("LastMockEmailPage", () => {
   expect(server).toBeDefined();
 
   const mountComponent = async (component: Component) => {
-    const route = `/last-email?subdomain=app&userEmail=recipient@example.com`;
+    const route = `/last-email?userEmail=recipient@example.com`;
     await router.push(route);
     const res = mountTestApp(component);
     return res;
@@ -88,7 +88,7 @@ describe("LastMockEmailPage", () => {
 
   it("should show no emails message when no emails exist", async () => {
     server.use(
-      http.get("http://app.localhost:3000/email/sent", () => {
+      http.get("http://api.localhost:3000/email/sent", () => {
         return HttpResponse.json([]);
       }),
     );

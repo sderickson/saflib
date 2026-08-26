@@ -20,6 +20,13 @@ schema:
   $ref: "pkg:@scope/product-offshoot-spec/openapi.yaml#/components/schemas/Widget"
 ```
 
+The shared error object lives in `@saflib/openapi`. Do not copy `schemas/error.yaml` into spec packages:
+
+```yaml
+schema:
+  $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+```
+
 Do not re-list offshoot schemas under a parent `components.schemas` just to make `$ref`s work — reference the offshoot package instead. Generated parent schema fragments re-export offshoot types so existing `…-spec/schemas/Name` imports keep the correct type identity.
 For conventions on designing routes and schemas (URL structure, batch endpoints, binary responses, nullable fields, etc.), see [API Design](./02-api-design.md).
 

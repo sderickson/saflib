@@ -1,0 +1,36 @@
+startJobsDemo:
+  summary: Start the jobs demo chain
+  description: >
+    Site-admin-only foreground endpoint that enqueues `jobsDemoStepB` with optional
+    demo options (dedupe, concurrency, retry simulation payload).
+  operationId: startJobsDemo
+  tags:
+    - site-admin-only
+    - jobs-demo
+
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          $ref: "../../schemas/jobs-demo-options.yaml"
+
+  responses:
+    "200":
+      description: Enqueued step-b job.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/jobs-demo-start-result.yaml"
+    "401":
+      description: Unauthorized - missing or invalid auth headers, or not logged in.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Forbidden - user does not have required privileges.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

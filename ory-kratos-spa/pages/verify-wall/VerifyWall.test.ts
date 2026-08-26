@@ -5,9 +5,11 @@ import verifyWallAsync from "./VerifyWallAsync.vue";
 import {
   mountTestApp,
   createTestRouter,
-  testAppHandlers,
 } from "@saflib/ory-kratos-spa/test-app";
-import { resetKratosFlowMocks } from "@saflib/ory-kratos-sdk/fakes";
+import {
+  kratosFakeHandlers,
+  resetKratosFlowMocks,
+} from "@saflib/ory-kratos-sdk/fakes";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 
 const unverifiedSession = {
@@ -32,7 +34,7 @@ const unverifiedSession = {
 
 describe("verifyWall", () => {
   stubGlobals();
-  const server = setupMockServer(testAppHandlers);
+  const server = setupMockServer(kratosFakeHandlers);
   afterEach(resetKratosFlowMocks);
 
   it("should render", async () => {

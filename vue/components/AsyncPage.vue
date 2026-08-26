@@ -5,7 +5,7 @@
 
   <template v-else-if="isError">
     <slot name="error" :error="firstError">
-      <AsyncPageError :error="firstError" />
+      <component :is="errorComponent" :error="firstError" />
     </slot>
   </template>
 
@@ -16,7 +16,7 @@
 import { computed, ref } from "vue";
 import type { Component } from "vue";
 import type { LoaderQueries } from "../types.ts";
-import AsyncPageError from "./AsyncPageError.vue";
+import { useAsyncPageErrorComponent } from "../composables/useAsyncPageErrorComponent.ts";
 
 interface Props {
   loader?: () => LoaderQueries;
@@ -25,6 +25,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const errorComponent = useAsyncPageErrorComponent();
 
 // If pageComponent is an async component, eagerly trigger its loader so the
 // code download runs in parallel with data fetching rather than sequentially

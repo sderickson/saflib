@@ -1,0 +1,26 @@
+type: object
+description: A single Winston log entry captured in the in-memory dev ring buffer.
+properties:
+  id:
+    type: integer
+    description: Monotonic id for SSE Last-Event-ID / ?after= pagination.
+  timestamp:
+    type: string
+  level:
+    type: string
+  message:
+    type: string
+  reqId:
+    type: string
+  service_name:
+    type: string
+  subsystem_name:
+    type: string
+  operation_name:
+    type: string
+  meta:
+    description: Extra Winston metadata (JSON-serializable snapshot).
+required:
+  - id
+  - level
+  - message

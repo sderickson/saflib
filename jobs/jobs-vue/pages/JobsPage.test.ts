@@ -7,7 +7,7 @@ import type {
   Job,
   JobsServiceRequestBody,
   JobsServiceResponseBody,
-} from "jobs-spec";
+} from "@saflib/jobs-spec";
 import JobsPage from "./JobsPage.vue";
 import { router } from "./test_router";
 import { mountTestApp } from "../test-app";
@@ -81,13 +81,13 @@ const formatDateTime = (dateTimeString: string | null | undefined): string => {
 
 const handlers = [
   http.get<PathParams, never, ListJobsResponse>(
-    "http://test.localhost:3000/jobs",
+    "http://api.localhost:3000/jobs",
     () => {
       return HttpResponse.json({ jobs: mockJobs });
     },
   ),
   http.get<PathParams, never, GetJobResponse>(
-    "http://test.localhost:3000/jobs/:id",
+    "http://api.localhost:3000/jobs/:id",
     ({ params }) => {
       const job = mockJobs.find((j) => j.id === params.id) ?? mockJobs[0];
       return HttpResponse.json({
@@ -101,7 +101,7 @@ const handlers = [
     },
   ),
   http.post<PathParams, never, RetryJobResponse>(
-    "http://test.localhost:3000/jobs/:id/retry",
+    "http://api.localhost:3000/jobs/:id/retry",
     ({ params }) => {
       return HttpResponse.json({
         job: makeJob({ id: String(params.id), status: "pending", attempt: 0 }),
@@ -109,7 +109,7 @@ const handlers = [
     },
   ),
   http.post<PathParams, never, CancelJobResponse>(
-    "http://test.localhost:3000/jobs/:id/cancel",
+    "http://api.localhost:3000/jobs/:id/cancel",
     ({ params }) => {
       return HttpResponse.json({
         job: makeJob({
@@ -129,7 +129,7 @@ const handlers = [
     PathParams,
     CancelByOriginalRequestBody,
     CancelByOriginalRequestResponse
-  >("http://test.localhost:3000/jobs/cancel-by-original-request", async () => {
+  >("http://api.localhost:3000/jobs/cancel-by-original-request", async () => {
     return HttpResponse.json({
       jobs: [makeJob({ id: "job-1", status: "cancelled" })],
     });
@@ -141,11 +141,9 @@ describe("JobsPage", () => {
   const server = setupMockServer(handlers);
 
   const mountComponent = async (waitForData = true) => {
-    await router.push("/jobs?subdomain=test");
+    await router.push("/jobs");
     const wrapper = mountTestApp(JobsPage, {
-      propsData: {
-        subdomain: "test",
-      },
+      props: {},
     });
     if (waitForData) {
       await vi.waitFor(() => {
@@ -249,7 +247,7 @@ describe("JobsPage", () => {
     let receivedId: string | null = null;
     server.use(
       http.post<PathParams, never, RetryJobResponse>(
-        "http://test.localhost:3000/jobs/:id/retry",
+        "http://api.localhost:3000/jobs/:id/retry",
         ({ params }) => {
           receivedId = String(params.id);
           return HttpResponse.json({
@@ -274,7 +272,7 @@ describe("JobsPage", () => {
     let receivedId: string | null = null;
     server.use(
       http.post<PathParams, never, CancelJobResponse>(
-        "http://test.localhost:3000/jobs/:id/cancel",
+        "http://api.localhost:3000/jobs/:id/cancel",
         ({ params }) => {
           receivedId = String(params.id);
           return HttpResponse.json({
@@ -307,7 +305,7 @@ describe("JobsPage", () => {
         CancelByOriginalRequestBody,
         CancelByOriginalRequestResponse
       >(
-        "http://test.localhost:3000/jobs/cancel-by-original-request",
+        "http://api.localhost:3000/jobs/cancel-by-original-request",
         async ({ request }) => {
           receivedBody = await request.json();
           return HttpResponse.json({

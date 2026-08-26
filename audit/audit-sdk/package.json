@@ -1,0 +1,27 @@
+{
+  "name": "@saflib/audit-sdk",
+  "description": "TanStack Query hooks for audit log admin browse",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./requests/*": "./requests/*.ts",
+    ".": "./client.ts",
+    "./client": "./client.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/audit-spec": "*",
+    "@saflib/sdk": "*",
+    "@tanstack/vue-query": "*",
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

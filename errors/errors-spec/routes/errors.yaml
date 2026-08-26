@@ -1,0 +1,164 @@
+recordReportedError:
+  summary: Record a client-reported error
+  operationId: recordReportedError
+  tags:
+    - errors
+    - no-auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            reportedError:
+              type: object
+              properties:
+                kind:
+                  type: string
+                  enum:
+                    - client
+                message:
+                  type: string
+                stack:
+                  type: string
+                metadata:
+                  type: object
+                  additionalProperties: true
+                source:
+                  type: string
+              required:
+                - kind
+                - message
+          required:
+            - reportedError
+  responses:
+    "204":
+      description: Error recorded in the server ring buffer.
+    "400":
+      description: Invalid request body.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+postCspViolationReport:
+  summary: Ingest a Content-Security-Policy violation report
+  description: >
+    Accepts a browser CSP violation payload (`application/csp-report` or JSON with a
+    `csp-report` object), normalizes into the shared error ring buffer as
+    `kind: csp-violation`, and returns **204**. Tagged `csrf-exempt` because the browser
+    cannot send our double-submit CSRF header on automatic violation posts. Tagged
+    `no-auth` because browsers cannot rely on session cookies on automatic `report-uri`
+    posts (no-cors).
+  operationId: postCspViolationReport
+  tags:
+    - errors
+    - csrf-exempt
+    - no-auth
+  requestBody:
+    required: true
+    content:
+      application/csp-report:
+        schema:
+          type: object
+          additionalProperties: true
+          description: W3C CSP reporting body; typically includes a top-level `csp-report` object.
+      application/json:
+        schema:
+          type: object
+          additionalProperties: true
+          description: Some user agents send the same JSON as `application/json`.
+  responses:
+    "204":
+      description: Report accepted and stored in the error ring buffer.
+    "400":
+      description: Malformed body.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+postAdminTestError:
+  summary: Admin-only intentional server error
+  description: >
+    Throws an error on the server for verifying error reporting (e.g. Sentry and the
+    admin Errors page). Requires an authenticated site admin.
+  operationId: postAdminTestError
+  tags:
+    - errors
+    - site-admin-only
+  responses:
+    "401":
+      description: Unauthorized — missing or invalid auth.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Admin privileges required.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "500":
+      description: Intentional error for monitoring verification.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+listReportedErrors:
+  summary: List buffered reported errors
+  operationId: listReportedErrors
+  tags:
+    - errors
+    - site-admin-only
+  parameters:
+    - name: kind
+      in: query
+      schema:
+        type: string
+        enum:
+          - csp-violation
+          - client
+          - server
+          - test
+      description: Filter by error kind.
+    - name: source
+      in: query
+      schema:
+        type: string
+      description: Filter by source (substring match).
+    - name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+      description: Maximum number of entries to return (from the tail).
+  responses:
+    "200":
+      description: Buffered reported errors, newest last within the filtered slice.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              reportedErrors:
+                type: array
+                items:
+                  $ref: "../schemas/reported-error.yaml"
+            required:
+              - reportedErrors
+    "401":
+      description: Unauthorized — missing or invalid auth.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Forbidden — site admin required.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

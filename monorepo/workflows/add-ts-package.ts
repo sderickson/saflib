@@ -3,6 +3,7 @@ import {
   UpdateStepMachine,
   PromptStepMachine,
   CommandStepMachine,
+  TransformFileStepMachine,
   defineWorkflow,
   step,
   CdStepMachine,
@@ -10,6 +11,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 import { templatesProductRoot } from "@saflib/templates";
+import { prepareNewPackageExports } from "../src/package-exports.ts";
 
 const sourceDir = path.join(templatesProductRoot, "packages", "__package-name__");
 
@@ -67,8 +69,6 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
   templateFiles: {
     packageJson: path.join(sourceDir, "package.json"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
-    index: path.join(sourceDir, "index.ts"),
-    test: path.join(sourceDir, "index.test.ts"),
     vitest: path.join(sourceDir, "vitest.config.js"),
   },
 
@@ -85,18 +85,35 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
         name: context.packageDirName,
         targetDir: context.targetDir,
         lineReplace,
+        // Export stubs belong to monorepo/add-export, not a new package shell.
+        skipSourceGlobs: ["**/__group-name__/**"],
       };
     }),
 
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(context.targetDir, "package.json"),
+      description: `Clear template export placeholders in ${path.join(context.path, "package.json")}`,
+      transform: (content: string) => {
+        const pkg = JSON.parse(content) as Parameters<
+          typeof prepareNewPackageExports
+        >[0];
+        return JSON.stringify(prepareNewPackageExports(pkg), null, 2) + "\n";
+      },
+    })),
+
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "packageJson",
-      promptMessage: `The file '${path.join(context.path, "package.json")}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.`,
+      promptMessage: `The file '${path.join(context.path, "package.json")}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.
+
+Do not add a root \`"."\` barrel. Glob exports are added automatically by \`monorepo/add-export\` when you add the first module under a top-level folder.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Ensure the new package path '${context.path}' is included in the "workspaces" array in the root \`package.json\`.
       
-      For example: \`"workspaces": ["${context.path}", "other-packages/*"]\``,
+      For example: \`"workspaces": ["${context.path}", "other-packages/*"]\`
+
+      Source modules belong under thematic folders (e.g. \`lib/\`, \`http/\`), not at the package root. Add modules with \`monorepo/add-export\`.`,
     })),
 
     step(CdStepMachine, ({ context }) => ({
@@ -130,7 +147,9 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["run", "test"],
+      args: ["run", "typecheck"],
     })),
   ],
 });
+
+export default AddTsPackageWorkflowDefinition;

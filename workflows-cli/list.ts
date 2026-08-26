@@ -6,13 +6,14 @@ import openapiWorkflows from "@saflib/openapi/workflows";
 import monorepoWorkflows from "@saflib/monorepo/workflows";
 import vueSpaWorkflows from "@saflib/vue/workflows";
 import expressWorkflows from "@saflib/express/workflows";
-import emailWorkflows from "@saflib/email/workflows";
+import emailWorkflows from "@saflib/email-service/workflows";
 import envWorkflows from "@saflib/env/workflows";
 import commanderWorkflows from "@saflib/commander/workflows";
 import sdkWorkflows from "@saflib/sdk/workflows";
 import serviceWorkflows from "../service/workflows/index.ts";
 import grpcWorkflows from "@saflib/grpc/workflows";
 import cronWorkflows from "@saflib/cron/workflows";
+import jobsWorkflows from "@saflib/jobs/workflows";
 import integrationsWorkflows from "@saflib/integrations/workflows";
 import sentryWorkflows from "@saflib/sentry/workflows";
 import productWorkflows from "@saflib/product/workflows";
@@ -30,6 +31,7 @@ const workflowClasses: WorkflowDefinition[] = [
   ...commanderWorkflows,
   ...grpcWorkflows,
   ...cronWorkflows,
+  ...jobsWorkflows,
   ...integrationsWorkflows,
   ...sentryWorkflows,
   ...sdkWorkflows,

@@ -25,10 +25,17 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@saflib/vue": "*",
-    "@sentry/vue": "^10.21.0",
+    "@saflib/analytics-vue": "*",
+    "@saflib/base-links": "*",
+    "@saflib/base-sdk": "*",
+    "@saflib/base-spec": "*",
+    "@saflib/errors-vue": "*",
+    "@saflib/links": "*",
     "@saflib/ory-kratos-sdk": "*",
-    "@saflib/base-spec": "*"
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*"
   },
-  "sideEffects": false
+  "sideEffects": [
+    "./clients/events.ts"
+  ]
 }

@@ -83,11 +83,11 @@ listJobs:
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
     "403":
       description: Forbidden - site admin privileges required.
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

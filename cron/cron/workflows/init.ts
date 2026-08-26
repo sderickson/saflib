@@ -15,11 +15,6 @@ import path from "node:path";
 import { existsSync } from "node:fs";
 
 const cronRoot = path.join(templatesProductRoot, "service/cron");
-const httpLive = path.join(templatesProductRoot, "service/http/http.ts");
-const monolithLive = path.join(
-  templatesProductRoot,
-  "service/monolith/index.ts",
-);
 
 const input = [
   {
@@ -60,9 +55,8 @@ function makeCronInitLineReplace(context: CronInitWorkflowContext) {
 }
 
 /**
- * Cron is folded into the golden product (`base/service/cron` + weave on http/monolith).
- * This workflow upserts those weave areas and ensures the cron package is present —
- * it does not create a second cron stack.
+ * Cron is folded into the golden product (`base/service/cron` + concrete http/monolith wiring).
+ * This workflow ensures the cron package is present — it does not re-weave parent http/monolith.
  */
 export const CronInitWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -71,7 +65,7 @@ export const CronInitWorkflowDefinition = defineWorkflow<
   id: "cron/init",
 
   description:
-    "Ensure the product cron package exists and weave createCronRouter / runCron into http + monolith",
+    "Ensure the product cron package exists (http/monolith cron wiring ships with product/init)",
 
   checklistDescription: ({ packageName }) =>
     `Ensure cron weave for ${packageName}.`,
@@ -115,8 +109,6 @@ export const CronInitWorkflowDefinition = defineWorkflow<
     packageJson: path.join(cronRoot, "package.json"),
     tsconfig: path.join(cronRoot, "tsconfig.json"),
     vitestConfig: path.join(cronRoot, "vitest.config.js"),
-    http: httpLive,
-    monolith: monolithLive,
   },
 
   docFiles: {},
@@ -140,24 +132,6 @@ export const CronInitWorkflowDefinition = defineWorkflow<
           existsSync(path.join(context.cronDir, "package.json")),
       },
     ),
-
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.serviceName,
-      targetDir: context.httpDir,
-      templateFiles: {
-        http: httpLive,
-      },
-      lineReplace: makeCronInitLineReplace(context),
-    })),
-
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.serviceName,
-      targetDir: context.monolithDir,
-      templateFiles: {
-        monolith: monolithLive,
-      },
-      lineReplace: makeCronInitLineReplace(context),
-    })),
 
     step(CdStepMachine, ({ context }) => ({
       path: context.cronDir,

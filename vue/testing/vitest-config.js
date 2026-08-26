@@ -56,7 +56,9 @@ const baseCoverage = {
 
     // Test infrastructure
     "**/test-app.ts",
+    "**/*.fixture.ts",
     "**/fixtures.ts",
+    "**/fixtures/**",
   ],
 };
 

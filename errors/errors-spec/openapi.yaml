@@ -1,0 +1,26 @@
+openapi: 3.0.0
+info:
+  title: Error Reporting API
+  version: 1.0.0
+  description: Unified error capture (client, server, CSP) and admin viewing via an in-memory ring buffer.
+
+components:
+  schemas:
+    ReportedError:
+      $ref: "./schemas/reported-error.yaml"
+    Error:
+      $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+paths:
+  /errors/record:
+    post:
+      $ref: "./routes/errors.yaml#/recordReportedError"
+  /csp-violations:
+    post:
+      $ref: "./routes/errors.yaml#/postCspViolationReport"
+  /admin/test-error:
+    post:
+      $ref: "./routes/errors.yaml#/postAdminTestError"
+  /admin/errors:
+    get:
+      $ref: "./routes/errors.yaml#/listReportedErrors"

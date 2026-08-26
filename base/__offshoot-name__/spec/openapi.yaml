@@ -5,17 +5,29 @@ info:
   description: Offshoot OpenAPI paths and schemas; parent service-spec composes via $ref
 
 paths:
-  # BEGIN WORKFLOW AREA route-paths FOR openapi/route
+  # Concrete health — outside add-route area so openapi/init does not empty it.
   /__offshoot-name__/health:
     get:
       $ref: "./routes/health.yaml#/get__OffshootName__Health"
+
+  # BEGIN WORKFLOW AREA route-paths FOR openapi/route
+  __url-path__:
+    __method__:
+      $ref: "./routes/__group-name__/__target-name__.yaml#/__operationId__"
+  # END WORKFLOW AREA
+
+  # Empty: nested openapi/init can mount further offshoots here.
+  # BEGIN WORKFLOW AREA offshoot-paths FOR openapi/init
   # END WORKFLOW AREA
 
 components:
   schemas:
     Error:
-      $ref: "./schemas/error.yaml"
-    # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
+      $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    # Concrete health schema — outside add-schema area.
     __OffshootName__Health:
       $ref: "./schemas/health.yaml"
+    # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
+    __TargetName__:
+      $ref: "./schemas/__target-name__.yaml"
     # END WORKFLOW AREA

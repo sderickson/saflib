@@ -1,0 +1,45 @@
+getMineUserConfigs:
+  summary: "Get or lazy-create the caller's user config"
+  operationId: "getMineUserConfigs"
+  tags: []
+  description: >
+    Returns the authenticated user's `user_config` preferences (display name,
+    marketing email opt-in, and Terms of Service agreement timestamp). If no row
+    exists yet, inserts defaults (`displayName` empty string,
+    `marketingEmailsOptIn` false, `marketingEmailsOptInAt` null,
+    `termsOfServiceAgreedAt` null) and returns that row.
+
+    **Lazy-create pattern:** empty `user_config` rows are created on first GET
+    (not via a Kratos registration webhook). This keeps Kratos auth-only and the
+    product DB responsible for user-facing prefs.
+
+  responses:
+    "200":
+      description: >
+        Caller's user config. Always present after this call (created with defaults
+        when missing).
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - userConfig
+            properties:
+              userConfig:
+                description: Owner-only preferences for the signed-in user.
+                $ref: "../../openapi.yaml#/components/schemas/UserConfig"
+
+    "401":
+      description: "Unauthorized - missing or invalid auth headers, or not logged in."
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+    "403":
+      description: "Forbidden."
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

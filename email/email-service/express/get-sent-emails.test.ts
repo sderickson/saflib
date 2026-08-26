@@ -11,10 +11,7 @@ describe("getSentEmails", () => {
 
   beforeEach(() => {
     sentEmails.length = 0;
-    const emailService = createEmailService({
-      type: "nodemailer",
-      transport: "mock",
-    });
+    const emailService = createEmailService("mock");
     app = express();
     app.use("/", createEmailsRouter({ emailService }));
     app.use(createErrorMiddleware());
@@ -28,10 +25,7 @@ describe("getSentEmails", () => {
   });
 
   it("should return sent emails for a specific user", async () => {
-    const emailService = createEmailService({
-      type: "nodemailer",
-      transport: "mock",
-    });
+    const emailService = createEmailService("mock");
     const email1 = `test${Math.random()}@test.com`;
     const email2 = `test${Math.random()}@test.com`;
     await emailService.sendEmail({

@@ -7,13 +7,19 @@
   },
   "exports": {},
   "dependencies": {
+    "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",
     "@saflib/base-http": "*",
+    "@saflib/base-jobs": "*",
     "@saflib/base-kratos-handlers": "*",
     "@saflib/base-service-common": "*",
+    "@saflib/base-spec": "*",
     "@saflib/env": "*",
+    "@saflib/express": "*",
+    "@saflib/jobs": "*",
     "@saflib/monorepo": "*",
+    "@saflib/node": "*",
     "@saflib/sentry": "*"
   },
   "sideEffects": false

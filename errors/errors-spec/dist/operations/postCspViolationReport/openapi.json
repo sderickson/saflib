@@ -1,0 +1,73 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "postCspViolationReport",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/csp-violations": {
+      "post": {
+        "summary": "Ingest a Content-Security-Policy violation report",
+        "description": "Accepts a browser CSP violation payload (`application/csp-report` or JSON with a `csp-report` object), normalizes into the shared error ring buffer as `kind: csp-violation`, and returns **204**. Tagged `csrf-exempt` because the browser cannot send our double-submit CSRF header on automatic violation posts. Tagged `no-auth` because browsers cannot rely on session cookies on automatic `report-uri` posts (no-cors).\n",
+        "operationId": "postCspViolationReport",
+        "tags": [
+          "errors",
+          "csrf-exempt",
+          "no-auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/csp-report": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "W3C CSP reporting body; typically includes a top-level `csp-report` object."
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Some user agents send the same JSON as `application/json`."
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Report accepted and stored in the error ring buffer."
+          },
+          "400": {
+            "description": "Malformed body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

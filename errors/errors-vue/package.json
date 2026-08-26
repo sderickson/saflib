@@ -1,0 +1,33 @@
+{
+  "name": "@saflib/errors-vue",
+  "description": "Client Sentry init, error smoke widgets, and admin Errors page",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./lib/*": "./lib/*",
+    "./pages/*": "./pages/*"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/errors-sdk": "*",
+    "@saflib/errors-spec": "*",
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*",
+    "@sentry/vue": "^10.0.0",
+    "@tanstack/vue-query": "*",
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@vue/test-utils": "*",
+    "msw": "*"
+  },
+  "sideEffects": false
+}

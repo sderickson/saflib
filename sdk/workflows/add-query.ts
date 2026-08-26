@@ -17,8 +17,6 @@ import path from "node:path";
 
 const sdkRoot = path.join(templatesProductRoot, "service", "sdk");
 const requestDir = path.join(sdkRoot, "requests", "__group-name__");
-/** Live fakes.ts — areas hold the stub group; CopyStep upserts them. */
-const fakesLive = path.join(sdkRoot, "fakes.ts");
 
 const input = [
   {
@@ -74,8 +72,9 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
         requiredSuffix: "-sdk",
         silentError: true, // so checklists don't error
       }),
+      // Keep pathResult.targetDir (…/requests/<group>) — templates share one
+      // stub dir so sharedPrefix has no `requests/<group>` segment to restore.
       ...pathResult,
-      targetDir: input.cwd,
       queryName: pathResult.targetName,
       urlPath: input.urlPath,
       method: input.method,
@@ -88,7 +87,6 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
     templateFile: path.join(requestDir, "__query-name__.ts"),
     templateFileFake: path.join(requestDir, "__query-name__.fake.ts"),
     templateFileTest: path.join(requestDir, "__query-name__.test.ts"),
-    rootFakes: fakesLive,
   },
 
   docFiles: {
@@ -103,8 +101,8 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
         targetDir: context.targetDir,
         lineReplace: (line: string) => {
           let out = line;
-          // Golden stubs use concrete baseHandler from @saflib/base-sdk.
-          out = out.split("baseHandler").join(`${context.serviceName}Handler`);
+          // Keep `baseHandler` — sdk packages export that name; only remap the
+          // golden spec package to this package's sibling spec.
           out = out
             .split("@saflib/base-spec")
             .join(`${context.sharedPackagePrefix}-spec`);

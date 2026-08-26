@@ -29,6 +29,7 @@
     "e2e",
     "playwright-report",
     "test-results",
+    "workflows/**",
     "workflows/template/**",
     "workflows/templates/**",
     "**/workflows/template/**",

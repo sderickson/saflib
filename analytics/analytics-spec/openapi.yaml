@@ -1,0 +1,20 @@
+openapi: 3.0.0
+info:
+  title: Product Analytics API
+  version: 1.0.0
+  description: Product event capture and admin viewing via an in-memory ring buffer.
+
+components:
+  schemas:
+    ProductEventRecord:
+      $ref: "./schemas/product-event-record.yaml"
+    Error:
+      $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+paths:
+  /product-events/record:
+    post:
+      $ref: "./routes/product_events.yaml#/recordProductEvent"
+  /admin/product-events:
+    get:
+      $ref: "./routes/product_events.yaml#/listProductEvents"

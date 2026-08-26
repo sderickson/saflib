@@ -1,10 +1,11 @@
 {
   "name": "@saflib/email-service",
-  "description": "Email sending abstraction (nodemailer) with mock store and Express routes",
+  "description": "Brevo transactional email with in-memory mock store and Express routes",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./workflows": "./workflows/index.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -16,13 +17,11 @@
     "@getbrevo/brevo": "^5.0.3",
     "@saflib/email-spec": "*",
     "@saflib/express": "*",
-    "@saflib/node": "*",
-    "nodemailer": "^8.0.0"
+    "@saflib/node": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
-    "@types/nodemailer": "^8.0.0",
     "@types/supertest": "^7.0.0",
     "express": "^5.0.0",
     "supertest": "^7.0.0"

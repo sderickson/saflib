@@ -30,18 +30,18 @@ restoreBackup:
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
     "403":
       description: "Forbidden - user does not have required privileges."
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
     "404":
       description: "Backup not found"
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

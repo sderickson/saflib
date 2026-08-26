@@ -452,4 +452,56 @@ describe("validateWorkflowAreas", () => {
       }),
     ).toThrow(/Target has workflow area/);
   });
+
+  it("with workflowId, ignores areas for other workflows (offshoot stub vs service template)", () => {
+    const source = [
+      "// BEGIN WORKFLOW AREA schema-exports FOR drizzle/update-schema",
+      'export * from "./schemas/__group-name__.ts";',
+      "// END WORKFLOW AREA",
+      "// BEGIN WORKFLOW AREA offshoot-schema-exports FOR drizzle/init",
+      'export * from "@saflib/base-__offshoot-name__-db";',
+      "// END WORKFLOW AREA",
+    ];
+    // Offshoot stub: only the update-schema area (no parent weave export)
+    const target = [
+      "// BEGIN WORKFLOW AREA schema-exports FOR drizzle/update-schema",
+      "// END WORKFLOW AREA",
+    ];
+    expect(() =>
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+        workflowId: "drizzle/update-schema",
+      }),
+    ).not.toThrow();
+    expect(() =>
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
+    ).toThrow(/offshoot-schema-exports/);
+  });
+
+  it("with workflowId, still requires matching areas for that workflow", () => {
+    const source = [
+      "// BEGIN WORKFLOW AREA schema-exports FOR drizzle/update-schema",
+      'export * from "./schemas/__group-name__.ts";',
+      "// END WORKFLOW AREA",
+      "// BEGIN WORKFLOW AREA offshoot-schema-exports FOR drizzle/init",
+      "// END WORKFLOW AREA",
+    ];
+    expect(() =>
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: [
+          "// BEGIN WORKFLOW AREA offshoot-schema-exports FOR drizzle/init",
+          "// END WORKFLOW AREA",
+        ],
+        ...ctx,
+        workflowId: "drizzle/update-schema",
+      }),
+    ).toThrow(/schema-exports/);
+  });
 });

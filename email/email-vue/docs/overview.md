@@ -5,7 +5,7 @@ for your admin SPA. This page will let you see the last email that was sent from
 service, and is most useful in playwright tests.
 
 For this to work, the service which sends emails needs to run a `@saflib/express`
-server on a subdomain, which uses the Express router provided by `@saflib/email` (it can just be added to the service's existing Express server).
+server on a subdomain, which uses the Express router provided by `@saflib/email-service` (mount it on the product API Express app).
 The `LastMockEmailPage` takes as a query parameter a subdomain which it should target to find
 these email API routes.
 

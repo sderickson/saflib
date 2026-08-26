@@ -18,8 +18,6 @@ import path from "node:path";
 
 const sdkRoot = path.join(templatesProductRoot, "service", "sdk");
 const requestDir = path.join(sdkRoot, "requests", "__group-name__");
-/** Live fakes.ts — areas hold the stub group; CopyStep upserts them. */
-const fakesLive = path.join(sdkRoot, "fakes.ts");
 
 const input = [
   {
@@ -92,8 +90,9 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
         requiredSuffix: "-sdk",
         silentError: true, // so checklists don't error
       }),
+      // Keep pathResult.targetDir (…/requests/<group>) — templates share one
+      // stub dir so sharedPrefix has no `requests/<group>` segment to restore.
       ...pathResult,
-      targetDir: input.cwd,
       mutationName: pathResult.targetName,
       operationId,
       upload: input.upload ?? false,
@@ -118,7 +117,6 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       requestDir,
       "__mutation-name__.test.ts",
     ),
-    rootFakes: fakesLive,
   },
 
   docFiles: {
@@ -134,7 +132,7 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
         flags: { upload: context.upload, download: context.download },
         lineReplace: (line: string) => {
           let out = line;
-          out = out.split("baseHandler").join(`${context.serviceName}Handler`);
+          // Keep `baseHandler`; only remap the golden spec package name.
           out = out
             .split("@saflib/base-spec")
             .join(`${context.sharedPackagePrefix}-spec`);

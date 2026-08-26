@@ -1,16 +1,20 @@
 import express, { type IRouter } from "express";
+import { groupRouterMounts } from "./routers.ts";
 
 /**
- * Minimal __offshoot-name__ router. Grow with express/add-handler (cwd in this package).
+ * __offshoot-name__ barrel router — mounted once by the parent http app.
+ * Grow groups with `express/add-handler` (cwd in this package → `routers.ts`).
  */
 export function create__OffshootName__Router(): IRouter {
   const router = express.Router();
 
-  // BEGIN WORKFLOW AREA route-registrations FOR express/add-handler
   router.get("/__offshoot-name__/health", (_req, res) => {
     res.json({ status: "ok" });
   });
-  // END WORKFLOW AREA
+
+  for (const mount of groupRouterMounts()) {
+    router.use(mount.createRouter());
+  }
 
   return router;
 }

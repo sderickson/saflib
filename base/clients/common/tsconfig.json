@@ -25,13 +25,31 @@
   ],
   "references": [
     {
+      "path": "../../../analytics/analytics-vue"
+    },
+    {
+      "path": "../../../errors/errors-vue"
+    },
+    {
+      "path": "../../../links"
+    },
+    {
       "path": "../../../ory-kratos-sdk"
+    },
+    {
+      "path": "../../../sdk"
     },
     {
       "path": "../../../vue"
     },
     {
+      "path": "../../service/sdk"
+    },
+    {
       "path": "../../service/spec"
+    },
+    {
+      "path": "../links"
     }
   ],
   "include": [

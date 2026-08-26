@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import { DynamicBaseLayout } from "@saflib/base-clients-common/components";
-import { useKratosSession } from "@saflib/ory-kratos-sdk";
+import { ContentWidth } from "@saflib/vue/components";
 import { configureAuthApp } from "@saflib/ory-kratos-spa";
 
 configureAuthApp();
-
-const { data: session } = useKratosSession();
-const loggedIn = computed(() => !!session);
 </script>
 
 <template>
-  <DynamicBaseLayout :logged-in="loggedIn">
-    <v-container class="auth-spa-container py-6">
-      <v-row justify="center">
-        <v-col cols="12" sm="10" md="7" lg="5" xl="4">
-          <router-view />
-        </v-col>
-      </v-row>
-    </v-container>
+  <DynamicBaseLayout>
+    <ContentWidth variant="narrow" class="auth-spa-container py-8 py-md-12">
+      <router-view />
+    </ContentWidth>
   </DynamicBaseLayout>
 </template>
+
+<style scoped>
+.auth-spa-container {
+  min-height: calc(100vh - 90px);
+}
+</style>

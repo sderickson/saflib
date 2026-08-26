@@ -7,7 +7,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    "./__group-name__/*": "./__group-name__/*.ts"
   },
   "scripts": {
     "test": "vitest run",

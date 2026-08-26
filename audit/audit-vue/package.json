@@ -1,0 +1,30 @@
+{
+  "name": "@saflib/audit-vue",
+  "description": "Admin audit log browse page",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./pages/*": "./pages/*"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/audit-sdk": "*",
+    "@saflib/audit-spec": "*",
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*",
+    "@tanstack/vue-query": "*",
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@vue/test-utils": "*"
+  },
+  "sideEffects": false
+}

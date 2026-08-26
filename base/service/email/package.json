@@ -10,7 +10,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@saflib/email": "*"
+    "@saflib/email-service": "*"
   },
   "sideEffects": false
 }

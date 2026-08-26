@@ -36,7 +36,7 @@
       "path": "../drizzle"
     },
     {
-      "path": "../email/email"
+      "path": "../email/email-service"
     },
     {
       "path": "../env"

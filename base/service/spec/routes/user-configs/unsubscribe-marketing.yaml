@@ -1,0 +1,50 @@
+unsubscribeMarketingEmailsUserConfigs:
+  summary: "Public marketing-email unsubscribe"
+  operationId: "unsubscribeMarketingEmailsUserConfigs"
+  tags:
+    - no-auth
+  description: >
+    Clears marketing email opt-in for the identity matching the given address,
+    when one exists. Always returns **200** with an empty success payload —
+    never reveals whether the email is known, whether a `user_config` row
+    exists, or the prior opt-in state. Tagged `no-auth` (and therefore
+    CSRF-exempt) so unsubscribe links work without a session.
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required:
+            - email
+          properties:
+            email:
+              # No `format: email` — AJV's email format rejects some real
+              # addresses (and query-string `+` → space mangling). Invalid or
+              # unknown addresses still get 200 from the handler (no-op).
+              type: string
+              minLength: 1
+              maxLength: 320
+              description: Address to unsubscribe from marketing email.
+              example: "alex@example.com"
+
+  responses:
+    "200":
+      description: >
+        Request accepted. Does not indicate whether the email matched an
+        account or whether preferences changed.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties: {}
+
+    "400":
+      description: Invalid request body (e.g. missing or malformed email).
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

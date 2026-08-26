@@ -113,21 +113,21 @@ enqueueJob:
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
     "401":
       description: Unauthorized - missing or invalid assertion.
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
     "403":
       description: Forbidden - calling operation is not allowed to enqueue the target (trigger-map violation).
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
     "422":
       description: >
@@ -135,11 +135,11 @@ enqueueJob:
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
     "429":
       description: Spawn cap exceeded for this originalRequestId chain.
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

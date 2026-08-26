@@ -7,10 +7,10 @@
   "type": "module",
   "exports": {
     ".": "./main.ts",
-    "./fixtures": "./fixtures.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts",
-    "./test-app": "./test-app.ts"
+    "./test-app": "./test-app.ts",
+    "./*": "./*"
   },
   "scripts": {
     "dev": "vite",
@@ -22,13 +22,25 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@saflib/analytics-vue": "*",
+    "@saflib/audit-vue": "*",
     "@saflib/base-clients-common": "*",
     "@saflib/base-links": "*",
     "@saflib/base-sdk": "*",
-    "@saflib/ory-kratos-sdk": "*",
-    "@saflib/vue": "*",
+    "@saflib/cron-vue": "*",
+    "@saflib/email-vue": "*",
+    "@saflib/errors-vue": "*",
+    "@saflib/jobs-vue": "*",
     "@saflib/links": "*",
+    "@saflib/node-log-vue": "*",
+    "@saflib/node-metrics-vue": "*",
+    "@saflib/ory-kratos-sdk": "*",
+    "@saflib/ory-kratos-spa": "*",
+    "@saflib/vue": "*",
     "vue-router": "^5.0.0"
+  },
+  "devDependencies": {
+    "@saflib/playwright": "*"
   },
   "sideEffects": false
 }

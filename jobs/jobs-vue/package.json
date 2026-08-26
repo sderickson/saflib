@@ -14,7 +14,7 @@
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*",
-    "jobs-spec": "*"
+    "@saflib/jobs-spec": "*"
   },
   "sideEffects": false
 }

@@ -27,10 +27,22 @@
       "path": "../../../env"
     },
     {
+      "path": "../../../express"
+    },
+    {
+      "path": "../../../jobs/jobs"
+    },
+    {
       "path": "../../../monorepo"
     },
     {
+      "path": "../../../node"
+    },
+    {
       "path": "../../../sentry"
+    },
+    {
+      "path": "../audit"
     },
     {
       "path": "../common"
@@ -45,7 +57,13 @@
       "path": "../http"
     },
     {
+      "path": "../jobs"
+    },
+    {
       "path": "../kratos-handlers"
+    },
+    {
+      "path": "../spec"
     }
   ]
 }

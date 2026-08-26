@@ -1,0 +1,43 @@
+jobsDemoStepB:
+  summary: Jobs demo chain step B
+  description: >
+    Background step that optionally fails N times (503) to demonstrate retries,
+    then enqueues `jobsDemoStepC`.
+  operationId: jobsDemoStepB
+  tags:
+    - site-admin-only
+    - background
+    - jobs-demo
+
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          $ref: "../../schemas/jobs-demo-options.yaml"
+
+  responses:
+    "200":
+      description: Enqueued step-c after optional simulated failures.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/jobs-demo-step-result.yaml"
+    "503":
+      description: Simulated retryable failure (demo only).
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "401":
+      description: Unauthorized - missing or invalid auth headers, or not logged in.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Forbidden - user does not have required privileges.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

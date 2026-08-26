@@ -4,7 +4,7 @@ import {
   createScopedMiddleware,
 } from "@saflib/express";
 import type { DbKey } from "@saflib/drizzle";
-import { jsonSpec } from "jobs-spec";
+import { jsonSpec } from "@saflib/jobs-spec";
 import { jobsServiceStorage } from "./context.ts";
 import { listJobsHandler } from "../routes/jobs/list.ts";
 import { getJobHandler } from "../routes/jobs/get.ts";

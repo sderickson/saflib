@@ -1,0 +1,58 @@
+getUsersByIdAdmin:
+  summary: "Look up a Kratos identity by ID (site-admin)"
+  operationId: "getUsersByIdAdmin"
+
+  tags:
+    - site-admin-only
+
+  parameters:
+    - name: "id"
+      in: "query"
+      required: true
+      schema:
+        type: "string"
+        format: "uuid"
+      description: "Kratos identity ID"
+
+  responses:
+    "200":
+      description: "Successfully retrieved the identity."
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - identity
+            properties:
+              identity:
+                description: Kratos identity from the admin API.
+                $ref: "../../openapi.yaml#/components/schemas/KratosIdentity"
+
+    "401":
+      description: "Unauthorized - missing or invalid auth headers, or not logged in."
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+    "403":
+      description: "Forbidden - admin privileges required."
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+    "404":
+      description: "Identity not found."
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+    "502":
+      description: "Identity service returned an unexpected error."
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
