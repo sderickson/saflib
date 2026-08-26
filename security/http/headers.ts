@@ -22,7 +22,7 @@ export function cspDeniesFraming(csp: string): boolean {
 }
 
 /**
- * Dev stack: vite-plugin-vue-devtools iframes sibling SPAs at `/__devtools__/`.
+ * Dev stack: vite-plugin-vue-devtools iframes sibling SPAs (devtools UI path).
  */
 export function cspAllowsDevDevtoolsFraming(csp: string): boolean {
   return /frame-ancestors\s+'self'\s+http:\/\/\*\./i.test(csp);

@@ -44,7 +44,7 @@ http://caddy:2020 {
 # Edge headers for dev SPAs (Vite behind reverse_proxy). No HSTS — stack is http:// only.
 # CSP is deliberately loose so HMR / eval work; production uses stricter policy in deploy templates.
 # CSP_SCRIPT_SRC_EXTRA: Kratos public origin for Ory webauthn.js (passkeys).
-# frame-ancestors / frame-src allow sibling SPAs so vite-plugin-vue-devtools can iframe /__devtools__/.
+# frame-ancestors / frame-src allow sibling SPAs so vite-plugin-vue-devtools can iframe its UI path.
 (security-headers) {
 	header {
 		X-Content-Type-Options "nosniff"
