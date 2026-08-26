@@ -12,14 +12,14 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@ory/client": "^1.22.28",
-    "@saflib/openapi": "*",
-    "@saflib/env": "*",
+    "@ory/client": "^1.22.37",
     "@saflib/analytics-http": "*",
+    "@saflib/env": "*",
     "@saflib/errors-http": "*",
     "@saflib/node": "*",
     "@saflib/node-log-http": "*",
     "@saflib/notify": "*",
+    "@saflib/openapi": "*",
     "@saflib/templates": "*",
     "@saflib/utils": "*",
     "cors": "^2.0.0",
