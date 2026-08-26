@@ -8,46 +8,46 @@ import {
   validateNpmScriptTarget,
 } from "./npm-script-validation.ts";
 
-const repoRoot = path.resolve(import.meta.dirname, "../../../../");
+const fixtureRoot = path.join(import.meta.dirname, "npm-script-fixtures");
+const childPackageDir = path.join(fixtureRoot, "packages/child");
+const workspaceName = "@fixture/npm-script-child";
 
 describe("npm-script-validation", () => {
-  it("finds the outermost workspace root from a nested package", () => {
-    expect(findOutermostWorkspaceRoot(path.join(repoRoot, "daemon/service/http"))).toBe(
-      repoRoot,
-    );
+  it("finds a workspace root that contains a nested package", () => {
+    const root = findOutermostWorkspaceRoot(childPackageDir);
+    const packages = indexWorkspacePackages(root);
+    expect(packages.get(workspaceName)?.dir).toBe(childPackageDir);
   });
 
   it("indexes known workspace packages", () => {
-    const packages = indexWorkspacePackages(repoRoot);
-    expect(packages.get("@pathclerk/daemon-http")?.dir).toBe(
-      path.join(repoRoot, "daemon/service/http"),
-    );
-    expect(packages.get("@pathclerk/daemon-http")?.scripts.test).toBe("vitest run");
+    const packages = indexWorkspacePackages(fixtureRoot);
+    expect(packages.get(workspaceName)?.dir).toBe(childPackageDir);
+    expect(packages.get(workspaceName)?.scripts.test).toBe("echo test");
   });
 
   it("builds npm run args with forwarded script args", () => {
-    expect(buildNpmRunArgs("@pathclerk/daemon-http", "test", ["whatsapp"])).toEqual([
+    expect(buildNpmRunArgs(workspaceName, "test", ["unit"])).toEqual([
       "run",
       "test",
       "-w",
-      "@pathclerk/daemon-http",
+      workspaceName,
       "--",
-      "whatsapp",
+      "unit",
     ]);
   });
 
   it("formats npm script commands for checklists", () => {
-    expect(
-      formatNpmScriptCommand("@pathclerk/daemon-http", "test", ["whatsapp"]),
-    ).toBe("npm run test -w @pathclerk/daemon-http -- whatsapp");
+    expect(formatNpmScriptCommand(workspaceName, "test", ["unit"])).toBe(
+      `npm run test -w ${workspaceName} -- unit`,
+    );
   });
 
   it("accepts a valid workspace and script", () => {
     expect(() =>
       validateNpmScriptTarget({
-        workspace: "@pathclerk/daemon-http",
+        workspace: workspaceName,
         script: "test",
-        startDir: path.join(repoRoot, "daemon/plans"),
+        startDir: path.join(fixtureRoot, "packages/nested"),
         runMode: "dry",
       }),
     ).not.toThrow();
@@ -56,20 +56,20 @@ describe("npm-script-validation", () => {
   it("throws for an unknown workspace", () => {
     expect(() =>
       validateNpmScriptTarget({
-        workspace: "@pathclerk/daemon-service-http",
+        workspace: "@fixture/npm-script-missing",
         script: "test",
-        startDir: repoRoot,
+        startDir: fixtureRoot,
         runMode: "dry",
       }),
-    ).toThrow(/workspace "@pathclerk\/daemon-service-http" not found/);
+    ).toThrow(/workspace "@fixture\/npm-script-missing" not found/);
   });
 
   it("throws for a missing script", () => {
     expect(() =>
       validateNpmScriptTarget({
-        workspace: "@pathclerk/daemon-http",
+        workspace: workspaceName,
         script: "typoo",
-        startDir: repoRoot,
+        startDir: fixtureRoot,
         runMode: "dry",
       }),
     ).toThrow(/script "typoo" not found/);

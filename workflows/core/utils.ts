@@ -114,26 +114,40 @@ export function contextFromInput(input: WorkflowInput): WorkflowContext {
   };
 }
 
-let timeout: NodeJS.Timeout | undefined;
-
-/**
- * A hack to wait for workflows to halt. Periodically checks an actor based on a condition; used by runWorkflow.
- * @internal
- */
 export const pollingWaitFor = (
   actor: AnyActor,
   condition: (snapshot: AnyMachineSnapshot) => boolean,
+  options?: { intervalMs?: number; timeoutMs?: number },
 ) => {
-  let resolve: (value: any) => void;
-  const promise = new Promise((_resolve, _reject) => {
-    resolve = _resolve;
-  });
-  timeout = setInterval(() => {
-    if (condition(actor.getSnapshot())) {
-      clearInterval(timeout);
-      resolve(actor.getSnapshot());
-    }
-  }, 10);
+  const intervalMs = options?.intervalMs ?? 10;
+  const timeoutMs = options?.timeoutMs ?? 30_000;
 
-  return promise;
+  return new Promise((resolve, reject) => {
+    const startedAt = Date.now();
+    const interval = setInterval(() => {
+      try {
+        const snapshot = actor.getSnapshot();
+        if (
+          typeof snapshot.matches === "function" &&
+          condition(snapshot)
+        ) {
+          clearInterval(interval);
+          resolve(snapshot);
+          return;
+        }
+        if (snapshot.status === "error") {
+          clearInterval(interval);
+          reject(snapshot.error ?? new Error("Actor entered error state"));
+          return;
+        }
+        if (Date.now() - startedAt > timeoutMs) {
+          clearInterval(interval);
+          reject(new Error(`pollingWaitFor timed out after ${timeoutMs}ms`));
+        }
+      } catch (error) {
+        clearInterval(interval);
+        reject(error);
+      }
+    }, intervalMs);
+  });
 };

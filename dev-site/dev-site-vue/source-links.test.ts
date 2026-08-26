@@ -9,11 +9,11 @@ describe("resolveGithubSourceRef", () => {
   it("prefers the current branch, then commit, then fallback", () => {
     expect(
       resolveGithubSourceRef({
-        branch: "2026-08-26-integrations",
+        branch: "feature/source-links",
         commitHash: "abc123",
         fallbackRef: "main",
       }),
-    ).toBe("2026-08-26-integrations");
+    ).toBe("feature/source-links");
     expect(
       resolveGithubSourceRef({
         branch: null,
@@ -30,33 +30,29 @@ describe("resolveGithubSourceRef", () => {
 describe("sourceOpenUrls", () => {
   it("builds blob links on the resolved ref", () => {
     expect(
-      sourceOpenUrls("daemon/service/common/whatsapp-outbound.ts", {
-        githubRepo: "PathClerk/pathclerk",
-        githubRef: "feature/whatsapp",
+      sourceOpenUrls("workflows/core/utils.ts", {
+        githubRepo: "acme/widget",
+        githubRef: "feature/source-links",
         line: 15,
       }).github,
     ).toBe(
-      "https://github.com/PathClerk/pathclerk/blob/feature/whatsapp/daemon/service/common/whatsapp-outbound.ts#L15",
+      "https://github.com/acme/widget/blob/feature/source-links/workflows/core/utils.ts#L15",
     );
     expect(
       sourceOpenUrls("README.md", {
-        githubRepo: "PathClerk/pathclerk",
+        githubRepo: "acme/widget",
         commitHash: "deadbeef",
       }).github,
-    ).toBe("https://github.com/PathClerk/pathclerk/blob/deadbeef/README.md");
+    ).toBe("https://github.com/acme/widget/blob/deadbeef/README.md");
   });
 });
 
 describe("githubCompareUrl", () => {
   it("links fork point to head", () => {
     expect(
-      githubCompareUrl(
-        "PathClerk/pathclerk",
-        "mergebase123",
-        "2026-08-26-integrations",
-      ),
+      githubCompareUrl("acme/widget", "mergebase123", "feature/source-links"),
     ).toBe(
-      "https://github.com/PathClerk/pathclerk/compare/mergebase123...2026-08-26-integrations",
+      "https://github.com/acme/widget/compare/mergebase123...feature/source-links",
     );
   });
 });

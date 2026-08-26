@@ -60,4 +60,4 @@ npm script name from the target workspace package.json, e.g. `test`.
 
 > **workspace**: `string`
 
-npm workspace name, e.g. `@pathclerk/daemon-http`.
+npm workspace name, e.g. `@fixture/npm-script-child`.

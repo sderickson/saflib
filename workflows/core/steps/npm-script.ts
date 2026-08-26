@@ -15,7 +15,7 @@ import {
  */
 export interface NpmScriptStepInput {
   /**
-   * npm workspace name, e.g. `@pathclerk/daemon-http`.
+   * npm workspace name, e.g. `@fixture/npm-script-child`.
    */
   workspace: string;
 
