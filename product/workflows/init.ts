@@ -118,7 +118,7 @@ function toProductMonorepoDevCompose(
  * skipSourceGlobs (paths matching __stub-name__). Dropping them keeps
  * package.json / tsconfig valid after the stub packages themselves are omitted.
  */
-function isSkippedStubRefLine(line: string): boolean {
+export function isSkippedStubRefLine(line: string): boolean {
   if (!/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(line)) return false;
   // package.json dependency on a skipped stub package
   if (/^\s*"@[^"]*__[^"]*"\s*:/.test(line)) return true;
@@ -130,7 +130,7 @@ function isSkippedStubRefLine(line: string): boolean {
   return false;
 }
 
-function makeProductInitLineReplace(context: InitProductWorkflowContext) {
+export function makeProductInitLineReplace(context: InitProductWorkflowContext) {
   const placeholderReplace = makeLineReplace(context);
   const dockerFrom = `saflib-${SOURCE_PRODUCT_NAME}`;
   const dockerTo = `${context.organizationName}-${context.productName}`;

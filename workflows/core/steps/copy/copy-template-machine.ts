@@ -19,7 +19,7 @@ import { minimatch } from "minimatch";
 export type { CopyStepInput };
 
 /** Always skipped when expanding directory template sources. */
-const DEFAULT_SKIP_SOURCE_GLOBS = [
+export const DEFAULT_SKIP_SOURCE_GLOBS = [
   "**/node_modules/**",
   "**/dist/**",
   "**/playwright-report/**",
@@ -30,7 +30,7 @@ const DEFAULT_SKIP_SOURCE_GLOBS = [
   "**/saf-workflow-status.error.json",
 ];
 
-function shouldSkipSourcePath(
+export function shouldSkipSourcePath(
   fullPath: string,
   input: CopyStepInput,
 ): boolean {

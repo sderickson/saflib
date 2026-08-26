@@ -166,6 +166,74 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   },
 ];
 
+/**
+ * Product seed that must survive `product/init` emptying other workflows'
+ * areas. Tokens listed here must appear *outside* BEGIN/END WORKFLOW AREA
+ * blocks (init clears non-matching areas).
+ */
+const seedOutsideWorkflowAreas: { rel: string; mustInclude: string[] }[] = [
+  {
+    rel: "service/http/handlers/admin/index.ts",
+    mustInclude: [
+      "getUsersByIdAdminHandler",
+      "createAdminRouter",
+      "/admin/users/by-id",
+    ],
+  },
+  {
+    rel: "service/db/schema.ts",
+    mustInclude: ["./schemas/user-config.ts"],
+  },
+  {
+    rel: "clients/links/app-links.ts",
+    mustInclude: ["home:", 'path: "/"'],
+  },
+  {
+    rel: "clients/links/admin-links.ts",
+    mustInclude: ["home:", "users:", "cronJobs:"],
+  },
+  {
+    rel: "clients/links/account-links.ts",
+    mustInclude: ["home:", "profile:", "verifyEmail:"],
+  },
+  {
+    rel: "clients/links/root-links.ts",
+    mustInclude: ["home:"],
+  },
+  {
+    rel: "clients/app/router.ts",
+    mustInclude: ["HomeAsync", "appLinks.home.path"],
+  },
+  {
+    rel: "clients/app/strings.ts",
+    mustInclude: ["home,"],
+  },
+  {
+    rel: "clients/account/router.ts",
+    mustInclude: ["HomeAsync", "accountLinks.home.path"],
+  },
+  {
+    rel: "clients/account/strings.ts",
+    mustInclude: ["home,", "verify_email,"],
+  },
+  {
+    rel: "clients/admin/router.ts",
+    mustInclude: ["HomeAsync", "adminLinks.home.path"],
+  },
+  {
+    rel: "clients/admin/strings.ts",
+    mustInclude: ["home,", "users,"],
+  },
+];
+
+/** Strip WORKFLOW AREA bodies (comment styles used in TS/YAML). */
+function stripWorkflowAreas(content: string): string {
+  return content.replace(
+    /^[ \t]*(?:\/\/|#)\s*BEGIN WORKFLOW AREA[\s\S]*?^[ \t]*(?:\/\/|#)\s*END WORKFLOW AREA.*$/gm,
+    "",
+  );
+}
+
 describe("golden product expansion stubs", () => {
   it("keeps stub files under templatesProductRoot", () => {
     for (const rel of stubPaths) {
@@ -183,6 +251,20 @@ describe("golden product expansion stubs", () => {
         expect(
           content.includes(token),
           `${rel} should still reference stub token ${token}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("keeps product seed outside other workflows' areas (survives product/init)", () => {
+    for (const { rel, mustInclude } of seedOutsideWorkflowAreas) {
+      const abs = path.join(templatesProductRoot, rel);
+      expect(existsSync(abs), `missing seed host: ${rel}`).toBe(true);
+      const outside = stripWorkflowAreas(readFileSync(abs, "utf8"));
+      for (const token of mustInclude) {
+        expect(
+          outside.includes(token),
+          `${rel}: seed ${JSON.stringify(token)} must sit outside WORKFLOW AREA blocks (product/init empties foreign areas)`,
         ).toBe(true);
       }
     }
