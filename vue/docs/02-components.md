@@ -186,11 +186,14 @@ export function useEvalCreateFlow(callbacks: {
 
 **Scoping note**: Each component that calls a composable gets its own instance with its own local state. This is usually what you want — each sub-component manages its own editing/uploading state independently. However, when multiple siblings need **coordinated state** (e.g. "only one note in edit mode at a time"), the parent should own that coordination state and pass it as a simple prop (like `isEditing: boolean`), while the sub-component still calls its own composable for mutations and other stateful flows.
 
-Composables are tested using `withVueQuery` and `setupMockServer` with the SDK's fake handlers — full integration tests that exercise the state machine and networking without a DOM:
+Composables are tested using `withVueQuery` and `setupMockServer` with the resource-group fake handlers the flow actually calls — full integration tests that exercise the state machine and networking without a DOM:
 
 ```typescript
 // useEvalCreateFlow.test.ts
-setupMockServer(iformServiceFakeHandlers);
+import { evalsFakeHandlers } from "@pathclerk/daemon-sdk/requests/evals/index.fakes";
+import { formsFakeHandlers } from "@pathclerk/daemon-sdk/requests/forms/index.fakes";
+
+setupMockServer([...evalsFakeHandlers, ...formsFakeHandlers]);
 
 it("create without file: creates eval, calls onClose", async () => {
   const [flow, app] = withVueQuery(() => useEvalCreateFlow({ onClose, onCreated }));

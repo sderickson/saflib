@@ -10,7 +10,7 @@ Component testing in SAF applications should use:
 
 ## Shared Test App
 
-Each SPA should have a `test-app.ts` at the root of the root of the package. See [`test-app.ts`](./01-overview.md#test-app-ts) for information on setting that up. This handles all the plugins that Vue components expect in order to function properly. Most of this will be taken care of by `@saflib/vue`'s [`mountWithPlugins`](./ref/@saflib/vue/testing/functions/mountWithPlugins.md) function, but if your SPA has other needs such as additional plugins, `test-app.ts` is the place to do that.
+Each SPA should have a `test-app.ts` at the root of the package. See [`test-app.ts`](./01-overview.md#test-app-ts) for information on setting that up. This handles Vue plugins (router, i18n) via `@saflib/vue`'s [`mountWithPlugins`](./ref/@saflib/vue/testing/functions/mountWithPlugins.md). Do **not** put a kitchen-sink MSW `testAppHandlers` bag here — each test imports only the SDK resource-group fake handlers it needs (same idea as Express slim route tests).
 
 ## Globals
 
@@ -26,7 +26,21 @@ In order to test the integration of everything involved in rendering a page, you
 
 Rather than including mock data in the same file, which will often be redundant with other files, tests should import mock data from the package that provides the Tanstack queries, per [best practices](../../best-practices.md#ownership-of-mocks-fakes-shims).
 
-Use [`setupMockServer`](../../sdk/docs/ref/@saflib/sdk/testing/functions/setupMockServer.md) within the `describe` block next to `setupGlobals`. They both handle setup and teardown for each test.
+Use [`setupMockServer`](../../sdk/docs/ref/@saflib/sdk/testing/functions/setupMockServer.md) within the `describe` block next to `stubGlobals`. Import only the resource-group fake handler modules the page/composable actually calls (via the SDK package glob, e.g. `@scope/sdk/requests/matters/index.fakes`) — not a full-service mega bag from `./fakes`.
+
+```typescript
+import { adminFakeHandlers } from "@saflib/base-sdk/requests/admin/index.fakes";
+import { userConfigsFakeHandlers } from "@saflib/base-sdk/requests/user-configs/index.fakes";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
+
+describe("MyPage", () => {
+  stubGlobals();
+  setupMockServer([...adminFakeHandlers, ...userConfigsFakeHandlers]);
+  // ...
+});
+```
+
+If a view uses only static fixtures and makes no network calls, omit `setupMockServer`.
 
 ## Element Selection
 
@@ -67,12 +81,12 @@ These tests are fast (typically < 5ms for dozens of tests) and stable since they
 Composables that involve TanStack queries/mutations need a Vue app context and a mock server. Use the same pattern as SDK tests:
 
 ```typescript
-import { iformServiceFakeHandlers, mockEvals, mockForms } from "@vendata/iform-sdk/fakes";
+import { adminFakeHandlers } from "@saflib/base-sdk/requests/admin/index.fakes";
 import { withVueQuery } from "@saflib/sdk/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 
 describe("useMyFlow", () => {
-  setupMockServer(iformServiceFakeHandlers);
+  setupMockServer(adminFakeHandlers);
 
   beforeEach(() => {
     mockEvals.length = 0;

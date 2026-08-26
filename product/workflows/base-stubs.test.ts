@@ -42,7 +42,6 @@ const stubPaths = [
   "__offshoot-name__/http/package.json",
   "__offshoot-name__/http/http.ts",
   "__offshoot-name__/sdk/package.json",
-  "__offshoot-name__/sdk/fakes.ts",
   // vue/add-static-site: live docker areas stay empty; tokens live in stubs
   "dev/.workflow-stubs/vue-add-static-site/build-images.sh",
   "dev/.workflow-stubs/vue-add-static-site/Dockerfile.template",
@@ -78,7 +77,7 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   {
     rel: "service/http/routers.ts",
     mustInclude: [
-      "create__GroupName__Router",
+      "router-imports",
       "router-mounts",
       "groupRouterMounts",
     ],
@@ -86,7 +85,7 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   {
     rel: "__offshoot-name__/http/routers.ts",
     mustInclude: [
-      "create__GroupName__Router",
+      "router-imports",
       "router-mounts",
       "groupRouterMounts",
     ],
@@ -95,19 +94,7 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     rel: "service/http/http.ts",
     mustInclude: [
       "groupRouterMounts",
-      "@saflib/base-__offshoot-name__-http",
-      "create__OffshootName__Router",
-      "createCronRouter",
-      "getBaseCronDbKey",
-    ],
-  },
-  {
-    rel: "service/sdk/fakes.ts",
-    mustInclude: [
-      "__group-name__",
-      "__groupName__FakeHandlers",
-      "@saflib/base-__offshoot-name__-sdk",
-      "__offshootName__FakeHandlers",
+      "createBaseHttpApp",
     ],
   },
   {

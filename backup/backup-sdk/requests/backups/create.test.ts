@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useCreateBackup } from "./create.ts";
 import { listBackups } from "./list.ts";
-import { backupServiceFakeHandlers } from "../../fakes.ts";
+import { backupsFakeHandlers } from "./index.fakes.ts";
 import { backupStubs } from "./list.fake.ts";
 import { withVueQuery } from "@saflib/sdk/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { useQuery } from "@tanstack/vue-query";
 
 describe("useCreateBackup", () => {
-  setupMockServer(backupServiceFakeHandlers);
+  setupMockServer(backupsFakeHandlers);
 
   beforeEach(() => {
     backupStubs.length = 0;

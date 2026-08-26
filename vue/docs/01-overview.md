@@ -110,7 +110,7 @@ Imports and re-exports all `strings` files in the package. This is both used by 
 
 _[Template file](../workflows/spa-template/test-app.ts)_
 
-Exports a `mountTestApp` function which wraps and extends Vue Test Utils' [`mount`](https://test-utils.vuejs.org/api/#mount) function. This function can let [`mountWithPlugins`](./ref/@saflib/vue/testing/functions/mountWithPlugins.md) do most of the heavy lifting.
+Exports a `mountTestApp` function which wraps and extends Vue Test Utils' [`mount`](https://test-utils.vuejs.org/api/#mount) function. This function can let [`mountWithPlugins`](./ref/@saflib/vue/testing/functions/mountWithPlugins.md) do most of the heavy lifting (router + i18n). MSW fake handlers stay out of this file — import resource-group handlers in each test instead.
 
 ### `tsconfig.json` and `vitest.config.ts`
 

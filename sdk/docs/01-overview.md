@@ -36,7 +36,6 @@ Each SDK package should have the following structure:
 │   ├── ...
 │   └── fake-store.ts
 ├── index.ts
-├── fakes.ts
 ├── package.json
 ├── typed-fake.json
 └── tsconfig.json
@@ -74,9 +73,9 @@ Alongside all these files are fakes. Per [best-practices](../../best-practices.m
 
 The index file for the SDK. This should export all Tanstack functions, Vue components, and other shared code used in production. Since these packages can be large and shared, it's important to export everything independently, rather than grouping them in an object and exporting that object, so they can be properly tree-shaken.
 
-### `fakes.ts`
+### `requests/` fakes
 
-Similarly to the `index.ts` file, this re-exports files from the `requests/` directory. However, these only export the fake files, so that they're only used in tests. This also allows the fake in-memory store to automatically refresh the data after each test.
+Per-resource MSW handlers live in `requests/{resource}/index.fakes.ts`. Shared mock data and `resetMocks()` live in `requests/{resource}/mocks.ts`. Tests import only the groups they need — do **not** add a root `fakes.ts` barrel (it pulls the entire fake graph into every importer).
 
 ### `typed-fake.json`
 

@@ -4,9 +4,9 @@ import settingsAsync from "./SettingsAsync.vue";
 import {
   mountTestApp,
   createTestRouter,
-  testAppHandlers,
 } from "@saflib/ory-kratos-spa/test-app";
 import {
+  kratosFakeHandlers,
   kratosSessionLoggedInHandler,
   resetKratosFlowMocks,
 } from "@saflib/ory-kratos-sdk/fakes";
@@ -14,7 +14,7 @@ import { setupMockServer } from "@saflib/sdk/testing/mock";
 
 describe("settings", () => {
   stubGlobals();
-  const server = setupMockServer(testAppHandlers);
+  const server = setupMockServer(kratosFakeHandlers);
   beforeEach(() => {
     server.use(kratosSessionLoggedInHandler);
   });

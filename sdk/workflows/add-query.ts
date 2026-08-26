@@ -17,8 +17,6 @@ import path from "node:path";
 
 const sdkRoot = path.join(templatesProductRoot, "service", "sdk");
 const requestDir = path.join(sdkRoot, "requests", "__group-name__");
-/** Live fakes.ts — areas hold the stub group; CopyStep upserts them. */
-const fakesLive = path.join(sdkRoot, "fakes.ts");
 
 const input = [
   {
@@ -88,7 +86,6 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
     templateFile: path.join(requestDir, "__query-name__.ts"),
     templateFileFake: path.join(requestDir, "__query-name__.fake.ts"),
     templateFileTest: path.join(requestDir, "__query-name__.test.ts"),
-    rootFakes: fakesLive,
   },
 
   docFiles: {

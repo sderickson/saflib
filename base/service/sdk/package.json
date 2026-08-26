@@ -8,12 +8,12 @@
   "type": "module",
   "exports": {
     "./client": "./client.ts",
-    "./fakes": "./fakes.ts",
     "./i18n": "./i18n.ts",
     "./strings": "./strings.ts",
     "./test-app": "./test-app.ts",
     "./typed-fake": "./typed-fake.ts",
-    "./requests/*": "./requests/*.ts"
+    "./requests/*": "./requests/*.ts",
+    "./*": "./*"
   },
   "scripts": {
     "test": "vitest run",

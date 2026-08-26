@@ -18,8 +18,6 @@ import path from "node:path";
 
 const sdkRoot = path.join(templatesProductRoot, "service", "sdk");
 const requestDir = path.join(sdkRoot, "requests", "__group-name__");
-/** Live fakes.ts — areas hold the stub group; CopyStep upserts them. */
-const fakesLive = path.join(sdkRoot, "fakes.ts");
 
 const input = [
   {
@@ -118,7 +116,6 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       requestDir,
       "__mutation-name__.test.ts",
     ),
-    rootFakes: fakesLive,
   },
 
   docFiles: {

@@ -4,9 +4,11 @@ import loginAsync from "./LoginAsync.vue";
 import {
   mountTestApp,
   createTestRouter,
-  testAppHandlers,
 } from "@saflib/ory-kratos-spa/test-app";
-import { resetKratosFlowMocks } from "@saflib/ory-kratos-sdk/fakes";
+import {
+  kratosFakeHandlers,
+  resetKratosFlowMocks,
+} from "@saflib/ory-kratos-sdk/fakes";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 
 // Renders the page to capture baseline coverage.
@@ -14,7 +16,7 @@ import { setupMockServer } from "@saflib/sdk/testing/mock";
 
 describe("login", () => {
   stubGlobals();
-  setupMockServer(testAppHandlers);
+  setupMockServer(kratosFakeHandlers);
   afterEach(resetKratosFlowMocks);
 
   it("should render", async () => {

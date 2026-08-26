@@ -5,8 +5,6 @@ import { createMemoryHistory, type Router } from "vue-router";
 import { createAuthRouter } from "./router.ts";
 import { auth_strings } from "./strings.ts";
 
-export { kratosFakeHandlers as testAppHandlers } from "@saflib/ory-kratos-sdk/fakes";
-
 export const createTestRouter = () =>
   createAuthRouter({ history: createMemoryHistory() });
 

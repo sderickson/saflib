@@ -4,11 +4,6 @@ import type { Component } from "vue";
 import { createMemoryHistory, type Router } from "vue-router";
 import { createAdminRouter } from "./router.ts";
 import { admin_strings } from "./strings.ts";
-import {
-  resetMocks,
-  baseServiceFakeHandlers,
-} from "@saflib/base-sdk/fakes";
-import { kratosFakeHandlers } from "@saflib/ory-kratos-sdk/fakes";
 
 export const createTestRouter = () =>
   createAdminRouter({ history: createMemoryHistory() });
@@ -25,9 +20,3 @@ export const mountTestApp = <C extends Component>(
     },
   });
 };
-
-export const testAppHandlers = [
-  ...kratosFakeHandlers,
-  ...baseServiceFakeHandlers,
-];
-export { resetMocks };
