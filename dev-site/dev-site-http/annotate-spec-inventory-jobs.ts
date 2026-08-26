@@ -1,11 +1,11 @@
 import type { PackageSpecInventory } from "./spec-inventory-build.ts";
 
-/** Caller → targets (same shape as `@saflib/jobs` TriggerMap / daemonTriggerMap). */
+/** Caller → targets (same shape as `@saflib/jobs` TriggerMap / productTriggerMap). */
 export type JobTriggerMap = Readonly<Record<string, readonly string[]>>;
 
 /**
  * Annotate spec inventory operations with job graph edges from a product
- * trigger map (e.g. `daemonTriggerMap`). Mutates operations in place.
+ * trigger map (e.g. `productTriggerMap`). Mutates operations in place.
  */
 export function annotateSpecInventoryJobEdges(
   inventory: PackageSpecInventory,

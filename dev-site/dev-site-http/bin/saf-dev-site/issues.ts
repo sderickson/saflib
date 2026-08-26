@@ -54,19 +54,19 @@ export const addIssuesCommand = (program: Command) => {
     )
     .requiredOption(
       "-p, --package <name>",
-      "Package name (e.g. @pathclerk/daemon-form-artifacts)",
+      "Package name (e.g. @acme/form-artifacts)",
     )
     .argument("[hash]", "Commit hash (default: HEAD; ignored with --workdir)")
     .option("--workdir", "Analyze the working tree (no sqlite / no scan)", false)
     .option("--repo-root <path>", "Git repository root (default: cwd / DEV_SITE_REPO_ROOT)")
     .option(
       "--product-root <path>",
-      "Path prefix within the repo (default: daemon when using daemon DB or --workdir, else DEV_SITE_PRODUCT_ROOT / empty)",
+      "Path prefix within the repo (default: DEV_SITE_PRODUCT_ROOT or whole repo)",
     )
     .option("--main-ref <ref>", "Main branch ref (default: main / DEV_SITE_MAIN_REF)")
     .option(
       "--db <path>",
-      "SQLite file path (default: DEV_SITE_DB_PATH, else daemon/.../dev-site.sqlite if present; opens read-only; ignored with --workdir)",
+      "SQLite file path (default: DEV_SITE_DB_PATH or library default; opens read-only; ignored with --workdir)",
     )
     .option("--json", "Print machine-readable JSON", false)
     .action(

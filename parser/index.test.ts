@@ -331,7 +331,7 @@ describe("extractDrizzleTables", () => {
 describe("extractImports", () => {
   it("collects named, default, namespace, and side-effect imports", () => {
     const source = `
-      import { createMatter, getByIdMatter as get } from "@pathclerk/daemon-db/queries/matter/create";
+      import { createMatter, getByIdMatter as get } from "@acme/product-db/queries/matter/create";
       import def from "./local.ts";
       import * as ns from "../other/index.ts";
       import "./side-effect.ts";
@@ -344,7 +344,7 @@ describe("extractImports", () => {
       { specifier: "./reexport.ts", names: ["*"] },
       { specifier: "./side-effect.ts", names: [] },
       {
-        specifier: "@pathclerk/daemon-db/queries/matter/create",
+        specifier: "@acme/product-db/queries/matter/create",
         names: ["createMatter", "getByIdMatter"],
       },
       { specifier: "@scope/pkg/queries/foo/bar", names: ["x"] },

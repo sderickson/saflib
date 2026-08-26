@@ -33,7 +33,7 @@ async function runLocked<T>(fn: () => T | Promise<T>): Promise<T> {
 /**
  * Exclusive filesystem lock shared by every process that mutates the active audit
  * chain (appends, rotation clear). Complements SQLite `BEGIN IMMEDIATE` when
- * multiple daemon processes share one on-disk audit DB.
+ * multiple product service processes share one on-disk audit DB.
  *
  * Skipped for in-memory SQLite (tests and single-process isolation) so appends
  * stay on the same tick as `res.on("finish")` handlers.

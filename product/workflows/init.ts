@@ -23,7 +23,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 /**
  * Walk up from `start` and return the outermost directory whose package.json
- * declares `workspaces`. Nested installs (e.g. saflib inside pathclerk) must
+ * declares `workspaces`. Nested installs (e.g. saflib inside a host monorepo) must
  * run `npm install` at that root so new product packages get linked.
  */
 export function findOutermostWorkspaceRoot(start: string): string {
@@ -375,7 +375,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       { skipIf: ({ context }) => context.productOnly },
     ),
     step(CdStepMachine, ({ context }) => ({
-      // Nested monorepos (pathclerk → saflib): install at the outermost
+      // Nested monorepos (host product → saflib): install at the outermost
       // workspace root so new product packages are linked for typecheck.
       path: findOutermostWorkspaceRoot(context.originalWorkingDirectory),
     })),

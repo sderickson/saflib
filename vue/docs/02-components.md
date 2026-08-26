@@ -190,8 +190,8 @@ Composables are tested using `withVueQuery` and `setupMockServer` with the resou
 
 ```typescript
 // useEvalCreateFlow.test.ts
-import { evalsFakeHandlers } from "@pathclerk/daemon-sdk/requests/evals/index.fakes";
-import { formsFakeHandlers } from "@pathclerk/daemon-sdk/requests/forms/index.fakes";
+import { evalsFakeHandlers } from "@acme/product-sdk/requests/evals/index.fakes";
+import { formsFakeHandlers } from "@acme/product-sdk/requests/forms/index.fakes";
 
 setupMockServer([...evalsFakeHandlers, ...formsFakeHandlers]);
 

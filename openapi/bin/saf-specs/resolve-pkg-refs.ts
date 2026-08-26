@@ -13,7 +13,7 @@ import path from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
 export interface ExternalSchemaProvenance {
-  /** npm package name that owns the schema (e.g. `@pathclerk/daemon-dossier-spec`). */
+  /** npm package name that owns the schema (e.g. `@acme/product-dossier-spec`). */
   packageName: string;
   /** Canonical schema export name (OpenAPI component id). */
   schemaName: string;

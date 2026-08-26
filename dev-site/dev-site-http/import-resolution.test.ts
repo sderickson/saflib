@@ -6,6 +6,10 @@ import {
   stripTsExt,
 } from "./import-resolution.ts";
 
+const pkgName = "@acme/form-artifacts";
+const pkgDir = "product/form-artifacts";
+const consumerFile = "product/service/http/routes/x.ts";
+
 describe("import-resolution", () => {
   it("resolveRelative joins and normalizes ..", () => {
     expect(resolveRelative("a/b/c.ts", "./d")).toBe("a/b/d");
@@ -22,19 +26,19 @@ describe("import-resolution", () => {
   it("moduleTargetFromImport resolves package-absolute imports", () => {
     expect(
       moduleTargetFromImport(
-        "@pathclerk/daemon-form-artifacts",
-        "daemon/form-artifacts",
-        "daemon/service/http/routes/x.ts",
-        "@pathclerk/daemon-form-artifacts/paths/form-artifact-paths",
+        pkgName,
+        pkgDir,
+        consumerFile,
+        "@acme/form-artifacts/paths/form-artifact-paths",
       ),
     ).toBe("paths/form-artifact-paths");
 
     expect(
       moduleTargetFromImport(
-        "@pathclerk/daemon-form-artifacts",
-        "daemon/form-artifacts",
-        "daemon/service/http/routes/x.ts",
-        "@pathclerk/daemon-form-artifacts/interpreter-statement/types",
+        pkgName,
+        pkgDir,
+        consumerFile,
+        "@acme/form-artifacts/interpreter-statement/types",
       ),
     ).toBe("interpreter-statement/types");
   });
@@ -42,18 +46,18 @@ describe("import-resolution", () => {
   it("moduleTargetFromImport resolves relative imports inside the package", () => {
     expect(
       moduleTargetFromImport(
-        "@pathclerk/daemon-form-artifacts",
-        "daemon/form-artifacts",
-        "daemon/form-artifacts/load-builtin-form-artifacts.ts",
+        pkgName,
+        pkgDir,
+        "product/form-artifacts/load-builtin-form-artifacts.ts",
         "./form-artifact-paths",
       ),
     ).toBe("form-artifact-paths");
 
     expect(
       moduleTargetFromImport(
-        "@pathclerk/daemon-form-artifacts",
-        "daemon/form-artifacts",
-        "daemon/form-artifacts/lib/foo.ts",
+        pkgName,
+        pkgDir,
+        "product/form-artifacts/lib/foo.ts",
         "../bar",
       ),
     ).toBe("bar");
@@ -62,18 +66,18 @@ describe("import-resolution", () => {
   it("moduleTargetFromImport ignores other packages and out-of-package relatives", () => {
     expect(
       moduleTargetFromImport(
-        "@pathclerk/daemon-form-artifacts",
-        "daemon/form-artifacts",
-        "daemon/service/http/x.ts",
-        "@pathclerk/daemon-db/queries/matter/create",
+        pkgName,
+        pkgDir,
+        "product/service/http/x.ts",
+        "@acme/product-db/queries/matter/create",
       ),
     ).toBeNull();
 
     expect(
       moduleTargetFromImport(
-        "@pathclerk/daemon-form-artifacts",
-        "daemon/form-artifacts",
-        "daemon/service/http/x.ts",
+        pkgName,
+        pkgDir,
+        "product/service/http/x.ts",
         "./local",
       ),
     ).toBeNull();
@@ -82,8 +86,8 @@ describe("import-resolution", () => {
   it("packageLocalPath strips package directory", () => {
     expect(
       packageLocalPath(
-        "daemon/service/http/routes/x.ts",
-        "daemon/service/http",
+        "product/service/http/routes/x.ts",
+        "product/service/http",
       ),
     ).toBe("routes/x.ts");
   });

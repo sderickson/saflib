@@ -74,7 +74,7 @@ describe("buildDbPackageFileNav", () => {
         {
           packageName: "@pkg/db",
           filePath: "db/instances/registry.ts",
-          name: "daemonDbManager",
+          name: "productDbManager",
           kind: "const",
         },
         {
