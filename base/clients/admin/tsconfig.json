@@ -35,9 +35,6 @@
       "path": "../../../ory-kratos-spa"
     },
     {
-      "path": "../../../playwright"
-    },
-    {
       "path": "../../../vue"
     },
     {
