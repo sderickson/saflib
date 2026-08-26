@@ -7,7 +7,7 @@ import { home } from "./pages/home/Home.strings.ts";
 
 export const app_strings = {
   ...base_common_strings,
-  // BEGIN WORKFLOW AREA string-object FOR vue/add-view sdk/add-component
   home,
+  // BEGIN WORKFLOW AREA string-object FOR vue/add-view sdk/add-component
   // END WORKFLOW AREA
 };

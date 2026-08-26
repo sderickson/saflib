@@ -1,9 +1,9 @@
 import express, { type IRouter } from "express";
 import { createOperationScopedMiddleware } from "@saflib/express";
 import { operationJsonSpec as getUsersByIdAdminOperationJsonSpec } from "@saflib/base-spec/operations/getUsersByIdAdmin";
+import { getUsersByIdAdminHandler } from "./users-by-id.ts";
 
 // BEGIN WORKFLOW AREA handler-imports FOR express/add-handler
-import { getUsersByIdAdminHandler } from "./users-by-id.ts";
 // END WORKFLOW AREA
 
 /**
@@ -13,12 +13,13 @@ import { getUsersByIdAdminHandler } from "./users-by-id.ts";
 export function createAdminRouter(): IRouter {
   const router = express.Router();
 
-  // BEGIN WORKFLOW AREA route-registrations FOR express/add-handler
   router.get(
     "/admin/users/by-id",
     ...createOperationScopedMiddleware(getUsersByIdAdminOperationJsonSpec),
     getUsersByIdAdminHandler,
   );
+
+  // BEGIN WORKFLOW AREA route-registrations FOR express/add-handler
   // END WORKFLOW AREA
 
   return router;

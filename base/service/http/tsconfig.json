@@ -1,9 +1,7 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
-    {
-      "path": "../../__offshoot-name__/http"
-    },
+    { "path": "../../__offshoot-name__/http" },
     {
       "path": "../../../cron/cron"
     },

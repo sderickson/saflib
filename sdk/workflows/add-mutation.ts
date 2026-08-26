@@ -90,8 +90,9 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
         requiredSuffix: "-sdk",
         silentError: true, // so checklists don't error
       }),
+      // Keep pathResult.targetDir (…/requests/<group>) — templates share one
+      // stub dir so sharedPrefix has no `requests/<group>` segment to restore.
       ...pathResult,
-      targetDir: input.cwd,
       mutationName: pathResult.targetName,
       operationId,
       upload: input.upload ?? false,

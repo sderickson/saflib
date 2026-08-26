@@ -41,11 +41,9 @@
     {
       "path": "../../../secret-store"
     },
+    { "path": "../integrations/__integration-name__" },
     {
       "path": "../db"
-    },
-    {
-      "path": "../integrations/__integration-name__"
     }
   ]
 }

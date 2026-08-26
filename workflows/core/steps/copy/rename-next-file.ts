@@ -50,6 +50,15 @@ export const renameNextFile = fromPromise(
       return { fileName: targetFileName };
     }
 
+    // Workflow status snapshots are machine-local and may embed unresolved
+    // __stub__ paths — never run lineReplace on them.
+    if (
+      targetFileName === "saf-workflow-status.json" ||
+      targetFileName === "saf-workflow-status.error.json"
+    ) {
+      return { fileName: targetFileName };
+    }
+
     const content = await readFile(targetPath, "utf-8");
     // Null bytes → binary mislabeled; leave untouched.
     if (content.includes("\0")) {

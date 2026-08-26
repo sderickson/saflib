@@ -1,11 +1,16 @@
 {
-  "extends": "@saflib/monorepo/tsconfig.json",
+  "extends": [
+    "@saflib/vue/tsconfig.app.json"
+  ],
   "references": [
     {
       "path": "../../../monorepo"
     },
     {
       "path": "../../../sdk"
+    },
+    {
+      "path": "../../../vue"
     },
     {
       "path": "../spec"
@@ -15,7 +20,8 @@
     "outDir": "./dist/types",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "noEmit": false,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "types": ["vite/client"]
   },
   "exclude": [
     "node_modules",
@@ -30,6 +36,8 @@
   ],
   "include": [
     "**/*.ts",
+    "**/*.tsx",
+    "**/*.vue",
     "**/*.json"
   ]
 }

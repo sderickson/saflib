@@ -13,12 +13,13 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -b"
+    "typecheck": "vue-tsc -b"
   },
   "dependencies": {
     "@saflib/base-__offshoot-name__-spec": "*",
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
+    "@saflib/vue": "*",
     "msw": "^2.11.3"
   },
   "devDependencies": {

@@ -17,7 +17,6 @@ import { verify_email } from "./pages/email-verification/VerifyEmail.strings.ts"
 export const account_strings = {
   ...base_common_strings,
   ...kratos_auth_strings,
-  // BEGIN WORKFLOW AREA string-object FOR vue/add-view sdk/add-component
   profile,
   profile_intro,
   profile_form,
@@ -25,5 +24,6 @@ export const account_strings = {
   home_nav_list,
   account_settings_section,
   verify_email,
+  // BEGIN WORKFLOW AREA string-object FOR vue/add-view sdk/add-component
   // END WORKFLOW AREA
 };

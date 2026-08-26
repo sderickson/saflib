@@ -3,7 +3,6 @@ import type { LinkMap } from "@saflib/links";
 const subdomain = "account";
 
 export const accountLinks: LinkMap = {
-  // BEGIN WORKFLOW AREA page-links FOR vue/add-view
   home: {
     subdomain,
     path: "/",
@@ -50,5 +49,6 @@ export const accountLinks: LinkMap = {
     path: "/new-verification",
     params: ["return_to"],
   },
+  // BEGIN WORKFLOW AREA page-links FOR vue/add-view
   // END WORKFLOW AREA
 };

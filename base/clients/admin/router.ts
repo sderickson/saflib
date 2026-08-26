@@ -14,11 +14,11 @@ import { ProductEventsAsync } from "@saflib/analytics-vue";
 import { MetricsAsync } from "@saflib/node-metrics-vue";
 import { ErrorsAsync } from "@saflib/errors-vue";
 import { AuditLogsAsync } from "@saflib/audit-vue";
-
-// BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 import HomeAsync from "./pages/home/HomeAsync.vue";
 import UsersAsync from "./pages/users/UsersAsync.vue";
 import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
+
+// BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 // END WORKFLOW AREA
 
 const devObservabilityRoutes: RouteRecordRaw[] = isDevelopmentDeployment()
@@ -50,7 +50,6 @@ export const createAdminRouter = (options?: {
   history?: RouterHistory;
 }) => {
   const routes: RouteRecordRaw[] = [
-    // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
     {
       path: adminLinks.home.path,
       component: HomeAsync,
@@ -72,6 +71,7 @@ export const createAdminRouter = (options?: {
       path: adminLinks.audit.path,
       component: AuditLogsAsync,
     },
+    // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
     // END WORKFLOW AREA
     { path: "/:pathMatch(.*)*", component: PageNotFound },
   ];

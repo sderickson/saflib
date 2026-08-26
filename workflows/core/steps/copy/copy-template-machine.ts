@@ -24,6 +24,10 @@ const DEFAULT_SKIP_SOURCE_GLOBS = [
   "**/dist/**",
   "**/playwright-report/**",
   "**/test-results/**",
+  // Local workflow runtime state (gitignored) — often contains leftover
+  // __stub__ template paths that break makeLineReplace during product/init.
+  "**/saf-workflow-status.json",
+  "**/saf-workflow-status.error.json",
 ];
 
 function shouldSkipSourcePath(
