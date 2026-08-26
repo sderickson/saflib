@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "saf-specs generate -f openapi.yaml -o dist",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "generate": "npm exec saf-specs generate"
   },
   "dependencies": {
     "@saflib/openapi": "*"

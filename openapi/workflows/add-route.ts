@@ -139,7 +139,7 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["exec", "saf-specs", "generate"],
+      args: ["run", "generate"],
     })),
 
     step(CommandStepMachine, () => ({

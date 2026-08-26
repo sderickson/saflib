@@ -111,22 +111,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "__url-path__": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/admin/users/by-id": {
         parameters: {
             query?: never;
@@ -136,6 +120,22 @@ export interface paths {
         };
         /** Look up a Kratos identity by ID (site-admin) */
         get: operations["getUsersByIdAdmin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "__url-path__": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
         put?: never;
         post?: never;
         delete?: never;
@@ -168,8 +168,8 @@ export interface components {
         Error: _Ext0_Error;
         ProductEvent: components["schemas"]["index"];
         UserConfig: components["schemas"]["user-config"];
-        __TargetName__: components["schemas"]["__target-name__"];
         KratosIdentity: components["schemas"]["kratos-identity"];
+        __TargetName__: components["schemas"]["__target-name__"];
         "jobs-demo-options": {
             /** @description Optional dedupe key forwarded to the enqueued job. */
             dedupeKey?: string | null;

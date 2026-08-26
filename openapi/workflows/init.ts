@@ -112,7 +112,7 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["exec", "saf-specs", "generate"],
+      args: ["run", "generate"],
     })),
   ],
 });
