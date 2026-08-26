@@ -13,10 +13,7 @@ import {
   createAnalyticsRouter,
   createDevAnalyticsRouter,
 } from "@saflib/analytics-http";
-import {
-  createErrorsRouter,
-  createDevErrorsRouter,
-} from "@saflib/errors-http";
+import { createErrorsRouter } from "@saflib/errors-http";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
@@ -72,12 +69,11 @@ export const createGlobalMiddleware = (
   }
 
   let sanitizeMiddleware: Handler[] = [blockHtml];
+  // Logs / in-memory analytics listing stay development-only. Admin error
+  // smoke + ring buffer (`/admin/test-error`, `/admin/errors`) are on
+  // createErrorsRouter so prod-local / production authz and monitoring checks work.
   const devObservabilityMiddleware: Handler[] = isDevelopmentDeployment()
-    ? [
-        createDevLogsRouter(),
-        createDevAnalyticsRouter(),
-        createDevErrorsRouter(),
-      ]
+    ? [createDevLogsRouter(), createDevAnalyticsRouter()]
     : [];
   return [
     ...metricsMiddleware,
