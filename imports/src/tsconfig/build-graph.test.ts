@@ -10,11 +10,19 @@ import {
 } from "./build-graph.ts";
 
 describe("buildReferenceGraph", () => {
-  it("does not add devDependency workspace packages as project references", () => {
-    const { graph } = buildReferenceGraph();
-    for (const node of graph.values()) {
-      expect(node.references).not.toContain("@saflib/playwright");
-      expect(node.references).not.toContain("@saflib/vitest");
+  it("does not add vitest/playwright when they are only in devDependencies", () => {
+    const { graph, context } = buildReferenceGraph();
+    for (const [name, node] of graph) {
+      const pj = context.monorepoPackageJsons[name]!;
+      const runtimeDeps = new Set(Object.keys(pj.dependencies ?? {}));
+      // Harness packages (e.g. @saflib/security) may depend on playwright at
+      // runtime; only forbid refs when the dep is test-only.
+      if (!runtimeDeps.has("@saflib/playwright")) {
+        expect(node.references).not.toContain("@saflib/playwright");
+      }
+      if (!runtimeDeps.has("@saflib/vitest")) {
+        expect(node.references).not.toContain("@saflib/vitest");
+      }
     }
   });
 

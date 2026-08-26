@@ -36,9 +36,11 @@
     "@saflib/node-metrics-vue": "*",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/ory-kratos-spa": "*",
-    "@saflib/playwright": "*",
     "@saflib/vue": "*",
     "vue-router": "^5.0.0"
+  },
+  "devDependencies": {
+    "@saflib/playwright": "*"
   },
   "sideEffects": false
 }
