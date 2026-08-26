@@ -119,7 +119,7 @@ The shared vitest config excludes files from coverage that don't contain meaning
 
 - `*.strings.ts` — pure localization data
 - `*.loader.ts` — simple prefetch wrappers
-- `test-app.ts`, `fixtures.ts` — test infrastructure
+- `test-app.ts`, `*.fixture.ts` — test infrastructure
 - `main.ts`, `router.ts` — app bootstrapping (covered by E2E)
 
 This keeps the report focused on files with actual logic.

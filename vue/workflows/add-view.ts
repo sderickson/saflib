@@ -107,7 +107,6 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     strings: path.join(pageDir, "__TargetName__.strings.ts"),
     fixture: path.join(pageDir, "__TargetName__.fixture.ts"),
     stringsIndex: path.join(packageDir, "strings.ts"),
-    fixturesIndex: path.join(packageDir, "fixtures.ts"),
     router: path.join(packageDir, "router.ts"),
     links: linksStub,
   },
@@ -226,6 +225,9 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
   a vue file into sub-components. Interpolation in \`.strings.ts\` must use vue-i18n form:
   \`{placeholder}\` in the English string and \`t(strings.key, { placeholder: value })\` in the
   component — never \`{{placeholder}}\` (breaks message compilation in production builds).
+  Root \`strings.ts\` is for i18n registration only — keep upserting there; do **not** add a
+  root \`fixtures.ts\` barrel. Playwright imports the co-located \`*.fixture.ts\` via the SPA
+  package glob (e.g. \`@scope/pkg/pages/.../Page.fixture.ts\`).
 * **Sub-component interfaces**: Keep them simple. Props = **render data** from the loader (plain
   values) + simple display state (booleans, IDs). Omit loader query **loading/errors** for that
   data—the \`*Async\` page owns fetch UX. Omit **mutation instances** passed from parents; the

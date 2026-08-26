@@ -1,9 +1,7 @@
 import { expect, type Page } from "@playwright/test";
-import type {
-  LoginPageFixture,
-  RegistrationPageFixture,
-  VerifyWallPageFixture,
-} from "@saflib/ory-kratos-spa/fixtures";
+import type { LoginPageFixture } from "@saflib/ory-kratos-spa/pages/login/login.fixture.ts";
+import type { RegistrationPageFixture } from "@saflib/ory-kratos-spa/pages/registration/registration.fixture.ts";
+import type { VerifyWallPageFixture } from "@saflib/ory-kratos-spa/pages/verify-wall/verify-wall.fixture.ts";
 import { getUniqueEmail } from "@saflib/playwright";
 import { apiOrigin } from "./http-helpers.ts";
 

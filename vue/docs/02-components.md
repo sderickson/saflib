@@ -214,7 +214,7 @@ See [testing](./04-testing.md) for more info.
 
 _[Template file](../workflows/template/__subdomain-name__/__group-name__/__TargetName__.fixture.ts)_
 
-A [Playwright Fixture](https://playwright.dev/docs/test-fixtures) provides a consistent, reusable way for Playwright tests to interact with the application. Since the fixture is tightly coupled to the implementation and feature set of a view, it lives in the same directory as the view.
+A [Playwright Fixture](https://playwright.dev/docs/test-fixtures) provides a consistent, reusable way for Playwright tests to interact with the application. Since the fixture is tightly coupled to the implementation and feature set of a view, it lives in the same directory as the view (`*.fixture.ts`). Tests import that file via the SPA package glob (e.g. `@scope/pkg/pages/.../Page.fixture.ts`) or a same-package relative path — do not re-export page fixtures from a root `fixtures.ts` barrel.
 
 ## Sub-Components
 
