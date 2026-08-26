@@ -1,4 +1,9 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  type Dirent,
+} from "node:fs";
 import path from "node:path";
 
 const SKIP_DIR_NAMES = new Set([
@@ -75,7 +80,7 @@ export function indexWorkspacePackages(
       }
     }
 
-    let entries: ReturnType<typeof readdirSync>;
+    let entries: Dirent[];
     try {
       entries = readdirSync(dir, { withFileTypes: true });
     } catch {

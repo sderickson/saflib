@@ -2,11 +2,7 @@ import { assign, fromPromise, raise, setup } from "xstate";
 import type { WorkflowInput, WorkflowOutput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 import { workflowActions, workflowActors, logInfo, logError } from "../xstate.ts";
-import {
-  type CommandStepContext,
-  type CommandStepInput,
-  isScriptModeValidationCommand,
-} from "./command.ts";
+import { type CommandStepContext, type CommandStepInput } from "./command.ts";
 import { executeCommandStep } from "./command-runner.ts";
 import {
   buildNpmRunArgs,
@@ -61,7 +57,8 @@ export interface NpmScriptStepContext extends CommandStepContext {
 export function npmScriptToCommandInput(
   input: NpmScriptStepInput & WorkflowInput,
 ): CommandStepInput & WorkflowInput {
-  const startDir = input.originalWorkingDirectory ?? input.cwd;
+  const startDir =
+    input.originalWorkingDirectory ?? input.cwd ?? process.cwd();
   validateNpmScriptTarget({
     workspace: input.workspace,
     script: input.script,
