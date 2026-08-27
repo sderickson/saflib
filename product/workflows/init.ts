@@ -346,6 +346,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
           ".github/workflows/playwright.yml",
           ".github/workflows/typecheck.yml",
           ".github/workflows/push.yml",
+          ".github/workflows/security.yml",
           ".github/actions/setup-node-deps",
         ],
       }),
@@ -383,17 +384,18 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["install"],
     })),
-    step(CdStepMachine, ({ context }) => {
-      return {
-        path: `./${context.productName}/service/monolith`,
-      };
-    }),
-    step(CommandStepMachine, () => {
-      return {
-        command: "npm",
-        args: ["exec", "saf-env", "generate", "--", "--combined"],
-      };
-    }),
+    // Refresh env.ts under the new product only (stub packages like
+    // __integration-name__ were omitted from the copy). Do not run
+    // workspace-wide generate-all — that rewrites unrelated packages.
+    step(CommandStepMachine, ({ context }) => ({
+      command: "node",
+      args: [
+        "--experimental-strip-types",
+        "--disable-warning=ExperimentalWarning",
+        path.join(import.meta.dirname, "regenerate-product-env.ts"),
+        path.join(context.originalWorkingDirectory, context.productName),
+      ],
+    })),
     step(CdStepMachine, ({ context }) => {
       return {
         path: `./${context.productName}/dev`,

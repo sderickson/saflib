@@ -162,15 +162,35 @@ export const CommandStepMachine = setup({
             }),
           ],
         },
-        onError: {
-          target: "standby",
-          actions: [
-            logError(
-              ({ event }) =>
-                `Command failed: ${(event.error as Error).message}`,
-            ),
-          ],
-        },
+        onError: [
+          {
+            // Script/CI harnesses must fail fast — standby waits for an agent "continue".
+            guard: ({ context }) =>
+              context.runMode === "script" ||
+              context.runMode === "dry" ||
+              context.runMode === "checklist",
+            actions: [
+              logError(
+                ({ event }) =>
+                  `Command failed: ${(event.error as Error).message}`,
+              ),
+              ({ event }) => {
+                throw event.error instanceof Error
+                  ? event.error
+                  : new Error(String(event.error));
+              },
+            ],
+          },
+          {
+            target: "standby",
+            actions: [
+              logError(
+                ({ event }) =>
+                  `Command failed: ${(event.error as Error).message}`,
+              ),
+            ],
+          },
+        ],
       },
     },
     standby: {

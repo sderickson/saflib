@@ -33,6 +33,12 @@ export type ConcreteWorkflowRunner =
 
 export interface WorkflowRunOptions {
   onSnapshot?: (snapshot: Snapshot<any>) => void;
+  /**
+   * Max time to wait for the workflow actor to settle. Script-mode harnesses
+   * (e.g. live-test) should pass a long budget; unit tests use the default.
+   * Use `Infinity` for no deadline.
+   */
+  timeoutMs?: number;
 }
 
 export interface WorkflowStepInfo {
@@ -133,7 +139,11 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       console.log("Actor started with error", snapshot.error);
       return false;
     }
-    await pollingWaitFor(actor, workflowAllSettled);
+    // Script mode runs whole suites (live-test) — far longer than the 30s unit-test default.
+    const timeoutMs =
+      options?.timeoutMs ??
+      (this.input.runMode === "script" ? 25 * 60 * 1000 : undefined);
+    await pollingWaitFor(actor, workflowAllSettled, { timeoutMs });
     const t1 = Date.now();
     if (process.env.NODE_ENV !== "test" && this.input.runMode === "run") {
       console.log(`Time taken: ${((t1 - t0) / 1000 / 60).toFixed(2)}m`);
