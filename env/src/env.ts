@@ -268,11 +268,12 @@ export interface ${typeName}${extendsClause} {}
     const compiled = await compile(schemaForCompile, typeName, {
       bannerComment: "",
     });
-    // json-schema-to-typescript emits `export interface Name { ... }` — inject extends.
+    // json-schema-to-typescript may sanitize the type name (e.g. template
+    // placeholders with `__`); rewrite to our name and inject extends.
     interfaceSnippet = `${bannerComment}
 ${compiled.replace(
-  new RegExp(`export interface ${typeName}\\s*\\{`),
-  `export interface ${typeName}${extendsClause} {`,
+  /export interface \w+(\s*\{)/,
+  `export interface ${typeName}${extendsClause}$1`,
 )}`;
   }
 

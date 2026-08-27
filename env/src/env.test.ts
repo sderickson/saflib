@@ -58,6 +58,35 @@ describe("makeEnvParserSnippet", () => {
     );
   });
 
+  it("keeps a stable type name when json-schema-to-typescript would sanitize it", async () => {
+    const snippet = await makeEnvParserSnippet(
+      {
+        type: "object",
+        properties: {
+          __INTEGRATION_NAME___API_KEY: {
+            type: "string",
+            description: "The API key",
+            source: "@saflib/base-__integration-name__-integration",
+          },
+        },
+        required: [],
+        additionalProperties: false,
+      },
+      "@saflib/base-__integration-name__-integration",
+      ["@saflib/env"],
+    );
+
+    expect(snippet).toContain(
+      "export interface Base__integrationName__IntegrationEnvSchema extends EnvEnvSchema {",
+    );
+    expect(snippet).toContain(
+      "as unknown as Base__integrationName__IntegrationEnvSchema;",
+    );
+    expect(snippet).not.toContain(
+      "Base_IntegrationName__IntegrationEnvSchema",
+    );
+  });
+
   it("emits an empty extending interface when there are no local props", async () => {
     const empty: SimplifiedJSONSchema = {
       type: "object",

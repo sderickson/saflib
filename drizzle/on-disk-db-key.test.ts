@@ -48,17 +48,18 @@ describe("createOnDiskDbKeyAccessor", () => {
   it("lazily connects once and creates the data directory", () => {
     const packageUrl = pathToFileURL(path.join(tmp, "jobs.ts")).href;
     const keys: string[] = [];
+    const fakeKey = Symbol("key-1") as DbKey;
     const accessor = createOnDiskDbKeyAccessor({
       packageUrl,
       filePrefix: "jobs-db",
       connect: (options) => {
         keys.push(String(options?.onDisk));
-        return `key-${keys.length}` as DbKey;
+        return fakeKey;
       },
     });
 
-    expect(accessor.getDbKey()).toBe("key-1");
-    expect(accessor.getDbKey()).toBe("key-1");
+    expect(accessor.getDbKey()).toBe(fakeKey);
+    expect(accessor.getDbKey()).toBe(fakeKey);
     expect(keys).toHaveLength(1);
     expect(fs.existsSync(path.join(tmp, "data"))).toBe(true);
     expect(keys[0]).toBe(accessor.getSqlitePath());
