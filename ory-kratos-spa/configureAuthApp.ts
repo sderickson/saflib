@@ -12,10 +12,12 @@ import {
   AUTH_POST_AUTH_URL_IS_OVERRIDE,
   AUTH_POST_REGISTER_FALLBACK_HREF,
   AUTH_POST_REGISTER_URL_IS_OVERRIDE,
+  AUTH_POST_RECOVERY_SETTINGS_HREF,
   AUTH_ROOT_HOME_FALLBACK_HREF,
   AUTH_ROOT_HOME_URL_IS_OVERRIDE,
   defaultPostAuthFallbackHref,
   defaultPostRegisterFallbackHref,
+  defaultPostRecoverySettingsHref,
   defaultRootHomeFallbackHref,
 } from "./authFallbackInject.ts";
 
@@ -55,6 +57,14 @@ export interface ConfigureAuthAppOptions extends Partial<AuthAppConfig> {
    * See {@link AUTH_POST_REGISTER_FALLBACK_HREF}.
    */
   postRegisterOverrideHref?: MaybeRefOrGetter<string>;
+  /**
+   * Builds the absolute URL for recovery `show_settings_ui` when Kratos omits `flow.url`.
+   * Defaults to auth `/settings?flow=…`. Set this when settings live on account
+   * (e.g. password page with `?flow=`).
+   */
+  postRecoverySettingsHref?: MaybeRefOrGetter<
+    (settingsFlowId: string) => string
+  >;
   /**
    * Called immediately before starting the Kratos browser logout redirect
    * (e.g. clear product cookies that should not survive sign-out).
@@ -135,6 +145,15 @@ export function configureAuthApp(
     return defaultRootHomeFallbackHref.value;
   });
   provide(AUTH_ROOT_HOME_FALLBACK_HREF, rootHomeHref);
+
+  const postRecoverySettingsHref = computed(() => {
+    const o = toValue(options);
+    if (o.postRecoverySettingsHref !== undefined) {
+      return toValue(o.postRecoverySettingsHref);
+    }
+    return defaultPostRecoverySettingsHref;
+  });
+  provide(AUTH_POST_RECOVERY_SETTINGS_HREF, postRecoverySettingsHref);
 
   provide(AUTH_ON_BEFORE_LOGOUT, () => {
     toValue(options).onBeforeLogout?.();

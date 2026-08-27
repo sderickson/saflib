@@ -36,6 +36,8 @@ export interface PackageJsonLayoutFields extends SafPackageJson {
   scripts?: Record<string, string>;
   /** Subpath exports map (`"./foo": "./foo.ts"`). */
   exports?: Record<string, unknown>;
+  /** Package-local `#` imports map (`"#foo.ts": "./foo.ts"`). */
+  imports?: Record<string, unknown>;
 }
 
 export interface CheckPackageLayoutFromInputsOptions {

@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
-import { getClient } from "../../client.ts";
+import { getClient } from "#client.ts";
 
 export const GET_MINE_USER_CONFIGS_QUERY_KEY = [
   "user-configs",

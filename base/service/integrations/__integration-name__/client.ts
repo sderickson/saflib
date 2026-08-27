@@ -2,6 +2,7 @@
 import type { SecretStore } from "@saflib/secret-store";
 import { typedEnv } from "./env.ts";
 import { mock__IntegrationName__Client } from "./client.mocks.ts";
+import packageSecrets from "./secrets.json" with { type: "json" };
 
 const isTest = typedEnv.NODE_ENV === "test";
 let _isMocked = isTest;
@@ -26,7 +27,10 @@ export async function configure__IntegrationName__(
 ): Promise<void> {
   if (_configured) return;
 
-  const result = await store.getSecretByName("__INTEGRATION_NAME___API_KEY");
+  const result = await store.getSecretByName(
+    "__INTEGRATION_NAME___API_KEY",
+    packageSecrets,
+  );
   if (result.result !== undefined) {
     apiKey = result.result;
     _isMocked = apiKey === "mock";

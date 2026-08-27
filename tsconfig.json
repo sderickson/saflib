@@ -92,10 +92,7 @@
       "path": "./base/dev"
     },
     {
-      "path": "./base/packages/__package-name__"
-    },
-    {
-      "path": "./base/plans"
+      "path": "./base/lib/__package-name__"
     },
     {
       "path": "./base/security"
@@ -281,9 +278,6 @@
       "path": "./playwright"
     },
     {
-      "path": "./posthog-client"
-    },
-    {
       "path": "./processes"
     },
     {
@@ -299,9 +293,6 @@
       "path": "./security"
     },
     {
-      "path": "./sentry"
-    },
-    {
       "path": "./service"
     },
     {
@@ -309,6 +300,30 @@
     },
     {
       "path": "./utils"
+    },
+    {
+      "path": "./vendors/azure"
+    },
+    {
+      "path": "./vendors/brevo"
+    },
+    {
+      "path": "./vendors/gcs"
+    },
+    {
+      "path": "./vendors/infisical"
+    },
+    {
+      "path": "./vendors/loki"
+    },
+    {
+      "path": "./vendors/posthog"
+    },
+    {
+      "path": "./vendors/posthog-client"
+    },
+    {
+      "path": "./vendors/sentry"
     },
     {
       "path": "./vite"

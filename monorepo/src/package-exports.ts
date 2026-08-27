@@ -3,6 +3,20 @@ import {
   isAllowedRootTsFile,
   type PackageJsonLayoutFields,
 } from "./package-layout.ts";
+import {
+  importsFromExports,
+  ROOT_IMPORT_CATCHALL,
+  stripTemplateImportPlaceholders,
+  upsertImportGlob,
+} from "./package-imports.ts";
+
+export {
+  importGlobForTopLevelSegment,
+  importsFromExports,
+  ROOT_IMPORT_CATCHALL,
+  stripTemplateImportPlaceholders,
+  upsertImportGlob,
+} from "./package-imports.ts";
 
 export function exportGlobForTopLevelSegment(segment: string): {
   key: string;
@@ -95,22 +109,50 @@ export function upsertPackageJsonExportsForModule(
   groupName: string,
   targetName: string,
 ): PackageJsonLayoutFields {
-  const exportsMap = stripTemplateExportPlaceholders(
-    (packageJson.exports ?? {}) as Record<string, unknown>,
+  const exportsMap = upsertPackageExportForModule(
+    stripTemplateExportPlaceholders(
+      (packageJson.exports ?? {}) as Record<string, unknown>,
+    ),
+    groupName,
+    targetName,
   );
+  const layout = resolveExportModulePathLayout(groupName, targetName);
+  const derived = importsFromExports(exportsMap);
+  const kept = stripTemplateImportPlaceholders(
+    (packageJson.imports ?? {}) as Record<string, unknown>,
+  );
+  // Drop stale catch-all when this package is on the explicit-map convention.
+  if (!derived[ROOT_IMPORT_CATCHALL.key]) {
+    delete kept[ROOT_IMPORT_CATCHALL.key];
+  }
+  let imports: Record<string, unknown> = { ...kept, ...derived };
+  // Thematic globs are redundant when `#*` already covers the tree.
+  if (layout.useGlob && !imports[ROOT_IMPORT_CATCHALL.key]) {
+    imports = upsertImportGlob(imports, layout.topLevelSegment);
+  }
   return {
     ...packageJson,
-    exports: upsertPackageExportForModule(exportsMap, groupName, targetName),
+    exports: exportsMap,
+    imports,
   };
 }
 
 export function prepareNewPackageExports(
   packageJson: PackageJsonLayoutFields,
 ): PackageJsonLayoutFields {
+  const exports = stripTemplateExportPlaceholders(
+    (packageJson.exports ?? {}) as Record<string, unknown>,
+  );
+  const derived = importsFromExports(exports);
+  const kept = stripTemplateImportPlaceholders(
+    (packageJson.imports ?? {}) as Record<string, unknown>,
+  );
+  if (!derived[ROOT_IMPORT_CATCHALL.key]) {
+    delete kept[ROOT_IMPORT_CATCHALL.key];
+  }
   return {
     ...packageJson,
-    exports: stripTemplateExportPlaceholders(
-      (packageJson.exports ?? {}) as Record<string, unknown>,
-    ),
+    exports,
+    imports: { ...kept, ...derived },
   };
 }

@@ -23,5 +23,11 @@
   "sideEffects": [
     "**/*.css",
     "**/*.scss"
-  ]
+  ],
+  "exports": {
+    "./env": "./env.ts"
+  },
+  "imports": {
+    "#env.ts": "./env.ts"
+  }
 }

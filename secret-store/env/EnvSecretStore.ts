@@ -6,7 +6,7 @@ import { SecretStore } from "../SecretStore.ts";
  * Resolves secrets from `process.env` by variable name.
  */
 export class EnvSecretStore extends SecretStore {
-  async getSecretByName(
+  protected async fetchSecretByName(
     name: string,
   ): Promise<ReturnsError<string, SecretStoreError>> {
     const raw =

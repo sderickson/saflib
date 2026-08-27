@@ -3,7 +3,7 @@
   "saf": {
     "kind": "lib"
   },
-  "description": "Server-side analytics abstraction (PostHog) with in-memory implementation for tests",
+  "description": "Server-side analytics abstraction with in-memory implementation for tests",
   "private": true,
   "type": "module",
   "exports": {
@@ -16,10 +16,10 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/node": "*",
-    "posthog-node": "^5.33.2"
+    "@saflib/node": "*"
   },
   "devDependencies": {
+    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },

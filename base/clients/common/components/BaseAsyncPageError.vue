@@ -37,7 +37,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useQueryClient } from "@tanstack/vue-query";
 import { TanstackError } from "@saflib/sdk";
-import { useReverseT } from "../i18n.ts";
+import { useReverseT } from "#i18n.ts";
 import { async_page_error as strings } from "./BaseAsyncPageError.strings.ts";
 import {
   baseAccessErrorAction,
@@ -46,7 +46,7 @@ import {
   probeBaseMfaRequirement,
   resolveBaseAccessErrorKind,
   type BaseMfaProbeResult,
-} from "../utils/access-error.logic.ts";
+} from "#utils/access-error.logic.ts";
 
 const props = defineProps<{
   error?: unknown;

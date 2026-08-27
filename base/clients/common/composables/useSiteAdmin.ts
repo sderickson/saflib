@@ -4,7 +4,7 @@ import {
   kratosEmailVerifiedFromSession,
   useKratosSession,
 } from "@saflib/ory-kratos-sdk";
-import { isSiteAdminEmail } from "../utils/site-admin.logic.ts";
+import { isSiteAdminEmail } from "#utils/site-admin.logic.ts";
 
 /** True when the session email is a verified site-admin (nav chrome only). */
 export function useSiteAdmin() {

@@ -1,0 +1,30 @@
+{
+  "name": "@saflib/vendors-gcs",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Google Cloud Storage-backed ObjectStore adapter",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^7.19.0",
+    "@saflib/env": "*",
+    "@saflib/node": "*",
+    "@saflib/object-store": "*"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

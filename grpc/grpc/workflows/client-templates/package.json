@@ -5,7 +5,8 @@
   "type": "module",
   "main": ".",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./env": "./env.ts"
   },
   "dependencies": {
     "@saflib/env": "*",

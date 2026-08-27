@@ -1,28 +1,14 @@
 import type { SecretStore } from "./SecretStore.ts";
 import { EnvSecretStore } from "./env/EnvSecretStore.ts";
-import {
-  InfisicalSecretStore,
-  type InfisicalSecretStoreOptions,
-} from "./infisical/InfisicalSecretStore.ts";
 
-export type CreateSecretStoreOptions =
-  | { type: "env" }
-  | { type: "infisical"; options: InfisicalSecretStoreOptions };
+export type CreateSecretStoreOptions = { type: "env" };
 
 /**
- * Creates a {@link SecretStore} for either plain environment variables or Infisical.
+ * Creates an env-backed {@link SecretStore}.
+ * For Infisical, use `@saflib/vendors-infisical`.
  */
 export function createSecretStore(
-  options: CreateSecretStoreOptions,
+  _options: CreateSecretStoreOptions = { type: "env" },
 ): SecretStore {
-  switch (options.type) {
-    case "env":
-      return new EnvSecretStore();
-    case "infisical":
-      return new InfisicalSecretStore(options.options);
-    default: {
-      const _: never = options;
-      return _;
-    }
-  }
+  return new EnvSecretStore();
 }

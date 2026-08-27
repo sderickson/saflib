@@ -10,10 +10,10 @@ import {
   makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
-import { templatesProductRoot } from "@saflib/templates";
+import { packageStubRoot } from "@saflib/templates";
 import { prepareNewPackageExports } from "../src/package-exports.ts";
 
-const sourceDir = path.join(templatesProductRoot, "packages", "__package-name__");
+const sourceDir = packageStubRoot;
 
 const input = [
   {
@@ -25,8 +25,8 @@ const input = [
   {
     name: "path",
     description:
-      "The RELATIVE path from monorepo root where the package directory (containing package.json) will be created (e.g., packages/my-lib or saflib/node)",
-    exampleValue: "packages/my-lib",
+      "The RELATIVE path from monorepo root where the package directory (containing package.json) will be created (e.g., my-product/lib/my-lib or saflib/node)",
+    exampleValue: "my-product/lib/my-lib",
   },
 ] as const;
 
@@ -105,7 +105,7 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
       fileId: "packageJson",
       promptMessage: `The file '${path.join(context.path, "package.json")}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.
 
-Do not add a root \`"."\` barrel. Glob exports are added automatically by \`monorepo/add-export\` when you add the first module under a top-level folder.`,
+Do not add a root \`"."\` barrel. Glob exports (and matching package-local \`#\` imports) are added automatically by \`monorepo/add-export\` when you add the first module under a top-level folder. Prefer \`#lib/foo.ts\` over \`../\` climbs inside the package.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -113,7 +113,7 @@ Do not add a root \`"."\` barrel. Glob exports are added automatically by \`mono
       
       For example: \`"workspaces": ["${context.path}", "other-packages/*"]\`
 
-      Source modules belong under thematic folders (e.g. \`lib/\`, \`http/\`), not at the package root. Add modules with \`monorepo/add-export\`.`,
+      Source modules belong under thematic folders (e.g. \`lib/\`, \`http/\`), not at the package root. Add modules with \`monorepo/add-export\`. Same-package imports should use \`#…\` (see package.json \`imports\`).`,
     })),
 
     step(CdStepMachine, ({ context }) => ({

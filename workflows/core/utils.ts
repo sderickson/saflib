@@ -120,17 +120,17 @@ export const pollingWaitFor = (
   options?: { intervalMs?: number; timeoutMs?: number },
 ) => {
   const intervalMs = options?.intervalMs ?? 10;
+  // Default 30s for unit tests; long script/CI runs must pass timeoutMs explicitly
+  // (or use Infinity). `0` / `Infinity` disable the deadline.
   const timeoutMs = options?.timeoutMs ?? 30_000;
+  const hasDeadline = Number.isFinite(timeoutMs) && timeoutMs > 0;
 
   return new Promise((resolve, reject) => {
     const startedAt = Date.now();
     const interval = setInterval(() => {
       try {
         const snapshot = actor.getSnapshot();
-        if (
-          typeof snapshot.matches === "function" &&
-          condition(snapshot)
-        ) {
+        if (condition(snapshot)) {
           clearInterval(interval);
           resolve(snapshot);
           return;
@@ -140,7 +140,7 @@ export const pollingWaitFor = (
           reject(snapshot.error ?? new Error("Actor entered error state"));
           return;
         }
-        if (Date.now() - startedAt > timeoutMs) {
+        if (hasDeadline && Date.now() - startedAt > timeoutMs) {
           clearInterval(interval);
           reject(new Error(`pollingWaitFor timed out after ${timeoutMs}ms`));
         }

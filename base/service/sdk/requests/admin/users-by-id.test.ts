@@ -3,7 +3,7 @@ import { getUsersByIdAdminQuery } from "./users-by-id.ts";
 import { withVueQuery } from "@saflib/sdk/testing";
 import { useQuery } from "@tanstack/vue-query";
 import { ref } from "vue";
-import { setupScopedMockServer } from "../../testing.ts";
+import { setupScopedMockServer } from "#testing.ts";
 import { getUsersByIdAdminHandler } from "./users-by-id.fake.ts";
 import { resetMocks } from "./mocks.ts";
 

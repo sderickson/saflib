@@ -1,1 +1,1 @@
-export { createSentryCallback, sentryCallback } from "@saflib/errors-vue/lib/createSentryCallback.ts";
+export { createSentryCallback, sentryCallback } from "@saflib/vendors-sentry";

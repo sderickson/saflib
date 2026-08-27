@@ -4,9 +4,10 @@ import {
   RecoveryFlowState,
 } from "@ory/client";
 import { ref, type MaybeRefOrGetter, toValue } from "vue";
-import { linkToHrefWithHost } from "@saflib/links";
-import { authLinks } from "@saflib/ory-kratos-sdk/links";
-import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
+import {
+  useAuthPostAuthFallbackHref,
+  useAuthPostRecoverySettingsHref,
+} from "../../authFallbackInject.ts";
 import {
   BrowserRedirectRequired,
   RecoveryFlowUpdated,
@@ -30,6 +31,7 @@ export function useRecoveryFlow(
   flowId: MaybeRefOrGetter<string>,
 ) {
   const postAuthFallbackHref = useAuthPostAuthFallbackHref();
+  const postRecoverySettingsHref = useAuthPostRecoverySettingsHref();
   const updateRecovery = useUpdateRecoveryFlowMutation();
 
   const submitting = ref(false);
@@ -37,12 +39,6 @@ export function useRecoveryFlow(
 
   function clearSubmitError() {
     submitError.value = null;
-  }
-
-  function settingsFlowHrefFromId(settingsFlowId: string): string {
-    return linkToHrefWithHost(authLinks.settings, {
-      params: { flow: settingsFlowId },
-    });
   }
 
   function applyBrowserLocationChangeRequired(
@@ -57,7 +53,7 @@ export function useRecoveryFlow(
   function applyRecoveryFlow(updated: RecoveryFlow) {
     const continueUrl = recoveryFlowContinueWithUrl(
       updated,
-      settingsFlowHrefFromId,
+      postRecoverySettingsHref.value,
     );
     if (continueUrl) {
       window.location.assign(continueUrl);

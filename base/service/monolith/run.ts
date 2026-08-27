@@ -1,9 +1,9 @@
 import { startBaseService } from "./index.ts";
-import { addLokiTransport, collectSystemMetrics } from "@saflib/node";
-import { setServiceName } from "@saflib/node";
+import { collectSystemMetrics, setServiceName } from "@saflib/node";
+import { addLokiTransport } from "@saflib/vendors-loki";
 import { validateEnv } from "@saflib/env";
 import envSchema from "./env.schema.combined.json" with { type: "json" };
-import { initSentry } from "@saflib/sentry";
+import { initSentry } from "@saflib/vendors-sentry";
 import { startOryKratosService } from "@saflib/ory-kratos";
 import {
   courierCallbacks,

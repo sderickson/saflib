@@ -1,16 +1,12 @@
 import { expect, test as base } from "@playwright/test";
 import {
   loginPageFixture,
-  type LoginPageFixture,
-} from "@saflib/ory-kratos-spa/pages/login/login.fixture.ts";
-import {
   registrationPageFixture,
-  type RegistrationPageFixture,
-} from "@saflib/ory-kratos-spa/pages/registration/registration.fixture.ts";
-import {
   verifyWallPageFixture,
+  type LoginPageFixture,
+  type RegistrationPageFixture,
   type VerifyWallPageFixture,
-} from "@saflib/ory-kratos-spa/pages/verify-wall/verify-wall.fixture.ts";
+} from "@saflib/ory-kratos-spa/fixtures";
 import { apiOrigin, getCsrfToken } from "./fixtures/http-helpers.ts";
 import { sessionAsRegisteredUser } from "./fixtures/kratos-session.ts";
 

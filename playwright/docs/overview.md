@@ -31,5 +31,5 @@ Playwright tests can also provide a record of these user journeys, for review an
 `@saflib/playwright` includes a default playwright config with the following features:
 
 - Firefox and Chromium browsers
-- A global setup test which checks the health of services listed in `SERVICE_SUBDOMAINS` environment variable.
+- A global setup test which checks `{PROTOCOL}://api.{DOMAIN}/health` before e2e runs.
 - Some more aggressive timeouts; by default they're 30 seconds, I changed them to 10 seconds.

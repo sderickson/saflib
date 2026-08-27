@@ -7,5 +7,5 @@ export {
   baseVerifyEmailHref,
   isEmailVerificationRequiredError,
   resolveBaseAccessErrorKind,
-} from "../utils/access-error.logic.ts";
-export type { BaseAccessErrorKind } from "../utils/access-error.logic.ts";
+} from "#utils/access-error.logic.ts";
+export type { BaseAccessErrorKind } from "#utils/access-error.logic.ts";

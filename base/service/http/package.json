@@ -27,6 +27,7 @@
     "@saflib/cron": "*",
     "@saflib/email-service": "*",
     "@saflib/express": "*",
+    "@saflib/vendors-brevo": "*",
     "@saflib/jobs": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
@@ -38,5 +39,10 @@
     "@types/http-errors": "^2.0.0",
     "supertest": "^7.0.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#handlers/*": "./handlers/*",
+    "#http.ts": "./http.ts",
+    "#testing/*": "./testing/*"
+  }
 }

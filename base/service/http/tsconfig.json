@@ -12,6 +12,9 @@
       "path": "../../../express"
     },
     {
+      "path": "../../../vendors/brevo"
+    },
+    {
       "path": "../../../jobs/jobs"
     },
     {

@@ -25,5 +25,11 @@
   "devDependencies": {
     "@saflib/vitest": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#errors.ts": "./errors.ts",
+    "#schema.ts": "./schema.ts",
+    "#schemas/*": "./schemas/*",
+    "#types.ts": "./types.ts"
+  }
 }

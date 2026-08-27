@@ -8,10 +8,8 @@ import { isDevelopmentDeployment } from "@saflib/env";
 import express, { type Router } from "express";
 import type { Request } from "express";
 import type { DbKey } from "@saflib/drizzle";
-import {
-  createEmailsRouter,
-  resolveEmailServiceFromEnv,
-} from "@saflib/email-service";
+import { createEmailsRouter } from "@saflib/email-service";
+import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 import { baseDb } from "@saflib/base-db/instances";
 import {
   baseAuditRecorderMiddleware,

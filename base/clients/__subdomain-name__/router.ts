@@ -6,7 +6,7 @@ import {
 } from "vue-router";
 import { __subdomainName__Links } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
-import HomePage from "./home/HomePage.vue";
+import HomePage from "./pages/home/HomePage.vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 import __FullName__Async from "./__group-name__/__TargetName__Async.vue";

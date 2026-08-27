@@ -1,6 +1,10 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "references": [],
+  "references": [
+    {
+      "path": "../monorepo"
+    }
+  ],
   "compilerOptions": {
     "outDir": "./dist/types",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",

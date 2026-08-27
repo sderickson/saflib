@@ -10,7 +10,7 @@ import config from "./drizzle.config.ts";
 import * as schema from "./test-schema.ts";
 import assert from "node:assert";
 import path from "node:path";
-import { typedEnv } from "@saflib/env";
+import { typedEnv } from "./env.ts";
 
 typedEnv.DEPLOYMENT_NAME = "arbitrary-name";
 const dbPath = path.join(

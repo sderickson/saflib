@@ -10,7 +10,6 @@ describe("playwright-env", () => {
     const original = {
       DOMAIN: process.env.DOMAIN,
       PROTOCOL: process.env.PROTOCOL,
-      SERVICE_SUBDOMAINS: process.env.SERVICE_SUBDOMAINS,
     };
 
     applySecurityPlaywrightEnv({ domain: "only.domain" });
@@ -20,11 +19,9 @@ describe("playwright-env", () => {
     applySecurityPlaywrightEnv({
       domain: "full.test",
       protocol: "https",
-      serviceSubdomains: "api,grpc",
     });
     expect(process.env.DOMAIN).toBe("full.test");
     expect(process.env.PROTOCOL).toBe("https");
-    expect(process.env.SERVICE_SUBDOMAINS).toBe("api,grpc");
 
     applyLocalDevSecurityEnv("base.docker.localhost");
     expect(process.env.DOMAIN).toBe("base.docker.localhost");
@@ -36,6 +33,5 @@ describe("playwright-env", () => {
 
     process.env.DOMAIN = original.DOMAIN;
     process.env.PROTOCOL = original.PROTOCOL;
-    process.env.SERVICE_SUBDOMAINS = original.SERVICE_SUBDOMAINS;
   });
 });

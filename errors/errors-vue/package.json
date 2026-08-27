@@ -1,6 +1,6 @@
 {
   "name": "@saflib/errors-vue",
-  "description": "Client Sentry init, error smoke widgets, and admin Errors page",
+  "description": "Client error reporting helpers, smoke widgets, and admin Errors page",
   "private": true,
   "type": "module",
   "main": "./index.ts",
@@ -20,7 +20,6 @@
     "@saflib/errors-spec": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
-    "@sentry/vue": "^10.0.0",
     "@tanstack/vue-query": "*",
     "vue": "*"
   },

@@ -49,6 +49,12 @@ export {
 export { makePostKratosActionHandler } from "./post-kratos-action.ts";
 export { createPostKratosCourierHandler } from "./routes/post-kratos-courier.ts";
 export { resolveAuthFromIdentityId } from "./resolveAuthFromIdentityId.ts";
+export {
+  kratosAdminBaseUrl,
+  resolveUserIdByEmail,
+  fetchKratosIdentityById,
+  resolveEmailFromIdentityId,
+} from "@saflib/express/kratos-admin";
 export type {
   KratosAction,
   KratosActionContext,

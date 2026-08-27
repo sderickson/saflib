@@ -6,7 +6,7 @@ import type { Schema, DbKey, DbOptions, DbConnection } from "./types.ts";
 import path from "path";
 import fs from "fs";
 import { makeSubsystemReporters } from "@saflib/node";
-import { typedEnv } from "@saflib/env";
+import { typedEnv } from "./env.ts";
 import { randomUUID } from "crypto";
 import { Readable } from "node:stream";
 import { reconcileSquashedMigrations } from "./reconcile-squashed-migrations.ts";

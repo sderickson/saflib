@@ -25,5 +25,8 @@
   "devDependencies": {
     "@saflib/vitest": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#requests/*": "./requests/*"
+  }
 }

@@ -66,10 +66,10 @@
       "path": "../sdk"
     },
     {
-      "path": "../sentry"
+      "path": "../service"
     },
     {
-      "path": "../service"
+      "path": "../vendors/sentry"
     },
     {
       "path": "../vue"

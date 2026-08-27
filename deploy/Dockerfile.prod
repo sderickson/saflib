@@ -11,7 +11,7 @@ RUN npm run build
 FROM __organization-name__-__product-name__-clients:latest AS __product-name__-builder
 
 COPY ./deploy/env.__product-name__.prod-local /app/env.__product-name__.prod-local
-RUN export $(grep -v "^#" /app/env.__product-name__.prod-local | xargs) && DOMAIN=${DOMAIN} CLIENT_SUBDOMAINS=${CLIENT_SUBDOMAINS} SERVICE_SUBDOMAINS=${SERVICE_SUBDOMAINS} npm run build
+RUN export $(grep -v "^#" /app/env.__product-name__.prod-local | xargs) && DOMAIN=${DOMAIN} CLIENT_SUBDOMAINS=${CLIENT_SUBDOMAINS} npm run build
 # END WORKFLOW AREA
 
 FROM caddy:2.11.3-builder-alpine AS caddy-rebuild

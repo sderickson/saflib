@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./*": "./*.ts"
+    "./*": "./*.ts",
+    "./env": "./env.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -22,5 +23,8 @@
     "@saflib/object-store": "*",
     "@saflib/secret-store": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*"
+  }
 }

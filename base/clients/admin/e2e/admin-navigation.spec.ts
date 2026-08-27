@@ -4,14 +4,14 @@ import { getUniqueEmail, getUniqueId } from "@saflib/playwright";
 import {
   registrationPageFixture,
   type RegistrationPageFixture,
-} from "@saflib/ory-kratos-spa/pages/registration/registration.fixture.ts";
+} from "@saflib/ory-kratos-spa/fixtures";
 import {
   baseFixture,
   type BaseFixture,
 } from "@saflib/base-clients-common/fixtures";
 import { adminLinks } from "@saflib/base-links";
-import { home as homeStrings } from "../pages/home/Home.strings.ts";
-import { users as usersStrings } from "../pages/users/Users.strings.ts";
+import { home as homeStrings } from "#pages/home/Home.strings.ts";
+import { users as usersStrings } from "#pages/users/Users.strings.ts";
 
 type AdminNavigationFixtures = {
   baseApp: BaseFixture;

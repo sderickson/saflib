@@ -3,7 +3,7 @@
   "saf": {
     "kind": "lib"
   },
-  "description": "Secret store library for env-backed and Infisical-backed secret resolution",
+  "description": "Abstract secret store with env-backed implementation and package secrets.json manifests",
   "private": true,
   "type": "module",
   "exports": {
@@ -16,10 +16,10 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@infisical/sdk": "^5.0.0"
+    "@saflib/monorepo": "*"
   },
   "devDependencies": {
-    "@saflib/monorepo": "*",
+    "@saflib/dev-tools": "*",
     "@saflib/vitest": "*"
   },
   "sideEffects": false

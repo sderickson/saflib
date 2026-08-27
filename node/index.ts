@@ -4,8 +4,11 @@ export * from "./src/reporters.ts";
 export * from "./src/context.ts";
 export * from "./src/errors.ts";
 export * from "./src/git-hashes.ts";
-export * from "./src/loki.ts";
 export * from "./src/metrics.ts";
 export * from "./src/types.ts";
 export * from "./src/signAssertion.ts";
+export {
+  configureInternalAssertionKeys,
+  SAF_INTERNAL_ASSERTION_KEYS_NAME,
+} from "./src/configureInternalAssertionKeys.ts";
 export * from "./env.ts";

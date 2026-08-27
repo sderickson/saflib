@@ -3,10 +3,15 @@ import type { ComponentMountingOptions } from "@vue/test-utils";
 import type { Component } from "vue";
 import { createMemoryHistory, type Router } from "vue-router";
 import { createKratosAuthRouter } from "./router.ts";
+import { kratosSessionRouteRecords } from "./session-routes.ts";
 import { auth_strings } from "./strings.ts";
 
+/** Test router with logged-out auth routes plus session routes (settings / verify-wall). */
 export const createTestRouter = () =>
-  createKratosAuthRouter({ history: createMemoryHistory() });
+  createKratosAuthRouter({
+    history: createMemoryHistory(),
+    additionalRoutes: kratosSessionRouteRecords(),
+  });
 
 export const mountTestApp = <C extends Component>(
   Component: C,

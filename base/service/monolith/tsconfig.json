@@ -27,6 +27,9 @@
       "path": "../../../env"
     },
     {
+      "path": "../../../errors/errors-http"
+    },
+    {
       "path": "../../../express"
     },
     {
@@ -39,7 +42,10 @@
       "path": "../../../node"
     },
     {
-      "path": "../../../sentry"
+      "path": "../../../vendors/loki"
+    },
+    {
+      "path": "../../../vendors/sentry"
     },
     {
       "path": "../audit"

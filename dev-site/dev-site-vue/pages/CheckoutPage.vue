@@ -168,6 +168,7 @@
                 >
                   <v-tab value="spec">Spec</v-tab>
                   <v-tab value="docs">Docs</v-tab>
+                  <v-tab value="secrets">Secrets</v-tab>
                   <v-tab value="issues">
                     Issues
                     <v-chip
@@ -270,6 +271,13 @@
                     :local-repo-root="localRepoRoot"
                     @navigate-package="onDocNavigatePackage"
                   />
+                  <PackageSecretsPane
+                    v-else-if="tab === 'secrets'"
+                    :subdomain="subdomain"
+                    :commit-hash="paneCommitHash"
+                    :package-directory="selectedPkg.directory"
+                    :product-root="checkout.productRoot"
+                  />
                   <PackageIssuesPane
                     v-else
                     :subdomain="subdomain"
@@ -351,6 +359,7 @@ import {
 } from "../package-change-overlay";
 import PackageDirTree from "../components/PackageDirTree.vue";
 import PackageDocsPane from "../components/PackageDocsPane.vue";
+import PackageSecretsPane from "../components/PackageSecretsPane.vue";
 import PackageSpecPane from "../components/PackageSpecPane.vue";
 import PackageDbSpecPane from "../components/PackageDbSpecPane.vue";
 import PackageSpecRoutesPane from "../components/PackageSpecRoutesPane.vue";
@@ -569,9 +578,9 @@ const issueCount = computed(() => {
   }).length;
 });
 
-const tab = computed<"spec" | "docs" | "issues">(() => {
+const tab = computed<"spec" | "docs" | "secrets" | "issues">(() => {
   const t = route.query.tab;
-  if (t === "docs" || t === "issues") return t;
+  if (t === "docs" || t === "secrets" || t === "issues") return t;
   return "spec";
 });
 
@@ -604,7 +613,9 @@ const replaceQuery = (patch: Record<string, string | undefined>) => {
 
 const setTab = (value: unknown) => {
   const next =
-    value === "docs" || value === "issues" ? value : "spec";
+    value === "docs" || value === "secrets" || value === "issues"
+      ? value
+      : "spec";
   replaceQuery({ tab: next === "spec" ? undefined : next });
 };
 

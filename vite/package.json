@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./workspace-package-exports": "./workspace-package-exports-plugin.ts"
+    "./workspace-package-exports": "./workspace-package-exports-plugin.ts",
+    "./env": "./env.ts"
   },
   "scripts": {
     "test": "vitest run",

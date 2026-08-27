@@ -9,7 +9,7 @@ import {
 } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 
-import { baseDbManager } from "../../instances.ts";
+import { baseDbManager } from "#instances.ts";
 import { upsertUserConfig } from "./upsert.ts";
 
 describe("upsertUserConfig", () => {

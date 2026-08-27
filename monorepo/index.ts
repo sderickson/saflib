@@ -83,11 +83,16 @@ export {
 
 export {
   exportGlobForTopLevelSegment,
+  importGlobForTopLevelSegment,
+  importsFromExports,
   prepareNewPackageExports,
   resolveExportModulePathLayout,
+  ROOT_IMPORT_CATCHALL,
   stripTemplateExportPlaceholders,
+  stripTemplateImportPlaceholders,
   upsertExplicitExport,
   upsertExportGlob,
+  upsertImportGlob,
   upsertPackageExportForModule,
   upsertPackageJsonExportsForModule,
   type ExportModulePathLayout,

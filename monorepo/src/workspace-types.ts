@@ -18,7 +18,7 @@ export interface PackageJson {
   engines?: Record<string, string>;
   description?: string;
   /** SAF package metadata (`kind` is db / http / spec / sdk / spa / lib / …). */
-  saf?: { kind?: string };
+  saf?: { kind?: string; envExtends?: string[] };
   scripts?: Record<string, string>;
   bin?: Record<string, string>;
   exports?: Record<string, string>;

@@ -18,14 +18,14 @@ describe("appendCommaSeparatedEnvValue", () => {
     const before = [
       "DOMAIN=docker.localhost",
       "CLIENT_SUBDOMAINS=,auth,app,admin,account",
-      "SERVICE_SUBDOMAINS=base",
+      "DEPLOYMENT_NAME=development",
     ].join("\n");
     expect(appendCommaSeparatedEnvValue(before, "CLIENT_SUBDOMAINS", "demo"))
       .toBe(
         [
           "DOMAIN=docker.localhost",
           "CLIENT_SUBDOMAINS=,auth,app,admin,account,demo",
-          "SERVICE_SUBDOMAINS=base",
+          "DEPLOYMENT_NAME=development",
         ].join("\n"),
       );
   });

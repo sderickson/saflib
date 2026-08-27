@@ -1,7 +1,7 @@
 // @ts-nocheck — scaffold placeholders until drizzle/add-query copies this file.
 import { describe, it, expect, beforeAll, afterAll, beforeEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
-import { baseDbManager } from "../../instances.ts";
+import { baseDbManager } from "#instances.ts";
 import { __targetName____GroupName__ } from "./__target-name__.ts";
 
 describe("__targetName____GroupName__", () => {

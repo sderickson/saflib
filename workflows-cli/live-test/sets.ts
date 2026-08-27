@@ -487,21 +487,12 @@ export function setupLiveTestSteps(): LiveTestStep[] {
 }
 
 export function teardownLiveTestSteps(): LiveTestStep[] {
+  // Cleanup also runs from live-test.ts `finally` so failures mid-suite still
+  // restore package.json / remove scaffold CI. Keep a workflow step as a
+  // checklist breadcrumb when the suite succeeds inside the state machine.
   return [
     step(CdStepMachine, () => ({
       path: ".",
-    })),
-    step(CommandStepMachine, () => ({
-      command: "rm",
-      args: [
-        "-rf",
-        LIVE_TEST_PRODUCT,
-        LIVE_TEST_DEPLOY,
-        ".github/workflows/playwright.yml",
-        ".github/workflows/typecheck.yml",
-        ".github/workflows/push.yml",
-        ".github/actions/setup-node-deps",
-      ],
     })),
     step(CommandStepMachine, () => ({
       command: "node",

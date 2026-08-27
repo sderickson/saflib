@@ -1,0 +1,33 @@
+{
+  "name": "@saflib/vendors-azure",
+  "saf": {
+    "kind": "lib",
+    "envExtends": ["@saflib/env"]
+  },
+  "description": "Azure Blob Storage-backed ObjectStore adapter",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./env": "./env.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.13.0",
+    "@azure/storage-blob": "^12.28.0",
+    "@saflib/env": "*",
+    "@saflib/node": "*",
+    "@saflib/object-store": "*"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

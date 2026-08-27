@@ -1,7 +1,7 @@
 // @ts-nocheck — scaffold placeholders until sdk/add-query or sdk/add-mutation copies this file.
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
-import { getClient } from "../../client.ts";
+import { getClient } from "#client.ts";
 import type { RequestBody as __mutationName____GroupName__RequestBody } from "template-package-spec/operations/__operationId__";
 
 // BEGIN ONCE WORKFLOW AREA instructions FOR sdk/add-mutation IF upload

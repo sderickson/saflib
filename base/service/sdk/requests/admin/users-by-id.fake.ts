@@ -1,5 +1,5 @@
 import type { ResponseBody as getUsersByIdAdminResponseBody } from "@saflib/base-spec/operations/getUsersByIdAdmin";
-import { baseHandler } from "../../typed-fake.ts";
+import { baseHandler } from "#typed-fake.ts";
 import { mockKratosIdentities } from "./mocks.ts";
 
 export const getUsersByIdAdminHandler = baseHandler({

@@ -12,5 +12,8 @@
   "dependencies": {
     "@saflib/email-service": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./emails/*"
+  }
 }

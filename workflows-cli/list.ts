@@ -15,7 +15,7 @@ import grpcWorkflows from "@saflib/grpc/workflows";
 import cronWorkflows from "@saflib/cron/workflows";
 import jobsWorkflows from "@saflib/jobs/workflows";
 import integrationsWorkflows from "@saflib/integrations/workflows";
-import sentryWorkflows from "@saflib/sentry/workflows";
+import sentryWorkflows from "@saflib/vendors-sentry/workflows";
 import productWorkflows from "@saflib/product/workflows";
 import type { WorkflowDefinition } from "@saflib/workflows";
 

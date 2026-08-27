@@ -46,7 +46,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./workflows": "./workflows/index.ts",
-    "./resolveAuthFromIdentityId": "./src/resolveAuthFromIdentityId.ts"
+    "./resolveAuthFromIdentityId": "./src/resolveAuthFromIdentityId.ts",
+    "./kratos-admin": "./src/kratos-admin.ts",
+    "./env": "./env.ts"
   },
   "sideEffects": false
 }

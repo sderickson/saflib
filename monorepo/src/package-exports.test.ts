@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   exportGlobForTopLevelSegment,
+  importsFromExports,
   prepareNewPackageExports,
   resolveExportModulePathLayout,
   stripTemplateExportPlaceholders,
@@ -54,9 +55,7 @@ describe("resolveExportModulePathLayout", () => {
 
 describe("upsertPackageExportForModule", () => {
   it("adds a glob export for folder modules", () => {
-    expect(
-      upsertPackageExportForModule({}, "lib", "starter"),
-    ).toEqual({
+    expect(upsertPackageExportForModule({}, "lib", "starter")).toEqual({
       "./lib/*": "./lib/*.ts",
     });
   });
@@ -69,27 +68,108 @@ describe("upsertPackageExportForModule", () => {
   });
 
   it("adds an explicit export for allowlisted root modules", () => {
-    expect(
-      upsertPackageExportForModule({}, "client", "client"),
-    ).toEqual({
+    expect(upsertPackageExportForModule({}, "client", "client")).toEqual({
       "./client": "./client.ts",
     });
   });
 });
 
+describe("importsFromExports", () => {
+  it("uses only #* when exports has a root glob (no redundant folder globs)", () => {
+    expect(
+      importsFromExports({
+        "./*": "./*.ts",
+        "./lib/*": "./lib/*.ts",
+        "./matter-pipeline": "./matter-pipeline/index.ts",
+        "./env": "./env.ts",
+      }),
+    ).toEqual({
+      "#*": "./*",
+      "#matter-pipeline": "./matter-pipeline/index.ts",
+    });
+  });
+
+  it("lists thematic folders and root files when there is no #* catch-all", () => {
+    expect(
+      importsFromExports({
+        "./assets/*": "./assets/*.ts",
+        "./clients": "./clients/index.ts",
+        "./clients/*": "./clients/*.ts",
+        "./i18n": "./i18n.ts",
+        "./vuetify-config": "./vuetify-config.ts",
+      }),
+    ).toEqual({
+      "#assets/*": "./assets/*",
+      "#clients": "./clients/index.ts",
+      "#clients/*": "./clients/*",
+      "#i18n.ts": "./i18n.ts",
+      "#vuetify-config.ts": "./vuetify-config.ts",
+    });
+  });
+
+  it("remaps #* when exports ./* points into a subdirectory", () => {
+    expect(importsFromExports({ "./*": "./emails/*.ts" })).toEqual({
+      "#*": "./emails/*",
+    });
+  });
+
+  it("skips dist remaps and does not invent a catch-all", () => {
+    expect(
+      importsFromExports({
+        "./operations/*": "./dist/operations/*/index.ts",
+      }),
+    ).toEqual({});
+  });
+
+  it("derives thematic globs from nested leaf exports", () => {
+    expect(
+      importsFromExports({
+        "./http": "./http.ts",
+        "./testing/slim-route-test": "./testing/slim-route-test.ts",
+        "./handlers/*": "./handlers/*.ts",
+      }),
+    ).toEqual({
+      "#handlers/*": "./handlers/*",
+      "#http.ts": "./http.ts",
+      "#testing/*": "./testing/*",
+    });
+  });
+
+  it("maps folder entry remaps to barrel + thematic glob", () => {
+    expect(
+      importsFromExports({
+        "./instances": "./instances/registry.ts",
+        "./queries/*": "./queries/*.ts",
+      }),
+    ).toEqual({
+      "#instances": "./instances/registry.ts",
+      "#instances/*": "./instances/*",
+      "#queries/*": "./queries/*",
+    });
+  });
+});
+
 describe("package.json helpers", () => {
-  it("prepareNewPackageExports strips template placeholders", () => {
+  it("prepareNewPackageExports strips placeholders and syncs imports", () => {
     expect(
       prepareNewPackageExports({
         name: "@scope/pkg",
         exports: {
           "./__group-name__/*": "./__group-name__/*.ts",
         },
-      }).exports,
-    ).toEqual({});
+        imports: {
+          "#*": "./*",
+          "#__group-name__/*": "./__group-name__/*",
+        },
+      }),
+    ).toEqual({
+      name: "@scope/pkg",
+      exports: {},
+      imports: {},
+    });
   });
 
-  it("upsertPackageJsonExportsForModule merges into package.json", () => {
+  it("upsertPackageJsonExportsForModule merges exports and imports", () => {
     expect(
       upsertPackageJsonExportsForModule(
         {
@@ -98,9 +178,15 @@ describe("package.json helpers", () => {
         },
         "http",
         "headers",
-      ).exports,
+      ),
     ).toEqual({
-      "./http/*": "./http/*.ts",
+      name: "@scope/pkg",
+      exports: {
+        "./http/*": "./http/*.ts",
+      },
+      imports: {
+        "#http/*": "./http/*",
+      },
     });
   });
 });

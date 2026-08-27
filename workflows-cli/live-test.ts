@@ -10,6 +10,7 @@
  */
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 import { runWorkflow } from "@saflib/workflows";
 import {
   createWorkflowLogger,
@@ -26,6 +27,11 @@ const saflibRoot = path.resolve(
   "..",
 );
 
+const cleanupScript = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "cleanup-product-init-artifacts.ts",
+);
+
 function printList(): void {
   console.log("Live-test sets:\n");
   for (const set of liveTestSets) {
@@ -36,6 +42,22 @@ function printList(): void {
   npm run live-test list
   npm run live-test <set> [<set>...]
 `);
+}
+
+function cleanupLiveTestArtifacts(): void {
+  console.log("Cleaning live-test artifacts…");
+  const result = spawnSync(
+    process.execPath,
+    [
+      "--experimental-strip-types",
+      "--disable-warning=ExperimentalWarning",
+      cleanupScript,
+    ],
+    { cwd: saflibRoot, stdio: "inherit" },
+  );
+  if (result.status !== 0) {
+    console.error("Live-test cleanup failed");
+  }
 }
 
 async function main(): Promise<void> {
@@ -77,20 +99,35 @@ async function main(): Promise<void> {
   const label = args.length > 0 ? args.join(", ") : "all";
   console.log(`Live-test: ${label}`);
 
-  const { output } = await runWorkflow({
-    definition,
-    runMode: "script",
-  });
+  let failed = false;
+  try {
+    const { output } = await runWorkflow({
+      definition,
+      runMode: "script",
+    });
 
-  if (!output) {
-    console.error("Live-test did not complete successfully");
-    process.exit(1);
+    if (!output) {
+      console.error("Live-test did not complete successfully");
+      failed = true;
+    } else {
+      console.log("Live-test completed successfully");
+    }
+  } catch (err) {
+    console.error(err);
+    failed = true;
+  } finally {
+    // Always undo saflib-root mutations (package.json workspaces, scaffold CI,
+    // tmp/, unit-tests workflow area) — including when the suite fails mid-way.
+    cleanupLiveTestArtifacts();
   }
 
-  console.log("Live-test completed successfully");
+  if (failed) {
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {
   console.error(err);
+  cleanupLiveTestArtifacts();
   process.exit(1);
 });

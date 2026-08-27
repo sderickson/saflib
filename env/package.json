@@ -8,6 +8,7 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./env": "./env.ts",
     "./workflows": "./workflows/index.ts"
   },
   "bin": {

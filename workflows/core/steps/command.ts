@@ -169,6 +169,20 @@ export const CommandStepMachine = setup({
               ({ event }) =>
                 `Command failed: ${(event.error as Error).message}`,
             ),
+            // Script/CI must fail fast — standby waits for an agent "continue".
+            // Keep this in an action (not a `guard`) so the exported machine
+            // type stays portable without referencing xstate's GuardArgs.
+            ({ context, event }) => {
+              if (
+                context.runMode === "script" ||
+                context.runMode === "dry" ||
+                context.runMode === "checklist"
+              ) {
+                throw event.error instanceof Error
+                  ? event.error
+                  : new Error(String(event.error));
+              }
+            },
           ],
         },
       },

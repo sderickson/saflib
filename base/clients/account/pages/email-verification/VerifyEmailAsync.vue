@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import NewVerificationAsync from "@saflib/ory-kratos-spa/pages/new-verification/NewVerificationAsync.vue";
+import { NewVerificationAsync } from "@saflib/ory-kratos-spa/verification";
 import { useReverseT } from "@saflib/base-account-spa/i18n";
 import { verify_email } from "./VerifyEmail.strings.ts";
 import EmailVerificationShell from "./EmailVerificationShell.vue";

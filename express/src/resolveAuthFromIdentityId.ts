@@ -1,4 +1,5 @@
 import type { Auth } from "@saflib/node";
+import { kratosAdminBaseUrl } from "./kratos-admin.ts";
 
 interface KratosIdentityTraits {
   email?: string;
@@ -15,11 +16,6 @@ interface KratosIdentity {
   state?: string;
   traits?: KratosIdentityTraits;
   verifiable_addresses?: KratosVerifiableAddress[];
-}
-
-function kratosAdminBaseUrl(): string {
-  const raw = process.env.KRATOS_ADMIN_API_URL ?? "http://kratos:4434";
-  return raw.replace(/\/$/, "");
 }
 
 /**

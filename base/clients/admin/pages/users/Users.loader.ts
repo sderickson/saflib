@@ -15,9 +15,7 @@ export function useUsersLoader() {
     { immediate: true },
   );
 
-  const userQuery = useQuery({
-    ...getUsersByIdAdminQuery(userId),
-  });
+  const userQuery = useQuery(getUsersByIdAdminQuery(userId));
 
   return { userQuery };
 }

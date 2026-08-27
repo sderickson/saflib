@@ -6,9 +6,10 @@ export type {
   EmailResult,
 } from "./types.ts";
 export { sentEmails } from "./mock-store.ts";
-export { createEmailService } from "./createEmailService.ts";
-export { resolveEmailServiceFromEnv } from "./resolveEmailServiceFromEnv.ts";
-export { BrevoEmailService } from "./brevo/BrevoEmailService.ts";
+export {
+  MockEmailService,
+  createMockEmailService,
+} from "./MockEmailService.ts";
 export {
   createEmailsRouter,
   type EmailsRouterOptions,
