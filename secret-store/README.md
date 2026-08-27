@@ -1,8 +1,13 @@
 # `@saflib/secret-store`
 
-Fetch secrets from Infisical (or env) **after** checking they are declared in the
-calling package’s `secrets.json`. Validation is package-local at the call site —
-there is no process-wide secret registry or boot-time monorepo graph walk.
+Fetch secrets **after** checking they are declared in the calling package’s
+`secrets.json`. Validation is package-local at the call site — there is no
+process-wide secret registry or boot-time monorepo graph walk.
+
+This package provides the abstract `SecretStore`, an env-backed
+implementation, and a process-level singleton (`setSecretStore` /
+`getSecretStore`). Vendor backends (e.g. Infisical) live in
+`@saflib/vendors-*` packages.
 
 ## Declare secrets
 
@@ -34,42 +39,26 @@ if (out.error) {
 `getSecretByName(name, packageSecrets)`:
 
 1. Returns `SecretNotDeclaredError` if `name` is not in `packageSecrets`.
-2. Otherwise fetches from Infisical / env as configured.
+2. Otherwise fetches from the configured backend.
 
 Prefer importing `./secrets.json` next to the `configure*` function that owns
-the secret. Put values in Infisical (or local env / `"mock"` sentinel).
-
-## Developer workflow
-
-1. Add `{ name, description }` to the package’s `secrets.json`.
-2. In that package’s configure / client setup: `getSecretByName(name, packageSecrets)`.
-3. Put the value in Infisical / local env (or `"mock"`).
-4. Dev-site Checkout → package → **Secrets** tab confirms the declaration
-   (names + descriptions only; never live values).
+the secret.
 
 ## Creating a store
 
 ```ts
-import { createSecretStore, configureSecretStore, getSecretStore } from "@saflib/secret-store";
+import { createSecretStore, setSecretStore, getSecretStore } from "@saflib/secret-store";
 
-// Process-level (reads INFISICAL_TOKEN / PROJECT_ID / ENVIRONMENT from env):
+// Env-backed (typical for CLIs and base template):
+const store = createSecretStore({ type: "env" });
+setSecretStore(store);
+
+// Infisical (product opt-in via @saflib/vendors-infisical):
+import { configureSecretStore, getSecretStore } from "@saflib/vendors-infisical";
 configureSecretStore();
 const store = getSecretStore();
-
-// Or construct explicitly:
-const store = createSecretStore({ type: "env" });
-// or
-const store = createSecretStore({
-  type: "infisical",
-  options: {
-    accessToken: process.env.INFISICAL_TOKEN ?? "",
-    projectId: process.env.INFISICAL_PROJECT_ID ?? "",
-    environment: process.env.INFISICAL_ENVIRONMENT ?? "",
-  },
-});
 ```
 
 Infisical connection env (`INFISICAL_TOKEN`, `INFISICAL_PROJECT_ID`,
-`INFISICAL_ENVIRONMENT`) is declared on this package’s `env.schema.json`.
-Composition roots (e.g. daemon-service-common) inherit them via the env-parent
-graph. Sentinel `"mock"` for `INFISICAL_TOKEN` selects the mock Infisical client.
+`INFISICAL_ENVIRONMENT`) is declared on `@saflib/vendors-infisical`.
+Sentinel `"mock"` for `INFISICAL_TOKEN` selects the mock Infisical client.

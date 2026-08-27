@@ -1,5 +1,3 @@
-import type { InfisicalClientError } from "./infisical/errors.ts";
-
 /** Returned when `process.env[name]` is missing or blank. */
 export class EnvSecretNotFoundError extends Error {
   constructor(name: string) {
@@ -18,8 +16,11 @@ export class SecretNotDeclaredError extends Error {
   }
 }
 
-/** Union of errors returned by {@link SecretStore#getSecretByName}. */
+/**
+ * Union of errors returned by {@link SecretStore#getSecretByName}.
+ * Vendor backends may return additional `Error` subclasses.
+ */
 export type SecretStoreError =
   | EnvSecretNotFoundError
   | SecretNotDeclaredError
-  | InfisicalClientError;
+  | Error;

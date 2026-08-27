@@ -2,7 +2,10 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../monorepo"
+      "path": "../../env"
+    },
+    {
+      "path": "../../secret-store"
     }
   ],
   "compilerOptions": {
@@ -22,8 +25,5 @@
     "**/workflows/template/**",
     "**/workflows/templates/**"
   ],
-  "include": [
-    "**/*.ts",
-    "**/*.json"
-  ]
+  "include": ["**/*.ts", "**/*.json"]
 }

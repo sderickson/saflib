@@ -296,6 +296,9 @@
       "path": "./secret-store"
     },
     {
+      "path": "./vendors/infisical"
+    },
+    {
       "path": "./security"
     },
     {

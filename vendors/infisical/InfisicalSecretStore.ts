@@ -1,7 +1,6 @@
 import { InfisicalSDK } from "@infisical/sdk";
 import type { ReturnsError } from "@saflib/monorepo";
-import { SecretStore } from "../SecretStore.ts";
-import type { SecretStoreError } from "../errors.ts";
+import { SecretStore, type SecretStoreError } from "@saflib/secret-store";
 import { InfisicalNetworkError, mapSdkError } from "./errors.ts";
 import { mockGetSecretByName } from "./mockGetSecretByName.ts";
 
@@ -61,4 +60,11 @@ export class InfisicalSecretStore extends SecretStore {
       return { error: mapSdkError(err) };
     }
   }
+}
+
+/** Convenience factory for Infisical-backed stores. */
+export function createInfisicalSecretStore(
+  options: InfisicalSecretStoreOptions,
+): InfisicalSecretStore {
+  return new InfisicalSecretStore(options);
 }

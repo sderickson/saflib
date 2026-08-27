@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import type { SecretManifest } from "../secrets-manifest.ts";
+import type { SecretManifest } from "@saflib/secret-store";
 import { InfisicalSecretStore } from "./InfisicalSecretStore.ts";
 
 const key = "INFISICAL_MOCK_SECRET_KEY";

@@ -30,6 +30,8 @@
   },
   "dependencies": {
     "@saflib/dev-tools": "*",
+    "@saflib/secret-store": "file:secret-store",
+    "@saflib/vendors-infisical": "file:vendors/infisical",
     "saflib-workflows": "^0.2.0"
   },
   "overrides": {

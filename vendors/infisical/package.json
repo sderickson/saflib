@@ -1,13 +1,15 @@
 {
-  "name": "@saflib/secret-store",
+  "name": "@saflib/vendors-infisical",
   "saf": {
-    "kind": "lib"
+    "kind": "lib",
+    "envExtends": ["@saflib/env"]
   },
-  "description": "Abstract secret store with env-backed implementation and package secrets.json manifests",
+  "description": "Infisical-backed SecretStore adapter and process-level configure helpers",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./env": "./env.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -16,10 +18,13 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/monorepo": "*"
+    "@infisical/sdk": "^5.0.0",
+    "@saflib/env": "*",
+    "@saflib/secret-store": "*"
   },
   "devDependencies": {
     "@saflib/dev-tools": "*",
+    "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },
   "sideEffects": false
