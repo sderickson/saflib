@@ -9,8 +9,8 @@ import {
 } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 
-import { baseDbManager } from "../../instances.ts";
-import { userConfigTable } from "../../schemas/user-config.ts";
+import { baseDbManager } from "#instances.ts";
+import { userConfigTable } from "#schemas/user-config.ts";
 import { createIfMissingUserConfig } from "./create-if-missing.ts";
 
 describe("createIfMissingUserConfig", () => {

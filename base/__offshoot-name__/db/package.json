@@ -25,5 +25,9 @@
   "devDependencies": {
     "@saflib/vitest": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*",
+    "#schemas/*": "./schemas/*"
+  }
 }

@@ -21,5 +21,8 @@
   "dependencies": {
     "@saflib/openapi": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*"
+  }
 }

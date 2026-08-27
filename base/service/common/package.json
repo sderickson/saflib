@@ -23,5 +23,8 @@
     "@saflib/object-store": "*",
     "@saflib/secret-store": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*"
+  }
 }

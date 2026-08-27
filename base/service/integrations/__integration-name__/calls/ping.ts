@@ -1,4 +1,4 @@
-import { get__IntegrationName__Client } from "../client.ts";
+import { get__IntegrationName__Client } from "#client.ts";
 
 /**
  * A read-only API call to verify the integration is working.

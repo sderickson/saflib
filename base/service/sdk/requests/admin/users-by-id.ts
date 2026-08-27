@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
-import { getClient } from "../../client.ts";
-import type { Ref } from "vue";
+import { getClient } from "#client.ts";
+import { computed, type Ref } from "vue";
 
 /** Stable query key for `GET /admin/users/by-id`. */
 export function getUsersByIdAdminQueryKey(userId: string) {
@@ -10,7 +10,8 @@ export function getUsersByIdAdminQueryKey(userId: string) {
 
 export const getUsersByIdAdminQuery = (userId: Ref<string>) => {
   return queryOptions({
-    queryKey: ["admin", "users-by-id", userId],
+    // Computed key (not a bare Ref in the tuple) keeps vue-query's `enabled` types happy.
+    queryKey: computed(() => getUsersByIdAdminQueryKey(userId.value)),
     queryFn: async () =>
       handleClientMethod(
         getClient().GET("/admin/users/by-id", {

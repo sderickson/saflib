@@ -10,8 +10,8 @@ import {
   type BaseFixture,
 } from "@saflib/base-clients-common/fixtures";
 import { adminLinks } from "@saflib/base-links";
-import { home as homeStrings } from "../pages/home/Home.strings.ts";
-import { users as usersStrings } from "../pages/users/Users.strings.ts";
+import { home as homeStrings } from "#pages/home/Home.strings.ts";
+import { users as usersStrings } from "#pages/users/Users.strings.ts";
 
 type AdminNavigationFixtures = {
   baseApp: BaseFixture;

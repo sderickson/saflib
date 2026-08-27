@@ -10,7 +10,7 @@ SAF-specific import-graph measurement and enforcement tooling.
 | [02-ci.md](./02-ci.md) | ESLint import-graph rules, PR checklist |
 | [03-project-references.md](./03-project-references.md) | TypeScript project references (`saf-imports tsconfig`, `src/tsconfig/`) |
 | [04-composite-type-guidance.md](./04-composite-type-guidance.md) | Types across composite packages |
-| [05-scaffold.md](./05-scaffold.md) | Init workflow defaults (`sideEffects`, exports) |
+| [05-scaffold.md](./05-scaffold.md) | Init workflow defaults (`sideEffects`, exports, `#` imports) |
 | [06-spa-bundles.md](./06-spa-bundles.md) | SPA shell vs page chunk measurement |
 | [cli/](./cli/index.md) | Generated CLI reference |
 
@@ -18,6 +18,7 @@ SAF-specific import-graph measurement and enforcement tooling.
 
 - **No root barrels** — import `@scope/pkg/subpath`, not deleted package roots.
 - **Hybrid `exports`** — wildcard patterns + `exportsAliases` for large packages (see [05-scaffold.md](./05-scaffold.md)).
+- **Package-local `#` imports** — same-package code uses `#foo.ts` / `#lib/bar.ts`, not `../` climbs.
 - **`sideEffects: false`** (or explicit CSS/client entry exceptions) for tree-shaking.
 - **Snapshot tool** — optional local metrics snapshots for test graphs and entry probes (not gated in CI today).
 

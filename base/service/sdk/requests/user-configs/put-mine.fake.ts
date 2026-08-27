@@ -2,7 +2,7 @@ import type {
   RequestBody as putMineUserConfigsRequestBody,
   ResponseBody as putMineUserConfigsResponseBody,
 } from "@saflib/base-spec/operations/putMineUserConfigs";
-import { baseHandler } from "../../typed-fake.ts";
+import { baseHandler } from "#typed-fake.ts";
 import { ensureMockUserConfig, MOCK_SESSION_USER_ID } from "./mocks.ts";
 
 export const putMineUserConfigsHandler = baseHandler({

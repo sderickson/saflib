@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   exportGlobForTopLevelSegment,
+  importsFromExports,
   prepareNewPackageExports,
   resolveExportModulePathLayout,
   stripTemplateExportPlaceholders,
@@ -54,9 +55,7 @@ describe("resolveExportModulePathLayout", () => {
 
 describe("upsertPackageExportForModule", () => {
   it("adds a glob export for folder modules", () => {
-    expect(
-      upsertPackageExportForModule({}, "lib", "starter"),
-    ).toEqual({
+    expect(upsertPackageExportForModule({}, "lib", "starter")).toEqual({
       "./lib/*": "./lib/*.ts",
     });
   });
@@ -69,27 +68,68 @@ describe("upsertPackageExportForModule", () => {
   });
 
   it("adds an explicit export for allowlisted root modules", () => {
-    expect(
-      upsertPackageExportForModule({}, "client", "client"),
-    ).toEqual({
+    expect(upsertPackageExportForModule({}, "client", "client")).toEqual({
       "./client": "./client.ts",
     });
   });
 });
 
+describe("importsFromExports", () => {
+  it("derives extension-preserving # maps from export globs", () => {
+    expect(
+      importsFromExports({
+        "./*": "./*.ts",
+        "./lib/*": "./lib/*.ts",
+        "./matter-pipeline": "./matter-pipeline/index.ts",
+        "./env": "./env.ts",
+      }),
+    ).toEqual({
+      "#*": "./*",
+      "#lib/*": "./lib/*",
+      "#matter-pipeline": "./matter-pipeline/index.ts",
+    });
+  });
+
+  it("remaps #* when exports ./* points into a subdirectory", () => {
+    expect(importsFromExports({ "./*": "./emails/*.ts" })).toEqual({
+      "#*": "./emails/*",
+    });
+  });
+
+  it("skips dist remaps that are not package-local source trees", () => {
+    expect(
+      importsFromExports({
+        "./operations/*": "./dist/operations/*/index.ts",
+      }),
+    ).toEqual({
+      "#*": "./*",
+    });
+  });
+});
+
 describe("package.json helpers", () => {
-  it("prepareNewPackageExports strips template placeholders", () => {
+  it("prepareNewPackageExports strips placeholders and syncs imports", () => {
     expect(
       prepareNewPackageExports({
         name: "@scope/pkg",
         exports: {
           "./__group-name__/*": "./__group-name__/*.ts",
         },
-      }).exports,
-    ).toEqual({});
+        imports: {
+          "#*": "./*",
+          "#__group-name__/*": "./__group-name__/*",
+        },
+      }),
+    ).toEqual({
+      name: "@scope/pkg",
+      exports: {},
+      imports: {
+        "#*": "./*",
+      },
+    });
   });
 
-  it("upsertPackageJsonExportsForModule merges into package.json", () => {
+  it("upsertPackageJsonExportsForModule merges exports and imports", () => {
     expect(
       upsertPackageJsonExportsForModule(
         {
@@ -98,9 +138,16 @@ describe("package.json helpers", () => {
         },
         "http",
         "headers",
-      ).exports,
+      ),
     ).toEqual({
-      "./http/*": "./http/*.ts",
+      name: "@scope/pkg",
+      exports: {
+        "./http/*": "./http/*.ts",
+      },
+      imports: {
+        "#*": "./*",
+        "#http/*": "./http/*",
+      },
     });
   });
 });

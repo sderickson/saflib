@@ -3,6 +3,19 @@ import {
   isAllowedRootTsFile,
   type PackageJsonLayoutFields,
 } from "./package-layout.ts";
+import {
+  importsFromExports,
+  stripTemplateImportPlaceholders,
+  upsertImportGlob,
+} from "./package-imports.ts";
+
+export {
+  importGlobForTopLevelSegment,
+  importsFromExports,
+  ROOT_IMPORT_CATCHALL,
+  stripTemplateImportPlaceholders,
+  upsertImportGlob,
+} from "./package-imports.ts";
 
 export function exportGlobForTopLevelSegment(segment: string): {
   key: string;
@@ -95,22 +108,45 @@ export function upsertPackageJsonExportsForModule(
   groupName: string,
   targetName: string,
 ): PackageJsonLayoutFields {
-  const exportsMap = stripTemplateExportPlaceholders(
-    (packageJson.exports ?? {}) as Record<string, unknown>,
+  const exportsMap = upsertPackageExportForModule(
+    stripTemplateExportPlaceholders(
+      (packageJson.exports ?? {}) as Record<string, unknown>,
+    ),
+    groupName,
+    targetName,
   );
+  const layout = resolveExportModulePathLayout(groupName, targetName);
+  let imports = {
+    ...stripTemplateImportPlaceholders(
+      (packageJson.imports ?? {}) as Record<string, unknown>,
+    ),
+    ...importsFromExports(exportsMap),
+  };
+  if (layout.useGlob) {
+    imports = upsertImportGlob(imports, layout.topLevelSegment);
+  }
   return {
     ...packageJson,
-    exports: upsertPackageExportForModule(exportsMap, groupName, targetName),
+    exports: exportsMap,
+    imports,
   };
 }
 
 export function prepareNewPackageExports(
   packageJson: PackageJsonLayoutFields,
 ): PackageJsonLayoutFields {
+  const exports = stripTemplateExportPlaceholders(
+    (packageJson.exports ?? {}) as Record<string, unknown>,
+  );
+  const imports = {
+    ...stripTemplateImportPlaceholders(
+      (packageJson.imports ?? {}) as Record<string, unknown>,
+    ),
+    ...importsFromExports(exports),
+  };
   return {
     ...packageJson,
-    exports: stripTemplateExportPlaceholders(
-      (packageJson.exports ?? {}) as Record<string, unknown>,
-    ),
+    exports,
+    imports,
   };
 }

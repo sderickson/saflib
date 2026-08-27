@@ -1,5 +1,5 @@
-import { baseDbManager } from "../../instances.ts";
-import { userConfigTable } from "../../schemas/user-config.ts";
+import { baseDbManager } from "#instances.ts";
+import { userConfigTable } from "#schemas/user-config.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";

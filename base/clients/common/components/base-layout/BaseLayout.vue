@@ -87,8 +87,8 @@ import {
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
 import { useKratosSession } from "@saflib/ory-kratos-sdk";
 import { accountLinks, adminLinks, appLinks } from "@saflib/base-links";
-import { useSiteAdmin } from "../../composables/useSiteAdmin.ts";
-import { useReverseT } from "../../i18n.ts";
+import { useSiteAdmin } from "#composables/useSiteAdmin.ts";
+import { useReverseT } from "#i18n.ts";
 
 type SidebarLink = Link & { name: string };
 

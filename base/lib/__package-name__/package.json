@@ -22,5 +22,9 @@
     "@saflib/vitest": "*",
     "@saflib/monorepo": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*",
+    "#__group-name__/*": "./__group-name__/*"
+  }
 }

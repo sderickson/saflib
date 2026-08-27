@@ -38,5 +38,17 @@
   },
   "sideEffects": [
     "./clients/events.ts"
-  ]
+  ],
+  "imports": {
+    "#*": "./*",
+    "#assets/*": "./assets/*",
+    "#clients": "./clients/index.ts",
+    "#clients/*": "./clients/*",
+    "#components": "./components/index.ts",
+    "#components/*": "./components/*",
+    "#composables/*": "./composables/*",
+    "#fixtures": "./fixtures/index.ts",
+    "#fixtures/*": "./fixtures/*",
+    "#utils/*": "./utils/*"
+  }
 }

@@ -7,7 +7,7 @@ import {
   acquireRouterSlimRouteTest,
   releaseSlimRouteTest,
   type SlimRouteTestContext,
-} from "../../testing/slim-route-test.ts";
+} from "#testing/slim-route-test.ts";
 import { create__GroupName__Router } from "./index.ts";
 
 describe("__targetName____GroupName__", () => {

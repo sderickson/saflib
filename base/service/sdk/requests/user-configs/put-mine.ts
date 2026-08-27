@@ -1,7 +1,7 @@
 import type { RequestBody as putMineUserConfigsRequestBody } from "@saflib/base-spec/operations/putMineUserConfigs";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
-import { getClient } from "../../client.ts";
+import { getClient } from "#client.ts";
 import { GET_MINE_USER_CONFIGS_QUERY_KEY } from "./get-mine.ts";
 
 export type PutMineUserConfigsVariables =

@@ -39,5 +39,10 @@
     "@types/http-errors": "^2.0.0",
     "supertest": "^7.0.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*",
+    "#handlers/*": "./handlers/*",
+    "#testing/*": "./testing/*"
+  }
 }

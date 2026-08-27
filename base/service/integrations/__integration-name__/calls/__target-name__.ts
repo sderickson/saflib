@@ -1,4 +1,4 @@
-import { get__IntegrationName__Client, isMocked } from "../client.ts";
+import { get__IntegrationName__Client, isMocked } from "#client.ts";
 import { mock__TargetName__ } from "./__target-name__.mocks.ts";
 
 // TODO: Define the return type for this call.

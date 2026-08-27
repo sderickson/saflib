@@ -25,5 +25,8 @@
     "@saflib/base-spec": "*",
     "@saflib/vitest": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*"
+  }
 }

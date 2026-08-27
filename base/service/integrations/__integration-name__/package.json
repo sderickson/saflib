@@ -2,7 +2,9 @@
   "name": "@saflib/base-__integration-name__-integration",
   "saf": {
     "kind": "integration",
-    "envExtends": ["@saflib/env"]
+    "envExtends": [
+      "@saflib/env"
+    ]
   },
   "description": "Golden integration stub for Base (expansion via integrations/add-call)",
   "private": true,
@@ -28,5 +30,8 @@
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*"
+  }
 }

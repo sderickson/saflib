@@ -19,5 +19,8 @@
     "@saflib/jobs-spec": "*",
     "@saflib/openapi": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*"
+  }
 }

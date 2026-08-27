@@ -5,7 +5,7 @@ import {
   createBaseHttpApp,
   type BaseHttpAppLease,
   type HttpRouterMount,
-} from "../http.ts";
+} from "#http.ts";
 
 export type SlimRouteTestContext = {
   app: Express;

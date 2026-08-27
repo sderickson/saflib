@@ -26,5 +26,8 @@
     "@saflib/vendors-loki": "*",
     "@saflib/vendors-sentry": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*"
+  }
 }

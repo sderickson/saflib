@@ -1,13 +1,13 @@
 // @ts-nocheck — scaffold placeholders until drizzle/add-query copies this file.
-import { baseDbManager } from "../../instances.ts";
-import { StubError } from "../../errors.ts";
+import { baseDbManager } from "#instances.ts";
+import { StubError } from "#errors.ts";
 // TODO: import your actual types
-import type { StubParams, StubEntity } from "../../types.ts";
+import type { StubParams, StubEntity } from "#types.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import { __groupName__Table } from "../../schemas/__group-name__.ts";
+import { __groupName__Table } from "#schemas/__group-name__.ts";
 
 export type __TargetName____GroupName__Error = StubError;
 

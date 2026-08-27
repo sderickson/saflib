@@ -40,5 +40,9 @@
   },
   "sideEffects": [
     "./client.ts"
-  ]
+  ],
+  "imports": {
+    "#*": "./*",
+    "#requests/*": "./requests/*"
+  }
 }

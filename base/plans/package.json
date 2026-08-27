@@ -17,5 +17,8 @@
     "@saflib/vitest": "*",
     "@saflib/monorepo": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "imports": {
+    "#*": "./*"
+  }
 }

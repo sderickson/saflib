@@ -1,7 +1,7 @@
 // @ts-nocheck — scaffold placeholders until sdk/add-query or sdk/add-mutation copies this file.
 import { queryOptions } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
-import { getClient } from "../../client.ts";
+import { getClient } from "#client.ts";
 
 interface __QueryName____GroupName__QueryOptions {
   // TODO: Define the interface for the query. Use vue Ref types, e.g.
