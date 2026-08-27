@@ -8,14 +8,7 @@ export type CreateSecretStoreOptions = { type: "env" };
  * For Infisical, use `@saflib/vendors-infisical`.
  */
 export function createSecretStore(
-  options: CreateSecretStoreOptions,
+  _options: CreateSecretStoreOptions = { type: "env" },
 ): SecretStore {
-  switch (options.type) {
-    case "env":
-      return new EnvSecretStore();
-    default: {
-      const _: never = options;
-      return _;
-    }
-  }
+  return new EnvSecretStore();
 }

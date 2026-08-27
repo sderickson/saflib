@@ -8,14 +8,7 @@ export type CreateAnalyticsServiceOptions = { type: "in-memory" };
  * For PostHog, use `@saflib/vendors-posthog`.
  */
 export function createAnalyticsService(
-  options: CreateAnalyticsServiceOptions,
+  _options: CreateAnalyticsServiceOptions = { type: "in-memory" },
 ): AnalyticsService {
-  switch (options.type) {
-    case "in-memory":
-      return new InMemoryAnalyticsService();
-    default: {
-      const _: never = options;
-      return _;
-    }
-  }
+  return new InMemoryAnalyticsService();
 }
