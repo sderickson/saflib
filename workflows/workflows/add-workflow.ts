@@ -12,14 +12,9 @@ import {
   parsePackageName,
 } from "@saflib/workflows";
 import path from "node:path";
-import { templatesProductRoot } from "@saflib/templates";
+import { packageStubRoot } from "@saflib/templates";
 
-const sourceDir = path.join(
-  templatesProductRoot,
-  "packages",
-  "__package-name__",
-  "workflows",
-);
+const sourceDir = path.join(packageStubRoot, "workflows");
 
 const input = [
   {

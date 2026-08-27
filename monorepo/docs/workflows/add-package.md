@@ -26,9 +26,9 @@ When run, the workflow will:
   - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/index.ts)
   - Upsert **index.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/index.test.ts)
   - Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/vitest.config.js)
-- The file 'packages/my-lib/package.json' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.
-- Ensure the new package path 'packages/my-lib' is included in the "workspaces" array in the root `package.json`.
-- Change working directory to packages/my-lib
+- The file 'my-product/lib/my-lib/package.json' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.
+- Ensure the new package path 'my-product/lib/my-lib' is included in the "workspaces" array in the root `package.json`.
+- Change working directory to my-product/lib/my-lib
 - Run `npm install`
 - Run `saf-imports tsconfig generate --write` (also runs on root `npm install` via `postinstall`)
 - Run `npm run test`
@@ -43,7 +43,7 @@ Creates a new TypeScript package according to monorepo best practices.
 Arguments:
   name        The desired package name, including scope (e.g., @your-org/package-name)
               Example: "@example-org/example-package"
-  path        The RELATIVE path from monorepo root where the package directory (containing package.json) will be created (e.g., packages/my-lib or saflib/node)
-              Example: "packages/my-lib"
+  path        The RELATIVE path from monorepo root where the package directory (containing package.json) will be created (e.g., my-product/lib/my-lib or saflib/node)
+              Example: "my-product/lib/my-lib"
 
 ```

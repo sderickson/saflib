@@ -28,12 +28,12 @@ const stubPaths = [
   "service/email/emails/__target-name__.ts",
   "service/cron/jobs/__group-name__/__target-name__.ts",
   "service/integrations/__integration-name__/calls/__target-name__.ts",
-  "packages/__package-name__/package.json",
-  "packages/__package-name__/__group-name__/__target-name__.ts",
-  "packages/__package-name__/__group-name__/__target-name__.test.ts",
-  "packages/__package-name__/bin/__group-name__/index.ts",
-  "packages/__package-name__/workflows/__target-name__.ts",
-  "packages/__package-name__/env.schema.json",
+  "lib/__package-name__/package.json",
+  "lib/__package-name__/__group-name__/__target-name__.ts",
+  "lib/__package-name__/__group-name__/__target-name__.test.ts",
+  "lib/__package-name__/bin/__group-name__/index.ts",
+  "lib/__package-name__/workflows/__target-name__.ts",
+  "lib/__package-name__/env.schema.json",
   // Phase 5 domain offshoot golden packages
   "__offshoot-name__/db/package.json",
   "__offshoot-name__/db/schemas/__offshoot-name__.ts",
@@ -42,9 +42,6 @@ const stubPaths = [
   "__offshoot-name__/http/package.json",
   "__offshoot-name__/http/http.ts",
   "__offshoot-name__/sdk/package.json",
-  // vue/add-static-site: live docker areas stay empty; tokens live in stubs
-  "dev/.workflow-stubs/vue-add-static-site/build-images.sh",
-  "dev/.workflow-stubs/vue-add-static-site/Dockerfile.template",
 ] as const;
 
 /** Live hosts whose workflow areas must contain stub tokens (not emptied). */
@@ -121,24 +118,20 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     ],
   },
   {
-    // Live areas intentionally empty (invalid Docker tags); tokens in .workflow-stubs.
+    // Live areas filled so vue/add-static-site can upsert from golden base/dev.
     rel: "dev/build-images.sh",
-    mustInclude: ["BEGIN WORKFLOW AREA build-static-sites"],
+    mustInclude: [
+      "BEGIN WORKFLOW AREA build-static-sites",
+      "__static-subdomain-name__",
+    ],
   },
   {
     rel: "dev/Dockerfile.template",
     mustInclude: [
       "BEGIN WORKFLOW AREA static-site-builders",
       "BEGIN WORKFLOW AREA static-site-assets",
+      "__static-subdomain-name__",
     ],
-  },
-  {
-    rel: "dev/.workflow-stubs/vue-add-static-site/build-images.sh",
-    mustInclude: ["__static-subdomain-name__"],
-  },
-  {
-    rel: "dev/.workflow-stubs/vue-add-static-site/Dockerfile.template",
-    mustInclude: ["__static-subdomain-name__"],
   },
   {
     rel: "service/common/context.ts",
@@ -161,7 +154,7 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     mustInclude: ["runBaseCron"],
   },
   {
-    rel: "packages/__package-name__/package.json",
+    rel: "lib/__package-name__/package.json",
     mustInclude: ["__group-name__"],
   },
 ];

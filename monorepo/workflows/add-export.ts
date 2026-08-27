@@ -11,13 +11,13 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 import { readFileSync } from "node:fs";
-import { templatesProductRoot } from "@saflib/templates";
+import { packageStubRoot } from "@saflib/templates";
 import {
   resolveExportModulePathLayout,
   upsertPackageJsonExportsForModule,
 } from "../src/package-exports.ts";
 
-const sourceDir = path.join(templatesProductRoot, "packages", "__package-name__");
+const sourceDir = packageStubRoot;
 const exportDir = path.join(sourceDir, "__group-name__");
 
 const input = [

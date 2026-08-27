@@ -52,6 +52,17 @@ export const offshootStubRoot = path.join(
 );
 
 /**
+ * Golden npm-package shell for `monorepo/add-package` and related stubs
+ * (exports, CLI, workflows, env). Destination path is chosen by the workflow
+ * (prefer `<product>/lib/...`); this is only the source template.
+ */
+export const packageStubRoot = path.join(
+  templatesProductRoot,
+  "lib",
+  "__package-name__",
+);
+
+/**
  * @deprecated Prefer {@link templatesProductRoot} — init now copies product,
  * deploy, and scaffold as separate roots.
  */

@@ -92,7 +92,7 @@
       "path": "./base/dev"
     },
     {
-      "path": "./base/packages/__package-name__"
+      "path": "./base/lib/__package-name__"
     },
     {
       "path": "./base/plans"
