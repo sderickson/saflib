@@ -10,8 +10,14 @@ export {
 } from "./createSecretStore.ts";
 export {
   EnvSecretNotFoundError,
+  SecretNotDeclaredError,
   type SecretStoreError,
 } from "./errors.ts";
+export {
+  isSecretDeclared,
+  type SecretManifest,
+  type SecretManifestEntry,
+} from "./secrets-manifest.ts";
 export {
   InfisicalNotFoundError,
   InfisicalUnauthorizedError,

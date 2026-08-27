@@ -28,6 +28,9 @@
     },
     {
       "path": "../node-log/node-log-http"
+    },
+    {
+      "path": "../secret-store"
     }
   ]
 }

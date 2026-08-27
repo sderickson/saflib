@@ -1,9 +1,13 @@
 import { afterEach, describe, expect, it } from "vitest";
+import type { SecretManifest } from "../secrets-manifest.ts";
 import { InfisicalSecretStore } from "./InfisicalSecretStore.ts";
 
-describe("InfisicalSecretStore (mock token)", () => {
-  const key = "INFISICAL_MOCK_SECRET_KEY";
+const key = "INFISICAL_MOCK_SECRET_KEY";
+const manifest: SecretManifest = [
+  { name: key, description: "InfisicalSecretStore unit test key." },
+];
 
+describe("InfisicalSecretStore (mock token)", () => {
   afterEach(() => {
     delete process.env[key];
   });
@@ -14,7 +18,7 @@ describe("InfisicalSecretStore (mock token)", () => {
       projectId: "p",
       environment: "dev",
     });
-    const { result, error } = await store.getSecretByName(key);
+    const { result, error } = await store.getSecretByName(key, manifest);
     expect(error).toBeUndefined();
     expect(result).toBe("mock");
   });
@@ -26,7 +30,7 @@ describe("InfisicalSecretStore (mock token)", () => {
       projectId: "p",
       environment: "dev",
     });
-    const { result, error } = await store.getSecretByName(key);
+    const { result, error } = await store.getSecretByName(key, manifest);
     expect(error).toBeUndefined();
     expect(result).toBe("from-env");
   });

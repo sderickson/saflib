@@ -27,9 +27,6 @@
       "path": "../env"
     },
     {
-      "path": "../errors/errors-http"
-    },
-    {
       "path": "../node"
     }
   ]

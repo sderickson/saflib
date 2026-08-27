@@ -8,4 +8,8 @@ export * from "./src/loki.ts";
 export * from "./src/metrics.ts";
 export * from "./src/types.ts";
 export * from "./src/signAssertion.ts";
+export {
+  configureInternalAssertionKeys,
+  SAF_INTERNAL_ASSERTION_KEYS_NAME,
+} from "./src/configureInternalAssertionKeys.ts";
 export * from "./env.ts";

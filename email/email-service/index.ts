@@ -7,6 +7,10 @@ export type {
 } from "./types.ts";
 export { sentEmails } from "./mock-store.ts";
 export { createEmailService } from "./createEmailService.ts";
+export {
+  configureEmail,
+  BREVO_API_KEY_NAME,
+} from "./configureEmail.ts";
 export { resolveEmailServiceFromEnv } from "./resolveEmailServiceFromEnv.ts";
 export { BrevoEmailService } from "./brevo/BrevoEmailService.ts";
 export {

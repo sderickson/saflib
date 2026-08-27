@@ -34,7 +34,7 @@ export class InfisicalSecretStore extends SecretStore {
     this.sdk = sdk;
   }
 
-  async getSecretByName(
+  protected async fetchSecretByName(
     name: string,
   ): Promise<ReturnsError<string, SecretStoreError>> {
     if (this.sdk === null) {
