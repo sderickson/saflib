@@ -28,7 +28,7 @@ Source lives in thematic folders — import by subpath (no root barrel):
 
 - **`createSecurityPlaywrightConfig`** — prod-local docker compose suite (Chromium, serial workers, excludes `@canary`)
 - **`createSecurityCanaryPlaywrightConfig`** — production HTTPS checks tagged `@canary`
-- **`applyLocalDevSecurityEnv` / `applyProductionCanaryEnv`** — set `DOMAIN`, `PROTOCOL`, `SERVICE_SUBDOMAINS`
+- **`applyLocalDevSecurityEnv` / `applyProductionCanaryEnv`** — set `DOMAIN`, `PROTOCOL`
 - **Origin helpers** — `apiOrigin`, `appOrigin`, `evilOrigin`, `kratosPublicOrigin`, `spaOrigin`, `apexUrl`
 - **CSRF** — `getCsrfToken(page, origin)` via configurable issuer GET
 - **Headers** — `assertSecurityHeaders`, CSP framing helpers

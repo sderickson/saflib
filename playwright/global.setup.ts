@@ -1,6 +1,7 @@
 import { expect, test as setup } from "@playwright/test";
 
-const serviceSubdomains = process.env.SERVICE_SUBDOMAINS?.split(",") || [];
+/** API host health-checked before e2e (matches product Caddy `api.{DOMAIN}`). */
+const serviceSubdomains = ["api"] as const;
 const domain = process.env.DOMAIN;
 const protocol = process.env.PROTOCOL;
 

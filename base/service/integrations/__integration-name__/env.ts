@@ -14,4 +14,6 @@ export interface Base__integrationName__IntegrationEnvSchema extends EnvEnvSchem
 /**
  * `process.env` casted to the `Base__integrationName__IntegrationEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as Base__integrationName__IntegrationEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as Base__integrationName__IntegrationEnvSchema;
