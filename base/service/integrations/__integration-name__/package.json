@@ -32,6 +32,9 @@
   },
   "sideEffects": false,
   "imports": {
-    "#*": "./*"
+    "#calls/*": "./calls/*",
+    "#client.mocks.ts": "./client.mocks.ts",
+    "#client.ts": "./client.ts",
+    "#env.ts": "./env.ts"
   }
 }

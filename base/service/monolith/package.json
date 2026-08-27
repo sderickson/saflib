@@ -28,6 +28,6 @@
   },
   "sideEffects": false,
   "imports": {
-    "#*": "./*"
+    "#env.ts": "./env.ts"
   }
 }

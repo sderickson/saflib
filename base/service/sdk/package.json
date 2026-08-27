@@ -42,7 +42,6 @@
     "./client.ts"
   ],
   "imports": {
-    "#*": "./*",
-    "#requests/*": "./requests/*"
+    "#*": "./*"
   }
 }

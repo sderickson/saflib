@@ -75,7 +75,7 @@ describe("upsertPackageExportForModule", () => {
 });
 
 describe("importsFromExports", () => {
-  it("derives extension-preserving # maps from export globs", () => {
+  it("uses only #* when exports has a root glob (no redundant folder globs)", () => {
     expect(
       importsFromExports({
         "./*": "./*.ts",
@@ -85,8 +85,25 @@ describe("importsFromExports", () => {
       }),
     ).toEqual({
       "#*": "./*",
-      "#lib/*": "./lib/*",
       "#matter-pipeline": "./matter-pipeline/index.ts",
+    });
+  });
+
+  it("lists thematic folders and root files when there is no #* catch-all", () => {
+    expect(
+      importsFromExports({
+        "./assets/*": "./assets/*.ts",
+        "./clients": "./clients/index.ts",
+        "./clients/*": "./clients/*.ts",
+        "./i18n": "./i18n.ts",
+        "./vuetify-config": "./vuetify-config.ts",
+      }),
+    ).toEqual({
+      "#assets/*": "./assets/*",
+      "#clients": "./clients/index.ts",
+      "#clients/*": "./clients/*",
+      "#i18n.ts": "./i18n.ts",
+      "#vuetify-config.ts": "./vuetify-config.ts",
     });
   });
 
@@ -96,13 +113,25 @@ describe("importsFromExports", () => {
     });
   });
 
-  it("skips dist remaps that are not package-local source trees", () => {
+  it("skips dist remaps and does not invent a catch-all", () => {
     expect(
       importsFromExports({
         "./operations/*": "./dist/operations/*/index.ts",
       }),
+    ).toEqual({});
+  });
+
+  it("derives thematic globs from nested leaf exports", () => {
+    expect(
+      importsFromExports({
+        "./http": "./http.ts",
+        "./testing/slim-route-test": "./testing/slim-route-test.ts",
+        "./handlers/*": "./handlers/*.ts",
+      }),
     ).toEqual({
-      "#*": "./*",
+      "#handlers/*": "./handlers/*",
+      "#http.ts": "./http.ts",
+      "#testing/*": "./testing/*",
     });
   });
 });
@@ -123,9 +152,7 @@ describe("package.json helpers", () => {
     ).toEqual({
       name: "@scope/pkg",
       exports: {},
-      imports: {
-        "#*": "./*",
-      },
+      imports: {},
     });
   });
 
@@ -145,7 +172,6 @@ describe("package.json helpers", () => {
         "./http/*": "./http/*.ts",
       },
       imports: {
-        "#*": "./*",
         "#http/*": "./http/*",
       },
     });

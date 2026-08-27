@@ -27,7 +27,6 @@
   },
   "sideEffects": false,
   "imports": {
-    "#*": "./*",
     "#requests/*": "./requests/*"
   }
 }

@@ -27,7 +27,9 @@
   },
   "sideEffects": false,
   "imports": {
-    "#*": "./*",
-    "#schemas/*": "./schemas/*"
+    "#errors.ts": "./errors.ts",
+    "#schema.ts": "./schema.ts",
+    "#schemas/*": "./schemas/*",
+    "#types.ts": "./types.ts"
   }
 }

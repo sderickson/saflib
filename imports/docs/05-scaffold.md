@@ -9,7 +9,7 @@ with correct `exports`, `imports`, and `sideEffects` without manual follow-up.
 | --- | --- | --- |
 | `sideEffects` | `false` | Vue/client: `["**/*.css", "**/*.scss"]` + entry files with side effects (`client.ts`) |
 | `exports` | **Single-star globs** | `./dir/*` → `./dir/*.ts` — not per-file leaf maps |
-| `imports` | **Package-local `#` globs** | Extension-preserving: `#dir/*` → `./dir/*`, plus `#*` → `./*` |
+| `imports` | **Package-local `#` maps** | Extension-preserving; see below |
 | `exportsAliases` | optional | Short paths, legacy names, remaps (e.g. `lib.ts`) |
 
 ## Package-local `#` imports
@@ -20,12 +20,28 @@ Prefer Node `package.json` `"imports"` over `../` parent climbs **within the sam
 - Do **not** auto-append `.ts` in the map (targets are `./*`, not `./*.ts`).
 - Classic `#foo.ts` / `#lib/bar.ts` (not `#/…` — that needs newer TypeScript).
 
+**Choose one shape** (do not mix a catch-all with redundant folder globs):
+
+1. **Root catch-all** — only when `exports` has `./*` (service-common, SPA shells). Nested paths are covered; skip thematic `#dir/*` entries.
+
 ```json
 "imports": {
-  "#*": "./*",
-  "#lib/*": "./lib/*",
+  "#*": "./*"
+}
+```
+
+2. **Explicit surface** — when there is no `./*` export. List thematic folders and root files so nested files can only `#`-import what you intend:
+
+```json
+"imports": {
   "#queries/*": "./queries/*",
-  "#schemas/*": "./schemas/*"
+  "#schemas/*": "./schemas/*",
+  "#instances.ts": "./instances.ts",
+  "#errors.ts": "./errors.ts",
+  "#types.ts": "./types.ts",
+  "#components": "./components/index.ts",
+  "#components/*": "./components/*",
+  "#i18n.ts": "./i18n.ts"
 }
 ```
 
@@ -36,7 +52,8 @@ import { baseDbManager } from "#instances.ts";
 ```
 
 Scaffold helpers (`prepareNewPackageExports`, `upsertPackageJsonExportsForModule`) keep `imports`
-in sync with `exports` (template `__placeholders__` stripped on init).
+in sync with `exports` (template `__placeholders__` stripped on init). Hand-author extra keys for
+internal-only paths that are not in `exports` (e.g. integration `#calls/*`, `#client.ts`).
 
 ## Export pattern examples
 

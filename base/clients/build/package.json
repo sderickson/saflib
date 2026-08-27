@@ -28,6 +28,6 @@
     "./env": "./env.ts"
   },
   "imports": {
-    "#*": "./*"
+    "#env.ts": "./env.ts"
   }
 }

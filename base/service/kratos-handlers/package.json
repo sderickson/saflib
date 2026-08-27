@@ -15,8 +15,5 @@
   "scripts": {
     "typecheck": "tsc -b"
   },
-  "sideEffects": false,
-  "imports": {
-    "#*": "./*"
-  }
+  "sideEffects": false
 }

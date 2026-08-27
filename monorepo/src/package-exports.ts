@@ -5,6 +5,7 @@ import {
 } from "./package-layout.ts";
 import {
   importsFromExports,
+  ROOT_IMPORT_CATCHALL,
   stripTemplateImportPlaceholders,
   upsertImportGlob,
 } from "./package-imports.ts";
@@ -116,13 +117,17 @@ export function upsertPackageJsonExportsForModule(
     targetName,
   );
   const layout = resolveExportModulePathLayout(groupName, targetName);
-  let imports = {
-    ...stripTemplateImportPlaceholders(
-      (packageJson.imports ?? {}) as Record<string, unknown>,
-    ),
-    ...importsFromExports(exportsMap),
-  };
-  if (layout.useGlob) {
+  const derived = importsFromExports(exportsMap);
+  const kept = stripTemplateImportPlaceholders(
+    (packageJson.imports ?? {}) as Record<string, unknown>,
+  );
+  // Drop stale catch-all when this package is on the explicit-map convention.
+  if (!derived[ROOT_IMPORT_CATCHALL.key]) {
+    delete kept[ROOT_IMPORT_CATCHALL.key];
+  }
+  let imports: Record<string, unknown> = { ...kept, ...derived };
+  // Thematic globs are redundant when `#*` already covers the tree.
+  if (layout.useGlob && !imports[ROOT_IMPORT_CATCHALL.key]) {
     imports = upsertImportGlob(imports, layout.topLevelSegment);
   }
   return {
@@ -138,15 +143,16 @@ export function prepareNewPackageExports(
   const exports = stripTemplateExportPlaceholders(
     (packageJson.exports ?? {}) as Record<string, unknown>,
   );
-  const imports = {
-    ...stripTemplateImportPlaceholders(
-      (packageJson.imports ?? {}) as Record<string, unknown>,
-    ),
-    ...importsFromExports(exports),
-  };
+  const derived = importsFromExports(exports);
+  const kept = stripTemplateImportPlaceholders(
+    (packageJson.imports ?? {}) as Record<string, unknown>,
+  );
+  if (!derived[ROOT_IMPORT_CATCHALL.key]) {
+    delete kept[ROOT_IMPORT_CATCHALL.key];
+  }
   return {
     ...packageJson,
     exports,
-    imports,
+    imports: { ...kept, ...derived },
   };
 }

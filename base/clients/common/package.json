@@ -40,7 +40,6 @@
     "./clients/events.ts"
   ],
   "imports": {
-    "#*": "./*",
     "#assets/*": "./assets/*",
     "#clients": "./clients/index.ts",
     "#clients/*": "./clients/*",
@@ -49,6 +48,10 @@
     "#composables/*": "./composables/*",
     "#fixtures": "./fixtures/index.ts",
     "#fixtures/*": "./fixtures/*",
-    "#utils/*": "./utils/*"
+    "#i18n.ts": "./i18n.ts",
+    "#playwright.config.ts": "./playwright.config.ts",
+    "#strings.ts": "./strings.ts",
+    "#utils/*": "./utils/*",
+    "#vuetify-config.ts": "./vuetify-config.ts"
   }
 }

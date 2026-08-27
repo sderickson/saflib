@@ -1,7 +1,15 @@
 /**
  * Derive package-local `#` import maps from `exports`.
- * Extensions stay in the import specifier (`#foo.ts`), so targets are extension-preserving
- * (`./*` not `./*.ts`).
+ *
+ * Extensions stay in the import specifier (`#foo.ts`), so targets are
+ * extension-preserving (`./*` not `./*.ts`).
+ *
+ * Convention:
+ * - If `exports` has `./*`, use only `#*` (covers root + nested). Do not also
+ *   list thematic folder globs — they are redundant.
+ * - Otherwise list thematic `#dir/*` globs, root files (`#i18n.ts`), and
+ *   barrels (`#clients` → `./clients/index.ts`) so the map documents what is
+ *   importable from nested files.
  */
 export function importGlobForTopLevelSegment(segment: string): {
   key: string;
@@ -13,7 +21,7 @@ export function importGlobForTopLevelSegment(segment: string): {
   };
 }
 
-/** Catch-all for package-root files: `#context.ts` → `./context.ts`. */
+/** Catch-all only when `exports` includes `./*`. */
 export const ROOT_IMPORT_CATCHALL = {
   key: "#*",
   value: "./*",
@@ -41,58 +49,90 @@ export function upsertImportGlob(
   return { ...imports, [key]: value };
 }
 
+function isSameTreeGlob(segment: string, value: string): boolean {
+  return (
+    value === `./${segment}/*` ||
+    value === `./${segment}/*.ts` ||
+    value.startsWith(`./${segment}/`)
+  );
+}
+
 /**
- * Build a default `imports` map from an `exports` map:
- * - `./*` → `./*.ts` becomes `#*` → `./*`
- * - `./dir/*` → `./dir/*.ts` becomes `#dir/*` → `./dir/*`
- * - `./dir/*` → `./dir/*` becomes `#dir/*` → `./dir/*`
- * Explicit leaf exports are covered by `#*`.
+ * Build a default `imports` map from an `exports` map.
  */
 export function importsFromExports(
   exports: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
-  const imports: Record<string, unknown> = {
-    [ROOT_IMPORT_CATCHALL.key]: ROOT_IMPORT_CATCHALL.value,
-  };
+  const imports: Record<string, unknown> = {};
   if (!exports) return imports;
+
+  const hasRootGlob = Object.entries(exports).some(
+    ([key, value]) =>
+      key === "./*" && typeof value === "string" && !value.includes("__"),
+  );
+
+  if (hasRootGlob) {
+    const rootValue = exports["./*"];
+    if (typeof rootValue === "string") {
+      const remapped = rootValue.match(/^\.\/([^*/]+)\/\*(?:\.ts)?$/);
+      imports[ROOT_IMPORT_CATCHALL.key] = remapped
+        ? `./${remapped[1]}/*`
+        : ROOT_IMPORT_CATCHALL.value;
+    }
+
+    // Keep explicit barrels that remaps (e.g. `#matter-pipeline` → index).
+    for (const [key, value] of Object.entries(exports)) {
+      if (typeof value !== "string") continue;
+      if (key.includes("__") || value.includes("__")) continue;
+      if (
+        !key.includes("*") &&
+        key.startsWith("./") &&
+        !key.slice(2).includes("/") &&
+        value.endsWith("/index.ts")
+      ) {
+        imports[`#${key.slice(2)}`] = value;
+      }
+    }
+    return imports;
+  }
 
   for (const [key, value] of Object.entries(exports)) {
     if (typeof value !== "string") continue;
     if (key.includes("__") || value.includes("__")) continue;
 
-    // `./dir/*` → `./dir/*` or `./dir/*.ts` (skip remaps like `./dist/dir/*/index.ts`)
+    // `./dir/*` → `#dir/*` (skip dist remaps)
     const dirMatch = key.match(/^\.\/([^/]+)\/\*$/);
     if (dirMatch) {
       const segment = dirMatch[1];
-      if (
-        value === `./${segment}/*` ||
-        value === `./${segment}/*.ts` ||
-        value.startsWith(`./${segment}/`)
-      ) {
+      if (isSameTreeGlob(segment, value)) {
         imports[`#${segment}/*`] = `./${segment}/*`;
       }
       continue;
     }
 
-    // `./*` → `./*.ts` / `./*`, or remapped (e.g. `./emails/*.ts`)
-    if (key === "./*") {
-      const remapped = value.match(/^\.\/([^*/]+)\/\*(?:\.ts)?$/);
-      if (remapped) {
-        imports[ROOT_IMPORT_CATCHALL.key] = `./${remapped[1]}/*`;
-      } else {
-        imports[ROOT_IMPORT_CATCHALL.key] = ROOT_IMPORT_CATCHALL.value;
+    if (key.includes("*") || !key.startsWith("./")) continue;
+
+    const subpath = key.slice(2);
+
+    // Nested leaf export (`./testing/slim-route-test`) → thematic `#testing/*`
+    if (subpath.includes("/")) {
+      const segment = subpath.split("/")[0]!;
+      if (isSameTreeGlob(segment, value) || value.startsWith(`./${segment}/`)) {
+        imports[`#${segment}/*`] = `./${segment}/*`;
       }
       continue;
     }
 
-    // Explicit index barrel: `./clients` → `./clients/index.ts`
-    if (
-      !key.includes("*") &&
-      key.startsWith("./") &&
-      value.endsWith("/index.ts")
-    ) {
-      const name = key.slice(2);
-      imports[`#${name}`] = value;
+    // Barrel: `./clients` → `./clients/index.ts`
+    if (value.endsWith("/index.ts")) {
+      imports[`#${subpath}`] = value;
+      continue;
+    }
+
+    // Root file: `./i18n` → `./i18n.ts` becomes `#i18n.ts`
+    const rootFile = value.match(/^\.\/([^/]+\.tsx?)$/);
+    if (rootFile) {
+      imports[`#${rootFile[1]}`] = value;
     }
   }
 

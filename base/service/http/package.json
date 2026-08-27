@@ -41,8 +41,8 @@
   },
   "sideEffects": false,
   "imports": {
-    "#*": "./*",
     "#handlers/*": "./handlers/*",
+    "#http.ts": "./http.ts",
     "#testing/*": "./testing/*"
   }
 }

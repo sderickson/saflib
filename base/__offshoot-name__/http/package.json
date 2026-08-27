@@ -26,6 +26,6 @@
   },
   "sideEffects": false,
   "imports": {
-    "#*": "./*"
+    "#http.ts": "./http.ts"
   }
 }
