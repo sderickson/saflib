@@ -1,10 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { cronDb } from "@saflib/cron-db";
 import { runCron, type CronEnqueuer, type JobsMap } from "@saflib/cron";
-import type { DbKey } from "@saflib/drizzle";
-import { typedEnv } from "@saflib/env";
+import { createOnDiskDbKeyAccessor } from "@saflib/drizzle";
 import {
   baseServiceStorage,
   type BaseServiceContext,
@@ -21,31 +17,20 @@ export const baseJobs: JobsMap = {
   // END WORKFLOW AREA
 };
 
-/** Absolute path to the cron job-settings SQLite file under this package's `data/`. */
-export function getBaseCronSqlitePath(): string {
-  return path.join(
-    path.dirname(fileURLToPath(import.meta.url)),
-    "data",
-    `cron-db-${typedEnv.DEPLOYMENT_NAME}.sqlite`,
-  );
-}
+const cronDbAccessor = createOnDiskDbKeyAccessor({
+  packageUrl: import.meta.url,
+  filePrefix: "cron-db",
+  connect: cronDb.connect,
+});
 
-let cronJobSettingsDbKey: DbKey | undefined;
+/** Absolute path to the cron job-settings SQLite file under this package's `data/`. */
+export const getBaseCronSqlitePath = cronDbAccessor.getSqlitePath;
 
 /**
  * Opaque key for `@saflib/cron-db` (not the main app DB key). Use this for
  * `createCronRouter` and `runCron`.
  */
-export function getBaseCronDbKey(): DbKey {
-  if (!cronJobSettingsDbKey) {
-    const sqlitePath = getBaseCronSqlitePath();
-    if (process.env.NODE_ENV !== "test") {
-      fs.mkdirSync(path.dirname(sqlitePath), { recursive: true });
-    }
-    cronJobSettingsDbKey = cronDb.connect({ onDisk: sqlitePath });
-  }
-  return cronJobSettingsDbKey;
-}
+export const getBaseCronDbKey = cronDbAccessor.getDbKey;
 
 export const runBaseCron = (
   context: BaseServiceContext,

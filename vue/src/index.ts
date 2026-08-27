@@ -7,6 +7,7 @@ import "./assets.d.ts";
 export * from "./app.ts";
 export * from "./events.ts";
 export * from "./strings.ts";
+export * from "./spa-bootstrap.ts";
 export * from "../types.ts";
 export * from "./snackbar.ts";
 export * from "./test-mode.ts";

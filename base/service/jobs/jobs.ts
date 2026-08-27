@@ -1,6 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { jobsDb } from "@saflib/jobs-db";
 import {
   runJobs,
@@ -8,7 +5,7 @@ import {
   type JobOperationConfigMap,
   type TriggerMap,
 } from "@saflib/jobs";
-import type { DbKey } from "@saflib/drizzle";
+import { createOnDiskDbKeyAccessor } from "@saflib/drizzle";
 import { typedEnv } from "@saflib/env";
 import { jsonSpec } from "@saflib/base-spec";
 import {
@@ -41,28 +38,17 @@ export const baseJobOperations: JobOperationConfigMap = {
   jobsDemoStepC: { timeoutMs: 30_000 },
 };
 
-/** Absolute path to the jobs SQLite file under this package's `data/`. */
-export function getBaseJobsSqlitePath(): string {
-  return path.join(
-    path.dirname(fileURLToPath(import.meta.url)),
-    "data",
-    `jobs-db-${typedEnv.DEPLOYMENT_NAME}.sqlite`,
-  );
-}
+const jobsDbAccessor = createOnDiskDbKeyAccessor({
+  packageUrl: import.meta.url,
+  filePrefix: "jobs-db",
+  connect: jobsDb.connect,
+});
 
-let jobsDbKey: DbKey | undefined;
+/** Absolute path to the jobs SQLite file under this package's `data/`. */
+export const getBaseJobsSqlitePath = jobsDbAccessor.getSqlitePath;
 
 /** Opaque key for `@saflib/jobs-db` (separate from the main app DB). */
-export function getBaseJobsDbKey(): DbKey {
-  if (!jobsDbKey) {
-    const sqlitePath = getBaseJobsSqlitePath();
-    if (process.env.NODE_ENV !== "test") {
-      fs.mkdirSync(path.dirname(sqlitePath), { recursive: true });
-    }
-    jobsDbKey = jobsDb.connect({ onDisk: sqlitePath });
-  }
-  return jobsDbKey;
-}
+export const getBaseJobsDbKey = jobsDbAccessor.getDbKey;
 
 /**
  * Validates `baseTriggerMap` / `baseJobOperations` against the base OpenAPI spec

@@ -61,3 +61,12 @@ export {
 } from "./vitest-helpers.ts";
 
 export { noStoreCacheControl } from "./middleware/noStore.ts";
+
+export {
+  kratosAdminBaseUrl,
+  resolveUserIdByEmail,
+  fetchKratosIdentityById,
+  resolveEmailFromIdentityId,
+} from "./kratos-admin.ts";
+
+export { resolveAuthFromIdentityId } from "./resolveAuthFromIdentityId.ts";
