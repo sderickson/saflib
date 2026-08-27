@@ -95,9 +95,6 @@
       "path": "./base/lib/__package-name__"
     },
     {
-      "path": "./base/plans"
-    },
-    {
       "path": "./base/security"
     },
     {

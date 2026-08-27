@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Demo home for the literal template SPA at __subdomain-name__.docker.localhost.
- * Replaced/extended via vue/add-view when this package is the add-spa source.
+ * Extended via vue/add-view when this package is the add-spa source.
  */
 import { ContentWidth } from "@saflib/vue/components";
 </script>
