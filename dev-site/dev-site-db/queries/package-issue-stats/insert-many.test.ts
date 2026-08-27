@@ -32,19 +32,19 @@ describe("package-issue-stats", () => {
       insertMany(dbKey, [
         {
           commitHash,
-          packageName: "@pathclerk/daemon-http",
+          packageName: "@acme/product-http",
           kind: "dead-code",
           count: 3,
         },
         {
           commitHash,
-          packageName: "@pathclerk/daemon-http",
+          packageName: "@acme/product-http",
           kind: "oversized-file",
           count: 1,
         },
         {
           commitHash,
-          packageName: "@pathclerk/daemon-form-mappings",
+          packageName: "@acme/product-form-mappings",
           kind: "package-layout",
           count: 5,
         },
@@ -60,9 +60,9 @@ describe("package-issue-stats", () => {
         .map((r) => `${r.packageName}:${r.kind}:${r.count}`)
         .sort(),
     ).toEqual([
-      "@pathclerk/daemon-form-mappings:package-layout:5",
-      "@pathclerk/daemon-http:dead-code:3",
-      "@pathclerk/daemon-http:oversized-file:1",
+      "@acme/product-form-mappings:package-layout:5",
+      "@acme/product-http:dead-code:3",
+      "@acme/product-http:oversized-file:1",
     ]);
   });
 

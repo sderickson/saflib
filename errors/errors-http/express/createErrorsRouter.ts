@@ -38,9 +38,11 @@ const cspReportJsonBody: RequestHandler = (req, res, next) => {
 };
 
 /**
- * Unified error reporting ingest (always mounted):
+ * Unified error reporting (always mounted, including production / prod-local):
  * - `POST /errors/record` — browser client error capture
  * - `POST /csp-violations` — browser CSP reports → same ring buffer
+ * - `POST /admin/test-error` — intentional server error (site-admin-only)
+ * - `GET /admin/errors` — ring buffer listing (site-admin-only)
  */
 export function createErrorsRouter(): Router {
   const router = Router();
@@ -58,32 +60,25 @@ export function createErrorsRouter(): Router {
     createPostCspViolationReportHandler(),
   );
 
-  return router;
-}
-
-/**
- * Development-only in-memory error viewer and smoke tooling:
- * - `POST /admin/test-error` — intentional server error
- * - `GET /admin/errors` — ring buffer listing (Sentry in production)
- */
-export function createDevErrorsRouter(): Router {
-  const router = Router();
-
   router.post(
     "/admin/test-error",
-    ...createOperationScopedMiddleware(postAdminTestErrorOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(postAdminTestErrorOperationJsonSpec),
     createPostAdminTestErrorHandler(),
   );
 
   router.get(
     "/admin/errors",
-    ...createOperationScopedMiddleware(listReportedErrorsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(listReportedErrorsOperationJsonSpec),
     createListReportedErrorsHandler(),
   );
 
   return router;
+}
+
+/**
+ * @deprecated Admin error routes live on {@link createErrorsRouter} (always mounted).
+ * Kept as a no-op so older composition call sites do not double-register.
+ */
+export function createDevErrorsRouter(): Router {
+  return Router();
 }

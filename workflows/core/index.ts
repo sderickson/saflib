@@ -15,6 +15,8 @@ export * from "./steps/copy/templating.ts";
 export * from "./steps/update/update-template-machine.ts";
 export * from "./steps/prompt.ts";
 export * from "./steps/command.ts";
+export * from "./steps/npm-script.ts";
+export * from "./steps/npm-script-validation.ts";
 export * from "./steps/cd.ts";
 export * from "./steps/transform-file.ts";
 export * from "./offshoot.ts";

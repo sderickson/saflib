@@ -55,6 +55,16 @@
           {{ checkout.compare.mergeBaseAnalyzed ? "analyzed" : "not analyzed" }}
         </v-chip>
         <v-btn
+          v-if="githubRepo && githubCompareHref"
+          size="small"
+          variant="text"
+          :href="githubCompareHref"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Changes on GitHub
+        </v-btn>
+        <v-btn
           v-if="compareMode && checkout.compare && !checkout.compare.mergeBaseAnalyzed"
           color="primary"
           size="small"
@@ -183,7 +193,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
                     :github-repo="githubRepo"
-                    :github-ref="githubRef"
+                    :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
                     @update:scope="setSpecScope"
@@ -198,7 +208,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
                     :github-repo="githubRepo"
-                    :github-ref="githubRef"
+                    :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                   />
                   <PackageHttpPane
@@ -211,7 +221,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
                     :github-repo="githubRepo"
-                    :github-ref="githubRef"
+                    :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
                     @update:scope="setSpecScope"
@@ -226,7 +236,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
                     :github-repo="githubRepo"
-                    :github-ref="githubRef"
+                    :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
                     @update:scope="setSpecScope"
@@ -241,7 +251,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
                     :github-repo="githubRepo"
-                    :github-ref="githubRef"
+                    :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
                     @update:scope="setSpecScope"
@@ -256,7 +266,7 @@
                     :product-root="checkout.productRoot"
                     :packages="checkout.packages"
                     :github-repo="githubRepo"
-                    :github-ref="githubRef"
+                    :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                     @navigate-package="onDocNavigatePackage"
                   />
@@ -268,7 +278,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.productRoot"
                     :github-repo="githubRepo"
-                    :github-ref="githubRef"
+                    :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                   />
                 </div>
@@ -349,6 +359,7 @@ import PackageSdkPane from "../components/PackageSdkPane.vue";
 import PackageIssuesPane from "../components/PackageIssuesPane.vue";
 import ResizableColumns from "../components/ResizableColumns.vue";
 import ChangeChip from "../components/ChangeChip.vue";
+import { githubCompareUrl, resolveGithubSourceRef } from "../source-links";
 
 const props = withDefaults(
   defineProps<{
@@ -408,6 +419,27 @@ const isEmptyCompare = computed(() => {
 const compareFromHash = computed(() =>
   compareReady.value ? checkout.value?.compare?.mergeBaseHash : undefined,
 );
+
+const effectiveGithubRef = computed(() =>
+  resolveGithubSourceRef({
+    branch: checkout.value?.branch,
+    commitHash: checkout.value?.hash,
+    fallbackRef: props.githubRef,
+  }),
+);
+
+const githubCompareHref = computed(() => {
+  if (!props.githubRepo || !compareMode.value) {
+    return undefined;
+  }
+  const c = checkout.value;
+  const base = c?.compare?.mergeBaseHash;
+  const head = effectiveGithubRef.value;
+  if (!c?.hash || !base || base === c.hash) {
+    return undefined;
+  }
+  return githubCompareUrl(props.githubRepo, base, head);
+});
 
 const pathRenames = computed(
   () => checkout.value?.compare?.renames ?? [],

@@ -11,6 +11,7 @@
 | [AgentConfig](interfaces/AgentConfig.md)                       | When in "run" mode, specify which agent to use.                                          |
 | [CdStepInput](interfaces/CdStepInput.md)                       | Input for the CdStepMachine.                                                             |
 | [CommandStepInput](interfaces/CommandStepInput.md)             | Input for the CommandStepMachine.                                                        |
+| [NpmScriptStepInput](interfaces/NpmScriptStepInput.md)         | Input for the NpmScriptStepMachine.                                                      |
 | [CopyStepInput](interfaces/CopyStepInput.md)                   | Input for the CopyStepMachine.                                                           |
 | [ParsePackageNameInput](interfaces/ParsePackageNameInput.md)   | Argument for the parsePackageName function.                                              |
 | [ParsePackageNameOutput](interfaces/ParsePackageNameOutput.md) | Return value for the parsePackageName function.                                          |
@@ -43,6 +44,7 @@
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | [CdStepMachine](variables/CdStepMachine.md)           | Updates the current working directory for subsequent steps, such as "copy", "update", and "command".                              |
 | [CommandStepMachine](variables/CommandStepMachine.md) | Runs a shell command as part of a workflow. Stops the workflow if the command fails.                                              |
+| [NpmScriptStepMachine](variables/NpmScriptStepMachine.md) | Runs `npm run <script> -w <workspace>` with workspace/script validation.                                                   |
 | [CopyStepMachine](variables/CopyStepMachine.md)       | Copies all `templateFiles` to the given directory, performing string replacements for directories, file names, and file contents. |
 | [PromptStepMachine](variables/PromptStepMachine.md)   | Prompts the agent or user to do an arbitrary task.                                                                                |
 | [UpdateStepMachine](variables/UpdateStepMachine.md)   | Prompts the agent to update one of the templateFiles that was copied over by the CopyStepMachine.                                 |

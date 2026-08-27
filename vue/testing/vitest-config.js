@@ -67,7 +67,7 @@ const baseCoverage = {
  * you pass --coverage on the CLI.
  *
  * Root and saflib can each hoist Vue; mixed runtimes break AsyncPage /
- * Vuetify. Pathclerk's postinstall removes the nested saflib copies when
+ * Vuetify. A host monorepo's postinstall may remove nested saflib copies when
  * the root copy is present.
  */
 export const defaultConfig = defineConfig({

@@ -1,0 +1,7 @@
+{
+  "name": "@fixture/npm-script-nested",
+  "private": true,
+  "scripts": {
+    "test": "echo test"
+  }
+}

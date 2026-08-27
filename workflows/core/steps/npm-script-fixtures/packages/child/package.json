@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/npm-script-child",
+  "private": true,
+  "scripts": {
+    "test": "echo test",
+    "build": "echo build"
+  }
+}

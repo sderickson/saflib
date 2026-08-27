@@ -92,7 +92,7 @@ export const OpenApiSchemaWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["exec", "saf-specs", "generate"],
+      args: ["run", "generate"],
     })),
 
     step(CommandStepMachine, () => ({

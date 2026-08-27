@@ -21,6 +21,13 @@ import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 // END WORKFLOW AREA
 
+const alwaysAvailableObservabilityRoutes: RouteRecordRaw[] = [
+  {
+    path: adminLinks.errors.path,
+    component: ErrorsAsync,
+  },
+];
+
 const devObservabilityRoutes: RouteRecordRaw[] = isDevelopmentDeployment()
   ? [
       {
@@ -38,10 +45,6 @@ const devObservabilityRoutes: RouteRecordRaw[] = isDevelopmentDeployment()
       {
         path: adminLinks.events.path,
         component: ProductEventsAsync,
-      },
-      {
-        path: adminLinks.errors.path,
-        component: ErrorsAsync,
       },
     ]
   : [];
@@ -66,6 +69,7 @@ export const createAdminRouter = (options?: {
       path: adminLinks.jobs.path,
       component: JobsAsync,
     },
+    ...alwaysAvailableObservabilityRoutes,
     ...devObservabilityRoutes,
     {
       path: adminLinks.audit.path,

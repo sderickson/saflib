@@ -16,7 +16,7 @@ import { ContentWidth } from "@saflib/vue/components";
 
 **Variants:** `narrow` · `medium` · `wide` (default) · `full`
 
-- Layout shells (`BaseLayout`, `DaemonLayout`) should **not** wrap routes in a width container — only `px-4` padding on `v-main`.
+- Layout shells (`BaseLayout`, `ProductLayout`) should **not** wrap routes in a width container — only `px-4` padding on `v-main`.
 - Each page owns one `ContentWidth`; do not nest another outer `v-container` / row / col shell.
 
 See `ContentWidth.vue` for breakpoint recipes.

@@ -39,24 +39,24 @@ describe("collectPackageIssues", () => {
       {
         packageName: "@pkg/spa",
         directory: "clients/app",
-        productRoot: "daemon",
+        productRoot: "product",
         exports: [
           {
             name: "main",
             kind: "const",
-            filePath: "daemon/clients/app/main.ts",
+            filePath: "product/clients/app/main.ts",
             usedBy: [],
           },
           {
             name: "mountTestApp",
             kind: "const",
-            filePath: "daemon/clients/app/test-app.ts",
+            filePath: "product/clients/app/test-app.ts",
             usedBy: [],
           },
         ],
         publicExportFilePaths: ["main.ts", "test-app.ts"],
       },
-      { packageDirectory: "clients/app", productRoot: "daemon" },
+      { packageDirectory: "clients/app", productRoot: "product" },
     );
     expect(issues).toEqual([]);
   });

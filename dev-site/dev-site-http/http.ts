@@ -42,7 +42,7 @@ export type CreateDevSiteHttpAppOptions = {
    */
   mounts?: HttpRouterMount[];
   /**
-   * Optional product job graph (e.g. `daemonTriggerMap`). Annotates Spec
+   * Optional product job graph (e.g. `productTriggerMap`). Annotates Spec
    * inventory ops with enqueue edges for route cards.
    */
   jobTriggerMap?: JobTriggerMap;

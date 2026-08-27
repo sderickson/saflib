@@ -1,0 +1,5 @@
+{
+  "name": "@fixture/npm-script-root",
+  "private": true,
+  "workspaces": ["packages/*"]
+}

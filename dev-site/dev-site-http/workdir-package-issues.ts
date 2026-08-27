@@ -29,7 +29,7 @@ import {
 
 export interface WorkdirPackageIssuesOptions {
   repoRoot: string;
-  /** Limit walk to this prefix (e.g. `daemon`). Empty = whole repo. */
+  /** Limit walk to this prefix (e.g. `product`). Empty = whole repo. */
   productRoot?: string;
   packageName: string;
   /** When true (default), include monorepo layout + LoC findings. */

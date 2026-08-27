@@ -7,13 +7,12 @@ import {
 import {
   workflowActions,
   workflowActors,
-  runCommandAsync,
   logInfo,
   logError,
 } from "../xstate.ts";
-import { handlePrompt } from "../prompt.ts";
 import { raise } from "xstate";
 import { contextFromInput } from "../utils.ts";
+import { executeCommandStep } from "./command-runner.ts";
 
 /**
  * Input for the CommandStepMachine.
@@ -64,10 +63,6 @@ export interface CommandStepContext extends WorkflowContext {
   shouldContinue?: boolean;
 }
 
-const messageForContext = (ctx: CommandStepContext) => {
-  return `The command \`${ctx.command} ${ctx.args.join(" ")}\` failed.\nCWD: ${ctx.cwd}.\n${ctx.errorPrompt ? `\n${ctx.errorPrompt}` : ""}`;
-};
-
 /**
  * In script mode, skip agent-loop validation commands. Mechanical steps
  * (install, saf-specs generate, prettier, …) still run; typecheck/test of
@@ -114,49 +109,8 @@ export const CommandStepMachine = setup({
   actors: {
     ...workflowActors,
     runCommand: fromPromise(
-      async ({ input }: { input: CommandStepContext }) => {
-        if (input.runMode === "dry" || input.runMode === "checklist") {
-          return `Skipped because mode is ${input.runMode}.`;
-        }
-        if (
-          input.runMode === "script" &&
-          !input.forceInScript &&
-          isScriptModeValidationCommand(input.command, input.args)
-        ) {
-          return `Skipped validation command in script mode: ${input.command} ${input.args.join(" ")}`;
-        }
-        let tries = 0;
-        while (true) {
-          if (tries > 3) {
-            throw new Error(
-              `Agent failed to fix command: ${input.command} ${input.args.join(" ")}`,
-            );
-          }
-
-          try {
-            await runCommandAsync(input.command, input.args, {
-              cwd: input.cwd,
-            });
-            return {
-              shouldContinue: true,
-            };
-          } catch (error) {
-            if (input.ignoreError) {
-              return {
-                shouldContinue: true,
-              };
-            }
-            const { shouldContinue } = await handlePrompt({
-              context: input,
-              msg: messageForContext(input),
-            });
-            if (!shouldContinue) {
-              throw error;
-            }
-            tries++;
-          }
-        }
-      },
+      async ({ input }: { input: CommandStepContext }) =>
+        executeCommandStep(input),
     ),
   },
 }).createMachine({
@@ -227,7 +181,9 @@ export const CommandStepMachine = setup({
         prompt: {
           actions: [
             ({ context }) => {
-              console.log(messageForContext(context));
+              console.log(
+                `The command \`${context.command} ${context.args.join(" ")}\` failed.\nCWD: ${context.cwd}.\n${context.errorPrompt ? `\n${context.errorPrompt}` : ""}`,
+              );
             },
           ],
         },

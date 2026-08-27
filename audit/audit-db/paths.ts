@@ -7,7 +7,7 @@ const packageDir = path.dirname(fileURLToPath(import.meta.url));
 /**
  * Directory for seal pipeline filesystem state: `.seal.lock`, `staging/`, `sealed/`,
  * `last-digest.json`, etc. Production uses the package `data/` folder, which Docker mounts at
- * `/app/daemon/service/audit/data` alongside the live SQLite file.
+ * `/app/<product>/service/audit/data` alongside the live SQLite file.
  *
  * In tests, set `AUDIT_DATA_ROOT` to isolate seal artifacts under a temp directory (the live DB
  * file path is controlled separately via `auditDb.connect`).

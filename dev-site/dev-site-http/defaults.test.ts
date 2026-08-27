@@ -4,29 +4,30 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   assertCliMayOpenDb,
+  BIND_MOUNTED_DEV_SITE_DB_SUFFIX,
   DbInUseError,
-  isDaemonSharedDbPath,
+  isBindMountedSharedDbPath,
 } from "./bin/saf-dev-site/defaults.ts";
 
-describe("isDaemonSharedDbPath", () => {
-  it("matches the bind-mounted daemon sqlite path", () => {
+describe("isBindMountedSharedDbPath", () => {
+  it("matches the bind-mounted dev-site sqlite path", () => {
     expect(
-      isDaemonSharedDbPath(
-        "/Users/x/pathclerk/daemon/dev-site/service/http/data/dev-site.sqlite",
+      isBindMountedSharedDbPath(
+        `/Users/x/acme-widget/product/${BIND_MOUNTED_DEV_SITE_DB_SUFFIX}`,
       ),
     ).toBe(true);
     expect(
-      isDaemonSharedDbPath(
-        "C:\\repo\\daemon\\dev-site\\service\\http\\data\\dev-site.sqlite",
+      isBindMountedSharedDbPath(
+        `C:\\repo\\product\\${BIND_MOUNTED_DEV_SITE_DB_SUFFIX.replace(/\//g, "\\")}`,
       ),
     ).toBe(true);
   });
 
   it("rejects other sqlite paths", () => {
-    expect(isDaemonSharedDbPath("/tmp/other.sqlite")).toBe(false);
+    expect(isBindMountedSharedDbPath("/tmp/other.sqlite")).toBe(false);
     expect(
-      isDaemonSharedDbPath(
-        "/tmp/daemon/dev-site/service/http/data/other.sqlite",
+      isBindMountedSharedDbPath(
+        `/tmp/product/${BIND_MOUNTED_DEV_SITE_DB_SUFFIX.replace("dev-site.sqlite", "other.sqlite")}`,
       ),
     ).toBe(false);
   });
@@ -84,13 +85,10 @@ describe("assertCliMayOpenDb", () => {
     ).not.toThrow();
   });
 
-  it("refuses write on the shared daemon path when Docker api is up", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dev-site-daemon-"));
+  it("refuses write on the shared dev-site path when Docker api is up", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dev-site-shared-"));
     tmpDirs.push(dir);
-    const dbPath = path.join(
-      dir,
-      "daemon/dev-site/service/http/data/dev-site.sqlite",
-    );
+    const dbPath = path.join(dir, BIND_MOUNTED_DEV_SITE_DB_SUFFIX);
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
     fs.writeFileSync(dbPath, "");
 

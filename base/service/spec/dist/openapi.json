@@ -392,11 +392,6 @@
         }
       }
     },
-    "__url-path__": {
-      "__method__": {
-        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-L6u6qT/routes/__group-name__/__target-name__.yaml#/__operationId__"
-      }
-    },
     "/admin/users/by-id": {
       "get": {
         "summary": "Look up a Kratos identity by ID (site-admin)",
@@ -480,6 +475,11 @@
         }
       }
     },
+    "__url-path__": {
+      "__method__": {
+        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-n8Mrqj/routes/__group-name__/__target-name__.yaml#/__operationId__"
+      }
+    },
     "/__offshoot-name__/health": {
       "get": {
         "operationId": "get__OffshootName__Health",
@@ -510,11 +510,11 @@
       "UserConfig": {
         "$ref": "#/components/schemas/user-config"
       },
-      "__TargetName__": {
-        "$ref": "#/components/schemas/__target-name__"
-      },
       "KratosIdentity": {
         "$ref": "#/components/schemas/kratos-identity"
+      },
+      "__TargetName__": {
+        "$ref": "#/components/schemas/__target-name__"
       },
       "jobs-demo-options": {
         "type": "object",

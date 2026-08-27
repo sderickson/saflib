@@ -1,48 +1,39 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
-import path from "node:path";
 
-/** Same on-disk location the daemon HTTP service uses by default. */
-export const DAEMON_DEV_SITE_DB_REL =
-  "daemon/dev-site/service/http/data/dev-site.sqlite";
+/** Standard dev-site sqlite path suffix under a product tree. */
+export const BIND_MOUNTED_DEV_SITE_DB_SUFFIX =
+  "dev-site/service/http/data/dev-site.sqlite";
 
 export function resolveRepoRoot(explicit?: string): string {
   return explicit || process.env.DEV_SITE_REPO_ROOT || process.cwd();
 }
 
 /**
- * Prefer explicit `--db`, then `DEV_SITE_DB_PATH`, then the daemon service
- * sqlite beside `daemon/dev-site/service/http` (when present), else the
- * library on-disk default (`true` → `@saflib/dev-site-db/data/`).
+ * Prefer explicit `--db`, then `DEV_SITE_DB_PATH`, else the library on-disk
+ * default (`true` → `@saflib/dev-site-db/data/`).
  */
 export function resolveDbPath(
   repoRoot: string,
   explicit?: string,
 ): string | true {
+  void repoRoot;
   if (explicit) return explicit;
   if (process.env.DEV_SITE_DB_PATH) return process.env.DEV_SITE_DB_PATH;
-  const daemonDb = path.resolve(repoRoot, DAEMON_DEV_SITE_DB_REL);
-  if (fs.existsSync(daemonDb)) return daemonDb;
   return true;
 }
 
 /**
- * Prefer explicit `--product-root`, then `DEV_SITE_PRODUCT_ROOT`, then
- * `daemon` when using the daemon sqlite, else whole-repo (`""`).
+ * Prefer explicit `--product-root`, then `DEV_SITE_PRODUCT_ROOT`, else
+ * whole-repo (`""`).
  */
 export function resolveProductRoot(
   explicit: string | undefined,
-  dbPath: string | true,
+  _dbPath: string | true,
 ): string {
   if (explicit !== undefined && explicit !== "") return explicit;
   if (process.env.DEV_SITE_PRODUCT_ROOT !== undefined) {
     return process.env.DEV_SITE_PRODUCT_ROOT;
-  }
-  if (
-    typeof dbPath === "string" &&
-    dbPath.replace(/\\/g, "/").includes("daemon/dev-site/")
-  ) {
-    return "daemon";
   }
   return "";
 }
@@ -52,35 +43,26 @@ export function resolveMainRef(explicit?: string): string {
 }
 
 /**
- * Like {@link resolveProductRoot}, but when the result would be whole-repo and
- * `daemon/` exists under the repo (typical PathClerk layout), prefer `daemon`
- * for workdir scans.
+ * Like {@link resolveProductRoot}, but falls back to whole-repo when unset.
  */
 export function resolveWorkdirProductRoot(
-  repoRoot: string,
+  _repoRoot: string,
   explicit: string | undefined,
   dbPath: string | true,
 ): string {
-  const fromDefaults = resolveProductRoot(explicit, dbPath);
-  if (fromDefaults) return fromDefaults;
-  if (explicit !== undefined) return explicit;
-  if (fs.existsSync(path.resolve(repoRoot, "daemon"))) return "daemon";
-  return "";
+  return resolveProductRoot(explicit, dbPath);
 }
 
-export function isDaemonSharedDbPath(dbPath: string): boolean {
+export function isBindMountedSharedDbPath(dbPath: string): boolean {
   const normalized = dbPath.replace(/\\/g, "/");
-  return (
-    normalized.endsWith(`/${DAEMON_DEV_SITE_DB_REL}`) ||
-    normalized.endsWith(DAEMON_DEV_SITE_DB_REL)
-  );
+  return normalized.endsWith(BIND_MOUNTED_DEV_SITE_DB_SUFFIX);
 }
 
 export class DbInUseError extends Error {
   constructor(dbPath: string, detail: string) {
     super(
       `Refusing to open ${dbPath}: ${detail}. ` +
-        "Stop the Docker api (`npm run dev` in daemon/dev-site/dev) or pass --db / DEV_SITE_DB_PATH to a separate file.",
+        "Stop the dev-site Docker api or pass --db / DEV_SITE_DB_PATH to a separate file.",
     );
     this.name = "DbInUseError";
   }
@@ -122,7 +104,7 @@ export function listSqliteHolderPids(dbPath: string): number[] {
 }
 
 /**
- * True when compose service `api` under `daemon/dev-site/dev` is running.
+ * True when compose service `api` under a `dev-site/dev` project is running.
  * Backup when host `lsof` cannot see the VM-side holder.
  */
 export function isDevSiteDockerApiRunning(): boolean {
@@ -145,7 +127,7 @@ export function isDevSiteDockerApiRunning(): boolean {
     return out
       .split("\n")
       .map((line) => line.trim().replace(/\\/g, "/"))
-      .some((dir) => /\/daemon\/dev-site\/dev\/?$/.test(dir));
+      .some((dir) => /\/dev-site\/dev\/?$/.test(dir));
   } catch {
     return false;
   }
@@ -185,10 +167,10 @@ export function assertCliMayOpenDb(
     );
   }
 
-  if (isDaemonSharedDbPath(dbPath) && dockerApiRunning()) {
+  if (isBindMountedSharedDbPath(dbPath) && dockerApiRunning()) {
     throw new DbInUseError(
       dbPath,
-      "daemon Docker api container is running (shared bind-mounted sqlite)",
+      "dev-site Docker api container is running (shared bind-mounted sqlite)",
     );
   }
 }

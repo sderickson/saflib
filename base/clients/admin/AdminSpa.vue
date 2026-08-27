@@ -9,6 +9,7 @@ const adminSidebarLinks = [
   { ...adminLinks.users, name: "Users" },
   { ...adminLinks.cronJobs, name: "Cron" },
   { ...adminLinks.jobs, name: "Jobs" },
+  { ...adminLinks.errors, name: "Errors" },
   { ...adminLinks.audit, name: "Audit" },
 ];
 
@@ -21,7 +22,6 @@ const devObservabilitySidebarLinks = computed(() => {
     { ...adminLinks.logs, name: "Logs" },
     { ...adminLinks.metrics, name: "Metrics" },
     { ...adminLinks.events, name: "Events" },
-    { ...adminLinks.errors, name: "Errors" },
   ];
 });
 </script>

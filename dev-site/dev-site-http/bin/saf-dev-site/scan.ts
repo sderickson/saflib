@@ -17,11 +17,11 @@ export const addScanCommand = (program: Command) => {
       "Ingest mainline commits newest-first from tip (plus feature-branch tips when --limit is unset).",
     )
     .option("--repo-root <path>", "Git repository root to analyze")
-    .option("--product-root <path>", "Path prefix within the repo (e.g. daemon)")
+    .option("--product-root <path>", "Path prefix within the repo (e.g. product)")
     .option("--main-ref <ref>", "Main branch ref")
     .option(
       "--db <path>",
-      "SQLite file path (created if missing; scan refuses if Docker api holds the shared daemon DB)",
+      "SQLite file path (created if missing; scan refuses if Docker api holds the shared dev-site DB)",
     )
     .option(
       "--limit <n>",

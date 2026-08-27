@@ -207,7 +207,7 @@ const program = new Command()
   .option("--root <dir>", "Monorepo root (default: auto-detect)")
   .option(
     "--product-root <dir>",
-    "Limit source walk to this repo-relative prefix (e.g. daemon)",
+    "Limit source walk to this repo-relative prefix (e.g. product)",
   )
   .option(
     "--workdir",
