@@ -281,9 +281,6 @@
       "path": "./playwright"
     },
     {
-      "path": "./posthog-client"
-    },
-    {
       "path": "./processes"
     },
     {
@@ -296,13 +293,7 @@
       "path": "./secret-store"
     },
     {
-      "path": "./vendors/infisical"
-    },
-    {
       "path": "./security"
-    },
-    {
-      "path": "./sentry"
     },
     {
       "path": "./service"
@@ -312,6 +303,30 @@
     },
     {
       "path": "./utils"
+    },
+    {
+      "path": "./vendors/azure"
+    },
+    {
+      "path": "./vendors/brevo"
+    },
+    {
+      "path": "./vendors/gcs"
+    },
+    {
+      "path": "./vendors/infisical"
+    },
+    {
+      "path": "./vendors/loki"
+    },
+    {
+      "path": "./vendors/posthog"
+    },
+    {
+      "path": "./vendors/posthog-client"
+    },
+    {
+      "path": "./vendors/sentry"
     },
     {
       "path": "./vite"

@@ -1,0 +1,30 @@
+{
+  "name": "@saflib/vendors-brevo",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Brevo-backed EmailService adapter and process-level configure helpers",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@getbrevo/brevo": "^5.0.3",
+    "@saflib/email-service": "*",
+    "@saflib/node": "*",
+    "@saflib/secret-store": "*"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

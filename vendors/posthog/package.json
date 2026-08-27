@@ -1,0 +1,32 @@
+{
+  "name": "@saflib/vendors-posthog",
+  "saf": {
+    "kind": "lib",
+    "envExtends": ["@saflib/env"]
+  },
+  "description": "PostHog-backed AnalyticsService adapter and process-level configure helpers",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./env": "./env.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/analytics-service": "*",
+    "@saflib/env": "*",
+    "@saflib/node": "*",
+    "posthog-node": "^5.33.2"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

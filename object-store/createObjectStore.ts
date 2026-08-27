@@ -1,19 +1,9 @@
 import type { ObjectStore } from "./ObjectStore.ts";
 import { DiskObjectStore } from "./disk/DiskObjectStore.ts";
-import {
-  AzureObjectStore,
-  type AzureObjectStoreOptions,
-} from "./azure/AzureObjectStore.ts";
-import {
-  GcsObjectStore,
-  type GcsObjectStoreOptions,
-} from "./gcs/GcsObjectStore.ts";
 import { TestObjectStore } from "./test/TestObjectStore.ts";
 
 export type CreateObjectStoreOptions =
   | { type: "disk"; rootPath: string }
-  | { type: "azure"; options: AzureObjectStoreOptions }
-  | { type: "gcs"; options: GcsObjectStoreOptions }
   | { type: "test" };
 
 /**
@@ -25,8 +15,6 @@ const testStoreCache = new Map<string, TestObjectStore>();
 
 function getTestStoreCacheKey(options: CreateObjectStoreOptions): string | null {
   if (options.type === "disk") return options.rootPath;
-  if (options.type === "azure") return `azure:${options.options.containerName}`;
-  if (options.type === "gcs") return `gcs:${options.options.bucketName}`;
   return null;
 }
 
@@ -35,6 +23,8 @@ function getTestStoreCacheKey(options: CreateObjectStoreOptions): string | null 
  * TestObjectStore (in-memory) regardless of the requested type, so tests
  * don't write to disk. Stores are cached by container key so multiple contexts
  * with the same config share the same in-memory store.
+ *
+ * For GCS use `@saflib/vendors-gcs`. For Azure use `@saflib/vendors-azure`.
  */
 export function createObjectStore(
   options: CreateObjectStoreOptions,
@@ -54,10 +44,6 @@ export function createObjectStore(
   switch (options.type) {
     case "disk":
       return new DiskObjectStore(options.rootPath);
-    case "azure":
-      return new AzureObjectStore(options.options);
-    case "gcs":
-      return new GcsObjectStore(options.options);
     case "test":
       return new TestObjectStore();
     default: {

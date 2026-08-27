@@ -9,10 +9,8 @@ export {
 } from "./lib/reportedErrorBuffer.ts";
 
 export {
-  initErrorsServer,
-  initSentry,
   installReportedErrorCollector,
-  type InitErrorsServerOptions,
+  CSP_INGEST_MESSAGE,
 } from "./lib/initErrorsServer.ts";
 
 export {

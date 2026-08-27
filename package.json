@@ -31,7 +31,14 @@
   "dependencies": {
     "@saflib/dev-tools": "*",
     "@saflib/secret-store": "file:secret-store",
+    "@saflib/vendors-azure": "file:vendors/azure",
+    "@saflib/vendors-brevo": "file:vendors/brevo",
+    "@saflib/vendors-gcs": "file:vendors/gcs",
     "@saflib/vendors-infisical": "file:vendors/infisical",
+    "@saflib/vendors-loki": "file:vendors/loki",
+    "@saflib/vendors-posthog": "file:vendors/posthog",
+    "@saflib/vendors-posthog-client": "file:vendors/posthog-client",
+    "@saflib/vendors-sentry": "file:vendors/sentry",
     "saflib-workflows": "^0.2.0"
   },
   "overrides": {

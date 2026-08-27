@@ -40,6 +40,9 @@
       "path": "../../../sdk"
     },
     {
+      "path": "../../../vendors/sentry"
+    },
+    {
       "path": "../../../vue"
     },
     {

@@ -27,6 +27,7 @@
     "@saflib/cron": "*",
     "@saflib/email-service": "*",
     "@saflib/express": "*",
+    "@saflib/vendors-brevo": "*",
     "@saflib/jobs": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",

@@ -1,0 +1,50 @@
+import { PostHog } from "posthog-node";
+import {
+  AnalyticsServiceBase,
+  type IdentifyProps,
+} from "@saflib/analytics-service";
+
+export type PosthogAnalyticsServiceOptions = {
+  apiKey: string;
+  host: string;
+};
+
+export class PosthogAnalyticsService extends AnalyticsServiceBase {
+  private readonly client: PostHog;
+
+  constructor(options: PosthogAnalyticsServiceOptions) {
+    super();
+    this.client = new PostHog(options.apiKey, { host: options.host });
+  }
+
+  identify(props: IdentifyProps): void {
+    this.client.identify({
+      distinctId: props.distinctId,
+      properties: props.properties,
+      disableGeoip: props.disableGeoip,
+    });
+  }
+
+  shutdown(): void | Promise<void> {
+    return this.client.shutdown();
+  }
+
+  protected emitCapture(event: {
+    distinctId: string;
+    event: string;
+    context?: Record<string, unknown>;
+  }): void {
+    this.client.capture({
+      distinctId: event.distinctId,
+      event: event.event,
+      properties: event.context,
+    });
+  }
+}
+
+/** Convenience factory for PostHog-backed analytics. */
+export function createPosthogAnalyticsService(
+  options: PosthogAnalyticsServiceOptions,
+): PosthogAnalyticsService {
+  return new PosthogAnalyticsService(options);
+}

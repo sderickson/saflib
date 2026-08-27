@@ -11,8 +11,9 @@ export {
   type CreateAnalyticsServiceOptions,
 } from "./createAnalyticsService.ts";
 export {
-  configureAnalytics,
+  setAnalyticsClient,
   getAnalyticsClient,
+  hasAnalyticsClient,
   resetAnalyticsForTests,
 } from "./configureAnalytics.ts";
 export {
@@ -21,7 +22,3 @@ export {
   clearCapturedAnalyticsCalls,
   type CapturedAnalyticsCall,
 } from "./in-memory/InMemoryAnalyticsService.ts";
-export {
-  PosthogAnalyticsService,
-  type PosthogAnalyticsServiceOptions,
-} from "./posthog/PosthogAnalyticsService.ts";

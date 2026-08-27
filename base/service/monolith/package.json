@@ -23,7 +23,8 @@
     "@saflib/jobs": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
-    "@saflib/sentry": "*"
+    "@saflib/vendors-loki": "*",
+    "@saflib/vendors-sentry": "*"
   },
   "sideEffects": false
 }

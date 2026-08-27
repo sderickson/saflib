@@ -1,0 +1,358 @@
+import { describe, it, expect } from "vitest";
+import { Readable } from "stream";
+import {
+  PathTraversalError,
+  StorageError,
+  FileNotFoundError,
+} from "@saflib/object-store";
+import { AzureObjectStore } from "./AzureObjectStore.ts";
+
+describe("AzureObjectStore", () => {
+  describe("constructor", () => {
+    it("should initialize with container name", () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      expect(store).toBeInstanceOf(AzureObjectStore);
+    });
+
+    it("should initialize with container name and tier", () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Cool",
+        accessLevel: "private",
+      });
+      expect(store).toBeInstanceOf(AzureObjectStore);
+    });
+
+    it("should initialize with container name, tier, and access level", () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Cool",
+        accessLevel: "blob",
+      });
+      expect(store).toBeInstanceOf(AzureObjectStore);
+    });
+  });
+
+  describe("uploadFile", () => {
+    it("should upload file successfully", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const stream = Readable.from("test content");
+
+      const result = await store.uploadFile("test.txt", stream);
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.success).toBe(true);
+        expect(result.result.url).toBeDefined();
+      }
+    });
+
+    it("should upload file with metadata", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const stream = Readable.from("test content");
+
+      const result = await store.uploadFile("test.txt", stream, {
+        mimetype: "text/plain",
+        filename: "test.txt",
+        cacheTime: "2024-01-01T00:00:00Z",
+      });
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.success).toBe(true);
+      }
+    });
+
+    it("should include path in url", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const stream = Readable.from("test content");
+
+      const result = await store.uploadFile("file.txt", stream);
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.success).toBe(true);
+        expect(result.result.url).toContain("file.txt");
+      }
+    });
+
+    it("should return StorageError for invalid paths", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const stream = Readable.from("test content");
+
+      const result = await store.uploadFile("../file.txt", stream);
+
+      expect("error" in result).toBe(true);
+      if ("error" in result && result.error) {
+        expect(result.error).toBeInstanceOf(StorageError);
+        expect(result.error.cause).toBeInstanceOf(PathTraversalError);
+      }
+    });
+  });
+
+  describe("listFiles", () => {
+    it("should return empty array in test mode", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const result = await store.listFiles();
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result).toEqual([]);
+      }
+    });
+
+    it("should accept prefix parameter", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const result = await store.listFiles("subfolder");
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(Array.isArray(result.result)).toBe(true);
+      }
+    });
+  });
+
+  describe("deleteFile", () => {
+    it("should delete file successfully", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const result = await store.deleteFile("test.txt");
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.success).toBe(true);
+      }
+    });
+
+    it("should return StorageError for invalid paths", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+
+      const result = await store.deleteFile("../file.txt");
+
+      expect("error" in result).toBe(true);
+      if ("error" in result && result.error) {
+        expect(result.error).toBeInstanceOf(StorageError);
+        expect(result.error.cause).toBeInstanceOf(PathTraversalError);
+      }
+    });
+  });
+
+  describe("readFile", () => {
+    it("should return Readable stream in test mode", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const result = await store.readFile("test.txt");
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result).toBeInstanceOf(Readable);
+      }
+    });
+
+    it("should return StorageError for invalid paths", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+
+      const result = await store.readFile("../file.txt");
+
+      expect("error" in result).toBe(true);
+      if ("error" in result && result.error) {
+        expect(result.error).toBeInstanceOf(StorageError);
+        expect(result.error.cause).toBeInstanceOf(PathTraversalError);
+      }
+    });
+  });
+
+  describe("path handling", () => {
+    it("should use nested path in url", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const stream = Readable.from("test");
+
+      const uploadResult = await store.uploadFile(
+        "folder/subfolder/file.txt",
+        stream,
+      );
+      expect("result" in uploadResult).toBe(true);
+      if ("result" in uploadResult && uploadResult.result) {
+        expect(uploadResult.result.url).toContain(
+          "folder/subfolder/file.txt",
+        );
+      }
+    });
+  });
+
+  describe("error handling", () => {
+    it("should return StorageError on upload failure", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const stream = Readable.from("test");
+
+      const result = await store.uploadFile("test.txt", stream);
+
+      if ("error" in result) {
+        expect(result.error).toBeInstanceOf(StorageError);
+      } else {
+        expect("result" in result).toBe(true);
+      }
+    });
+
+    it("should return StorageError on delete failure", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const result = await store.deleteFile("nonexistent.txt");
+
+      if ("error" in result) {
+        expect(result.error).toBeInstanceOf(StorageError);
+      } else {
+        expect("result" in result).toBe(true);
+      }
+    });
+
+    it("should return FileNotFoundError or StorageError on read failure", async () => {
+      const store = new AzureObjectStore({
+        containerName: "test-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const result = await store.readFile("nonexistent.txt");
+
+      if ("error" in result) {
+        expect(
+          result.error instanceof FileNotFoundError ||
+            result.error instanceof StorageError,
+        ).toBe(true);
+      } else {
+        expect("result" in result).toBe(true);
+      }
+    });
+  });
+
+  describe("upsertContainer", () => {
+    it("should upsert container successfully in test mode", async () => {
+      const store = new AzureObjectStore({
+        containerName: "my-container",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const result = await store.upsertContainer();
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.success).toBe(true);
+        expect(result.result.created).toBe(true);
+        expect(result.result.url).toBe(
+          "https://mock-storage.blob.core.windows.net/my-container",
+        );
+      }
+    });
+
+    it("should use access level from constructor (blob)", async () => {
+      const store = new AzureObjectStore({
+        containerName: "blob-container",
+        tier: "Hot",
+        accessLevel: "blob",
+      });
+      const result = await store.upsertContainer();
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.success).toBe(true);
+      }
+    });
+
+    it("should use access level from constructor (container)", async () => {
+      const store = new AzureObjectStore({
+        containerName: "public-container",
+        tier: "Hot",
+        accessLevel: "container",
+      });
+      const result = await store.upsertContainer();
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.success).toBe(true);
+      }
+    });
+
+    it("should use store container name", async () => {
+      const store = new AzureObjectStore({
+        containerName: "custom-container-name",
+        tier: "Hot",
+        accessLevel: "private",
+      });
+      const result = await store.upsertContainer();
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.url).toContain("custom-container-name");
+      }
+    });
+  });
+
+  describe("StorageError", () => {
+    it("should create error with message", () => {
+      const error = new StorageError("Test error");
+      expect(error).toBeInstanceOf(Error);
+      expect(error).toBeInstanceOf(StorageError);
+      expect(error.name).toBe("StorageError");
+      expect(error.message).toBe("Test error");
+    });
+
+    it("should create error with cause", () => {
+      const cause = new Error("Original error");
+      const error = new StorageError("Test error", cause);
+      expect(error.cause).toBe(cause);
+    });
+  });
+});

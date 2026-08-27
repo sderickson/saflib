@@ -1,6 +1,6 @@
 {
   "name": "@saflib/email-service",
-  "description": "Brevo transactional email with in-memory mock store and Express routes",
+  "description": "EmailService abstract types, in-memory mock store, and Express mock email routes",
   "private": true,
   "type": "module",
   "exports": {
@@ -14,11 +14,9 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@getbrevo/brevo": "^5.0.3",
     "@saflib/email-spec": "*",
     "@saflib/express": "*",
-    "@saflib/node": "*",
-    "@saflib/secret-store": "*"
+    "@saflib/node": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",

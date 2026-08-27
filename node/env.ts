@@ -10,14 +10,6 @@ export interface NodeEnvSchema extends EnvEnvSchema {
    */
   LOG_LEVEL?: "error" | "warn" | "info" | "verbose" | "debug" | "silly";
   /**
-   * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
-   */
-  LOKI_HOSTNAME?: string;
-  /**
-   * The port number of the Loki instance to send logs to (e.g., 3100)
-   */
-  LOKI_PORT?: string;
-  /**
    * Comma-separated list of emails who will get the 'admin' scope. Emails must be validated to receive this scope.
    */
   ADMIN_EMAILS: string;

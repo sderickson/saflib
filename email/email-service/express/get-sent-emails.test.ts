@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createErrorMiddleware } from "@saflib/express";
-import { createEmailService } from "../createEmailService.ts";
+import { createMockEmailService } from "../MockEmailService.ts";
 import { sentEmails } from "../mock-store.ts";
 import { createEmailsRouter } from "./createEmailsRouter.ts";
 
@@ -11,7 +11,7 @@ describe("getSentEmails", () => {
 
   beforeEach(() => {
     sentEmails.length = 0;
-    const emailService = createEmailService("mock");
+    const emailService = createMockEmailService();
     app = express();
     app.use("/", createEmailsRouter({ emailService }));
     app.use(createErrorMiddleware());
@@ -25,7 +25,7 @@ describe("getSentEmails", () => {
   });
 
   it("should return sent emails for a specific user", async () => {
-    const emailService = createEmailService("mock");
+    const emailService = createMockEmailService();
     const email1 = `test${Math.random()}@test.com`;
     const email2 = `test${Math.random()}@test.com`;
     await emailService.sendEmail({
