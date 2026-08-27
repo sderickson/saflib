@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import VerificationAsync from "@saflib/ory-kratos-spa/pages/verification/VerificationAsync.vue";
+import { VerificationAsync } from "@saflib/ory-kratos-spa/verification";
 import { useReverseT } from "@saflib/base-account-spa/i18n";
 import { verify_email } from "./VerifyEmail.strings.ts";
 import EmailVerificationShell from "./EmailVerificationShell.vue";

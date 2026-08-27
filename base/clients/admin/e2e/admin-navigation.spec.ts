@@ -4,7 +4,7 @@ import { getUniqueEmail, getUniqueId } from "@saflib/playwright";
 import {
   registrationPageFixture,
   type RegistrationPageFixture,
-} from "@saflib/ory-kratos-spa/pages/registration/registration.fixture.ts";
+} from "@saflib/ory-kratos-spa/fixtures";
 import {
   baseFixture,
   type BaseFixture,

@@ -2,7 +2,7 @@ import { expect, test as base } from "@playwright/test";
 import {
   loginPageFixture,
   type LoginPageFixture,
-} from "@saflib/ory-kratos-spa/pages/login/login.fixture.ts";
+} from "@saflib/ory-kratos-spa/fixtures";
 import { apiOrigin } from "@saflib/security/origins/urls";
 import {
   assertCsrfCookie,

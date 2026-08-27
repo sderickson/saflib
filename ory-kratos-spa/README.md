@@ -1,8 +1,33 @@
 # Auth SPA — Kratos Custom UI
 
-Vue 3 + Vuetify single-page app providing custom UI for [Ory Kratos](https://www.ory.sh/kratos/) self-service browser flows: login, registration, recovery, verification, settings, and a post-registration email-verify wall.
+Vue 3 + Vuetify library providing custom UI for [Ory Kratos](https://www.ory.sh/kratos/) self-service browser flows.
 
 This document describes the **intended architecture**. When code diverges from what is described here, treat the document as correct and the code as needing a fix.
+
+## Package exports
+
+| Entry | Purpose |
+| ----- | ------- |
+| `@saflib/ory-kratos-spa` | `configureAuthApp`, auth fallback inject |
+| `./router` | `createKratosAuthRouter` — **logged-out** flows + logout only |
+| `./session-routes` | `kratosSessionRouteRecords()` — settings + verify-wall (mount on auth or account) |
+| `./settings` | `SettingsSectionAsync` for embedding settings in account (or another SPA) |
+| `./registration` | Registration override building blocks |
+| `./verification` | `VerificationAsync` / `NewVerificationAsync` for account embeds |
+| `./fixtures` | Playwright fixtures (login, logout, registration, verify-wall) |
+| `./strings`, `./i18n`, `./test-app` | i18n and vitest helpers |
+
+There is **no** catch-all export. Prefer the entries above over deep `pages/...` paths.
+
+### Auth vs session placement
+
+```
+auth SPA  → createKratosAuthRouter (login, registration, recovery, verification, logout)
+account   → SettingsSectionAsync on product routes (/email, /password, /mfa, …)
+optional  → ...kratosSessionRouteRecords() on auth when you still want /settings + /verify-wall
+```
+
+Daemon mounts session routes on auth for security e2e / recovery path-only redirects, and embeds settings on account for day-to-day UX. Configure recovery → settings via `configureAuthApp({ postRecoverySettingsHref })`.
 
 ## Page structure
 

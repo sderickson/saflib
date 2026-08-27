@@ -1,9 +1,10 @@
 import { computed, inject, type ComputedRef, type InjectionKey } from "vue";
 import { useRoute } from "vue-router";
+import { linkToHref, linkToHrefWithHost } from "@saflib/links";
+import { authLinks } from "@saflib/ory-kratos-sdk/links";
 
 // really gotta figure out some better way to handle client-side links
 // perhaps set up something in @saflib/vue that is reactive?
-import { linkToHref } from "@saflib/links";
 const domain = document.location.host.replace("auth.", "");
 
 /** Default post-auth URL when the shell does not set `postAuthFallbackHref` or `postAuthOverrideHref` in `configureAuthApp`. */
@@ -20,6 +21,17 @@ export const defaultRootHomeFallbackHref = computed(() =>
 export const defaultPostRegisterFallbackHref = computed(() =>
   linkToHref({ subdomain: "app", path: "/" }, { domain }),
 );
+
+/**
+ * Default recovery → settings continue URL (auth `/settings?flow=…`).
+ * Override via {@link configureAuthApp} `postRecoverySettingsHref` when settings
+ * live on another SPA (e.g. account).
+ */
+export function defaultPostRecoverySettingsHref(settingsFlowId: string): string {
+  return linkToHrefWithHost(authLinks.settings, {
+    params: { flow: settingsFlowId },
+  });
+}
 
 /**
  * Resolved post-auth fallback base URL from {@link configureAuthApp} (override, explicit fallback, or library default).
@@ -45,15 +57,28 @@ export const AUTH_ROOT_HOME_URL_IS_OVERRIDE: InjectionKey<ComputedRef<boolean>> 
 /**
  * Resolved post-register URL from {@link configureAuthApp} (override or default).
  */
-export const AUTH_POST_REGISTER_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
-  Symbol("authPostRegisterFallbackHref");
+export const AUTH_POST_REGISTER_FALLBACK_HREF: InjectionKey<
+  ComputedRef<string>
+> = Symbol("authPostRegisterFallbackHref");
 
 /** True when {@link configureAuthApp} was given `postRegisterOverrideHref`. */
-export const AUTH_POST_REGISTER_URL_IS_OVERRIDE: InjectionKey<ComputedRef<boolean>> =
-  Symbol("authPostRegisterUrlIsOverride");
+export const AUTH_POST_REGISTER_URL_IS_OVERRIDE: InjectionKey<
+  ComputedRef<boolean>
+> = Symbol("authPostRegisterUrlIsOverride");
+
+/**
+ * Resolver for recovery `show_settings_ui` continue (settings flow id → absolute URL).
+ */
+export const AUTH_POST_RECOVERY_SETTINGS_HREF: InjectionKey<
+  ComputedRef<(settingsFlowId: string) => string>
+> = Symbol("authPostRecoverySettingsHref");
 
 /** Default for URL override flags when `configureAuthApp` was not used. */
 export const defaultAuthUrlNotOverride = computed(() => false);
+
+const defaultPostRecoverySettingsHrefRef = computed(
+  () => defaultPostRecoverySettingsHref,
+);
 
 function mergeReturnToQuery(
   route: ReturnType<typeof useRoute>,
@@ -117,6 +142,18 @@ export function useAuthPostRegisterFallbackHref(): ComputedRef<string> {
     defaultAuthUrlNotOverride,
   );
   return mergeReturnToQuery(route, resolvedHref, isOverride);
+}
+
+/**
+ * Where recovery should send the browser for a Kratos settings continue step.
+ */
+export function useAuthPostRecoverySettingsHref(): ComputedRef<
+  (settingsFlowId: string) => string
+> {
+  return inject(
+    AUTH_POST_RECOVERY_SETTINGS_HREF,
+    defaultPostRecoverySettingsHrefRef,
+  );
 }
 
 export function useAuthPostAuthUrlIsOverride(): ComputedRef<boolean> {

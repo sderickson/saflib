@@ -7,9 +7,11 @@
     "./i18n": "./i18n.ts",
     "./test-app": "./test-app.ts",
     "./router": "./router.ts",
+    "./session-routes": "./session-routes.ts",
     "./settings": "./settings.ts",
     "./registration": "./registration.ts",
-    "./*": "./*"
+    "./verification": "./verification.ts",
+    "./fixtures": "./fixtures.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.2"
