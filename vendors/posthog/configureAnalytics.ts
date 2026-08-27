@@ -1,9 +1,10 @@
 import {
   hasAnalyticsClient,
-  getAnalyticsClient,
+  getAnalyticsClient as getConfiguredAnalyticsClient,
   resetAnalyticsForTests,
   setAnalyticsClient,
   createAnalyticsService,
+  type AnalyticsService,
 } from "@saflib/analytics-service";
 import { getSafReporters } from "@saflib/node";
 import { PosthogAnalyticsService } from "./PosthogAnalyticsService.ts";
@@ -37,4 +38,14 @@ export function configureAnalytics(): void {
   log.info(`analytics: ${useMock ? "in-memory (mock)" : "PostHog"}`);
 }
 
-export { getAnalyticsClient, resetAnalyticsForTests };
+/**
+ * Returns the process-level analytics client, configuring from env on first use.
+ */
+export function getAnalyticsClient(): AnalyticsService {
+  if (!hasAnalyticsClient()) {
+    configureAnalytics();
+  }
+  return getConfiguredAnalyticsClient();
+}
+
+export { resetAnalyticsForTests };
