@@ -1,8 +1,16 @@
 #!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { Command } from "commander";
-import { getCombinedEnvSchema, makeEnvParserSnippet } from "./env.ts";
+import {
+  getCombinedEnvSchema,
+  getDirectEnvParents,
+  getLocalEnvSchema,
+  makeEnvParserSnippet,
+} from "./env.ts";
 import { writeFileSync, existsSync } from "fs";
-import { buildMonorepoContext, getCurrentPackageName } from "@saflib/monorepo/workspace";
+import {
+  buildMonorepoContext,
+  getCurrentPackageName,
+} from "@saflib/monorepo/workspace";
 import path from "path";
 import { formatPath } from "@saflib/monorepo/dev";
 
@@ -31,6 +39,20 @@ program.command("print").action(async () => {
   console.log(formattedStrings.join("\n"));
 });
 
+async function generateEnvFiles(packageName: string, packagePath: string) {
+  const context = buildMonorepoContext();
+  const localSchema = getLocalEnvSchema(packageName, context);
+  const parents = getDirectEnvParents(packageName, context);
+  const typeSnippet = await makeEnvParserSnippet(
+    localSchema,
+    packageName,
+    parents,
+  );
+  const envTsPath = path.join(packagePath, "env.ts");
+  writeFileSync(envTsPath, typeSnippet);
+  return { localSchema, parents, envTsPath };
+}
+
 program
   .command("generate")
   .description(
@@ -39,15 +61,11 @@ program
   .option("-c, --combined", "Whether to export the combined schema as well.")
   .action(async (options) => {
     const currentPackageName = getCurrentPackageName();
-    const combinedSchema = await getCombinedEnvSchema();
-    const typeSnippet = await makeEnvParserSnippet(
-      combinedSchema,
-      currentPackageName,
-    );
-    writeFileSync("env.ts", typeSnippet);
+    await generateEnvFiles(currentPackageName, process.cwd());
 
     // Note: to use this with npm exec, need to include "--" prior to the "--combined" option
     if (options.combined) {
+      const combinedSchema = await getCombinedEnvSchema();
       writeFileSync(
         "env.schema.combined.json",
         JSON.stringify(combinedSchema, null, 2),
@@ -79,16 +97,15 @@ program
       console.log(`Generating env files for package: ${packageName}`);
 
       try {
-        const combinedSchema = await getCombinedEnvSchema(packageName);
-        const typeSnippet = await makeEnvParserSnippet(
-          combinedSchema,
+        const { envTsPath: writtenPath } = await generateEnvFiles(
           packageName,
+          packagePath,
         );
-        writeFileSync(envTsPath, typeSnippet);
-        formatPath(envTsPath);
+        formatPath(writtenPath);
 
         // If the package has a combined schema file, update it too
         if (existsSync(combinedSchemaPath)) {
+          const combinedSchema = await getCombinedEnvSchema(packageName);
           writeFileSync(
             combinedSchemaPath,
             JSON.stringify(combinedSchema, null, 2),

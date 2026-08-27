@@ -31,13 +31,36 @@ If a package would use an env variable not provided by some dependency, it shoul
 }
 ```
 
-Run `npm exec saf-env generate` in that package to generate an `env.ts` file with a TypeScript `interface` which conforms to the combined schema of it and and all its dependencies' schemas. It also provides `typedEnv`, which is `process.env` cast to the generated type. The package can import `typedEnv` and use it and it will be type safe according to the schema. This can also be exported for use by other packages which depend on it, so they don't necessarily have to generate their own redundant `env.ts`.
+Run `npm exec saf-env generate` in that package to generate an `env.ts` file. The generated file:
+
+- Declares an interface with **only this package's** schema properties.
+- `import type`s and `extends` the env interfaces of its **env parents** (direct workspace dependencies that have `env.ts` / `env.schema.json`, or an explicit `saf.envExtends` list in `package.json`).
+- Exports `typedEnv`, which is `process.env` cast to that composed type.
+
+Packages should also export `./env` from `package.json` so dependents can import the generated types:
+
+```json
+"exports": {
+  "./env": "./env.ts"
+}
+```
 
 To ensure env variables passed in at runtime are _actually_ valid, a package will need to validate against a combined schema when the application begins.
 
-To do this, go to whichever package is doing the validating (likely a `service` package or wherever execution begins) and run `npm exec saf-env generate -- --combined`. This will produce an `env.schema.combined.json` file which, like `env.ts`, will include the schemas of all the dependencies as well as anything defined by the package itself. That package can then use `validateSchema` when the process begins. This function errors so the process will end if the environment is invalid.
+To do this, go to whichever package is doing the validating (likely a `service` package or wherever execution begins) and run `npm exec saf-env generate -- --combined`. This will produce an `env.schema.combined.json` file which merges schemas along the same **env-parent graph** (not the full npm transitive closure of unrelated code dependencies). That package can then use `validateEnv` when the process begins. This function errors so the process will end if the environment is invalid.
 
 To regenerate all existing `env.ts` and `env.schema.combined.json` files in the workspace, run `npm exec saf-env generate-all`.
+
+### Explicit env parents
+
+When a package depends on another package for code but should **not** inherit that package's env schema (for example `@saflib/sentry` depends on `@saflib/node` for git hashes, but client builds should not see server logging env), set:
+
+```json
+"saf": {
+  "kind": "lib",
+  "envExtends": ["@saflib/env"]
+}
+```
 
 ## Core Env Variables
 

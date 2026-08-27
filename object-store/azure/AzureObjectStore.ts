@@ -9,7 +9,7 @@ import { getBlobServiceClient } from "./client.ts";
 import { uploadFile } from "./upload-file.ts";
 import { deleteBlob } from "./delete-blob.ts";
 import { upsertContainer } from "./upsert-container.ts";
-import { typedEnv } from "../env.ts";
+import { typedEnv } from "@saflib/env";
 import type { ReturnsError } from "@saflib/monorepo";
 import { getSafReporters } from "@saflib/node";
 import type { AccessTier } from "@azure/storage-blob";

@@ -5,7 +5,9 @@
     "typecheck": "tsc -b",
     "start": "node --experimental-strip-types ./run.ts"
   },
-  "exports": {},
+  "exports": {
+    "./env": "./env.ts"
+  },
   "dependencies": {
     "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
@@ -16,6 +18,7 @@
     "@saflib/base-service-common": "*",
     "@saflib/base-spec": "*",
     "@saflib/env": "*",
+    "@saflib/errors-http": "*",
     "@saflib/express": "*",
     "@saflib/jobs": "*",
     "@saflib/monorepo": "*",

@@ -8,7 +8,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./mocks": "./client.mocks.ts"
+    "./mocks": "./client.mocks.ts",
+    "./env": "./env.ts"
   },
   "scripts": {
     "test": "vitest run",

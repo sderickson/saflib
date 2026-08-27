@@ -1,7 +1,7 @@
 /**
- * @deprecated Server Sentry init moved to `@saflib/errors-http`. Re-exported for compatibility.
+ * `@saflib/sentry` provides Vite source-map upload helpers (`./vite-build`) and
+ * Sentry-related env schema (`SENTRY_DSN`, `SENTRY_AUTH_TOKEN`).
+ *
+ * Server Sentry init lives in `@saflib/errors-http` (`initErrorsServer` / `initSentry`).
  */
-export {
-  initErrorsServer as initSentry,
-  type InitErrorsServerOptions as InitSentryOptions,
-} from "@saflib/errors-http";
+export {};

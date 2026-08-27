@@ -7,7 +7,7 @@ import {
   FileNotFoundError,
 } from "../ObjectStore.ts";
 import { getStorage } from "./client.ts";
-import { typedEnv } from "../env.ts";
+import { typedEnv } from "@saflib/env";
 import type { ReturnsError } from "@saflib/monorepo";
 import { getSafReporters } from "@saflib/node";
 

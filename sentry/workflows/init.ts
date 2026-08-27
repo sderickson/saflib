@@ -54,7 +54,7 @@ export const SentryInitWorkflowDefinition = defineWorkflow<
 
 4. **Production Docker build** — Do **not** \`COPY\` a gitignored \`.env.sentry-build-plugin\` into the image. Pass the token with **BuildKit** \`--secret id=...,env=SENTRY_AUTH_TOKEN\` and a matching \`RUN --mount=type=secret,...\` in the stage that runs \`npm run build\` for the client. The local build script should load an optional \`.env.sentry-build-plugin\` into the shell when present, and use the same \`docker build --secret\` for CI.
 
-5. **Runtime DSNs** — Wire \`SENTRY_DSN\` (and dev/prod projects if applicable) in env schema and app init (\`@saflib/sentry\` \`initSentry\` on the server; Vue client per your SPA pattern).
+5. **Runtime DSNs** — Wire \`SENTRY_DSN\` (and dev/prod projects if applicable) in env schema and app init (\`@saflib/errors-http\` \`initSentry\` / \`initErrorsServer\` on the server; Vue client per your SPA pattern).
 
 6. **\`@saflib/sentry\` package** — Ensure \`./vite-build\` export and dependencies (\`@sentry/vite-plugin\`, \`@saflib/node\` for git hashes) are present; \`createSentryViteBuildPlugin\` centralizes release, \`setCommits\`, and monorepo-relative sourcemap paths.
 

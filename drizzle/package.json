@@ -7,7 +7,8 @@
   "type": "module",
   "exports": {
     "./workflows": "./workflows/index.ts",
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./env": "./env.ts"
   },
   "scripts": {
     "test": "vitest run",

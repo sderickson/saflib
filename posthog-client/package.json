@@ -9,7 +9,8 @@
   "exports": {
     ".": "./posthog.ts",
     "./html": "./html.ts",
-    "./init": "./init.ts"
+    "./init": "./init.ts",
+    "./env": "./env.ts"
   },
   "dependencies": {
     "@saflib/env": "*",

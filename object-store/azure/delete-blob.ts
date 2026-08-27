@@ -1,5 +1,5 @@
 import type { AccessTier } from "@azure/storage-blob";
-import { typedEnv } from "../env.ts";
+import { typedEnv } from "@saflib/env";
 import { getBlobServiceClient } from "./client.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
