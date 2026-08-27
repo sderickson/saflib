@@ -1,13 +1,15 @@
 {
   "name": "@saflib/secret-store",
   "saf": {
-    "kind": "lib"
+    "kind": "lib",
+    "envExtends": ["@saflib/env"]
   },
   "description": "Secret store library for env-backed and Infisical-backed secret resolution",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./env": "./env.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -16,9 +18,11 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@infisical/sdk": "^5.0.0"
+    "@infisical/sdk": "^5.0.0",
+    "@saflib/env": "*"
   },
   "devDependencies": {
+    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },

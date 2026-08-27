@@ -30,6 +30,4 @@ export interface NodeEnvSchema extends EnvEnvSchema {
 /**
  * `process.env` casted to the `NodeEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as NodeEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as NodeEnvSchema;

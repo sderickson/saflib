@@ -1,7 +1,8 @@
 {
   "name": "@saflib/node",
   "saf": {
-    "kind": "lib"
+    "kind": "lib",
+    "envExtends": ["@saflib/env"]
   },
   "description": "Reusable Node.js utilities",
   "private": true,

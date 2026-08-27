@@ -50,8 +50,13 @@ the secret. Put values in Infisical (or local env / `"mock"` sentinel).
 ## Creating a store
 
 ```ts
-import { createSecretStore } from "@saflib/secret-store";
+import { createSecretStore, configureSecretStore, getSecretStore } from "@saflib/secret-store";
 
+// Process-level (reads INFISICAL_TOKEN / PROJECT_ID / ENVIRONMENT from env):
+configureSecretStore();
+const store = getSecretStore();
+
+// Or construct explicitly:
 const store = createSecretStore({ type: "env" });
 // or
 const store = createSecretStore({
@@ -63,3 +68,8 @@ const store = createSecretStore({
   },
 });
 ```
+
+Infisical connection env (`INFISICAL_TOKEN`, `INFISICAL_PROJECT_ID`,
+`INFISICAL_ENVIRONMENT`) is declared on this package’s `env.schema.json`.
+Composition roots (e.g. daemon-service-common) inherit them via the env-parent
+graph. Sentinel `"mock"` for `INFISICAL_TOKEN` selects the mock Infisical client.

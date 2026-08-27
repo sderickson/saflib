@@ -9,6 +9,11 @@ export {
   type CreateSecretStoreOptions,
 } from "./createSecretStore.ts";
 export {
+  configureSecretStore,
+  getSecretStore,
+  resetSecretStoreForTests,
+} from "./configureSecretStore.ts";
+export {
   EnvSecretNotFoundError,
   SecretNotDeclaredError,
   type SecretStoreError,

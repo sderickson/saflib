@@ -1,7 +1,8 @@
 {
   "name": "@saflib/base-__integration-name__-integration",
   "saf": {
-    "kind": "integration"
+    "kind": "integration",
+    "envExtends": ["@saflib/env"]
   },
   "description": "Golden integration stub for Base (expansion via integrations/add-call)",
   "private": true,

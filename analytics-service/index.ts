@@ -11,6 +11,11 @@ export {
   type CreateAnalyticsServiceOptions,
 } from "./createAnalyticsService.ts";
 export {
+  configureAnalytics,
+  getAnalyticsClient,
+  resetAnalyticsForTests,
+} from "./configureAnalytics.ts";
+export {
   InMemoryAnalyticsService,
   capturedAnalyticsCalls,
   clearCapturedAnalyticsCalls,

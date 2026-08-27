@@ -1,13 +1,15 @@
 {
   "name": "@saflib/analytics-service",
   "saf": {
-    "kind": "lib"
+    "kind": "lib",
+    "envExtends": ["@saflib/env"]
   },
   "description": "Server-side analytics abstraction (PostHog) with in-memory implementation for tests",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./env": "./env.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -16,10 +18,12 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/env": "*",
     "@saflib/node": "*",
     "posthog-node": "^5.33.2"
   },
   "devDependencies": {
+    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },
