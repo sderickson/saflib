@@ -134,6 +134,19 @@ describe("importsFromExports", () => {
       "#testing/*": "./testing/*",
     });
   });
+
+  it("maps folder entry remaps to barrel + thematic glob", () => {
+    expect(
+      importsFromExports({
+        "./instances": "./instances/registry.ts",
+        "./queries/*": "./queries/*.ts",
+      }),
+    ).toEqual({
+      "#instances": "./instances/registry.ts",
+      "#instances/*": "./instances/*",
+      "#queries/*": "./queries/*",
+    });
+  });
 });
 
 describe("package.json helpers", () => {

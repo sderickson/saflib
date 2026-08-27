@@ -129,6 +129,13 @@ export function importsFromExports(
       continue;
     }
 
+    // Folder entry remap: `./instances` → `./instances/registry.ts`
+    if (value.startsWith(`./${subpath}/`)) {
+      imports[`#${subpath}`] = value;
+      imports[`#${subpath}/*`] = `./${subpath}/*`;
+      continue;
+    }
+
     // Root file: `./i18n` → `./i18n.ts` becomes `#i18n.ts`
     const rootFile = value.match(/^\.\/([^/]+\.tsx?)$/);
     if (rootFile) {
