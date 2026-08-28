@@ -18,10 +18,12 @@
     "@saflib/base-__integration-name__-integration": "*",
     "@saflib/base-db": "*",
     "@saflib/drizzle": "*",
+    "@saflib/email-service": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/object-store": "*",
-    "@saflib/secret-store": "*"
+    "@saflib/secret-store": "*",
+    "@saflib/vendors-brevo": "*"
   },
   "sideEffects": false,
   "imports": {

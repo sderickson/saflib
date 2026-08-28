@@ -1,3 +1,5 @@
+import type { EmailService } from "@saflib/email-service";
+import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 import { configureSecretStore } from "./secrets.ts";
 // BEGIN WORKFLOW AREA integration-imports FOR integrations/init
 import { getSecretStore } from "./secrets.ts";
@@ -5,6 +7,7 @@ import { configure__IntegrationName__ } from "@saflib/base-__integration-name__-
 // END WORKFLOW AREA
 
 let initialized = false;
+let emailClient: EmailService | undefined;
 
 /**
  * Initializes all process-level dependencies for the base service:
@@ -22,5 +25,15 @@ export async function initializeDependencies(): Promise<void> {
   await configure__IntegrationName__(getSecretStore());
   // END WORKFLOW AREA
 
+  emailClient = resolveEmailServiceFromEnv();
+
   initialized = true;
+}
+
+/** Shared email service (mock in dev when `BREVO_API_KEY=mock`). */
+export function getEmailClient(): EmailService {
+  if (!emailClient) {
+    emailClient = resolveEmailServiceFromEnv();
+  }
+  return emailClient;
 }
