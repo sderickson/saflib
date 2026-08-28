@@ -14,6 +14,15 @@ export type Schema = Record<string, unknown>;
  */
 export type DbKey = symbol;
 
+/** Options for constructing a {@link DbManager}. */
+export interface DbManagerOptions {
+  /**
+   * SQLite pragmas applied on every `connect()` and `attachConnection()` unless
+   * overridden per call via {@link DbOptions.pragmas}.
+   */
+  defaultPragmas?: Record<string, string | number>;
+}
+
 /**
  * When a "connection" is created, these parameters are provided.
  */

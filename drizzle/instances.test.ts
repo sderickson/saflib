@@ -184,6 +184,37 @@ describe("Instance Manager", () => {
     manager.disconnect(key);
   });
 
+  it("applies defaultPragmas on every connection", () => {
+    const managerWithDefaults = new DbManager(schema, config, import.meta.url, {
+      defaultPragmas: { foreign_keys: "ON" },
+    });
+    const key = managerWithDefaults.connect();
+    const instance = managerWithDefaults.get(key as DbKey);
+    assert(instance);
+    expect(instance.$client.pragma("foreign_keys", { simple: true })).toBe(1);
+    managerWithDefaults.disconnect(key as DbKey);
+  });
+
+  it("per-connect pragmas override defaultPragmas", () => {
+    const managerWithDefaults = new DbManager(schema, config, import.meta.url, {
+      defaultPragmas: { foreign_keys: "ON" },
+    });
+    const dbPath = getTempDbPath("default-pragma-override");
+    const key = managerWithDefaults.connect({
+      onDisk: dbPath,
+      overrideTestDefault: true,
+      pragmas: { journal_mode: "WAL" },
+    });
+    const instance = managerWithDefaults.get(key as DbKey);
+    assert(instance);
+    expect(instance.$client.pragma("foreign_keys", { simple: true })).toBe(1);
+    expect(instance.$client.pragma("journal_mode", { simple: true })).toBe(
+      "wal",
+    );
+    managerWithDefaults.disconnect(key as DbKey);
+    rmSync(dbPath, { force: true });
+  });
+
   it("applies pragmas when provided", () => {
     const dbPath = getTempDbPath("pragma-on");
     const key = manager.connect({
