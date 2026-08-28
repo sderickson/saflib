@@ -11,7 +11,7 @@ async function onVerificationCodeValid(payload: VerificationCodeValidPayload) {
   const { log } = getSafReporters();
   const { user, verificationUrl, verificationCode } = payload;
   if (process.env.NODE_ENV === "development") {
-    log.info(`Verification code email for ${user.email}: ${verificationCode}`);
+    log.info(`Verification code for ${user.email}: ${verificationCode}`);
     log.info(`Verification URL:`);
     log.info(verificationUrl);
   }
@@ -21,7 +21,7 @@ async function onRecoveryCodeValid(payload: RecoveryCodeValidPayload) {
   const { log } = getSafReporters();
   const { user, recoveryCode } = payload;
   if (process.env.NODE_ENV === "development") {
-    log.info(`Recovery code email for ${user.email}: ${recoveryCode}`);
+    log.info(`Recovery code for ${user.email}: ${recoveryCode}`);
   }
 }
 
