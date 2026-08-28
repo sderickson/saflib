@@ -33,7 +33,13 @@
       "path": "../../imports"
     },
     {
+      "path": "../../links"
+    },
+    {
       "path": "../../sdk"
+    },
+    {
+      "path": "../../vite"
     },
     {
       "path": "../../vue"

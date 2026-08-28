@@ -28,6 +28,12 @@
     },
     {
       "path": "../../../ory-kratos"
+    },
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../email"
     }
   ]
 }

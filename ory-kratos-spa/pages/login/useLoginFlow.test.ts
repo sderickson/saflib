@@ -1,21 +1,58 @@
 import { http, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ref } from "vue";
+import { createApp, defineComponent, h, ref } from "vue";
+import { VueQueryPlugin, QueryClient } from "@tanstack/vue-query";
+import { createRouter, createMemoryHistory } from "vue-router";
 import { setClientName } from "@saflib/links";
 import {
   getLoginFlowQueryOptions,
   LoginFlowFetched,
 } from "@saflib/ory-kratos-sdk";
-import { withVueQuery } from "@saflib/sdk/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import {
   kratosFakeHandlers,
   mockLoginFlow,
   resetKratosFlowMocks,
 } from "@saflib/ory-kratos-sdk/fakes";
+import {
+  configureAuthApp,
+  type ConfigureAuthAppOptions,
+} from "../../configureAuthApp.ts";
 import { useLoginFlow } from "./useLoginFlow.ts";
 
 const mockLoginFlowId = "mock-login-flow";
+
+function mountLoginFlow(options: ConfigureAuthAppOptions = {}) {
+  let result!: ReturnType<typeof useLoginFlow>;
+  const Harness = defineComponent({
+    setup() {
+      result = useLoginFlow(ref(mockLoginFlow));
+      return () => null;
+    },
+  });
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      mutations: { retry: false },
+      queries: { retry: false },
+    },
+  });
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: "/", component: { template: "<div/>" } }],
+  });
+  const app = createApp(
+    defineComponent({
+      setup() {
+        configureAuthApp(options);
+        return () => h(Harness);
+      },
+    }),
+  );
+  app.use(VueQueryPlugin, { queryClient });
+  app.use(router);
+  app.mount(document.createElement("div"));
+  return [result, app, queryClient] as const;
+}
 
 function loginTestForm() {
   const form = document.createElement("form");
@@ -44,7 +81,7 @@ describe("useLoginFlow", () => {
     vi.restoreAllMocks();
   });
 
-  it("assigns window.location to account MFA setup after AAL1 login when MFA is not enrolled", async () => {
+  it("assigns window.location to account MFA setup after AAL1 login when MFA is required", async () => {
     const assignMock = vi.fn();
     vi.stubGlobal("location", {
       href: "http://auth.localhost:3000/",
@@ -55,11 +92,11 @@ describe("useLoginFlow", () => {
     const mfaSetup = "http://account.localhost:3000/mfa";
 
     try {
-      const [{ submitLoginForm }, app] = withVueQuery(() =>
-        useLoginFlow(ref(mockLoginFlow)),
-      );
+      const [loginFlow, app] = mountLoginFlow({
+        requireMfaAfterLogin: true,
+      });
 
-      await submitLoginForm(loginTestForm());
+      await loginFlow.submitLoginForm(loginTestForm());
 
       await vi.waitFor(() =>
         expect(assignMock).toHaveBeenCalledWith(mfaSetup),
@@ -93,11 +130,37 @@ describe("useLoginFlow", () => {
     );
 
     try {
-      const [{ submitLoginForm }, app] = withVueQuery(() =>
-        useLoginFlow(ref(mockLoginFlow)),
-      );
+      const [loginFlow, app] = mountLoginFlow({
+        requireMfaAfterLogin: true,
+      });
 
-      await submitLoginForm(loginTestForm());
+      await loginFlow.submitLoginForm(loginTestForm());
+
+      await vi.waitFor(() =>
+        expect(assignMock).toHaveBeenCalledWith(hubAppHome),
+      );
+      app.unmount();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("assigns window.location to return_to after AAL1 login when MFA is not required", async () => {
+    const assignMock = vi.fn();
+    vi.stubGlobal("location", {
+      href: "http://auth.localhost:3000/",
+      host: "auth.localhost:3000",
+      protocol: "http:",
+      assign: assignMock,
+    });
+    const hubAppHome = "http://app.localhost:3000/";
+
+    try {
+      const [loginFlow, app] = mountLoginFlow({
+        requireMfaAfterLogin: false,
+      });
+
+      await loginFlow.submitLoginForm(loginTestForm());
 
       await vi.waitFor(() =>
         expect(assignMock).toHaveBeenCalledWith(hubAppHome),
@@ -130,16 +193,14 @@ describe("useLoginFlow", () => {
       ),
     );
 
-    const [{ submitLoginForm }, app, queryClient] = withVueQuery(() =>
-      useLoginFlow(ref(mockLoginFlow)),
-    );
+    const [loginFlow, app, queryClient] = mountLoginFlow();
 
     queryClient.setQueryData(
       getLoginFlowQueryOptions({ flowId: mockLoginFlowId }).queryKey,
       new LoginFlowFetched(mockLoginFlow),
     );
 
-    await submitLoginForm(loginTestForm());
+    await loginFlow.submitLoginForm(loginTestForm());
 
     await vi.waitFor(() => {
       const data = queryClient.getQueryData(

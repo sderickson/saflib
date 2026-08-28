@@ -27,13 +27,22 @@ export interface AuthAppConfig {
    * so a host layout can supply its own headings.
    */
   showFlowHeaders: boolean;
+  /**
+   * When true (default), after password login the auth SPA probes for AAL2 and redirects
+   * to MFA challenge or account MFA setup before honoring `return_to`. Products that treat
+   * MFA as optional (e.g. base) should set this to false.
+   */
+  requireMfaAfterLogin: boolean;
 }
 
 const defaultAuthAppConfig: AuthAppConfig = {
   showFlowHeaders: true,
+  requireMfaAfterLogin: true,
 };
 
 export interface ConfigureAuthAppOptions extends Partial<AuthAppConfig> {
+  /** @see {@link AuthAppConfig.requireMfaAfterLogin} */
+  requireMfaAfterLogin?: boolean;
   /**
    * Default URL after login when `?return_to=` is absent. When set, `?return_to=` is still honored when present.
    * Prefer this over `postAuthOverrideHref` when deep links (e.g. “sell a part” with `return_to`) should win.
@@ -52,8 +61,14 @@ export interface ConfigureAuthAppOptions extends Partial<AuthAppConfig> {
    */
   rootHomeOverrideHref?: MaybeRefOrGetter<string>;
   /**
+   * Default URL after registration when `?return_to=` is absent. When set, `?return_to=` is still
+   * honored when present. Prefer this over `postRegisterOverrideHref` when deep links should win.
+   * When omitted, the library default app home URL is used as that fallback.
+   */
+  postRegisterFallbackHref?: MaybeRefOrGetter<string>;
+  /**
    * When set, this URL is used after registration (and on the verify wall) and `?return_to=` is ignored.
-   * When omitted, `?return_to=` is honored, then the default URL.
+   * When omitted, `?return_to=` is honored, then the fallback URL.
    * See {@link AUTH_POST_REGISTER_FALLBACK_HREF}.
    */
   postRegisterOverrideHref?: MaybeRefOrGetter<string>;
@@ -96,6 +111,8 @@ export function configureAuthApp(
       ...defaultAuthAppConfig,
       showFlowHeaders:
         o.showFlowHeaders ?? defaultAuthAppConfig.showFlowHeaders,
+      requireMfaAfterLogin:
+        o.requireMfaAfterLogin ?? defaultAuthAppConfig.requireMfaAfterLogin,
     };
   });
   provide(AUTH_APP_CONFIG, config);
@@ -127,6 +144,9 @@ export function configureAuthApp(
     const o = toValue(options);
     if (o.postRegisterOverrideHref !== undefined) {
       return toValue(o.postRegisterOverrideHref);
+    }
+    if (o.postRegisterFallbackHref !== undefined) {
+      return toValue(o.postRegisterFallbackHref);
     }
     return defaultPostRegisterFallbackHref.value;
   });

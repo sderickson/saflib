@@ -1,5 +1,6 @@
 import type { UiText } from "@ory/client";
 import { ref, type MaybeRefOrGetter, toValue } from "vue";
+import { useRoute } from "vue-router";
 import {
   useUpdateVerificationFlowMutation,
   VerificationFlowUpdated,
@@ -9,6 +10,7 @@ import type { KratosFlowUiMessageFilterContext } from "../common/kratosUiMessage
 import {
   buildVerificationUpdateBodyFromFormData,
   destinationAfterVerification,
+  parseReturnToFromQuery,
   verificationFlowIsComplete,
 } from "./Verification.logic.ts";
 
@@ -20,6 +22,7 @@ export function useVerificationFlow(
   verificationToken: MaybeRefOrGetter<string | undefined>,
   flowId: MaybeRefOrGetter<string>,
 ) {
+  const route = useRoute();
   const postAuthFallbackHref = useAuthPostAuthFallbackHref();
   const updateVerification = useUpdateVerificationFlowMutation();
 
@@ -68,6 +71,7 @@ export function useVerificationFlow(
           destinationAfterVerification(
             updated.flow.return_to,
             postAuthFallbackHref.value,
+            parseReturnToFromQuery(route.query),
           ),
         );
       }

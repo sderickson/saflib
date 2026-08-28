@@ -1,0 +1,24 @@
+{
+  "name": "@saflib/dev-site-docker-app",
+  "description": "Vite build target for the shared dev-site Docker image",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./main.ts"
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/dev-site-vue": "*",
+    "@saflib/links": "*",
+    "@saflib/vite": "*",
+    "@saflib/vue": "*",
+    "@tanstack/vue-query": "*",
+    "vue": "*",
+    "vue-router": "*",
+    "vuetify": "*"
+  },
+  "sideEffects": false
+}

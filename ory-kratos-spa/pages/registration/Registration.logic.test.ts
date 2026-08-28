@@ -7,8 +7,25 @@ import {
   csrfTokenFromUiFlow,
   postRegistrationNavigationUrl,
   traitsEmailFromFormData,
+  appendVerificationFlowToDestination,
   verificationFlowIdFromRegistrationContinueWith,
 } from "./Registration.logic.ts";
+
+describe("appendVerificationFlowToDestination", () => {
+  it("appends flow query param when continue_with includes verification", () => {
+    expect(
+      appendVerificationFlowToDestination("http://app.localhost:3000/", [
+        { action: "show_verification_ui", flow: { id: "vf-1" } },
+      ]),
+    ).toBe("http://app.localhost:3000/?flow=vf-1");
+  });
+
+  it("returns destination unchanged when continue_with is missing", () => {
+    expect(
+      appendVerificationFlowToDestination("http://app.localhost:3000/", []),
+    ).toBe("http://app.localhost:3000/");
+  });
+});
 
 describe("verificationFlowIdFromRegistrationContinueWith", () => {
   it("extracts show_verification_ui flow id", () => {

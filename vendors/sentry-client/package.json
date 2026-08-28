@@ -1,0 +1,29 @@
+{
+  "name": "@saflib/vendors-sentry-client",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Sentry Vue/browser adapters for SPA createApp callbacks",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./createSentryCallback": "./createSentryCallback.ts"
+  },
+  "scripts": {
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/errors-vue": "*",
+    "@sentry/vue": "^10.0.0"
+  },
+  "peerDependencies": {
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "vue": "*",
+    "vue-tsc": "^3.0.6"
+  },
+  "sideEffects": false
+}

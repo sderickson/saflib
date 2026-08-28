@@ -1,0 +1,38 @@
+{
+  "name": "@saflib/vendors-sentry-node",
+  "saf": {
+    "kind": "lib",
+    "envExtends": ["@saflib/env"]
+  },
+  "description": "Sentry Node adapters: service init, Vite source-map upload plugin, and env schema",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./env": "./env.ts",
+    "./vite-build": "./vite-build.ts",
+    "./workflows": "./workflows/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/env": "*",
+    "@saflib/errors-http": "*",
+    "@saflib/node": "*",
+    "@sentry/node": "^10.0.0",
+    "@sentry/vite-plugin": "^5.2.1"
+  },
+  "peerDependencies": {
+    "vite": "^8.0.0"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@saflib/workflows": "*",
+    "vite": "8.0.13",
+    "vitest": "^3.2.4"
+  },
+  "sideEffects": false
+}

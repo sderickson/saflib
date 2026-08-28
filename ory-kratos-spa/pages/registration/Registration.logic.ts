@@ -85,6 +85,28 @@ export function postRegistrationNavigationUrl(flow: RegistrationFlow): string | 
   return u || undefined;
 }
 
+/** Append a registration `continue_with` verification flow id to a post-auth destination URL. */
+export function appendVerificationFlowToDestination(
+  destination: string,
+  continueWith:
+    | readonly { action?: string; flow?: { id?: string } }[]
+    | null
+    | undefined,
+): string {
+  const flowId = verificationFlowIdFromRegistrationContinueWith(continueWith);
+  if (!flowId) {
+    return destination;
+  }
+  try {
+    const url = new URL(destination);
+    url.searchParams.set("flow", flowId);
+    return url.toString();
+  } catch {
+    const join = destination.includes("?") ? "&" : "?";
+    return `${destination}${join}flow=${encodeURIComponent(flowId)}`;
+  }
+}
+
 /**
  * Pull a verification flow id from Kratos registration `continue_with`, when present.
  */

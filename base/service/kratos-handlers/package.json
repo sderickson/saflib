@@ -6,13 +6,17 @@
     ".": "./index.ts"
   },
   "dependencies": {
+    "@saflib/base-email": "*",
+    "@saflib/base-service-common": "*",
     "@saflib/node": "*",
     "@saflib/ory-kratos": "*"
   },
   "devDependencies": {
-    "@saflib/monorepo": "*"
+    "@saflib/monorepo": "*",
+    "vitest": "*"
   },
   "scripts": {
+    "test": "vitest run",
     "typecheck": "tsc -b"
   },
   "sideEffects": false

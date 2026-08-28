@@ -55,9 +55,16 @@ export function generateDockerfiles(
     const copyPackageJsonCommand = `COPY --parents ./package.json ./package-lock.json ${packageJsonRelativePaths.join(" ")} ./scripts/postinstall-tsconfig-refs.mjs ./scripts/dedupe-vue-runtime.mjs ./`;
     const copySrcCommand = `COPY --parents ${packageRelativePaths.join(" ")} ./`;
 
+    const packageRel = path
+      .relative(ctx.rootDir, ctx.monorepoPackageDirectories[packageName])
+      .split(path.sep)
+      .join("/");
+    const packageRoot = `/app/${packageRel}`;
+
     const dockerfileContents = dockerTemplate
       .replace("#{ copy_packages }#", copyPackageJsonCommand)
-      .replace("#{ copy_src }#", copySrcCommand);
+      .replace("#{ copy_src }#", copySrcCommand)
+      .replace(/#\{ package_root \}#/g, packageRoot);
 
     const dockerfilePath = path.join(
       ctx.monorepoPackageDirectories[packageName],

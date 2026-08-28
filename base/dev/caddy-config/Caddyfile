@@ -35,6 +35,14 @@ http://account.docker.localhost {
 	}
 }
 
+# Built (static) saflib dev-site: Express API + SPA on one port.
+http://dev.docker.localhost {
+	import security-headers
+	reverse_proxy site:3099 {
+		import reverse_proxy_common
+	}
+}
+
 # BEGIN WORKFLOW AREA client-subdomains FOR vue/add-spa
 http://__subdomain-name__.docker.localhost {
 	import security-headers

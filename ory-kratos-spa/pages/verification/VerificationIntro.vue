@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="float-right mb-4">
+    <div v-if="showLoginLink" class="float-right mb-4">
       <a
         :href="loginHref"
         class="text-primary text-decoration-none d-inline-flex align-center ga-1"
@@ -17,6 +17,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import { useKratosSession } from "@saflib/ory-kratos-sdk";
 import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
 import { useAuthAppConfig } from "../../configureAuthApp.ts";
 import { useAuthFlowCrossLinks } from "../common/useAuthFlowCrossLinks.ts";
@@ -29,4 +31,8 @@ const props = defineProps<{
 const { t } = useReverseT();
 const authApp = useAuthAppConfig();
 const { loginHref } = useAuthFlowCrossLinks(() => props.flowReturnTo);
+const sessionQuery = useKratosSession();
+
+/** Signed-in users (e.g. account verify-email) should not see "Sign in instead". */
+const showLoginLink = computed(() => !sessionQuery.data.value?.identity);
 </script>

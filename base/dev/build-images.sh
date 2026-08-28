@@ -8,6 +8,11 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO_ROOT"
 
+if [ ! -f ./dev-site/dev-site-docker/Dockerfile ]; then
+  echo "Missing dev-site/dev-site-docker/Dockerfile. Run saf-docker generate first." >&2
+  exit 1
+fi
+
 export DOCKER_BUILDKIT=1
 
 docker_build() {
@@ -37,8 +42,10 @@ docker_build ./base/clients/root/Dockerfile \
 pids+=($!)
 
 # BEGIN WORKFLOW AREA build-static-sites FOR vue/add-static-site
+# Image refs must not contain a name component starting with `_`; the stub
+# directory keeps `__static-subdomain-name__`, the tag uses `static-subdomain-name`.
 docker_build ./base/clients/__static-subdomain-name__/Dockerfile \
-  -t saflib-base-__static-subdomain-name__-static:latest &
+  -t saflib-base-static-subdomain-name-static:latest &
 pids+=($!)
 # END WORKFLOW AREA
 
@@ -48,6 +55,10 @@ pids+=($!)
 
 docker_build ./base/clients/build/Dockerfile \
   -t saflib-base-clients:latest &
+pids+=($!)
+
+docker_build ./dev-site/dev-site-docker/Dockerfile \
+  -t saflib-dev-site:latest &
 pids+=($!)
 
 wait_all "${pids[@]}"

@@ -8,7 +8,7 @@ export interface ClientErrorCallbackOptions {
 
 /**
  * Vue `createApp` callback: mirror Vue errors to `POST /errors/record`.
- * For Sentry, use `createSentryCallback` from `@saflib/vendors-sentry`.
+ * For Sentry, use `createSentryCallback` from `@saflib/vendors-sentry-client`.
  */
 export function createClientErrorCallback(
   options: ClientErrorCallbackOptions = {},

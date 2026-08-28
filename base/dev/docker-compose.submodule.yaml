@@ -1,0 +1,8 @@
+# Submodule overlay for the dev stack site service (see docker-compose.dev-site.submodule.yaml).
+services:
+  site:
+    environment:
+      GIT_DIR: /git-dir
+      GIT_WORK_TREE: /repo
+    volumes:
+      - ${DEV_SITE_GIT_DIR_MOUNT}:/git-dir:ro

@@ -1,0 +1,27 @@
+# Standalone dev-site smoke (built image). Set DEV_SITE_REPO_ROOT and DEV_SITE_PRODUCT_ROOT.
+services:
+  site:
+    image: saflib-dev-site:latest
+    build:
+      context: ../..
+      dockerfile: dev-site/dev-site-docker/Dockerfile
+    ports:
+      - "3099:3099"
+    environment:
+      NODE_ENV: production
+      TZ: UTC
+      DEPLOYMENT_NAME: development
+      DOMAIN: localhost
+      PROTOCOL: http
+      CLIENT_SUBDOMAINS: ""
+      ADMIN_EMAILS: "admin@saflib.com"
+      ALLOW_DB_CREATION: "true"
+      DEV_SITE_SERVICE_HTTP_HOST: "0.0.0.0:3099"
+      DEV_SITE_REPO_ROOT: /repo
+      DEV_SITE_PRODUCT_ROOT: base
+      DEV_SITE_MAIN_REF: main
+      DEV_SITE_DB_PATH: /data/dev-site.sqlite
+      DEV_SITE_STATIC_DIR: /app/dev-site/dev-site-docker/clients/app/dist
+    volumes:
+      - ../..:/repo:ro
+      - ./service/http/data:/data

@@ -30,6 +30,9 @@
       "path": "../../../drizzle"
     },
     {
+      "path": "../../../email/email-service"
+    },
+    {
       "path": "../../../monorepo"
     },
     {
@@ -41,9 +44,14 @@
     {
       "path": "../../../secret-store"
     },
-    { "path": "../integrations/__integration-name__" },
+    {
+      "path": "../../../vendors/brevo"
+    },
     {
       "path": "../db"
+    },
+    {
+      "path": "../integrations/__integration-name__"
     }
   ]
 }

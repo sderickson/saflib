@@ -35,7 +35,7 @@ function recordFromCollector(param: ErrorCollectorParam): void {
 
 /**
  * Wire the error ring buffer collector (without Sentry). Safe to call once at boot.
- * For Sentry forwarding, use `@saflib/vendors-sentry` `configureSentry()`.
+ * For Sentry forwarding, use `@saflib/vendors-sentry-node` `configureSentry()`.
  */
 export function installReportedErrorCollector(): void {
   addErrorCollector(recordFromCollector);

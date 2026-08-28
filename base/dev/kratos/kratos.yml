@@ -30,6 +30,9 @@ selfservice:
       after:
         password:
           hooks:
+            # After the auto-injected verification hook sends the code, include its
+            # flow id in continue_with so the app can resume verification.
+            - hook: show_verification_ui
             - &kratos_action_webhook
               hook: web_hook
               config:

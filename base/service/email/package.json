@@ -7,10 +7,15 @@
     "./*": "./emails/*.ts"
   },
   "scripts": {
+    "test": "vitest run",
     "typecheck": "tsc -b"
   },
   "dependencies": {
     "@saflib/email-service": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "vitest": "*"
   },
   "sideEffects": false,
   "imports": {

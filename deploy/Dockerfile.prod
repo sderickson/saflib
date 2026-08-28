@@ -3,7 +3,7 @@ FROM __organization-name__-__product-name__-root:latest AS __organization-name__
 RUN npm run build
 
 # BEGIN WORKFLOW AREA build-static-sites FOR vue/add-static-site
-FROM __organization-name__-__product-name__-__static-subdomain-name__-static:latest AS __static-subdomain-name__-static-builder
+FROM __organization-name__-__product-name__-static-subdomain-name-static:latest AS static-subdomain-name-static-builder
 RUN npm run build
 # END WORKFLOW AREA
 
@@ -25,7 +25,7 @@ RUN apk upgrade --no-cache && rm -rf /var/cache/apk/*
 COPY --from=__organization-name__-__product-name__-root-builder /app/__product-name__/clients/root/.vitepress/dist /srv/__product-name__-root
 
 # BEGIN WORKFLOW AREA copy-static-sites FOR vue/add-static-site
-COPY --from=__static-subdomain-name__-static-builder /app/__product-name__/clients/__static-subdomain-name__/.vitepress/dist /srv/__product-name__-__static-subdomain-name__
+COPY --from=static-subdomain-name-static-builder /app/__product-name__/clients/__static-subdomain-name__/.vitepress/dist /srv/__product-name__-__static-subdomain-name__
 # END WORKFLOW AREA
 
 # BEGIN WORKFLOW AREA copy-product-assets FOR product/init

@@ -5,7 +5,11 @@
   "type": "module",
   "main": "./index.ts",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./app": "./app/mount.ts",
+    "./router": "./app/router.ts",
+    "./vuetify-config": "./app/vuetify-config.ts",
+    "./vite-config": "./app/vite-config.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -14,13 +18,18 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@saflib/dev-site-http": "*",
     "@saflib/dev-site-spec": "*",
     "@saflib/imports": "*",
+    "@saflib/links": "*",
     "@saflib/sdk": "*",
+    "@saflib/vite": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*",
-    "marked": "^15.0.12"
+    "marked": "^15.0.12",
+    "vue-router": "*",
+    "vuetify": "*"
   },
   "sideEffects": false
 }

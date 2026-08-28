@@ -22,7 +22,7 @@
     "@saflib/openapi": "*",
     "@saflib/processes": "*",
     "@saflib/product": "*",
-    "@saflib/vendors-sentry": "*",
+    "@saflib/vendors-sentry-node": "*",
     "@saflib/sdk": "*",
     "@saflib/service": "*",
     "@saflib/vue": "*",

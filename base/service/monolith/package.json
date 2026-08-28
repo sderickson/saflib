@@ -24,7 +24,7 @@
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/vendors-loki": "*",
-    "@saflib/vendors-sentry": "*"
+    "@saflib/vendors-sentry-node": "*"
   },
   "sideEffects": false,
   "imports": {

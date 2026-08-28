@@ -78,7 +78,17 @@ export const kratosUpdateRegistrationHandler = http.post(
           schema_url: "",
           traits: { email: "user@example.com" },
         },
-        session: { id: "mock-session", active: true },
+        session: {
+          id: "mock-session",
+          active: true,
+          authenticator_assurance_level: "aal1",
+        },
+        continue_with: [
+          {
+            action: "show_verification_ui",
+            flow: { id: mockVerificationFlow.id },
+          },
+        ],
       });
     }
     const body = {

@@ -7,6 +7,8 @@ export interface DevSiteHttpContext {
   repoRoot: string;
   productRoot: string;
   mainRef: string;
+  /** GitHub `owner/name` for UI source/commit links. */
+  githubRepo?: string;
   /** On-disk sqlite path when available; undefined for `:memory:`. */
   dbPath?: string;
   /**

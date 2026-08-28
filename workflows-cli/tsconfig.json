@@ -69,7 +69,7 @@
       "path": "../service"
     },
     {
-      "path": "../vendors/sentry"
+      "path": "../vendors/sentry-node"
     },
     {
       "path": "../vue"

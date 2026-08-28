@@ -37,8 +37,18 @@
 
       <v-col cols="12" md="8">
         <v-card v-if="selectedEmail" class="elevation-1">
-          <v-card-title>
-            <h3>{{ selectedEmail.subject }}</h3>
+          <v-card-title class="d-flex align-start align-sm-center ga-3 flex-wrap">
+            <h3 class="flex-grow-1 text-wrap mb-0">
+              {{ selectedEmail.subject }}
+            </h3>
+            <v-switch
+              v-if="selectedEmail.text && selectedEmail.html"
+              v-model="showTextVersion"
+              :label="strings.email_details.text"
+              density="compact"
+              hide-details
+              class="flex-shrink-0"
+            />
           </v-card-title>
           <v-card-text>
             <div v-if="selectedEmail.timeSent" class="mb-2">
@@ -78,16 +88,13 @@
               >: {{ selectedEmail.replyTo.join(", ") }}
             </div>
             <hr />
-            <div v-if="selectedEmail.text" class="mb-2">
-              <strong v-if="selectedEmail.html"
-                >{{ strings.email_details.text }}:</strong
-              >
+            <div
+              v-if="selectedEmail.text && (showTextVersion || !selectedEmail.html)"
+              class="mb-2"
+            >
               <pre class="text-wrap">{{ selectedEmail.text }}</pre>
             </div>
-            <div v-if="selectedEmail.html" class="mb-2">
-              <strong v-if="selectedEmail.text"
-                >{{ strings.email_details.html }}:</strong
-              >
+            <div v-if="!showTextVersion && selectedEmail.html" class="mb-2">
               <!-- eslint-disable-next-line vue/no-v-html - mock email content from our server -->
               <div v-html="selectedEmail.html"></div>
             </div>
@@ -110,6 +117,7 @@ import {
 
 const { userEmailFilter, sentEmailsQuery } = useSentEmailsPageLoader();
 const selectedIndex = ref(0);
+const showTextVersion = ref(false);
 
 const emails = computed(() =>
   sortSentEmailsNewestFirst(sentEmailsQuery.data.value ?? []),
@@ -117,13 +125,23 @@ const emails = computed(() =>
 
 const selectedEmail = computed(() => emails.value[selectedIndex.value] ?? null);
 
+function resetTextVersionToggle() {
+  showTextVersion.value = false;
+}
+
 watch(emails, (next) => {
   if (next.length === 0) {
     selectedIndex.value = 0;
+    showTextVersion.value = false;
     return;
   }
   if (selectedIndex.value >= next.length) {
     selectedIndex.value = 0;
   }
+  resetTextVersionToggle();
+});
+
+watch(selectedIndex, () => {
+  resetTextVersionToggle();
 });
 </script>
