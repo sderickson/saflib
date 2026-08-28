@@ -4,6 +4,8 @@ import {
   VueQueryPlugin,
   type VueQueryPluginOptions,
 } from "@tanstack/vue-query";
+import "./components/marketing/marketing.css";
+import { registerMarketingComponents } from "./components/marketing/register.ts";
 
 /**
  * Plugins required by {@link BaseLayout} in VitePress static sites (Kratos session).
@@ -16,4 +18,5 @@ export function enhanceStaticSiteApp(app: App): void {
     queryClient,
   };
   app.use(VueQueryPlugin, queryOptions);
+  registerMarketingComponents(app);
 }

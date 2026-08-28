@@ -1,4 +1,5 @@
-import { cp, lstat, readdir } from "node:fs/promises";
+import { constants } from "node:fs";
+import { access, cp, lstat, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
@@ -14,6 +15,13 @@ export function copySharedPublicPlugin(publicDir: string): Plugin {
     },
     async closeBundle() {
       if (!outDir) {
+        return;
+      }
+
+      try {
+        await access(publicDir, constants.R_OK);
+      } catch {
+        // Minimal Docker images for static-root omit base/clients/build.
         return;
       }
 

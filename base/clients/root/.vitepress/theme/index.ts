@@ -5,7 +5,6 @@ import { enhanceStaticSiteApp } from "@saflib/base-clients-common/static-site-th
 import "vuetify/styles";
 import "./style.css";
 import StaticSiteLayout from "./components/StaticSiteLayout.vue";
-import RootHomePage from "./components/RootHomePage.vue";
 
 import { setClientName } from "@saflib/links";
 
@@ -18,6 +17,5 @@ export default {
   enhanceApp({ app }) {
     enhanceStaticSiteApp(app);
     app.use(vuetify);
-    app.component("RootHomePage", RootHomePage);
   },
 } satisfies Theme;

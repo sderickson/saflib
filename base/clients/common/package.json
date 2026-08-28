@@ -10,6 +10,7 @@
     "./components": "./components/index.ts",
     "./components/base-layout": "./components/base-layout/BaseLayout.vue",
     "./components/base-layout/DynamicBaseLayout": "./components/base-layout/DynamicBaseLayout.vue",
+    "./components/marketing": "./components/marketing/index.ts",
     "./components/*": "./components/*.ts",
     "./composables/*": "./composables/*.ts",
     "./fixtures": "./fixtures/index.ts",
@@ -41,7 +42,8 @@
     "@saflib/vue": "*"
   },
   "sideEffects": [
-    "./clients/events.ts"
+    "./clients/events.ts",
+    "./components/marketing/marketing.css"
   ],
   "imports": {
     "#assets/*": "./assets/*",

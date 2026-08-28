@@ -1,0 +1,69 @@
+.VPContent {
+  background: rgb(var(--v-theme-background));
+}
+
+.mkt-section-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.mkt-section-inner {
+  max-width: 1280px;
+  margin-inline: auto;
+}
+
+.mkt-section-pad-xl {
+  padding: clamp(3rem, 7vw, 5.5rem) clamp(1.25rem, 5vw, 3rem);
+}
+
+.mkt-copy-max {
+  max-width: 60ch;
+}
+
+.mkt-lede-max {
+  max-width: 56ch;
+}
+
+.mkt-text-muted {
+  color: rgba(var(--v-theme-on-surface), 0.72);
+}
+
+.mkt-text-subtle {
+  color: rgba(var(--v-theme-on-surface), 0.58);
+}
+
+.mkt-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(var(--v-theme-primary));
+}
+
+.mkt-eyebrow-mark {
+  display: inline-block;
+  width: 28px;
+  height: 2px;
+  background: currentColor;
+}
+
+.mkt-btn-industrial {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  height: 56px !important;
+}
+
+.mkt-btn-ghost-on-dark {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  color: #fff !important;
+}
+
+.mkt-btn-ghost-on-dark:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}

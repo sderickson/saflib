@@ -1,11 +1,1 @@
-.VPContent {
-  background: rgb(var(--v-theme-background));
-}
-
-.root-home a {
-  text-decoration: none;
-}
-
-.root-home a:hover {
-  text-decoration: underline;
-}
+/* Site-specific overrides; shared marketing styles come from @saflib/base-clients-common/static-site-theme */
