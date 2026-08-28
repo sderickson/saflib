@@ -89,6 +89,8 @@ services:
     build:
       context: ../..
       dockerfile: dev-site/dev-site-docker/Dockerfile
+    ports:
+      - "3099:3099"
     environment:
       NODE_ENV: production
       TZ: UTC
