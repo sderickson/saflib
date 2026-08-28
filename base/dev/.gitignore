@@ -1,2 +1,2 @@
-.env
-
+dev-site-data/*
+!dev-site-data/.gitkeep
