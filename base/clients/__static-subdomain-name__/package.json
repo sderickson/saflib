@@ -9,11 +9,12 @@
     "preview": "vitepress preview"
   },
   "dependencies": {
-    "@mdi/font": "^7.4.47",
-    "@saflib/links": "*",
-    "@saflib/vue": "*",
     "@saflib/base-clients-common": "*",
     "@saflib/base-links": "*",
+    "@saflib/links": "*",
+    "@saflib/sdk": "*",
+    "@saflib/vite": "*",
+    "@saflib/vue": "*",
     "@vue/tsconfig": "^0.9.1",
     "sass": "^1.93.2",
     "vite-plugin-vuetify": "^2.1.3",

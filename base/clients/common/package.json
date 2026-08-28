@@ -8,12 +8,15 @@
     "./clients": "./clients/index.ts",
     "./clients/*": "./clients/*.ts",
     "./components": "./components/index.ts",
+    "./components/base-layout": "./components/base-layout/BaseLayout.vue",
+    "./components/base-layout/DynamicBaseLayout": "./components/base-layout/DynamicBaseLayout.vue",
     "./components/*": "./components/*.ts",
     "./composables/*": "./composables/*.ts",
     "./fixtures": "./fixtures/index.ts",
     "./fixtures/*": "./fixtures/*.ts",
     "./utils/*": "./utils/*.ts",
     "./vuetify-config": "./vuetify-config.ts",
+    "./static-site-theme": "./static-site-theme.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts",
     "./playwright.config": "./playwright.config.ts"
@@ -25,6 +28,7 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@saflib/analytics-vue": "*",
     "@saflib/base-links": "*",
     "@saflib/base-sdk": "*",

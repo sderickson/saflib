@@ -2,8 +2,8 @@
   <v-app>
     <v-app-bar height="90" class="px-4" v-if="mounted">
       <v-app-bar-title>
-        <a :href="toHref(logoLink)" class="logo-link">
-          {{ t(base_layout.nav_title) }}
+        <a :href="toHref(logoLink)" class="logo-link text-decoration-none">
+          {{ base_layout.nav_title }}
         </a>
       </v-app-bar-title>
 
@@ -57,7 +57,7 @@
         />
         <template v-if="devSidebarLinks && devSidebarLinks.length > 0">
           <v-divider class="my-2" />
-          <v-list-subheader>{{ t(base_layout.dev_sidebar_title) }}</v-list-subheader>
+          <v-list-subheader>{{ base_layout.dev_sidebar_title }}</v-list-subheader>
           <v-list-item
             v-for="link in devSidebarLinks"
             :key="link.path"
@@ -88,7 +88,6 @@ import { authLinks } from "@saflib/ory-kratos-sdk/links";
 import { useKratosSession } from "@saflib/ory-kratos-sdk";
 import { accountLinks, adminLinks, appLinks } from "@saflib/base-links";
 import { useSiteAdmin } from "#composables/useSiteAdmin.ts";
-import { useReverseT } from "#i18n.ts";
 
 type SidebarLink = Link & { name: string };
 
@@ -106,7 +105,6 @@ const hasSidebar = computed(
     (props.devSidebarLinks?.length ?? 0) > 0,
 );
 
-const { t } = useReverseT();
 const { data: session, status: sessionStatus } = useKratosSession();
 const { isSiteAdmin } = useSiteAdmin();
 
@@ -151,21 +149,21 @@ const logoLink = computed<Link>(() =>
 const navLinks = computed<LinkWithName[]>(() => {
   if (!isLoggedIn.value) {
     return [
-      { ...authLinks.newLogin, name: t(base_layout.nav_login) },
-      { ...authLinks.newRegistration, name: t(base_layout.nav_sign_up) },
+      { ...authLinks.newLogin, name: base_layout.nav_login },
+      { ...authLinks.newRegistration, name: base_layout.nav_sign_up },
     ];
   }
 
   const links: LinkWithName[] = [
-    { ...appLinks.home, name: t(base_layout.nav_app) },
-    { ...accountLinks.home, name: t(base_layout.nav_account) },
+    { ...appLinks.home, name: base_layout.nav_app },
+    { ...accountLinks.home, name: base_layout.nav_account },
   ];
 
   if (isSiteAdmin.value) {
-    links.push({ ...adminLinks.home, name: t(base_layout.nav_admin) });
+    links.push({ ...adminLinks.home, name: base_layout.nav_admin });
   }
 
-  links.push({ ...authLinks.logout, name: t(base_layout.nav_logout) });
+  links.push({ ...authLinks.logout, name: base_layout.nav_logout });
   return links;
 });
 </script>
