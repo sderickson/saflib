@@ -5,6 +5,8 @@ import {
   buildVerificationResendCodeBody,
   destinationAfterVerification,
   emailForVerificationResend,
+  parseVerificationFlowIdFromQuery,
+  verificationFlowHasUiNodes,
   verificationFlowIsComplete,
   verificationFlowShouldFetch,
 } from "./Verification.logic.ts";
@@ -19,6 +21,32 @@ describe("verificationFlowShouldFetch", () => {
     expect(verificationFlowShouldFetch(undefined)).toBe(false);
     expect(verificationFlowShouldFetch("")).toBe(false);
     expect(verificationFlowShouldFetch("   ")).toBe(false);
+  });
+});
+
+describe("parseVerificationFlowIdFromQuery", () => {
+  it("extracts a trimmed flow id from the query", () => {
+    expect(parseVerificationFlowIdFromQuery({ flow: "  flow-1  " })).toBe("flow-1");
+  });
+
+  it("returns undefined when flow is missing or blank", () => {
+    expect(parseVerificationFlowIdFromQuery({})).toBeUndefined();
+    expect(parseVerificationFlowIdFromQuery({ flow: "   " })).toBeUndefined();
+    expect(parseVerificationFlowIdFromQuery({ flow: 1 })).toBeUndefined();
+  });
+});
+
+describe("verificationFlowHasUiNodes", () => {
+  it("returns true when the flow has UI nodes", () => {
+    expect(
+      verificationFlowHasUiNodes({ ui: { nodes: [{}] } } as never),
+    ).toBe(true);
+  });
+
+  it("returns false for stub-like flows", () => {
+    expect(
+      verificationFlowHasUiNodes({ ui: { nodes: [] } } as never),
+    ).toBe(false);
   });
 });
 

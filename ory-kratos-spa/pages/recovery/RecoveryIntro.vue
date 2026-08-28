@@ -1,5 +1,13 @@
 <template>
   <div>
+    <v-alert
+      v-if="showDevHint"
+      type="info"
+      variant="tonal"
+      class="mb-6"
+    >
+      {{ t(strings.dev_recovery_hint) }}
+    </v-alert>
     <div class="float-right mb-4">
       <a
         :href="loginHref"
@@ -17,6 +25,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import { isDevelopmentDeployment } from "@saflib/vue";
 import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
 import { useAuthAppConfig } from "../../configureAuthApp.ts";
 import { useAuthFlowCrossLinks } from "../common/useAuthFlowCrossLinks.ts";
@@ -29,4 +39,5 @@ const props = defineProps<{
 const { t } = useReverseT();
 const authApp = useAuthAppConfig();
 const { loginHref } = useAuthFlowCrossLinks(() => props.flowReturnTo);
+const showDevHint = computed(() => isDevelopmentDeployment());
 </script>
