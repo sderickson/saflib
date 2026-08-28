@@ -81,6 +81,8 @@ export type BasePackageLineReplaceContext = {
   spaPackageName?: string;
   /** Remap `@saflib/base-__static-subdomain-name__-static` → this package. */
   staticPackageName?: string;
+  /** Subdomain slug for static sites (replaces docker-safe `static-subdomain-name` token). */
+  staticSubdomainName?: string;
   /**
    * Docker image prefix after init rewrite of `saflib-base`, e.g. `saflib-tmp`.
    * Also remaps `/app/base/`, `./base/`, and `/…/base-static-` path prefixes.
@@ -122,6 +124,13 @@ export function makeBasePackageLineReplace(
       out = out
         .split("@saflib/base-__static-subdomain-name__-static")
         .join(context.staticPackageName);
+    }
+    if ("staticSubdomainName" in context && context.staticSubdomainName) {
+      // Docker image refs cannot use `__static-subdomain-name__` literally (invalid
+      // `_`-prefixed name component). Templates use the docker-safe token instead.
+      out = out
+        .split("static-subdomain-name")
+        .join(context.staticSubdomainName);
     }
     out = out.split("DynamicBaseLayout").join(`Dynamic${productPascal}Layout`);
     out = out.split("BaseLayout").join(`${productPascal}Layout`);

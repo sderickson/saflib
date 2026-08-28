@@ -37,8 +37,10 @@ docker_build ./base/clients/root/Dockerfile \
 pids+=($!)
 
 # BEGIN WORKFLOW AREA build-static-sites FOR vue/add-static-site
+# Image refs must not contain a name component starting with `_`; the stub
+# directory keeps `__static-subdomain-name__`, the tag uses `static-subdomain-name`.
 docker_build ./base/clients/__static-subdomain-name__/Dockerfile \
-  -t saflib-base-__static-subdomain-name__-static:latest &
+  -t saflib-base-static-subdomain-name-static:latest &
 pids+=($!)
 # END WORKFLOW AREA
 

@@ -7,7 +7,7 @@ FROM saflib-base-static-root:latest AS static-root-builder
 RUN npm run build
 
 # BEGIN WORKFLOW AREA static-site-builders FOR vue/add-static-site
-FROM saflib-base-__static-subdomain-name__-static:latest AS __static-subdomain-name__-static-builder
+FROM saflib-base-static-subdomain-name-static:latest AS static-subdomain-name-static-builder
 RUN npm run build
 # END WORKFLOW AREA
 
@@ -26,5 +26,5 @@ RUN npm ci --omit=dev
 FROM caddy:2.11.3
 COPY --from=static-root-builder /app/base/clients/root/.vitepress/dist /srv/base-static-root
 # BEGIN WORKFLOW AREA static-site-assets FOR vue/add-static-site
-COPY --from=__static-subdomain-name__-static-builder /app/base/clients/__static-subdomain-name__/.vitepress/dist /srv/base-static-__static-subdomain-name__
+COPY --from=static-subdomain-name-static-builder /app/base/clients/__static-subdomain-name__/.vitepress/dist /srv/base-static-__static-subdomain-name__
 # END WORKFLOW AREA
