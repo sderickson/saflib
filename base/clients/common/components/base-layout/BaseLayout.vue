@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar height="90" class="px-4" v-if="mounted">
+    <v-app-bar height="90" class="px-4 border-b" v-if="mounted">
       <v-app-bar-title>
         <a :href="toHref(logoLink)" class="logo-link text-decoration-none">
           {{ base_layout.nav_title }}
@@ -57,7 +57,9 @@
         />
         <template v-if="devSidebarLinks && devSidebarLinks.length > 0">
           <v-divider class="my-2" />
-          <v-list-subheader>{{ base_layout.dev_sidebar_title }}</v-list-subheader>
+          <v-list-subheader>{{
+            base_layout.dev_sidebar_title
+          }}</v-list-subheader>
           <v-list-item
             v-for="link in devSidebarLinks"
             :key="link.path"
