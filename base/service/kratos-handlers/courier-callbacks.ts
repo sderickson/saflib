@@ -9,9 +9,11 @@ import type {
 
 async function onVerificationCodeValid(payload: VerificationCodeValidPayload) {
   const { log } = getSafReporters();
-  const { user, verificationUrl } = payload;
+  const { user, verificationUrl, verificationCode } = payload;
   if (process.env.NODE_ENV === "development") {
-    log.info(`Verification code email for ${user.email}: ${verificationUrl}`);
+    log.info(`Verification code email for ${user.email}: ${verificationCode}`);
+    log.info(`Verification URL:`);
+    log.info(verificationUrl);
   }
 }
 
