@@ -17,7 +17,7 @@ RUN npm ci
 
 #{ copy_src }#
 
-WORKDIR /app/dev-site/dev-site-docker/clients/app
+WORKDIR #{ package_root }#/clients/app
 RUN npm run build
 
 ENV NODE_ENV=production \
@@ -25,9 +25,9 @@ ENV NODE_ENV=production \
   ALLOW_DB_CREATION=true \
   DEV_SITE_SERVICE_HTTP_HOST=0.0.0.0:3099 \
   DEV_SITE_MAIN_REF=main \
-  DEV_SITE_STATIC_DIR=/app/dev-site/dev-site-docker/clients/app/dist \
+  DEV_SITE_STATIC_DIR=#{ package_root }#/clients/app/dist \
   DEV_SITE_DB_PATH=/data/dev-site.sqlite
 
-WORKDIR /app/dev-site/dev-site-docker/service/http
+WORKDIR #{ package_root }#/service/http
 EXPOSE 3099
 CMD ["npm", "start"]
