@@ -65,6 +65,11 @@ getCheckout:
                   exists).
                 items:
                   type: string
+              githubRepo:
+                type: string
+                description: >
+                  GitHub `owner/name` for source and commit links. Omitted when
+                  the server has no `DEV_SITE_GITHUB_REPO` configured.
               compare:
                 $ref: "../../schemas/checkout-compare.yaml"
     "400":

@@ -77,6 +77,10 @@
                         "type": "string"
                       }
                     },
+                    "githubRepo": {
+                      "type": "string",
+                      "description": "GitHub `owner/name` for source and commit links. Omitted when the server has no `DEV_SITE_GITHUB_REPO` configured.\n"
+                    },
                     "compare": {
                       "$ref": "#/components/schemas/checkout-compare"
                     }

@@ -30,6 +30,8 @@ export type CreateDevSiteHttpAppOptions = {
   productRoot?: string;
   /** Main branch ref. Defaults to `main`. */
   mainRef?: string;
+  /** GitHub `owner/name` for UI source/commit links. */
+  githubRepo?: string;
   /**
    * Directory of built SPA assets (Vite `dist`). When set, Express serves them
    * and falls back to `index.html` for client-side routes. API routes live under
@@ -52,6 +54,33 @@ export type DevSiteHttpAppLease = {
   app: express.Express;
   devSiteDbKey: DbKey;
 };
+
+function buildDevSiteRuntimeConfigScript(config: {
+  githubRepo?: string;
+  githubRef?: string;
+}): string | undefined {
+  const payload: Record<string, string> = {};
+  if (config.githubRepo) {
+    payload.githubRepo = config.githubRepo;
+  }
+  if (config.githubRef) {
+    payload.githubRef = config.githubRef;
+  }
+  if (Object.keys(payload).length === 0) {
+    return undefined;
+  }
+  return `<script>window.__DEV_SITE_CONFIG__=${JSON.stringify(payload)}</script>`;
+}
+
+export function injectDevSiteRuntimeConfig(
+  html: string,
+  script: string,
+): string {
+  if (html.includes("</head>")) {
+    return html.replace("</head>", `${script}</head>`);
+  }
+  return `${script}${html}`;
+}
 
 function defaultRouterMounts(): HttpRouterMount[] {
   return [
@@ -81,6 +110,7 @@ export function createDevSiteHttpApp(
   const repoRoot = options.repoRoot ?? process.cwd();
   const productRoot = options.productRoot ?? "";
   const mainRef = options.mainRef ?? "main";
+  const githubRepo = options.githubRepo;
   const dbPath = devSiteDb.getDbPath(dbKey!);
   const jobTriggerMap = options.jobTriggerMap;
 
@@ -94,7 +124,7 @@ export function createDevSiteHttpApp(
 
   app.use((_req, _res, next) => {
     devSiteHttpStorage.run(
-      { dbKey: dbKey!, repoRoot, productRoot, mainRef, dbPath, jobTriggerMap },
+      { dbKey: dbKey!, repoRoot, productRoot, mainRef, githubRepo, dbPath, jobTriggerMap },
       () => next(),
     );
   });
@@ -111,6 +141,18 @@ export function createDevSiteHttpApp(
   if (options.staticDir) {
     const staticRoot = path.resolve(options.staticDir);
     const indexHtml = path.join(staticRoot, "index.html");
+    const runtimeConfigScript = buildDevSiteRuntimeConfigScript({
+      githubRepo,
+    });
+
+    const sendSpaIndex = (_req: express.Request, res: express.Response) => {
+      let html = fs.readFileSync(indexHtml, "utf8");
+      if (runtimeConfigScript && !html.includes("__DEV_SITE_CONFIG__")) {
+        html = injectDevSiteRuntimeConfig(html, runtimeConfigScript);
+      }
+      res.type("html").send(html);
+    };
+
     app.use(express.static(staticRoot, { index: false }));
     app.get(/.*/, (req, res, next) => {
       if (req.method !== "GET" && req.method !== "HEAD") {
@@ -125,7 +167,7 @@ export function createDevSiteHttpApp(
         next();
         return;
       }
-      res.sendFile(indexHtml);
+      sendSpaIndex(req, res);
     });
   } else {
     // Live-dev: API has no SPA. Soft-hint browsers that still hit :3099.

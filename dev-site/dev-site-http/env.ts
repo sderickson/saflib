@@ -31,6 +31,10 @@ export interface DevSiteHttpEnvSchema extends DrizzleEnvSchema, ExpressEnvSchema
    * Optional absolute path to built SPA assets. When set, Express serves the UI and API on one port.
    */
   DEV_SITE_STATIC_DIR?: string;
+  /**
+   * GitHub `owner/name` for source and commit links in the UI (e.g. sderickson/saflib).
+   */
+  DEV_SITE_GITHUB_REPO?: string;
 }
 
 /**

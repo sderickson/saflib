@@ -139,6 +139,8 @@ export interface operations {
                         packages: components["schemas"]["package-metrics"][];
                         /** @description Local branch names that can be used as `compareRef` (current branch omitted; configured main ref always included when it exists). */
                         compareCandidates: string[];
+                        /** @description GitHub `owner/name` for source and commit links. Omitted when the server has no `DEV_SITE_GITHUB_REPO` configured. */
+                        githubRepo?: string;
                         compare?: components["schemas"]["checkout-compare"];
                     };
                 };

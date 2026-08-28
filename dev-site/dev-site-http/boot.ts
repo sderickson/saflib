@@ -47,6 +47,7 @@ export async function startDevSiteService(
       productRoot: typedEnv.DEV_SITE_PRODUCT_ROOT ?? "",
       mainRef: typedEnv.DEV_SITE_MAIN_REF || "main",
       staticDir: typedEnv.DEV_SITE_STATIC_DIR || undefined,
+      githubRepo: typedEnv.DEV_SITE_GITHUB_REPO || undefined,
     });
 
     startExpressServer(lease.app, { port });

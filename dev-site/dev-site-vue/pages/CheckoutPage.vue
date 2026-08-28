@@ -402,6 +402,11 @@ const {
   refetch,
 } = useCheckout(props.subdomain, compareRef);
 
+/** Prefer server-configured repo (matches analyzed git root); router prop is fallback. */
+const githubRepo = computed(
+  () => checkout.value?.githubRepo ?? props.githubRepo,
+);
+
 const {
   mutate: scan,
   isPending: isScanning,
@@ -438,7 +443,7 @@ const effectiveGithubRef = computed(() =>
 );
 
 const githubCompareHref = computed(() => {
-  if (!props.githubRepo || !compareMode.value) {
+  if (!githubRepo.value || !compareMode.value) {
     return undefined;
   }
   const c = checkout.value;
@@ -447,7 +452,7 @@ const githubCompareHref = computed(() => {
   if (!c?.hash || !base || base === c.hash) {
     return undefined;
   }
-  return githubCompareUrl(props.githubRepo, base, head);
+  return githubCompareUrl(githubRepo.value, base, head);
 });
 
 const pathRenames = computed(

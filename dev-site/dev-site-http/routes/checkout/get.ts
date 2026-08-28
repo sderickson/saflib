@@ -28,6 +28,10 @@ export const getCheckoutHandler = createHandler(async (req, res) => {
         throw error satisfies never;
     }
   }
-  const response: ResponseBody["getCheckout"][200] = result;
+  const ctx = getDevSiteHttpContext();
+  const response: ResponseBody["getCheckout"][200] = {
+    ...result,
+    ...(ctx.githubRepo ? { githubRepo: ctx.githubRepo } : {}),
+  };
   res.status(200).json(response);
 });

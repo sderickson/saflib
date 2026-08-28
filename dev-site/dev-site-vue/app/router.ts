@@ -7,6 +7,7 @@ import {
   CheckoutPage,
   BuildPage,
 } from "../index.ts";
+import { readDevSiteRuntimeConfig } from "./runtime-config.ts";
 
 /** Same-origin API (Vite proxy in dev; Express static+API in built mode). */
 const apiSubdomain = "";
@@ -26,11 +27,15 @@ function envString(key: string, fallback: string): string {
 }
 
 export function createDevSiteRouter(options: CreateDevSiteRouterOptions = {}) {
+  const runtime = readDevSiteRuntimeConfig();
   const githubRepo =
     options.githubRepo ??
-    envString("VITE_DEV_SITE_GITHUB_REPO", "PathClerk/pathclerk");
+    runtime.githubRepo ??
+    envString("VITE_DEV_SITE_GITHUB_REPO", "sderickson/saflib");
   const githubRef =
-    options.githubRef ?? envString("VITE_DEV_SITE_GITHUB_REF", "main");
+    options.githubRef ??
+    runtime.githubRef ??
+    envString("VITE_DEV_SITE_GITHUB_REF", "main");
   const localRepoRoot =
     options.localRepoRoot ??
     (import.meta as ImportMeta & { env?: Record<string, string> }).env
