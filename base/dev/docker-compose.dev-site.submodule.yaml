@@ -1,0 +1,8 @@
+# Submodule overlay: mount saflib's git metadata so git commands work when saflib/.git is a gitfile.
+services:
+  site:
+    environment:
+      GIT_DIR: /git-dir
+      GIT_WORK_TREE: /repo
+    volumes:
+      - ${DEV_SITE_GIT_DIR_MOUNT}:/git-dir:ro

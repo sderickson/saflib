@@ -100,12 +100,12 @@ services:
       ALLOW_DB_CREATION: "true"
       DEV_SITE_SERVICE_HTTP_HOST: "0.0.0.0:3099"
       DEV_SITE_REPO_ROOT: /repo
-      DEV_SITE_PRODUCT_ROOT: base
+      DEV_SITE_PRODUCT_ROOT: ${DEV_SITE_PRODUCT_ROOT:-base}
       DEV_SITE_MAIN_REF: main
       DEV_SITE_DB_PATH: /data/dev-site.sqlite
       DEV_SITE_STATIC_DIR: /app/dev-site/dev-site-docker/clients/app/dist
     volumes:
-      - ../..:/repo:ro
+      - ${DEV_SITE_REPO_MOUNT:-../..}:/repo:ro
       - ./dev-site-data:/data
 
 volumes:

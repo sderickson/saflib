@@ -5,11 +5,11 @@
   "scripts": {
     "typecheck": "tsc -b",
     "build": "./build-images.sh",
-    "dev": "saf-git-hashes && saf-docker prune && saf-docker generate && ./build-images.sh && docker compose --env-file env.dev --env-file .env -f docker-compose.yaml up -V",
-    "up": "saf-git-hashes && saf-docker prune && saf-docker generate && ./build-images.sh && docker compose --env-file env.dev --env-file .env -f docker-compose.yaml up --detach -V",
+    "dev": "saf-git-hashes && saf-docker prune && saf-docker generate && ./build-images.sh && ./scripts/dev-compose.sh up -V",
+    "up": "saf-git-hashes && saf-docker prune && saf-docker generate && ./build-images.sh && ./scripts/dev-compose.sh up --detach -V",
     "down": "saf-docker generate && docker compose --env-file env.dev --env-file .env -f docker-compose.yaml down",
-    "dev-site": "saf-docker generate && docker compose -f docker-compose.dev-site.yaml up --build -V",
-    "dev-site:down": "docker compose -f docker-compose.dev-site.yaml down"
+    "dev-site": "saf-docker generate && ./scripts/dev-site-compose.sh up --build -V",
+    "dev-site:down": "./scripts/dev-site-compose.sh down"
   },
   "dependencies": {
     "@saflib/dev-tools": "*"
