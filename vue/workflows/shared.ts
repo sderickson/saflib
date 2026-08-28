@@ -125,13 +125,6 @@ export function makeBasePackageLineReplace(
         .split("@saflib/base-__static-subdomain-name__-static")
         .join(context.staticPackageName);
     }
-    if ("staticSubdomainName" in context && context.staticSubdomainName) {
-      // Docker image refs cannot use `__static-subdomain-name__` literally (invalid
-      // `_`-prefixed name component). Templates use the docker-safe token instead.
-      out = out
-        .split("static-subdomain-name")
-        .join(context.staticSubdomainName);
-    }
     out = out.split("DynamicBaseLayout").join(`Dynamic${productPascal}Layout`);
     out = out.split("BaseLayout").join(`${productPascal}Layout`);
     out = out
@@ -150,6 +143,16 @@ export function makeBasePackageLineReplace(
         .split("/base-static-")
         .join(`/${context.productName}-static-`);
     }
-    return lineReplace(out);
+    // Interpolate `__static-subdomain-name__` (and other placeholders) first.
+    // Docker image refs cannot use that form (invalid `_`-prefixed name), so
+    // templates also use bare `static-subdomain-name`; replace those after so
+    // we don't turn `__static-subdomain-name__` into `__docs__`.
+    out = lineReplace(out);
+    if ("staticSubdomainName" in context && context.staticSubdomainName) {
+      out = out
+        .split("static-subdomain-name")
+        .join(context.staticSubdomainName);
+    }
+    return out;
   };
 }
