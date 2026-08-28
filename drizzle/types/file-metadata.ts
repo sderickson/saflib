@@ -21,12 +21,12 @@ export const fileMetadataColumns = {
   mimetype: text("mimetype").notNull(),
   size: integer("size").notNull(),
   md5_hash: text("md5_hash"),
-  created_at: text("created_at")
+  created_at: integer("created_at", { mode: "timestamp" })
     .notNull()
-    .$defaultFn(() => new Date().toISOString()),
-  updated_at: text("updated_at")
+    .$defaultFn(() => new Date()),
+  updated_at: integer("updated_at", { mode: "timestamp" })
     .notNull()
-    .$defaultFn(() => new Date().toISOString()),
+    .$defaultFn(() => new Date()),
 } as const;
 
 /**
@@ -49,6 +49,6 @@ export interface FileMetadataFields {
   mimetype: string;
   size: number;
   md5_hash: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
 }
