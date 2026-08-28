@@ -1,6 +1,7 @@
 import { createSpaMain } from "@saflib/vue";
 import Spa from "./AppSpa.vue";
 import "vuetify/styles";
+import { vuetifyConfig } from "@saflib/base-clients-common/vuetify-config";
 import { createAppRouter } from "./router.ts";
 import { app_strings } from "./strings.ts";
 import { BaseAsyncPageError } from "@saflib/base-clients-common/components";
@@ -15,4 +16,5 @@ export const main = createSpaMain({
   strings: app_strings,
   asyncPageError: BaseAsyncPageError,
   callback: createSentryCallback({ source: "app" }),
+  vuetifyConfig,
 });

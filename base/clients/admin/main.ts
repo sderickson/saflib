@@ -1,6 +1,7 @@
 import { createSpaMain } from "@saflib/vue";
 import Spa from "./AdminSpa.vue";
 import "vuetify/styles";
+import { vuetifyConfig } from "@saflib/base-clients-common/vuetify-config";
 import { createAdminRouter } from "./router.ts";
 import { admin_strings } from "./strings.ts";
 import { BaseAsyncPageError } from "@saflib/base-clients-common/components";
@@ -15,4 +16,5 @@ export const main = createSpaMain({
   strings: admin_strings,
   asyncPageError: BaseAsyncPageError,
   callback: createSentryCallback({ source: "admin" }),
+  vuetifyConfig,
 });
