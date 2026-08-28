@@ -38,7 +38,8 @@
     "@saflib/vendors-loki": "file:vendors/loki",
     "@saflib/vendors-posthog": "file:vendors/posthog",
     "@saflib/vendors-posthog-client": "file:vendors/posthog-client",
-    "@saflib/vendors-sentry": "file:vendors/sentry",
+    "@saflib/vendors-sentry-client": "file:vendors/sentry-client",
+    "@saflib/vendors-sentry-node": "file:vendors/sentry-node",
     "saflib-workflows": "^0.2.0"
   },
   "overrides": {

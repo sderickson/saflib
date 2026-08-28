@@ -323,7 +323,10 @@
       "path": "./vendors/posthog-client"
     },
     {
-      "path": "./vendors/sentry"
+      "path": "./vendors/sentry-client"
+    },
+    {
+      "path": "./vendors/sentry-node"
     },
     {
       "path": "./vite"

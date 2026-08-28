@@ -47,16 +47,16 @@ export const SentryInitWorkflowDefinition = defineWorkflow<
 1. **GitHub Actions** — Workflow that builds Docker images must expose \`SENTRY_AUTH_TOKEN\` to the build (e.g. job \`env:\` from **repository or environment secrets**). If using a GitHub **Environment**, add \`environment:\` on the job so those secrets resolve.
 
 2. **Client Vite build** — In the package that runs \`vite build\` for browser apps (often \`*\/clients\/build\` or similar):
-   - Use **\`createSentryViteBuildPlugin\` from \`@saflib/vendors-sentry/vite-build\`** (pass \`authToken\`, Sentry \`org\`\/\`project\` slugs, \`githubRepoSlug\` for \`setCommits\`, and absolute \`monorepoRoot\`). Keep \`SENTRY_AUTH_TOKEN\` in env for the build (e.g. \`typedEnv\` or validateEnv).
-   - Remove duplicate \`@sentry/vite-plugin\` from that package if the plugin is only used via \`@saflib/vendors-sentry\`.
+   - Use **\`createSentryViteBuildPlugin\` from \`@saflib/vendors-sentry-node/vite-build\`** (pass \`authToken\`, Sentry \`org\`\/\`project\` slugs, \`githubRepoSlug\` for \`setCommits\`, and absolute \`monorepoRoot\`). Keep \`SENTRY_AUTH_TOKEN\` in env for the build (e.g. \`typedEnv\` or validateEnv).
+   - Remove duplicate \`@sentry/vite-plugin\` from that package if the plugin is only used via \`@saflib/vendors-sentry-node\`.
 
 3. **Docker (Node slim / CI)** — If \`sentry-cli\` hits TLS errors in Linux images, install **\`ca-certificates\`** in the **builder** image (e.g. \`apt-get\` in the clients build Dockerfile template).
 
 4. **Production Docker build** — Do **not** \`COPY\` a gitignored \`.env.sentry-build-plugin\` into the image. Pass the token with **BuildKit** \`--secret id=...,env=SENTRY_AUTH_TOKEN\` and a matching \`RUN --mount=type=secret,...\` in the stage that runs \`npm run build\` for the client. The local build script should load an optional \`.env.sentry-build-plugin\` into the shell when present, and use the same \`docker build --secret\` for CI.
 
-5. **Runtime DSNs** — Wire \`SENTRY_DSN\` (and dev/prod projects if applicable) in env schema and app init (\`@saflib/vendors-sentry\` \`configureSentry\` / \`initSentry\` on the server; Vue \`createSentryCallback\` from the same package).
+5. **Runtime DSNs** — Wire \`SENTRY_DSN\` (and dev/prod projects if applicable) in env schema and app init (\`@saflib/vendors-sentry-node\` \`configureSentry\` / \`initSentry\` on the server; Vue \`createSentryCallback\` from \`@saflib/vendors-sentry-client\`).
 
-6. **\`@saflib/vendors-sentry\` package** — Ensure \`./vite-build\` export and dependencies (\`@sentry/vite-plugin\`, \`@saflib/node\` for git hashes) are present; \`createSentryViteBuildPlugin\` centralizes release, \`setCommits\`, and monorepo-relative sourcemap paths.
+6. **Packages** — \`@saflib/vendors-sentry-node\` owns Node init + \`./vite-build\`; \`@saflib/vendors-sentry-client\` owns Vue callbacks only (no \`@sentry/node\`). Never import \`sentry-node\` from SPA code.
 
 Run \`npm install\` at the repo root after \`package.json\` changes. Fix any type or test failures in touched packages.`,
     })),

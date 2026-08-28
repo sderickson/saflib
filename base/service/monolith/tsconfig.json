@@ -45,7 +45,7 @@
       "path": "../../../vendors/loki"
     },
     {
-      "path": "../../../vendors/sentry"
+      "path": "../../../vendors/sentry-node"
     },
     {
       "path": "../audit"

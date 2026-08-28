@@ -33,7 +33,7 @@
     "@saflib/links": "*",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/sdk": "*",
-    "@saflib/vendors-sentry": "*",
+    "@saflib/vendors-sentry-client": "*",
     "@saflib/vue": "*"
   },
   "sideEffects": [

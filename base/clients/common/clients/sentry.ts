@@ -1,1 +1,4 @@
-export { createSentryCallback, sentryCallback } from "@saflib/vendors-sentry";
+export {
+  createSentryCallback,
+  sentryCallback,
+} from "@saflib/vendors-sentry-client";

@@ -25,22 +25,7 @@
   },
   "references": [
     {
-      "path": "../../env"
-    },
-    {
-      "path": "../../errors/errors-http"
-    },
-    {
-      "path": "../../errors/errors-sdk"
-    },
-    {
-      "path": "../../errors/errors-spec"
-    },
-    {
       "path": "../../errors/errors-vue"
-    },
-    {
-      "path": "../../node"
     }
   ]
 }
