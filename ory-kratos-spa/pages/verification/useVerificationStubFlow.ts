@@ -1,4 +1,5 @@
 import { computed, ref, watch, type Ref } from "vue";
+import { useRoute } from "vue-router";
 import type { Session, VerificationFlow } from "@ory/client";
 import {
   useUpdateVerificationFlowMutation,
@@ -11,6 +12,7 @@ import {
   canSubmitVerificationCode,
   destinationAfterVerification,
   emailForVerificationResend,
+  parseReturnToFromQuery,
   verificationFlowIsComplete,
 } from "./Verification.logic.ts";
 
@@ -24,6 +26,7 @@ export function useVerificationStubFlow(args: {
   /** When true, auto-submit email once to request a code for a newly created flow. */
   needsEmailBootstrap: Ref<boolean>;
 }) {
+  const route = useRoute();
   const postAuthFallbackHref = useAuthPostAuthFallbackHref();
   const updateVerification = useUpdateVerificationFlowMutation();
 
@@ -65,6 +68,7 @@ export function useVerificationStubFlow(args: {
         destinationAfterVerification(
           updated.flow.return_to,
           postAuthFallbackHref.value,
+          parseReturnToFromQuery(route.query),
         ),
       );
       return true;

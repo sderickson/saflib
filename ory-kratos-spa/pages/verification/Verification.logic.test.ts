@@ -5,6 +5,8 @@ import {
   buildVerificationResendCodeBody,
   destinationAfterVerification,
   emailForVerificationResend,
+  isAuthUiReturnTo,
+  parseReturnToFromQuery,
   parseVerificationFlowIdFromQuery,
   verificationFlowHasUiNodes,
   verificationFlowIsComplete,
@@ -64,11 +66,56 @@ describe("verificationFlowIsComplete", () => {
   });
 });
 
-describe("destinationAfterVerification", () => {
-  it("prefers the flow return_to when set", () => {
-    expect(destinationAfterVerification("https://app.example/after", "https://fallback")).toBe(
-      "https://app.example/after",
+describe("parseReturnToFromQuery", () => {
+  it("extracts a trimmed return_to from the query", () => {
+    expect(parseReturnToFromQuery({ return_to: "  https://app.example/  " })).toBe(
+      "https://app.example/",
     );
+  });
+
+  it("returns undefined when return_to is missing or blank", () => {
+    expect(parseReturnToFromQuery({})).toBeUndefined();
+    expect(parseReturnToFromQuery({ return_to: "   " })).toBeUndefined();
+    expect(parseReturnToFromQuery({ return_to: 1 })).toBeUndefined();
+  });
+});
+
+describe("isAuthUiReturnTo", () => {
+  it("returns true for auth subdomain hosts", () => {
+    expect(isAuthUiReturnTo("http://auth.docker.localhost/")).toBe(true);
+    expect(isAuthUiReturnTo("https://auth.example.com/login")).toBe(true);
+  });
+
+  it("returns false for other hosts", () => {
+    expect(isAuthUiReturnTo("http://app.docker.localhost/")).toBe(false);
+    expect(isAuthUiReturnTo("not-a-url")).toBe(false);
+  });
+});
+
+describe("destinationAfterVerification", () => {
+  it("prefers route return_to over the flow return_to", () => {
+    expect(
+      destinationAfterVerification(
+        "http://auth.docker.localhost/",
+        "https://fallback",
+        "https://app.example/after",
+      ),
+    ).toBe("https://app.example/after");
+  });
+
+  it("prefers a non-auth flow return_to when there is no route return_to", () => {
+    expect(
+      destinationAfterVerification("https://app.example/after", "https://fallback"),
+    ).toBe("https://app.example/after");
+  });
+
+  it("uses the fallback when flow return_to points at the auth UI", () => {
+    expect(
+      destinationAfterVerification(
+        "http://auth.docker.localhost/",
+        "https://fallback",
+      ),
+    ).toBe("https://fallback");
   });
 
   it("uses the fallback when return_to is empty", () => {

@@ -41,13 +41,54 @@ export function verificationFlowIsComplete(flow: VerificationFlow): boolean {
   return flow.state === VerificationFlowState.PassedChallenge;
 }
 
-/** Where to send the browser after successful verification: Kratos `return_to` or the injected hub app fallback URL. */
+/** Parse `?return_to=` from a router query record. */
+export function parseReturnToFromQuery(
+  query: Record<string, unknown>,
+): string | undefined {
+  const raw = query.return_to;
+  if (typeof raw !== "string") {
+    return undefined;
+  }
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+/** Kratos often defaults verification completion to the auth UI origin. */
+export function isAuthUiReturnTo(url: string): boolean {
+  try {
+    const { hostname } = new URL(url);
+    return hostname === "auth" || hostname.startsWith("auth.");
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Where to send the browser after successful verification.
+ * Prefer explicit `?return_to=` (e.g. from the app verify button), then a non-auth
+ * Kratos flow `return_to`, then the injected fallback URL.
+ */
 export function destinationAfterVerification(
   flowReturnTo: string | null | undefined,
   fallbackRecipesHomeHref: string,
+  queryReturnTo?: string | null,
 ): string {
-  const u = flowReturnTo?.trim();
-  return u || fallbackRecipesHomeHref;
+  const fromQuery = queryReturnTo?.trim();
+  if (fromQuery) {
+    return fromQuery;
+  }
+
+  const fromFlow = flowReturnTo?.trim();
+  if (fromFlow && !isAuthUiReturnTo(fromFlow)) {
+    return fromFlow;
+  }
+
+  const fallback = fallbackRecipesHomeHref.trim();
+  if (fallback) {
+    return fallback;
+  }
+
+  return fromFlow ?? fallbackRecipesHomeHref;
 }
 
 /**
