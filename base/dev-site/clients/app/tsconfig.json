@@ -3,7 +3,6 @@
     "@saflib/vue/tsconfig.app.json"
   ],
   "compilerOptions": {
-    "rootDir": ".",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "outDir": "./dist/types",
     "noEmit": false,
@@ -12,11 +11,6 @@
       "vite/client"
     ]
   },
-  "include": [
-    ".vitepress/theme/**/*.ts",
-    ".vitepress/theme/**/*.vue",
-    "assets.d.ts"
-  ],
   "exclude": [
     "node_modules",
     "dist/types",
@@ -28,24 +22,27 @@
     "**/workflows/template/**",
     "**/workflows/templates/**"
   ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.vue",
+    "**/*.json"
+  ],
   "references": [
     {
-      "path": "../../../links"
+      "path": "../../../../dev-site/dev-site-vue"
     },
     {
-      "path": "../../../sdk"
+      "path": "../../../clients/common"
     },
     {
-      "path": "../../../vite"
+      "path": "../../../../links"
     },
     {
-      "path": "../../../vue"
+      "path": "../../../../vite"
     },
     {
-      "path": "../common"
-    },
-    {
-      "path": "../links"
+      "path": "../../../../vue"
     }
   ]
 }

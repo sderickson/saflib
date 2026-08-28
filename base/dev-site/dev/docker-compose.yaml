@@ -1,0 +1,61 @@
+# Live-dev: Vite SPA + Express API with bind mounts (no image rebuild on change).
+#
+#   UI (HMR):  http://localhost:5199/
+#   API only:  http://localhost:3099/api/...
+#
+# Mount base/dev-site + saflib dev-site packages + saflib/monorepo — not all of saflib —
+# so the image's Linux node_modules (better-sqlite3, rolldown, …) stay intact.
+services:
+  api:
+    build:
+      context: ../../..
+      dockerfile: base/dev-site/dev/Dockerfile
+    working_dir: /app/base/dev-site/service/http
+    command: ["npm", "run", "dev"]
+    environment:
+      NODE_ENV: development
+      TZ: UTC
+      DEPLOYMENT_NAME: development
+      DOMAIN: localhost
+      PROTOCOL: http
+      CLIENT_SUBDOMAINS: ""
+      ADMIN_EMAILS: "admin@saflib.com"
+      ALLOW_DB_CREATION: "true"
+      DEV_SITE_SERVICE_HTTP_HOST: "0.0.0.0:3099"
+      DEV_SITE_REPO_ROOT: /repo
+      DEV_SITE_PRODUCT_ROOT: base
+      DEV_SITE_MAIN_REF: main
+      DEV_SITE_DB_PATH: /app/base/dev-site/service/http/data/dev-site.sqlite
+    volumes:
+      - ../../:/app/base/dev-site
+      - ../../../dev-site/dev-site-db:/app/dev-site/dev-site-db
+      - ../../../dev-site/dev-site-http:/app/dev-site/dev-site-http
+      - ../../../dev-site/dev-site-spec:/app/dev-site/dev-site-spec
+      - ../../../dev-site/dev-site-vue:/app/dev-site/dev-site-vue
+      - ../../../monorepo:/app/monorepo
+      - ../../..:/repo:ro
+      - ../service/http/data:/app/base/dev-site/service/http/data
+    ports:
+      - "3099:3099"
+
+  web:
+    build:
+      context: ../../..
+      dockerfile: base/dev-site/dev/Dockerfile
+    working_dir: /app/base/dev-site/clients/app
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5199"]
+    environment:
+      DEV_SITE_API_PROXY_TARGET: http://api:3099
+      VITE_DEV_SITE_GITHUB_REPO: PathClerk/pathclerk
+      VITE_DEV_SITE_GITHUB_REF: main
+      VITE_DEV_SITE_LOCAL_REPO_ROOT: ${VITE_DEV_SITE_LOCAL_REPO_ROOT:-}
+    volumes:
+      - ../../:/app/base/dev-site
+      - ../../../dev-site/dev-site-db:/app/dev-site/dev-site-db
+      - ../../../dev-site/dev-site-http:/app/dev-site/dev-site-http
+      - ../../../dev-site/dev-site-spec:/app/dev-site/dev-site-spec
+      - ../../../dev-site/dev-site-vue:/app/dev-site/dev-site-vue
+    ports:
+      - "5199:5199"
+    depends_on:
+      - api

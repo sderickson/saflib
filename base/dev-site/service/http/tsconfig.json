@@ -16,7 +16,6 @@
     "**/workflows/templates/**"
   ],
   "compilerOptions": {
-    "rootDir": ".",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "outDir": "./dist/types",
     "noEmit": false,
@@ -24,34 +23,25 @@
   },
   "references": [
     {
-      "path": "../../../audit/audit-db"
+      "path": "../../../../dev-site/dev-site-db"
     },
     {
-      "path": "../../../drizzle"
+      "path": "../../../../dev-site/dev-site-http"
     },
     {
-      "path": "../../../email/email-service"
+      "path": "../../../../env"
     },
     {
-      "path": "../../../monorepo"
+      "path": "../../../../express"
     },
     {
-      "path": "../../../node"
+      "path": "../../../../monorepo"
     },
     {
-      "path": "../../../object-store"
+      "path": "../../../../node"
     },
     {
-      "path": "../../../secret-store"
-    },
-    {
-      "path": "../../../vendors/brevo"
-    },
-    {
-      "path": "../db"
-    },
-    {
-      "path": "../integrations/__integration-name__"
+      "path": "../../../service/jobs"
     }
   ]
 }

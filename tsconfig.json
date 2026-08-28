@@ -92,6 +92,12 @@
       "path": "./base/dev"
     },
     {
+      "path": "./base/dev-site/clients/app"
+    },
+    {
+      "path": "./base/dev-site/service/http"
+    },
+    {
       "path": "./base/lib/__package-name__"
     },
     {
