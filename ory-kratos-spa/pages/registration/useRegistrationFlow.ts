@@ -26,7 +26,7 @@ import {
   buildRegistrationUpdateBodyFromFormData,
   registrationSubmitErrorMessage,
   traitsEmailFromFormData,
-  verificationFlowIdFromRegistrationContinueWith,
+  appendVerificationFlowToDestination,
 } from "./Registration.logic.ts";
 import { kratos_registration_flow as flowStrings } from "./RegistrationFlowForm.strings.ts";
 
@@ -85,18 +85,7 @@ export function useRegistrationFlow(
     destination: string,
     continueWith: RegistrationCompleted["result"]["continue_with"],
   ): string {
-    const flowId = verificationFlowIdFromRegistrationContinueWith(continueWith);
-    if (!flowId) {
-      return destination;
-    }
-    try {
-      const url = new URL(destination);
-      url.searchParams.set("flow", flowId);
-      return url.toString();
-    } catch {
-      const join = destination.includes("?") ? "&" : "?";
-      return `${destination}${join}flow=${encodeURIComponent(flowId)}`;
-    }
+    return appendVerificationFlowToDestination(destination, continueWith);
   }
 
   async function runAfterRegistration(fd: FormData): Promise<void> {

@@ -60,7 +60,8 @@ describe("useRegistrationFlow", () => {
 
       await submitRegistrationForm(registrationTestForm());
 
-      const expected = "http://app.localhost:3000/";
+      const expected =
+        "http://app.localhost:3000/?flow=mock-verification-flow";
       await vi.waitFor(() => expect(assignMock).toHaveBeenCalledWith(expected));
       app.unmount();
     } finally {
@@ -134,7 +135,9 @@ describe("useRegistrationFlow", () => {
 
       await vi.waitFor(() => expect(afterRegistration).toHaveBeenCalled());
       await vi.waitFor(() =>
-        expect(assignMock).toHaveBeenCalledWith("http://app.localhost:3000/"),
+        expect(assignMock).toHaveBeenCalledWith(
+          "http://app.localhost:3000/?flow=mock-verification-flow",
+        ),
       );
       expect(afterRegistration.mock.invocationCallOrder[0]!).toBeLessThan(
         assignMock.mock.invocationCallOrder[0]!,
@@ -165,7 +168,9 @@ describe("useRegistrationFlow", () => {
       await submitRegistrationForm(registrationTestForm());
 
       await vi.waitFor(() =>
-        expect(assignMock).toHaveBeenCalledWith("http://app.localhost:3000/"),
+        expect(assignMock).toHaveBeenCalledWith(
+          "http://app.localhost:3000/?flow=mock-verification-flow",
+        ),
       );
       app.unmount();
     } finally {

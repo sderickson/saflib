@@ -5,6 +5,7 @@ import {
   useAuthPostAuthFallbackHref,
   useAuthPostAuthUrlIsOverride,
 } from "../../authFallbackInject.ts";
+import { useAuthAppConfig } from "../../configureAuthApp.ts";
 import {
   BrowserRedirectRequired,
   createLoginFlowQueryOptions,
@@ -43,6 +44,7 @@ function mfaSetupHref(): string {
  */
 export function useLoginFlow(flow: Ref<LoginFlow>) {
   const queryClient = useQueryClient();
+  const authAppConfig = useAuthAppConfig();
   const postAuthHref = useAuthPostAuthFallbackHref();
   const postAuthIsOverride = useAuthPostAuthUrlIsOverride();
   const updateLogin = useUpdateLoginFlowMutation();
@@ -64,7 +66,10 @@ export function useLoginFlow(flow: Ref<LoginFlow>) {
     completed: LoginCompleted,
   ): Promise<void> {
     const session = completed.session.session;
-    if (sessionSatisfiesMfa(session?.authenticator_assurance_level)) {
+    if (
+      !authAppConfig.value.requireMfaAfterLogin ||
+      sessionSatisfiesMfa(session?.authenticator_assurance_level)
+    ) {
       window.location.assign(returnTo.value);
       return;
     }
