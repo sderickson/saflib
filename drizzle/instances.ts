@@ -112,6 +112,11 @@ export class DbManager<S extends Schema, C extends Config> {
     if (migrationsPath.startsWith("./")) {
       migrationsPath = path.join(this.rootPath, migrationsPath);
     }
+    // Drizzle wraps pending migrations in BEGIN/COMMIT. PRAGMA foreign_keys in
+    // migration SQL cannot disable enforcement inside that transaction when FKs
+    // were already enabled on connect — turn them off for the migrate() call.
+    const foreignKeysBefore = sqlite.pragma("foreign_keys", { simple: true });
+    sqlite.pragma("foreign_keys = OFF");
     try {
       reconcileSquashedMigrations(sqlite, migrationsPath, {
         info: (message) => log.info(message),
@@ -126,6 +131,8 @@ export class DbManager<S extends Schema, C extends Config> {
         log.error(`Cause:\n\n${error.cause}\n\n`);
       }
       throw error;
+    } finally {
+      sqlite.pragma(`foreign_keys = ${foreignKeysBefore ? "ON" : "OFF"}`);
     }
   };
 
