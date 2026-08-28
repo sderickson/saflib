@@ -92,12 +92,6 @@
       "path": "./base/dev"
     },
     {
-      "path": "./base/dev-site/clients/app"
-    },
-    {
-      "path": "./base/dev-site/service/http"
-    },
-    {
       "path": "./base/lib/__package-name__"
     },
     {
@@ -159,6 +153,12 @@
     },
     {
       "path": "./dev-site/dev-site-db"
+    },
+    {
+      "path": "./dev-site/dev-site-docker/clients/app"
+    },
+    {
+      "path": "./dev-site/dev-site-docker/service/http"
     },
     {
       "path": "./dev-site/dev-site-http"

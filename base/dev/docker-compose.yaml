@@ -5,6 +5,7 @@ services:
   caddy:
     depends_on:
       - clients
+      - site
     image: saflib-base-dev-caddy:latest
     build:
       context: ../..
@@ -82,6 +83,30 @@ services:
     volumes:
       - ./kratos/data:/var/lib/sqlite
       - ./kratos:/etc/config/kratos
+
+  site:
+    image: saflib-dev-site:latest
+    build:
+      context: ../..
+      dockerfile: dev-site/dev-site-docker/Dockerfile
+    environment:
+      NODE_ENV: production
+      TZ: UTC
+      DEPLOYMENT_NAME: development
+      DOMAIN: localhost
+      PROTOCOL: http
+      CLIENT_SUBDOMAINS: ""
+      ADMIN_EMAILS: "admin@saflib.com"
+      ALLOW_DB_CREATION: "true"
+      DEV_SITE_SERVICE_HTTP_HOST: "0.0.0.0:3099"
+      DEV_SITE_REPO_ROOT: /app
+      DEV_SITE_PRODUCT_ROOT: base
+      DEV_SITE_MAIN_REF: main
+      DEV_SITE_DB_PATH: /data/dev-site.sqlite
+      DEV_SITE_STATIC_DIR: /app/dev-site/dev-site-docker/clients/app/dist
+    volumes:
+      - ../..:/app:ro
+      - ./dev-site-data:/data
 
 volumes:
   caddy_data:

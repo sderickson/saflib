@@ -19,3 +19,7 @@ export type {
   CreateDevSiteHttpAppOptions,
   DevSiteHttpAppLease,
 } from "./http.ts";
+export { startDevSiteService } from "./boot.ts";
+export type { StartDevSiteServiceOptions } from "./boot.ts";
+export type { DevSiteHttpEnvSchema } from "./env.ts";
+export { typedEnv } from "./env.ts";

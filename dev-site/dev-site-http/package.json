@@ -8,6 +8,8 @@
   "exports": {
     ".": "./index.ts",
     "./http": "./http.ts",
+    "./boot": "./boot.ts",
+    "./env": "./env.ts",
     "./package-issues": "./package-issues.ts",
     "./testing/slim-route-test": "./testing/slim-route-test.ts",
     "./routes/*": "./routes/*.ts"

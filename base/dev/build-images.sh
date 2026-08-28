@@ -8,8 +8,8 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO_ROOT"
 
-if [ ! -f ./base/dev-site/Dockerfile ]; then
-  echo "Missing base/dev-site/Dockerfile. Run saf-docker generate first." >&2
+if [ ! -f ./dev-site/dev-site-docker/Dockerfile ]; then
+  echo "Missing dev-site/dev-site-docker/Dockerfile. Run saf-docker generate first." >&2
   exit 1
 fi
 
@@ -57,8 +57,8 @@ docker_build ./base/clients/build/Dockerfile \
   -t saflib-base-clients:latest &
 pids+=($!)
 
-docker_build ./base/dev-site/Dockerfile \
-  -t saflib-base-dev-site:latest &
+docker_build ./dev-site/dev-site-docker/Dockerfile \
+  -t saflib-dev-site:latest &
 pids+=($!)
 
 wait_all "${pids[@]}"

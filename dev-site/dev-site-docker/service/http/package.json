@@ -1,0 +1,23 @@
+{
+  "name": "@saflib/dev-site-docker-http",
+  "description": "HTTP entrypoint for the shared dev-site Docker image",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "start": "node --experimental-strip-types run.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/dev-site-http": "*",
+    "@saflib/env": "*",
+    "@saflib/node": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

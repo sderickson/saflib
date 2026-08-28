@@ -1,0 +1,15 @@
+{
+  "name": "@saflib/dev-site-docker",
+  "description": "Runnable Docker image for dev-site (API + SPA on one port)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "saf-docker generate"
+  },
+  "dependencies": {
+    "@saflib/dev-site-docker-app": "*",
+    "@saflib/dev-site-docker-http": "*",
+    "@saflib/dev-tools": "*"
+  },
+  "sideEffects": false
+}

@@ -30,25 +30,16 @@
   ],
   "references": [
     {
-      "path": "../../imports"
+      "path": "../../../dev-site-vue"
     },
     {
-      "path": "../../links"
+      "path": "../../../../links"
     },
     {
-      "path": "../../sdk"
+      "path": "../../../../vite"
     },
     {
-      "path": "../../vite"
-    },
-    {
-      "path": "../../vue"
-    },
-    {
-      "path": "../dev-site-http"
-    },
-    {
-      "path": "../dev-site-spec"
+      "path": "../../../../vue"
     }
   ]
 }
