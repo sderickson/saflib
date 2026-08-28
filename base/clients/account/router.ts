@@ -26,6 +26,7 @@ export const createAccountRouter = (options?: {
     {
       path: accountLinks.verifyEmail.path,
       component: VerifyEmailAsync,
+      meta: { blankShell: true },
     },
     {
       path: accountLinks.newVerification.path,
@@ -33,10 +34,12 @@ export const createAccountRouter = (options?: {
         path: accountLinks.verifyEmail.path,
         query: to.query,
       }),
+      meta: { blankShell: true },
     },
     {
       path: accountLinks.verification.path,
       component: EmailVerificationFlowAsync,
+      meta: { blankShell: true },
     },
     {
       path: accountLinks.home.path,
