@@ -9,6 +9,7 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./createSentryCallback": "./createSentryCallback.ts",
     "./env": "./env.ts",
     "./vite-build": "./vite-build.ts",
     "./workflows": "./workflows/index.ts"

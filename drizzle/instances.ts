@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import type { Config } from "drizzle-kit";
-import type { Schema, DbKey, DbOptions, DbConnection } from "./types.ts";
+import type { Schema, DbKey, DbOptions, DbConnection, DbManagerOptions } from "./types.ts";
 import path from "path";
 import fs from "fs";
 import { makeSubsystemReporters } from "@saflib/node";
@@ -27,13 +27,15 @@ export class DbManager<S extends Schema, C extends Config> {
   private rootPath: string;
   private activeBackups: Set<string>;
   private dbPaths: Map<DbKey, string>;
+  private defaultPragmas: Record<string, string | number>;
 
-  constructor(schema: S, c: C, rootUrl: string) {
+  constructor(schema: S, c: C, rootUrl: string, options?: DbManagerOptions) {
     this.config = c;
     this.schema = schema;
     this.instances = new Map();
     this.activeBackups = new Set();
     this.dbPaths = new Map();
+    this.defaultPragmas = options?.defaultPragmas ?? {};
     if (!rootUrl.startsWith("file://")) {
       throw new Error("Root URL must start with 'file://'");
     }
@@ -83,11 +85,7 @@ export class DbManager<S extends Schema, C extends Config> {
     const sqlite = options?.readonly
       ? new Database(dbStorage, { readonly: true, fileMustExist: true })
       : new Database(dbStorage);
-    if (options?.pragmas) {
-      for (const [key, value] of Object.entries(options.pragmas)) {
-        sqlite.pragma(`${key} = ${value}`);
-      }
-    }
+    this.applyPragmas(sqlite, options?.pragmas);
     const db = drizzle(sqlite, { schema: this.schema });
 
     if (
@@ -114,6 +112,11 @@ export class DbManager<S extends Schema, C extends Config> {
     if (migrationsPath.startsWith("./")) {
       migrationsPath = path.join(this.rootPath, migrationsPath);
     }
+    // Drizzle wraps pending migrations in BEGIN/COMMIT. PRAGMA foreign_keys in
+    // migration SQL cannot disable enforcement inside that transaction when FKs
+    // were already enabled on connect — turn them off for the migrate() call.
+    const foreignKeysBefore = sqlite.pragma("foreign_keys", { simple: true });
+    sqlite.pragma("foreign_keys = OFF");
     try {
       reconcileSquashedMigrations(sqlite, migrationsPath, {
         info: (message) => log.info(message),
@@ -128,6 +131,8 @@ export class DbManager<S extends Schema, C extends Config> {
         log.error(`Cause:\n\n${error.cause}\n\n`);
       }
       throw error;
+    } finally {
+      sqlite.pragma(`foreign_keys = ${foreignKeysBefore ? "ON" : "OFF"}`);
     }
   };
 
@@ -366,10 +371,7 @@ export class DbManager<S extends Schema, C extends Config> {
     const sqlite = options?.readonly
       ? new Database(sqlitePath, { readonly: true, fileMustExist: true })
       : new Database(sqlitePath);
-    const pragmas = options?.pragmas ?? {};
-    for (const [pragmaKey, value] of Object.entries(pragmas)) {
-      sqlite.pragma(`${pragmaKey} = ${value}`);
-    }
+    this.applyPragmas(sqlite, options?.pragmas);
     const db = drizzle(sqlite, { schema: this.schema });
     if (
       this.config.out &&
@@ -450,6 +452,16 @@ export class DbManager<S extends Schema, C extends Config> {
       stream.pipe(writeStream);
     });
   }
+
+  private applyPragmas = (
+    sqlite: Database.Database,
+    pragmas?: Record<string, string | number>,
+  ): void => {
+    const merged = { ...this.defaultPragmas, ...pragmas };
+    for (const [key, value] of Object.entries(merged)) {
+      sqlite.pragma(`${key} = ${value}`);
+    }
+  };
 
   publicInterface() {
     return {

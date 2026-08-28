@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/node";
 import { addErrorCollector, getSafReporters } from "@saflib/node";
-import { installReportedErrorCollector } from "@saflib/errors-http";
+import { installReportedErrorCollector } from "@saflib/errors-http/lib/initErrorsServer";
 import { typedEnv } from "./env.ts";
 
 export type ConfigureSentryOptions = {

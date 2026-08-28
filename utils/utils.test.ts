@@ -1,9 +1,22 @@
 import { describe, it, expect } from "vitest";
 import {
+  generateShortId,
   kebabCaseToPascalCase,
   kebabCaseToCamelCase,
   kebabCaseToSnakeCase,
 } from "./index.ts";
+
+describe("generateShortId", () => {
+  it("returns a 12-character URL-safe string by default", () => {
+    const id = generateShortId();
+    expect(id).toHaveLength(12);
+    expect(id).toMatch(/^[A-Za-z0-9_-]+$/);
+  });
+
+  it("honors byteLength override", () => {
+    expect(generateShortId(6)).toHaveLength(8);
+  });
+});
 
 describe("Naming convention utilities", () => {
   it("should convert kebab-case to PascalCase", () => {

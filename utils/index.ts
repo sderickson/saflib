@@ -1,8 +1,9 @@
 /**
- * Short random ID (8 base64url chars by default). Uses crypto.getRandomValues; URL-safe,
- * same entropy as 12 hex chars in less space. Optional byteLength (default 6 → 8 chars).
+ * Short random ID (12 base64url chars by default). Uses crypto.getRandomValues; URL-safe.
+ * Default byteLength 9 → 72 bits of entropy. Optional byteLength override for callers
+ * that need a different width.
  */
-export function generateShortId(byteLength: number = 6): string {
+export function generateShortId(byteLength: number = 9): string {
   const bytes = new Uint8Array(byteLength);
   crypto.getRandomValues(bytes);
   if (typeof Buffer !== "undefined") {
