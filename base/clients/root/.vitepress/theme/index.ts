@@ -2,7 +2,7 @@ import type { Theme } from "vitepress";
 import { createVuetify } from "vuetify";
 import { vuetifyConfig } from "@saflib/base-clients-common/vuetify-config";
 import { enhanceStaticSiteApp } from "@saflib/base-clients-common/static-site-theme";
-import "vuetify/styles";
+import "@saflib/base-clients-common/style-imports";
 import "./style.css";
 import StaticSiteLayout from "./components/StaticSiteLayout.vue";
 

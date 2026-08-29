@@ -1,6 +1,6 @@
 import { createSpaMain } from "@saflib/vue";
 import Spa from "./AuthSpa.vue";
-import "vuetify/styles";
+import "@saflib/base-clients-common/style-imports";
 import { vuetifyConfig } from "@saflib/base-clients-common/vuetify-config";
 import { createAuthRouter } from "./router.ts";
 import { auth_strings } from "./strings.ts";

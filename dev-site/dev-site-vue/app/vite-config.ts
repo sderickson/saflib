@@ -6,7 +6,7 @@ export type DevSiteViteConfigOptions = {
   /** Monorepo root passed to workspace package resolution (usually saflib root). */
   monorepoRoot: string;
   /** Optional SCSS overrides path for Vuetify theming. */
-  vuetifyOverrides?: string;
+  vuetifySettings?: string;
   /** Vite dev/preview port. Defaults to 5199. */
   port?: number;
   /** API proxy target for `/api`. Defaults to http://127.0.0.1:3099. */
@@ -26,9 +26,9 @@ export function devSiteViteConfig(options: DevSiteViteConfigOptions): UserConfig
       monorepoRoot: options.monorepoRoot,
       appType: "spa",
       useSubdomainProxy: false,
-      vuetifyOverrides:
-        options.vuetifyOverrides ??
-        path.resolve(import.meta.dirname, "../overrides.scss"),
+      vuetifySettings:
+        options.vuetifySettings ??
+        path.resolve(import.meta.dirname, "../vuetify-settings.scss"),
     }),
     defineConfig({
       server: {

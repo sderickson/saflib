@@ -1,0 +1,13 @@
+/* Vuetify component CSS overrides (imported once via style-imports.ts — SPAs and VitePress).
+ *
+ * Prefer this file (or vuetify-settings.scss) over <style> blocks in Vue SFCs
+ * when restyling .v-* components — keeps the design system consistent.
+ *
+ * To find selectors and structure, open the component under:
+ *   node_modules/vuetify/lib/components/<VComponent>/
+ * Examples: VBtn.sass, VDialog.sass, VCard.sass, VList.sass, …
+ * Sass variable defaults ($button-height, …) are in adjacent _variables.scss
+ * and are overridden in vuetify-settings.scss via `@use "vuetify/settings"`.
+ *
+ * App-wide utility classes that are NOT restyling Vuetify belong in globals.scss.
+ */

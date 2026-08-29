@@ -1,0 +1,10 @@
+/* Vuetify Sass variable overrides (vite-plugin-vuetify `styles.configFile`).
+ *
+ * Intentionally minimal — product SPAs supply real theming via their own
+ * clients/build/vuetify-settings.scss. Defaults live under node_modules, e.g.:
+ *   node_modules/vuetify/lib/components/VBtn/_variables.scss
+ *   node_modules/vuetify/lib/styles/settings/
+ *
+ * CSS selector overrides belong in a product vuetify-overrides.scss.
+ * Non-Vuetify app utilities belong in a product globals.scss.
+ */

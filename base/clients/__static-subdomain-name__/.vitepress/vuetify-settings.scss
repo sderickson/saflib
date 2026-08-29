@@ -1,0 +1,15 @@
+/* Vuetify Sass variable overrides (vite-plugin-vuetify `styles.configFile`).
+ *
+ * Prefer this file over <style> blocks in Vue SFCs when the change should apply
+ * product-wide. Defaults live next to each component under node_modules, e.g.:
+ *   node_modules/vuetify/lib/components/VBtn/_variables.scss
+ * Global tokens also under:
+ *   node_modules/vuetify/lib/styles/settings/
+ *
+ * For CSS selector overrides and app utilities, see clients/build/
+ * vuetify-overrides.scss and globals.scss (loaded via style-imports in SPA + VitePress).
+ */
+
+@use "vuetify/settings" with (
+  $body-font-family: "Roboto"
+);

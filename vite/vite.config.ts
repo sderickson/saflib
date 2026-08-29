@@ -107,9 +107,10 @@ export interface MakeConfigProps {
    */
   plugins?: PluginOption[];
   /**
-   * A relative path (from process.cwd()) to the Vuetify style configFile override.
+   * Relative path (from process.cwd()) to the Vuetify Sass settings configFile
+   * (`vuetify-settings.scss` — `@use "vuetify/settings" with (…)`).
    */
-  vuetifyOverrides?: string;
+  vuetifySettings?: string;
   /**
    * The absolute path of the root of the monorepo, to ensure vite has access to saflib packages.
    */
@@ -135,7 +136,7 @@ export interface MakeConfigProps {
 export function makeConfig(config: MakeConfigProps = {}) {
   const {
     plugins: extraPlugins = [],
-    vuetifyOverrides,
+    vuetifySettings,
     monorepoRoot,
     sourcemap,
   } = config;
@@ -147,7 +148,7 @@ export function makeConfig(config: MakeConfigProps = {}) {
       vue(),
       vueDevTools(),
       vuetify(
-        vuetifyOverrides ? { styles: { configFile: vuetifyOverrides } } : {},
+        vuetifySettings ? { styles: { configFile: vuetifySettings } } : {},
       ),
       ...(monorepoRoot
         ? [workspacePackageExportsPlugin({ monorepoRoot })]

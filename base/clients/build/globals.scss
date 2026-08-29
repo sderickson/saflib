@@ -1,0 +1,8 @@
+/* App-wide utility / layout classes that are not Vuetify component restyles
+ * (imported once via style-imports.ts — SPAs and VitePress).
+ *
+ * Prefer this file over <style> in Vue SFCs when a class should be reused
+ * product-wide. Restyling .v-* components belongs in vuetify-overrides.scss; Sass
+ * variables belong in vuetify-settings.scss (see those files for where
+ * Vuetify sources live under node_modules/vuetify/lib/…).
+ */
