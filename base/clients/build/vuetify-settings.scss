@@ -11,6 +11,7 @@
  *
  * CSS selector / structure overrides go in vuetify-overrides.scss.
  * Non-Vuetify app utility classes go in globals.scss.
+ * SPAs and VitePress both use this file (vite `vuetifySettings` / plugin configFile).
  */
 
 @use "vuetify/settings" with (
