@@ -18,3 +18,8 @@ export {
   type FileMetadataFields,
 } from "./types/file-metadata.ts";
 export { generateShortId } from "./id.ts";
+export {
+  assertNoFkCascades,
+  findFkCascadeViolations,
+  type FkCascadeViolation,
+} from "./no-fk-cascades.ts";
