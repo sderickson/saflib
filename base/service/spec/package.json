@@ -12,12 +12,17 @@
   },
   "scripts": {
     "build": "saf-specs generate -f openapi.yaml -o dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc -b",
     "generate": "npm exec saf-specs generate"
   },
   "dependencies": {
     "@saflib/jobs-spec": "*",
     "@saflib/openapi": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
   },
   "sideEffects": false
 }

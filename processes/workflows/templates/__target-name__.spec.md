@@ -36,7 +36,7 @@
    - Purpose: [brief description]
    - Request parameters: [list parameters]
    - Request body: [describe structure, may include business object values]
-   - Response: [describe structure, should generally be a business object, or an object with business object values, or business object array values]
+   - Response: [flat object keyed by resource name, e.g. `{ recipe: Recipe }` or `{ recipes: Recipe[] }` — never a bare business object or array at the root]
    - Error responses: [list possible errors]
    - Authorization requirements: [describe who can access]
 

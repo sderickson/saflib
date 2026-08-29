@@ -75,7 +75,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       fileId: "spec",
       promptMessage: `Update **${path.basename(context.copiedFiles!.spec)}**.
 
-      When specifying API endpoints, follow the conventions in /saflib/openapi/docs/02-api-design.md — in particular: one URL per distinct action (don't overload endpoints), batch endpoints when child resources need to be fetched for multiple parents, and JSON object responses keyed by resource name.`,
+      When specifying API endpoints, follow the conventions in /saflib/openapi/docs/02-api-design.md — in particular: one URL per distinct action (don't overload endpoints), batch endpoints when child resources need to be fetched for multiple parents, and JSON object responses keyed by resource name (never a bare business object or array at the root).`,
     })),
 
     step(PromptStepMachine, () => ({
@@ -113,6 +113,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       * Give each distinct action its own URL path — don't overload one endpoint with query params that change its behavior. Use named action paths under the resource (e.g. \`GET /resource-name/by-parent-ids\`, \`GET /resource-name/search\`).
       * When a child resource needs to be fetched for multiple parents on a single page (e.g. note-files for each note), plan a **batch endpoint** (e.g. \`GET /recipe-note-files/by-note-ids?noteIds=...\`) so the frontend can fetch them in one loader query instead of N.
       * URLs ending in a resource ID return JSON. Binary content gets a sub-path like \`/blob\`.
+      * **Response envelopes:** every JSON success body is a flat object keyed by resource name (\`{ recipe: ... }\`, \`{ recipes: [...] }\`). Never put a business object or array at the document root — that makes adding a second resource or metadata a breaking change. Keep resources flat (IDs, not nested objects).
       `,
     })),
 

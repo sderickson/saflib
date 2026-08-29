@@ -7,4 +7,10 @@ get__OffshootName__Health:
       content:
         application/json:
           schema:
-            $ref: "../schemas/health.yaml"
+            type: object
+            additionalProperties: false
+            required:
+              - health
+            properties:
+              health:
+                $ref: "../schemas/health.yaml"

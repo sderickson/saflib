@@ -51,8 +51,14 @@ __operationId__:
         # ELSE
         application/json:
           schema:
-            # TODO: Update to an appropriate schema reference
-            $ref: "../../schemas/__group-name__.yaml"
+            type: object
+            additionalProperties: false
+            required:
+              - __groupName__
+            properties:
+              __groupName__:
+                # TODO: $ref a business-object schema; keep the envelope key.
+                $ref: "../../schemas/__group-name__.yaml"
         # END WORKFLOW AREA
 
     "401":

@@ -64,6 +64,24 @@ listRecipes:
   - { id: "r2", title: "Soup" }
 ```
 
+Also never put a **single business object at the root** via a bare `$ref` (or `allOf: [$ref]`). That has the same extensibility problem as a bare array:
+
+```yaml
+# Bad — business object at the root
+schema:
+  $ref: "#/components/schemas/Recipe"
+
+# Good — keyed envelope
+schema:
+  type: object
+  required: [recipe]
+  properties:
+    recipe:
+      $ref: "#/components/schemas/Recipe"
+```
+
+Spec packages enforce this with `assertNoRootResponseBodies` from `@saflib/openapi` (legacy offenders may be allowlisted until migrated).
+
 ### Key by Resource Name
 
 Top-level response keys should be the **resource name** (matching the schema name). This makes it straightforward to map response data into TanStack's query cache — the key in the response corresponds to the resource the query is about.

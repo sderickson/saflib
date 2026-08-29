@@ -9,11 +9,16 @@
   },
   "scripts": {
     "build": "saf-specs generate -f openapi.yaml -o dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc",
     "generate": "npm exec saf-specs generate"
   },
   "dependencies": {
     "@saflib/openapi": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
   },
   "sideEffects": false
 }
