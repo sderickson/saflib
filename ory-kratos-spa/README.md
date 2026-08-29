@@ -27,7 +27,7 @@ account   → SettingsSectionAsync on product routes (/email, /password, /mfa, �
 optional  → ...kratosSessionRouteRecords() on auth when you still want /settings + /verify-wall
 ```
 
-Daemon mounts session routes on auth for security e2e / recovery path-only redirects, and embeds settings on account for day-to-day UX. Configure recovery → settings via `configureAuthApp({ postRecoverySettingsHref })`.
+A product may mount session routes on auth for security e2e / recovery path-only redirects, and embed settings on account for day-to-day UX. Configure recovery → settings via `configureAuthApp({ postRecoverySettingsHref })`.
 
 ## Page structure
 
