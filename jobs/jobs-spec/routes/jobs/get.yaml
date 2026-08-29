@@ -1,12 +1,9 @@
 getJob:
   summary: Get a job by id
   description: >
-    Admin detail for a single job, including the raw enqueue assertion token
-    (`authorityAssertion`) stored with the authority grant. List responses omit
-    that token to keep payloads small. Mounted as monolith chrome (`site-admin-only`).
+    Admin detail for a single job, including the raw enqueue assertion token (`authorityAssertion`) stored with the authority grant. List responses omit that token to keep payloads small. Mounted as monolith chrome (`site-admin-only`).
   operationId: getJob
   tags:
-    - jobs
     - site-admin-only
 
   parameters:
@@ -36,8 +33,7 @@ getJob:
                 type: object
                 additionalProperties: false
                 description: >
-                  Enqueue-hop identity assertion as stored with the job
-                  (payload, signature, keyId). Detail-only; omitted from list.
+                  Enqueue-hop identity assertion as stored with the job (payload, signature, keyId). Detail-only; omitted from list.
                 required:
                   - payload
                   - signature

@@ -1,4 +1,5 @@
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { assertOpenApiOperationTags } from "@saflib/openapi";
 import {
   BACKGROUND_TAG,
   CRON_TRIGGER_PREFIX,
@@ -77,6 +78,7 @@ const HTTP_METHODS = [
  * method, path template, and whether it carries the `background` tag.
  */
 export function buildOperationMap(apiSpec: OpenAPIV3.DocumentV3): OperationMap {
+  assertOpenApiOperationTags(apiSpec);
   const map = new Map<string, ResolvedOperation>();
 
   for (const [pathTemplate, pathItem] of Object.entries(apiSpec.paths ?? {})) {

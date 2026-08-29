@@ -10,7 +10,6 @@
         "summary": "List buffered product events",
         "operationId": "listProductEvents",
         "tags": [
-          "product-events",
           "site-admin-only"
         ],
         "parameters": [

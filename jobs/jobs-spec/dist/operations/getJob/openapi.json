@@ -11,7 +11,6 @@
         "description": "Admin detail for a single job, including the raw enqueue assertion token (`authorityAssertion`) stored with the authority grant. List responses omit that token to keep payloads small. Mounted as monolith chrome (`site-admin-only`).\n",
         "operationId": "getJob",
         "tags": [
-          "jobs",
           "site-admin-only"
         ],
         "parameters": [

@@ -5,6 +5,7 @@ import type {
 } from "express-openapi-validator/dist/framework/types.ts";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { InternalServerError } from "express-openapi-validator/dist/framework/types.ts";
+import { assertOpenApiOperationTags } from "@saflib/openapi";
 import { typedEnv } from "@saflib/env";
 import multer from "multer";
 import { lenientEmailOpenApiFormat } from "./openapi-formats.ts";
@@ -127,6 +128,9 @@ function buildOpenApiValidatorMiddleware(
   spec: string | OpenAPIV3.DocumentV3,
   fileUploader?: multer.Options,
 ): OpenApiRequestHandler[] {
+  if (typeof spec === "object" && spec !== null) {
+    assertOpenApiOperationTags(spec);
+  }
   return OpenApiValidator.middleware({
     apiSpec: spec,
     validateRequests: true,

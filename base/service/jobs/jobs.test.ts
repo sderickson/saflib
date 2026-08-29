@@ -21,7 +21,7 @@ const validationSpec: OpenAPIV3.DocumentV3 = {
     "/test/start": {
       post: {
         operationId: "testJobStart",
-        tags: ["test"],
+        tags: [],
         responses: { "200": { description: "ok" } },
       },
     },

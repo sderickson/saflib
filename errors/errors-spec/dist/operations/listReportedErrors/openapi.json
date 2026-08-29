@@ -10,7 +10,6 @@
         "summary": "List buffered reported errors",
         "operationId": "listReportedErrors",
         "tags": [
-          "errors",
           "site-admin-only"
         ],
         "parameters": [

@@ -10,20 +10,20 @@ import {
 } from "./operations.ts";
 
 const sampleSpec: OpenAPIV3.DocumentV3 = {
-  openapi: "3.0.0",
+  openapi: "3.1.0",
   info: { title: "test", version: "1.0.0" },
   paths: {
     "/jobs-demo/start": {
       post: {
         operationId: "startJobsDemo",
-        tags: ["jobs-demo"],
+        tags: ["site-admin-only"],
         responses: { "200": { description: "ok" } },
       },
     },
     "/jobs-demo/step-b": {
       post: {
         operationId: "jobsDemoStepB",
-        tags: ["jobs-demo", "background"],
+        tags: ["background"],
         responses: { "200": { description: "ok" } },
       },
     },

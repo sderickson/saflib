@@ -1,12 +1,9 @@
 retryJob:
   summary: Retry a dead or cancelled job
   description: >
-    Moves a dead or cancelled job back to pending with a full attempt-counter
-    reset. Returns 409 when the job is not in a retryable state. Mounted as
-    monolith chrome (`site-admin-only`).
+    Moves a dead or cancelled job back to pending with a full attempt-counter reset. Returns 409 when the job is not in a retryable state. Mounted as monolith chrome (`site-admin-only`).
   operationId: retryJob
   tags:
-    - jobs
     - site-admin-only
 
   parameters:

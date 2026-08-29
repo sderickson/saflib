@@ -20,6 +20,7 @@
     "@saflib/drizzle": "*",
     "@saflib/express": "*",
     "@saflib/node": "*",
+    "@saflib/openapi": "*",
     "http-errors": "^2.0.0",
     "@saflib/jobs-db": "*",
     "@saflib/jobs-spec": "*",

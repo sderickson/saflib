@@ -12,8 +12,7 @@
         "description": "Site-admin-only foreground endpoint that enqueues `jobsDemoStepB` with optional demo options (dedupe, concurrency, retry simulation payload).\n",
         "operationId": "startJobsDemo",
         "tags": [
-          "site-admin-only",
-          "jobs-demo"
+          "site-admin-only"
         ],
         "requestBody": {
           "required": false,
@@ -66,8 +65,7 @@
         "operationId": "jobsDemoStepB",
         "tags": [
           "site-admin-only",
-          "background",
-          "jobs-demo"
+          "background"
         ],
         "requestBody": {
           "required": false,
@@ -130,8 +128,7 @@
         "operationId": "jobsDemoStepC",
         "tags": [
           "site-admin-only",
-          "background",
-          "jobs-demo"
+          "background"
         ],
         "requestBody": {
           "required": false,
@@ -481,7 +478,7 @@
     },
     "__url-path__": {
       "__method__": {
-        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-QWn7hv/routes/__group-name__/__target-name__.yaml#/__operationId__"
+        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-34A0LK/routes/__group-name__/__target-name__.yaml#/__operationId__"
       }
     },
     "/__offshoot-name__/health": {

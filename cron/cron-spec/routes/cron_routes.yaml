@@ -3,10 +3,9 @@ get:
   summary: List all cron jobs
   operationId: listCronJobs
   tags:
-    - cron
     - site-admin-only
   security:
-    - scopes: ["cron:read"]
+    - scopes: [ "cron:read" ]
   responses:
     "200":
       description: A list of cron jobs.
@@ -34,10 +33,9 @@ put:
   summary: Update settings for a specific cron job by name
   operationId: updateCronJobSettings
   tags:
-    - cron
     - site-admin-only
   security:
-    - scopes: ["cron:write"]
+    - scopes: [ "cron:write" ]
   requestBody:
     description: The job name and settings to update.
     required: true

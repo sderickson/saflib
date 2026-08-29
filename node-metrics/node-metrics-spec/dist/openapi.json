@@ -99,7 +99,6 @@
         "summary": "Snapshot of parsed in-process Prometheus metrics",
         "operationId": "getMetricsSnapshot",
         "tags": [
-          "metrics",
           "site-admin-only"
         ],
         "responses": {

@@ -11,7 +11,6 @@
         "description": "Cancels a pending or retrying job (`terminalReason: cancelled-by-admin`). Running jobs are not interrupted (409). Mounted as monolith chrome (`site-admin-only`).\n",
         "operationId": "cancelJob",
         "tags": [
-          "jobs",
           "site-admin-only"
         ],
         "parameters": [

@@ -10,7 +10,6 @@
         "summary": "SSE stream of development log entries",
         "operationId": "streamDevLogs",
         "tags": [
-          "dev-logs",
           "no-auth"
         ],
         "parameters": [

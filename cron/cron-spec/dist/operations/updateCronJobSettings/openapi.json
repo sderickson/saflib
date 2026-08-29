@@ -10,7 +10,6 @@
         "summary": "Update settings for a specific cron job by name",
         "operationId": "updateCronJobSettings",
         "tags": [
-          "cron",
           "site-admin-only"
         ],
         "security": [

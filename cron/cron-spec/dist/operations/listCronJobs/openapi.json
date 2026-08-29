@@ -10,7 +10,6 @@
         "summary": "List all cron jobs",
         "operationId": "listCronJobs",
         "tags": [
-          "cron",
           "site-admin-only"
         ],
         "security": [

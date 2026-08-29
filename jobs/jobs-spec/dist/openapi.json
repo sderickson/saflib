@@ -11,9 +11,6 @@
         "summary": "Enqueue a background job",
         "description": "Internal-surface enqueue. Auth is the M1 signed assertion path (not site-admin-only). Assertion claims supply `callingOperationId` and `originalRequestId`. On a live `dedupeKey` collision the existing job is upserted (runAt pushed, request refreshed) and returned with 200; otherwise a new job is created with 201.\n",
         "operationId": "enqueueJob",
-        "tags": [
-          "jobs"
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -189,7 +186,6 @@
         "description": "Admin list of queued jobs with optional filters and offset pagination. Mounted on the public app as monolith chrome (`site-admin-only`).\n",
         "operationId": "listJobs",
         "tags": [
-          "jobs",
           "site-admin-only"
         ],
         "parameters": [
@@ -322,7 +318,6 @@
         "description": "Cancels every non-terminal, non-running job that shares the given `originalRequestId` (`terminalReason: cancelled-by-chain`). Running jobs in the chain are left alone. Returns the jobs that were cancelled. Mounted as monolith chrome (`site-admin-only`).\n",
         "operationId": "cancelJobsByOriginalRequest",
         "tags": [
-          "jobs",
           "site-admin-only"
         ],
         "requestBody": {
@@ -398,7 +393,6 @@
         "description": "Admin detail for a single job, including the raw enqueue assertion token (`authorityAssertion`) stored with the authority grant. List responses omit that token to keep payloads small. Mounted as monolith chrome (`site-admin-only`).\n",
         "operationId": "getJob",
         "tags": [
-          "jobs",
           "site-admin-only"
         ],
         "parameters": [
@@ -500,7 +494,6 @@
         "description": "Moves a dead or cancelled job back to pending with a full attempt-counter reset. Returns 409 when the job is not in a retryable state. Mounted as monolith chrome (`site-admin-only`).\n",
         "operationId": "retryJob",
         "tags": [
-          "jobs",
           "site-admin-only"
         ],
         "parameters": [
@@ -584,7 +577,6 @@
         "description": "Cancels a pending or retrying job (`terminalReason: cancelled-by-admin`). Running jobs are not interrupted (409). Mounted as monolith chrome (`site-admin-only`).\n",
         "operationId": "cancelJob",
         "tags": [
-          "jobs",
           "site-admin-only"
         ],
         "parameters": [

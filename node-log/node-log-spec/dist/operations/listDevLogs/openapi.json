@@ -10,7 +10,6 @@
         "summary": "Snapshot of buffered development logs",
         "operationId": "listDevLogs",
         "tags": [
-          "dev-logs",
           "no-auth"
         ],
         "parameters": [

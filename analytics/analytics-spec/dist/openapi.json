@@ -73,7 +73,6 @@
         "summary": "Record a product analytics event",
         "operationId": "recordProductEvent",
         "tags": [
-          "product-events",
           "no-auth"
         ],
         "requestBody": {
@@ -138,7 +137,6 @@
         "summary": "List buffered product events",
         "operationId": "listProductEvents",
         "tags": [
-          "product-events",
           "site-admin-only"
         ],
         "parameters": [

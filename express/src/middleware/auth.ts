@@ -4,6 +4,12 @@ import {
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
   AUTH_ERROR_MFA_REQUIRED,
 } from "@saflib/utils/auth-error-codes";
+import {
+  OPENAPI_TAG_EMAIL_VERIFIED,
+  OPENAPI_TAG_MFA_REQUIRED,
+  OPENAPI_TAG_NO_AUTH,
+  OPENAPI_TAG_SITE_ADMIN_ONLY,
+} from "@saflib/openapi";
 import { typedEnv } from "../../env.ts";
 
 export interface AuthMiddlewareOptions {
@@ -59,20 +65,21 @@ export const makeAuthMiddleware = (
     const { auth } = getSafContext();
     const tags = req.openapi?.schema?.tags;
     const routeRequiresSiteAdmin =
-      tags?.includes("site-admin-only") === true || Boolean(adminRequired);
+      tags?.includes(OPENAPI_TAG_SITE_ADMIN_ONLY) === true ||
+      Boolean(adminRequired);
 
     const routeRequiresVerifiedEmail =
       Boolean(emailVerificationRequired) ||
-      tags?.includes("email-verified") === true ||
+      tags?.includes(OPENAPI_TAG_EMAIL_VERIFIED) === true ||
       routeRequiresSiteAdmin;
 
     const routeRequiresMfa =
       isMfaEnforcementEnabled() &&
       (Boolean(mfaRequired) ||
-        tags?.includes("mfa-required") === true ||
+        tags?.includes(OPENAPI_TAG_MFA_REQUIRED) === true ||
         routeRequiresSiteAdmin);
 
-    if (tags?.includes("no-auth")) {
+    if (tags?.includes(OPENAPI_TAG_NO_AUTH)) {
       return next();
     }
 

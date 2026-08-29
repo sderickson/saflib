@@ -118,7 +118,6 @@
         "summary": "List all cron jobs",
         "operationId": "listCronJobs",
         "tags": [
-          "cron",
           "site-admin-only"
         ],
         "security": [
@@ -170,7 +169,6 @@
         "summary": "Update settings for a specific cron job by name",
         "operationId": "updateCronJobSettings",
         "tags": [
-          "cron",
           "site-admin-only"
         ],
         "security": [

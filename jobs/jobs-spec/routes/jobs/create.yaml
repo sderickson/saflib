@@ -3,8 +3,6 @@ enqueueJob:
   description: >
     Internal-surface enqueue. Auth is the M1 signed assertion path (not site-admin-only). Assertion claims supply `callingOperationId` and `originalRequestId`. On a live `dedupeKey` collision the existing job is upserted (runAt pushed, request refreshed) and returned with 200; otherwise a new job is created with 201.
   operationId: enqueueJob
-  tags:
-    - jobs
 
   requestBody:
     required: true

@@ -2,7 +2,6 @@ recordReportedError:
   summary: Record a client-reported error
   operationId: recordReportedError
   tags:
-    - errors
     - no-auth
   requestBody:
     required: true
@@ -45,15 +44,9 @@ recordReportedError:
 postCspViolationReport:
   summary: Ingest a Content-Security-Policy violation report
   description: >
-    Accepts a browser CSP violation payload (`application/csp-report` or JSON with a
-    `csp-report` object), normalizes into the shared error ring buffer as
-    `kind: csp-violation`, and returns **204**. Tagged `csrf-exempt` because the browser
-    cannot send our double-submit CSRF header on automatic violation posts. Tagged
-    `no-auth` because browsers cannot rely on session cookies on automatic `report-uri`
-    posts (no-cors).
+    Accepts a browser CSP violation payload (`application/csp-report` or JSON with a `csp-report` object), normalizes into the shared error ring buffer as `kind: csp-violation`, and returns **204**. Tagged `csrf-exempt` because the browser cannot send our double-submit CSRF header on automatic violation posts. Tagged `no-auth` because browsers cannot rely on session cookies on automatic `report-uri` posts (no-cors).
   operationId: postCspViolationReport
   tags:
-    - errors
     - csrf-exempt
     - no-auth
   requestBody:
@@ -82,11 +75,9 @@ postCspViolationReport:
 postAdminTestError:
   summary: Admin-only intentional server error
   description: >
-    Throws an error on the server for verifying error reporting (e.g. Sentry and the
-    admin Errors page). Requires an authenticated site admin.
+    Throws an error on the server for verifying error reporting (e.g. Sentry and the admin Errors page). Requires an authenticated site admin.
   operationId: postAdminTestError
   tags:
-    - errors
     - site-admin-only
   responses:
     "401":
@@ -112,7 +103,6 @@ listReportedErrors:
   summary: List buffered reported errors
   operationId: listReportedErrors
   tags:
-    - errors
     - site-admin-only
   parameters:
     - name: kind

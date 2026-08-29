@@ -10,7 +10,6 @@
         "summary": "Record a product analytics event",
         "operationId": "recordProductEvent",
         "tags": [
-          "product-events",
           "no-auth"
         ],
         "requestBody": {

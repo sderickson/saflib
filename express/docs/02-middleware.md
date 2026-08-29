@@ -34,6 +34,12 @@ Otherwise, if the request is unauthenticated, the middleware returns 401.
 
 If a route has an `email-verified` tag, or scoped middleware was created with `emailVerificationRequired: true`, the middleware returns 403 unless `auth.emailVerified` is true.
 
+If a route has an `mfa-required` tag (or `site-admin-only`), MFA is required when enforcement is enabled.
+
+If a route has a `site-admin-only` tag, the caller must be a site admin (and satisfy verified email + MFA).
+
+Allowed operation tags are defined in `@saflib/openapi` — see [Operation tags](../../openapi/docs/03-tags.md). Unknown tags fail at startup.
+
 When creating scoped middleware, `auth.ts` can be disabled, but it's on by default.
 
 ### `blockHtml.ts`

@@ -11,8 +11,7 @@
         "description": "Site-admin-only foreground endpoint that enqueues `jobsDemoStepB` with optional demo options (dedupe, concurrency, retry simulation payload).\n",
         "operationId": "startJobsDemo",
         "tags": [
-          "site-admin-only",
-          "jobs-demo"
+          "site-admin-only"
         ],
         "requestBody": {
           "required": false,

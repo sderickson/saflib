@@ -10,7 +10,6 @@
         "summary": "Record a client-reported error",
         "operationId": "recordReportedError",
         "tags": [
-          "errors",
           "no-auth"
         ],
         "requestBody": {

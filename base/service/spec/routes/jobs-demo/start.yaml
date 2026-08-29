@@ -1,12 +1,10 @@
 startJobsDemo:
   summary: Start the jobs demo chain
   description: >
-    Site-admin-only foreground endpoint that enqueues `jobsDemoStepB` with optional
-    demo options (dedupe, concurrency, retry simulation payload).
+    Site-admin-only foreground endpoint that enqueues `jobsDemoStepB` with optional demo options (dedupe, concurrency, retry simulation payload).
   operationId: startJobsDemo
   tags:
     - site-admin-only
-    - jobs-demo
 
   requestBody:
     required: false

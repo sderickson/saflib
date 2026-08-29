@@ -4,7 +4,6 @@ post:
   operationId: postKratosCourier
   tags:
     - no-auth
-    - email
   requestBody:
     required: true
     content:

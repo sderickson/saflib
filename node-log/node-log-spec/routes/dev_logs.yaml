@@ -2,7 +2,6 @@ listDevLogs:
   summary: Snapshot of buffered development logs
   operationId: listDevLogs
   tags:
-    - dev-logs
     - no-auth
   parameters:
     - name: after
@@ -54,7 +53,6 @@ streamDevLogs:
   summary: SSE stream of development log entries
   operationId: streamDevLogs
   tags:
-    - dev-logs
     - no-auth
   parameters:
     - name: Last-Event-ID

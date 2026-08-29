@@ -12,8 +12,7 @@
         "operationId": "jobsDemoStepB",
         "tags": [
           "site-admin-only",
-          "background",
-          "jobs-demo"
+          "background"
         ],
         "requestBody": {
           "required": false,

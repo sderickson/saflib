@@ -10,8 +10,7 @@
         "summary": "Receive email dispatch from Ory Kratos HTTP courier",
         "operationId": "postKratosCourier",
         "tags": [
-          "no-auth",
-          "email"
+          "no-auth"
         ],
         "requestBody": {
           "required": true,

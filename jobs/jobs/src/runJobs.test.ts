@@ -53,7 +53,7 @@ const apiSpec: OpenAPIV3.DocumentV3 = {
     "/jobs-demo/start": {
       post: {
         operationId: "startJobsDemo",
-        tags: ["jobs-demo"],
+        tags: ["site-admin-only"],
         responses: { "200": { description: "ok" } },
       },
     },

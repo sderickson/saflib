@@ -1,13 +1,11 @@
 jobsDemoStepB:
   summary: Jobs demo chain step B
   description: >
-    Background step that optionally fails N times (503) to demonstrate retries,
-    then enqueues `jobsDemoStepC`.
+    Background step that optionally fails N times (503) to demonstrate retries, then enqueues `jobsDemoStepC`.
   operationId: jobsDemoStepB
   tags:
     - site-admin-only
     - background
-    - jobs-demo
 
   requestBody:
     required: false
