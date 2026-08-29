@@ -62,19 +62,17 @@ Each handler should be wrapped with [`createHandler`](https://github.com/sderick
 
 In `http.ts`, mount product routers **before** any router that ends with a catch-all 404. `@saflib/cron`'s `createCronRouter` is the usual case: it terminates unmatched paths, so routers registered after it never run. Symptoms: integration tests get **404** for a route that is correctly defined and imported. Fix: move `app.use(create…Router())` above the cron mount (keep terminators last).
 
-### OpenAPI `nullable` and express-openapi-validator
+### OpenAPI nullability and express-openapi-validator
 
-`createScopedMiddleware({ apiSpec })` validates requests and responses with `express-openapi-validator`. That library rejects schemas that use `nullable: true` with `allOf: [$ref: …]` and **no sibling `type`**, and surfaces it as an unexpected **500** with message `"nullable" cannot be used without "type"`.
+`createScopedMiddleware({ apiSpec })` validates requests and responses with `express-openapi-validator` (OpenAPI **3.1**).
 
-When that happens, fix the **OpenAPI schema** in the adjacent `-spec` package (then rebuild so `jsonSpec` / `dist/openapi.json` update)—do not chase a handler bug.
-
-**Also see** [@saflib/openapi API Design — Nullable fields](../../openapi/docs/02-api-design.md#nullable-fields-openapi-30): OpenAPI 3.0 does **not** allow `type: "null"` or `oneOf`/`anyOf` null branches. Agents often add those by mistake; they break bundling and validation.
+**Also see** [@saflib/openapi API Design — Nullable fields](../../openapi/docs/02-api-design.md#nullable-fields-openapi-31).
 
 Safe patterns:
 
-- Scalars: `type: string` (or number, etc.) plus `nullable: true`, with constraints inline; or omit `nullable` and omit the property when unset on responses.
-- Objects: `type: object`, `nullable: true`, and `allOf: [$ref: …]` (sibling `type` is required).
-- Avoid: `nullable: true` + `allOf: [$ref]` with no `type`.
+- Scalars / arrays: `type: [string, "null"]` or `type: [array, "null"]` (plus constraints / `items`).
+- `$ref` objects: `oneOf: [{ type: "null" }, { $ref: … }]`.
+- Avoid: OpenAPI 3.0 `nullable: true` (especially with `allOf: [$ref]` and no sibling `type` — that used to 500 with `"nullable" cannot be used without "type"`).
 
 ## Error Handling
 

@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "base API",
     "version": "1.0.0",
@@ -255,8 +255,10 @@
                     "example": false
                   },
                   "termsOfServiceAgreedAt": {
-                    "type": "string",
-                    "nullable": true,
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "description": "Pass the literal string `now` to record Terms of Service agreement using the server clock. Any other value (including ISO timestamps from a prior GET, or null) is ignored. Once recorded, the agreement timestamp is not cleared or overwritten.\n",
                     "example": "now"
                   },
@@ -264,9 +266,11 @@
                     "type": "string"
                   },
                   "marketingEmailsOptInAt": {
-                    "type": "string",
-                    "format": "date-time",
-                    "nullable": true
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
                   },
                   "createdAt": {
                     "type": "string",
@@ -477,7 +481,7 @@
     },
     "__url-path__": {
       "__method__": {
-        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-n8Mrqj/routes/__group-name__/__target-name__.yaml#/__operationId__"
+        "$ref": "/var/folders/30/trj7szrx71d4wp3391q244z00000gn/T/saf-specs-QWn7hv/routes/__group-name__/__target-name__.yaml#/__operationId__"
       }
     },
     "/__offshoot-name__/health": {
@@ -490,7 +494,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/health"
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "health"
+                  ],
+                  "properties": {
+                    "health": {
+                      "$ref": "#/components/schemas/health"
+                    }
+                  }
                 }
               }
             }
@@ -521,13 +534,17 @@
         "additionalProperties": false,
         "properties": {
           "dedupeKey": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Optional dedupe key forwarded to the enqueued job."
           },
           "concurrencyKey": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Optional concurrency key forwarded to the enqueued job."
           },
           "failuresBeforeSuccess": {
@@ -705,8 +722,10 @@
             "example": "startJobsDemo"
           },
           "parentJobId": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Short id of the job that enqueued this one, or null at the chain root.",
             "example": null
           },
@@ -717,14 +736,18 @@
             "example": "2026-08-06T21:00:00.000Z"
           },
           "dedupeKey": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts (pushes runAt, refreshes request) and returns the existing job.\n",
             "example": "matter:demo-1:claim"
           },
           "concurrencyKey": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Optional key limiting concurrency: at most one running job per key (e.g. `matter:{id}`).\n",
             "example": "matter:demo-1"
           },
@@ -744,8 +767,10 @@
             "example": 5
           },
           "result": {
-            "type": "object",
-            "nullable": true,
+            "type": [
+              "object",
+              "null"
+            ],
             "description": "Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `errorBody` is set only on failure and capped at 8 KB.\n",
             "additionalProperties": false,
             "properties": {
@@ -755,14 +780,18 @@
                 "example": 500
               },
               "errorBody": {
-                "type": "string",
-                "nullable": true,
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "description": "Capped error response body recorded only on failure.",
                 "example": "{\"error\":\"upstream timeout\"}"
               },
               "terminalReason": {
-                "type": "string",
-                "nullable": true,
+                "type": [
+                  "string",
+                  "null"
+                ],
                 "enum": [
                   "exhausted",
                   "permanent-status",
@@ -784,16 +813,20 @@
             "example": "2026-08-06T20:59:55.000Z"
           },
           "startedAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "description": "When the current (or last) delivery attempt started; null if never claimed.",
             "example": null
           },
           "finishedAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "description": "When the job reached a terminal status; null while still active.",
             "example": null
           }
@@ -887,16 +920,20 @@
             "example": false
           },
           "marketingEmailsOptInAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "description": "When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketingEmailsOptIn` becomes false).\n",
             "example": null
           },
           "termsOfServiceAgreedAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "description": "When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `termsOfServiceAgreedAt: \"now\"`). Once set, later preference updates do not clear or overwrite it.\n",
             "example": null
           },

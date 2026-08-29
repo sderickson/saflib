@@ -31,7 +31,7 @@ When run, the workflow will:
 - Update the index.ts file to export the new schema from `components["schemas"]`.
 - Run `npx tsc --noEmit`
 
-When the schema includes optional or clearable fields, use OpenAPI 3.0 `nullable: true` — **never** `type: "null"` or `oneOf` with a null branch. See [API Design — Nullable fields](../02-api-design.md#nullable-fields-openapi-30).
+When the schema includes optional or clearable fields, use OpenAPI 3.1 nullability — `type: [string, "null"]`, or `oneOf: [{ type: "null" }, { $ref: … }]` for objects. Do **not** use `nullable: true`. See [API Design — Nullable fields](../02-api-design.md#nullable-fields-openapi-31).
 
 ## Help Docs
 

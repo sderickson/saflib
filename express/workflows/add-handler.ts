@@ -192,10 +192,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 
       **Router mount order (http.ts):** Platform terminators (\`createCronRouter\`, etc.) stay in main \`http.ts\` *after* \`groupRouterMounts()\` / offshoot barrels. Product group routers belong in \`routers.ts\` so they always mount before those terminators.
 
-      **OpenAPI schemas and express-openapi-validator:** If integration tests return **500** with message \`"nullable" cannot be used without "type"\`, the bug is in the **spec**, not the handler. \`express-openapi-validator\` rejects properties that use \`nullable: true\` together with \`allOf: [\$ref: …]\` and **no sibling \`type\`**. Fix the adjacent OpenAPI schema (and regenerate the spec package) before debugging the handler:
-      - Prefer \`type: string\` / \`type: object\` **plus** \`nullable: true\` with inline constraints, **or** omit \`nullable\` and treat optional fields as omitted when unset (mappers often omit nulls on responses).
-      - Do **not** write \`nullable: true\` + \`allOf: [\$ref]\` without a sibling \`type\`.
-      - Request bodies that accept null-to-clear should use \`type: …, nullable: true\` (inline or with \`type\` + \`allOf\`), not bare \`nullable\` + \`\$ref\`/\`allOf\` alone.
+      **OpenAPI schemas and express-openapi-validator:** Specs are OpenAPI **3.1**. Prefer \`type: [string, "null"]\` / \`type: [array, "null"]\`, and for nullable \`$ref\` objects \`oneOf: [{ type: "null" }, { \$ref: … }]\`. Do **not** use OpenAPI 3.0 \`nullable: true\` (especially with \`allOf: [\$ref]\` and no sibling \`type\` — that used to 500). See \`@saflib/openapi\` docs/02-api-design.md.
       - After schema fixes, rebuild the spec package (\`npm run build\` in the \`-spec\` package) so \`jsonSpec\` / \`dist/openapi.json\` pick up the change.${
         context.upload
           ? `

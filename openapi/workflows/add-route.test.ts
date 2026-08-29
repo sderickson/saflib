@@ -58,7 +58,7 @@ describe("mergeOpenApiRoute", () => {
   });
 
   it("preserves content before and after the workflow area", () => {
-    const before = "openapi: 3.0.0\npaths:";
+    const before = "openapi: 3.1.0\npaths:";
     const after = "  /outside:\n    get:\n      $ref: 'out.yaml'";
     const content = [
       before,
@@ -70,7 +70,7 @@ describe("mergeOpenApiRoute", () => {
       after,
     ].join("\n");
     const result = mergeOpenApiRoute(content);
-    expect(result).toMatch(/^openapi: 3\.0\.0/);
+    expect(result).toMatch(/^openapi: 3\.1\.0/);
     expect(result).toContain("  /outside:");
     expect(result).toContain("  /inside:");
   });

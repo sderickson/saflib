@@ -1,11 +1,7 @@
 enqueueJob:
   summary: Enqueue a background job
   description: >
-    Internal-surface enqueue. Auth is the M1 signed assertion path (not
-    site-admin-only). Assertion claims supply `callingOperationId` and
-    `originalRequestId`. On a live `dedupeKey` collision the existing job is
-    upserted (runAt pushed, request refreshed) and returned with 200; otherwise
-    a new job is created with 201.
+    Internal-surface enqueue. Auth is the M1 signed assertion path (not site-admin-only). Assertion claims supply `callingOperationId` and `originalRequestId`. On a live `dedupeKey` collision the existing job is upserted (runAt pushed, request refreshed) and returned with 200; otherwise a new job is created with 201.
   operationId: enqueueJob
   tags:
     - jobs
@@ -27,33 +23,27 @@ enqueueJob:
               example: "jobsDemoStepB"
             request:
               description: >
-                Capped request payload for the target operation (serialized size
-                ≤ 16 KB including this object's pathParams/query/body).
+                Capped request payload for the target operation (serialized size ≤ 16 KB including this object's pathParams/query/body).
               $ref: "../../schemas/job.yaml#/properties/request"
             runAt:
               type: string
               format: date-time
               description: >
-                Absolute earliest claim time. Ignored when delayMs is also set if
-                the implementation prefers delayMs; typically use one or the other.
+                Absolute earliest claim time. Ignored when delayMs is also set if the implementation prefers delayMs; typically use one or the other.
               example: "2026-08-06T21:00:00.000Z"
             delayMs:
               type: integer
               minimum: 0
               description: >
-                Relative delay in milliseconds from enqueue time before the job
-                becomes claimable. Alternative to runAt.
+                Relative delay in milliseconds from enqueue time before the job becomes claimable. Alternative to runAt.
               example: 5000
             dedupeKey:
-              type: string
-              nullable: true
+              type: [ string, "null" ]
               description: >
-                Optional key unique among non-terminal jobs. Re-enqueue with the
-                same live key upserts and returns the existing job (200).
+                Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts and returns the existing job (200).
               example: "matter:Mt4k_wZ7:claim"
             concurrencyKey:
-              type: string
-              nullable: true
+              type: [ string, "null" ]
               description: >
                 Optional key limiting concurrency (at most one running job per key).
               example: "matter:Mt4k_wZ7"
@@ -65,10 +55,7 @@ enqueueJob:
               type: object
               additionalProperties: false
               description: >
-                Explicit authority override for enqueueOnBehalfOf. When present,
-                both userId and authority evidence are required; the job runs as
-                that user under the given grant instead of deriving authority from
-                the caller's request context.
+                Explicit authority override for enqueueOnBehalfOf. When present, both userId and authority evidence are required; the job runs as that user under the given grant instead of deriving authority from the caller's request context.
               required:
                 - userId
                 - authority

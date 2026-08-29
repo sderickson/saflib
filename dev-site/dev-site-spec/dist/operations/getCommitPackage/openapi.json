@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "getCommitPackage",
     "version": "1.0.0"
@@ -184,14 +184,18 @@
             ]
           },
           "signature": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.\n",
             "example": "(repoRoot: string, options?: LogOptions)"
           },
           "docstring": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).\n",
             "example": "Walk commits newest-first without checking out."
           },
@@ -255,14 +259,18 @@
             "example": "log"
           },
           "subjectSignature": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Signature of the linked export at this commit (null if unknown).",
             "example": "(repoRoot: string, options?: LogOptions)"
           },
           "subjectDocstring": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "First JSDoc prose line of the linked export, when present."
           },
           "subjectFilePath": {
@@ -307,8 +315,10 @@
                   "description": "Query directory name or kebab form of table name (e.g. package-metrics)."
                 },
                 "table": {
-                  "type": "object",
-                  "nullable": true,
+                  "type": [
+                    "object",
+                    "null"
+                  ],
                   "required": [
                     "exportName",
                     "tableName",
@@ -326,8 +336,10 @@
                       "type": "string"
                     },
                     "docstring": {
-                      "type": "string",
-                      "nullable": true,
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "First prose line of leading JSDoc on the table const."
                     },
                     "columns": {
@@ -350,8 +362,10 @@
                             "type": "string"
                           },
                           "docstring": {
-                            "type": "string",
-                            "nullable": true,
+                            "type": [
+                              "string",
+                              "null"
+                            ],
                             "description": "First prose line of leading JSDoc on the column."
                           }
                         }
@@ -384,16 +398,22 @@
                         "type": "string"
                       },
                       "exportName": {
-                        "type": "string",
-                        "nullable": true
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       },
                       "signature": {
-                        "type": "string",
-                        "nullable": true
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       },
                       "docstring": {
-                        "type": "string",
-                        "nullable": true
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       },
                       "usedBy": {
                         "type": "array",
@@ -470,13 +490,17 @@
                   "description": "object = schema only; routes = REST resource only; both = schema + matching resource.\n"
                 },
                 "resource": {
-                  "type": "string",
-                  "nullable": true,
+                  "type": [
+                    "string",
+                    "null"
+                  ],
                   "description": "routes/<resource> folder name when present."
                 },
                 "schema": {
-                  "type": "object",
-                  "nullable": true,
+                  "type": [
+                    "object",
+                    "null"
+                  ],
                   "required": [
                     "name",
                     "yamlPath",
@@ -494,8 +518,10 @@
                       "description": "Package-relative path to the schema YAML."
                     },
                     "description": {
-                      "type": "string",
-                      "nullable": true
+                      "type": [
+                        "string",
+                        "null"
+                      ]
                     },
                     "properties": {
                       "type": "array",
@@ -513,8 +539,10 @@
                             "type": "string"
                           },
                           "docstring": {
-                            "type": "string",
-                            "nullable": true
+                            "type": [
+                              "string",
+                              "null"
+                            ]
                           }
                         }
                       }
@@ -569,8 +597,10 @@
                         "type": "string"
                       },
                       "summary": {
-                        "type": "string",
-                        "nullable": true
+                        "type": [
+                          "string",
+                          "null"
+                        ]
                       },
                       "tags": {
                         "type": "array",
@@ -584,13 +614,17 @@
                         "description": "Package-relative route YAML under the spec package."
                       },
                       "routeStem": {
-                        "type": "string",
-                        "nullable": true,
+                        "type": [
+                          "string",
+                          "null"
+                        ],
                         "description": "Isomorphic stem after routes/handlers/requests (e.g. matters/core/create).\n"
                       },
                       "handler": {
-                        "type": "object",
-                        "nullable": true,
+                        "type": [
+                          "object",
+                          "null"
+                        ],
                         "description": "Sibling HTTP handler file when present.",
                         "required": [
                           "filePath",
@@ -606,8 +640,10 @@
                         }
                       },
                       "request": {
-                        "type": "object",
-                        "nullable": true,
+                        "type": [
+                          "object",
+                          "null"
+                        ],
                         "description": "Sibling SDK request module when present.",
                         "required": [
                           "filePath",
@@ -623,8 +659,10 @@
                         }
                       },
                       "fake": {
-                        "type": "object",
-                        "nullable": true,
+                        "type": [
+                          "object",
+                          "null"
+                        ],
                         "description": "Sibling SDK fake/MSW module (`*.fake.ts`) when present beside the request.\n",
                         "required": [
                           "filePath",

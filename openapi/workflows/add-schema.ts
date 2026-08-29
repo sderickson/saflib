@@ -87,7 +87,7 @@ export const OpenApiSchemaWorkflowDefinition = defineWorkflow<
       - Include appropriate descriptions and examples with new or updated properties
       - Update the required property as necessary
       - Use type: string for id and reference fields (do not use format: uuid; we use short ids from generateShortId)
-      - For nullable enums, make sure to include null in the enum list otherwise the validator will disallow null values.`,
+      - For nullable fields use OpenAPI 3.1 forms: \`type: [string, "null"]\`, or \`oneOf: [{ type: "null" }, { \$ref: … }]\` for objects. For nullable enums, include null in the enum list (or use a type/enum union) so the validator allows null.`,
     })),
 
     step(CommandStepMachine, () => ({

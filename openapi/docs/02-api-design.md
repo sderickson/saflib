@@ -245,84 +245,58 @@ Look for these during spec/planning:
 
 In these cases, add a batch endpoint that accepts multiple parent IDs and returns all matching child resources. Group the response by parent ID for easy client-side mapping.
 
-## Nullable fields (OpenAPI 3.0)
+## Nullable fields (OpenAPI 3.1)
 
-SAF specs use **OpenAPI 3.0**, not OpenAPI 3.1 / full JSON Schema. Agents often reach for JSON Schema patterns that look correct in isolation but **fail spec bundling, code generation, or request validation**. The most common mistake is representing “this field can be null” with `type: "null"`.
+SAF specs use **OpenAPI 3.1** (JSON Schema–aligned). Prefer the patterns agents already reach for: type arrays that include `"null"`, and `oneOf` with a null branch for `$ref` objects.
 
-### Do not use `type: "null"`
-
-OpenAPI 3.0 allows only these `type` values: `array`, `boolean`, `integer`, `number`, `object`, `string`. **`null` is not one of them.**
-
-These patterns are **invalid** in SAF specs and must not be added:
+### Scalars and arrays
 
 ```yaml
-# Bad — "null" is not an OpenAPI 3.0 type
-mailingAddress:
-  type: "null"
-
-# Bad — JSON Schema / OpenAPI 3.1 style; breaks express-openapi-validator
-mailingAddress:
-  oneOf:
-    - type: "null"
-    - $ref: "./flat-address.yaml"
-
-# Bad — same problem with anyOf
-value:
-  anyOf:
-    - type: "null"
-    - type: string
-```
-
-Symptoms when this slips in:
-
-- Route tests or the running service return **500** during startup or first request, with validator errors mentioning `type` / `enum` / `oneOf`.
-- Clients sending JSON `null` get **400** with messages like `request/body/mailingAddress must be object` even when the YAML comment says the field is nullable.
-
-### Use `nullable: true` instead
-
-In OpenAPI 3.0, mark a field as nullable with **`nullable: true`** on a normal typed schema:
-
-```yaml
-# Good — scalar
+# Good — nullable scalar
 email:
-  type: string
-  nullable: true
+  type: [string, "null"]
   maxLength: 38
 
-# Good — object with a $ref (sibling type is required)
+# Good — nullable array
+dossierInputs:
+  type: [array, "null"]
+  items:
+    $ref: "./dossier-input.yaml"
+```
+
+### Nullable `$ref` objects
+
+Do **not** use OpenAPI 3.0’s `nullable: true` (removed in 3.1). For a property that is either null or a named schema, use `oneOf`:
+
+```yaml
+# Good — null or FlatAddress
 mailingAddress:
-  type: object
-  nullable: true
   description: Flat mailing address. Null clears the field.
-  allOf:
+  oneOf:
+    - type: "null"
     - $ref: "../../schemas/dossier/embeds/flat-address.yaml"
 ```
 
-**Avoid** `nullable: true` with `allOf: [$ref: …]` and **no sibling `type`**. That also breaks `express-openapi-validator` (often as a **500** with `"nullable" cannot be used without "type"`). See [@saflib/express routes — OpenAPI nullable](../../express/docs/03-routes.md#openapi-nullable-and-express-openapi-validator).
+### Do not use `nullable: true`
 
-### Omit properties instead of sending JSON `null` (clients)
-
-Even when a request field is documented as `nullable: true`, **clients should usually omit the property** when they have no value, rather than sending `"field": null`.
-
-Reason: `express-openapi-validator` can reject explicit `null` on nullable object schemas that use `allOf` + `$ref`, while still accepting the property when it is **omitted**. Prefer omission in SDKs and form builders unless the route contract explicitly requires sending `null` to clear a field on update.
-
-Example:
-
-```ts
-// Good — partial create; server stores omitted fields as null
-{ familyName: "Chen", givenName: "Wei" }
-
-// Risky — may 400 on nullable object + $ref schemas
-{ familyName: "Chen", givenName: "Wei", mailingAddress: null }
+```yaml
+# Bad — OpenAPI 3.0 only; invalid / ignored in 3.1
+email:
+  type: string
+  nullable: true
 ```
 
-On **update** routes where “omitted clears to null”, omitting a blank nested object is often the intended way to clear it — same as sending null — without tripping validation.
+### Omit vs explicit `null` (clients)
+
+- **Create / partial update:** omit the key when unset if the server treats omitted as null.
+- **Clear on update:** sending `"mailingAddress": null` is valid when the schema uses the `oneOf` / type-array forms above — prefer that over inventing a sentinel empty object.
 
 ### Quick reference
 
-| Goal            | OpenAPI 3.0 (use this)                                             | Do not use                                    |
-| --------------- | ------------------------------------------------------------------ | --------------------------------------------- |
-| Optional string | `type: string`, `nullable: true`                                   | `oneOf: [{ type: "null" }, { type: string }]` |
-| Optional object | `type: object`, `nullable: true`, `allOf: [$ref]`                  | `type: "null"` or `oneOf` with null branch    |
-| Unset on create | Document “omitted → null”; client omits key                        | Client sends `null` unless verified           |
-| Clear on update | Document “omitted → null” or accept explicit null after schema fix | Assume `null` always validates                |
+| Goal            | OpenAPI 3.1 (use this)                                      | Do not use                                      |
+| --------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| Optional string | `type: [string, "null"]`                                    | `nullable: true`                                |
+| Optional object | `oneOf: [{ type: "null" }, { $ref: … }]`                    | `type: object` + `nullable: true` + `allOf`     |
+| Optional array  | `type: [array, "null"]`                                     | `nullable: true` on `type: array`               |
+| Unset on create | Document “omitted → null”; client may omit key              | —                                               |
+| Clear on update | Explicit `null` is fine with the patterns above             | Empty `{}` as a stand-in for null               |
