@@ -23,30 +23,30 @@ function jobParams(
 ): CreateJobParams {
   return {
     status: "pending",
-    operationId: "jobsDemoStepB",
+    operation_id: "jobsDemoStepB",
     request: { body: {} },
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request",
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-1",
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: now,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-1",
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: now,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -59,8 +59,8 @@ async function seedRunning(dbKey: DbKey, id = "job-1") {
       id,
       status: "running",
       attempt: 1,
-      startedAt: now,
-      heartbeatAt: now,
+      started_at: now,
+      heartbeat_at: now,
     }),
   );
 }
@@ -80,45 +80,45 @@ describe("recordAttemptResultJob", () => {
     jobsDbManager.clearAllTablesForTests(dbKey);
   });
 
-  it("records succeeded: status, result, finishedAt", async () => {
+  it("records succeeded: status, result, finished_at", async () => {
     await seedRunning(dbKey);
 
     const { result, error } = await recordAttemptResultJob(dbKey, {
       id: "job-1",
       now: later,
       outcome: "succeeded",
-      result: { statusCode: 200 },
+      result: { status_code: 200 },
     });
 
     expect(error).toBeUndefined();
     assert(result);
     expect(result.status).toBe("succeeded");
-    expect(result.result).toEqual({ statusCode: 200 });
-    expect(result.finishedAt).toEqual(later);
-    expect(result.updatedAt).toEqual(later);
+    expect(result.result).toEqual({ status_code: 200 });
+    expect(result.finished_at).toEqual(later);
+    expect(result.updated_at).toEqual(later);
   });
 
-  it("schedules retry: retrying, runAt backoff, result recorded", async () => {
+  it("schedules retry: retrying, run_at backoff, result recorded", async () => {
     await seedRunning(dbKey);
 
     const { result, error } = await recordAttemptResultJob(dbKey, {
       id: "job-1",
       now: later,
       outcome: "retry",
-      runAt: backoffAt,
-      result: { statusCode: 503, errorBody: '{"error":"unavailable"}' },
+      run_at: backoffAt,
+      result: { status_code: 503, error_body: '{"error":"unavailable"}' },
     });
 
     expect(error).toBeUndefined();
     assert(result);
     expect(result.status).toBe("retrying");
-    expect(result.runAt).toEqual(backoffAt);
+    expect(result.run_at).toEqual(backoffAt);
     expect(result.result).toEqual({
-      statusCode: 503,
-      errorBody: '{"error":"unavailable"}',
+      status_code: 503,
+      error_body: '{"error":"unavailable"}',
     });
-    expect(result.finishedAt).toBeNull();
-    expect(result.updatedAt).toEqual(later);
+    expect(result.finished_at).toBeNull();
+    expect(result.updated_at).toEqual(later);
   });
 
   it.each([
@@ -126,7 +126,7 @@ describe("recordAttemptResultJob", () => {
     "permanent-status",
     "rejected-by-endpoint",
     "auth-unresolvable",
-  ] as const)("records dead with terminalReason %s", async (terminalReason) => {
+  ] as const)("records dead with terminal_reason %s", async (terminal_reason) => {
     await seedRunning(dbKey);
 
     const { result, error } = await recordAttemptResultJob(dbKey, {
@@ -134,9 +134,9 @@ describe("recordAttemptResultJob", () => {
       now: later,
       outcome: "dead",
       result: {
-        statusCode: 422,
-        errorBody: "capped-by-caller",
-        terminalReason,
+        status_code: 422,
+        error_body: "capped-by-caller",
+        terminal_reason,
       },
     });
 
@@ -144,11 +144,11 @@ describe("recordAttemptResultJob", () => {
     assert(result);
     expect(result.status).toBe("dead");
     expect(result.result).toEqual({
-      statusCode: 422,
-      errorBody: "capped-by-caller",
-      terminalReason,
+      status_code: 422,
+      error_body: "capped-by-caller",
+      terminal_reason,
     });
-    expect(result.finishedAt).toEqual(later);
+    expect(result.finished_at).toEqual(later);
   });
 
   it("returns JobNotFoundError when the id does not exist", async () => {
@@ -156,7 +156,7 @@ describe("recordAttemptResultJob", () => {
       id: "missing",
       now: later,
       outcome: "succeeded",
-      result: { statusCode: 200 },
+      result: { status_code: 200 },
     });
 
     expect(result).toBeUndefined();
@@ -170,7 +170,7 @@ describe("recordAttemptResultJob", () => {
       id: "job-1",
       now: later,
       outcome: "dead",
-      result: { statusCode: 500, terminalReason: "exhausted" },
+      result: { status_code: 500, terminal_reason: "exhausted" },
     });
 
     expect(result).toBeUndefined();

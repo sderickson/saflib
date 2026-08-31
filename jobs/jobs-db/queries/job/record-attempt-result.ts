@@ -21,12 +21,12 @@ export type AttemptDeadTerminalReason = Extract<
 
 type RecordAttemptResultBase = {
   id: (typeof jobTable.$inferSelect)["id"];
-  /** Written to `updatedAt`; also `finishedAt` for terminal outcomes. */
+  /** Written to `updated_at`; also `finished_at` for terminal outcomes. */
   now: Date;
 };
 
 /**
- * Attempt outcome. `errorBody` must already be capped at 8 KB by the caller.
+ * Attempt outcome. `error_body` must already be capped at 8 KB by the caller.
  */
 export type RecordAttemptResultJobParams = RecordAttemptResultBase &
   (
@@ -37,12 +37,12 @@ export type RecordAttemptResultJobParams = RecordAttemptResultBase &
     | {
         outcome: "retry";
         /** Next claim time after backoff. */
-        runAt: Date;
+        run_at: Date;
         result: JobResult;
       }
     | {
         outcome: "dead";
-        result: JobResult & { terminalReason: AttemptDeadTerminalReason };
+        result: JobResult & { terminal_reason: AttemptDeadTerminalReason };
       }
   );
 
@@ -53,9 +53,9 @@ export type RecordAttemptResultJobError =
 /**
  * Record a delivery attempt outcome. Only transitions from `running`.
  *
- * - `succeeded` → status succeeded, result + finishedAt
- * - `retry` → status retrying, runAt = backoff, result recorded
- * - `dead` → status dead, result (with terminalReason) + finishedAt
+ * - `succeeded` → status succeeded, result + finished_at
+ * - `retry` → status retrying, run_at = backoff, result recorded
+ * - `dead` → status dead, result (with terminal_reason) + finished_at
  */
 export const recordAttemptResultJob = queryWrapper(
   async (
@@ -71,21 +71,21 @@ export const recordAttemptResultJob = queryWrapper(
         ? {
             status: "succeeded" as const,
             result: params.result,
-            finishedAt: params.now,
-            updatedAt: params.now,
+            finished_at: params.now,
+            updated_at: params.now,
           }
         : params.outcome === "retry"
           ? {
               status: "retrying" as const,
-              runAt: params.runAt,
+              run_at: params.run_at,
               result: params.result,
-              updatedAt: params.now,
+              updated_at: params.now,
             }
           : {
               status: "dead" as const,
               result: params.result,
-              finishedAt: params.now,
-              updatedAt: params.now,
+              finished_at: params.now,
+              updated_at: params.now,
             };
 
     const updated = await db

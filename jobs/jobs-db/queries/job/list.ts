@@ -9,14 +9,14 @@ const DEFAULT_LIMIT = 50;
 
 export type ListJobParams = {
   status?: JobStatus;
-  operationId?: (typeof jobTable.$inferSelect)["operationId"];
-  userId?: (typeof jobTable.$inferSelect)["userId"];
-  originalRequestId?: (typeof jobTable.$inferSelect)["originalRequestId"];
-  concurrencyKey?: string;
-  /** Inclusive lower bound on `createdAt`. */
-  createdAfter?: Date;
-  /** Inclusive upper bound on `createdAt`. */
-  createdBefore?: Date;
+  operation_id?: (typeof jobTable.$inferSelect)["operation_id"];
+  user_id?: (typeof jobTable.$inferSelect)["user_id"];
+  original_request_id?: (typeof jobTable.$inferSelect)["original_request_id"];
+  concurrency_key?: string;
+  /** Inclusive lower bound on `created_at`. */
+  created_after?: Date;
+  /** Inclusive upper bound on `created_at`. */
+  created_before?: Date;
   /** Page size; defaults to 50. */
   limit?: number;
   /** Rows to skip; defaults to 0. */
@@ -26,7 +26,7 @@ export type ListJobParams = {
 export type ListJobError = never;
 
 /**
- * List jobs with optional filters, newest first (`createdAt` desc, then `id`).
+ * List jobs with optional filters, newest first (`created_at` desc, then `id`).
  */
 export const listJob = queryWrapper(
   async (
@@ -41,23 +41,23 @@ export const listJob = queryWrapper(
     if (params.status !== undefined) {
       conditions.push(eq(jobTable.status, params.status));
     }
-    if (params.operationId !== undefined) {
-      conditions.push(eq(jobTable.operationId, params.operationId));
+    if (params.operation_id !== undefined) {
+      conditions.push(eq(jobTable.operation_id, params.operation_id));
     }
-    if (params.userId !== undefined) {
-      conditions.push(eq(jobTable.userId, params.userId));
+    if (params.user_id !== undefined) {
+      conditions.push(eq(jobTable.user_id, params.user_id));
     }
-    if (params.originalRequestId !== undefined) {
-      conditions.push(eq(jobTable.originalRequestId, params.originalRequestId));
+    if (params.original_request_id !== undefined) {
+      conditions.push(eq(jobTable.original_request_id, params.original_request_id));
     }
-    if (params.concurrencyKey !== undefined) {
-      conditions.push(eq(jobTable.concurrencyKey, params.concurrencyKey));
+    if (params.concurrency_key !== undefined) {
+      conditions.push(eq(jobTable.concurrency_key, params.concurrency_key));
     }
-    if (params.createdAfter !== undefined) {
-      conditions.push(gte(jobTable.createdAt, params.createdAfter));
+    if (params.created_after !== undefined) {
+      conditions.push(gte(jobTable.created_at, params.created_after));
     }
-    if (params.createdBefore !== undefined) {
-      conditions.push(lte(jobTable.createdAt, params.createdBefore));
+    if (params.created_before !== undefined) {
+      conditions.push(lte(jobTable.created_at, params.created_before));
     }
 
     const limit = params.limit ?? DEFAULT_LIMIT;
@@ -67,7 +67,7 @@ export const listJob = queryWrapper(
       .select()
       .from(jobTable)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(jobTable.createdAt), desc(jobTable.id))
+      .orderBy(desc(jobTable.created_at), desc(jobTable.id))
       .limit(limit)
       .offset(offset);
 

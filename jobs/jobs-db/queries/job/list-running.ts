@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 
 export type RunningJobRow = Pick<
   typeof jobTable.$inferSelect,
-  "id" | "operationId" | "attempt" | "maxAttempts" | "heartbeatAt"
+  "id" | "operation_id" | "attempt" | "max_attempts" | "heartbeat_at"
 >;
 
 export type ListRunningJobsError = never;
@@ -24,10 +24,10 @@ export const listRunningJobsJob = queryWrapper(
     const rows = await db
       .select({
         id: jobTable.id,
-        operationId: jobTable.operationId,
+        operation_id: jobTable.operation_id,
         attempt: jobTable.attempt,
-        maxAttempts: jobTable.maxAttempts,
-        heartbeatAt: jobTable.heartbeatAt,
+        max_attempts: jobTable.max_attempts,
+        heartbeat_at: jobTable.heartbeat_at,
       })
       .from(jobTable)
       .where(eq(jobTable.status, "running"));

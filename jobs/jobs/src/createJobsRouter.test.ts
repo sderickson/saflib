@@ -24,30 +24,30 @@ function jobParams(
 ) {
   return {
     status: "pending" as const,
-    operationId: "testJobStepB",
+    operation_id: "testJobStepB",
     request: { body: {} },
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request" as const,
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-1",
-    enqueuedByOperationId: "testJobStart",
-    parentJobId: null,
-    runAt: now,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-1",
+    enqueued_by_operation_id: "testJobStart",
+    parent_job_id: null,
+    run_at: now,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -79,8 +79,8 @@ describe("createJobsRouter admin actions", () => {
         id: "job-dead",
         status: "dead",
         attempt: 5,
-        finishedAt: now,
-        result: { terminalReason: "exhausted", statusCode: 500 },
+        finished_at: now,
+        result: { terminal_reason: "exhausted", status_code: 500 },
       }),
     );
 
@@ -125,7 +125,7 @@ describe("createJobsRouter admin actions", () => {
     expect(response.body.job).toMatchObject({
       id: "job-pending",
       status: "cancelled",
-      result: { terminalReason: "cancelled-by-admin" },
+      result: { terminal_reason: "cancelled-by-admin" },
     });
   });
 
@@ -136,8 +136,8 @@ describe("createJobsRouter admin actions", () => {
         id: "job-running",
         status: "running",
         attempt: 1,
-        startedAt: now,
-        heartbeatAt: now,
+        started_at: now,
+        heartbeat_at: now,
       }),
     );
 
@@ -155,20 +155,20 @@ describe("createJobsRouter admin actions", () => {
       jobParams({
         id: "job-cancel-chain",
         status: "pending",
-        originalRequestId: chainId,
-        runAt: new Date(Date.now() + 60_000),
+        original_request_id: chainId,
+        run_at: new Date(Date.now() + 60_000),
       }),
     );
 
     const { result: cancelledRows } = await cancelByOriginalRequestIdJob(
       dbKey,
-      { originalRequestId: chainId, now: new Date() },
+      { original_request_id: chainId, now: new Date() },
     );
     expect(cancelledRows!.length).toBe(1);
     expect(cancelledRows![0]).toMatchObject({
       status: "cancelled",
-      originalRequestId: chainId,
-      result: { terminalReason: "cancelled-by-chain" },
+      original_request_id: chainId,
+      result: { terminal_reason: "cancelled-by-chain" },
     });
   });
 

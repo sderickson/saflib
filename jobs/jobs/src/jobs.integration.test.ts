@@ -103,7 +103,7 @@ function createWorkApp() {
     "/test/step-b",
     createHandler(async (_req, res) => {
       await enqueue({
-        operationId: "testJobStepC",
+        operation_id: "testJobStepC",
         request: { body: { label: "integration" } },
       });
       res.status(200).json({ enqueued: "testJobStepC" });
@@ -285,7 +285,7 @@ describe("jobs integration", () => {
           method: "POST",
           path: "/jobs",
           body: {
-            operationId: "testJobStepB",
+            operation_id: "testJobStepB",
             request: { body: { label: "integration" } },
           },
           asUser: { userId: adminUserId, mfaCompleted: true },
@@ -308,29 +308,29 @@ describe("jobs integration", () => {
 
         await waitUntil(async () => {
           const { result } = await listJob(dbKey, {
-            originalRequestId: chainRoot,
-            operationId: "testJobStepC",
+            original_request_id: chainRoot,
+            operation_id: "testJobStepC",
           });
           return result?.some((j) => j.status === "succeeded") ?? false;
         });
 
         const { result: chainJobs } = await listJob(dbKey, {
-          originalRequestId: chainRoot,
+          original_request_id: chainRoot,
         });
         expect(chainJobs!.length).toBeGreaterThanOrEqual(2);
         expect(stepCCompletions.length).toBeGreaterThanOrEqual(1);
 
-        const jobC = chainJobs!.find((j) => j.operationId === "testJobStepC");
+        const jobC = chainJobs!.find((j) => j.operation_id === "testJobStepC");
         expect(jobC).toMatchObject({
           status: "succeeded",
-          originalRequestId: chainRoot,
-          enqueuedByOperationId: "testJobStepB",
-          parentJobId: jobBId,
+          original_request_id: chainRoot,
+          enqueued_by_operation_id: "testJobStepB",
+          parent_job_id: jobBId,
         });
 
         const listed = await request(adminApp)
           .get("/jobs")
-          .query({ originalRequestId: chainRoot })
+          .query({ original_request_id: chainRoot })
           .set(makeAdminHeaders(adminUserId, adminEmail));
         expect(listed.status).toBe(200);
         expect(listed.body.jobs.length).toBeGreaterThanOrEqual(2);
@@ -340,10 +340,10 @@ describe("jobs integration", () => {
           .set(makeAdminHeaders(adminUserId, adminEmail));
         expect(detail.status).toBe(200);
         expect(detail.body.job.id).toBe(jobBId);
-        expect(detail.body.authorityAssertion).toMatchObject({
+        expect(detail.body.authority_assertion).toMatchObject({
           payload: expect.any(String),
           signature: expect.any(String),
-          keyId: expect.any(String),
+          key_id: expect.any(String),
         });
       } finally {
         await caller.close();
@@ -362,7 +362,7 @@ describe("jobs integration", () => {
         method: "POST",
         path: "/jobs",
         body: {
-          operationId: "testJobStepC",
+          operation_id: "testJobStepC",
           request: { body: {} },
         },
         asUser: { userId: adminUserId, mfaCompleted: true },
@@ -380,47 +380,47 @@ describe("jobs integration", () => {
 
   it("cancel-by-original-request cancels a delayed pending chain", async () => {
     const cancelChain = `cancel-${randomUUID()}`;
-    const runAt = new Date(Date.now() + 60_000);
+    const run_at = new Date(Date.now() + 60_000);
     await createJob(dbKey, {
       id: "cancel-pending-job",
       status: "pending",
-      operationId: "testJobStepB",
+      operation_id: "testJobStepB",
       request: { body: {} },
-      userId: adminUserId,
+      user_id: adminUserId,
       authority: {
         kind: "request",
-        userId: adminUserId,
-        requestId: cancelChain,
-        assertion: { payload: "p", signature: "s", keyId: "k1" },
+        user_id: adminUserId,
+        request_id: cancelChain,
+        assertion: { payload: "p", signature: "s", key_id: "k1" },
       },
-      originalRequestId: cancelChain,
-      enqueuedByOperationId: "testJobStart",
-      parentJobId: null,
-      runAt,
-      dedupeKey: null,
-      concurrencyKey: null,
+      original_request_id: cancelChain,
+      enqueued_by_operation_id: "testJobStart",
+      parent_job_id: null,
+      run_at,
+      dedupe_key: null,
+      concurrency_key: null,
       priority: 0,
       attempt: 0,
-      maxAttempts: 5,
-      heartbeatAt: null,
+      max_attempts: 5,
+      heartbeat_at: null,
       result: null,
-      createdAt: runAt,
-      updatedAt: runAt,
-      startedAt: null,
-      finishedAt: null,
+      created_at: run_at,
+      updated_at: run_at,
+      started_at: null,
+      finished_at: null,
       spawnCap: 1000,
     });
 
     const { result: cancelledRows } =
       await cancelByOriginalRequestIdJob(dbKey, {
-        originalRequestId: cancelChain,
+        original_request_id: cancelChain,
         now: new Date(),
       });
     expect(cancelledRows!.length).toBe(1);
     expect(cancelledRows![0]).toMatchObject({
       status: "cancelled",
-      originalRequestId: cancelChain,
-      result: { terminalReason: "cancelled-by-chain" },
+      original_request_id: cancelChain,
+      result: { terminal_reason: "cancelled-by-chain" },
     });
   });
 });

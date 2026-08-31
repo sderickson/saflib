@@ -32,30 +32,30 @@ function jobParams(
 ): CreateJobParams {
   return {
     status: "pending",
-    operationId: "jobsDemoStepB",
+    operation_id: "jobsDemoStepB",
     request: { body: {} },
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request",
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-chain",
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: t0,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-chain",
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: t0,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: t0,
-    updatedAt: t0,
-    startedAt: null,
-    finishedAt: null,
+    created_at: t0,
+    updated_at: t0,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -93,12 +93,12 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
     expect(claimed[0]!.attempt).toBe(1);
   });
 
-  it("dedupe upsert: live key pushes runAt and refreshes request", async () => {
+  it("dedupe upsert: live key pushes run_at and refreshes request", async () => {
     const first = await createJob(
       dbKey,
       jobParams({
         id: "job-1",
-        dedupeKey: "matter:1:claim",
+        dedupe_key: "matter:1:claim",
         request: { body: { n: 1 } },
       }),
     );
@@ -110,20 +110,20 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
       dbKey,
       jobParams({
         id: "job-2",
-        dedupeKey: "matter:1:claim",
+        dedupe_key: "matter:1:claim",
         request: { body: { n: 2 } },
-        runAt: later,
-        updatedAt: later,
+        run_at: later,
+        updated_at: later,
       }),
     );
     assert(second.result);
     expect(second.result.deduped).toBe(true);
     expect(second.result.job.id).toBe("job-1");
     expect(second.result.job.request).toEqual({ body: { n: 2 } });
-    expect(second.result.job.runAt).toEqual(later);
+    expect(second.result.job.run_at).toEqual(later);
 
     const count = await countByOriginalRequestIdJob(dbKey, {
-      originalRequestId: "r-chain",
+      original_request_id: "r-chain",
     });
     expect(count.result).toBe(1);
   });
@@ -134,10 +134,10 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
       jobParams({
         id: "job-running",
         status: "running",
-        dedupeKey: "matter:1:auto-claim",
+        dedupe_key: "matter:1:auto-claim",
         attempt: 1,
-        startedAt: t0,
-        heartbeatAt: t0,
+        started_at: t0,
+        heartbeat_at: t0,
       }),
     );
 
@@ -145,7 +145,7 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
       dbKey,
       jobParams({
         id: "job-follow-up",
-        dedupeKey: "matter:1:auto-claim",
+        dedupe_key: "matter:1:auto-claim",
         request: { body: { drain: true } },
       }),
     );
@@ -155,7 +155,7 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
     expect(followUp.result.job.status).toBe("pending");
 
     const count = await countByOriginalRequestIdJob(dbKey, {
-      originalRequestId: "r-chain",
+      original_request_id: "r-chain",
     });
     expect(count.result).toBe(2);
   });
@@ -166,26 +166,26 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
       jobParams({
         id: "job-running",
         status: "running",
-        concurrencyKey: "matter:1",
+        concurrency_key: "matter:1",
         attempt: 1,
-        startedAt: t0,
-        heartbeatAt: t0,
+        started_at: t0,
+        heartbeat_at: t0,
       }),
     );
     await createJob(
       dbKey,
       jobParams({
         id: "job-blocked",
-        concurrencyKey: "matter:1",
-        originalRequestId: "r-2",
+        concurrency_key: "matter:1",
+        original_request_id: "r-2",
       }),
     );
     await createJob(
       dbKey,
       jobParams({
         id: "job-free",
-        concurrencyKey: "matter:2",
-        originalRequestId: "r-3",
+        concurrency_key: "matter:2",
+        original_request_id: "r-3",
       }),
     );
 
@@ -206,9 +206,9 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
         id: "job-retry",
         status: "running",
         attempt: 2,
-        maxAttempts: 5,
-        startedAt: stale,
-        heartbeatAt: stale,
+        max_attempts: 5,
+        started_at: stale,
+        heartbeat_at: stale,
       }),
     );
     await createJob(
@@ -217,10 +217,10 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
         id: "job-dead",
         status: "running",
         attempt: 5,
-        maxAttempts: 5,
-        startedAt: stale,
-        heartbeatAt: stale,
-        originalRequestId: "r-2",
+        max_attempts: 5,
+        started_at: stale,
+        heartbeat_at: stale,
+        original_request_id: "r-2",
       }),
     );
 
@@ -233,7 +233,7 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
     expect(byId["job-retry"]!.status).toBe("retrying");
     expect(byId["job-dead"]!.status).toBe("dead");
     expect(byId["job-dead"]!.result).toEqual({
-      terminalReason: "exhausted",
+      terminal_reason: "exhausted",
     });
 
     const reclaim = await claimNextJob(dbKey, { now: t0 });
@@ -251,7 +251,7 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
       jobParams({
         id: "job-old",
         status: "succeeded",
-        finishedAt: expired,
+        finished_at: expired,
       }),
     );
     await createJob(
@@ -259,7 +259,7 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
       jobParams({
         id: "job-live",
         status: "pending",
-        originalRequestId: "r-2",
+        original_request_id: "r-2",
       }),
     );
 
@@ -290,7 +290,7 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
     expect(error).toBeInstanceOf(JobSpawnCapExceededError);
 
     const count = await countByOriginalRequestIdJob(dbKey, {
-      originalRequestId: "r-chain",
+      original_request_id: "r-chain",
     });
     expect(count.result).toBe(1);
   });
@@ -302,8 +302,8 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
         id: "job-1",
         status: "dead",
         attempt: 5,
-        finishedAt: t0,
-        result: { statusCode: 500, terminalReason: "exhausted" },
+        finished_at: t0,
+        result: { status_code: 500, terminal_reason: "exhausted" },
       }),
     );
 
@@ -316,8 +316,8 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
     expect(result.status).toBe("pending");
     expect(result.attempt).toBe(0);
     expect(result.result).toBeNull();
-    expect(result.finishedAt).toBeNull();
-    expect(result.runAt).toEqual(later);
+    expect(result.finished_at).toBeNull();
+    expect(result.run_at).toEqual(later);
 
     const claimed = await claimNextJob(dbKey, { now: later });
     assert(claimed.result);

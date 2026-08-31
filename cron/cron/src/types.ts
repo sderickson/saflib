@@ -18,7 +18,7 @@ export type CustomLogError = (
  * Dynamic fan-out belongs in the target handler.
  */
 export interface CronJobRequest {
-  pathParams?: Record<string, unknown>;
+  path_params?: Record<string, unknown>;
   query?: Record<string, unknown>;
   body?: unknown;
 }
@@ -33,7 +33,7 @@ export interface JobConfig {
   /** The single job this schedule enqueues. */
   enqueue: {
     operationId: string;
-    /** Static request: { pathParams?, query?, body? }. */
+    /** Static request: { path_params?, query?, body? }. */
     request?: CronJobRequest;
     /** Defaults to `cron:{jobName}`. */
     dedupeKey?: string;

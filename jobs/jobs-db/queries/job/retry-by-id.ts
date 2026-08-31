@@ -10,7 +10,7 @@ const retryableStatuses = ["dead", "cancelled"] as const;
 
 export type RetryByIdJobParams = {
   id: (typeof jobTable.$inferSelect)["id"];
-  /** Written to `runAt` and `updatedAt` so the job is immediately claimable. */
+  /** Written to `run_at` and `updated_at` so the job is immediately claimable. */
   now: Date;
 };
 
@@ -33,11 +33,11 @@ export const retryByIdJob = queryWrapper(
         status: "pending",
         attempt: 0,
         result: null,
-        finishedAt: null,
-        startedAt: null,
-        heartbeatAt: null,
-        runAt: params.now,
-        updatedAt: params.now,
+        finished_at: null,
+        started_at: null,
+        heartbeat_at: null,
+        run_at: params.now,
+        updated_at: params.now,
       })
       .where(
         and(

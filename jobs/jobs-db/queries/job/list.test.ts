@@ -15,34 +15,34 @@ import { listJob } from "./list.ts";
 
 function jobParams(
   overrides: Partial<CreateJobParams> &
-    Pick<CreateJobParams, "id" | "createdAt">,
+    Pick<CreateJobParams, "id" | "created_at">,
 ): CreateJobParams {
-  const createdAt = overrides.createdAt;
+  const created_at = overrides.created_at;
   return {
     status: "pending",
-    operationId: "jobsDemoStepB",
+    operation_id: "jobsDemoStepB",
     request: { body: {} },
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request",
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-1",
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: createdAt,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-1",
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: created_at,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    updatedAt: createdAt,
-    startedAt: null,
-    finishedAt: null,
+    updated_at: created_at,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -75,15 +75,15 @@ describe("listJob", () => {
       dbKey,
       jobParams({
         id: "job-old",
-        createdAt: new Date("2026-08-06T10:00:00.000Z"),
+        created_at: new Date("2026-08-06T10:00:00.000Z"),
       }),
     );
     await createJob(
       dbKey,
       jobParams({
         id: "job-new",
-        createdAt: new Date("2026-08-06T12:00:00.000Z"),
-        originalRequestId: "r-2",
+        created_at: new Date("2026-08-06T12:00:00.000Z"),
+        original_request_id: "r-2",
       }),
     );
 
@@ -92,37 +92,37 @@ describe("listJob", () => {
     expect(result.map((j) => j.id)).toEqual(["job-new", "job-old"]);
   });
 
-  it("filters by status, operationId, userId, and originalRequestId", async () => {
+  it("filters by status, operation_id, user_id, and original_request_id", async () => {
     await createJob(
       dbKey,
       jobParams({
         id: "job-match",
-        createdAt: new Date("2026-08-06T12:00:00.000Z"),
+        created_at: new Date("2026-08-06T12:00:00.000Z"),
         status: "dead",
-        operationId: "jobsDemoStepC",
-        userId: "user-2",
-        originalRequestId: "r-match",
-        finishedAt: new Date("2026-08-06T12:01:00.000Z"),
-        result: { terminalReason: "exhausted" },
+        operation_id: "jobsDemoStepC",
+        user_id: "user-2",
+        original_request_id: "r-match",
+        finished_at: new Date("2026-08-06T12:01:00.000Z"),
+        result: { terminal_reason: "exhausted" },
       }),
     );
     await createJob(
       dbKey,
       jobParams({
         id: "job-other",
-        createdAt: new Date("2026-08-06T11:00:00.000Z"),
+        created_at: new Date("2026-08-06T11:00:00.000Z"),
         status: "pending",
-        operationId: "jobsDemoStepB",
-        userId: "user-1",
-        originalRequestId: "r-other",
+        operation_id: "jobsDemoStepB",
+        user_id: "user-1",
+        original_request_id: "r-other",
       }),
     );
 
     const { result } = await listJob(dbKey, {
       status: "dead",
-      operationId: "jobsDemoStepC",
-      userId: "user-2",
-      originalRequestId: "r-match",
+      operation_id: "jobsDemoStepC",
+      user_id: "user-2",
+      original_request_id: "r-match",
     });
 
     assert(result);
@@ -130,34 +130,34 @@ describe("listJob", () => {
     expect(result[0]!.id).toBe("job-match");
   });
 
-  it("filters by createdAfter and createdBefore (inclusive)", async () => {
+  it("filters by created_after and created_before (inclusive)", async () => {
     await createJob(
       dbKey,
       jobParams({
         id: "job-early",
-        createdAt: new Date("2026-08-06T09:00:00.000Z"),
+        created_at: new Date("2026-08-06T09:00:00.000Z"),
       }),
     );
     await createJob(
       dbKey,
       jobParams({
         id: "job-mid",
-        createdAt: new Date("2026-08-06T10:00:00.000Z"),
-        originalRequestId: "r-2",
+        created_at: new Date("2026-08-06T10:00:00.000Z"),
+        original_request_id: "r-2",
       }),
     );
     await createJob(
       dbKey,
       jobParams({
         id: "job-late",
-        createdAt: new Date("2026-08-06T11:00:00.000Z"),
-        originalRequestId: "r-3",
+        created_at: new Date("2026-08-06T11:00:00.000Z"),
+        original_request_id: "r-3",
       }),
     );
 
     const { result } = await listJob(dbKey, {
-      createdAfter: new Date("2026-08-06T10:00:00.000Z"),
-      createdBefore: new Date("2026-08-06T10:00:00.000Z"),
+      created_after: new Date("2026-08-06T10:00:00.000Z"),
+      created_before: new Date("2026-08-06T10:00:00.000Z"),
     });
 
     assert(result);
@@ -169,23 +169,23 @@ describe("listJob", () => {
       dbKey,
       jobParams({
         id: "job-a",
-        createdAt: new Date("2026-08-06T12:00:00.000Z"),
+        created_at: new Date("2026-08-06T12:00:00.000Z"),
       }),
     );
     await createJob(
       dbKey,
       jobParams({
         id: "job-b",
-        createdAt: new Date("2026-08-06T11:00:00.000Z"),
-        originalRequestId: "r-2",
+        created_at: new Date("2026-08-06T11:00:00.000Z"),
+        original_request_id: "r-2",
       }),
     );
     await createJob(
       dbKey,
       jobParams({
         id: "job-c",
-        createdAt: new Date("2026-08-06T10:00:00.000Z"),
-        originalRequestId: "r-3",
+        created_at: new Date("2026-08-06T10:00:00.000Z"),
+        original_request_id: "r-3",
       }),
     );
 

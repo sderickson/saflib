@@ -19,30 +19,30 @@ function jobParams(
 ): CreateJobParams {
   return {
     status: "pending",
-    operationId: "jobsDemoStepB",
+    operation_id: "jobsDemoStepB",
     request: { body: {} },
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request",
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-chain",
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: now,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-chain",
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: now,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -65,9 +65,9 @@ describe("countByOriginalRequestIdJob", () => {
 
 
 
-  it("returns 0 when no jobs share the originalRequestId", async () => {
+  it("returns 0 when no jobs share the original_request_id", async () => {
     const { result, error } = await countByOriginalRequestIdJob(dbKey, {
-      originalRequestId: "r-missing",
+      original_request_id: "r-missing",
     });
     expect(error).toBeUndefined();
     expect(result).toBe(0);
@@ -77,19 +77,19 @@ describe("countByOriginalRequestIdJob", () => {
     await createJob(dbKey, jobParams({ id: "job-1", status: "pending" }));
     await createJob(
       dbKey,
-      jobParams({ id: "job-2", status: "succeeded", finishedAt: now }),
+      jobParams({ id: "job-2", status: "succeeded", finished_at: now }),
     );
     await createJob(
       dbKey,
       jobParams({
         id: "job-other",
         status: "pending",
-        originalRequestId: "r-other",
+        original_request_id: "r-other",
       }),
     );
 
     const { result } = await countByOriginalRequestIdJob(dbKey, {
-      originalRequestId: "r-chain",
+      original_request_id: "r-chain",
     });
     expect(result).toBe(2);
   });

@@ -45,7 +45,7 @@ const sampleSpec = asOpenApiDocument({
 });
 
 describe("buildOperationMap", () => {
-  it("maps operationId to method, path template, and background flag", () => {
+  it("maps operation_id to method, path template, and background flag", () => {
     const map = buildOperationMap(sampleSpec);
 
     expect(map.get("startJobsDemo")).toEqual({

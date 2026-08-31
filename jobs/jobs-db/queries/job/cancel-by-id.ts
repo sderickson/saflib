@@ -10,14 +10,14 @@ const cancellableStatuses = ["pending", "retrying"] as const;
 
 export type CancelByIdJobParams = {
   id: (typeof jobTable.$inferSelect)["id"];
-  /** Written to `finishedAt` and `updatedAt`. */
+  /** Written to `finished_at` and `updated_at`. */
   now: Date;
 };
 
 export type CancelByIdJobError = JobNotFoundError | JobNotCancellableError;
 
 /**
- * Cancel a pending/retrying job (`terminalReason: cancelled-by-admin`).
+ * Cancel a pending/retrying job (`terminal_reason: cancelled-by-admin`).
  * Running and terminal jobs return `JobNotCancellableError`.
  */
 export const cancelByIdJob = queryWrapper(
@@ -31,9 +31,9 @@ export const cancelByIdJob = queryWrapper(
       .update(jobTable)
       .set({
         status: "cancelled",
-        result: { terminalReason: "cancelled-by-admin" },
-        finishedAt: params.now,
-        updatedAt: params.now,
+        result: { terminal_reason: "cancelled-by-admin" },
+        finished_at: params.now,
+        updated_at: params.now,
       })
       .where(
         and(

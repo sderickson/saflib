@@ -21,7 +21,7 @@ export const getJobHandler = createHandler(async (req, res) => {
 
   const response: JobsServiceResponseBody["getJob"][200] = {
     job: mapJobToWire(result!),
-    authorityAssertion: result!.authority.assertion,
+    authority_assertion: result!.authority.assertion,
   };
   res.status(200).json(response);
 });

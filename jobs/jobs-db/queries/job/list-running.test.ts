@@ -20,30 +20,30 @@ function jobParams(
 ): CreateJobParams {
   return {
     status: "pending",
-    operationId: "jobsDemoStepB",
+    operation_id: "jobsDemoStepB",
     request: { body: {} },
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request",
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-1",
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: now,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-1",
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: now,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -71,8 +71,8 @@ describe("listRunningJobsJob", () => {
         id: "job-running",
         status: "running",
         attempt: 1,
-        startedAt: now,
-        heartbeatAt: now,
+        started_at: now,
+        heartbeat_at: now,
       }),
     );
     await createJob(dbKey, jobParams({ id: "job-pending", status: "pending" }));
@@ -83,10 +83,10 @@ describe("listRunningJobsJob", () => {
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
       id: "job-running",
-      operationId: "jobsDemoStepB",
+      operation_id: "jobsDemoStepB",
       attempt: 1,
-      maxAttempts: 5,
-      heartbeatAt: now,
+      max_attempts: 5,
+      heartbeat_at: now,
     });
   });
 });

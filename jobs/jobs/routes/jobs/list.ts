@@ -12,25 +12,25 @@ export const listJobsHandler = createHandler(async (req, res) => {
   const ctx = jobsServiceStorage.getStore()!;
   const query = req.query as {
     status?: JobStatus;
-    operationId?: string;
-    userId?: string;
-    originalRequestId?: string;
-    createdAfter?: string;
-    createdBefore?: string;
+    operation_id?: string;
+    user_id?: string;
+    original_request_id?: string;
+    created_after?: string;
+    created_before?: string;
     limit?: string;
     offset?: string;
   };
 
   const { result } = await listJob(ctx.dbKey, {
     status: query.status,
-    operationId: query.operationId,
-    userId: query.userId,
-    originalRequestId: query.originalRequestId,
-    createdAfter: query.createdAfter
-      ? new Date(query.createdAfter)
+    operation_id: query.operation_id,
+    user_id: query.user_id,
+    original_request_id: query.original_request_id,
+    created_after: query.created_after
+      ? new Date(query.created_after)
       : undefined,
-    createdBefore: query.createdBefore
-      ? new Date(query.createdBefore)
+    created_before: query.created_before
+      ? new Date(query.created_before)
       : undefined,
     limit: query.limit != null ? Number(query.limit) : undefined,
     offset: query.offset != null ? Number(query.offset) : undefined,

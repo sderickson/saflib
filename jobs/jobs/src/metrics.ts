@@ -38,12 +38,12 @@ export interface JobsDeliveryLabels {
  * Start a timer for a delivery attempt; call the returned function with the
  * final status when the attempt completes.
  */
-export function startJobsDeliveryTimer(operationId: string): (
+export function startJobsDeliveryTimer(operation_id: string): (
   status: JobsDeliveryMetricStatus,
 ) => void {
   const end = deliveryHistogram.startTimer({
     service_name: getServiceName(),
-    operation_id: operationId,
+    operation_id: operation_id,
   });
   return (status) => {
     end({ status });
@@ -51,10 +51,10 @@ export function startJobsDeliveryTimer(operationId: string): (
 }
 
 export function observeJobsEnqueued(
-  operationId: string,
+  operation_id: string,
   outcome: JobsEnqueuedOutcome,
 ): void {
-  enqueuedCounter.inc({ operation_id: operationId, outcome });
+  enqueuedCounter.inc({ operation_id: operation_id, outcome });
 }
 
 export function setJobsQueueDepth(counts: { status: JobStatus; count: number }[]): void {

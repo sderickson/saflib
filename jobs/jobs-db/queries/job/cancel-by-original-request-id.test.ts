@@ -24,30 +24,30 @@ function jobParams(
 ): CreateJobParams {
   return {
     status: "pending",
-    operationId: "jobsDemoStepB",
+    operation_id: "jobsDemoStepB",
     request: { body: {} },
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request",
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-chain",
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: now,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-chain",
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: now,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -72,7 +72,7 @@ describe("cancelByOriginalRequestIdJob", () => {
 
   it("returns an empty array when nothing matches", async () => {
     const { result, error } = await cancelByOriginalRequestIdJob(dbKey, {
-      originalRequestId: "r-missing",
+      original_request_id: "r-missing",
       now: later,
     });
 
@@ -93,8 +93,8 @@ describe("cancelByOriginalRequestIdJob", () => {
         id: "job-running",
         status: "running",
         attempt: 1,
-        startedAt: now,
-        heartbeatAt: now,
+        started_at: now,
+        heartbeat_at: now,
       }),
     );
     await createJob(
@@ -102,7 +102,7 @@ describe("cancelByOriginalRequestIdJob", () => {
       jobParams({
         id: "job-done",
         status: "succeeded",
-        finishedAt: now,
+        finished_at: now,
       }),
     );
     await createJob(
@@ -110,12 +110,12 @@ describe("cancelByOriginalRequestIdJob", () => {
       jobParams({
         id: "job-other-chain",
         status: "pending",
-        originalRequestId: "r-other",
+        original_request_id: "r-other",
       }),
     );
 
     const { result, error } = await cancelByOriginalRequestIdJob(dbKey, {
-      originalRequestId: "r-chain",
+      original_request_id: "r-chain",
       now: later,
     });
 
@@ -127,16 +127,16 @@ describe("cancelByOriginalRequestIdJob", () => {
     );
     for (const job of result) {
       expect(job.status).toBe("cancelled");
-      expect(job.result).toEqual({ terminalReason: "cancelled-by-chain" });
-      expect(job.finishedAt).toEqual(later);
-      expect(job.updatedAt).toEqual(later);
+      expect(job.result).toEqual({ terminal_reason: "cancelled-by-chain" });
+      expect(job.finished_at).toEqual(later);
+      expect(job.updated_at).toEqual(later);
     }
 
     const db = jobsDbManager.get(dbKey)!;
     const untouched = await db
       .select()
       .from(jobTable)
-      .where(eq(jobTable.originalRequestId, "r-chain"));
+      .where(eq(jobTable.original_request_id, "r-chain"));
     const byId = Object.fromEntries(untouched.map((j) => [j.id, j]));
     expect(byId["job-running"]!.status).toBe("running");
     expect(byId["job-done"]!.status).toBe("succeeded");

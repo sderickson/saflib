@@ -56,13 +56,13 @@ export function signalJobsWake(): void {
 
 function resolvePath(
   pathTemplate: string,
-  pathParams: Record<string, unknown> | undefined,
+  path_params: Record<string, unknown> | undefined,
 ): string {
-  if (!pathParams) {
+  if (!path_params) {
     return pathTemplate;
   }
   return pathTemplate.replace(/\{([^}]+)\}/g, (_match, name: string) => {
-    const value = pathParams[name];
+    const value = path_params[name];
     if (value == null) {
       throw new Error(`Missing path param "${name}" for ${pathTemplate}`);
     }
@@ -100,28 +100,28 @@ function mfaCompletedFromAuthority(authority: JobAuthority): boolean {
 }
 
 function timeoutForOperation(
-  operationId: string,
+  operation_id: string,
   options: JobsServiceOptions,
 ): number {
   return (
-    options.operationConfig?.[operationId]?.timeoutMs ?? DEFAULT_TIMEOUT_MS
+    options.operationConfig?.[operation_id]?.timeoutMs ?? DEFAULT_TIMEOUT_MS
   );
 }
 
 function isJobStalled(
   job: {
-    operationId: string;
-    heartbeatAt: Date | null;
+    operation_id: string;
+    heartbeat_at: Date | null;
   },
   now: Date,
   options: JobsServiceOptions,
 ): boolean {
-  if (!job.heartbeatAt) {
+  if (!job.heartbeat_at) {
     return false;
   }
-  const timeoutMs = timeoutForOperation(job.operationId, options);
+  const timeoutMs = timeoutForOperation(job.operation_id, options);
   const cutoff = now.getTime() - (timeoutMs + STALL_GRACE_MS);
-  return job.heartbeatAt.getTime() < cutoff;
+  return job.heartbeat_at.getTime() < cutoff;
 }
 
 /**
@@ -239,8 +239,8 @@ export async function runJobs(
       requestId,
       serviceName: getServiceName(),
       subsystemName: "jobs",
-      operationName: job.operationId,
-      originalRequestId: job.originalRequestId,
+      operationName: job.operation_id,
+      originalRequestId: job.original_request_id,
     };
     const reporters: SafReporters = {
       log: createLogger(context),
@@ -249,8 +249,8 @@ export async function runJobs(
 
     await safContextStorage.run(context, async () => {
       await safReportersStorage.run(reporters, async () => {
-        const endTimer = startJobsDeliveryTimer(job.operationId);
-        const resolved = ops.get(job.operationId);
+        const endTimer = startJobsDeliveryTimer(job.operation_id);
+        const resolved = ops.get(job.operation_id);
         const now = () => new Date();
 
         if (!resolved) {
@@ -259,8 +259,8 @@ export async function runJobs(
             now: now(),
             outcome: "dead",
             result: {
-              terminalReason: "permanent-status",
-              errorBody: `Unknown operationId "${job.operationId}"`,
+              terminal_reason: "permanent-status",
+              error_body: `Unknown operation_id "${job.operation_id}"`,
             },
           });
           if (error) {
@@ -270,7 +270,7 @@ export async function runJobs(
           return;
         }
 
-        const timeoutMs = timeoutForOperation(job.operationId, options);
+        const timeoutMs = timeoutForOperation(job.operation_id, options);
         const controller = new AbortController();
         const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -288,12 +288,12 @@ export async function runJobs(
         let timedOut = false;
         let networkError = false;
         let response: Response | undefined;
-        let errorBody: string | undefined;
+        let error_body: string | undefined;
 
         try {
           const path = resolvePath(
             resolved.pathTemplate,
-            job.request.pathParams,
+            job.request.path_params,
           );
           const method = resolved.method.toLowerCase();
           const body =
@@ -303,29 +303,29 @@ export async function runJobs(
                 ? {}
                 : undefined;
           response = await caller({
-            operationId: job.operationId,
+            operationId: job.operation_id,
             method: resolved.method,
             path,
             body,
             query: queryToStrings(job.request.query),
             asUser: {
-              userId: job.userId,
+              userId: job.user_id,
               mfaCompleted: mfaCompletedFromAuthority(job.authority),
             },
             requestId,
             claims: {
               jobId: job.id,
-              originalRequestId: job.originalRequestId,
+              originalRequestId: job.original_request_id,
             },
             signal: controller.signal,
           });
         } catch (err) {
           if (controller.signal.aborted) {
             timedOut = true;
-            errorBody = `delivery timed out after ${timeoutMs}ms`;
+            error_body = `delivery timed out after ${timeoutMs}ms`;
           } else {
             networkError = true;
-            errorBody = err instanceof Error ? err.message : String(err);
+            error_body = err instanceof Error ? err.message : String(err);
           }
         } finally {
           clearTimeout(timeoutHandle);
@@ -336,9 +336,9 @@ export async function runJobs(
           timedOut,
           networkError,
           response,
-          errorBody,
+          error_body,
           attempt: job.attempt,
-          maxAttempts: job.maxAttempts,
+          max_attempts: job.max_attempts,
           now: now(),
         });
 
@@ -348,7 +348,7 @@ export async function runJobs(
             id: job.id,
             now: recordedAt,
             outcome: "succeeded",
-            result: { statusCode: classification.statusCode },
+            result: { status_code: classification.status_code },
           });
           if (error) {
             logError(error);
@@ -362,10 +362,10 @@ export async function runJobs(
             id: job.id,
             now: recordedAt,
             outcome: "retry",
-            runAt: new Date(recordedAt.getTime() + backoffMs),
+            run_at: new Date(recordedAt.getTime() + backoffMs),
             result: {
-              statusCode: classification.statusCode,
-              errorBody: classification.errorBody,
+              status_code: classification.status_code,
+              error_body: classification.error_body,
             },
           });
           if (error) {
@@ -377,9 +377,9 @@ export async function runJobs(
             now: recordedAt,
             outcome: "dead",
             result: {
-              statusCode: classification.statusCode,
-              errorBody: classification.errorBody,
-              terminalReason: classification.terminalReason,
+              status_code: classification.status_code,
+              error_body: classification.error_body,
+              terminal_reason: classification.terminal_reason,
             },
           });
           if (error) {

@@ -225,27 +225,27 @@ describe("jobs-demo integration", () => {
       .send({ dedupeKey: "integration-demo" });
 
     expect(startRes.status).toBe(200);
-    expect(startRes.body.job.operationId).toBe("jobsDemoStepB");
+    expect(startRes.body.job.operation_id).toBe("jobsDemoStepB");
 
     await waitUntil(async () => demoStepCCompletions.length > 0);
 
     const listRes = await request(app)
       .get("/jobs")
       .set(adminHeaders)
-      .query({ originalRequestId: startRes.body.job.originalRequestId });
+      .query({ original_request_id: startRes.body.job.original_request_id });
 
     expect(listRes.status).toBe(200);
     const operationIds = listRes.body.jobs.map(
-      (job: { operationId: string }) => job.operationId,
+      (job: { operation_id: string }) => job.operation_id,
     );
     expect(operationIds).toContain("jobsDemoStepB");
     expect(operationIds).toContain("jobsDemoStepC");
 
     const { result: dbJobs } = await listJob(jobsDbKey, {
-      originalRequestId: startRes.body.job.originalRequestId,
+      original_request_id: startRes.body.job.original_request_id,
       limit: 20,
       offset: 0,
     });
-    expect(dbJobs?.some((j) => j.operationId === "jobsDemoStepC")).toBe(true);
+    expect(dbJobs?.some((j) => j.operation_id === "jobsDemoStepC")).toBe(true);
   });
 });

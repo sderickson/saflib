@@ -23,7 +23,7 @@ export const jobsDemoStepBHandler = createHandler(async (req, res) => {
   }
 
   await enqueue({
-    operationId: "jobsDemoStepC",
+    operation_id: "jobsDemoStepC",
     request: { body },
   });
 

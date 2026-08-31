@@ -20,30 +20,30 @@ function jobParams(
 ): CreateJobParams {
   return {
     status: "pending",
-    operationId: "jobsDemoStepB",
+    operation_id: "jobsDemoStepB",
     request: { body: {} },
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request",
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-1",
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: now,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-1",
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: now,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -70,7 +70,7 @@ describe("claimNextJob", () => {
     expect(result).toBeNull();
   });
 
-  it("claims a pending job: running, startedAt, heartbeatAt, attempt++", async () => {
+  it("claims a pending job: running, started_at, heartbeat_at, attempt++", async () => {
     await createJob(dbKey, jobParams({ id: "job-1", attempt: 0 }));
 
     const { result, error } = await claimNextJob(dbKey, { now });
@@ -79,10 +79,10 @@ describe("claimNextJob", () => {
     assert(result);
     expect(result.id).toBe("job-1");
     expect(result.status).toBe("running");
-    expect(result.startedAt).toEqual(now);
-    expect(result.heartbeatAt).toEqual(now);
+    expect(result.started_at).toEqual(now);
+    expect(result.heartbeat_at).toEqual(now);
     expect(result.attempt).toBe(1);
-    expect(result.updatedAt).toEqual(now);
+    expect(result.updated_at).toEqual(now);
   });
 
   it("claims a retrying job", async () => {
@@ -99,12 +99,12 @@ describe("claimNextJob", () => {
     expect(result.attempt).toBe(3);
   });
 
-  it("skips jobs with runAt in the future", async () => {
+  it("skips jobs with run_at in the future", async () => {
     await createJob(
       dbKey,
       jobParams({
         id: "job-future",
-        runAt: new Date("2026-08-06T13:00:00.000Z"),
+        run_at: new Date("2026-08-06T13:00:00.000Z"),
       }),
     );
 
@@ -122,8 +122,8 @@ describe("claimNextJob", () => {
       jobParams({
         id: "job-done",
         status: "succeeded",
-        finishedAt: now,
-        originalRequestId: "r-2",
+        finished_at: now,
+        original_request_id: "r-2",
       }),
     );
 
@@ -135,7 +135,7 @@ describe("claimNextJob", () => {
     await createJob(dbKey, jobParams({ id: "job-low", priority: 1 }));
     await createJob(
       dbKey,
-      jobParams({ id: "job-high", priority: 10, originalRequestId: "r-2" }),
+      jobParams({ id: "job-high", priority: 10, original_request_id: "r-2" }),
     );
 
     const first = await claimNextJob(dbKey, { now });
@@ -147,16 +147,16 @@ describe("claimNextJob", () => {
     expect(second.result.id).toBe("job-low");
   });
 
-  it("breaks ties by earlier runAt then id", async () => {
+  it("breaks ties by earlier run_at then id", async () => {
     const earlier = new Date("2026-08-06T11:00:00.000Z");
-    await createJob(dbKey, jobParams({ id: "job-b", runAt: earlier, priority: 5 }));
+    await createJob(dbKey, jobParams({ id: "job-b", run_at: earlier, priority: 5 }));
     await createJob(
       dbKey,
       jobParams({
         id: "job-a",
-        runAt: earlier,
+        run_at: earlier,
         priority: 5,
-        originalRequestId: "r-2",
+        original_request_id: "r-2",
       }),
     );
 
@@ -165,13 +165,13 @@ describe("claimNextJob", () => {
     expect(result.id).toBe("job-a");
   });
 
-  it("excludes jobs whose concurrencyKey has a running peer", async () => {
+  it("excludes jobs whose concurrency_key has a running peer", async () => {
     await createJob(
       dbKey,
       jobParams({
         id: "job-running",
         status: "running",
-        concurrencyKey: "matter:1",
+        concurrency_key: "matter:1",
         attempt: 1,
       }),
     );
@@ -179,16 +179,16 @@ describe("claimNextJob", () => {
       dbKey,
       jobParams({
         id: "job-blocked",
-        concurrencyKey: "matter:1",
-        originalRequestId: "r-2",
+        concurrency_key: "matter:1",
+        original_request_id: "r-2",
       }),
     );
     await createJob(
       dbKey,
       jobParams({
         id: "job-other",
-        concurrencyKey: "matter:2",
-        originalRequestId: "r-3",
+        concurrency_key: "matter:2",
+        original_request_id: "r-3",
       }),
     );
 
@@ -200,14 +200,14 @@ describe("claimNextJob", () => {
     expect(again.result).toBeNull();
   });
 
-  it("allows concurrent claims when concurrencyKey is null", async () => {
-    await createJob(dbKey, jobParams({ id: "job-1", concurrencyKey: null }));
+  it("allows concurrent claims when concurrency_key is null", async () => {
+    await createJob(dbKey, jobParams({ id: "job-1", concurrency_key: null }));
     await createJob(
       dbKey,
       jobParams({
         id: "job-2",
-        concurrencyKey: null,
-        originalRequestId: "r-2",
+        concurrency_key: null,
+        original_request_id: "r-2",
       }),
     );
 

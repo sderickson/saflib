@@ -15,7 +15,7 @@ export interface paths {
         put?: never;
         /**
          * Enqueue a background job
-         * @description Internal-surface enqueue. Auth is the M1 signed assertion path (not site-admin-only). Assertion claims supply `callingOperationId` and `originalRequestId`. On a live `dedupeKey` collision the existing job is upserted (runAt pushed, request refreshed) and returned with 200; otherwise a new job is created with 201.
+         * @description Internal-surface enqueue. Auth is the M1 signed assertion path (not site-admin-only). Assertion claims supply `callingOperationId` and `originalRequestId`. On a live `dedupe_key` collision the existing job is upserted (run_at pushed, request refreshed) and returned with 200; otherwise a new job is created with 201.
          */
         post: operations["enqueueJob"];
         delete?: never;
@@ -38,7 +38,7 @@ export interface components {
          */
         request: {
             /** @description Path template substitutions keyed by parameter name. */
-            pathParams?: {
+            path_params?: {
                 [key: string]: unknown;
             };
             /** @description Query string parameters keyed by name. */
@@ -59,12 +59,12 @@ export interface components {
              * @description User who made the originating request.
              * @example Us7k_pQ2
              */
-            userId: string;
+            user_id: string;
             /**
              * @description Originating request id (e.g. X-Request-ID).
              * @example r-abc123
              */
-            requestId: string;
+            request_id: string;
         } | {
             /**
              * @example importer
@@ -75,12 +75,12 @@ export interface components {
              * @description Importer creator whose authority is used.
              * @example Us7k_pQ2
              */
-            userId: string;
+            user_id: string;
             /**
              * @description Short id of the importer row that authorized the chain.
              * @example Im7k_mN2
              */
-            importerId: string;
+            importer_id: string;
         } | {
             /**
              * @example cron
@@ -91,14 +91,14 @@ export interface components {
              * @description Admin who enabled the cron job (`enabled_by`).
              * @example Us7k_pQ2
              */
-            userId: string;
+            user_id: string;
             /**
              * @description Name of the cron job that enqueued this chain.
              * @example recoverySweep
              */
-            cronJobName: string;
+            cron_job_name: string;
         };
-        /** @description Wire form of a queued API-call job. CamelCase projection of the `job` row; omits internal columns (`heartbeatAt`, `updatedAt`). Authority is the discriminated evidence grant without the raw enqueue assertion token (detail endpoints may return that separately as `authorityAssertion`). */
+        /** @description Wire form of a queued API-call job; field names match the `job` row and nested JSON. Omits internal columns (`heartbeat_at`, `updated_at`). Authority is the discriminated evidence grant without the raw enqueue assertion token (detail endpoints may return that separately as `authority_assertion`). */
         job: {
             /**
              * @description Short identifier for the job (from generateShortId).
@@ -115,7 +115,7 @@ export interface components {
              * @description Target OpenAPI operationId resolved at delivery time.
              * @example jobsDemoStepB
              */
-            operationId: string;
+            operation_id: string;
             /**
              * @description Capped request payload delivered to the target operation (serialized size ≤ 16 KB). Path params, query, and body are optional and substituted into the operation's path template / request.
              * @example {
@@ -126,7 +126,7 @@ export interface components {
              */
             request: {
                 /** @description Path template substitutions keyed by parameter name. */
-                pathParams?: {
+                path_params?: {
                     [key: string]: unknown;
                 };
                 /** @description Query string parameters keyed by name. */
@@ -140,7 +140,7 @@ export interface components {
              * @description Acting user whose authority the job runs under.
              * @example Us7k_pQ2
              */
-            userId: string;
+            user_id: string;
             /** @description Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token. */
             authority: {
                 /**
@@ -152,12 +152,12 @@ export interface components {
                  * @description User who made the originating request.
                  * @example Us7k_pQ2
                  */
-                userId: string;
+                user_id: string;
                 /**
                  * @description Originating request id (e.g. X-Request-ID).
                  * @example r-abc123
                  */
-                requestId: string;
+                request_id: string;
             } | {
                 /**
                  * @example importer
@@ -168,12 +168,12 @@ export interface components {
                  * @description Importer creator whose authority is used.
                  * @example Us7k_pQ2
                  */
-                userId: string;
+                user_id: string;
                 /**
                  * @description Short id of the importer row that authorized the chain.
                  * @example Im7k_mN2
                  */
-                importerId: string;
+                importer_id: string;
             } | {
                 /**
                  * @example cron
@@ -184,44 +184,44 @@ export interface components {
                  * @description Admin who enabled the cron job (`enabled_by`).
                  * @example Us7k_pQ2
                  */
-                userId: string;
+                user_id: string;
                 /**
                  * @description Name of the cron job that enqueued this chain.
                  * @example recoverySweep
                  */
-                cronJobName: string;
+                cron_job_name: string;
             };
             /**
              * @description Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Copied from parent on chained enqueues; joins audit_event.request_id.
              * @example r-abc123
              */
-            originalRequestId: string;
+            original_request_id: string;
             /**
              * @description Calling operationId that enqueued this job (trigger-map edge).
              * @example startJobsDemo
              */
-            enqueuedByOperationId: string;
+            enqueued_by_operation_id: string;
             /**
              * @description Short id of the job that enqueued this one, or null at the chain root.
              * @example null
              */
-            parentJobId: string | null;
+            parent_job_id: string | null;
             /**
              * Format: date-time
              * @description Earliest time the job may be claimed for delivery.
              * @example 2026-08-06T21:00:00.000Z
              */
-            runAt: string;
+            run_at: string;
             /**
-             * @description Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts (pushes runAt, refreshes request) and returns the existing job.
+             * @description Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts (pushes run_at, refreshes request) and returns the existing job.
              * @example matter:demo-1:claim
              */
-            dedupeKey: string | null;
+            dedupe_key: string | null;
             /**
              * @description Optional key limiting concurrency: at most one running job per key (e.g. `matter:{id}`).
              * @example matter:demo-1
              */
-            concurrencyKey: string | null;
+            concurrency_key: string | null;
             /**
              * @description Claim priority; higher values are claimed first. Default 0.
              * @example 0
@@ -236,44 +236,44 @@ export interface components {
              * @description Maximum delivery attempts before the job becomes dead (exhausted).
              * @example 5
              */
-            maxAttempts: number;
-            /** @description Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `errorBody` is set only on failure and capped at 8 KB. */
+            max_attempts: number;
+            /** @description Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `error_body` is set only on failure and capped at 8 KB. */
             result: {
                 /**
                  * @description HTTP status code from the delivery attempt, when available.
                  * @example 500
                  */
-                statusCode?: number;
+                status_code?: number;
                 /**
                  * @description Capped error response body recorded only on failure.
                  * @example {"error":"upstream timeout"}
                  */
-                errorBody?: string | null;
+                error_body?: string | null;
                 /**
                  * @description Why the job became terminal. Null when the job succeeded or result is from a non-terminal retryable failure mid-flight.
                  * @example exhausted
                  * @enum {string|null}
                  */
-                terminalReason?: "exhausted" | "permanent-status" | "rejected-by-endpoint" | "auth-unresolvable" | "cancelled-by-admin" | "cancelled-by-chain" | null;
+                terminal_reason?: "exhausted" | "permanent-status" | "rejected-by-endpoint" | "auth-unresolvable" | "cancelled-by-admin" | "cancelled-by-chain" | null;
             } | null;
             /**
              * Format: date-time
              * @description When the job row was created.
              * @example 2026-08-06T20:59:55.000Z
              */
-            createdAt: string;
+            created_at: string;
             /**
              * Format: date-time
              * @description When the current (or last) delivery attempt started; null if never claimed.
              * @example null
              */
-            startedAt: string | null;
+            started_at: string | null;
             /**
              * Format: date-time
              * @description When the job reached a terminal status; null while still active.
              * @example null
              */
-            finishedAt: string | null;
+            finished_at: string | null;
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
@@ -307,42 +307,42 @@ export interface operations {
                      * @description Target OpenAPI operationId (must exist and carry the background tag).
                      * @example jobsDemoStepB
                      */
-                    operationId: string;
-                    /** @description Capped request payload for the target operation (serialized size ≤ 16 KB including this object's pathParams/query/body). */
+                    operation_id: string;
+                    /** @description Capped request payload for the target operation (serialized size ≤ 16 KB including this object's path_params/query/body). */
                     request: components["schemas"]["request"];
                     /**
                      * Format: date-time
-                     * @description Absolute earliest claim time. Ignored when delayMs is also set if the implementation prefers delayMs; typically use one or the other.
+                     * @description Absolute earliest claim time. Ignored when delay_ms is also set if the implementation prefers delay_ms; typically use one or the other.
                      * @example 2026-08-06T21:00:00.000Z
                      */
-                    runAt?: string;
+                    run_at?: string;
                     /**
-                     * @description Relative delay in milliseconds from enqueue time before the job becomes claimable. Alternative to runAt.
+                     * @description Relative delay in milliseconds from enqueue time before the job becomes claimable. Alternative to run_at.
                      * @example 5000
                      */
-                    delayMs?: number;
+                    delay_ms?: number;
                     /**
                      * @description Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts and returns the existing job (200).
                      * @example matter:Mt4k_wZ7:claim
                      */
-                    dedupeKey?: string | null;
+                    dedupe_key?: string | null;
                     /**
                      * @description Optional key limiting concurrency (at most one running job per key).
                      * @example matter:Mt4k_wZ7
                      */
-                    concurrencyKey?: string | null;
+                    concurrency_key?: string | null;
                     /**
                      * @description Claim priority; higher values are claimed first. Defaults to 0.
                      * @example 0
                      */
                     priority?: number;
-                    /** @description Explicit authority override for enqueueOnBehalfOf. When present, both userId and authority evidence are required; the job runs as that user under the given grant instead of deriving authority from the caller's request context. */
-                    onBehalfOf?: {
+                    /** @description Explicit authority override for enqueueOnBehalfOf. When present, both user_id and authority evidence are required; the job runs as that user under the given grant instead of deriving authority from the caller's request context. */
+                    on_behalf_of?: {
                         /**
                          * @description Acting user for the enqueued job.
                          * @example Us7k_pQ2
                          */
-                        userId: string;
+                        user_id: string;
                         /** @description Evidence grant for the override (request, importer, or cron kind). */
                         authority: components["schemas"]["authority"];
                     };

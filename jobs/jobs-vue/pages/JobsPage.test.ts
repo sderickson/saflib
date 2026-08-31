@@ -24,23 +24,23 @@ type CancelByOriginalRequestBody =
 const makeJob = (overrides: Partial<Job> = {}): Job => ({
   id: "job-1",
   status: "pending",
-  operationId: "jobsDemoStepB",
+  operation_id: "jobsDemoStepB",
   request: { body: { failuresBeforeSuccess: 2 } },
-  userId: "user-1",
-  authority: { kind: "request", userId: "user-1", requestId: "r-abc" },
-  originalRequestId: "r-abc",
-  enqueuedByOperationId: "startJobsDemo",
-  parentJobId: null,
-  runAt: new Date().toISOString(),
-  dedupeKey: null,
-  concurrencyKey: null,
+  user_id: "user-1",
+  authority: { kind: "request", user_id: "user-1", request_id: "r-abc" },
+  original_request_id: "r-abc",
+  enqueued_by_operation_id: "startJobsDemo",
+  parent_job_id: null,
+  run_at: new Date().toISOString(),
+  dedupe_key: null,
+  concurrency_key: null,
   priority: 0,
   attempt: 0,
-  maxAttempts: 5,
+  max_attempts: 5,
   result: null,
-  createdAt: new Date(Date.now() - 86400 * 1000).toISOString(),
-  startedAt: null,
-  finishedAt: null,
+  created_at: new Date(Date.now() - 86400 * 1000).toISOString(),
+  started_at: null,
+  finished_at: null,
   ...overrides,
 });
 
@@ -49,21 +49,21 @@ const mockJobs: Job[] = [
   makeJob({
     id: "job-2",
     status: "dead",
-    operationId: "jobsDemoStepC",
+    operation_id: "jobsDemoStepC",
     attempt: 5,
     result: {
-      statusCode: 500,
-      errorBody: '{"error":"exhausted"}',
-      terminalReason: "exhausted",
+      status_code: 500,
+      error_body: '{"error":"exhausted"}',
+      terminal_reason: "exhausted",
     },
-    finishedAt: new Date().toISOString(),
+    finished_at: new Date().toISOString(),
   }),
   makeJob({
     id: "job-3",
     status: "succeeded",
     attempt: 1,
-    result: { statusCode: 200, errorBody: null, terminalReason: null },
-    finishedAt: new Date().toISOString(),
+    result: { status_code: 200, error_body: null, terminal_reason: null },
+    finished_at: new Date().toISOString(),
   }),
 ];
 
@@ -92,10 +92,10 @@ const handlers = [
       const job = mockJobs.find((j) => j.id === params.id) ?? mockJobs[0];
       return HttpResponse.json({
         job,
-        authorityAssertion: {
+        authority_assertion: {
           payload: "eyJ1c2VySWQiOiJ1c2VyLTEifQ",
           signature: "dGVzdC1zaWduYXR1cmU",
-          keyId: "k1",
+          key_id: "k1",
         },
       });
     },
@@ -116,11 +116,11 @@ const handlers = [
           id: String(params.id),
           status: "cancelled",
           result: {
-            statusCode: undefined,
-            errorBody: null,
-            terminalReason: "cancelled-by-admin",
+            status_code: undefined,
+            error_body: null,
+            terminal_reason: "cancelled-by-admin",
           },
-          finishedAt: new Date().toISOString(),
+          finished_at: new Date().toISOString(),
         }),
       });
     },
@@ -222,7 +222,7 @@ describe("JobsPage", () => {
     expect(
       row1.findComponent({ name: "v-chip", text: "pending" }).exists(),
     ).toBe(true);
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].createdAt));
+    expect(row1.text()).toContain(formatDateTime(mockJobs[0].created_at));
     expect(getActionButton(wrapper, "job-1", "Cancel").exists()).toBe(true);
     expect(getActionButton(wrapper, "job-2", "Retry").exists()).toBe(true);
   });
@@ -328,7 +328,7 @@ describe("JobsPage", () => {
     await massCancelButton.trigger("click");
 
     await vi.waitFor(() => {
-      expect(receivedBody).toEqual({ originalRequestId: "r-abc" });
+      expect(receivedBody).toEqual({ original_request_id: "r-abc" });
     });
   });
 });

@@ -8,14 +8,14 @@ import { and, eq } from "drizzle-orm";
 
 export type HeartbeatJobParams = {
   id: (typeof jobTable.$inferSelect)["id"];
-  /** Value written to `heartbeatAt` (and `updatedAt`). */
+  /** Value written to `heartbeat_at` (and `updated_at`). */
   now: Date;
 };
 
 export type HeartbeatJobError = JobNotFoundError | JobNotRunningError;
 
 /**
- * Refresh `heartbeatAt` for a running job (stall detection).
+ * Refresh `heartbeat_at` for a running job (stall detection).
  */
 export const heartbeatJob = queryWrapper(
   async (
@@ -29,8 +29,8 @@ export const heartbeatJob = queryWrapper(
     const updated = await db
       .update(jobTable)
       .set({
-        heartbeatAt: params.now,
-        updatedAt: params.now,
+        heartbeat_at: params.now,
+        updated_at: params.now,
       })
       .where(
         and(eq(jobTable.id, params.id), eq(jobTable.status, "running")),

@@ -1,7 +1,7 @@
 cancelJob:
   summary: Cancel a pending or retrying job
   description: >
-    Cancels a pending or retrying job (`terminalReason: cancelled-by-admin`). Running jobs are not interrupted (409). Mounted as monolith chrome (`site-admin-only`).
+    Cancels a pending or retrying job (`terminal_reason: cancelled-by-admin`). Running jobs are not interrupted (409). Mounted as monolith chrome (`site-admin-only`).
   operationId: cancelJob
   tags:
     - site-admin-only

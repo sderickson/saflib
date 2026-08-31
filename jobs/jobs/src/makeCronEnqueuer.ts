@@ -11,6 +11,8 @@ export interface MakeCronEnqueuerOptions {
 /**
  * Params for one cron-tick enqueue. Kept free of `@saflib/cron` types so the
  * cron package can inject this function without a reverse dependency.
+ * Field names match `@saflib/cron` `CronEnqueueParams` (camel); mapped to
+ * snake_case jobs API bodies inside the enqueuer.
  */
 export interface CronEnqueueParams {
   /** Cron job name (becomes `cron:{jobName}` callingOperationId / default dedupe). */
@@ -39,7 +41,7 @@ export type CronEnqueuer = (
 
 /**
  * Factory for the enqueue function injected into `@saflib/cron`.
- * Signs with `callingOperationId = cron:{jobName}` and passes `onBehalfOf`
+ * Signs with `callingOperationId = cron:{jobName}` and passes `on_behalf_of`
  * cron authority for the enabling admin. Does not import `@saflib/cron`.
  */
 export function makeCronEnqueuer(
@@ -51,23 +53,23 @@ export function makeCronEnqueuer(
 
   return async (params) => {
     const callingOperationId = cronTriggerKey(params.jobName);
-    const dedupeKey = params.dedupeKey ?? callingOperationId;
+    const dedupe_key = params.dedupeKey ?? callingOperationId;
 
     const request = params.request ?? {};
     const body: JobsServiceRequestBody["enqueueJob"] = {
-      operationId: params.operationId,
+      operation_id: params.operationId,
       request: {
         ...request,
         body: request.body ?? {},
       },
-      dedupeKey,
+      dedupe_key,
       priority: params.priority,
-      onBehalfOf: {
-        userId: params.enabledBy,
+      on_behalf_of: {
+        user_id: params.enabledBy,
         authority: {
           kind: "cron",
-          userId: params.enabledBy,
-          cronJobName: params.jobName,
+          user_id: params.enabledBy,
+          cron_job_name: params.jobName,
         },
       },
     };

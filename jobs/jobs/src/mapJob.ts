@@ -2,55 +2,27 @@ import type { JobEntity } from "@saflib/jobs-db";
 import type { Job } from "@saflib/jobs-spec";
 
 /**
- * Maps a jobs-db row to the wire `Job` (omits heartbeat/updatedAt; strips the
- * embedded enqueue assertion from `authority`).
+ * Maps a jobs-db row to the wire `Job`: date fields → ISO strings, omit
+ * heartbeat/updated_at, and strip the embedded enqueue assertion from authority.
  */
 export function mapJobToWire(job: JobEntity): Job {
-  let authority: Job["authority"];
-  if (job.authority.kind === "request") {
-    authority = {
-      kind: "request",
-      userId: job.authority.userId,
-      requestId: job.authority.requestId,
-    };
-  } else if (job.authority.kind === "importer") {
-    authority = {
-      kind: "importer",
-      userId: job.authority.userId,
-      importerId: job.authority.importerId,
-    };
-  } else if (job.authority.kind === "cron") {
-    authority = {
-      kind: "cron",
-      userId: job.authority.userId,
-      cronJobName: job.authority.cronJobName,
-    };
-  } else {
-    const _exhaustive: never = job.authority;
-    throw new Error(
-      `Unknown job authority kind: ${(_exhaustive as { kind: string }).kind}`,
-    );
-  }
-
+  const { assertion: _assertion, ...authority } = job.authority;
+  const {
+    heartbeat_at: _heartbeat,
+    updated_at: _updated,
+    authority: _authority,
+    run_at,
+    created_at,
+    started_at,
+    finished_at,
+    ...rest
+  } = job;
   return {
-    id: job.id,
-    status: job.status,
-    operationId: job.operationId,
-    request: job.request,
-    userId: job.userId,
+    ...rest,
     authority,
-    originalRequestId: job.originalRequestId,
-    enqueuedByOperationId: job.enqueuedByOperationId,
-    parentJobId: job.parentJobId,
-    runAt: job.runAt.toISOString(),
-    dedupeKey: job.dedupeKey,
-    concurrencyKey: job.concurrencyKey,
-    priority: job.priority,
-    attempt: job.attempt,
-    maxAttempts: job.maxAttempts,
-    result: job.result,
-    createdAt: job.createdAt.toISOString(),
-    startedAt: job.startedAt?.toISOString() ?? null,
-    finishedAt: job.finishedAt?.toISOString() ?? null,
+    run_at: run_at.toISOString(),
+    created_at: created_at.toISOString(),
+    started_at: started_at?.toISOString() ?? null,
+    finished_at: finished_at?.toISOString() ?? null,
   };
 }

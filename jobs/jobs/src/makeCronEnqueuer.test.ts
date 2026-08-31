@@ -165,15 +165,15 @@ describe("makeCronEnqueuer", () => {
 
     expect(result.deduped).toBe(false);
     expect(result.job).toMatchObject({
-      operationId: "purgeClaudeFilesMaintenance",
-      userId: "admin-enabled-by",
-      originalRequestId: "tick-req-1",
-      enqueuedByOperationId: "cron:purgeClaudeFiles",
-      dedupeKey: "cron:purgeClaudeFiles",
+      operation_id: "purgeClaudeFilesMaintenance",
+      user_id: "admin-enabled-by",
+      original_request_id: "tick-req-1",
+      enqueued_by_operation_id: "cron:purgeClaudeFiles",
+      dedupe_key: "cron:purgeClaudeFiles",
       authority: {
         kind: "cron",
-        userId: "admin-enabled-by",
-        cronJobName: "purgeClaudeFiles",
+        user_id: "admin-enabled-by",
+        cron_job_name: "purgeClaudeFiles",
       },
     });
 
@@ -182,15 +182,15 @@ describe("makeCronEnqueuer", () => {
     });
     expect(stored?.authority).toMatchObject({
       kind: "cron",
-      userId: "admin-enabled-by",
-      cronJobName: "purgeClaudeFiles",
+      user_id: "admin-enabled-by",
+      cron_job_name: "purgeClaudeFiles",
     });
 
     const assertionPayload = JSON.parse(
       Buffer.from(stored!.authority.assertion.payload, "base64url").toString(
         "utf8",
       ),
-    )     as {
+    ) as {
       userId: string;
       requestId?: string;
       mfaCompleted?: boolean;
