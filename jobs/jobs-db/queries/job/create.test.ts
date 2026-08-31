@@ -20,7 +20,7 @@ function baseParams(
   return {
     status: "pending",
     operation_id: "jobsDemoStepB",
-    request: { body: { failuresBeforeSuccess: 0 } },
+    request: { body: { failures_before_success: 0 } },
     user_id: "user-1",
     authority: {
       kind: "request",
@@ -78,7 +78,9 @@ describe("createJob", () => {
     expect(result.job.id).toBe("job-1");
     expect(result.job.status).toBe("pending");
     expect(result.job.operation_id).toBe("jobsDemoStepB");
-    expect(result.job.request).toEqual({ body: { failuresBeforeSuccess: 0 } });
+    expect(result.job.request).toEqual({
+      body: { failures_before_success: 0 },
+    });
     expect(result.job.original_request_id).toBe("r-1");
   });
 

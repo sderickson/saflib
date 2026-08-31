@@ -5,7 +5,7 @@ import { recordProductEvent } from "../lib/productEventBuffer.ts";
 export function createRecordProductEventHandler() {
   return createHandler(async (req, res) => {
     const body = req.body as AnalyticsRequestBody["recordProductEvent"];
-    recordProductEvent(body.productEvent as Record<string, unknown>, "client");
+    recordProductEvent(body.product_event as Record<string, unknown>, "client");
     res.status(204).end();
   });
 }

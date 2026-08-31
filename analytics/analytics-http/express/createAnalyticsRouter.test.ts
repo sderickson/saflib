@@ -31,7 +31,7 @@ describe("createAnalyticsRouter", () => {
       .post("/product-events/record")
       .set("x-requested-with", "XMLHttpRequest")
       .send({
-        productEvent: {
+        product_event: {
           event: "login",
           client: "web-auth",
           context: { method: "email" },
@@ -46,12 +46,12 @@ describe("createAnalyticsRouter", () => {
       .set("x-requested-with", "XMLHttpRequest")
       .expect(200);
 
-    expect(res.body.productEvents).toHaveLength(2);
-    expect(res.body.productEvents[0]).toMatchObject({
+    expect(res.body.product_events).toHaveLength(2);
+    expect(res.body.product_events[0]).toMatchObject({
       name: "login",
       source: "client",
     });
-    expect(res.body.productEvents[1]).toMatchObject({
+    expect(res.body.product_events[1]).toMatchObject({
       name: "server_boot",
       source: "server",
     });
@@ -68,7 +68,7 @@ describe("createAnalyticsRouter", () => {
       .set("x-requested-with", "XMLHttpRequest")
       .expect(200);
 
-    expect(res.body.productEvents).toHaveLength(1);
-    expect(res.body.productEvents[0].name).toBe("signup");
+    expect(res.body.product_events).toHaveLength(1);
+    expect(res.body.product_events[0].name).toBe("signup");
   });
 });

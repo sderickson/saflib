@@ -34,9 +34,9 @@ export function createListReportedErrorsHandler() {
       }
     }
 
-    const reportedErrors = listReportedErrors({ kind, source, limit });
+    const reported_errors = listReportedErrors({ kind, source, limit });
     res
       .status(200)
-      .json({ reportedErrors } satisfies ErrorsResponseBody["listReportedErrors"][200]);
+      .json({ reported_errors } satisfies ErrorsResponseBody["listReportedErrors"][200]);
   });
 }

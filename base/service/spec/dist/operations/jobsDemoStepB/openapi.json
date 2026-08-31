@@ -75,21 +75,21 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "dedupeKey": {
+          "dedupe_key": {
             "type": [
               "string",
               "null"
             ],
             "description": "Optional dedupe key forwarded to the enqueued job."
           },
-          "concurrencyKey": {
+          "concurrency_key": {
             "type": [
               "string",
               "null"
             ],
             "description": "Optional concurrency key forwarded to the enqueued job."
           },
-          "failuresBeforeSuccess": {
+          "failures_before_success": {
             "type": "integer",
             "minimum": 0,
             "description": "For step-b demos: respond 503 this many times before succeeding and enqueueing step-c.\n"

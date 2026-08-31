@@ -222,7 +222,7 @@ describe("jobs-demo integration", () => {
     const startRes = await request(app)
       .post("/jobs-demo/start")
       .set(adminHeaders)
-      .send({ dedupeKey: "integration-demo" });
+      .send({ dedupe_key: "integration-demo" });
 
     expect(startRes.status).toBe(200);
     expect(startRes.body.job.operation_id).toBe("jobsDemoStepB");

@@ -20,8 +20,8 @@ export function registerDevBackendProductEventConnector(): void {
   registerProductEventConnector(async (event: ProductEventCommon) => {
     try {
       await recordProductEvent({
-        productEvent:
-          event as AnalyticsRequestBody["recordProductEvent"]["productEvent"],
+        product_event:
+          event as AnalyticsRequestBody["recordProductEvent"]["product_event"],
       });
     } catch (error) {
       console.error("Failed to record product event to backend", error);

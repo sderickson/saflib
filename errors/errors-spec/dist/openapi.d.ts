@@ -133,7 +133,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    reportedError: {
+                    reported_error: {
                         /** @enum {string} */
                         kind: "client";
                         message: string;
@@ -262,7 +262,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        reportedErrors: components["schemas"]["reported-error"][];
+                        reported_errors: components["schemas"]["reported-error"][];
                     };
                 };
             };

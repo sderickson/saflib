@@ -50,7 +50,7 @@ export interface components {
              * @description Capped request payload delivered to the target operation (serialized size ≤ 16 KB). Path params, query, and body are optional and substituted into the operation's path template / request.
              * @example {
              *       "body": {
-             *         "failuresBeforeSuccess": 2
+             *         "failures_before_success": 2
              *       }
              *     }
              */

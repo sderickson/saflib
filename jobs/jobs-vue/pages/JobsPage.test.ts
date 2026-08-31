@@ -25,7 +25,7 @@ const makeJob = (overrides: Partial<Job> = {}): Job => ({
   id: "job-1",
   status: "pending",
   operation_id: "jobsDemoStepB",
-  request: { body: { failuresBeforeSuccess: 2 } },
+  request: { body: { failures_before_success: 2 } },
   user_id: "user-1",
   authority: { kind: "request", user_id: "user-1", request_id: "r-abc" },
   original_request_id: "r-abc",

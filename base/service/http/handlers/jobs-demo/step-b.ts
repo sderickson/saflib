@@ -13,7 +13,7 @@ type JobsDemoOptions = components["schemas"]["jobs-demo-options"];
 export const jobsDemoStepBHandler = createHandler(async (req, res) => {
   const body = (req.body ?? {}) as JobsDemoOptions;
   const key = demoFailureKey(body);
-  const failuresBeforeSuccess = body.failuresBeforeSuccess ?? 0;
+  const failuresBeforeSuccess = body.failures_before_success ?? 0;
 
   if (failuresBeforeSuccess > 0) {
     const attempts = recordDemoFailure(key);

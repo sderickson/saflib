@@ -41,7 +41,7 @@ describe("createErrorsRouter", () => {
       .post("/errors/record")
       .set("x-requested-with", "XMLHttpRequest")
       .send({
-        reportedError: {
+        reported_error: {
           kind: "client",
           message: "Vue render failed",
           stack: "Error: Vue render failed\n    at ...",
@@ -61,13 +61,13 @@ describe("createErrorsRouter", () => {
       .set(siteAdminHeaders)
       .expect(200);
 
-    expect(res.body.reportedErrors).toHaveLength(2);
-    expect(res.body.reportedErrors[0]).toMatchObject({
+    expect(res.body.reported_errors).toHaveLength(2);
+    expect(res.body.reported_errors[0]).toMatchObject({
       kind: "client",
       message: "Vue render failed",
       source: "web-admin",
     });
-    expect(res.body.reportedErrors[1]).toMatchObject({
+    expect(res.body.reported_errors[1]).toMatchObject({
       kind: "server",
       source: "http",
     });
@@ -91,8 +91,8 @@ describe("createErrorsRouter", () => {
       .set(siteAdminHeaders)
       .expect(200);
 
-    expect(res.body.reportedErrors).toHaveLength(1);
-    expect(res.body.reportedErrors[0]).toMatchObject({
+    expect(res.body.reported_errors).toHaveLength(1);
+    expect(res.body.reported_errors[0]).toMatchObject({
       kind: "csp-violation",
       source: "browser",
     });
@@ -110,8 +110,8 @@ describe("createErrorsRouter", () => {
       .set(siteAdminHeaders)
       .expect(200);
 
-    expect(res.body.reportedErrors).toHaveLength(1);
-    expect(res.body.reportedErrors[0].message).toContain(
+    expect(res.body.reported_errors).toHaveLength(1);
+    expect(res.body.reported_errors[0].message).toContain(
       "Intentional admin test error",
     );
   });
@@ -149,7 +149,7 @@ describe("createErrorsRouter", () => {
       .set(siteAdminHeaders)
       .expect(200);
 
-    expect(res.body.reportedErrors).toHaveLength(1);
-    expect(res.body.reportedErrors[0].kind).toBe("client");
+    expect(res.body.reported_errors).toHaveLength(1);
+    expect(res.body.reported_errors[0].kind).toBe("client");
   });
 });

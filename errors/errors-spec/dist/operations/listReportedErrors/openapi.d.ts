@@ -86,7 +86,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        reportedErrors: components["schemas"]["reported-error"][];
+                        reported_errors: components["schemas"]["reported-error"][];
                     };
                 };
             };

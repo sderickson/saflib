@@ -43,7 +43,7 @@ properties:
         description: JSON request body for the target operation, when any.
     example:
       body:
-        failuresBeforeSuccess: 2
+        failures_before_success: 2
   user_id:
     type: string
     description: Acting user whose authority the job runs under.

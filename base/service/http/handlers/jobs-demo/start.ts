@@ -11,8 +11,8 @@ export const startJobsDemoHandler = createHandler(async (req, res) => {
   const { job } = await enqueue({
     operation_id: "jobsDemoStepB",
     request: { body },
-    dedupe_key: body.dedupeKey ?? undefined,
-    concurrency_key: body.concurrencyKey ?? undefined,
+    dedupe_key: body.dedupe_key ?? undefined,
+    concurrency_key: body.concurrency_key ?? undefined,
   });
 
   const response: StartJobsDemoJobsDemoResponseBody["startJobsDemo"][200] = {

@@ -9,7 +9,7 @@ type ListReportedErrorsResponse =
   ErrorsResponseBody["listReportedErrors"][200];
 
 const mockErrors: ListReportedErrorsResponse = {
-  reportedErrors: [
+  reported_errors: [
     {
       id: 1,
       kind: "client",

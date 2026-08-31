@@ -23,8 +23,8 @@ export const __targetName____GroupName__ = queryWrapper(
       .insert(__groupName__Table)
       .values({
         ...params,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
       })
       .returning();
     return {

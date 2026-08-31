@@ -10,7 +10,7 @@ recordProductEvent:
         schema:
           type: object
           properties:
-            productEvent:
+            product_event:
               type: object
               additionalProperties: true
               properties:
@@ -28,7 +28,7 @@ recordProductEvent:
               required:
                 - event
           required:
-            - productEvent
+            - product_event
   responses:
     "204":
       description: Event recorded in the server ring buffer.
@@ -64,12 +64,12 @@ listProductEvents:
           schema:
             type: object
             properties:
-              productEvents:
+              product_events:
                 type: array
                 items:
                   $ref: "../schemas/product-event-record.yaml"
             required:
-              - productEvents
+              - product_events
     "401":
       description: Unauthorized - Invalid or missing authentication.
       content:

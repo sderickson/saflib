@@ -19,7 +19,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "productEvent": {
+                  "product_event": {
                     "type": "object",
                     "additionalProperties": true,
                     "properties": {
@@ -46,7 +46,7 @@
                   }
                 },
                 "required": [
-                  "productEvent"
+                  "product_event"
                 ]
               }
             }

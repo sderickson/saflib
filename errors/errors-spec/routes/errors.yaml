@@ -10,7 +10,7 @@ recordReportedError:
         schema:
           type: object
           properties:
-            reportedError:
+            reported_error:
               type: object
               properties:
                 kind:
@@ -30,7 +30,7 @@ recordReportedError:
                 - kind
                 - message
           required:
-            - reportedError
+            - reported_error
   responses:
     "204":
       description: Error recorded in the server ring buffer.
@@ -134,12 +134,12 @@ listReportedErrors:
           schema:
             type: object
             properties:
-              reportedErrors:
+              reported_errors:
                 type: array
                 items:
                   $ref: "../schemas/reported-error.yaml"
             required:
-              - reportedErrors
+              - reported_errors
     "401":
       description: Unauthorized — missing or invalid auth.
       content:

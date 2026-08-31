@@ -39,7 +39,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "productEvents": {
+                    "product_events": {
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/product-event-record"
@@ -47,7 +47,7 @@
                     }
                   },
                   "required": [
-                    "productEvents"
+                    "product_events"
                   ]
                 }
               }
@@ -89,7 +89,7 @@
           },
           "name": {
             "type": "string",
-            "description": "Product event name (same as productEvent.event)."
+            "description": "Product event name (same as product_event.event)."
           },
           "payload": {
             "type": "object",

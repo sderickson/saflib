@@ -739,7 +739,7 @@
             },
             "example": {
               "body": {
-                "failuresBeforeSuccess": 2
+                "failures_before_success": 2
               }
             }
           },
@@ -1020,7 +1020,7 @@
         },
         "example": {
           "body": {
-            "failuresBeforeSuccess": 2
+            "failures_before_success": 2
           }
         }
       },

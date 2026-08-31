@@ -14,11 +14,11 @@ import ProfileForm from "./ProfileForm.vue";
 
 const { userConfigQuery } = useProfileLoader();
 
-if (!userConfigQuery.data.value?.userConfig) {
+if (!userConfigQuery.data.value?.user_config) {
   throw new Error("Failed to load user config");
 }
 
 const formValues = computed(() =>
-  profileFormValuesFromUserConfig(userConfigQuery.data.value!.userConfig),
+  profileFormValuesFromUserConfig(userConfigQuery.data.value!.user_config),
 );
 </script>
