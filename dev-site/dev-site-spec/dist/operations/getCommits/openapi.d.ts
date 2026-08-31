@@ -67,7 +67,7 @@ export interface components {
              * @description When this snapshot was written to the database.
              * @example 2026-08-12T11:00:00-07:00
              */
-            computedAt: string;
+            computed_at: string;
             /**
              * @description Analysis status for this commit.
              * @example complete

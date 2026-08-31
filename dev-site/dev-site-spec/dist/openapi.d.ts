@@ -222,7 +222,7 @@ export interface components {
             refs: components["schemas"]["commit-ref"][];
             analyzerVersion: string;
             /** Format: date-time */
-            computedAt: string;
+            computed_at: string;
             /** @enum {string} */
             status: "pending" | "complete" | "failed";
             /** @description Rollup counts across all packages at this commit, for timeline health indicators without fetching CommitDetail. */
@@ -273,7 +273,7 @@ export interface components {
              * @description When this snapshot was written to the database.
              * @example 2026-08-12T11:00:00-07:00
              */
-            computedAt: string;
+            computed_at: string;
             /**
              * @description Analysis status for this commit.
              * @example complete

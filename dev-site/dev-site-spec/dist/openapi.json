@@ -850,7 +850,7 @@
           "analyzerVersion": {
             "type": "string"
           },
-          "computedAt": {
+          "computed_at": {
             "type": "string",
             "format": "date-time"
           },
@@ -928,7 +928,7 @@
           "message",
           "refs",
           "analyzerVersion",
-          "computedAt",
+          "computed_at",
           "status",
           "summaryMetrics"
         ]
@@ -972,7 +972,7 @@
             "description": "Version string of the analyzer that produced this snapshot.",
             "example": "1"
           },
-          "computedAt": {
+          "computed_at": {
             "type": "string",
             "format": "date-time",
             "description": "When this snapshot was written to the database.",
@@ -996,7 +996,7 @@
           "message",
           "refs",
           "analyzerVersion",
-          "computedAt",
+          "computed_at",
           "status"
         ]
       },

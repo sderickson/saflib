@@ -129,7 +129,7 @@ async function persistCommit(
     message: snap.message,
     refs: snap.refs,
     analyzerVersion: snap.analyzerVersion || ANALYZER_VERSION,
-    computedAt: new Date(),
+    computed_at: new Date(),
     status: "complete",
     exportCount: snap.exportCount,
     testCaseCount: snap.testCaseCount,

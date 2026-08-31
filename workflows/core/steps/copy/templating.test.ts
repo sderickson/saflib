@@ -325,6 +325,38 @@ describe("templating", () => {
       );
     });
 
+    it("ignores CSS/glob lookalikes that are not placeholder tokens", () => {
+      const context = { serviceName: "identity-db" };
+      const lineReplace = makeLineReplace(context);
+
+      expect(
+        lineReplace(".mkt-blurb__paragraph + .mkt-blurb__paragraph {"),
+      ).toBe(".mkt-blurb__paragraph + .mkt-blurb__paragraph {");
+      expect(lineReplace('exclude: ["**/__*__/**", "**/e2e/**"],')).toBe(
+        'exclude: ["**/__*__/**", "**/e2e/**"],',
+      );
+    });
+
+    it("replaces adjacent and suffix-joined product tokens", () => {
+      const context = {
+        organizationName: "saflib",
+        productName: "tmp",
+      };
+      const lineReplace = makeLineReplace(context);
+
+      expect(
+        lineReplace("FROM __organization-name__-__product-name__-root:latest"),
+      ).toBe("FROM saflib-tmp-root:latest");
+      expect(lineReplace("__PRODUCT_NAME___DOMAIN=docker.localhost")).toBe(
+        "TMP_DOMAIN=docker.localhost",
+      );
+      expect(
+        lineReplace(
+          "{$__PRODUCT_NAME___PROTOCOL}://{$__PRODUCT_NAME___DOMAIN}",
+        ),
+      ).toBe("{$TMP_PROTOCOL}://{$TMP_DOMAIN}");
+    });
+
     it("should handle empty context", () => {
       const context = {};
       const lineReplace = makeLineReplace(context);

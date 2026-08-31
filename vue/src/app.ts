@@ -8,7 +8,7 @@ import {
 import type { Router } from "vue-router";
 import { createI18n } from "vue-i18n";
 import { type I18nMessages } from "./strings.ts";
-import { aliases, mdi } from "vuetify/iconsets/mdi";
+import { aliases, mdi } from "vuetify/iconsets/mdi-svg";
 import {
   asyncPageErrorKey,
   type AsyncPageErrorComponent,

@@ -28,7 +28,7 @@ export interface BlobFactEntity {
   analyzerVersion: string;
   lineCount: number;
   specialty: FileSpecialty;
-  computedAt: Date;
+  computed_at: Date;
 }
 
 export function blobFactExports(fact: BlobFactEntity): FileExportFact[] {
@@ -54,7 +54,7 @@ export const blobFactsTable = sqliteTable("blob_facts", {
   specialty: text("specialty_json", { mode: "json" })
     .$type<FileSpecialty>()
     .notNull(),
-  computedAt: integer("computed_at", { mode: "timestamp" }).notNull(),
+  computed_at: integer("computed_at", { mode: "timestamp" }).notNull(),
 });
 
 export type BlobFactEntityTest = Expect<

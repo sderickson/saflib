@@ -1,12 +1,14 @@
 #!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 /**
- * Regenerate `env.ts` for every package under a product tree that already has
- * one. Used by product/init after stub packages are omitted from the golden
- * copy — avoids `saf-env generate-all` rewriting unrelated monorepo packages.
+ * Regenerate `env.ts` for every package under a product tree that has
+ * `env.schema.json` (or an existing `env.ts`). Used by product/init after stub
+ * packages are omitted from the golden copy — avoids `saf-env generate-all`
+ * rewriting unrelated monorepo packages. CopyStep skips generated `env.ts` /
+ * `env.schema.combined.json`, so this is what creates them in the new product.
  *
  * Usage: node ./regenerate-product-env.ts <productRoot>
  */
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -46,20 +48,43 @@ function walkPackageDirs(dir: string, out: string[]): void {
   }
 }
 
+function packageWantsCombined(pkgDir: string): boolean {
+  if (existsSync(path.join(pkgDir, "env.schema.combined.json"))) {
+    return true;
+  }
+  // CopyStep skips the combined file; detect callers by import string.
+  let entries;
+  try {
+    entries = readdirSync(pkgDir, { withFileTypes: true });
+  } catch {
+    return false;
+  }
+  for (const e of entries) {
+    if (!e.isFile()) continue;
+    if (!/\.(ts|js|mts|cts)$/.test(e.name)) continue;
+    try {
+      const text = readFileSync(path.join(pkgDir, e.name), "utf8");
+      if (text.includes("env.schema.combined.json")) return true;
+    } catch {
+      // ignore
+    }
+  }
+  return false;
+}
+
 const packageDirs: string[] = [];
 walkPackageDirs(productRoot, packageDirs);
 
 let updated = 0;
 for (const pkgDir of packageDirs) {
   const envTs = path.join(pkgDir, "env.ts");
-  if (!existsSync(envTs)) continue;
-  if (!statSync(envTs).isFile()) continue;
+  const envSchema = path.join(pkgDir, "env.schema.json");
+  const hasEnvTs = existsSync(envTs) && statSync(envTs).isFile();
+  const hasSchema = existsSync(envSchema) && statSync(envSchema).isFile();
+  if (!hasEnvTs && !hasSchema) continue;
 
-  const hasCombined = existsSync(
-    path.join(pkgDir, "env.schema.combined.json"),
-  );
   const args = ["exec", "saf-env", "generate"];
-  if (hasCombined) {
+  if (packageWantsCombined(pkgDir)) {
     args.push("--", "--combined");
   }
 

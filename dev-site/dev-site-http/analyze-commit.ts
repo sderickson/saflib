@@ -108,7 +108,7 @@ function parseBlobFact(
     analyzerVersion: ANALYZER_VERSION,
     lineCount: countSourceLines(source),
     specialty: buildFileSpecialty(source),
-    computedAt: new Date(),
+    computed_at: new Date(),
   };
 }
 

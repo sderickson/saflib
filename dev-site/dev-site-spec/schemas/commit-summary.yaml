@@ -23,7 +23,7 @@ properties:
       $ref: "./commit-ref.yaml"
   analyzerVersion:
     type: string
-  computedAt:
+  computed_at:
     type: string
     format: date-time
   status:
@@ -86,6 +86,6 @@ required:
   - message
   - refs
   - analyzerVersion
-  - computedAt
+  - computed_at
   - status
   - summaryMetrics

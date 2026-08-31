@@ -1,4 +1,3 @@
-// TODO: Import the SDK client package.
 import type { SecretStore } from "@saflib/secret-store";
 import { typedEnv } from "./env.ts";
 import { mock__IntegrationName__Client } from "./client.mocks.ts";
@@ -8,7 +7,7 @@ const isTest = typedEnv.NODE_ENV === "test";
 let _isMocked = isTest;
 let _configured = isTest;
 
-// TODO: Update the env variable name below if you renamed it in env.schema.json.
+// TODO: Update the secret name below if you renamed it in secrets.json.
 let apiKey: string | undefined;
 
 /** True when using mocks (test mode or API key is "mock"). */
@@ -67,5 +66,6 @@ export function get__IntegrationName__Client(): Scoped__IntegrationName__Client 
   // Example:
   //   const sdk = new SdkClient({ apiKey });
   //   return sdk as Scoped__IntegrationName__Client;
+  void apiKey;
   return mock__IntegrationName__Client;
 }

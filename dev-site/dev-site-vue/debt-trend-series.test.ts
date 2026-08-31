@@ -12,7 +12,7 @@ function commit(
     message: "msg",
     refs: [],
     analyzerVersion: "1",
-    computedAt: "2026-01-01T01:00:00.000Z",
+    computed_at: "2026-01-01T01:00:00.000Z",
     status: "complete",
     summaryMetrics: summaryMetricsFixture({ hasIssueStats: true }),
     ...partial,

@@ -57,7 +57,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   versionControl: {
-    allowPaths: ["./env.ts"],
+    allowPaths: ["./env.ts", "./secrets.json"],
   },
 
   context: ({ input }) => {
@@ -99,7 +99,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     packageJson: path.join(integrationStubRoot, "package.json"),
-    envSchema: path.join(integrationStubRoot, "env.schema.json"),
+    secrets: path.join(integrationStubRoot, "secrets.json"),
     envFile: path.join(integrationStubRoot, "env.ts"),
     client: path.join(integrationStubRoot, "client.ts"),
     clientMocks: path.join(integrationStubRoot, "client.mocks.ts"),
@@ -161,14 +161,14 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Install the SDK package for the **${context.integrationName}** integration and configure environment variables.
+      promptText: `Install the SDK package for the **${context.integrationName}** integration and declare its secrets.
 
 Read the overview doc first: ${context.docFiles?.overview}
 
 1. Install the appropriate SDK npm package as a dependency (e.g. \`npm install some-sdk\`). If the integration doesn't need a dedicated SDK, skip this.
-2. Update the API key / credentials env variable(s) in \`env.schema.json\`. Rename or add variables as needed. Mark them as NOT required (the mock/test path should work without them).
-3. Describe each variable clearly in its \`"description"\` field.
-4. Update the env variable name in \`.env\` to match.`,
+2. Update API key / credential names in \`secrets.json\`. Rename or add entries as needed. Sentinel \`"mock"\` selects the in-memory mock client.
+3. Describe each secret clearly in its \`"description"\` field.
+4. Only add \`env.schema.json\` later if you need non-secret config (feature flags, recording mode, etc.), then run \`npm exec saf-env generate\`.`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -188,8 +188,8 @@ Read the overview doc first: ${context.docFiles?.overview}
 Read the overview doc first: ${context.docFiles?.overview}
 
 1. Import the installed SDK.
-2. Read the correct API key env variable from \`typedEnv\` (matching what you set in env.schema.json). Update the variable name and error message if you renamed it.
-3. **Do not change the two-gate pattern** (the \`if (!apiKey && !isTest)\` throw and the \`isMocked\` assignment). See the docs for why.
+2. Keep fetching credentials via \`store.getSecretByName(...)\` and \`secrets.json\` (already wired). Update the secret name if you renamed it in \`secrets.json\`.
+3. **Do not change the configure / isMocked pattern** (test mode mocks; missing secret warns; \`"mock"\` sentinel selects mocks). See the docs for why.
 4. Define a scoped client type using \`Pick\` to select only the SDK methods this integration will use. For nested SDKs, pick from each namespace. See the docs for patterns.
 5. Implement the **mock client** in \`client.mocks.ts\` (already imported). Put all mock data and mock method implementations there — keep \`client.mocks.ts\` **SDK-free** (\`import type\` only from the vendor package). Tests import mocks via \`@<package>/mocks\`.
 6. For SDK-backed integrations, split real SDK wiring into \`client.real.ts\` and wire production configure from the product's \`dependencies.integrations.ts\` (see existing integration packages in the monorepo).

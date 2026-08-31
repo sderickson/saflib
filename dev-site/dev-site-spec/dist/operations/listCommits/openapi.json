@@ -103,7 +103,7 @@
           "analyzerVersion": {
             "type": "string"
           },
-          "computedAt": {
+          "computed_at": {
             "type": "string",
             "format": "date-time"
           },
@@ -181,7 +181,7 @@
           "message",
           "refs",
           "analyzerVersion",
-          "computedAt",
+          "computed_at",
           "status",
           "summaryMetrics"
         ]

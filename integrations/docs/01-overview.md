@@ -8,7 +8,6 @@ Each integration package should have the following structure:
 
 ```
 {integration-name}/
-├── .env                    # Local API key (git-ignored)
 ├── .gitignore
 ├── bin/
 │   ├── ping.ts             # Runs the ping call with a live API key
@@ -19,8 +18,8 @@ Each integration package should have the following structure:
 │   └── {call-name}.mocks.ts  # Mock for the call
 ├── client.ts               # Scoped client with mock/real branching
 ├── client.mocks.ts         # Mock data and mock client implementation
-├── env.schema.json         # Env variable declarations
-├── env.ts                  # Generated typed env (via @saflib/env)
+├── secrets.json            # Declared secret names (API keys, etc.)
+├── env.ts                  # Generated typed env (NODE_ENV via @saflib/env; no local schema by default)
 ├── index.ts
 ├── index.test.ts
 ├── package.json
@@ -30,35 +29,38 @@ Each integration package should have the following structure:
 
 ## Runtime Behavior: API Key and Mock Logic
 
-The client uses a two-gate pattern. **Do not change this logic.** Getting it wrong breaks either tests or real API calls.
+Credentials live in the secret store (declared in `secrets.json`). **Do not put API keys in env.** The stub ships a generated `env.ts` (extends `@saflib/env` for `NODE_ENV`, etc.) with no local `env.schema.json`. Add a schema only for non-secret knobs, then re-run `saf-env generate`.
 
 ```ts
-const apiKey = typedEnv.MY_API_KEY;
+import { typedEnv } from "./env.ts";
+import packageSecrets from "./secrets.json" with { type: "json" };
+
 const isTest = typedEnv.NODE_ENV === "test";
+let _isMocked = isTest;
+let _configured = isTest;
+let apiKey: string | undefined;
 
-// Gate 1: Throw if the key is missing and we're NOT in a test.
-// A missing key in production/development is a configuration error.
-if (!apiKey && !isTest) {
-  throw new Error(
-    "MY_API_KEY is required. Set it in your environment or .env file.",
-  );
+export async function configureMyIntegration(store: SecretStore): Promise<void> {
+  if (_configured) return;
+  const result = await store.getSecretByName("MY_API_KEY", packageSecrets);
+  if (result.result !== undefined) {
+    apiKey = result.result;
+    _isMocked = apiKey === "mock";
+  }
+  _configured = true;
 }
-
-// Gate 2: Use mocks when the key is explicitly "mock" or when running tests.
-// A missing key does NOT mean "use mock" — it means misconfigured.
-export const isMocked = apiKey === "mock" || isTest;
 ```
 
 ### Why this matters
 
 | Scenario                  | `apiKey`      | `isTest` | Behavior                                     |
 | ------------------------- | ------------- | -------- | -------------------------------------------- |
-| Unit tests (`vitest run`) | `undefined`   | `true`   | Skip throw, `isMocked = true` → mock client  |
-| Dev with `.env` key       | `"sk-abc..."` | `false`  | Pass throw, `isMocked = false` → real client |
-| Dev forgot `.env`         | `undefined`   | `false`  | **Throw** — catches misconfiguration early   |
-| CI with `API_KEY=mock`    | `"mock"`      | `false`  | Pass throw, `isMocked = true` → mock client  |
+| Unit tests (`vitest run`) | `undefined`   | `true`   | Skip configure fetch, `isMocked = true`      |
+| Dev with secret set       | `"sk-abc..."` | `false`  | `isMocked = false` → real client             |
+| Dev forgot secret         | `undefined`   | `false`  | Warn on configure; real client may throw     |
+| CI with `MY_API_KEY=mock` | `"mock"`      | `false`  | `isMocked = true` → mock client              |
 
-A common mistake is to fold the missing-key case into `isMocked` (e.g. `isMocked = !apiKey || ...`). This silently mocks when the key is absent, which hides configuration errors and causes `npm run ping` to return mock data instead of failing loudly.
+Use the `"mock"` sentinel (via the env-backed secret store or Infisical) to opt into mocks outside tests.
 
 ## Scoping the Client
 
@@ -113,7 +115,7 @@ Mock data and mock client construction live in `client.mocks.ts`, separate from 
 The mock client must satisfy the scoped type and return realistic placeholder data. Mocks are used in two situations:
 
 1. **Unit tests** — `vitest run` sets `NODE_ENV=test`, so the mock is used automatically.
-2. **CI or environments without a real key** — Setting the env var to `"mock"` explicitly opts in to mock mode.
+2. **CI or environments without a real key** — Setting the secret to `"mock"` explicitly opts in to mock mode.
 
 Keep mock responses minimal but structurally correct — the test suite (and any downstream code exercised by tests) needs the response shape to be accurate.
 

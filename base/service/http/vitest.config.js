@@ -5,8 +5,8 @@ export default mergeConfig(
   defaultConfig,
   defineConfig({
     test: {
-      // Product-init stubs (__group-name__, etc.) are not runnable until renamed.
-      exclude: ["**/__*__/**", "**/e2e/**"],
+      // Stub dirs under this package (double-underscore names) are not runnable until renamed.
+      exclude: ["**/__*__/**", "**/e2e/**"], /* do not replace */
     },
   }),
 );

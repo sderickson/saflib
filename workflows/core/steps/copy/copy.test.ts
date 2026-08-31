@@ -148,6 +148,27 @@ describe("shouldSkipSourcePath", () => {
     ).toBe(true);
   });
 
+  it("skips generated env and migration artifacts", () => {
+    expect(shouldSkipSourcePath("/repo/service/common/env.ts", input)).toBe(
+      true,
+    );
+    expect(
+      shouldSkipSourcePath(
+        "/repo/service/monolith/env.schema.combined.json",
+        input,
+      ),
+    ).toBe(true);
+    expect(
+      shouldSkipSourcePath(
+        "/repo/service/db/migrations/0000_charming.sql",
+        input,
+      ),
+    ).toBe(true);
+    expect(
+      shouldSkipSourcePath("/repo/service/common/env.schema.json", input),
+    ).toBe(false);
+  });
+
   it("still copies vitepress theme source", () => {
     expect(
       shouldSkipSourcePath(

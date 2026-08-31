@@ -16,7 +16,7 @@ export interface FileFact {
   analyzerVersion: string;
   lineCount: number;
   specialty: FileSpecialty;
-  computedAt: Date;
+  computed_at: Date;
 }
 
 export interface FactStore {
@@ -59,7 +59,7 @@ export class MemoryFactStore implements FactStore {
       analyzerVersion: ANALYZER_VERSION,
       lineCount: countSourceLines(source),
       specialty: buildFileSpecialty(source),
-      computedAt: new Date(),
+      computed_at: new Date(),
     };
     this.byKey.set(contentKey, fact);
     return fact;
@@ -75,6 +75,6 @@ export function fileFactFromSource(
     analyzerVersion: ANALYZER_VERSION,
     lineCount: countSourceLines(source),
     specialty: buildFileSpecialty(source),
-    computedAt: new Date(),
+    computed_at: new Date(),
   };
 }

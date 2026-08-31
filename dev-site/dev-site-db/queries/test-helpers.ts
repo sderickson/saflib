@@ -18,7 +18,7 @@ export function makeCommit(
       { name: "main", type: "branch", isMainAncestor: true },
     ],
     analyzerVersion: overrides.analyzerVersion ?? "1",
-    computedAt: overrides.computedAt ?? new Date(base + 1000),
+    computed_at: overrides.computed_at ?? new Date(base + 1000),
     status: overrides.status ?? "complete",
     exportCount: overrides.exportCount ?? 0,
     testCaseCount: overrides.testCaseCount ?? 0,

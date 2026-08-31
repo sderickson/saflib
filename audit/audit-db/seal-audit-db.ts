@@ -10,7 +10,7 @@ import { verifyAuditChain } from "./queries/audit-event/verify-chain.ts";
 import type { VerifyAuditChainSuccess } from "./queries/audit-event/verify-chain.ts";
 import type { DbKey } from "@saflib/drizzle";
 import { getSafReporters } from "@saflib/node";
-import { compress } from "@mongodb-js/zstd";
+import { compress } from "./zstd.ts";
 import {
   AuditChainCorruptError,
   AuditSealInMemoryDbError,

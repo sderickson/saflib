@@ -97,7 +97,7 @@ export async function getCommit(
       message: commit.message,
       refs: commit.refs,
       analyzerVersion: commit.analyzerVersion,
-      computedAt: toIso(commit.computedAt),
+      computed_at: toIso(commit.computed_at),
       status: commit.status,
     },
     packageMetrics: metrics.map((m) => {
@@ -152,7 +152,7 @@ export async function listCommitSummaries(
       message: c.message,
       refs: c.refs,
       analyzerVersion: c.analyzerVersion,
-      computedAt: toIso(c.computedAt),
+      computed_at: toIso(c.computed_at),
       status: c.status,
       summaryMetrics: {
         packageCount: metrics.length,
