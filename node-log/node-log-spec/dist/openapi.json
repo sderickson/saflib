@@ -30,7 +30,7 @@
           "message": {
             "type": "string"
           },
-          "reqId": {
+          "req_id": {
             "type": "string"
           },
           "service_name": {

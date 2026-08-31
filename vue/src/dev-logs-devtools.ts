@@ -34,7 +34,7 @@ type DevLogEntry = {
   timestamp?: string
   level: string
   message: string
-  reqId?: string
+  req_id?: string
   service_name?: string
   subsystem_name?: string
   operation_name?: string
@@ -100,7 +100,7 @@ const filtered = computed(() => {
       metaStr.includes(q) ||
       (entry.subsystem_name?.toLowerCase().includes(q) ?? false) ||
       (entry.operation_name?.toLowerCase().includes(q) ?? false) ||
-      (entry.reqId?.toLowerCase().includes(q) ?? false)
+      (entry.req_id?.toLowerCase().includes(q) ?? false)
     )
   })
 })

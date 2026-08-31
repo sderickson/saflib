@@ -32,7 +32,7 @@ export interface components {
             timestamp?: string;
             level: string;
             message: string;
-            reqId?: string;
+            req_id?: string;
             service_name?: string;
             subsystem_name?: string;
             operation_name?: string;

@@ -54,9 +54,15 @@ const baseLogger = winston.createLogger({
   format: format.combine(
     compactTimestamp(),
     format.printf(
-      (info: TransformableInfo & { timestamp?: string; reqId?: string }) => {
-        const { timestamp, level, message, reqId } = info;
-        const reqIdStr = reqId ? `<${reqId.slice(0, 8)}> ` : "";
+      (info: TransformableInfo & {
+        timestamp?: string;
+        request_id?: string;
+      }) => {
+        const { timestamp, level, message, request_id } = info;
+        const reqIdStr =
+          request_id && request_id !== "-"
+            ? `<${request_id.slice(0, 8)}> `
+            : "";
         return `${timestamp} ${reqIdStr}[${level}]: ${message}`;
       },
     ),

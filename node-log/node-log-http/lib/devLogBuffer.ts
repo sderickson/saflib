@@ -10,7 +10,7 @@ export interface DevLogEntry {
   timestamp?: string;
   level: string;
   message: string;
-  reqId?: string;
+  req_id?: string;
   service_name?: string;
   subsystem_name?: string;
   operation_name?: string;
@@ -34,6 +34,7 @@ const KNOWN_INFO_KEYS = new Set([
   "message",
   "timestamp",
   "reqId",
+  "req_id",
   "request_id",
   "service_name",
   "subsystem_name",
@@ -93,12 +94,14 @@ function toEntry(info: TransformableInfo): DevLogEntry {
       typeof info.timestamp === "string" ? info.timestamp : undefined,
     level: typeof info.level === "string" ? info.level : "info",
     message,
-    reqId:
-      typeof info.reqId === "string"
-        ? info.reqId
-        : typeof info.request_id === "string"
-          ? info.request_id
-          : undefined,
+    req_id:
+      typeof info.req_id === "string"
+        ? info.req_id
+        : typeof info.reqId === "string"
+          ? info.reqId
+          : typeof info.request_id === "string"
+            ? info.request_id
+            : undefined,
     service_name:
       typeof info.service_name === "string" ? info.service_name : undefined,
     subsystem_name:
