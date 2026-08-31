@@ -17,7 +17,8 @@
     "./seal-types": "./seal-types.ts",
     "./seal-errors": "./seal-errors.ts",
     "./iso-safe": "./iso-safe.ts",
-    "./prune-sealed": "./prune-sealed.ts"
+    "./prune-sealed": "./prune-sealed.ts",
+    "./zstd": "./zstd.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -31,7 +32,6 @@
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
-    "@mongodb-js/zstd": "^2.0.1",
     "proper-lockfile": "^4.1.2"
   },
   "devDependencies": {
