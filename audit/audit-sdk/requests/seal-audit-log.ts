@@ -13,7 +13,7 @@ export async function sealAuditLog(): Promise<SealAuditLogMutationResult> {
 
   if (result.response.status === 409) {
     const payload = result.error as SealAuditLogMutationResult | undefined;
-    if (payload?.auditSealResult !== undefined) {
+    if (payload?.audit_seal_result !== undefined) {
       return payload;
     }
     throw new TanstackError(409, "SEAL_SKIPPED_UNEXPECTED_BODY");
@@ -32,7 +32,7 @@ export function useSealAuditLog() {
   return useMutation({
     mutationFn: () => sealAuditLog(),
     onSuccess: (data) => {
-      if (data.auditSealResult.status === "sealed") {
+      if (data.audit_seal_result.status === "sealed") {
         queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
       }
     },

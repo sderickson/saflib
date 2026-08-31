@@ -3,14 +3,14 @@ description: One row from the append-only audit log (admin API shape).
 required:
   - id
   - ts
-  - prevHash
-  - rowHash
-  - schemaVersion
+  - prev_hash
+  - row_hash
+  - schema_version
   - source
-  - eventType
+  - event_type
   - outcome
-  - gitCommitRoot
-  - gitCommitSaflib
+  - git_commit_root
+  - git_commit_saflib
   - env
 properties:
   id:
@@ -18,11 +18,11 @@ properties:
   ts:
     type: string
     format: date-time
-  prevHash:
+  prev_hash:
     type: string
-  rowHash:
+  row_hash:
     type: string
-  schemaVersion:
+  schema_version:
     type: integer
   source:
     type: string
@@ -32,27 +32,27 @@ properties:
       - kratos
       - system
       - webhook
-  actorUserId:
+  actor_user_id:
     type: [ string, "null" ]
-  onBehalfOfUserId:
+  on_behalf_of_user_id:
     type: [ string, "null" ]
-  authMethod:
+  auth_method:
     type: [ string, "null" ]
-  requestId:
+  request_id:
     type: [ string, "null" ]
-  clientIp:
+  client_ip:
     type: [ string, "null" ]
-  eventType:
+  event_type:
     type: string
-  resourceType:
+  resource_type:
     type: [ string, "null" ]
-  resourceId:
+  resource_id:
     type: [ string, "null" ]
   outcome:
     type: string
-  gitCommitRoot:
+  git_commit_root:
     type: string
-  gitCommitSaflib:
+  git_commit_saflib:
     type: string
   env:
     type: string

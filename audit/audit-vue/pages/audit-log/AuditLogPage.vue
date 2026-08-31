@@ -126,18 +126,19 @@ const sealPending = computed(() => sealMutation.isPending.value);
 const headers = [
   { title: strings.columns.time, key: "ts", sortable: false },
   { title: strings.columns.source, key: "source", sortable: false },
-  { title: strings.columns.event, key: "eventType", sortable: false },
+  { title: strings.columns.event, key: "event_type", sortable: false },
   { title: strings.columns.outcome, key: "outcome", sortable: false },
-  { title: strings.columns.actor, key: "actorUserId", sortable: false },
+  { title: strings.columns.actor, key: "actor_user_id", sortable: false },
   { title: strings.columns.resource, key: "resource", sortable: false },
-  { title: strings.columns.request, key: "requestId", sortable: false },
+  { title: strings.columns.request, key: "request_id", sortable: false },
   { title: strings.columns.details, key: "details", sortable: false },
 ];
 
 const tableItems = computed(() =>
   rows.value.map((r) => ({
     ...r,
-    resource: [r.resourceType, r.resourceId].filter(Boolean).join(" ") || "—",
+    resource:
+      [r.resource_type, r.resource_id].filter(Boolean).join(" ") || "—",
     details: formatDetails(r.details),
   })),
 );
@@ -155,7 +156,7 @@ function formatDetails(details: AuditLog["details"]): string {
 async function onSeal() {
   try {
     const result = await sealMutation.mutateAsync();
-    const ar = result.auditSealResult;
+    const ar = result.audit_seal_result;
     if (ar.status === "sealed") {
       showInfo("Audit log sealed and shipped.");
     } else if (ar.reason === "empty") {

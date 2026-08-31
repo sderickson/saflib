@@ -47,10 +47,10 @@ export function useAuditLogsLoader(): AuditLogsLoader {
     () => auditLogsQuery.data.value,
     (data) => {
       if (!data) return;
-      rows.value = [...data.auditLogs];
-      nextCursor.value = data.nextCursor;
-      spanHead.value = data.headAt;
-      spanTail.value = data.tailAt;
+      rows.value = [...data.audit_logs];
+      nextCursor.value = data.next_cursor;
+      spanHead.value = data.head_at;
+      spanTail.value = data.tail_at;
       spanChecked.value = true;
     },
     { immediate: true },
@@ -91,10 +91,10 @@ export function useAuditLogsLoader(): AuditLogsLoader {
           },
         }),
       );
-      rows.value = rows.value.concat(data.auditLogs);
-      nextCursor.value = data.nextCursor;
-      spanHead.value = data.headAt;
-      spanTail.value = data.tailAt;
+      rows.value = rows.value.concat(data.audit_logs);
+      nextCursor.value = data.next_cursor;
+      spanHead.value = data.head_at;
+      spanTail.value = data.tail_at;
     } catch (e: unknown) {
       const message =
         e instanceof TanstackError

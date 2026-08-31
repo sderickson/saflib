@@ -19,14 +19,14 @@
         "required": [
           "id",
           "ts",
-          "prevHash",
-          "rowHash",
-          "schemaVersion",
+          "prev_hash",
+          "row_hash",
+          "schema_version",
           "source",
-          "eventType",
+          "event_type",
           "outcome",
-          "gitCommitRoot",
-          "gitCommitSaflib",
+          "git_commit_root",
+          "git_commit_saflib",
           "env"
         ],
         "properties": {
@@ -37,13 +37,13 @@
             "type": "string",
             "format": "date-time"
           },
-          "prevHash": {
+          "prev_hash": {
             "type": "string"
           },
-          "rowHash": {
+          "row_hash": {
             "type": "string"
           },
-          "schemaVersion": {
+          "schema_version": {
             "type": "integer"
           },
           "source": {
@@ -56,46 +56,46 @@
               "webhook"
             ]
           },
-          "actorUserId": {
+          "actor_user_id": {
             "type": [
               "string",
               "null"
             ]
           },
-          "onBehalfOfUserId": {
+          "on_behalf_of_user_id": {
             "type": [
               "string",
               "null"
             ]
           },
-          "authMethod": {
+          "auth_method": {
             "type": [
               "string",
               "null"
             ]
           },
-          "requestId": {
+          "request_id": {
             "type": [
               "string",
               "null"
             ]
           },
-          "clientIp": {
+          "client_ip": {
             "type": [
               "string",
               "null"
             ]
           },
-          "eventType": {
+          "event_type": {
             "type": "string"
           },
-          "resourceType": {
+          "resource_type": {
             "type": [
               "string",
               "null"
             ]
           },
-          "resourceId": {
+          "resource_id": {
             "type": [
               "string",
               "null"
@@ -104,10 +104,10 @@
           "outcome": {
             "type": "string"
           },
-          "gitCommitRoot": {
+          "git_commit_root": {
             "type": "string"
           },
-          "gitCommitSaflib": {
+          "git_commit_saflib": {
             "type": "string"
           },
           "env": {
@@ -139,11 +139,11 @@
       },
       "audit-seal-result": {
         "type": "object",
-        "description": "Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `durationMs` are present.\n",
+        "description": "Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `duration_ms` are present.\n",
         "additionalProperties": false,
         "required": [
           "status",
-          "durationMs"
+          "duration_ms"
         ],
         "properties": {
           "status": {
@@ -160,7 +160,7 @@
               "in_progress"
             ]
           },
-          "durationMs": {
+          "duration_ms": {
             "type": "integer",
             "minimum": 0
           },
@@ -169,55 +169,55 @@
             "additionalProperties": false,
             "required": [
               "filename",
-              "sizeBytes",
-              "sha256Hex",
-              "archiveKey",
-              "rowCount",
-              "headHash",
-              "tailHash",
-              "firstTs",
-              "lastTs"
+              "size_bytes",
+              "sha256_hex",
+              "archive_key",
+              "row_count",
+              "head_hash",
+              "tail_hash",
+              "first_ts",
+              "last_ts"
             ],
             "properties": {
               "filename": {
                 "type": "string"
               },
-              "sizeBytes": {
+              "size_bytes": {
                 "type": "integer",
                 "minimum": 0
               },
-              "sha256Hex": {
+              "sha256_hex": {
                 "type": "string",
                 "minLength": 64,
                 "maxLength": 64
               },
-              "archiveKey": {
+              "archive_key": {
                 "type": "string",
                 "description": "Remote archive identifier (object path, bucket key, etc.)."
               },
-              "rowCount": {
+              "row_count": {
                 "type": "integer",
                 "minimum": 1
               },
-              "headHash": {
+              "head_hash": {
                 "type": "string",
                 "minLength": 64,
                 "maxLength": 64
               },
-              "tailHash": {
+              "tail_hash": {
                 "type": "string",
                 "minLength": 64,
                 "maxLength": 64
               },
-              "firstTs": {
+              "first_ts": {
                 "type": "string",
                 "format": "date-time"
               },
-              "lastTs": {
+              "last_ts": {
                 "type": "string",
                 "format": "date-time"
               },
-              "branchCount": {
+              "branch_count": {
                 "type": "integer",
                 "minimum": 0
               }
@@ -229,10 +229,10 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "auditSealResult"
+          "audit_seal_result"
         ],
         "properties": {
-          "auditSealResult": {
+          "audit_seal_result": {
             "$ref": "#/components/schemas/audit-seal-result"
           }
         }
@@ -275,7 +275,7 @@
     "/audit-logs": {
       "get": {
         "summary": "List audit log events (admin)",
-        "description": "Paginated keyset scan of the audit database, ordered by timestamp then id. `headAt` / `tailAt` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.\n",
+        "description": "Paginated keyset scan of the audit database, ordered by timestamp then id. `head_at` / `tail_at` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.\n",
         "operationId": "listAuditLogs",
         "tags": [
           "site-admin-only"
@@ -295,7 +295,7 @@
             "name": "cursor",
             "in": "query",
             "required": false,
-            "description": "Opaque pagination cursor from a previous response's `nextCursor`.",
+            "description": "Opaque pagination cursor from a previous response's `next_cursor`.",
             "schema": {
               "type": "string"
             }
@@ -334,19 +334,19 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "auditLogs",
-                    "headAt",
-                    "tailAt",
-                    "nextCursor"
+                    "audit_logs",
+                    "head_at",
+                    "tail_at",
+                    "next_cursor"
                   ],
                   "properties": {
-                    "auditLogs": {
+                    "audit_logs": {
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/audit-log"
                       }
                     },
-                    "headAt": {
+                    "head_at": {
                       "type": [
                         "string",
                         "null"
@@ -354,7 +354,7 @@
                       "format": "date-time",
                       "description": "Earliest `ts` in the audit table, if any rows exist."
                     },
-                    "tailAt": {
+                    "tail_at": {
                       "type": [
                         "string",
                         "null"
@@ -362,7 +362,7 @@
                       "format": "date-time",
                       "description": "Latest `ts` in the audit table, if any rows exist."
                     },
-                    "nextCursor": {
+                    "next_cursor": {
                       "type": [
                         "string",
                         "null"
@@ -417,7 +417,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Seal completed; `auditSealResult.status` is `sealed`.",
+            "description": "Seal completed; `audit_seal_result.status` is `sealed`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -447,7 +447,7 @@
             }
           },
           "409": {
-            "description": "Skipped — empty active DB or concurrent seal (`auditSealResult.status: skipped`).\n",
+            "description": "Skipped — empty active DB or concurrent seal (`audit_seal_result.status: skipped`).\n",
             "content": {
               "application/json": {
                 "schema": {

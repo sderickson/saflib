@@ -8,29 +8,12 @@ import { InvalidAuditEventCursorError } from "@saflib/audit-db/errors";
 import { throwError } from "@saflib/monorepo";
 import type { DbKey } from "@saflib/drizzle";
 
-function mapEntityToAuditLog(
+function toAuditLog(
   e: AuditEventEntity,
-): AuditResponseBody["listAuditLogs"][200]["auditLogs"][number] {
+): AuditResponseBody["listAuditLogs"][200]["audit_logs"][number] {
   return {
-    id: e.id,
+    ...e,
     ts: e.ts.toISOString(),
-    prevHash: e.prev_hash,
-    rowHash: e.row_hash,
-    schemaVersion: e.schema_version,
-    source: e.source,
-    actorUserId: e.actor_user_id,
-    onBehalfOfUserId: e.on_behalf_of_user_id,
-    authMethod: e.auth_method,
-    requestId: e.request_id,
-    clientIp: e.client_ip,
-    eventType: e.event_type,
-    resourceType: e.resource_type,
-    resourceId: e.resource_id,
-    outcome: e.outcome,
-    gitCommitRoot: e.git_commit_root,
-    gitCommitSaflib: e.git_commit_saflib,
-    env: e.env,
-    details: e.details,
   };
 }
 
@@ -104,10 +87,10 @@ export function createListAuditLogsHandler(
     const { events, nextCursor } = listRes.result;
 
     const response: AuditResponseBody["listAuditLogs"][200] = {
-      auditLogs: events.map(mapEntityToAuditLog),
-      headAt: headAt ? headAt.toISOString() : null,
-      tailAt: tailAt ? tailAt.toISOString() : null,
-      nextCursor,
+      audit_logs: events.map(toAuditLog),
+      head_at: headAt ? headAt.toISOString() : null,
+      tail_at: tailAt ? tailAt.toISOString() : null,
+      next_cursor: nextCursor,
     };
 
     res.status(200).json(response);

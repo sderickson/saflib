@@ -8,32 +8,32 @@ import { mountTestApp } from "../../test-app.ts";
 type ListAuditLogsResponse = AuditResponseBody["listAuditLogs"][200];
 
 const mockAuditLogs: ListAuditLogsResponse = {
-  auditLogs: [
+  audit_logs: [
     {
       id: "evt-1",
       ts: "2026-01-01T00:00:00.000Z",
-      prevHash: "0".repeat(64),
-      rowHash: "abc123",
-      schemaVersion: 1,
+      prev_hash: "0".repeat(64),
+      row_hash: "abc123",
+      schema_version: 1,
       source: "http",
-      actorUserId: "user-1",
-      onBehalfOfUserId: null,
-      authMethod: "kratos_session",
-      requestId: "req-1",
-      clientIp: "127.0.0.1",
-      eventType: "admin.test_error",
-      resourceType: "admin",
-      resourceId: null,
+      actor_user_id: "user-1",
+      on_behalf_of_user_id: null,
+      auth_method: "kratos_session",
+      request_id: "req-1",
+      client_ip: "127.0.0.1",
+      event_type: "admin.test_error",
+      resource_type: "admin",
+      resource_id: null,
       outcome: "error",
-      gitCommitRoot: "deadbeef",
-      gitCommitSaflib: "cafebabe",
+      git_commit_root: "deadbeef",
+      git_commit_saflib: "cafebabe",
       env: "test",
       details: { source: "http", method: "POST", status_code: 500 },
     },
   ],
-  headAt: "2026-01-01T00:00:00.000Z",
-  tailAt: "2026-01-01T00:00:00.000Z",
-  nextCursor: null,
+  head_at: "2026-01-01T00:00:00.000Z",
+  tail_at: "2026-01-01T00:00:00.000Z",
+  next_cursor: null,
 };
 
 vi.mock("@saflib/audit-sdk/requests/list-audit-logs", () => ({
