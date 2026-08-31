@@ -24,7 +24,7 @@ describe("PUT /jobs/settings", () => {
 
   it("should update the enabled status of an existing job and return the updated setting", async () => {
     const updatePayload: CronRequestBody["updateCronJobSettings"] = {
-      jobName: existingJobName,
+      job_name: existingJobName,
       enabled: false,
     };
 
@@ -53,7 +53,7 @@ describe("PUT /jobs/settings", () => {
   it("records enabledBy from the calling admin when enabling", async () => {
     const adminId = "admin-who-enables";
     const updatePayload: CronRequestBody["updateCronJobSettings"] = {
-      jobName: existingJobName,
+      job_name: existingJobName,
       enabled: true,
     };
 
@@ -64,33 +64,33 @@ describe("PUT /jobs/settings", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.enabled).toBe(true);
-    expect(response.body.enabledBy).toBe(adminId);
+    expect(response.body.enabled_by).toBe(adminId);
 
     const updatedSetting = await throwError(
       getByName(dbKey, existingJobName),
     );
-    expect(updatedSetting.enabledBy).toBe(adminId);
+    expect(updatedSetting.enabled_by).toBe(adminId);
   });
 
   it("retains enabledBy when disabling", async () => {
     await request(app)
       .put("/cron/jobs/settings")
       .set(makeAdminHeaders("admin-who-enables"))
-      .send({ jobName: existingJobName, enabled: true });
+      .send({ job_name: existingJobName, enabled: true });
 
     const response = await request(app)
       .put("/cron/jobs/settings")
       .set(makeAdminHeaders("other-admin"))
-      .send({ jobName: existingJobName, enabled: false });
+      .send({ job_name: existingJobName, enabled: false });
 
     expect(response.status).toBe(200);
     expect(response.body.enabled).toBe(false);
-    expect(response.body.enabledBy).toBe("admin-who-enables");
+    expect(response.body.enabled_by).toBe("admin-who-enables");
   });
 
   it("should return 404 if the job name does not exist", async () => {
     const updatePayload: CronRequestBody["updateCronJobSettings"] = {
-      jobName: "non-existent-job",
+      job_name: "non-existent-job",
       enabled: true,
     };
 

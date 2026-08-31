@@ -44,14 +44,14 @@ put:
         schema:
           type: object
           properties:
-            jobName:
+            job_name:
               type: string
               description: The name of the job to update.
             enabled:
               type: boolean
               description: Set whether the job is enabled.
           required:
-            - jobName
+            - job_name
             - enabled
   responses:
     "200":

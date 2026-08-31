@@ -32,7 +32,7 @@ describe("getByName", () => {
       getByName(dbKey, jobName),
     );
     expect(retrievedJob).toEqual(createdJob);
-    expect(retrievedJob.jobName).toBe(jobName);
+    expect(retrievedJob.job_name).toBe(jobName);
     expect(retrievedJob.enabled).toBe(true);
   });
 

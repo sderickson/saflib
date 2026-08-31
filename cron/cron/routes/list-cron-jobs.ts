@@ -15,7 +15,7 @@ export const listCronJobsHandler = createHandler(async function (_req, res) {
     }
   }
   const response: CronResponseBody["listCronJobs"][200] = jobs.map((setting) =>
-    mapJobSettingToResponse(setting, jobsMap[setting.jobName]?.schedule),
+    mapJobSettingToResponse(setting, jobsMap[setting.job_name]?.schedule),
   );
   res.status(200).json(response);
 });

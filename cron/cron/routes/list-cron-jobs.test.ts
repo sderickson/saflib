@@ -49,24 +49,28 @@ describe("GET /jobs", () => {
     // Construct expected body based on the actual seeded data and the mapping
     const expectedBody: JobSettings[] = seededSettings.map((setting) => ({
       id: setting.id,
-      jobName: setting.jobName,
+      job_name: setting.job_name,
       enabled: setting.enabled,
-      enabledBy: setting.enabledBy,
-      lastRunAt: setting.lastRunAt ? setting.lastRunAt.toISOString() : null,
-      lastRunStatus: setting.lastRunStatus,
+      enabled_by: setting.enabled_by,
+      last_run_at: setting.last_run_at
+        ? setting.last_run_at.toISOString()
+        : null,
+      last_run_status: setting.last_run_status,
       schedule: null,
-      runsNextAt: null,
-      createdAt: setting.createdAt.toISOString(),
-      updatedAt: setting.updatedAt.toISOString(),
+      runs_next_at: null,
+      created_at: setting.created_at.toISOString(),
+      updated_at: setting.updated_at.toISOString(),
     }));
 
-    // Sort arrays by jobName to ensure order doesn't affect comparison
+    // Sort arrays by job_name to ensure order doesn't affect comparison
     // Explicitly type parameters
     const sortedResponseBody = [...response.body].sort(
-      (a: JobSettings, b: JobSettings) => a.jobName.localeCompare(b.jobName),
+      (a: JobSettings, b: JobSettings) =>
+        a.job_name.localeCompare(b.job_name),
     );
     const sortedExpectedBody = [...expectedBody].sort(
-      (a: JobSettings, b: JobSettings) => a.jobName.localeCompare(b.jobName),
+      (a: JobSettings, b: JobSettings) =>
+        a.job_name.localeCompare(b.job_name),
     );
 
     expect(sortedResponseBody).toEqual(sortedExpectedBody);
