@@ -7,5 +7,9 @@ WORKDIR /app
 #{ copy_packages }#
 RUN npm ci --omit=dev
 #{ copy_src }#
+# Shared client styles live under clients/build; VitePress imports them via
+# style-imports.ts and vuetify-settings. Only public/ + these SCSS files are needed
+# (clients/build is not a runtime workspace dep of the static site packages).
+COPY --parents ./base/clients/build/public ./base/clients/build/globals.scss ./base/clients/build/vuetify-overrides.scss ./base/clients/build/vuetify-settings.scss ./
 
 WORKDIR /app/base/clients/__static-subdomain-name__
