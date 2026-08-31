@@ -41,7 +41,7 @@
       </v-col>
       <v-col cols="6" class="py-0 pe-0">
         <v-text-field
-          v-model="postalCode"
+          v-model="postal_code"
           :label="t(strings.addressPostalCodeLabel)"
           :placeholder="t(strings.addressPostalCodePlaceholder)"
           v-bind="commonInputProps"
@@ -87,7 +87,7 @@ const locality = ref<string | undefined>(
 );
 const region = ref<string | undefined>(props.modelValue?.region ?? undefined);
 const country = ref<string | undefined>(props.modelValue?.country ?? undefined);
-const postalCode = ref<string | undefined>(
+const postal_code = ref<string | undefined>(
   props.modelValue?.postal_code ?? undefined,
 );
 
@@ -123,14 +123,14 @@ const postalCodeRule = (v: string | undefined) => {
 
 // Watch for changes and emit updates
 watch(
-  [streetAddress, locality, region, country, postalCode],
+  [streetAddress, locality, region, country, postal_code],
   () => {
     const hasAnyValue =
       streetAddress.value ||
       locality.value ||
       region.value ||
       country.value ||
-      postalCode.value;
+      postal_code.value;
 
     if (hasAnyValue) {
       const address: Address = {
@@ -139,7 +139,7 @@ watch(
         locality: locality.value || null,
         region: region.value || null,
         country: country.value || null,
-        postal_code: postalCode.value || null,
+        postal_code: postal_code.value || null,
       };
       emit("update:modelValue", address);
     } else {
@@ -158,13 +158,13 @@ watch(
       locality.value = newValue.locality ?? undefined;
       region.value = newValue.region ?? undefined;
       country.value = newValue.country ?? undefined;
-      postalCode.value = newValue.postal_code ?? undefined;
+      postal_code.value = newValue.postal_code ?? undefined;
     } else {
       streetAddress.value = undefined;
       locality.value = undefined;
       region.value = undefined;
       country.value = undefined;
-      postalCode.value = undefined;
+      postal_code.value = undefined;
     }
   },
   { immediate: true },
@@ -177,7 +177,7 @@ onMounted(() => {
     locality.value ||
     region.value ||
     country.value ||
-    postalCode.value;
+    postal_code.value;
 
   if (hasAnyValue) {
     const address: Address = {
@@ -186,7 +186,7 @@ onMounted(() => {
       locality: locality.value || null,
       region: region.value || null,
       country: country.value || null,
-      postal_code: postalCode.value || null,
+      postal_code: postal_code.value || null,
     };
     emit("update:modelValue", address);
   } else {
