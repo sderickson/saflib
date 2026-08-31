@@ -93,7 +93,9 @@ export const CopyStepMachine = setup({
       // Single source: use the directory itself (or the file's parent). The
       // common-prefix loop below would drop the last character of a solo path.
       const only = templateKeys[0];
-      sharedPrefix = fs.statSync(only).isDirectory() ? only : path.dirname(only);
+      sharedPrefix = fs.statSync(only).isDirectory()
+        ? only
+        : path.dirname(only);
     } else {
       let sharedPrefixIndex = 0;
       for (let i = 0; i < templateKeys[0].length; i++) {
@@ -183,7 +185,7 @@ export const CopyStepMachine = setup({
             guard: "fileExisted",
             target: "popFile",
             actions: [
-              logWarn(
+              logInfo(
                 ({ event }) =>
                   `File ${event.output.fileName} already existed, skipping rename`,
               ),
