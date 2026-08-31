@@ -43,7 +43,7 @@ export interface components {
             refs: components["schemas"]["commit-ref"][];
             analyzerVersion: string;
             /** Format: date-time */
-            computedAt: string;
+            computed_at: string;
             /** @enum {string} */
             status: "pending" | "complete" | "failed";
             /** @description Rollup counts across all packages at this commit, for timeline health indicators without fetching CommitDetail. */
