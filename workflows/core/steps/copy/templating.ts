@@ -269,9 +269,11 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
     // special case, because npm doesn't allow package names to start with an underscore
     replaceMap[`template-package`] = context["sharedPackagePrefix"];
   }
-  // Only real placeholders: __token__ with identifier chars. Avoids false
-  // positives like CSS `.mkt-blurb__paragraph + .mkt-blurb__` or globs `__*__`.
-  const interpolationRegex = /__[A-Za-z][A-Za-z0-9_-]*__/g;
+  // Placeholders are `__token__` where token is kebab/snake/Pascal/camel
+  // segments (no embedded `__`). Greedy `[A-Za-z0-9_-]*` would swallow
+  // `__org__-__product__` or `__PRODUCT_NAME___DOMAIN` as one match.
+  const interpolationRegex =
+    /__([A-Za-z][A-Za-z0-9]*(?:[_-][A-Za-z0-9]+)*)__/g;
   return (line: string) => {
     let newLine = line;
     if (line.includes("template-package") && context["sharedPackagePrefix"]) {
@@ -282,17 +284,18 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
     }
     const matches = line.match(interpolationRegex);
     if (matches) {
-      matches.forEach((match) => {
+      // Longer tokens first so a token is not partially replaced by a shorter
+      // sibling (defensive; current alphabet doesn't overlap that way).
+      const unique = [...new Set(matches)].sort((a, b) => b.length - a.length);
+      for (const match of unique) {
         if (replaceMap[match] === undefined) {
           if (process.env.NODE_ENV !== "test") {
             console.error(`Match "${match}" not found in line \`${line}\``);
-            // console.error("replaceMap:", JSON.stringify(replaceMap, null, 2));
           }
           throw new Error(`Missing replacement for ${match}`);
         }
         newLine = newLine.replaceAll(match, replaceMap[match]);
-        // console.log(`Before/after replace:\n  ${line}\n  -> ${newLine}`);
-      });
+      }
     }
     return newLine;
   };
