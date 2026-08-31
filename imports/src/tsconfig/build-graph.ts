@@ -74,6 +74,46 @@ export function isGitIgnoredPackageDirectory(packageDir: string): boolean {
   return result.status === 0;
 }
 
+/**
+ * Batch `git check-ignore` for many package dirs under one repo root.
+ * Returns absolute paths that are ignored. One spawn instead of one per package.
+ */
+export function listGitIgnoredPackageDirectories(
+  rootDir: string,
+  packageDirs: Iterable<string>,
+): Set<string> {
+  const relToAbs = new Map<string, string>();
+  for (const abs of packageDirs) {
+    const rel = path.relative(rootDir, abs);
+    if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) {
+      continue;
+    }
+    relToAbs.set(rel, abs);
+  }
+  if (relToAbs.size === 0) {
+    return new Set();
+  }
+
+  const result = spawnSync("git", ["check-ignore", "--stdin"], {
+    cwd: rootDir,
+    input: [...relToAbs.keys()].join("\n") + "\n",
+    encoding: "utf8",
+  });
+  // status 0 = some ignored; 1 = none ignored; other = not a git repo / error
+  if (result.status !== 0 && result.status !== 1) {
+    return new Set();
+  }
+
+  const ignored = new Set<string>();
+  for (const rel of (result.stdout ?? "").split("\n")) {
+    const trimmed = rel.trim();
+    if (!trimmed) continue;
+    const abs = relToAbs.get(trimmed);
+    if (abs) ignored.add(abs);
+  }
+  return ignored;
+}
+
 function isUnderDir(dir: string, parentDir: string): boolean {
   const rel = path.relative(parentDir, dir);
   return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
@@ -112,6 +152,11 @@ export function buildReferenceGraph(
   const skippedMeta: string[] = [];
   const typecheckable = new Map<string, string>(); // name → entry
 
+  const gitIgnoredDirs = listGitIgnoredPackageDirectories(
+    context.rootDir,
+    [...packages].map((name) => monorepoPackageDirectories[name]!),
+  );
+
   for (const name of packages) {
     const pj = monorepoPackageJsons[name]!;
     const dir = monorepoPackageDirectories[name]!;
@@ -119,7 +164,7 @@ export function buildReferenceGraph(
       isMetaPackage(name, pj) ||
       isFixturePackage(dir, context.rootDir) ||
       isPublishedDistPackage(dir) ||
-      isGitIgnoredPackageDirectory(dir)
+      gitIgnoredDirs.has(dir)
     ) {
       skippedMeta.push(name);
       continue;
