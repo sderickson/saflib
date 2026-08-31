@@ -42,6 +42,20 @@ describe("isSkippedStubRefLine", () => {
     ).toBe(true);
   });
 
+  it("notes that multi-line stub refs need strip-stub-tsconfig-refs.ts", () => {
+    // Dropping only the path line leaves `{` / `}` behind — product/init runs
+    // strip-stub-tsconfig-refs.ts after copy to remove empty objects.
+    const lines = [
+      "    {",
+      '      "path": "../integrations/__integration-name__"',
+      "    }",
+    ];
+    const replace = makeProductInitLineReplace(testContext());
+    const out = lines.map(replace).join("\n");
+    expect(out).toContain("{");
+    expect(out).not.toContain("__integration-name__");
+  });
+
   it("keeps normal dependency and path lines", () => {
     expect(isSkippedStubRefLine('    "@saflib/drizzle": "*",')).toBe(false);
     expect(isSkippedStubRefLine('      "path": "../db"')).toBe(false);

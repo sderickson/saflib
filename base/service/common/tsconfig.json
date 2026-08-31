@@ -50,8 +50,6 @@
     {
       "path": "../db"
     },
-    {
-      "path": "../integrations/__integration-name__"
-    }
+    { "path": "../integrations/__integration-name__" }
   ]
 }

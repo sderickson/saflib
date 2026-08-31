@@ -288,6 +288,17 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       // Both globs: dir trees (`__/…`) and stub filenames (`__…__-links.ts`).
       skipSourceGlobs: ["**/__*__/**", "**/__*__*"],
     })),
+    // lineReplace drops stub `"path"` lines but can leave empty `{ }` objects in
+    // multi-line tsconfig references; strip those before npm install / saf-imports.
+    step(CommandStepMachine, ({ context }) => ({
+      command: "node",
+      args: [
+        "--experimental-strip-types",
+        "--disable-warning=ExperimentalWarning",
+        path.join(import.meta.dirname, "strip-stub-tsconfig-refs.ts"),
+        path.join(context.cwd, context.productName),
+      ],
+    })),
     step(
       CopyStepMachine,
       ({ context }) => {

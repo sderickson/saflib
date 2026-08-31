@@ -30,8 +30,9 @@ export function writeTsconfigJson(
 /** Paths that stay inside the package (e.g. `./tsconfig.app.json`). */
 export function isInternalReference(
   packageDir: string,
-  refPath: string,
+  refPath: string | undefined,
 ): boolean {
+  if (typeof refPath !== "string" || refPath.length === 0) return false;
   if (path.isAbsolute(refPath)) return false;
   const resolved = path.resolve(packageDir, refPath);
   const rel = path.relative(packageDir, resolved);
@@ -41,14 +42,22 @@ export function isInternalReference(
 export function readReferences(tsconfigPath: string): TsconfigReference[] {
   if (!fs.existsSync(tsconfigPath)) return [];
   const config = readTsconfigJson(tsconfigPath);
-  return (config.references ?? []).map((r) => ({ path: r.path }));
+  return (config.references ?? [])
+    .filter(
+      (r): r is TsconfigReference =>
+        typeof r?.path === "string" && r.path.length > 0,
+    )
+    .map((r) => ({ path: r.path }));
 }
 
 export function sortReferences(
   refs: TsconfigReference[],
 ): TsconfigReference[] {
   const byPath = new Map<string, TsconfigReference>();
-  for (const ref of refs) byPath.set(ref.path, { path: ref.path });
+  for (const ref of refs) {
+    if (typeof ref.path !== "string" || ref.path.length === 0) continue;
+    byPath.set(ref.path, { path: ref.path });
+  }
   return [...byPath.values()].sort((a, b) => a.path.localeCompare(b.path));
 }
 
@@ -70,8 +79,11 @@ export function mergePackageReferences(
   existing: TsconfigReference[],
   workspaceRefs: TsconfigReference[],
 ): TsconfigReference[] {
-  const internal = existing.filter((r) =>
-    isInternalReference(packageDir, r.path),
+  const internal = existing.filter(
+    (r) =>
+      typeof r?.path === "string" &&
+      r.path.length > 0 &&
+      isInternalReference(packageDir, r.path),
   );
   return sortReferences([...internal, ...workspaceRefs]);
 }
