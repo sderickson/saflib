@@ -9,8 +9,8 @@ import { generateShortId } from "@saflib/drizzle";
 export interface __OffshootName__Entity {
   id: string;
   name: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export const __offshootName__Table = sqliteTable("__offshoot_name___table", {
@@ -18,8 +18,8 @@ export const __offshootName__Table = sqliteTable("__offshoot_name___table", {
     .primaryKey()
     .$defaultFn(() => generateShortId()),
   name: text("name").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  created_at: integer("created_at", { mode: "timestamp" }).notNull(),
+  updated_at: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
 export type __OffshootName__EntityTest = Expect<

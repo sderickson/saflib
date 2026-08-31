@@ -56,7 +56,7 @@ function buildApp(options: {
 }
 
 describe("createChangeEventMiddleware", () => {
-  it("publishes on 2xx POST with operationId, params, and orgId", async () => {
+  it("publishes on 2xx POST with operation_id, params, and org_id", async () => {
     const { emitter, published } = mockEmitter();
     const app = buildApp({
       emitter,
@@ -69,9 +69,9 @@ describe("createChangeEventMiddleware", () => {
 
     expect(emitter.publish).toHaveBeenCalledTimes(1);
     expect(published[0]).toEqual({
-      operationId: "updateMatter",
+      operation_id: "updateMatter",
       params: { matterId: "m-42" },
-      orgId: "org-1",
+      org_id: "org-1",
     });
   });
 
@@ -83,7 +83,7 @@ describe("createChangeEventMiddleware", () => {
       operationId: "patchThing",
     });
     await request(patchApp).patch("/matters/a").expect(200);
-    expect(patchPublished[0]?.operationId).toBe("patchThing");
+    expect(patchPublished[0]?.operation_id).toBe("patchThing");
 
     const { emitter: deleteEmitter, published: deletePublished } =
       mockEmitter();
@@ -93,7 +93,7 @@ describe("createChangeEventMiddleware", () => {
       operationId: "deleteThing",
     });
     await request(deleteApp).delete("/matters/a").expect(200);
-    expect(deletePublished[0]?.operationId).toBe("deleteThing");
+    expect(deletePublished[0]?.operation_id).toBe("deleteThing");
   });
 
   it("skips GET requests", async () => {

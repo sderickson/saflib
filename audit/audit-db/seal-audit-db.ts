@@ -50,10 +50,10 @@ export async function sealAuditDb(
   const started = Date.now();
   const { log } = getSafReporters();
   const finish = (
-    partial: Omit<AuditSealResult, "durationMs">,
+    partial: Omit<AuditSealResult, "duration_ms">,
   ): AuditSealResult => ({
     ...partial,
-    durationMs: Date.now() - started,
+    duration_ms: Date.now() - started,
   });
 
   const dataRoot = options.dataRoot;
@@ -163,20 +163,20 @@ export async function sealAuditDb(
 
       const artifact: AuditSealArtifact = {
         filename: finalFilename,
-        localPath: stagingZst,
+        local_path: stagingZst,
         compressed,
-        sha256Hex,
-        rowCount: chainStaging.rowCount,
-        headHash: chainStaging.headHash,
-        tailHash: chainStaging.tailHash,
-        branchCount: chainStaging.branchCount,
-        firstTs: headAt.toISOString(),
-        lastTs: tailAt.toISOString(),
-        suggestedArchiveKey: suggestedArchiveKey(headAt, finalFilename),
+        sha256_hex: sha256Hex,
+        row_count: chainStaging.rowCount,
+        head_hash: chainStaging.headHash,
+        tail_hash: chainStaging.tailHash,
+        branch_count: chainStaging.branchCount,
+        first_ts: headAt.toISOString(),
+        last_ts: tailAt.toISOString(),
+        suggested_archive_key: suggestedArchiveKey(headAt, finalFilename),
       };
 
       log.info("audit-seal: ship sealed archive (host callback)");
-      const { archiveKey } = await options.shipSealedArchive({
+      const { archive_key } = await options.shipSealedArchive({
         artifact,
         trigger,
       });
@@ -199,15 +199,15 @@ export async function sealAuditDb(
         status: "sealed",
         archive: {
           filename: finalFilename,
-          sizeBytes: compressed.length,
-          sha256Hex,
-          archiveKey,
-          rowCount: chainStaging.rowCount,
-          headHash: chainStaging.headHash,
-          tailHash: chainStaging.tailHash,
-          branchCount: chainStaging.branchCount,
-          firstTs: headAt.toISOString(),
-          lastTs: tailAt.toISOString(),
+          size_bytes: compressed.length,
+          sha256_hex: sha256Hex,
+          archive_key,
+          row_count: chainStaging.rowCount,
+          head_hash: chainStaging.headHash,
+          tail_hash: chainStaging.tailHash,
+          branch_count: chainStaging.branchCount,
+          first_ts: headAt.toISOString(),
+          last_ts: tailAt.toISOString(),
         },
       });
     } catch (err) {

@@ -7,10 +7,10 @@ import {
 import type { ChangeEvent, ChangeEventWithId } from "../index.ts";
 
 function event(
-  overrides: Partial<ChangeEvent> & Pick<ChangeEvent, "orgId">,
+  overrides: Partial<ChangeEvent> & Pick<ChangeEvent, "org_id">,
 ): ChangeEvent {
   return {
-    operationId: "updateMatter",
+    operation_id: "updateMatter",
     params: { matterId: "m1" },
     ...overrides,
   };
@@ -22,13 +22,13 @@ describe("InProcessChangeEmitter", () => {
     const received: ChangeEventWithId[] = [];
     emitter.subscribe("org-a", (e) => received.push(e));
 
-    emitter.publish(event({ orgId: "org-a" }));
-    emitter.publish(event({ orgId: "org-b", operationId: "other" }));
+    emitter.publish(event({ org_id: "org-a" }));
+    emitter.publish(event({ org_id: "org-b", operation_id: "other" }));
 
     expect(received).toHaveLength(1);
     expect(received[0]).toMatchObject({
-      orgId: "org-a",
-      operationId: "updateMatter",
+      org_id: "org-a",
+      operation_id: "updateMatter",
       params: { matterId: "m1" },
       id: "1",
     });
@@ -39,22 +39,22 @@ describe("InProcessChangeEmitter", () => {
     const received: ChangeEventWithId[] = [];
     const unsubscribe = emitter.subscribe("org-a", (e) => received.push(e));
 
-    emitter.publish(event({ orgId: "org-a" }));
+    emitter.publish(event({ org_id: "org-a" }));
     unsubscribe();
-    emitter.publish(event({ orgId: "org-a", operationId: "second" }));
+    emitter.publish(event({ org_id: "org-a", operation_id: "second" }));
 
     expect(received).toHaveLength(1);
-    expect(received[0]!.operationId).toBe("updateMatter");
+    expect(received[0]!.operation_id).toBe("updateMatter");
   });
 
   test("getEventsAfter replays buffered events after Last-Event-ID", () => {
     const emitter = new InProcessChangeEmitter();
-    emitter.publish(event({ orgId: "org-a", operationId: "a" }));
-    emitter.publish(event({ orgId: "org-a", operationId: "b" }));
-    emitter.publish(event({ orgId: "org-a", operationId: "c" }));
+    emitter.publish(event({ org_id: "org-a", operation_id: "a" }));
+    emitter.publish(event({ org_id: "org-a", operation_id: "b" }));
+    emitter.publish(event({ org_id: "org-a", operation_id: "c" }));
 
     const after1 = emitter.getEventsAfter("org-a", "1");
-    expect(after1.map((e) => e.operationId)).toEqual(["b", "c"]);
+    expect(after1.map((e) => e.operation_id)).toEqual(["b", "c"]);
     expect(after1.map((e) => e.id)).toEqual(["2", "3"]);
 
     expect(emitter.getEventsAfter("org-a", "3")).toEqual([]);
@@ -65,11 +65,11 @@ describe("InProcessChangeEmitter", () => {
   test("ring buffer drops oldest when over capacity", () => {
     const emitter = new InProcessChangeEmitter({ maxEventsPerOrg: 3 });
     for (let i = 0; i < 5; i++) {
-      emitter.publish(event({ orgId: "org-a", operationId: `op-${i}` }));
+      emitter.publish(event({ org_id: "org-a", operation_id: `op-${i}` }));
     }
 
     const replay = emitter.getEventsAfter("org-a", "0");
-    expect(replay.map((e) => e.operationId)).toEqual(["op-2", "op-3", "op-4"]);
+    expect(replay.map((e) => e.operation_id)).toEqual(["op-2", "op-3", "op-4"]);
     expect(RING_BUFFER_MAX_EVENTS).toBe(50);
   });
 
@@ -80,14 +80,14 @@ describe("InProcessChangeEmitter", () => {
       maxEventAgeMs: 1_000,
     });
 
-    emitter.publish(event({ orgId: "org-a", operationId: "old" }));
+    emitter.publish(event({ org_id: "org-a", operation_id: "old" }));
     now += 500;
-    emitter.publish(event({ orgId: "org-a", operationId: "mid" }));
+    emitter.publish(event({ org_id: "org-a", operation_id: "mid" }));
     now += 600;
-    emitter.publish(event({ orgId: "org-a", operationId: "new" }));
+    emitter.publish(event({ org_id: "org-a", operation_id: "new" }));
 
     const replay = emitter.getEventsAfter("org-a", "0");
-    expect(replay.map((e) => e.operationId)).toEqual(["mid", "new"]);
+    expect(replay.map((e) => e.operation_id)).toEqual(["mid", "new"]);
     expect(RING_BUFFER_MAX_AGE_MS).toBe(5 * 60 * 1000);
   });
 
@@ -98,8 +98,8 @@ describe("InProcessChangeEmitter", () => {
     emitter.subscribe("org-a", (e) => a.push(e));
     emitter.subscribe("org-b", (e) => b.push(e));
 
-    emitter.publish(event({ orgId: "org-a" }));
-    emitter.publish(event({ orgId: "org-b", operationId: "b-op" }));
+    emitter.publish(event({ org_id: "org-a" }));
+    emitter.publish(event({ org_id: "org-b", operation_id: "b-op" }));
 
     expect(a).toHaveLength(1);
     expect(b).toHaveLength(1);
@@ -115,7 +115,7 @@ describe("InProcessChangeEmitter", () => {
     });
     emitter.subscribe("org-a", good);
 
-    expect(() => emitter.publish(event({ orgId: "org-a" }))).not.toThrow();
+    expect(() => emitter.publish(event({ org_id: "org-a" }))).not.toThrow();
     expect(good).toHaveBeenCalledOnce();
   });
 });

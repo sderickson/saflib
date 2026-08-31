@@ -3,35 +3,35 @@ export interface AuditSealResult {
   reason?: "empty" | "in_progress";
   archive?: {
     filename: string;
-    sizeBytes: number;
-    sha256Hex: string;
+    size_bytes: number;
+    sha256_hex: string;
     /** Remote archive key returned by {@link ShipSealedArchiveCallback}. */
-    archiveKey: string;
-    rowCount: number;
-    headHash: string;
-    tailHash: string;
-    branchCount?: number;
-    firstTs: string;
-    lastTs: string;
+    archive_key: string;
+    row_count: number;
+    head_hash: string;
+    tail_hash: string;
+    branch_count?: number;
+    first_ts: string;
+    last_ts: string;
   };
-  durationMs: number;
+  duration_ms: number;
 }
 
 /** Compressed sealed artifact ready for host upload and off-system reporting. */
 export type AuditSealArtifact = {
   filename: string;
   /** Path to the `.zst` bytes (staging until ship succeeds). */
-  localPath: string;
+  local_path: string;
   compressed: Buffer;
-  sha256Hex: string;
-  rowCount: number;
-  headHash: string;
-  tailHash: string;
-  branchCount?: number;
-  firstTs: string;
-  lastTs: string;
+  sha256_hex: string;
+  row_count: number;
+  head_hash: string;
+  tail_hash: string;
+  branch_count?: number;
+  first_ts: string;
+  last_ts: string;
   /** Default object key/path suggestion (host may ignore). */
-  suggestedArchiveKey: string;
+  suggested_archive_key: string;
 };
 
 export type AuditSealTrigger =
@@ -46,7 +46,7 @@ export type ShipSealedArchiveContext = {
 /** Host uploads the sealed archive and sends the seal report (email, etc.) off-system. */
 export type ShipSealedArchiveCallback = (
   ctx: ShipSealedArchiveContext,
-) => Promise<{ archiveKey: string }>;
+) => Promise<{ archive_key: string }>;
 
 export type SealAuditDbOptions = {
   auditDbKey: import("@saflib/drizzle").DbKey;

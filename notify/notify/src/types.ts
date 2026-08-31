@@ -4,11 +4,11 @@
  */
 export interface ChangeEvent {
   /** OpenAPI operationId of the write that completed. */
-  operationId: string;
+  operation_id: string;
   /** Path params from the request (string values only). */
   params: Record<string, string>;
   /** Org scope for routing. */
-  orgId: string;
+  org_id: string;
 }
 
 /** Change event plus monotonic id for SSE `id:` / Last-Event-ID replay. */
@@ -23,7 +23,7 @@ export type ChangeEventListener = (event: ChangeEventWithId) => void;
  * Never import product-specific types into implementations.
  */
 export interface ChangeEmitter {
-  /** Publish a change for the event's `orgId` channel. */
+  /** Publish a change for the event's `org_id` channel. */
   publish(event: ChangeEvent): void;
   /**
    * Subscribe to an org channel. Returns an unsubscribe function.

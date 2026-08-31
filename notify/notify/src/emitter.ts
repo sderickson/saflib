@@ -47,8 +47,8 @@ export class InProcessChangeEmitter implements ChangeEmitter {
       id: String(this.#nextId++),
     };
     const createdAt = this.#now();
-    this.#append(event.orgId, { event: withId, createdAt });
-    const listeners = this.#subscribers.get(event.orgId);
+    this.#append(event.org_id, { event: withId, createdAt });
+    const listeners = this.#subscribers.get(event.org_id);
     if (!listeners) {
       return;
     }
