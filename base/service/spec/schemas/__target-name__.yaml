@@ -13,12 +13,12 @@ properties:
     type: string
     description: Optional description of the template-resource
     example: "This is an example template resource"
-  createdAt:
+  created_at:
     type: string
     format: date-time
     description: When the template-resource was created
     example: "2023-01-01T00:00:00Z"
-  updatedAt:
+  updated_at:
     type: string
     format: date-time
     description: When the template-resource was last updated
@@ -26,5 +26,5 @@ properties:
 required:
   - id
   - name
-  - createdAt
-  - updatedAt
+  - created_at
+  - updated_at

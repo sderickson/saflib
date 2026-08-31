@@ -23,7 +23,7 @@ To run this workflow automatically, tell the agent to:
 3. **`drizzle/*`** — if the handler needs new tables/queries
 4. **`express/add-handler`** — handler, group router, slim test
 
-`operationId` follows `openapi/route`: `camelCase(handlerFile) + PascalCase(group)` (e.g. `routes/todos/create` → `createTodos`).
+`operationId` follows `openapi/route`: `camelCase(handlerFile) + PascalCase(group)` (e.g. `routes/todos/create` → `createTodos`). That **operation name** stays camelCase. **Resource / request / response JSON properties** in OpenAPI schemas must be `snake_case`, matching Drizzle entity props and SQL column names.
 
 ## What gets generated
 

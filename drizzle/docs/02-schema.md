@@ -14,8 +14,8 @@ When defining Drizzle schemas, please follow these more-specific guidelines.
 - **Timestamps**: Use `integer` with `{ mode: "timestamp" }` for dates
 
   ```typescript
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  created_at: integer("created_at", { mode: "timestamp" }).notNull(),
+  updated_at: integer("updated_at", { mode: "timestamp" }).notNull(),
   ```
 
 - **Currency**: Use `integer` for monetary values (store in cents or other lowest denomination)
@@ -27,7 +27,7 @@ When defining Drizzle schemas, please follow these more-specific guidelines.
 
 - **One-to-One Relationships**: Add unique constraints
   ```typescript
-  profileId: integer("profile_id").notNull().unique(),
+  profile_id: integer("profile_id").notNull().unique(),
   ```
 
 ## Indexes
@@ -166,8 +166,9 @@ have not opened yet. Within a product, keep uniform:
   ISO strings in some tables and epoch integers in others),
 - ID generation (one helper, not `generateShortId` in some tables and
   `randomUUID` in others),
-- TS field naming (pick `camelCase` or `snake_case` per product and do not mix
-  the two *within* a table),
+- TS field naming: use `snake_case` for entity props so they match SQL column
+  names and OpenAPI resource properties (`created_at: integer("created_at", …)`).
+  Do not mix `camelCase` and `snake_case` within a table,
 - whether a given relationship is declared with `.references()`.
 
 ### Nullable-for-legacy columns
