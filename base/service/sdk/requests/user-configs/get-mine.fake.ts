@@ -9,6 +9,6 @@ export const getMineUserConfigsHandler = baseHandler({
   handler: async (): Promise<
     getMineUserConfigsResponseBody["getMineUserConfigs"][200]
   > => {
-    return { userConfig: ensureMockUserConfig() };
+    return { user_config: ensureMockUserConfig() };
   },
 });

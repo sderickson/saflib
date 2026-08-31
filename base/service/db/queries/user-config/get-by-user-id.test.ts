@@ -28,9 +28,9 @@ describe("getByUserIdUserConfig", () => {
     baseDbManager.clearAllTablesForTests(dbKey);
   });
 
-  it("returns null when userId does not exist", async () => {
+  it("returns null when user_id does not exist", async () => {
     const { result, error } = await getByUserIdUserConfig(dbKey, {
-      userId: "nonexistent-id",
+      user_id: "nonexistent-id",
     });
 
     expect(error).toBeUndefined();
@@ -43,18 +43,18 @@ describe("getByUserIdUserConfig", () => {
     const [inserted] = await db
       .insert(userConfigTable)
       .values({
-        userId: "user-1",
-        displayName: "Alex",
-        marketingEmailsOptIn: true,
-        marketingEmailsOptInAt: now,
-        createdAt: now,
-        updatedAt: now,
+        user_id: "user-1",
+        display_name: "Alex",
+        marketing_emails_opt_in: true,
+        marketing_emails_opt_in_at: now,
+        created_at: now,
+        updated_at: now,
       })
       .returning();
     assert(inserted);
 
     const { result, error } = await getByUserIdUserConfig(dbKey, {
-      userId: inserted.userId,
+      user_id: inserted.user_id,
     });
 
     expect(error).toBeUndefined();

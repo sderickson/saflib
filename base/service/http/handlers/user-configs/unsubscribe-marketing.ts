@@ -25,7 +25,7 @@ export const unsubscribeMarketingEmailsUserConfigsHandler = createHandler(
           const userId = await resolveUserIdByEmail(email);
           if (userId) {
             const ctx = baseServiceStorage.getStore()!;
-            await clearMarketingEmailsOptIn(ctx.baseDbKey, { userId });
+            await clearMarketingEmailsOptIn(ctx.baseDbKey, { user_id: userId });
           }
         } catch (e) {
           log.error("marketing unsubscribe DB/identity failed", { err: e });

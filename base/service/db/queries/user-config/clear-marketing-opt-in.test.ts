@@ -31,30 +31,30 @@ describe("clearMarketingEmailsOptIn", () => {
 
   it("clears opt-in on an existing row", async () => {
     await upsertUserConfig(dbKey, {
-      userId: "user-1",
-      displayName: "Alex",
-      marketingEmailsOptIn: true,
+      user_id: "user-1",
+      display_name: "Alex",
+      marketing_emails_opt_in: true,
     });
 
     const { result, error } = await clearMarketingEmailsOptIn(dbKey, {
-      userId: "user-1",
+      user_id: "user-1",
     });
     expect(error).toBeUndefined();
     assert(result);
     expect(result.updated).toBe(true);
 
     const { result: row } = await getByUserIdUserConfig(dbKey, {
-      userId: "user-1",
+      user_id: "user-1",
     });
     assert(row);
-    expect(row.marketingEmailsOptIn).toBe(false);
-    expect(row.marketingEmailsOptInAt).toBeNull();
-    expect(row.displayName).toBe("Alex");
+    expect(row.marketing_emails_opt_in).toBe(false);
+    expect(row.marketing_emails_opt_in_at).toBeNull();
+    expect(row.display_name).toBe("Alex");
   });
 
   it("reports updated=false when no row exists", async () => {
     const { result, error } = await clearMarketingEmailsOptIn(dbKey, {
-      userId: "missing",
+      user_id: "missing",
     });
     expect(error).toBeUndefined();
     assert(result);

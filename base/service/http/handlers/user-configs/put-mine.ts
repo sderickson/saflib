@@ -17,22 +17,22 @@ export const putMineUserConfigsHandler = createHandler(async (req, res) => {
   const { auth } = getSafContextWithAuth();
   const data: RequestBody["putMineUserConfigs"] = req.body;
 
-  const displayName = data.displayName.trim();
-  if (!displayName) {
-    throw createError(400, "displayName must be non-empty after trim");
+  const display_name = data.display_name.trim();
+  if (!display_name) {
+    throw createError(400, "display_name must be non-empty after trim");
   }
-  if (displayName.length > DISPLAY_NAME_MAX_LENGTH) {
+  if (display_name.length > DISPLAY_NAME_MAX_LENGTH) {
     throw createError(
       400,
-      `displayName must be at most ${DISPLAY_NAME_MAX_LENGTH} characters`,
+      `display_name must be at most ${DISPLAY_NAME_MAX_LENGTH} characters`,
     );
   }
 
   const { result, error } = await upsertUserConfig(ctx.baseDbKey, {
-    userId: auth.userId,
-    displayName,
-    marketingEmailsOptIn: data.marketingEmailsOptIn,
-    agreeToTermsOfServiceNow: data.termsOfServiceAgreedAt === "now",
+    user_id: auth.userId,
+    display_name,
+    marketing_emails_opt_in: data.marketing_emails_opt_in,
+    agreeToTermsOfServiceNow: data.terms_of_service_agreed_at === "now",
   });
 
   if (error) {
@@ -40,7 +40,7 @@ export const putMineUserConfigsHandler = createHandler(async (req, res) => {
   }
 
   const response: ResponseBody["putMineUserConfigs"][200] = {
-    userConfig: mapUserConfigEntityToApi(result!),
+    user_config: mapUserConfigEntityToApi(result!),
   };
 
   res.status(200).json(response);

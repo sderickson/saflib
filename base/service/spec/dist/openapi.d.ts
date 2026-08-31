@@ -75,13 +75,13 @@ export interface paths {
         };
         /**
          * Get or lazy-create the caller's user config
-         * @description Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`displayName` empty string, `marketingEmailsOptIn` false, `marketingEmailsOptInAt` null, `termsOfServiceAgreedAt` null) and returns that row.
+         * @description Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`display_name` empty string, `marketing_emails_opt_in` false, `marketing_emails_opt_in_at` null, `terms_of_service_agreed_at` null) and returns that row.
          *     **Lazy-create pattern:** empty `user_config` rows are created on first GET (not via a Kratos registration webhook). This keeps Kratos auth-only and the product DB responsible for user-facing prefs.
          */
         get: operations["getMineUserConfigs"];
         /**
          * Update the caller's user config
-         * @description Upserts the authenticated user's display name and marketing email preference. Lazy-creates the `user_config` row when missing. `displayName` is trimmed; empty or whitespace-only values are rejected. When `marketingEmailsOptIn` becomes `true`, sets `marketingEmailsOptInAt` to now if newly opted in; when set to `false`, clears `marketingEmailsOptInAt` to null. Pass `termsOfServiceAgreedAt: "now"` to record Terms of Service agreement at the server's current time (preserved once set; not overwritten). `userId`, timestamps, and client-supplied ISO values for `marketingEmailsOptInAt` / `termsOfServiceAgreedAt` may be included when echoing a prior GET but are ignored — ownership and timestamps are server-controlled.
+         * @description Upserts the authenticated user's display name and marketing email preference. Lazy-creates the `user_config` row when missing. `display_name` is trimmed; empty or whitespace-only values are rejected. When `marketing_emails_opt_in` becomes `true`, sets `marketing_emails_opt_in_at` to now if newly opted in; when set to `false`, clears `marketing_emails_opt_in_at` to null. Pass `terms_of_service_agreed_at: "now"` to record Terms of Service agreement at the server's current time (preserved once set; not overwritten). `user_id`, timestamps, and client-supplied ISO values for `marketing_emails_opt_in_at` / `terms_of_service_agreed_at` may be included when echoing a prior GET but are ignored — ownership and timestamps are server-controlled.
          */
         put: operations["putMineUserConfigs"];
         post?: never;
@@ -384,13 +384,13 @@ export interface components {
         /**
          * @description Product-owned preferences for the signed-in user (owner-only). Keyed by Kratos identity id. Holds display name, marketing email consent, and Terms of Service agreement — not auth traits. Kratos owns identity/credentials/sessions; this resource is the Kratos-minimal product DB pattern.
          * @example {
-         *       "userId": "user_abc123",
-         *       "displayName": "Alex Rivera",
-         *       "marketingEmailsOptIn": false,
-         *       "marketingEmailsOptInAt": null,
-         *       "termsOfServiceAgreedAt": null,
-         *       "createdAt": "2026-07-23T00:00:00Z",
-         *       "updatedAt": "2026-07-23T12:30:00Z"
+         *       "user_id": "user_abc123",
+         *       "display_name": "Alex Rivera",
+         *       "marketing_emails_opt_in": false,
+         *       "marketing_emails_opt_in_at": null,
+         *       "terms_of_service_agreed_at": null,
+         *       "created_at": "2026-07-23T00:00:00Z",
+         *       "updated_at": "2026-07-23T12:30:00Z"
          *     }
          */
         "user-config": {
@@ -398,41 +398,41 @@ export interface components {
              * @description Kratos identity id of the owning user.
              * @example user_abc123
              */
-            userId: string;
+            user_id: string;
             /**
              * @description How the user appears to themselves and to others. May be empty after lazy-create until the first save; PUT requires a non-empty trimmed value.
              * @example Alex Rivera
              */
-            displayName: string;
+            display_name: string;
             /**
              * @description Explicit consent for product/marketing email. Defaults to false until the user opts in.
              * @example false
              */
-            marketingEmailsOptIn: boolean;
+            marketing_emails_opt_in: boolean;
             /**
              * Format: date-time
-             * @description When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketingEmailsOptIn` becomes false).
+             * @description When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketing_emails_opt_in` becomes false).
              * @example null
              */
-            marketingEmailsOptInAt: string | null;
+            marketing_emails_opt_in_at: string | null;
             /**
              * Format: date-time
-             * @description When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `termsOfServiceAgreedAt: "now"`). Once set, later preference updates do not clear or overwrite it.
+             * @description When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `terms_of_service_agreed_at: "now"`). Once set, later preference updates do not clear or overwrite it.
              * @example null
              */
-            termsOfServiceAgreedAt: string | null;
+            terms_of_service_agreed_at: string | null;
             /**
              * Format: date-time
              * @description When the user config row was created.
              * @example 2026-07-23T00:00:00Z
              */
-            createdAt: string;
+            created_at: string;
             /**
              * Format: date-time
              * @description When the user config row was last updated.
              * @example 2026-07-23T12:30:00Z
              */
-            updatedAt: string;
+            updated_at: string;
         };
         /** @description Ory Kratos identity as returned by the admin API. Extra fields from Kratos are allowed. `id` is the Kratos identity UUID (not a product `generateShortId`). */
         "kratos-identity": {
@@ -516,13 +516,13 @@ export interface components {
              * @description When the template-resource was created
              * @example 2023-01-01T00:00:00Z
              */
-            createdAt: string;
+            created_at: string;
             /**
              * Format: date-time
              * @description When the template-resource was last updated
              * @example 2023-01-01T00:00:00Z
              */
-            updatedAt: string;
+            updated_at: string;
         };
     };
     responses: never;
@@ -685,7 +685,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @description Owner-only preferences for the signed-in user. */
-                        userConfig: components["schemas"]["user-config"];
+                        user_config: components["schemas"]["user-config"];
                     };
                 };
             };
@@ -723,24 +723,24 @@ export interface operations {
                      * @description How the user appears to themselves and others. Trimmed server-side; must be non-empty after trim. Max length 80.
                      * @example Alex Rivera
                      */
-                    displayName: string;
+                    display_name: string;
                     /**
-                     * @description Explicit consent for product/marketing email. When flipped to true, `marketingEmailsOptInAt` is set; when flipped to false, that timestamp is cleared.
+                     * @description Explicit consent for product/marketing email. When flipped to true, `marketing_emails_opt_in_at` is set; when flipped to false, that timestamp is cleared.
                      * @example false
                      */
-                    marketingEmailsOptIn: boolean;
+                    marketing_emails_opt_in: boolean;
                     /**
                      * @description Pass the literal string `now` to record Terms of Service agreement using the server clock. Any other value (including ISO timestamps from a prior GET, or null) is ignored. Once recorded, the agreement timestamp is not cleared or overwritten.
                      * @example now
                      */
-                    termsOfServiceAgreedAt?: string | null;
-                    userId?: string;
+                    terms_of_service_agreed_at?: string | null;
+                    user_id?: string;
                     /** Format: date-time */
-                    marketingEmailsOptInAt?: string | null;
+                    marketing_emails_opt_in_at?: string | null;
                     /** Format: date-time */
-                    createdAt?: string;
+                    created_at?: string;
                     /** Format: date-time */
-                    updatedAt?: string;
+                    updated_at?: string;
                 };
             };
         };
@@ -753,11 +753,11 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @description Owner-only preferences for the signed-in user after upsert. */
-                        userConfig: components["schemas"]["user-config"];
+                        user_config: components["schemas"]["user-config"];
                     };
                 };
             };
-            /** @description `displayName` is empty or whitespace-only after trim. */
+            /** @description `display_name` is empty or whitespace-only after trim. */
             400: {
                 headers: {
                     [name: string]: unknown;

@@ -6,13 +6,13 @@ export function testUserConfig(
   overrides: Partial<UserConfig> = {},
 ): UserConfig {
   return {
-    userId: TEST_USER_ID,
-    displayName: "Test User",
-    marketingEmailsOptIn: false,
-    marketingEmailsOptInAt: null,
-    termsOfServiceAgreedAt: null,
-    createdAt: TEST_TIMESTAMP,
-    updatedAt: TEST_TIMESTAMP,
+    user_id: TEST_USER_ID,
+    display_name: "Test User",
+    marketing_emails_opt_in: false,
+    marketing_emails_opt_in_at: null,
+    terms_of_service_agreed_at: null,
+    created_at: TEST_TIMESTAMP,
+    updated_at: TEST_TIMESTAMP,
     ...overrides,
   };
 }

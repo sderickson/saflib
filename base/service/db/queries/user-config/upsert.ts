@@ -9,11 +9,11 @@ import type { DbKey } from "@saflib/drizzle";
 import { eq } from "drizzle-orm";
 
 export interface UpsertUserConfigParams {
-  userId: (typeof userConfigTable.$inferSelect)["userId"];
-  displayName: (typeof userConfigTable.$inferSelect)["displayName"];
-  marketingEmailsOptIn: (typeof userConfigTable.$inferSelect)["marketingEmailsOptIn"];
+  user_id: (typeof userConfigTable.$inferSelect)["user_id"];
+  display_name: (typeof userConfigTable.$inferSelect)["display_name"];
+  marketing_emails_opt_in: (typeof userConfigTable.$inferSelect)["marketing_emails_opt_in"];
   /**
-   * When true, set `termsOfServiceAgreedAt` to now if it is currently null.
+   * When true, set `terms_of_service_agreed_at` to now if it is currently null.
    * Does not overwrite an existing agreement timestamp.
    */
   agreeToTermsOfServiceNow?: boolean;
@@ -28,48 +28,48 @@ export const upsertUserConfig = queryWrapper(
   ): Promise<ReturnsError<UserConfigEntity, UpsertUserConfigError>> => {
     const db = baseDbManager.get(dbKey)!;
     const now = new Date();
-    const displayName = params.displayName.trim();
+    const display_name = params.display_name.trim();
 
     const existing = await db
       .select()
       .from(userConfigTable)
-      .where(eq(userConfigTable.userId, params.userId))
+      .where(eq(userConfigTable.user_id, params.user_id))
       .limit(1);
 
-    let marketingEmailsOptInAt: Date | null;
-    if (!params.marketingEmailsOptIn) {
-      marketingEmailsOptInAt = null;
-    } else if (!existing[0]?.marketingEmailsOptIn) {
-      marketingEmailsOptInAt = now;
+    let marketing_emails_opt_in_at: Date | null;
+    if (!params.marketing_emails_opt_in) {
+      marketing_emails_opt_in_at = null;
+    } else if (!existing[0]?.marketing_emails_opt_in) {
+      marketing_emails_opt_in_at = now;
     } else {
-      marketingEmailsOptInAt = existing[0].marketingEmailsOptInAt;
+      marketing_emails_opt_in_at = existing[0].marketing_emails_opt_in_at;
     }
 
-    let termsOfServiceAgreedAt: Date | null =
-      existing[0]?.termsOfServiceAgreedAt ?? null;
-    if (params.agreeToTermsOfServiceNow && !termsOfServiceAgreedAt) {
-      termsOfServiceAgreedAt = now;
+    let terms_of_service_agreed_at: Date | null =
+      existing[0]?.terms_of_service_agreed_at ?? null;
+    if (params.agreeToTermsOfServiceNow && !terms_of_service_agreed_at) {
+      terms_of_service_agreed_at = now;
     }
 
     const result = await db
       .insert(userConfigTable)
       .values({
-        userId: params.userId,
-        displayName,
-        marketingEmailsOptIn: params.marketingEmailsOptIn,
-        marketingEmailsOptInAt,
-        termsOfServiceAgreedAt,
-        createdAt: now,
-        updatedAt: now,
+        user_id: params.user_id,
+        display_name,
+        marketing_emails_opt_in: params.marketing_emails_opt_in,
+        marketing_emails_opt_in_at,
+        terms_of_service_agreed_at,
+        created_at: now,
+        updated_at: now,
       })
       .onConflictDoUpdate({
-        target: userConfigTable.userId,
+        target: userConfigTable.user_id,
         set: {
-          displayName,
-          marketingEmailsOptIn: params.marketingEmailsOptIn,
-          marketingEmailsOptInAt,
-          termsOfServiceAgreedAt,
-          updatedAt: now,
+          display_name,
+          marketing_emails_opt_in: params.marketing_emails_opt_in,
+          marketing_emails_opt_in_at,
+          terms_of_service_agreed_at,
+          updated_at: now,
         },
       })
       .returning();
