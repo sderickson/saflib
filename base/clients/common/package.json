@@ -17,6 +17,7 @@
     "./fixtures/*": "./fixtures/*.ts",
     "./utils/*": "./utils/*.ts",
     "./vuetify-config": "./vuetify-config.ts",
+    "./style-imports": "./style-imports.ts",
     "./static-site-theme": "./static-site-theme.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts",
@@ -43,7 +44,10 @@
   },
   "sideEffects": [
     "./clients/events.ts",
-    "./components/marketing/marketing.css"
+    "./components/marketing/marketing.css",
+    "./style-imports.ts",
+    "**/*.scss",
+    "**/*.css"
   ],
   "imports": {
     "#assets/*": "./assets/*",
@@ -58,6 +62,7 @@
     "#playwright.config.ts": "./playwright.config.ts",
     "#strings.ts": "./strings.ts",
     "#utils/*": "./utils/*",
-    "#vuetify-config.ts": "./vuetify-config.ts"
+    "#vuetify-config.ts": "./vuetify-config.ts",
+    "#style-imports.ts": "./style-imports.ts"
   }
 }

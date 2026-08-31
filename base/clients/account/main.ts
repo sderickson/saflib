@@ -1,6 +1,6 @@
 import { createSpaMain } from "@saflib/vue";
 import Spa from "./AccountSpa.vue";
-import "vuetify/styles";
+import "@saflib/base-clients-common/style-imports";
 import { vuetifyConfig } from "@saflib/base-clients-common/vuetify-config";
 import { createAccountRouter } from "./router.ts";
 import { account_strings } from "./strings.ts";

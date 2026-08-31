@@ -14,7 +14,7 @@ import {
   it,
   vi,
 } from "vitest";
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { asOpenApiDocument } from "@saflib/openapi";
 import type { DbKey } from "@saflib/drizzle";
 import { startExpressServer } from "@saflib/express";
 import { jobsDbManager } from "@saflib/jobs-db/instances";
@@ -29,8 +29,8 @@ const TEST_SECRET = Buffer.from("cron-enqueuer-test-secret!!!!").toString(
 );
 const TEST_KEYS = `cron-enq:${TEST_SECRET}`;
 
-const productSpec: OpenAPIV3.DocumentV3 = {
-  openapi: "3.0.0",
+const productSpec = asOpenApiDocument({
+  openapi: "3.1.0",
   info: { title: "product", version: "1.0.0" },
   paths: {
     "/maintenance/purge-claude-files": {
@@ -41,7 +41,7 @@ const productSpec: OpenAPIV3.DocumentV3 = {
       },
     },
   },
-};
+});
 
 const triggerMap = {
   "cron:purgeClaudeFiles": ["purgeClaudeFilesMaintenance"],

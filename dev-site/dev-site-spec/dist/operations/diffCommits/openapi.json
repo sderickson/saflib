@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "diffCommits",
     "version": "1.0.0"
@@ -377,14 +377,18 @@
             ]
           },
           "signature": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.\n",
             "example": "(repoRoot: string, options?: LogOptions)"
           },
           "docstring": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).\n",
             "example": "Walk commits newest-first without checking out."
           },
@@ -448,14 +452,18 @@
             "example": "log"
           },
           "subjectSignature": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Signature of the linked export at this commit (null if unknown).",
             "example": "(repoRoot: string, options?: LogOptions)"
           },
           "subjectDocstring": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "First JSDoc prose line of the linked export, when present."
           },
           "subjectFilePath": {
@@ -501,8 +509,10 @@
             "type": "string"
           },
           "docstring": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
@@ -533,8 +543,10 @@
             "type": "string"
           },
           "docstring": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },

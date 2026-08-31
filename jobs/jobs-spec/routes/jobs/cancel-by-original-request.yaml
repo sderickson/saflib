@@ -1,13 +1,9 @@
 cancelJobsByOriginalRequest:
   summary: Mass-cancel jobs in a request chain
   description: >
-    Cancels every non-terminal, non-running job that shares the given
-    `originalRequestId` (`terminalReason: cancelled-by-chain`). Running jobs in
-    the chain are left alone. Returns the jobs that were cancelled. Mounted as
-    monolith chrome (`site-admin-only`).
+    Cancels every non-terminal, non-running job that shares the given `originalRequestId` (`terminalReason: cancelled-by-chain`). Running jobs in the chain are left alone. Returns the jobs that were cancelled. Mounted as monolith chrome (`site-admin-only`).
   operationId: cancelJobsByOriginalRequest
   tags:
-    - jobs
     - site-admin-only
 
   requestBody:

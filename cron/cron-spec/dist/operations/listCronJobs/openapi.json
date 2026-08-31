@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "listCronJobs",
     "version": "1.0.0"
@@ -10,7 +10,6 @@
         "summary": "List all cron jobs",
         "operationId": "listCronJobs",
         "tags": [
-          "cron",
           "site-admin-only"
         ],
         "security": [
@@ -77,18 +76,25 @@
             "description": "Whether the job is enabled to run."
           },
           "enabledBy": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Kratos identity id of the admin who last enabled the job. Null for pre-migration rows until re-enabled. Ticks skip when enabled with null.\n"
           },
           "lastRunAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "description": "Timestamp of the last time the job ran."
           },
           "lastRunStatus": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "enum": [
               "success",
               "fail",
@@ -96,19 +102,22 @@
               "timed out",
               null
             ],
-            "nullable": true,
             "description": "Status of the last job run."
           },
           "schedule": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "readOnly": true,
             "description": "Cron schedule string from the registered JobsMap (e.g. `*/15 * * * *`)."
           },
           "runsNextAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "readOnly": true,
             "description": "Next scheduled tick when the job is enabled; null when disabled or schedule is unknown.\n"
           },

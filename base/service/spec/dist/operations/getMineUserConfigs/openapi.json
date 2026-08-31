@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "getMineUserConfigs",
     "version": "1.0.0"
@@ -78,16 +78,20 @@
             "example": false
           },
           "marketingEmailsOptInAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "description": "When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketingEmailsOptIn` becomes false).\n",
             "example": null
           },
           "termsOfServiceAgreedAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "description": "When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `termsOfServiceAgreedAt: \"now\"`). Once set, later preference updates do not clear or overwrite it.\n",
             "example": null
           },

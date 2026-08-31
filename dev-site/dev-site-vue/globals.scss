@@ -1,0 +1,6 @@
+/* App-wide utility / layout classes that are not Vuetify component restyles.
+ *
+ * Prefer product clients/build/globals.scss for hosted SPAs. Restyling .v-*
+ * components belongs in vuetify-overrides.scss; Sass variables in vuetify-settings.scss
+ * (see those files for where Vuetify sources live under node_modules).
+ */

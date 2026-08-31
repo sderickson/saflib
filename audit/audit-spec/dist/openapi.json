@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "Audit Log API",
     "version": "1.0.0",
@@ -57,35 +57,49 @@
             ]
           },
           "actorUserId": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "onBehalfOfUserId": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "authMethod": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "requestId": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "clientIp": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "eventType": {
             "type": "string"
           },
           "resourceType": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "resourceId": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "outcome": {
             "type": "string"
@@ -100,8 +114,10 @@
             "type": "string"
           },
           "details": {
-            "nullable": true,
-            "type": "object",
+            "type": [
+              "object",
+              "null"
+            ],
             "description": "Event-specific JSON payload; shape depends on `source`.",
             "additionalProperties": true
           }
@@ -331,20 +347,26 @@
                       }
                     },
                     "headAt": {
-                      "type": "string",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "format": "date-time",
-                      "nullable": true,
                       "description": "Earliest `ts` in the audit table, if any rows exist."
                     },
                     "tailAt": {
-                      "type": "string",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "format": "date-time",
-                      "nullable": true,
                       "description": "Latest `ts` in the audit table, if any rows exist."
                     },
                     "nextCursor": {
-                      "type": "string",
-                      "nullable": true,
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "description": "Pass as `cursor` to fetch the next page, if more rows exist."
                     }
                   }

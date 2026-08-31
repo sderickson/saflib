@@ -16,7 +16,7 @@ export interface DevSiteDockerHttpEnvSchema extends DevSiteHttpEnvSchema, EnvEnv
    */
   DEV_SITE_REPO_ROOT?: string;
   /**
-   * Path prefix within the repo to analyze (e.g. base or daemon). Empty string = whole repo.
+   * Path prefix within the repo to analyze (e.g. base or your-product). Empty string = whole repo.
    */
   DEV_SITE_PRODUCT_ROOT?: string;
   /**

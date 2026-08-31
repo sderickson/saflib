@@ -3,16 +3,7 @@ putMineUserConfigs:
   operationId: "putMineUserConfigs"
   tags: []
   description: >
-    Upserts the authenticated user's display name and marketing email preference.
-    Lazy-creates the `user_config` row when missing. `displayName` is trimmed;
-    empty or whitespace-only values are rejected. When `marketingEmailsOptIn`
-    becomes `true`, sets `marketingEmailsOptInAt` to now if newly opted in; when
-    set to `false`, clears `marketingEmailsOptInAt` to null. Pass
-    `termsOfServiceAgreedAt: "now"` to record Terms of Service agreement at the
-    server's current time (preserved once set; not overwritten). `userId`,
-    timestamps, and client-supplied ISO values for `marketingEmailsOptInAt` /
-    `termsOfServiceAgreedAt` may be included when echoing a prior GET but are
-    ignored — ownership and timestamps are server-controlled.
+    Upserts the authenticated user's display name and marketing email preference. Lazy-creates the `user_config` row when missing. `displayName` is trimmed; empty or whitespace-only values are rejected. When `marketingEmailsOptIn` becomes `true`, sets `marketingEmailsOptInAt` to now if newly opted in; when set to `false`, clears `marketingEmailsOptInAt` to null. Pass `termsOfServiceAgreedAt: "now"` to record Terms of Service agreement at the server's current time (preserved once set; not overwritten). `userId`, timestamps, and client-supplied ISO values for `marketingEmailsOptInAt` / `termsOfServiceAgreedAt` may be included when echoing a prior GET but are ignored — ownership and timestamps are server-controlled.
 
   requestBody:
     required: true
@@ -29,32 +20,24 @@ putMineUserConfigs:
               type: string
               maxLength: 80
               description: >
-                How the user appears to themselves and others. Trimmed
-                server-side; must be non-empty after trim. Max length 80.
+                How the user appears to themselves and others. Trimmed server-side; must be non-empty after trim. Max length 80.
               example: "Alex Rivera"
             marketingEmailsOptIn:
               type: boolean
               description: >
-                Explicit consent for product/marketing email. When flipped to true,
-                `marketingEmailsOptInAt` is set; when flipped to false, that
-                timestamp is cleared.
+                Explicit consent for product/marketing email. When flipped to true, `marketingEmailsOptInAt` is set; when flipped to false, that timestamp is cleared.
               example: false
             termsOfServiceAgreedAt:
-              type: string
-              nullable: true
+              type: [ string, "null" ]
               description: >
-                Pass the literal string `now` to record Terms of Service agreement
-                using the server clock. Any other value (including ISO timestamps
-                from a prior GET, or null) is ignored. Once recorded, the agreement
-                timestamp is not cleared or overwritten.
+                Pass the literal string `now` to record Terms of Service agreement using the server clock. Any other value (including ISO timestamps from a prior GET, or null) is ignored. Once recorded, the agreement timestamp is not cleared or overwritten.
               example: "now"
             # Accepted so clients may echo a prior GET; ignored by the server.
             userId:
               type: string
             marketingEmailsOptInAt:
-              type: string
+              type: [ string, "null" ]
               format: date-time
-              nullable: true
             createdAt:
               type: string
               format: date-time

@@ -18,5 +18,4 @@ properties:
   propName:
     type: string
   docstring:
-    type: string
-    nullable: true
+    type: [ string, "null" ]

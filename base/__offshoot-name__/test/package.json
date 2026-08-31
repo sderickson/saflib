@@ -1,0 +1,30 @@
+{
+  "name": "@saflib/base-__offshoot-name__-test",
+  "saf": {
+    "kind": "test"
+  },
+  "description": "Shared factories for Base __offshoot-name__ models used in unit tests (SPA, HTTP, SDK fakes)",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./shared/*": "./shared/*.ts",
+    "./factories/*": "./factories/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/base-__offshoot-name__-spec": "*",
+    "@saflib/monorepo": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false,
+  "imports": {
+    "#shared/*": "./shared/*",
+    "#factories/*": "./factories/*"
+  }
+}

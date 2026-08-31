@@ -40,6 +40,15 @@ describe("such-and-such query", () => {
 
 If the package exports a `publicInterface()` wrapper (e.g. `mainDb`), the same hooks apply using `mainDb.connect()`, `mainDb.disconnect()`, and `mainDb.clearAllTablesForTests()`.
 
+## No FK cascades
+
+Every drizzle package should include a small test that calls
+`assertNoFkCascades` from `@saflib/drizzle` against the package root. It fails
+if any migration SQL uses `ON DELETE/UPDATE CASCADE` or any schema sets
+`onDelete`/`onUpdate: "cascade"`. See [Schema](./02-schema.md).
+
 ## Coverage
 
 Database queries should aim for 100% coverage. This includes error handling. For any error they return, there should be a known set of steps to reproduce that error, and those should be in a test. If there's no known way to cause a "handled" error to be returned, then that logic should be removed. This ensures that all database query logic is intentional.
+
+When tests assert against OpenAPI/service model shapes (not just DB row inserts), prefer factories from product `*-test` packages (`@scope/<product>-test/factories/*`, offshoot `*-<offshoot>-test`) instead of hand-built empties.

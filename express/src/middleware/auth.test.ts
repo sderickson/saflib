@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 import express from "express";
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { asOpenApiDocument } from "@saflib/openapi";
 import request from "supertest";
 import {
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
@@ -169,8 +169,8 @@ const forbiddenSchemaProps = {
 
 describe("Auth Middleware email-verified OpenAPI tag", () => {
   /** Minimal spec with response bodies so express-openapi-validator accepts handler + auth errors. */
-  const specWithEmailVerifiedTag: OpenAPIV3.DocumentV3 = {
-    openapi: "3.0.0",
+  const specWithEmailVerifiedTag = asOpenApiDocument({
+    openapi: "3.1.0",
     info: { title: "test", version: "1.0.0" },
     paths: {
       "/tagged": {
@@ -203,7 +203,7 @@ describe("Auth Middleware email-verified OpenAPI tag", () => {
         },
       },
     },
-  };
+  });
 
   it("returns 403 when operation has email-verified tag and email is not verified", async () => {
     const app = express();
@@ -257,8 +257,8 @@ describe("Auth Middleware email-verified OpenAPI tag", () => {
 });
 
 describe("Auth Middleware mfa-required OpenAPI tag", () => {
-  const specWithMfaTag: OpenAPIV3.DocumentV3 = {
-    openapi: "3.0.0",
+  const specWithMfaTag = asOpenApiDocument({
+    openapi: "3.1.0",
     info: { title: "test", version: "1.0.0" },
     paths: {
       "/mfa-route": {
@@ -291,7 +291,7 @@ describe("Auth Middleware mfa-required OpenAPI tag", () => {
         },
       },
     },
-  };
+  });
 
   it("returns 403 MFA_REQUIRED when tag is present and session is not MFA-complete", async () => {
     const app = express();
@@ -346,8 +346,8 @@ describe("Auth Middleware mfa-required OpenAPI tag", () => {
 });
 
 describe("Auth Middleware site-admin-only OpenAPI tag", () => {
-  const specWithSiteAdminTag: OpenAPIV3.DocumentV3 = {
-    openapi: "3.0.0",
+  const specWithSiteAdminTag = asOpenApiDocument({
+    openapi: "3.1.0",
     info: { title: "test", version: "1.0.0" },
     paths: {
       "/admin-route": {
@@ -380,7 +380,7 @@ describe("Auth Middleware site-admin-only OpenAPI tag", () => {
         },
       },
     },
-  };
+  });
 
   it("returns EMAIL_VERIFICATION_REQUIRED before admin role when site-admin-only and email unverified", async () => {
     const app = express();

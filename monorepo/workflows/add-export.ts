@@ -116,7 +116,9 @@ export const AddExportWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the ${context.targetName} functionality.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the ${context.targetName} functionality.
+      
+      Prefer factories from product \`*-test\` packages when the unit under test deals with OpenAPI/service model shapes.`,
     })),
 
     step(CommandStepMachine, () => ({

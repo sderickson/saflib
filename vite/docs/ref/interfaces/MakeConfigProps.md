@@ -24,8 +24,9 @@ Additional plugins to include in the Vite config. Vue, Vuetify, VueDevTools, and
 
 ---
 
-### vuetifyOverrides?
+### vuetifySettings?
 
-> `optional` **vuetifyOverrides**: `string`
+> `optional` **vuetifySettings**: `string`
 
-A relative path (from process.cwd()) to the Vuetify style configFile override.
+A relative path (from process.cwd()) to the Vuetify Sass settings configFile
+(`vuetify-settings.scss`).

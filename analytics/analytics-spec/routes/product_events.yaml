@@ -2,7 +2,6 @@ recordProductEvent:
   summary: Record a product analytics event
   operationId: recordProductEvent
   tags:
-    - product-events
     - no-auth
   requestBody:
     required: true
@@ -44,7 +43,6 @@ listProductEvents:
   summary: List buffered product events
   operationId: listProductEvents
   tags:
-    - product-events
     - site-admin-only
   parameters:
     - name: name

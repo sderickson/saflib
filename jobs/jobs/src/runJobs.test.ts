@@ -14,7 +14,7 @@ import {
   vi,
 } from "vitest";
 import express from "express";
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { asOpenApiDocument } from "@saflib/openapi";
 import type { DbKey } from "@saflib/drizzle";
 import { verifyAssertion } from "@saflib/node";
 import { startExpressServer } from "@saflib/express";
@@ -46,14 +46,14 @@ const SERVER_SECRET = Buffer.from("jobs-runtime-test-secret!!!!").toString(
 );
 const SERVER_KEYS = `jobs-test:${SERVER_SECRET}`;
 
-const apiSpec: OpenAPIV3.DocumentV3 = {
-  openapi: "3.0.0",
+const apiSpec = asOpenApiDocument({
+  openapi: "3.1.0",
   info: { title: "jobs-runtime-test", version: "1.0.0" },
   paths: {
     "/jobs-demo/start": {
       post: {
         operationId: "startJobsDemo",
-        tags: ["jobs-demo"],
+        tags: ["site-admin-only"],
         responses: { "200": { description: "ok" } },
       },
     },
@@ -79,7 +79,7 @@ const apiSpec: OpenAPIV3.DocumentV3 = {
       },
     },
   },
-};
+});
 
 const triggerMap = {
   startJobsDemo: ["jobsDemoStepB", "jobsDemoWork"],

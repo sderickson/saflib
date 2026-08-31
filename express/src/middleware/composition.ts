@@ -1,6 +1,6 @@
 import type { ErrorRequestHandler, Handler, RequestHandler } from "express";
 import { json, urlencoded } from "express";
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import type { OpenApiDocument } from "@saflib/openapi";
 import { isDevelopmentDeployment } from "@saflib/env";
 import { corsRouter } from "./cors.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
@@ -96,7 +96,7 @@ export const createGlobalMiddleware = (
  * Options for creating scoped middleware.
  */
 export interface ScopedMiddlewareOptions {
-  apiSpec?: OpenAPIV3.DocumentV3;
+  apiSpec?: OpenApiDocument;
   fileUploader?: multer.Options;
   enforceAuth?: boolean;
   adminRequired?: boolean;
@@ -109,7 +109,7 @@ export interface ScopedMiddlewareOptions {
  * Scoped middleware for a single OpenAPI operation fragment (from `@<org>/<spec>/operations/<operationId>`).
  */
 export const createOperationScopedMiddleware = (
-  apiSpec: OpenAPIV3.DocumentV3,
+  apiSpec: OpenApiDocument,
   options: Omit<ScopedMiddlewareOptions, "apiSpec"> = {},
 ): Handler[] => createScopedMiddleware({ ...options, apiSpec });
 

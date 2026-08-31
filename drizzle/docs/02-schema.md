@@ -123,16 +123,21 @@ const pragmas = {
 const dbKey = myDbManager.connect({ onDisk: true, pragmas });
 ```
 
-Decide the delete behavior too. `ON DELETE no action` (the Drizzle default)
-means you must delete children yourself, in the right order, in a transaction.
-If a parent delete should remove its children, say so explicitly.
+**Never use FK cascades.** Leave the Drizzle default (`ON DELETE no action` /
+no `onDelete: "cascade"`). Delete children yourself, in the right order, in a
+transaction inside a query. SQL `ON DELETE CASCADE` is banned because
+drizzle-kit often recreates tables (`CREATE` → copy → `DROP` → rename); with
+cascades and foreign keys on, dropping the old parent can wipe entire child
+tables. Package tests call `assertNoFkCascades` from `@saflib/drizzle` to
+enforce this on migrations and schemas.
 
 ### Retention and deletion
 
 - For any table holding personal data, decide up front how a row gets deleted
   and whether anything must survive the delete (audit rows, billing records).
-- Deletion is a schema concern: without enforced FKs and cascades, "delete this
-  user's data" becomes a hand-maintained list of tables that goes stale.
+- Deletion is a query concern: with enforced FKs and **no** cascades, "delete
+  this user's data" is an explicit ordered delete in application code (not a
+  schema side effect).
 
 ### Money and counters
 

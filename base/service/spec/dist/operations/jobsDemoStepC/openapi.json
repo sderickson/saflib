@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "jobsDemoStepC",
     "version": "1.0.0"
@@ -12,8 +12,7 @@
         "operationId": "jobsDemoStepC",
         "tags": [
           "site-admin-only",
-          "background",
-          "jobs-demo"
+          "background"
         ],
         "requestBody": {
           "required": false,
@@ -67,13 +66,17 @@
         "additionalProperties": false,
         "properties": {
           "dedupeKey": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Optional dedupe key forwarded to the enqueued job."
           },
           "concurrencyKey": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Optional concurrency key forwarded to the enqueued job."
           },
           "failuresBeforeSuccess": {

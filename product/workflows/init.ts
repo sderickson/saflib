@@ -116,7 +116,8 @@ function toProductMonorepoDevCompose(
 /**
  * Live-host lines that still point at expansion stubs skipped by
  * skipSourceGlobs (paths matching __stub-name__). Dropping them keeps
- * package.json / tsconfig valid after the stub packages themselves are omitted.
+ * package.json / tsconfig / schema barrels valid after stub packages/files
+ * themselves are omitted.
  */
 export function isSkippedStubRefLine(line: string): boolean {
   if (!/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(line)) return false;
@@ -127,6 +128,8 @@ export function isSkippedStubRefLine(line: string): boolean {
   if (/^\s*\{\s*"path"\s*:\s*"[^"]*__[^"]*"\s*\}\s*,?\s*$/.test(line)) {
     return true;
   }
+  // import/export of skipped stub modules (e.g. schemas/__group-name__.ts)
+  if (/^\s*(export|import)\b/.test(line)) return true;
   return false;
 }
 
@@ -152,8 +155,9 @@ export function makeProductInitLineReplace(context: InitProductWorkflowContext) 
       return "";
     }
 
-    // Unknown __tokens__ (migration table names, comments) stay literal —
-    // product/init has no integrationName/groupName/etc.
+    // Unknown __tokens__ in comments / SQL stay literal when not dropped above —
+    // product/init has no integrationName/groupName/etc. Stub migrations are
+    // wiped and regenerated after install (see reset-product-db-migrations).
     let out: string;
     try {
       out = placeholderReplace(prepared);
@@ -288,6 +292,17 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       // Both globs: dir trees (`__/…`) and stub filenames (`__…__-links.ts`).
       skipSourceGlobs: ["**/__*__/**", "**/__*__*"],
     })),
+    // lineReplace drops stub `"path"` lines but can leave empty `{ }` objects in
+    // multi-line tsconfig references; strip those before npm install / saf-imports.
+    step(CommandStepMachine, ({ context }) => ({
+      command: "node",
+      args: [
+        "--experimental-strip-types",
+        "--disable-warning=ExperimentalWarning",
+        path.join(import.meta.dirname, "strip-stub-tsconfig-refs.ts"),
+        path.join(context.cwd, context.productName),
+      ],
+    })),
     step(
       CopyStepMachine,
       ({ context }) => {
@@ -419,6 +434,31 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         "--",
         "--write",
       ],
+    })),
+    // Drop golden stub-table migrations and regenerate a baseline from the
+    // schemas that actually shipped (stubs were skipSourceGlob'd).
+    step(CommandStepMachine, ({ context }) => ({
+      command: "node",
+      args: [
+        "--experimental-strip-types",
+        "--disable-warning=ExperimentalWarning",
+        path.join(import.meta.dirname, "reset-product-db-migrations.ts"),
+        path.join(
+          context.originalWorkingDirectory,
+          context.productName,
+          "service/db",
+        ),
+      ],
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/service/db`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "generate"],
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: context.originalWorkingDirectory,
     })),
     // CopyStep skips dist/; generate OpenAPI types/JSON for each saf.kind=spec package.
     step(CommandStepMachine, ({ context }) => ({

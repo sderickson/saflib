@@ -4,10 +4,7 @@ getCheckout:
   tags:
     - no-auth
   description: >
-    Resolve git HEAD and report whether that commit has been analyzed, plus
-    package metrics when it has. Also reports local branch compare candidates
-    and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`).
-    Used by the Current checkout UI.
+    Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`). Used by the Current checkout UI.
   parameters:
     - name: compareRef
       in: query
@@ -15,8 +12,7 @@ getCheckout:
       schema:
         type: string
       description: >
-        Local branch name to take the merge-base against. Defaults to the
-        server `main` ref.
+        Local branch name to take the merge-base against. Defaults to the server `main` ref.
   responses:
     "200":
       description: Checkout status
@@ -46,12 +42,9 @@ getCheckout:
               productRoot:
                 type: string
                 description: >
-                  Analysis path prefix within the repo (e.g. `products`). Empty
-                  string means the whole repository. Package `directory` values
-                  are relative to this prefix; prepend it for repo-absolute paths.
+                  Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths.
               branch:
-                type: string
-                nullable: true
+                type: [ string, "null" ]
                 description: Short branch name for HEAD, or null when detached.
               packages:
                 type: array
@@ -60,16 +53,13 @@ getCheckout:
               compareCandidates:
                 type: array
                 description: >
-                  Local branch names that can be used as `compareRef` (current
-                  branch omitted; configured main ref always included when it
-                  exists).
+                  Local branch names that can be used as `compareRef` (current branch omitted; configured main ref always included when it exists).
                 items:
                   type: string
               githubRepo:
                 type: string
                 description: >
-                  GitHub `owner/name` for source and commit links. Omitted when
-                  the server has no `DEV_SITE_GITHUB_REPO` configured.
+                  GitHub `owner/name` for source and commit links. Omitted when the server has no `DEV_SITE_GITHUB_REPO` configured.
               compare:
                 $ref: "../../schemas/checkout-compare.yaml"
     "400":

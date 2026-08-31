@@ -44,7 +44,7 @@ export default defineConfig({
       copySharedPublicPlugin(sharedPublicDir),
       vuetify({
         styles: {
-          configFile: path.resolve(__dirname, "./vuetify-overrides.scss"),
+          configFile: path.resolve(__dirname, "../../build/vuetify-settings.scss"),
         },
       }),
     ],

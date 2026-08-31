@@ -1,1 +1,2 @@
+# Runtime DB + seal pipeline (staging/, sealed/, last-digest, locks).
 data/

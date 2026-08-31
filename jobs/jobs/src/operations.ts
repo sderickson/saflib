@@ -1,4 +1,5 @@
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { assertOpenApiOperationTags, type OpenApiDocument } from "@saflib/openapi";
 import {
   BACKGROUND_TAG,
   CRON_TRIGGER_PREFIX,
@@ -76,7 +77,8 @@ const HTTP_METHODS = [
  * Walk a bundled OpenAPI document and map every `operationId` to its HTTP
  * method, path template, and whether it carries the `background` tag.
  */
-export function buildOperationMap(apiSpec: OpenAPIV3.DocumentV3): OperationMap {
+export function buildOperationMap(apiSpec: OpenApiDocument): OperationMap {
+  assertOpenApiOperationTags(apiSpec);
   const map = new Map<string, ResolvedOperation>();
 
   for (const [pathTemplate, pathItem] of Object.entries(apiSpec.paths ?? {})) {
@@ -113,7 +115,7 @@ export interface ValidateJobsStartupParams {
    * Pre-built map, or the OpenAPI document to walk. Prefer passing a shared
    * `OperationMap` when the runtime will reuse it for delivery.
    */
-  operations: OperationMap | OpenAPIV3.DocumentV3;
+  operations: OperationMap | OpenApiDocument;
 }
 
 /**
@@ -121,7 +123,7 @@ export interface ValidateJobsStartupParams {
  * Throws on unknown ids, missing `background` tags, or timeout ceiling breaches.
  */
 function isOperationMap(
-  value: OperationMap | OpenAPIV3.DocumentV3,
+  value: OperationMap | OpenApiDocument,
 ): value is OperationMap {
   return !("paths" in value);
 }

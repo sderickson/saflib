@@ -50,7 +50,7 @@ export const RETENTION_SWEEP_INTERVAL_MS = 60 * 60 * 1000;
 export const SPAWN_CAP = 1_000;
 
 /** OpenAPI tag that marks an operation as invocable by the job queue. */
-export const BACKGROUND_TAG = "background";
+export { OPENAPI_TAG_BACKGROUND as BACKGROUND_TAG } from "@saflib/openapi";
 
 /**
  * Prefix for trigger-map keys that represent cron schedules rather than

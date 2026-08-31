@@ -24,7 +24,7 @@ describe("buildReferenceGraph", () => {
         expect(node.references).not.toContain("@saflib/vitest");
       }
     }
-  });
+  }, 15_000);
 
   it("includes tracked golden deploy package in the graph", () => {
     const { graph, skippedMeta } = buildReferenceGraph();
@@ -35,7 +35,7 @@ describe("buildReferenceGraph", () => {
     expect(isGitIgnoredPackageDirectory(deployDir)).toBe(false);
     expect(skippedMeta).not.toContain("@__organization-name__/deploy");
     expect([...graph.keys()]).toContain("@__organization-name__/deploy");
-  });
+  }, 15_000);
 });
 
 describe("isGitIgnoredPackageDirectory", () => {

@@ -127,6 +127,7 @@ Mainly it should reflect what is given to it. Have it respect query parameters a
 If this is a list query, define the array there (e.g. \`export const mock${context.groupName}: ...\`).
 If this query reads from an existing list (e.g. a get-by-id), import the array from \`./mocks.ts\`.
 This way operations affect one another (like creating or deleting resources) so that TanStack caching can be tested.
+Seed mock rows with factories from product \`*-test\` packages when those exist (\`@scope/<product>-test/factories/*\` / \`@scope/<product>-<offshoot>-test/factories/*\`) instead of hand-building large empty objects.
 
 As part of this, also update **${context.targetName}.test.ts** to implement simple tests for the API query.
 

@@ -192,10 +192,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 
       **Router mount order (http.ts):** Platform terminators (\`createCronRouter\`, etc.) stay in main \`http.ts\` *after* \`groupRouterMounts()\` / offshoot barrels. Product group routers belong in \`routers.ts\` so they always mount before those terminators.
 
-      **OpenAPI schemas and express-openapi-validator:** If integration tests return **500** with message \`"nullable" cannot be used without "type"\`, the bug is in the **spec**, not the handler. \`express-openapi-validator\` rejects properties that use \`nullable: true\` together with \`allOf: [\$ref: …]\` and **no sibling \`type\`**. Fix the adjacent OpenAPI schema (and regenerate the spec package) before debugging the handler:
-      - Prefer \`type: string\` / \`type: object\` **plus** \`nullable: true\` with inline constraints, **or** omit \`nullable\` and treat optional fields as omitted when unset (mappers often omit nulls on responses).
-      - Do **not** write \`nullable: true\` + \`allOf: [\$ref]\` without a sibling \`type\`.
-      - Request bodies that accept null-to-clear should use \`type: …, nullable: true\` (inline or with \`type\` + \`allOf\`), not bare \`nullable\` + \`\$ref\`/\`allOf\` alone.
+      **OpenAPI schemas and express-openapi-validator:** Specs are OpenAPI **3.1**. Prefer \`type: [string, "null"]\` / \`type: [array, "null"]\`, and for nullable \`$ref\` objects \`oneOf: [{ type: "null" }, { \$ref: … }]\`. Do **not** use OpenAPI 3.0 \`nullable: true\` (especially with \`allOf: [\$ref]\` and no sibling \`type\` — that used to 500). See \`@saflib/openapi\` docs/02-api-design.md.
       - After schema fixes, rebuild the spec package (\`npm run build\` in the \`-spec\` package) so \`jsonSpec\` / \`dist/openapi.json\` pick up the change.${
         context.upload
           ? `
@@ -234,6 +231,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         * Do **not** import \`create…HttpApp\` from \`http.ts\` in handler tests — that mounts every product router (slow, heavy imports).
         * Multi-route chains: \`acquireRouterSlimRouteTestMulti([createA, createB])\` or a dedicated \`*.integration.test.ts\` with explicit scope.
         * **Imports:** use package subpath exports (e.g. \`@scope/my-db/queries/<group>/<name>\`, \`@scope/my-service-common/context\`) — never import from a package root or group query barrels. \`./queries/*\` / \`./handlers/*\` cover new files; do not edit \`package.json\` exports when adding handlers.
+        * **Shared model fixtures:** Prefer factories from product \`*-test\` packages (\`@scope/<product>-test/factories/*\` for core service models; \`@scope/<product>-<offshoot>-test/factories/*\` and \`provenance/*\` for offshoot models). Do not hand-build large empty objects when a factory exists. Add new factories there when the same shape is needed in more than one test. Prod empties stay on \`*-spec\` (\`empties\`); keep DB/HTTP mount helpers in the package's local \`testing/\` only.
         
         Review ${context.docFiles?.testingGuide} for more details.`,
     })),

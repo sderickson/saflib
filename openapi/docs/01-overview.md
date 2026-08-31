@@ -61,6 +61,8 @@ For OpenAPI operation tags used by middleware and the job queue (`site-admin-onl
 └── index.ts
 ```
 
+Shared unit-test factories for those schemas live in a sibling `saf.kind: "test"` package (`service/test` → `@scope/<product>-test`, or `{offshoot}/test` → `@scope/<product>-<offshoot>-test`). `openapi/init` scaffolds the offshoot test package next to the offshoot spec. Prefer those factories in SPA/HTTP/SDK tests instead of hand-built empties; prod empties stay on the spec package.
+
 ## Files and Directories Explained
 
 ### `dist/`
@@ -115,7 +117,7 @@ Per [best-practices](../../best-practices.md#specify-and-enforce-shared-apis-mod
 
 Schemas should be defined in a way that is easy to reuse across routes.
 
-For nullable and optional fields, follow [API Design — Nullable fields](./02-api-design.md#nullable-fields-openapi-30). **Do not use `type: "null"`** or JSON Schema `oneOf` with a null branch — those are not valid in our OpenAPI 3.0 toolchain.
+For nullable and optional fields, follow [API Design — Nullable fields](./02-api-design.md#nullable-fields-openapi-31). Use OpenAPI 3.1 forms (`type: [string, "null"]`, `oneOf` with a null branch for `$ref` objects). Do **not** use OpenAPI 3.0 `nullable: true`.
 
 ### `openapi.yaml`
 

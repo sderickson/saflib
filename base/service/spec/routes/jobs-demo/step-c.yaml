@@ -5,7 +5,6 @@ jobsDemoStepC:
   tags:
     - site-admin-only
     - background
-    - jobs-demo
 
   requestBody:
     required: false

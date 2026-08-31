@@ -31,7 +31,9 @@ When run, the workflow will:
 - Run `npm exec saf-specs generate`
 - Run `npx tsc --noEmit`
 
-For nullable request/response fields, use `nullable: true` on a typed schema — **not** `type: "null"` or JSON Schema `oneOf` null branches. See [API Design — Nullable fields](../02-api-design.md#nullable-fields-openapi-30).
+For nullable request/response fields, use OpenAPI 3.1 forms (`type: [string, "null"]`, `oneOf` with a null branch for `$ref` objects) — **not** `nullable: true`. See [API Design — Nullable fields](../02-api-design.md#nullable-fields-openapi-31).
+
+Operation `tags` must be from the enforced allowlist only (`no-auth`, `csrf-exempt`, `email-verified`, `mfa-required`, `site-admin-only`, `background`). Do not add grouping tags — the owning package is the group. See [Operation tags](../03-tags.md).
 
 ## Help Docs
 

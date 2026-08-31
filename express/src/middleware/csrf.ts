@@ -1,5 +1,9 @@
 import type { Handler } from "express";
 import { typedEnv } from "@saflib/env";
+import {
+  OPENAPI_TAG_CSRF_EXEMPT,
+  OPENAPI_TAG_NO_AUTH,
+} from "@saflib/openapi";
 import { isInternalRequest } from "../markInternal.ts";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
@@ -42,7 +46,10 @@ export const makeCsrfMiddleware = (): Handler => {
     }
 
     const tags = req.openapi.schema.tags;
-    if (tags?.includes("no-auth") || tags?.includes("csrf-exempt")) {
+    if (
+      tags?.includes(OPENAPI_TAG_NO_AUTH) ||
+      tags?.includes(OPENAPI_TAG_CSRF_EXEMPT)
+    ) {
       return next();
     }
 

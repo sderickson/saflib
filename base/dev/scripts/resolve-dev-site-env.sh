@@ -2,7 +2,7 @@
 # Writes dev-site.env with repo mount + product root for the current checkout layout.
 #
 # Canonical product scope is always base/ within the saflib repo (matches a copied product).
-# When saflib is a pathclerk submodule, also mount the submodule git dir so git plumbing works.
+# When saflib is a git submodule of a parent monorepo, also mount the submodule git dir so git plumbing works.
 set -euo pipefail
 
 DEV_DIR="$(cd "$(dirname "$0")/.." && pwd)"

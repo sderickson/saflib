@@ -267,7 +267,17 @@ Displays, like forms and pages, should declare their role by having `Display` at
 
 All components should avoid custom CSS if they can. Instead, take advantage of Vuetify's [utility classes](https://vuetifyjs.com/en/styles/borders/#usage) and [grid system](https://vuetifyjs.com/en/components/grids/#usage), and defer to app-specific [theming](https://vuetifyjs.com/en/features/theme/#api), and [SASS variables](https://vuetifyjs.com/en/features/sass-variables/#installation).
 
-If a component still needs custom CSS, it should be done in a `style` block at the bottom of the component, and `scoped` to avoid affecting other components.
+When a look should apply product-wide, put it in the clients design-system files rather than a component `<style>` block:
+
+| File | Use for |
+| --- | --- |
+| `clients/build/vuetify-settings.scss` | Vuetify Sass variables (`@use "vuetify/settings" with (…)`) |
+| `clients/build/vuetify-overrides.scss` | CSS that restyles `.v-*` components |
+| `clients/build/globals.scss` | App utility / layout classes that are not Vuetify restyles |
+
+To see what Vuetify ships, open `node_modules/vuetify/lib/components/<VComponent>/` (e.g. `VBtn.sass`, `_variables.scss`) and `node_modules/vuetify/lib/styles/settings/`.
+
+If a component still needs one-off CSS, use a `style` block at the bottom of the component, `scoped` so it does not leak.
 
 ### Run All Strings Through Vue I18n
 

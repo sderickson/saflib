@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "listReportedErrors",
     "version": "1.0.0"
@@ -10,7 +10,6 @@
         "summary": "List buffered reported errors",
         "operationId": "listReportedErrors",
         "tags": [
-          "errors",
           "site-admin-only"
         ],
         "parameters": [

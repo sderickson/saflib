@@ -4,9 +4,7 @@ listCommits:
   tags:
     - no-auth
   description: >
-    Paginated list of analyzed commits with rollup summary metrics for timeline
-    display. Does not include per-package / export / test-case inventories —
-    fetch those via GET /commits/{hash}.
+    Paginated list of analyzed commits with rollup summary metrics for timeline display. Does not include per-package / export / test-case inventories — fetch those via GET /commits/{hash}.
   parameters:
     - name: cursor
       in: query
@@ -14,8 +12,7 @@ listCommits:
       schema:
         type: string
       description: >
-        Opaque pagination cursor (commit hash of the last item from the previous
-        page). Omit for the first page.
+        Opaque pagination cursor (commit hash of the last item from the previous page). Omit for the first page.
     - name: limit
       in: query
       required: false
@@ -40,8 +37,6 @@ listCommits:
                 items:
                   $ref: "../../schemas/commit-summary.yaml"
               nextCursor:
-                type: string
-                nullable: true
+                type: [ string, "null" ]
                 description: >
-                  Pass as `cursor` on the next request. Null when there are no
-                  more pages.
+                  Pass as `cursor` on the next request. Null when there are no more pages.

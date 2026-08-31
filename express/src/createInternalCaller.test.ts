@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import express from "express";
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { asOpenApiDocument } from "@saflib/openapi";
 import { getSafContext } from "@saflib/node";
 import {
   createInternalCaller,
@@ -37,8 +37,8 @@ const WRONG_SECRET = Buffer.from("internal-caller-wrong-secret!!").toString(
 const SERVER_KEYS = `server:${SERVER_SECRET}`;
 const WRONG_KEYS = `wrong:${WRONG_SECRET}`;
 
-const probeSpec: OpenAPIV3.DocumentV3 = {
-  openapi: "3.0.0",
+const probeSpec = asOpenApiDocument({
+  openapi: "3.1.0",
   info: { title: "internal-caller", version: "1.0.0" },
   paths: {
     "/probe": {
@@ -78,7 +78,7 @@ const probeSpec: OpenAPIV3.DocumentV3 = {
       },
     },
   },
-};
+});
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

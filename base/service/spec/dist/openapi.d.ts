@@ -902,7 +902,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["health"];
+                    "application/json": {
+                        health: components["schemas"]["health"];
+                    };
                 };
             };
         };

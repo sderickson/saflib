@@ -33,28 +33,21 @@ properties:
       - system
       - webhook
   actorUserId:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
   onBehalfOfUserId:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
   authMethod:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
   requestId:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
   clientIp:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
   eventType:
     type: string
   resourceType:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
   resourceId:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
   outcome:
     type: string
   gitCommitRoot:
@@ -64,7 +57,6 @@ properties:
   env:
     type: string
   details:
-    nullable: true
-    type: object
+    type: [ object, "null" ]
     description: Event-specific JSON payload; shape depends on `source`.
     additionalProperties: true

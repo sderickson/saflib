@@ -101,7 +101,10 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
       promptMessage: `Update ${context.targetName}.ts to add the new table, or modify it.
 
       Use generateShortId() from @saflib/drizzle for primary key id columns (not crypto.randomUUID()).
-      If there's a foreign key relationship, DO NOT set it to cascade on delete.
+      If there's a foreign key relationship, DO NOT set onDelete/onUpdate to cascade — leave the
+      Drizzle default (no action). Cascades are banned: drizzle-kit table recreates can wipe child
+      tables, and deletes must stay explicit in query code. Package tests enforce this via
+      assertNoFkCascades.
       
       Please reference the documentation here for more information: ${context.docFiles?.schemaDoc}`,
     })),
@@ -119,6 +122,12 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "generate"],
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["test", "--", "no-fk-cascades"],
+      promptOnError: `FK CASCADE is not allowed in migrations or schemas. Remove onDelete/onUpdate: "cascade" and any ON DELETE/UPDATE CASCADE from generated SQL, then re-run generate. Delete related rows explicitly in query code instead.`,
     })),
   ],
 });

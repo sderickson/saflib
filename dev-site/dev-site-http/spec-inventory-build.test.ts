@@ -33,7 +33,7 @@ describe("buildSpecInventoryFromFiles", () => {
       [
         "openapi.yaml",
         `
-openapi: 3.0.0
+openapi: 3.1.0
 paths:
   /matters:
     post:

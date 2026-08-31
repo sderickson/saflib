@@ -2,33 +2,27 @@ type: object
 description: A shared address type that can be used across the platform
 properties:
   formatted:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
     description: Complete formatted address string
     example: "123 Main St, Anytown, ST 12345, USA"
   street_address:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
     description: Street address line
     example: "123 Main St"
   locality:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
     description: City or town name
     example: "Anytown"
   region:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
     description: State, province, or region
     example: "ST"
   country:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
     description: Country name
     example: "USA"
   postal_code:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
     description: ZIP or postal code
     example: "12345"
 example:

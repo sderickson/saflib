@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import express from "express";
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { asOpenApiDocument } from "@saflib/openapi";
 import request from "supertest";
 import { getSafContext, signAssertion } from "@saflib/node";
 import { createScopedMiddleware } from "./composition.ts";
@@ -19,8 +19,8 @@ const errorSchemaProps = {
   code: { type: "string" as const },
 };
 
-const probeSpec: OpenAPIV3.DocumentV3 = {
-  openapi: "3.0.0",
+const probeSpec = asOpenApiDocument({
+  openapi: "3.1.0",
   info: { title: "assertion-auth", version: "1.0.0" },
   paths: {
     "/probe": {
@@ -117,7 +117,7 @@ const probeSpec: OpenAPIV3.DocumentV3 = {
       },
     },
   },
-};
+});
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

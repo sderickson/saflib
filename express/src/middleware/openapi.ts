@@ -3,8 +3,8 @@ import type {
   OpenApiRequestHandler,
   OpenApiRequestMetadata,
 } from "express-openapi-validator/dist/framework/types.ts";
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { InternalServerError } from "express-openapi-validator/dist/framework/types.ts";
+import { assertOpenApiOperationTags, type OpenApiDocument } from "@saflib/openapi";
 import { typedEnv } from "@saflib/env";
 import multer from "multer";
 import { lenientEmailOpenApiFormat } from "./openapi-formats.ts";
@@ -115,7 +115,7 @@ const validateResponses = {
 
 /** Shared validator stacks per spec — avoids re-compiling AJV on every router mount. */
 const validatorCache = new WeakMap<
-  OpenAPIV3.DocumentV3,
+  OpenApiDocument,
   Map<string, OpenApiRequestHandler[]>
 >();
 
@@ -124,9 +124,12 @@ function fileUploaderCacheKey(fileUploader?: multer.Options): string {
 }
 
 function buildOpenApiValidatorMiddleware(
-  spec: string | OpenAPIV3.DocumentV3,
+  spec: string | OpenApiDocument,
   fileUploader?: multer.Options,
 ): OpenApiRequestHandler[] {
+  if (typeof spec === "object" && spec !== null) {
+    assertOpenApiOperationTags(spec);
+  }
   return OpenApiValidator.middleware({
     apiSpec: spec,
     validateRequests: true,
@@ -142,7 +145,7 @@ function buildOpenApiValidatorMiddleware(
 }
 
 export interface OpenApiValidatorOptions {
-  apiSpec: string | OpenAPIV3.DocumentV3;
+  apiSpec: string | OpenApiDocument;
   fileUploader?: multer.Options;
 }
 

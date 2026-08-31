@@ -11,16 +11,16 @@ describe("envSchemaTypeName", () => {
   it("derives the interface name from the package name", () => {
     expect(envSchemaTypeName("@saflib/env")).toBe("EnvEnvSchema");
     expect(envSchemaTypeName("@saflib/sentry")).toBe("SentryEnvSchema");
-    expect(envSchemaTypeName("@pathclerk/daemon-admin-clients")).toBe(
-      "DaemonAdminClientsEnvSchema",
+    expect(envSchemaTypeName("@acme/billing-admin-clients")).toBe(
+      "BillingAdminClientsEnvSchema",
     );
   });
 });
 
 describe("kebabCaseToPascalCase", () => {
   it("converts kebab segments", () => {
-    expect(kebabCaseToPascalCase("daemon-admin-clients")).toBe(
-      "DaemonAdminClients",
+    expect(kebabCaseToPascalCase("billing-admin-clients")).toBe(
+      "BillingAdminClients",
     );
   });
 });

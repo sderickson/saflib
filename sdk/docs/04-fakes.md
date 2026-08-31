@@ -12,6 +12,8 @@ SDK packages should export:
 - Shared mock data and `resetMocks()` from `requests/{resource}/mocks.ts`.
 - Scenario handler lists that can be prepended to the baseline handlers when needed.
 
+Prefer seeding mock rows with factories from product `*-test` packages (`@scope/<product>-test/factories/*`, offshoot `*-<offshoot>-test`) when those models already have factories — keep `mocks.ts` as the mutable in-memory store, not a second place that hand-builds every field.
+
 Do **not** add a root `fakes.ts` that re-exports every group — that forces every importer to parse the entire fake graph.
 
 This way tests which depend on the SDK can quickly test on some fake data, but also test scenarios such as a user whose email is verified or not verified.

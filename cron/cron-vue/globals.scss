@@ -1,0 +1,9 @@
+/* App-wide utility / layout classes that are not Vuetify component restyles.
+ *
+ * Prefer the host product's clients/build/globals.scss when this package is
+ * mounted inside an admin SPA. Use this file only if this package is built as
+ * its own Vite app.
+ *
+ * Restyling .v-* components belongs in vuetify-overrides.scss; Sass variables in
+ * vuetify-settings.scss (see those headers for node_modules paths).
+ */

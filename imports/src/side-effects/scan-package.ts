@@ -51,7 +51,7 @@ function scanFileContent(filePath: string, content: string): SideEffectFlag[] {
   if (/vue-query-register/.test(filePath) || /vue-query-register/.test(content)) {
     flags.push({ rule: "vue-query-register", file: filePath });
   }
-  if (rel === "font-imports.ts" || rel === "posthog-init.ts") {
+  if (rel === "style-imports.ts" || rel === "posthog-init.ts") {
     flags.push({ rule: "known-init", file: filePath, detail: rel });
   }
   if (rel === "index.ts" && /import\s+["']\.\/vue-query-register/.test(content)) {
@@ -75,8 +75,8 @@ function buildSuggestion(
       entries.add("**/*.css");
       entries.add("**/*.scss");
     }
-    if (f.rule === "known-init" && f.detail === "font-imports.ts") {
-      entries.add("./font-imports.ts");
+    if (f.rule === "known-init" && f.detail === "style-imports.ts") {
+      entries.add("./style-imports.ts");
     }
     if (f.rule === "declare-module" || f.rule === "vue-query-register" || f.rule === "index-registration") {
       const rel = path.relative(packageDir, f.file).replace(/\\/g, "/");

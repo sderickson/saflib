@@ -16,8 +16,7 @@ properties:
           type: string
           description: Query directory name or kebab form of table name (e.g. package-metrics).
         table:
-          type: object
-          nullable: true
+          type: [ object, "null" ]
           required:
             - exportName
             - tableName
@@ -31,8 +30,7 @@ properties:
             filePath:
               type: string
             docstring:
-              type: string
-              nullable: true
+              type: [ string, "null" ]
               description: First prose line of leading JSDoc on the table const.
             columns:
               type: array
@@ -50,8 +48,7 @@ properties:
                   typeKind:
                     type: string
                   docstring:
-                    type: string
-                    nullable: true
+                    type: [ string, "null" ]
                     description: First prose line of leading JSDoc on the column.
         usedByPackages:
           type: array
@@ -73,14 +70,11 @@ properties:
               filePath:
                 type: string
               exportName:
-                type: string
-                nullable: true
+                type: [ string, "null" ]
               signature:
-                type: string
-                nullable: true
+                type: [ string, "null" ]
               docstring:
-                type: string
-                nullable: true
+                type: [ string, "null" ]
               usedBy:
                 type: array
                 description: Non-test product files that import this leaf query module.

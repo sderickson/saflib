@@ -123,6 +123,13 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
       fileId: "route",
       promptMessage: `Update **${path.basename(context.copiedFiles!.route)}**.
       - Request parameters and body schemas, and response schemas should $ref existing schemas
+      - **Response envelope:** 2xx \`application/json\` bodies must be a flat object keyed by resource name
+        (e.g. \`{ recipe: Recipe }\`, \`{ recipes: Recipe[] }\`). Never put a business object, array, or bare
+        \`$ref\` at the document root — that blocks adding fields later. See
+        \`@saflib/openapi\` docs/02-api-design.md ("Always Return Objects" / "Key by Resource Name").
+      - **Tags:** only enforced behavioral tags from \`@saflib/openapi\` docs/03-tags.md
+        (\`no-auth\`, \`csrf-exempt\`, \`email-verified\`, \`mfa-required\`, \`site-admin-only\`, \`background\`).
+        No grouping tags — the owning package is the group.
       - Remove any unused sections (parameters, requestBody) if not needed
       - Do not specify a 400 response when the only 400s would come from OpenAPI request validation (e.g. missing required, wrong type). Do specify 400 for dynamic or business-rule failures (e.g. duplicate id, id not URL-safe, cannot remove creator).
       - If this is a list route, do not include a sort parameter unless explicitly requested.
@@ -140,6 +147,12 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "generate"],
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["test", "--", "no-root-response-bodies"],
+      promptOnError: `JSON success responses must be flat objects keyed by resource name — not a bare business object, array, or $ref at the root. Fix the route YAML (see @saflib/openapi docs/02-api-design.md). Do not add new allowlist entries for new routes.`,
     })),
 
     step(CommandStepMachine, () => ({

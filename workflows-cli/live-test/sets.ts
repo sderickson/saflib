@@ -319,6 +319,9 @@ export const liveTestSets: LiveTestSet[] = [
     assertFiles: [
       "dossier/db/package.json",
       "dossier/spec/openapi.yaml",
+      "dossier/spec/package.json",
+      "dossier/spec/vitest.config.js",
+      "dossier/spec/no-root-response-bodies.test.ts",
       "dossier/http/routers.ts",
       "dossier/sdk/package.json",
       "dossier/spec/schemas/item.yaml",
@@ -342,6 +345,21 @@ export const liveTestSets: LiveTestSet[] = [
       })),
       step(makeWorkflowMachine(OpenapiInitWorkflowDefinition), () => ({
         name: "dossier",
+      })),
+      // openapi/route runs `npm test -- no-root-response-bodies` in offshoot specs.
+      step(CdStepMachine, () => ({
+        path: ".",
+      })),
+      step(CommandStepMachine, () => ({
+        command: "node",
+        args: [
+          "--experimental-strip-types",
+          "--disable-warning=ExperimentalWarning",
+          "./workflows-cli/live-test/assert-contains.ts",
+          `${LIVE_TEST_PRODUCT}/dossier/spec/package.json`,
+          '"test": "vitest run"',
+          "@saflib/vitest",
+        ],
       })),
       step(CdStepMachine, () => ({
         path: `./${LIVE_TEST_PRODUCT}`,

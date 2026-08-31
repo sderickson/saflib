@@ -9,7 +9,7 @@ export function create__OffshootName__Router(): IRouter {
   const router = express.Router();
 
   router.get("/__offshoot-name__/health", (_req, res) => {
-    res.json({ status: "ok" });
+    res.json({ health: { status: "ok" } });
   });
 
   for (const mount of groupRouterMounts()) {

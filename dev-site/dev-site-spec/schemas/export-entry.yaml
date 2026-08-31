@@ -29,24 +29,19 @@ properties:
       - emit
       - model
   signature:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
     description: >
-      Syntactic display signature from the AST (no type-checker). Null for
-      re-exports without a local declaration.
+      Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.
     example: "(repoRoot: string, options?: LogOptions)"
   docstring:
-    type: string
-    nullable: true
+    type: [ string, "null" ]
     description: >
-      First prose line of the leading JSDoc on the export declaration. Null when
-      absent or for bare re-exports (`export { a }`).
+      First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).
     example: "Walk commits newest-first without checking out."
   usedBy:
     type: array
     description: >
-      Non-test product files that import this export (named import match, or
-      whole-module import when names are `*` / default / empty).
+      Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty).
     items:
       type: object
       required:
