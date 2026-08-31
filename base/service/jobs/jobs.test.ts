@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenApiDocument } from "@saflib/openapi";
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { asOpenApiDocument } from "@saflib/openapi";
 import {
   TIMEOUT_CEILING_MS,
   validateCronTriggerKeys,
@@ -15,8 +14,8 @@ import {
   runBaseJobs,
 } from "./jobs.ts";
 
-const validationSpec: OpenApiDocument = {
-  openapi: "3.0.0",
+const validationSpec = asOpenApiDocument({
+  openapi: "3.1.0",
   info: { title: "base-jobs-test", version: "1.0.0" },
   paths: {
     "/test/start": {
@@ -41,7 +40,7 @@ const validationSpec: OpenApiDocument = {
       },
     },
   },
-};
+});
 
 describe("baseTriggerMap / baseJobOperations", () => {
   it("defines the demo chain contract", () => {

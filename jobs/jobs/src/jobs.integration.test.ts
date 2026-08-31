@@ -17,7 +17,7 @@ import {
 } from "vitest";
 import request from "supertest";
 import express from "express";
-import type { OpenApiDocument } from "@saflib/openapi";
+import { asOpenApiDocument } from "@saflib/openapi";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { DbKey } from "@saflib/drizzle";
 import {
@@ -54,8 +54,8 @@ const jsonOk: OpenAPIV3.ResponseObject = {
   },
 };
 
-const workApiSpec: OpenApiDocument = {
-  openapi: "3.0.0",
+const workApiSpec = asOpenApiDocument({
+  openapi: "3.1.0",
   info: { title: "jobs-integration-work", version: "1.0.0" },
   paths: {
     "/test/start": {
@@ -80,7 +80,7 @@ const workApiSpec: OpenApiDocument = {
       },
     },
   },
-};
+});
 
 const triggerMap = {
   testJobStart: ["testJobStepB"],

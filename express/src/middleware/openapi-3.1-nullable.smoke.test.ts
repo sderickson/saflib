@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import express from "express";
 import request from "supertest";
-import type { OpenApiDocument } from "@saflib/openapi";
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import { asOpenApiDocument } from "@saflib/openapi";
 import { createOpenApiValidator } from "./openapi.ts";
 import { errorHandler } from "./errors.ts";
 
@@ -10,7 +9,7 @@ import { errorHandler } from "./errors.ts";
  * Smoke: express-openapi-validator against OpenAPI 3.1 nullability.
  * Agents write `type: [T, "null"]` / `oneOf: [null, $ref]` naturally; 3.0 forbids them.
  */
-const openApi31SmokeSpec = {
+const openApi31SmokeSpec = asOpenApiDocument({
   openapi: "3.1.0",
   info: { title: "oas-3.1-smoke", version: "0.0.0" },
   paths: {
@@ -79,7 +78,7 @@ const openApi31SmokeSpec = {
       },
     },
   },
-} as unknown as OpenApiDocument;
+});
 
 describe("OpenAPI 3.1 nullability (express-openapi-validator smoke)", () => {
   let app: express.Express;

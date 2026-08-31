@@ -15,13 +15,13 @@ export const castJson = (json: { default: unknown }): OpenApiDocument => {
 };
 
 /** Cast an inline OpenAPI object (e.g. in tests) to {@link OpenApiDocument}. */
-export function asOpenApiDocument(doc: {
-  openapi: string;
-  info: OpenAPIV3.InfoObject;
-  paths?: OpenAPIV3.PathsObject;
-  [key: string]: unknown;
-}): OpenApiDocument {
-  return doc as OpenApiDocument;
+export function asOpenApiDocument(
+  doc: Record<string, unknown> & {
+    openapi: string;
+    info: OpenAPIV3.InfoObject;
+  },
+): OpenApiDocument {
+  return doc as unknown as OpenApiDocument;
 }
 
 /**
