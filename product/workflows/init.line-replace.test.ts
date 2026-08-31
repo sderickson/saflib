@@ -59,11 +59,17 @@ describe("isSkippedStubRefLine", () => {
   it("keeps normal dependency and path lines", () => {
     expect(isSkippedStubRefLine('    "@saflib/drizzle": "*",')).toBe(false);
     expect(isSkippedStubRefLine('      "path": "../db"')).toBe(false);
+  });
+
+  it("drops import/export lines that reference skipped stub modules", () => {
+    expect(
+      isSkippedStubRefLine('export * from "./schemas/__group-name__.ts";'),
+    ).toBe(true);
     expect(
       isSkippedStubRefLine(
-        'export * from "./schemas/__group-name__.ts";',
+        'export * from "@saflib/base-__offshoot-name__-db/schema";',
       ),
-    ).toBe(false);
+    ).toBe(true);
   });
 });
 
