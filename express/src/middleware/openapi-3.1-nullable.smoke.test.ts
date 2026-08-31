@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import express from "express";
 import request from "supertest";
+import type { OpenApiDocument } from "@saflib/openapi";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import { errorHandler } from "./errors.ts";
@@ -78,7 +79,7 @@ const openApi31SmokeSpec = {
       },
     },
   },
-} as unknown as OpenAPIV3.DocumentV3;
+} as unknown as OpenApiDocument;
 
 describe("OpenAPI 3.1 nullability (express-openapi-validator smoke)", () => {
   let app: express.Express;

@@ -161,6 +161,7 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       
       * Make sure to use the dedicated test app, and the getElementByString helper function.
       * You don't really have to mock the server; the component should not load data directly itself. You also don't have to thoroughly test the component; just give it some sample inputs and make sure it renders correctly.
+      * For sample props that are OpenAPI/service models, prefer factories from product \`*-test\` packages (\`@scope/<product>-test/factories/*\` / \`@scope/<product>-<offshoot>-test/factories/*\`) instead of hand-built empties.
       `,
       }),
       {

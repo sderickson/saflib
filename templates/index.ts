@@ -42,7 +42,7 @@ export const templatesScaffoldRoot = path.join(
 );
 
 /**
- * Golden domain offshoot stubs (db / spec / http / sdk).
+ * Golden domain offshoot stubs (db / spec / http / sdk / test).
  * Skipped by product/init (skipSourceGlobs for __…__ paths);
  * copied by domain offshoot init workflows.
  */

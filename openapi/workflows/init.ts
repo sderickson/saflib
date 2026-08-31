@@ -14,6 +14,7 @@ import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
 import path from "node:path";
 
 const offshootSpecRoot = path.join(offshootStubRoot, "spec");
+const offshootTestRoot = path.join(offshootStubRoot, "test");
 const parentOpenapiLive = path.join(
   templatesProductRoot,
   "service/spec/openapi.yaml",
@@ -37,10 +38,10 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
   id: "openapi/init",
 
   description:
-    "Scaffold an offshoot OpenAPI package and weave path $refs into the parent spec",
+    "Scaffold an offshoot OpenAPI package (and sibling test factories package) and weave path $refs into the parent spec",
 
-  checklistDescription: ({ offshootPackageName }) =>
-    `Init offshoot spec ${offshootPackageName}.`,
+  checklistDescription: ({ offshootPackageName, offshootName }) =>
+    `Init offshoot spec ${offshootPackageName} (+ ${offshootName}-test).`,
 
   input,
 
@@ -75,6 +76,15 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
       targetDir: context.targetDir,
       templateFiles: {
         offshootSpec: offshootSpecRoot,
+      },
+      lineReplace: makeOffshootLineReplace(context),
+    })),
+
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.offshootName,
+      targetDir: path.join(context.productRoot, context.offshootName, "test"),
+      templateFiles: {
+        offshootTest: offshootTestRoot,
       },
       lineReplace: makeOffshootLineReplace(context),
     })),

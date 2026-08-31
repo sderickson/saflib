@@ -115,6 +115,8 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
       Full path: ${context.copiedFiles?.test}
 
       Aim for 100% coverage; there should be a known way to achieve every handled error. If it's not possible to cause a returned error, it should not be in the implementation.
+
+      Prefer factories from product \`*-test\` packages when asserting against OpenAPI/service model shapes (\`@scope/<product>-test/factories/*\`, offshoot \`@scope/<product>-<offshoot>-test/factories/*\`). Do not hand-build large empty objects when a factory exists; add one to the appropriate \`*-test\` package if the same shape is reused.
       
       Please reference the documentation here for more information: ${context.docFiles?.testingGuide}`,
     })),

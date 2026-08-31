@@ -231,6 +231,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         * Do **not** import \`create…HttpApp\` from \`http.ts\` in handler tests — that mounts every product router (slow, heavy imports).
         * Multi-route chains: \`acquireRouterSlimRouteTestMulti([createA, createB])\` or a dedicated \`*.integration.test.ts\` with explicit scope.
         * **Imports:** use package subpath exports (e.g. \`@scope/my-db/queries/<group>/<name>\`, \`@scope/my-service-common/context\`) — never import from a package root or group query barrels. \`./queries/*\` / \`./handlers/*\` cover new files; do not edit \`package.json\` exports when adding handlers.
+        * **Shared model fixtures:** Prefer factories from product \`*-test\` packages (\`@scope/<product>-test/factories/*\` for core service models; \`@scope/<product>-<offshoot>-test/factories/*\` and \`provenance/*\` for offshoot models). Do not hand-build large empty objects when a factory exists. Add new factories there when the same shape is needed in more than one test. Prod empties stay on \`*-spec\` (\`empties\`); keep DB/HTTP mount helpers in the package's local \`testing/\` only.
         
         Review ${context.docFiles?.testingGuide} for more details.`,
     })),

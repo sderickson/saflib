@@ -1,0 +1,30 @@
+{
+  "name": "@saflib/base-test",
+  "saf": {
+    "kind": "test"
+  },
+  "description": "Shared factories for core service models used in unit tests (SPA, HTTP, SDK fakes). Offshoot-specific helpers live in packages like @saflib/base-__offshoot-name__-test.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./shared/*": "./shared/*.ts",
+    "./factories/*": "./factories/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/base-spec": "*",
+    "@saflib/monorepo": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false,
+  "imports": {
+    "#shared/*": "./shared/*",
+    "#factories/*": "./factories/*"
+  }
+}

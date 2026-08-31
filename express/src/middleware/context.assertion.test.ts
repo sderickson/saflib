@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import express from "express";
+import type { OpenApiDocument } from "@saflib/openapi";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import request from "supertest";
 import { getSafContext, signAssertion } from "@saflib/node";
@@ -19,7 +20,7 @@ const errorSchemaProps = {
   code: { type: "string" as const },
 };
 
-const probeSpec: OpenAPIV3.DocumentV3 = {
+const probeSpec: OpenApiDocument = {
   openapi: "3.0.0",
   info: { title: "assertion-auth", version: "1.0.0" },
   paths: {

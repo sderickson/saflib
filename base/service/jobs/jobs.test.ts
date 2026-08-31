@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { OpenApiDocument } from "@saflib/openapi";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import {
   TIMEOUT_CEILING_MS,
@@ -14,7 +15,7 @@ import {
   runBaseJobs,
 } from "./jobs.ts";
 
-const validationSpec: OpenAPIV3.DocumentV3 = {
+const validationSpec: OpenApiDocument = {
   openapi: "3.0.0",
   info: { title: "base-jobs-test", version: "1.0.0" },
   paths: {

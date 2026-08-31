@@ -1,5 +1,5 @@
 import type { DbKey, DbOptions } from "@saflib/drizzle";
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
+import type { OpenApiDocument } from "@saflib/openapi";
 
 /**
  * Calling operationId → operationIds it may enqueue.
@@ -41,7 +41,7 @@ export interface JobsServiceOptions {
    * Bundled product OpenAPI document used to resolve operationId → method/path
    * and to validate `background` tags / known ids at startup.
    */
-  apiSpec: OpenAPIV3.DocumentV3;
+  apiSpec: OpenApiDocument;
 
   /**
    * Unix socket path of the target app (M1 internal listener) for delivery.

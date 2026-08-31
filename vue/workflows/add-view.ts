@@ -196,6 +196,13 @@ and any computation that doesn't need Vue reactivity or the DOM.
 Write unit tests in \`ComponentName.logic.test.ts\` — these should be fast, deterministic,
 no-DOM tests that import and call the functions directly.
 
+When tests need OpenAPI/service model objects (packets, dossier rows, resources, etc.), import
+factories from product \`*-test\` packages (\`@scope/<product>-test/factories/*\` for core models;
+\`@scope/<product>-<offshoot>-test/factories/*\` and \`provenance/*\` for offshoot models). Do not
+hand-build large empty objects when a factory exists; add factories to those packages when the
+same shape is needed in more than one test. Prod empties stay on \`*-spec\`; SPA-local
+\`testing/\` / \`test-app.ts\` stay for mount helpers only.
+
 Hint: you can group all validation in one function, rather than one per loader query.
 
 ## 2. Composables (\`useComponentFlow.ts\`)

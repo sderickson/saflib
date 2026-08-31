@@ -158,7 +158,8 @@ Mainly it should reflect what is given to it. Have it respect query parameters a
 **Mock data**: Import the shared mock data array from **mocks.ts** (adjacent to this file) and
 modify it in the handler. For create mutations, push a new item. For delete, splice it out.
 For update, modify in place. This way operations affect one another so that TanStack caching
-can be tested.
+can be tested. When creating new mock rows, prefer factories from product \`*-test\` packages
+(\`@scope/<product>-test/factories/*\` / \`@scope/<product>-<offshoot>-test/factories/*\`).
 
 As part of this, also update **${context.targetName}.test.ts** to implement simple tests for the API mutation.
 

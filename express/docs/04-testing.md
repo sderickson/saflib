@@ -59,6 +59,15 @@ Tests should include at least one test for each response code the **handler** im
 
 Do not test 500 responses in handler tests.
 
+## Shared model fixtures (`*-test` packages)
+
+Hand-building large OpenAPI model objects in every test file does not scale. Prefer factories from product test packages:
+
+- Core service models: `@scope/<product>-test/factories/*` (lives next to `service/spec` as `service/test`)
+- Offshoot models / provenance: `@scope/<product>-<offshoot>-test/factories/*` and `provenance/*` (e.g. `dossier/test`)
+
+Prod empties stay on `*-spec` (`empties`). Package-local `testing/` stays for DB/HTTP mount harnesses (e.g. slim route tests), not for shared model shapes. When the same fixture is needed in more than one test, add a factory to the appropriate `*-test` package (`saf.kind: "test"`).
+
 ## Mocking
 
 Tests for Express routes should be integration tests that use the actual database but mock other services, both internal and external.

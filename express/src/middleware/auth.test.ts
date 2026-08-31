@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 import express from "express";
+import type { OpenApiDocument } from "@saflib/openapi";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import request from "supertest";
 import {
@@ -169,7 +170,7 @@ const forbiddenSchemaProps = {
 
 describe("Auth Middleware email-verified OpenAPI tag", () => {
   /** Minimal spec with response bodies so express-openapi-validator accepts handler + auth errors. */
-  const specWithEmailVerifiedTag: OpenAPIV3.DocumentV3 = {
+  const specWithEmailVerifiedTag: OpenApiDocument = {
     openapi: "3.0.0",
     info: { title: "test", version: "1.0.0" },
     paths: {
@@ -257,7 +258,7 @@ describe("Auth Middleware email-verified OpenAPI tag", () => {
 });
 
 describe("Auth Middleware mfa-required OpenAPI tag", () => {
-  const specWithMfaTag: OpenAPIV3.DocumentV3 = {
+  const specWithMfaTag: OpenApiDocument = {
     openapi: "3.0.0",
     info: { title: "test", version: "1.0.0" },
     paths: {
@@ -346,7 +347,7 @@ describe("Auth Middleware mfa-required OpenAPI tag", () => {
 });
 
 describe("Auth Middleware site-admin-only OpenAPI tag", () => {
-  const specWithSiteAdminTag: OpenAPIV3.DocumentV3 = {
+  const specWithSiteAdminTag: OpenApiDocument = {
     openapi: "3.0.0",
     info: { title: "test", version: "1.0.0" },
     paths: {

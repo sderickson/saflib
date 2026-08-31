@@ -1,11 +1,28 @@
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 
+/** Bundled OpenAPI document accepted by express-openapi-validator (3.0.x or 3.1.x). */
+export type OpenApiDocument =
+  | OpenAPIV3.DocumentV3
+  | OpenAPIV3.DocumentV3_1;
+
 /**
- * Takes an imported JSON object and casts it to the OpenAPIV3.DocumentV3 type so that express-openapi-validator can validate the JSON against the OpenAPI spec without complaining about a type mismatch.
+ * Takes an imported JSON object and casts it to {@link OpenApiDocument} so that
+ * express-openapi-validator can validate the JSON against the OpenAPI spec without
+ * complaining about a type mismatch.
  */
-export const castJson = (json: any) => {
-  return json.default as OpenAPIV3.DocumentV3;
+export const castJson = (json: { default: unknown }): OpenApiDocument => {
+  return json.default as OpenApiDocument;
 };
+
+/** Cast an inline OpenAPI object (e.g. in tests) to {@link OpenApiDocument}. */
+export function asOpenApiDocument(doc: {
+  openapi: string;
+  info: OpenAPIV3.InfoObject;
+  paths?: OpenAPIV3.PathsObject;
+  [key: string]: unknown;
+}): OpenApiDocument {
+  return doc as OpenApiDocument;
+}
 
 /**
  * Convenience type to lookup the response body by operationId.

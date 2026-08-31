@@ -61,6 +61,8 @@ For OpenAPI operation tags used by middleware and the job queue (`site-admin-onl
 └── index.ts
 ```
 
+Shared unit-test factories for those schemas live in a sibling `saf.kind: "test"` package (`service/test` → `@scope/<product>-test`, or `{offshoot}/test` → `@scope/<product>-<offshoot>-test`). `openapi/init` scaffolds the offshoot test package next to the offshoot spec. Prefer those factories in SPA/HTTP/SDK tests instead of hand-built empties; prod empties stay on the spec package.
+
 ## Files and Directories Explained
 
 ### `dist/`

@@ -6,7 +6,7 @@ import {
   makeLineReplace,
 } from "./steps/copy/templating.ts";
 
-export type OffshootLayer = "db" | "spec" | "http" | "sdk";
+export type OffshootLayer = "db" | "spec" | "http" | "sdk" | "test";
 
 export type OffshootInitContext = {
   offshootName: string;
@@ -108,6 +108,9 @@ export function makeOffshootLineReplace(context: OffshootInitContext) {
     out = out
       .split("@saflib/base-__offshoot-name__-sdk")
       .join(`${context.sharedPackagePrefix}-${context.offshootName}-sdk`);
+    out = out
+      .split("@saflib/base-__offshoot-name__-test")
+      .join(`${context.sharedPackagePrefix}-${context.offshootName}-test`);
     // Sibling / parent layer refs inside offshoot packages.
     out = out
       .split("@saflib/base-db")
@@ -121,6 +124,9 @@ export function makeOffshootLineReplace(context: OffshootInitContext) {
     out = out
       .split("@saflib/base-sdk")
       .join(`${context.sharedPackagePrefix}-sdk`);
+    out = out
+      .split("@saflib/base-test")
+      .join(`${context.sharedPackagePrefix}-test`);
     // Base__OffshootName__X → ProductOffshootX (before __OffshootName__ alone).
     out = out
       .split("Base__OffshootName__")

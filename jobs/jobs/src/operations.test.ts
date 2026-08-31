@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { OpenApiDocument } from "@saflib/openapi";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import { TIMEOUT_CEILING_MS } from "./constants.ts";
 import {
@@ -9,8 +10,8 @@ import {
   validateJobsStartup,
 } from "./operations.ts";
 
-const sampleSpec: OpenAPIV3.DocumentV3 = {
-  openapi: "3.1.0",
+const sampleSpec: OpenApiDocument = {
+  openapi: "3.0.3",
   info: { title: "test", version: "1.0.0" },
   paths: {
     "/jobs-demo/start": {
@@ -42,7 +43,7 @@ const sampleSpec: OpenAPIV3.DocumentV3 = {
       },
     },
   },
-};
+});
 
 describe("buildOperationMap", () => {
   it("maps operationId to method, path template, and background flag", () => {

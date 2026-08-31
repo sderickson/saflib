@@ -62,6 +62,9 @@
       "path": "./base/__offshoot-name__/spec"
     },
     {
+      "path": "./base/__offshoot-name__/test"
+    },
+    {
       "path": "./base/clients/__static-subdomain-name__"
     },
     {
@@ -132,6 +135,9 @@
     },
     {
       "path": "./base/service/spec"
+    },
+    {
+      "path": "./base/service/test"
     },
     {
       "path": "./commander"

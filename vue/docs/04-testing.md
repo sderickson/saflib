@@ -76,6 +76,8 @@ it("preserves falsy non-null values", () => {
 
 These tests are fast (typically < 5ms for dozens of tests) and stable since they have no external dependencies.
 
+When logic tests need OpenAPI/service model objects, import factories from product `*-test` packages (`@scope/<product>-test/factories/*` for core models; `@scope/<product>-<offshoot>-test/factories/*` and `provenance/*` for offshoot models). Do not hand-build large empty objects when a factory exists; add factories there when the same shape is reused. Prod empties stay on `*-spec`; SPA `test-app.ts` / package `testing/` stay for mount helpers only.
+
 ### Composable Tests
 
 Composables that involve TanStack queries/mutations need a Vue app context and a mock server. Use the same pattern as SDK tests:

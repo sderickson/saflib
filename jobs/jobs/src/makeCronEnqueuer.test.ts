@@ -14,6 +14,7 @@ import {
   it,
   vi,
 } from "vitest";
+import type { OpenApiDocument } from "@saflib/openapi";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { DbKey } from "@saflib/drizzle";
 import { startExpressServer } from "@saflib/express";
@@ -29,7 +30,7 @@ const TEST_SECRET = Buffer.from("cron-enqueuer-test-secret!!!!").toString(
 );
 const TEST_KEYS = `cron-enq:${TEST_SECRET}`;
 
-const productSpec: OpenAPIV3.DocumentV3 = {
+const productSpec: OpenApiDocument = {
   openapi: "3.0.0",
   info: { title: "product", version: "1.0.0" },
   paths: {
