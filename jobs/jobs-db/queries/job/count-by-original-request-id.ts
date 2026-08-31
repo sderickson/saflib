@@ -6,13 +6,13 @@ import { jobTable } from "../../schemas/job.ts";
 import { count, eq } from "drizzle-orm";
 
 export type CountByOriginalRequestIdJobParams = {
-  originalRequestId: (typeof jobTable.$inferSelect)["originalRequestId"];
+  original_request_id: (typeof jobTable.$inferSelect)["original_request_id"];
 };
 
 export type CountByOriginalRequestIdJobError = never;
 
 /**
- * Count all jobs sharing an `originalRequestId` (spawn-cap / lineage).
+ * Count all jobs sharing an `original_request_id` (spawn-cap / lineage).
  */
 export const countByOriginalRequestIdJob = queryWrapper(
   async (
@@ -25,7 +25,7 @@ export const countByOriginalRequestIdJob = queryWrapper(
       await db
         .select({ value: count() })
         .from(jobTable)
-        .where(eq(jobTable.originalRequestId, params.originalRequestId))
+        .where(eq(jobTable.original_request_id, params.original_request_id))
     )[0]!;
 
     return { result: row.value };

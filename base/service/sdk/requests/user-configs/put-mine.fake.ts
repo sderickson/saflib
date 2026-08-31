@@ -16,24 +16,24 @@ export const putMineUserConfigsHandler = baseHandler({
     const config = ensureMockUserConfig(MOCK_SESSION_USER_ID);
     const now = new Date().toISOString();
 
-    const wasOptedIn = config.marketingEmailsOptIn;
-    config.displayName = data.displayName;
-    config.marketingEmailsOptIn = data.marketingEmailsOptIn;
-    if (data.marketingEmailsOptIn) {
+    const wasOptedIn = config.marketing_emails_opt_in;
+    config.display_name = data.display_name;
+    config.marketing_emails_opt_in = data.marketing_emails_opt_in;
+    if (data.marketing_emails_opt_in) {
       if (!wasOptedIn) {
-        config.marketingEmailsOptInAt = now;
+        config.marketing_emails_opt_in_at = now;
       }
     } else {
-      config.marketingEmailsOptInAt = null;
+      config.marketing_emails_opt_in_at = null;
     }
     if (
-      data.termsOfServiceAgreedAt === "now" &&
-      !config.termsOfServiceAgreedAt
+      data.terms_of_service_agreed_at === "now" &&
+      !config.terms_of_service_agreed_at
     ) {
-      config.termsOfServiceAgreedAt = now;
+      config.terms_of_service_agreed_at = now;
     }
-    config.updatedAt = now;
+    config.updated_at = now;
 
-    return { userConfig: { ...config } };
+    return { user_config: { ...config } };
   },
 });

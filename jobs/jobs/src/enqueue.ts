@@ -4,19 +4,19 @@ import type { Job, JobsServiceRequestBody } from "@saflib/jobs-spec";
 import createError from "http-errors";
 
 export interface EnqueueParams {
-  operationId: string;
+  operation_id: string;
   request?: JobsServiceRequestBody["enqueueJob"]["request"];
-  runAt?: string;
-  delayMs?: number;
-  dedupeKey?: string | null;
-  concurrencyKey?: string | null;
+  run_at?: string;
+  delay_ms?: number;
+  dedupe_key?: string | null;
+  concurrency_key?: string | null;
   priority?: number;
 }
 
 export interface EnqueueOnBehalfOfParams extends EnqueueParams {
-  userId: string;
+  user_id: string;
   authority: NonNullable<
-    JobsServiceRequestBody["enqueueJob"]["onBehalfOf"]
+    JobsServiceRequestBody["enqueueJob"]["on_behalf_of"]
   >["authority"];
 }
 
@@ -122,12 +122,12 @@ export async function enqueue(
 ): Promise<EnqueueResult> {
   return postEnqueue(
     {
-      operationId: params.operationId,
+      operation_id: params.operation_id,
       request: params.request ?? {},
-      runAt: params.runAt,
-      delayMs: params.delayMs,
-      dedupeKey: params.dedupeKey,
-      concurrencyKey: params.concurrencyKey,
+      run_at: params.run_at,
+      delay_ms: params.delay_ms,
+      dedupe_key: params.dedupe_key,
+      concurrency_key: params.concurrency_key,
       priority: params.priority,
     },
     options,
@@ -143,15 +143,15 @@ export async function enqueueOnBehalfOf(
 ): Promise<EnqueueResult> {
   return postEnqueue(
     {
-      operationId: params.operationId,
+      operation_id: params.operation_id,
       request: params.request ?? {},
-      runAt: params.runAt,
-      delayMs: params.delayMs,
-      dedupeKey: params.dedupeKey,
-      concurrencyKey: params.concurrencyKey,
+      run_at: params.run_at,
+      delay_ms: params.delay_ms,
+      dedupe_key: params.dedupe_key,
+      concurrency_key: params.concurrency_key,
       priority: params.priority,
-      onBehalfOf: {
-        userId: params.userId,
+      on_behalf_of: {
+        user_id: params.user_id,
         authority: params.authority,
       },
     },

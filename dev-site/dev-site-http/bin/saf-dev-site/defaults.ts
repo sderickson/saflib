@@ -14,10 +14,10 @@ export function resolveRepoRoot(explicit?: string): string {
  * default (`true` → `@saflib/dev-site-db/data/`).
  */
 export function resolveDbPath(
-  repoRoot: string,
+  repo_root: string,
   explicit?: string,
 ): string | true {
-  void repoRoot;
+  void repo_root;
   if (explicit) return explicit;
   if (process.env.DEV_SITE_DB_PATH) return process.env.DEV_SITE_DB_PATH;
   return true;

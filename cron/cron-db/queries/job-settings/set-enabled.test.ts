@@ -27,11 +27,11 @@ describe("setEnabledByName", () => {
       "admin-user-1",
     );
     assert(job);
-    expect(job.jobName).toBe(jobName);
+    expect(job.job_name).toBe(jobName);
     expect(job.enabled).toBe(true);
-    expect(job.enabledBy).toBe("admin-user-1");
-    expect(job.createdAt).toBeInstanceOf(Date);
-    expect(job.updatedAt).toBeInstanceOf(Date);
+    expect(job.enabled_by).toBe("admin-user-1");
+    expect(job.created_at).toBeInstanceOf(Date);
+    expect(job.updated_at).toBeInstanceOf(Date);
   });
 
   it("should update an existing job setting", async () => {
@@ -51,13 +51,13 @@ describe("setEnabledByName", () => {
       false,
     );
     assert(updatedJob);
-    expect(updatedJob.jobName).toBe(jobName);
+    expect(updatedJob.job_name).toBe(jobName);
     expect(updatedJob.enabled).toBe(false);
-    expect(updatedJob.enabledBy).toBe("admin-user-1");
+    expect(updatedJob.enabled_by).toBe("admin-user-1");
     expect(updatedJob.id).toBe(initialJob.id);
-    expect(updatedJob.createdAt).toEqual(initialJob.createdAt);
-    expect(updatedJob.updatedAt.getTime()).toBeGreaterThan(
-      initialJob.updatedAt.getTime(),
+    expect(updatedJob.created_at).toEqual(initialJob.created_at);
+    expect(updatedJob.updated_at.getTime()).toBeGreaterThan(
+      initialJob.updated_at.getTime(),
     );
   });
 
@@ -71,7 +71,7 @@ describe("setEnabledByName", () => {
     );
     assert(job);
     expect(job.enabled).toBe(true);
-    expect(job.enabledBy).toBe("enabler-id");
+    expect(job.enabled_by).toBe("enabler-id");
   });
 
   it("retains enabledBy when disabling", async () => {
@@ -84,7 +84,7 @@ describe("setEnabledByName", () => {
     );
     assert(disabled);
     expect(disabled.enabled).toBe(false);
-    expect(disabled.enabledBy).toBe("original-enabler");
+    expect(disabled.enabled_by).toBe("original-enabler");
   });
 
   it("updates enabledBy when re-enabling as a different admin", async () => {
@@ -99,6 +99,6 @@ describe("setEnabledByName", () => {
     );
     assert(reenabled);
     expect(reenabled.enabled).toBe(true);
-    expect(reenabled.enabledBy).toBe("admin-b");
+    expect(reenabled.enabled_by).toBe("admin-b");
   });
 });

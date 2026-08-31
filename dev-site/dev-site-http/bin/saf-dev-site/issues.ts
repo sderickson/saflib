@@ -6,6 +6,7 @@ import { devSiteDb } from "@saflib/dev-site-db/instances";
 import { getCommitPackage } from "../../get-package.ts";
 import { collectPackageIssues } from "../../package-issues.ts";
 import { collectWorkdirPackageIssues } from "../../workdir-package-issues.ts";
+import { toPackageDetailForIssues } from "../../wire-maps.ts";
 import {
   resolveDbPath,
   resolveMainRef,
@@ -16,9 +17,9 @@ import {
 import { ensureCliDbAvailable } from "./ensure-db.ts";
 
 function printIssuesText(args: {
-  packageName: string;
+  package_name: string;
   label: string;
-  productRoot: string;
+  product_root: string;
   metaLine: string;
   issues: Array<{
     filePath: string;
@@ -27,7 +28,7 @@ function printIssuesText(args: {
     kind?: string;
   }>;
 }): void {
-  console.log(`# Issues in ${args.packageName} @ ${args.label}`);
+  console.log(`# Issues in ${args.package_name} @ ${args.label}`);
   console.log(`# ${args.issues.length} issue(s)`);
   console.log(args.metaLine);
   console.log(
@@ -76,25 +77,25 @@ export const addIssuesCommand = (program: Command) => {
           package: string;
           workdir?: boolean;
           db?: string;
-          repoRoot?: string;
-          productRoot?: string;
+          repo_root?: string;
+          product_root?: string;
           mainRef?: string;
           json?: boolean;
         },
       ) => {
-        const repoRoot = resolveRepoRoot(opts.repoRoot);
+        const repo_root = resolveRepoRoot(opts.repo_root);
 
         if (opts.workdir) {
-          const dbPath = resolveDbPath(repoRoot, opts.db);
-          const productRoot = resolveWorkdirProductRoot(
-            repoRoot,
-            opts.productRoot,
+          const dbPath = resolveDbPath(repo_root, opts.db);
+          const product_root = resolveWorkdirProductRoot(
+            repo_root,
+            opts.product_root,
             dbPath,
           );
           const result = await collectWorkdirPackageIssues({
-            repoRoot,
-            productRoot: productRoot || undefined,
-            packageName: opts.package,
+            repo_root,
+            product_root: product_root || undefined,
+            package_name: opts.package,
           });
 
           if (opts.json) {
@@ -103,18 +104,18 @@ export const addIssuesCommand = (program: Command) => {
           }
 
           printIssuesText({
-            packageName: result.packageName,
+            package_name: result.package_name,
             label: "workdir",
-            productRoot: result.productRoot,
-            metaLine: `# source=workdir product-root=${result.productRoot || "(repo root)"} exports=${result.exportCount}`,
+            product_root: result.product_root,
+            metaLine: `# source=workdir product-root=${result.product_root || "(repo root)"} exports=${result.export_count}`,
             issues: result.issues,
           });
           return;
         }
 
-        const dbPath = resolveDbPath(repoRoot, opts.db);
+        const dbPath = resolveDbPath(repo_root, opts.db);
         ensureCliDbAvailable(dbPath, "read");
-        const productRoot = resolveProductRoot(opts.productRoot, dbPath);
+        const product_root = resolveProductRoot(opts.product_root, dbPath);
         const mainRef = resolveMainRef(opts.mainRef);
 
         const dbKey = devSiteDb.connect({
@@ -124,7 +125,7 @@ export const addIssuesCommand = (program: Command) => {
         });
         try {
           const ref = hashArg || "HEAD";
-          const resolved = resolveRef(repoRoot, ref);
+          const resolved = resolveRef(repo_root, ref);
           if (resolved.error) throw resolved.error;
           const hash = resolved.result;
 
@@ -132,8 +133,8 @@ export const addIssuesCommand = (program: Command) => {
           try {
             detail = await throwError(
               getCommitPackage(dbKey, hash, opts.package, {
-                repoRoot,
-                productRoot: productRoot || undefined,
+                repo_root,
+                product_root: product_root || undefined,
                 mainRef,
               }),
             );
@@ -155,21 +156,24 @@ export const addIssuesCommand = (program: Command) => {
             throw err;
           }
 
-          const issues = collectPackageIssues(detail, {
-            packageDirectory: detail.directory,
-            productRoot: productRoot || undefined,
-          });
+          const issues = collectPackageIssues(
+            toPackageDetailForIssues(detail),
+            {
+              packageDirectory: detail.directory,
+              productRoot: product_root || undefined,
+            },
+          );
 
           if (opts.json) {
             console.log(
               JSON.stringify(
                 {
-                  commitHash: detail.commitHash,
-                  packageName: detail.packageName,
+                  commit_hash: detail.commit_hash,
+                  package_name: detail.package_name,
                   directory: detail.directory,
                   source: "db",
                   dbPath: dbPath === true ? "(library default)" : dbPath,
-                  productRoot,
+                  product_root,
                   issueCount: issues.length,
                   issues,
                 },
@@ -181,10 +185,10 @@ export const addIssuesCommand = (program: Command) => {
           }
 
           printIssuesText({
-            packageName: detail.packageName,
-            label: detail.commitHash.slice(0, 12),
-            productRoot,
-            metaLine: `# db=${dbPath === true ? "(library default)" : dbPath} product-root=${productRoot || "(repo root)"}`,
+            package_name: detail.package_name,
+            label: detail.commit_hash.slice(0, 12),
+            product_root,
+            metaLine: `# db=${dbPath === true ? "(library default)" : dbPath} product-root=${product_root || "(repo root)"}`,
             issues,
           });
         } finally {

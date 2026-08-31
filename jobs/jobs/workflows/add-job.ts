@@ -19,17 +19,17 @@ const input = [
   {
     name: "callerOperationId",
     description:
-      "OpenAPI operationId allowed to enqueue the new background target (trigger-map key)",
+      "OpenAPI operation_id allowed to enqueue the new background target (trigger-map key)",
     exampleValue: "startJobsDemo",
   },
   {
     name: "targetOperationId",
     description:
-      "Background operationId the caller may enqueue (must exist in spec with background tag)",
+      "Background operation_id the caller may enqueue (must exist in spec with background tag)",
     exampleValue: "jobsDemoStepB",
   },
   {
-    name: "cronJobName",
+    name: "cron_job_name",
     description:
       "Optional cron job name when adding a cron: trigger key (omit for HTTP-only edges)",
     exampleValue: "jobsDemoKick",
@@ -39,7 +39,7 @@ const input = [
 interface JobsAddJobWorkflowContext extends ParsePackageNameOutput {
   callerOperationId: string;
   targetOperationId: string;
-  cronJobName?: string;
+  cron_job_name?: string;
   jobsDir: string;
 }
 
@@ -77,7 +77,7 @@ export const JobsAddJobWorkflowDefinition = defineWorkflow<
       }),
       callerOperationId: input.callerOperationId,
       targetOperationId: input.targetOperationId,
-      cronJobName: input.cronJobName,
+      cron_job_name: input.cron_job_name,
       jobsDir,
       targetDir: jobsDir,
     };
@@ -103,8 +103,8 @@ export const JobsAddJobWorkflowDefinition = defineWorkflow<
       promptText: `Add trigger-map entries in ${context.packageName}/jobs.ts:
       * HTTP edge in workflow area \`trigger-map\` (jobs/add-job): \`${context.callerOperationId}: ["${context.targetOperationId}"]\`
       ${
-        context.cronJobName
-          ? `* Prefer \`cron/add-job\` for the \`cron:${context.cronJobName}\` edge (workflow area \`cron-trigger-map\`); or add \`cron:${context.cronJobName}: ["${context.targetOperationId}"]\` here if the cron job already exists`
+        context.cron_job_name
+          ? `* Prefer \`cron/add-job\` for the \`cron:${context.cron_job_name}\` edge (workflow area \`cron-trigger-map\`); or add \`cron:${context.cron_job_name}: ["${context.targetOperationId}"]\` here if the cron job already exists`
           : ""
       }
       Implement the background HTTP handler with express/add-handler (background tag).

@@ -14,7 +14,7 @@ export const updateCronJobSettingsHandler = createHandler(
     const { auth } = getSafContext();
     const { result: updatedSetting, error } = await setEnabled(
       dbKey,
-      body.jobName,
+      body.job_name,
       body.enabled,
       body.enabled ? auth?.userId : undefined,
     );
@@ -25,12 +25,12 @@ export const updateCronJobSettingsHandler = createHandler(
       }
     }
 
-    if (!jobs[body.jobName]) {
+    if (!jobs[body.job_name]) {
       throw createError(404);
     }
 
     const response: CronResponseBody["updateCronJobSettings"][200] =
-      mapJobSettingToResponse(updatedSetting, jobs[body.jobName]?.schedule);
+      mapJobSettingToResponse(updatedSetting, jobs[body.job_name]?.schedule);
     res.status(200).json(response);
   },
 );

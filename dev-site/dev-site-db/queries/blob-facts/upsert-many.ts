@@ -21,7 +21,7 @@ export const upsertMany = queryWrapper(
     const db = devSiteDbManager.get(dbKey)!;
     const byHash = new Map<string, InsertBlobFactParams>();
     for (const row of rows) {
-      byHash.set(row.blobHash, row);
+      byHash.set(row.blob_hash, row);
     }
     const unique = [...byHash.values()];
 
@@ -30,10 +30,10 @@ export const upsertMany = queryWrapper(
         tx.insert(blobFactsTable)
           .values(row)
           .onConflictDoUpdate({
-            target: blobFactsTable.blobHash,
+            target: blobFactsTable.blob_hash,
             set: {
-              analyzerVersion: row.analyzerVersion,
-              lineCount: row.lineCount,
+              analyzer_version: row.analyzer_version,
+              line_count: row.line_count,
               specialty: row.specialty,
               computed_at: row.computed_at,
             },

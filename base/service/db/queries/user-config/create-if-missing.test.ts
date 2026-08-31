@@ -28,20 +28,20 @@ describe("createIfMissingUserConfig", () => {
     baseDbManager.clearAllTablesForTests(dbKey);
   });
 
-  it("inserts defaults when no row exists for userId", async () => {
+  it("inserts defaults when no row exists for user_id", async () => {
     const { result, error } = await createIfMissingUserConfig(dbKey, {
-      userId: "user-1",
+      user_id: "user-1",
     });
 
     expect(error).toBeUndefined();
     assert(result);
-    expect(result.userId).toBe("user-1");
-    expect(result.displayName).toBe("");
-    expect(result.marketingEmailsOptIn).toBe(false);
-    expect(result.marketingEmailsOptInAt).toBeNull();
-    expect(result.termsOfServiceAgreedAt).toBeNull();
-    expect(result.createdAt).toBeInstanceOf(Date);
-    expect(result.updatedAt).toBeInstanceOf(Date);
+    expect(result.user_id).toBe("user-1");
+    expect(result.display_name).toBe("");
+    expect(result.marketing_emails_opt_in).toBe(false);
+    expect(result.marketing_emails_opt_in_at).toBeNull();
+    expect(result.terms_of_service_agreed_at).toBeNull();
+    expect(result.created_at).toBeInstanceOf(Date);
+    expect(result.updated_at).toBeInstanceOf(Date);
 
     const db = baseDbManager.get(dbKey)!;
     const rows = await db.select().from(userConfigTable);
@@ -55,19 +55,19 @@ describe("createIfMissingUserConfig", () => {
     const [existing] = await db
       .insert(userConfigTable)
       .values({
-        userId: "user-1",
-        displayName: "Alex",
-        marketingEmailsOptIn: true,
-        marketingEmailsOptInAt: now,
-        termsOfServiceAgreedAt: null,
-        createdAt: now,
-        updatedAt: now,
+        user_id: "user-1",
+        display_name: "Alex",
+        marketing_emails_opt_in: true,
+        marketing_emails_opt_in_at: now,
+        terms_of_service_agreed_at: null,
+        created_at: now,
+        updated_at: now,
       })
       .returning();
     assert(existing);
 
     const { result, error } = await createIfMissingUserConfig(dbKey, {
-      userId: "user-1",
+      user_id: "user-1",
     });
 
     expect(error).toBeUndefined();
@@ -76,7 +76,7 @@ describe("createIfMissingUserConfig", () => {
 
     const rows = await db.select().from(userConfigTable);
     expect(rows).toHaveLength(1);
-    expect(rows[0]?.displayName).toBe("Alex");
-    expect(rows[0]?.marketingEmailsOptIn).toBe(true);
+    expect(rows[0]?.display_name).toBe("Alex");
+    expect(rows[0]?.marketing_emails_opt_in).toBe(true);
   });
 });

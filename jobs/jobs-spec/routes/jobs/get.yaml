@@ -1,7 +1,7 @@
 getJob:
   summary: Get a job by id
   description: >
-    Admin detail for a single job, including the raw enqueue assertion token (`authorityAssertion`) stored with the authority grant. List responses omit that token to keep payloads small. Mounted as monolith chrome (`site-admin-only`).
+    Admin detail for a single job, including the raw enqueue assertion token (`authority_assertion`) stored with the authority grant. List responses omit that token to keep payloads small. Mounted as monolith chrome (`site-admin-only`).
   operationId: getJob
   tags:
     - site-admin-only
@@ -25,19 +25,19 @@ getJob:
             additionalProperties: false
             required:
               - job
-              - authorityAssertion
+              - authority_assertion
             properties:
               job:
                 $ref: "../../openapi.yaml#/components/schemas/Job"
-              authorityAssertion:
+              authority_assertion:
                 type: object
                 additionalProperties: false
                 description: >
-                  Enqueue-hop identity assertion as stored with the job (payload, signature, keyId). Detail-only; omitted from list.
+                  Enqueue-hop identity assertion as stored with the job (payload, signature, key_id). Detail-only; omitted from list.
                 required:
                   - payload
                   - signature
-                  - keyId
+                  - key_id
                 properties:
                   payload:
                     type: string
@@ -47,7 +47,7 @@ getJob:
                     type: string
                     description: Base64url HMAC-SHA256 signature of the payload.
                     example: "dGVzdC1zaWduYXR1cmU"
-                  keyId:
+                  key_id:
                     type: string
                     description: Id of the key used to sign the assertion.
                     example: "k1"

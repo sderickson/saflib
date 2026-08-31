@@ -21,10 +21,10 @@ function detail(
   partial: Partial<OverlayPackageDetail> = {},
 ): OverlayPackageDetail {
   return {
-    packageName: pkg,
+    package_name: pkg,
     directory: "lib",
     exports: [],
-    testCases: [],
+    test_cases: [],
     ...partial,
   };
 }
@@ -35,23 +35,23 @@ describe("diffPackageDetails", () => {
       detail({
         exports: [
           {
-            packageName: pkg,
-            filePath: "lib/a.ts",
+            package_name: pkg,
+            file_path: "lib/a.ts",
             name: "keep",
             kind: "function",
             signature: "(): void",
             docstring: "same",
           },
           {
-            packageName: pkg,
-            filePath: "lib/a.ts",
+            package_name: pkg,
+            file_path: "lib/a.ts",
             name: "gone",
             kind: "function",
             signature: "(): void",
           },
           {
-            packageName: pkg,
-            filePath: "lib/a.ts",
+            package_name: pkg,
+            file_path: "lib/a.ts",
             name: "tweaked",
             kind: "function",
             signature: "(): void",
@@ -62,23 +62,23 @@ describe("diffPackageDetails", () => {
       detail({
         exports: [
           {
-            packageName: pkg,
-            filePath: "lib/a.ts",
+            package_name: pkg,
+            file_path: "lib/a.ts",
             name: "keep",
             kind: "function",
             signature: "(): void",
             docstring: "same",
           },
           {
-            packageName: pkg,
-            filePath: "lib/a.ts",
+            package_name: pkg,
+            file_path: "lib/a.ts",
             name: "fresh",
             kind: "function",
             signature: "(): number",
           },
           {
-            packageName: pkg,
-            filePath: "lib/a.ts",
+            package_name: pkg,
+            file_path: "lib/a.ts",
             name: "tweaked",
             kind: "function",
             signature: "(): string",
@@ -89,23 +89,23 @@ describe("diffPackageDetails", () => {
     );
     expect(overlay.packageChange).toBe("modified");
     expect(overlay.exports[exportIdentityKey({
-      filePath: "lib/a.ts",
+      file_path: "lib/a.ts",
       name: "fresh",
       kind: "function",
     })]).toBe("added");
     expect(overlay.exports[exportIdentityKey({
-      filePath: "lib/a.ts",
+      file_path: "lib/a.ts",
       name: "gone",
       kind: "function",
     })]).toBe("removed");
     expect(overlay.exports[exportIdentityKey({
-      filePath: "lib/a.ts",
+      file_path: "lib/a.ts",
       name: "tweaked",
       kind: "function",
     })]).toBe("modified");
     expect(
       overlay.exports[exportIdentityKey({
-        filePath: "lib/a.ts",
+        file_path: "lib/a.ts",
         name: "keep",
         kind: "function",
       })],
@@ -116,68 +116,68 @@ describe("diffPackageDetails", () => {
   it("marks tests added/removed and modified when subject fields change", () => {
     const overlay = diffPackageDetails(
       detail({
-        testCases: [
+        test_cases: [
           {
-            packageName: pkg,
-            filePath: "lib/a.test.ts",
-            fullName: "a > stays",
-            subjectName: "a",
-            subjectSignature: "(): void",
+            package_name: pkg,
+            file_path: "lib/a.test.ts",
+            full_name: "a > stays",
+            subject_name: "a",
+            subject_signature: "(): void",
           },
           {
-            packageName: pkg,
-            filePath: "lib/a.test.ts",
-            fullName: "a > gone",
+            package_name: pkg,
+            file_path: "lib/a.test.ts",
+            full_name: "a > gone",
           },
           {
-            packageName: pkg,
-            filePath: "lib/a.test.ts",
-            fullName: "a > docs",
-            subjectName: "a",
-            subjectDocstring: "old",
+            package_name: pkg,
+            file_path: "lib/a.test.ts",
+            full_name: "a > docs",
+            subject_name: "a",
+            subject_docstring: "old",
           },
         ],
       }),
       detail({
-        testCases: [
+        test_cases: [
           {
-            packageName: pkg,
-            filePath: "lib/a.test.ts",
-            fullName: "a > stays",
-            subjectName: "a",
-            subjectSignature: "(): void",
+            package_name: pkg,
+            file_path: "lib/a.test.ts",
+            full_name: "a > stays",
+            subject_name: "a",
+            subject_signature: "(): void",
           },
           {
-            packageName: pkg,
-            filePath: "lib/a.test.ts",
-            fullName: "a > new",
+            package_name: pkg,
+            file_path: "lib/a.test.ts",
+            full_name: "a > new",
           },
           {
-            packageName: pkg,
-            filePath: "lib/a.test.ts",
-            fullName: "a > docs",
-            subjectName: "a",
-            subjectDocstring: "new",
+            package_name: pkg,
+            file_path: "lib/a.test.ts",
+            full_name: "a > docs",
+            subject_name: "a",
+            subject_docstring: "new",
           },
         ],
       }),
     );
     expect(
       overlay.tests[testIdentityKey({
-        filePath: "lib/a.test.ts",
-        fullName: "a > new",
+        file_path: "lib/a.test.ts",
+        full_name: "a > new",
       })],
     ).toBe("added");
     expect(
       overlay.tests[testIdentityKey({
-        filePath: "lib/a.test.ts",
-        fullName: "a > gone",
+        file_path: "lib/a.test.ts",
+        full_name: "a > gone",
       })],
     ).toBe("removed");
     expect(
       overlay.tests[testIdentityKey({
-        filePath: "lib/a.test.ts",
-        fullName: "a > docs",
+        file_path: "lib/a.test.ts",
+        full_name: "a > docs",
       })],
     ).toBe("modified");
   });
@@ -187,72 +187,72 @@ describe("diffPackageDetails", () => {
       detail({
         exports: [
           {
-            packageName: pkg,
-            filePath: "lib/a.ts",
+            package_name: pkg,
+            file_path: "lib/a.ts",
             name: "foo",
             kind: "function",
             signature: "(): void",
             docstring: "same",
           },
         ],
-        testCases: [
+        test_cases: [
           {
-            packageName: pkg,
-            filePath: "lib/a.test.ts",
-            fullName: "foo > works",
+            package_name: pkg,
+            file_path: "lib/a.test.ts",
+            full_name: "foo > works",
           },
         ],
       }),
       detail({
         exports: [
           {
-            packageName: pkg,
-            filePath: "lib/b.ts",
+            package_name: pkg,
+            file_path: "lib/b.ts",
             name: "foo",
             kind: "function",
             signature: "(): void",
             docstring: "same",
           },
         ],
-        testCases: [
+        test_cases: [
           {
-            packageName: pkg,
-            filePath: "lib/b.test.ts",
-            fullName: "foo > works",
+            package_name: pkg,
+            file_path: "lib/b.test.ts",
+            full_name: "foo > works",
           },
         ],
       }),
       {
         pathRenames: [
-          { fromPath: "lib/a.ts", toPath: "lib/b.ts" },
-          { fromPath: "lib/a.test.ts", toPath: "lib/b.test.ts" },
+          { from_path: "lib/a.ts", to_path: "lib/b.ts" },
+          { from_path: "lib/a.test.ts", to_path: "lib/b.test.ts" },
         ],
       },
     );
     expect(
       overlay.exports[exportIdentityKey({
-        filePath: "lib/a.ts",
+        file_path: "lib/a.ts",
         name: "foo",
         kind: "function",
       })],
     ).toBeUndefined();
     expect(
       overlay.exports[exportIdentityKey({
-        filePath: "lib/b.ts",
+        file_path: "lib/b.ts",
         name: "foo",
         kind: "function",
       })],
     ).toBe("moved");
     expect(
       overlay.tests[testIdentityKey({
-        filePath: "lib/a.test.ts",
-        fullName: "foo > works",
+        file_path: "lib/a.test.ts",
+        full_name: "foo > works",
       })],
     ).toBeUndefined();
     expect(
       overlay.tests[testIdentityKey({
-        filePath: "lib/b.test.ts",
-        fullName: "foo > works",
+        file_path: "lib/b.test.ts",
+        full_name: "foo > works",
       })],
     ).toBe("moved");
     expect(overlay.modules["a"]).toBeUndefined();
@@ -265,8 +265,8 @@ describe("diffPackageDetails", () => {
       detail({
         exports: [
           {
-            packageName: pkg,
-            filePath: "lib/a.ts",
+            package_name: pkg,
+            file_path: "lib/a.ts",
             name: "foo",
             kind: "function",
             signature: "(): void",
@@ -276,19 +276,19 @@ describe("diffPackageDetails", () => {
       detail({
         exports: [
           {
-            packageName: pkg,
-            filePath: "lib/b.ts",
+            package_name: pkg,
+            file_path: "lib/b.ts",
             name: "foo",
             kind: "function",
             signature: "(): number",
           },
         ],
       }),
-      { pathRenames: [{ fromPath: "lib/a.ts", toPath: "lib/b.ts" }] },
+      { pathRenames: [{ from_path: "lib/a.ts", to_path: "lib/b.ts" }] },
     );
     expect(
       overlay.exports[exportIdentityKey({
-        filePath: "lib/b.ts",
+        file_path: "lib/b.ts",
         name: "foo",
         kind: "function",
       })],
@@ -298,10 +298,10 @@ describe("diffPackageDetails", () => {
     expect(overlay.movedFrom["b"]).toBeUndefined();
   });
 
-  it("marks schema properties added/removed/modified on typeKind or docstring", () => {
+  it("marks schema properties added/removed/modified on type_kind or docstring", () => {
     const overlay = diffPackageDetails(
       detail({
-        specInventory: {
+        spec_inventory: {
           entities: [
             {
               key: "object:Matter",
@@ -309,8 +309,8 @@ describe("diffPackageDetails", () => {
               schema: {
                 description: "Matter",
                 properties: [
-                  { name: "id", typeKind: "string", docstring: "id" },
-                  { name: "title", typeKind: "string", docstring: "old" },
+                  { name: "id", type_kind: "string", docstring: "id" },
+                  { name: "title", type_kind: "string", docstring: "old" },
                 ],
               },
               operations: [],
@@ -319,7 +319,7 @@ describe("diffPackageDetails", () => {
         },
       }),
       detail({
-        specInventory: {
+        spec_inventory: {
           entities: [
             {
               key: "object:Matter",
@@ -327,9 +327,9 @@ describe("diffPackageDetails", () => {
               schema: {
                 description: "Matter",
                 properties: [
-                  { name: "id", typeKind: "string", docstring: "id" },
-                  { name: "title", typeKind: "string", docstring: "new" },
-                  { name: "status", typeKind: "string" },
+                  { name: "id", type_kind: "string", docstring: "id" },
+                  { name: "title", type_kind: "string", docstring: "new" },
+                  { name: "status", type_kind: "string" },
                 ],
               },
               operations: [],
@@ -354,8 +354,8 @@ describe("diffPackageDetails", () => {
     const overlay = diffPackageDetails(null, detail({
       exports: [
         {
-          packageName: pkg,
-          filePath: "lib/dir/b.ts",
+          package_name: pkg,
+          file_path: "lib/dir/b.ts",
           name: "b",
           kind: "const",
         },
@@ -369,9 +369,9 @@ describe("diffPackageDetails", () => {
 describe("filterPackageDirTree", () => {
   it("keeps changed packages and drops empty dirs", () => {
     const tree = buildPackageDirTree([
-      { packageName: "@a/keep", directory: "products/a/keep" },
-      { packageName: "@a/hide", directory: "products/a/hide" },
-      { packageName: "@b/gone", directory: "products/b/gone" },
+      { package_name: "@a/keep", directory: "products/a/keep" },
+      { package_name: "@a/hide", directory: "products/a/hide" },
+      { package_name: "@b/gone", directory: "products/b/gone" },
     ]);
     const filtered = filterPackageDirTree(tree, {
       "@a/keep": "modified",
@@ -382,7 +382,7 @@ describe("filterPackageDirTree", () => {
     expect(products.children.map((n) => n.label).sort()).toEqual(["a", "b"]);
     const a = products.children.find((n) => n.label === "a")!;
     expect(a.children).toHaveLength(1);
-    expect(a.children[0]?.packageName).toBe("@a/keep");
+    expect(a.children[0]?.package_name).toBe("@a/keep");
     expect(a.children[0]?.change).toBe("modified");
   });
 });
@@ -459,17 +459,17 @@ describe("filterFileNav", () => {
 describe("packageChangesFromDiff", () => {
   it("unions metric deltas with export/test/db symbol hits", () => {
     const diff: CommitDiffLike = {
-      packageMetrics: {
-        added: [{ packageName: "@new/pkg" }],
-        removed: [{ packageName: "@old/pkg" }],
-        changed: [{ after: { packageName: "@chg/pkg" } }],
+      package_metrics: {
+        added: [{ package_name: "@new/pkg" }],
+        removed: [{ package_name: "@old/pkg" }],
+        changed: [{ after: { package_name: "@chg/pkg" } }],
       },
       exports: {
-        added: [{ packageName: "@doc/pkg" }],
+        added: [{ package_name: "@doc/pkg" }],
         removed: [],
       },
-      testCases: { added: [], removed: [] },
-      dbSchemas: {
+      test_cases: { added: [], removed: [] },
+      db_schemas: {
         tables: { added: [], removed: [] },
         columns: { added: [], removed: [], changed: [] },
       },
@@ -487,22 +487,22 @@ describe("pickChangedItems", () => {
   it("takes removed items from before and added/modified from after", () => {
     const picked = pickChangedItems(
       [
-        { filePath: "a.ts", name: "gone", kind: "const" },
-        { filePath: "a.ts", name: "tweaked", kind: "const", signature: "old" },
+        { file_path: "a.ts", name: "gone", kind: "const" },
+        { file_path: "a.ts", name: "tweaked", kind: "const", signature: "old" },
       ],
       [
-        { filePath: "a.ts", name: "fresh", kind: "const" },
-        { filePath: "a.ts", name: "tweaked", kind: "const", signature: "new" },
-        { filePath: "a.ts", name: "keep", kind: "const" },
+        { file_path: "a.ts", name: "fresh", kind: "const" },
+        { file_path: "a.ts", name: "tweaked", kind: "const", signature: "new" },
+        { file_path: "a.ts", name: "keep", kind: "const" },
       ],
       exportIdentityKey,
       {
-        [exportIdentityKey({ filePath: "a.ts", name: "gone", kind: "const" })]:
+        [exportIdentityKey({ file_path: "a.ts", name: "gone", kind: "const" })]:
           "removed",
-        [exportIdentityKey({ filePath: "a.ts", name: "fresh", kind: "const" })]:
+        [exportIdentityKey({ file_path: "a.ts", name: "fresh", kind: "const" })]:
           "added",
         [exportIdentityKey({
-          filePath: "a.ts",
+          file_path: "a.ts",
           name: "tweaked",
           kind: "const",
         })]: "modified",

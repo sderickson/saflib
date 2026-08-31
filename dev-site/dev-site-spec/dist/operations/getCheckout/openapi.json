@@ -12,10 +12,10 @@
         "tags": [
           "no-auth"
         ],
-        "description": "Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`). Used by the Current checkout UI.\n",
+        "description": "Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compare_ref` (default `main`). Used by the Current checkout UI.\n",
         "parameters": [
           {
-            "name": "compareRef",
+            "name": "compare_ref",
             "in": "query",
             "required": false,
             "schema": {
@@ -34,12 +34,12 @@
                   "required": [
                     "hash",
                     "message",
-                    "authoredAt",
+                    "authored_at",
                     "analyzed",
-                    "productRoot",
+                    "product_root",
                     "branch",
                     "packages",
-                    "compareCandidates"
+                    "compare_candidates"
                   ],
                   "properties": {
                     "hash": {
@@ -48,14 +48,14 @@
                     "message": {
                       "type": "string"
                     },
-                    "authoredAt": {
+                    "authored_at": {
                       "type": "string",
                       "format": "date-time"
                     },
                     "analyzed": {
                       "type": "boolean"
                     },
-                    "productRoot": {
+                    "product_root": {
                       "type": "string",
                       "description": "Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths.\n"
                     },
@@ -72,14 +72,14 @@
                         "$ref": "#/components/schemas/package-metrics"
                       }
                     },
-                    "compareCandidates": {
+                    "compare_candidates": {
                       "type": "array",
-                      "description": "Local branch names that can be used as `compareRef` (current branch omitted; configured main ref always included when it exists).\n",
+                      "description": "Local branch names that can be used as `compare_ref` (current branch omitted; configured main ref always included when it exists).\n",
                       "items": {
                         "type": "string"
                       }
                     },
-                    "githubRepo": {
+                    "github_repo": {
                       "type": "string",
                       "description": "GitHub `owner/name` for source and commit links. Omitted when the server has no `DEV_SITE_GITHUB_REPO` configured.\n"
                     },
@@ -92,7 +92,7 @@
             }
           },
           "400": {
-            "description": "compareRef is not a valid git object.",
+            "description": "compare_ref is not a valid git object.",
             "content": {
               "application/json": {
                 "schema": {
@@ -121,7 +121,7 @@
         "type": "object",
         "description": "Per-package file/LOC inventory at a single commit.",
         "properties": {
-          "packageName": {
+          "package_name": {
             "type": "string",
             "description": "npm package name (e.g. `@saflib/git`).",
             "example": "@saflib/git"
@@ -145,50 +145,50 @@
               "other"
             ]
           },
-          "sourceFiles": {
+          "source_files": {
             "type": "integer",
             "minimum": 0,
             "description": "Count of source files (excluding tests)."
           },
-          "sourceLines": {
+          "source_lines": {
             "type": "integer",
             "minimum": 0,
             "description": "Total lines across source files."
           },
-          "prodLines": {
+          "prod_lines": {
             "type": "integer",
             "minimum": 0,
             "description": "Production (non-test) source lines."
           },
-          "testLines": {
+          "test_lines": {
             "type": "integer",
             "minimum": 0,
             "description": "Test file lines."
           },
-          "testFiles": {
+          "test_files": {
             "type": "integer",
             "minimum": 0,
             "description": "Count of test files."
           },
-          "issueCountsByKind": {
+          "issue_counts_by_kind": {
             "$ref": "#/components/schemas/issue-counts-by-kind"
           },
-          "debtCount": {
+          "debt_count": {
             "type": "integer",
             "minimum": 0,
             "description": "Sum of all issue kinds (dead-code + oversized-file + package-layout).\n"
           }
         },
         "required": [
-          "packageName",
+          "package_name",
           "directory",
-          "sourceFiles",
-          "sourceLines",
-          "prodLines",
-          "testLines",
-          "testFiles",
-          "issueCountsByKind",
-          "debtCount"
+          "source_files",
+          "source_lines",
+          "prod_lines",
+          "test_lines",
+          "test_files",
+          "issue_counts_by_kind",
+          "debt_count"
         ]
       },
       "issue-counts-by-kind": {
@@ -218,31 +218,31 @@
         "type": "object",
         "description": "Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode.\n",
         "required": [
-          "againstRef",
-          "mergeBaseHash",
-          "mergeBaseAnalyzed",
-          "mergeBaseMessage",
-          "mergeBaseAuthoredAt",
+          "against_ref",
+          "merge_base_hash",
+          "merge_base_analyzed",
+          "merge_base_message",
+          "merge_base_authored_at",
           "renames"
         ],
         "properties": {
-          "againstRef": {
+          "against_ref": {
             "type": "string",
             "description": "Branch/ref HEAD was compared against (e.g. `main`)."
           },
-          "mergeBaseHash": {
+          "merge_base_hash": {
             "type": "string",
-            "description": "Full hash of `git merge-base(HEAD, againstRef)`."
+            "description": "Full hash of `git merge-base(HEAD, against_ref)`."
           },
-          "mergeBaseAnalyzed": {
+          "merge_base_analyzed": {
             "type": "boolean",
             "description": "True when that fork-point commit has an analysis snapshot."
           },
-          "mergeBaseMessage": {
+          "merge_base_message": {
             "type": "string",
             "description": "Subject of the fork-point commit."
           },
-          "mergeBaseAuthoredAt": {
+          "merge_base_authored_at": {
             "type": "string",
             "format": "date-time",
             "description": "Author date of the fork-point commit."
@@ -253,15 +253,15 @@
             "items": {
               "type": "object",
               "required": [
-                "fromPath",
-                "toPath"
+                "from_path",
+                "to_path"
               ],
               "properties": {
-                "fromPath": {
+                "from_path": {
                   "type": "string",
                   "description": "Path at the fork-point commit."
                 },
-                "toPath": {
+                "to_path": {
                   "type": "string",
                   "description": "Path at HEAD."
                 },

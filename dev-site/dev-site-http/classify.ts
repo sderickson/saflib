@@ -41,8 +41,8 @@ export const SOURCE_EXTS = new Set([
 ]);
 
 /** Heuristic: *.test.* / *.spec.* / *.fixture(s).* / *.test-helpers.*, or under testing/ / tests/ / __tests__/. */
-export function isTestSourcePath(relPosix: string, fileName: string): boolean {
-  const lower = fileName.toLowerCase();
+export function isTestSourcePath(relPosix: string, file_name: string): boolean {
+  const lower = file_name.toLowerCase();
   if (
     lower.endsWith(".test.ts") ||
     lower.endsWith(".test.tsx") ||
@@ -77,10 +77,10 @@ export function isScaffoldTemplatePath(relPosix: string): boolean {
   return relPosix.split("/").some((part) => /^__[^/]+__$/.test(part));
 }
 
-export function extOf(fileName: string): string {
-  const i = fileName.lastIndexOf(".");
+export function extOf(file_name: string): string {
+  const i = file_name.lastIndexOf(".");
   if (i <= 0) return "";
-  return fileName.slice(i).toLowerCase();
+  return file_name.slice(i).toLowerCase();
 }
 
 export function isSourcePath(relPosix: string): boolean {
@@ -88,11 +88,11 @@ export function isSourcePath(relPosix: string): boolean {
   if (parts.some((p) => EXCLUDE_DIRS.has(p) || (p.startsWith(".") && p !== "."))) {
     return false;
   }
-  const fileName = parts[parts.length - 1] ?? "";
-  if (EXCLUDE_FILES.has(fileName) || fileName.startsWith(".")) return false;
-  if (fileName.endsWith(".map") || fileName.endsWith(".min.js")) return false;
-  if (fileName.endsWith(".d.ts") || fileName.endsWith(".d.ts.map")) return false;
-  return SOURCE_EXTS.has(extOf(fileName));
+  const file_name = parts[parts.length - 1] ?? "";
+  if (EXCLUDE_FILES.has(file_name) || file_name.startsWith(".")) return false;
+  if (file_name.endsWith(".map") || file_name.endsWith(".min.js")) return false;
+  if (file_name.endsWith(".d.ts") || file_name.endsWith(".d.ts.map")) return false;
+  return SOURCE_EXTS.has(extOf(file_name));
 }
 
 export function countLines(text: string): number {
@@ -107,7 +107,7 @@ export function countLines(text: string): number {
 
 export interface PackageRoot {
   /** npm package name from package.json, or directory fallback. */
-  packageName: string;
+  package_name: string;
   /** Directory relative to repo root (posix, no trailing slash). "" for root. */
   directory: string;
 }
@@ -126,10 +126,10 @@ export function packageRootsFromPackageJsonPaths(
     if (parts.some((p) => EXCLUDE_DIRS.has(p))) continue;
     const directory =
       parts.length === 1 ? "" : parts.slice(0, -1).join("/");
-    const packageName =
+    const package_name =
       nameByPath.get(pkgJsonPath) ||
       (directory ? directory.split("/").pop()! : "(root)");
-    roots.push({ packageName, directory });
+    roots.push({ package_name, directory });
   }
   roots.sort((a, b) => b.directory.length - a.directory.length);
   return roots;
@@ -146,7 +146,7 @@ export function packageForPath(
       return root;
     }
   }
-  return { packageName: "(root)", directory: "" };
+  return { package_name: "(root)", directory: "" };
 }
 
 export function parsePackageName(packageJsonText: string): string | undefined {

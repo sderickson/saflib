@@ -8,7 +8,7 @@ export type DebtKind = "dead-code" | "oversized-file" | "package-layout";
 
 export interface DebtTrendPoint {
   hash: string;
-  authoredAt: string;
+  authored_at: string;
   debt: number;
   kinds: Record<DebtKind, number>;
   /** Branch segment label for this commit (e.g. `feature/x` or `main`). */
@@ -44,7 +44,7 @@ function firstParentChain(
     seen.add(cur);
     const commit: CommitSummary = byHash.get(cur)!;
     chain.push(commit);
-    cur = commit.parentHashes[0];
+    cur = commit.parent_hashes[0];
   }
   return chain;
 }
@@ -63,17 +63,17 @@ function mainlineHashSet(
   let tip =
     mainTips.sort(
       (a, b) =>
-        new Date(b.authoredAt).getTime() - new Date(a.authoredAt).getTime(),
+        new Date(b.authored_at).getTime() - new Date(a.authored_at).getTime(),
     )[0] ?? null;
 
   if (!tip) {
     const ancestors = commits.filter((c) =>
-      c.refs.some((r) => r.isMainAncestor),
+      c.refs.some((r) => r.is_main_ancestor),
     );
     tip =
       ancestors.sort(
         (a, b) =>
-          new Date(b.authoredAt).getTime() - new Date(a.authoredAt).getTime(),
+          new Date(b.authored_at).getTime() - new Date(a.authored_at).getTime(),
       )[0] ?? null;
   }
 
@@ -103,7 +103,7 @@ function segmentsFromPoints(points: DebtTrendPoint[]): DebtBranchSegment[] {
  * issue stats, labeled by branch segment.
  *
  * Ancestry walks the full loaded commit graph (so gaps without stats do not
- * truncate the chain); plotted points are filtered to `hasIssueStats`.
+ * truncate the chain); plotted points are filtered to `has_issue_stats`.
  */
 export function buildDebtTrendSeries(
   options: BuildDebtTrendOptions,
@@ -114,7 +114,7 @@ export function buildDebtTrendSeries(
     return { points: [], segments: [] };
   }
 
-  if (!options.commits.some((c) => c.summaryMetrics.hasIssueStats)) {
+  if (!options.commits.some((c) => c.summary_metrics.has_issue_stats)) {
     return { points: [], segments: [] };
   }
 
@@ -125,7 +125,7 @@ export function buildDebtTrendSeries(
   }
 
   const ancestryNewestFirst = firstParentChain(byHash, headHash).filter(
-    (c) => c.summaryMetrics.hasIssueStats,
+    (c) => c.summary_metrics.has_issue_stats,
   );
   if (ancestryNewestFirst.length === 0) {
     return { points: [], segments: [] };
@@ -137,12 +137,12 @@ export function buildDebtTrendSeries(
   const points: DebtTrendPoint[] = [...ancestryNewestFirst]
     .reverse()
     .map((c) => {
-      const kinds = c.summaryMetrics.issueCountsByKind;
+      const kinds = c.summary_metrics.issue_counts_by_kind;
       const onMain = mainline.has(c.hash);
       return {
         hash: c.hash,
-        authoredAt: c.authoredAt,
-        debt: c.summaryMetrics.debtCount ?? 0,
+        authored_at: c.authored_at,
+        debt: c.summary_metrics.debt_count ?? 0,
         kinds: {
           "dead-code": kinds["dead-code"] ?? 0,
           "oversized-file": kinds["oversized-file"] ?? 0,

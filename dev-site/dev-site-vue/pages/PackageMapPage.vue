@@ -57,7 +57,7 @@ const hash = computed(() =>
 );
 
 const pkgMeta = computed(() =>
-  checkout.value?.packages.find((p) => p.packageName === props.packageName),
+  checkout.value?.packages.find((p) => p.package_name === props.packageName),
 );
 
 const kind = computed<PackageKind | null>(() => {
@@ -80,10 +80,10 @@ const isLoading = computed(
 );
 
 const tree = computed(() => {
-  const detail = commitData.value?.commitDetail;
+  const detail = commitData.value?.commit_detail;
   if (!detail || !pkgMeta.value) return [];
   return buildPackageTestTree(
-    detail.testCases,
+    detail.test_cases,
     props.packageName,
     pkgMeta.value.directory,
   );

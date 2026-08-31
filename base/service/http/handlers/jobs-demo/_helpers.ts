@@ -2,10 +2,10 @@
 const stepBFailuresByKey = new Map<string, number>();
 
 export function demoFailureKey(body: {
-  dedupeKey?: string | null;
-  concurrencyKey?: string | null;
+  dedupe_key?: string | null;
+  concurrency_key?: string | null;
 }): string {
-  return body.dedupeKey ?? body.concurrencyKey ?? "default";
+  return body.dedupe_key ?? body.concurrency_key ?? "default";
 }
 
 export function recordDemoFailure(key: string): number {

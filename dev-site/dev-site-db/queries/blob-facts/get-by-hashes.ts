@@ -22,7 +22,7 @@ export const getByHashes = queryWrapper(
       const rows = await db
         .select()
         .from(blobFactsTable)
-        .where(inArray(blobFactsTable.blobHash, batch));
+        .where(inArray(blobFactsTable.blob_hash, batch));
       result.push(...rows);
     }
     return { result };

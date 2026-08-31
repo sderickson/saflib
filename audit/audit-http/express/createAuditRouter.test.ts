@@ -49,9 +49,9 @@ describe("createAuditLogsRouter", () => {
       .set(makeAdminHeaders("admin-audit-1", "admin@example.com"))
       .expect(200);
 
-    expect(res.body.auditLogs).toHaveLength(1);
-    expect(res.body.auditLogs[0].eventType).toBe("audit.http.test");
-    expect(res.body.headAt).toBeTruthy();
-    expect(res.body.tailAt).toBeTruthy();
+    expect(res.body.audit_logs).toHaveLength(1);
+    expect(res.body.audit_logs[0].event_type).toBe("audit.http.test");
+    expect(res.body.head_at).toBeTruthy();
+    expect(res.body.tail_at).toBeTruthy();
   });
 });

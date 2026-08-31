@@ -19,8 +19,8 @@ export type PackageIssueKind = (typeof packageIssueKinds)[number];
 
 export interface PackageIssueStatsEntity {
   id: string;
-  commitHash: string;
-  packageName: string;
+  commit_hash: string;
+  package_name: string;
   kind: PackageIssueKind;
   count: number;
 }
@@ -31,18 +31,18 @@ export const packageIssueStatsTable = sqliteTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => generateShortId()),
-    commitHash: text("commit_hash")
+    commit_hash: text("commit_hash")
       .notNull()
       .references(() => analyzedCommitsTable.hash),
-    packageName: text("package_name").notNull(),
+    package_name: text("package_name").notNull(),
     kind: text("kind", { enum: packageIssueKinds }).notNull(),
     count: integer("count").notNull(),
   },
   (table) => [
-    index("package_issue_stats_commit_hash_idx").on(table.commitHash),
+    index("package_issue_stats_commit_hash_idx").on(table.commit_hash),
     uniqueIndex("package_issue_stats_commit_pkg_kind_uidx").on(
-      table.commitHash,
-      table.packageName,
+      table.commit_hash,
+      table.package_name,
       table.kind,
     ),
   ],

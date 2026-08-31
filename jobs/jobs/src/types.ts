@@ -2,7 +2,7 @@ import type { DbKey, DbOptions } from "@saflib/drizzle";
 import type { OpenApiDocument } from "@saflib/openapi";
 
 /**
- * Calling operationId → operationIds it may enqueue.
+ * Calling operation_id → operationIds it may enqueue.
  * Reviewable contract enforced on every enqueue and validated at startup.
  */
 export type TriggerMap = Record<string, readonly string[]>;
@@ -38,7 +38,7 @@ export interface JobsServiceOptions {
   operationConfig?: JobOperationConfigMap;
 
   /**
-   * Bundled product OpenAPI document used to resolve operationId → method/path
+   * Bundled product OpenAPI document used to resolve operation_id → method/path
    * and to validate `background` tags / known ids at startup.
    */
   apiSpec: OpenApiDocument;
@@ -70,6 +70,6 @@ export interface ResolvedOperation {
 }
 
 /**
- * operationId → resolved HTTP details from a bundled OpenAPI document.
+ * operation_id → resolved HTTP details from a bundled OpenAPI document.
  */
 export type OperationMap = ReadonlyMap<string, ResolvedOperation>;

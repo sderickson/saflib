@@ -16,11 +16,11 @@ import {
  */
 export function useComparedPackageDetail(
   subdomain: string,
-  commitHash: MaybeRefOrGetter<string>,
-  packageName: MaybeRefOrGetter<string>,
+  commit_hash: MaybeRefOrGetter<string>,
+  package_name: MaybeRefOrGetter<string>,
   options: {
     compareFromHash?: MaybeRefOrGetter<string | undefined>;
-    productRoot?: MaybeRefOrGetter<string | undefined>;
+    product_root?: MaybeRefOrGetter<string | undefined>;
     pathRenames?: MaybeRefOrGetter<PathRename[] | undefined>;
   } = {},
 ) {
@@ -29,14 +29,14 @@ export function useComparedPackageDetail(
 
   const after = useCommitPackage(
     subdomain,
-    commitHash,
-    packageName,
+    commit_hash,
+    package_name,
     { allowMissing: comparing },
   );
   const before = useCommitPackage(
     subdomain,
     () => compareFromHash() ?? "",
-    packageName,
+    package_name,
     { allowMissing: true },
   );
 
@@ -55,17 +55,17 @@ export function useComparedPackageDetail(
   });
 
   const beforeDetail = computed(
-    () => (before.data.value?.packageDetail ?? null) as OverlayPackageDetail | null,
+    () => (before.data.value?.package_detail ?? null) as OverlayPackageDetail | null,
   );
   const afterDetail = computed(
-    () => (after.data.value?.packageDetail ?? null) as OverlayPackageDetail | null,
+    () => (after.data.value?.package_detail ?? null) as OverlayPackageDetail | null,
   );
 
   const overlay = computed((): PackageChangeOverlay | null => {
     if (!comparing()) return null;
     if (isLoading.value) return emptyOverlay();
     return diffPackageDetails(beforeDetail.value, afterDetail.value, {
-      productRoot: toValue(options.productRoot) ?? "",
+      product_root: toValue(options.product_root) ?? "",
       pathRenames: toValue(options.pathRenames) ?? [],
     });
   });

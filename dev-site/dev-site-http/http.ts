@@ -25,13 +25,13 @@ export type HttpRouterMount = {
 export type CreateDevSiteHttpAppOptions = {
   devSiteDbKey?: DbKey;
   /** Absolute path to the git repo to analyze. Defaults to process.cwd(). */
-  repoRoot?: string;
+  repo_root?: string;
   /** Path prefix within the repo (e.g. `products`). Defaults to "". */
-  productRoot?: string;
+  product_root?: string;
   /** Main branch ref. Defaults to `main`. */
   mainRef?: string;
   /** GitHub `owner/name` for UI source/commit links. */
-  githubRepo?: string;
+  github_repo?: string;
   /**
    * Directory of built SPA assets (Vite `dist`). When set, Express serves them
    * and falls back to `index.html` for client-side routes. API routes live under
@@ -56,12 +56,12 @@ export type DevSiteHttpAppLease = {
 };
 
 function buildDevSiteRuntimeConfigScript(config: {
-  githubRepo?: string;
+  github_repo?: string;
   githubRef?: string;
 }): string | undefined {
   const payload: Record<string, string> = {};
-  if (config.githubRepo) {
-    payload.githubRepo = config.githubRepo;
+  if (config.github_repo) {
+    payload.github_repo = config.github_repo;
   }
   if (config.githubRef) {
     payload.githubRef = config.githubRef;
@@ -107,10 +107,10 @@ export function createDevSiteHttpApp(
     dbKey = devSiteDb.connect();
   }
 
-  const repoRoot = options.repoRoot ?? process.cwd();
-  const productRoot = options.productRoot ?? "";
+  const repo_root = options.repo_root ?? process.cwd();
+  const product_root = options.product_root ?? "";
   const mainRef = options.mainRef ?? "main";
-  const githubRepo = options.githubRepo;
+  const github_repo = options.github_repo;
   const dbPath = devSiteDb.getDbPath(dbKey!);
   const jobTriggerMap = options.jobTriggerMap;
 
@@ -124,7 +124,7 @@ export function createDevSiteHttpApp(
 
   app.use((_req, _res, next) => {
     devSiteHttpStorage.run(
-      { dbKey: dbKey!, repoRoot, productRoot, mainRef, githubRepo, dbPath, jobTriggerMap },
+      { dbKey: dbKey!, repo_root, product_root, mainRef, github_repo, dbPath, jobTriggerMap },
       () => next(),
     );
   });
@@ -142,7 +142,7 @@ export function createDevSiteHttpApp(
     const staticRoot = path.resolve(options.staticDir);
     const indexHtml = path.join(staticRoot, "index.html");
     const runtimeConfigScript = buildDevSiteRuntimeConfigScript({
-      githubRepo,
+      github_repo,
     });
 
     const sendSpaIndex = (_req: express.Request, res: express.Response) => {

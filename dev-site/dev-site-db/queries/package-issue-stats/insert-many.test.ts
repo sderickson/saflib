@@ -12,7 +12,7 @@ import { insert } from "@saflib/dev-site-db/queries/analyzed-commits/insert";
 
 describe("package-issue-stats", () => {
   let dbKey: DbKey;
-  const commitHash = "ffffffffffffffffffffffffffffffffffffffff";
+  const commit_hash = "ffffffffffffffffffffffffffffffffffffffff";
 
   beforeAll(() => {
     dbKey = devSiteDbManager.connect();
@@ -24,27 +24,27 @@ describe("package-issue-stats", () => {
 
   beforeEach(async () => {
     devSiteDbManager.clearAllTablesForTests(dbKey);
-    await throwError(insert(dbKey, makeCommit({ hash: commitHash })));
+    await throwError(insert(dbKey, makeCommit({ hash: commit_hash })));
   });
 
   it("insertMany + listByCommit round-trip", async () => {
     const inserted = await throwError(
       insertMany(dbKey, [
         {
-          commitHash,
-          packageName: "@acme/product-http",
+          commit_hash,
+          package_name: "@acme/product-http",
           kind: "dead-code",
           count: 3,
         },
         {
-          commitHash,
-          packageName: "@acme/product-http",
+          commit_hash,
+          package_name: "@acme/product-http",
           kind: "oversized-file",
           count: 1,
         },
         {
-          commitHash,
-          packageName: "@acme/product-form-mappings",
+          commit_hash,
+          package_name: "@acme/product-form-mappings",
           kind: "package-layout",
           count: 5,
         },
@@ -53,11 +53,11 @@ describe("package-issue-stats", () => {
     expect(inserted).toHaveLength(3);
     expect(inserted[0].id).toBeTruthy();
 
-    const listed = await throwError(listByCommit(dbKey, commitHash));
+    const listed = await throwError(listByCommit(dbKey, commit_hash));
     expect(listed).toHaveLength(3);
     expect(
       listed
-        .map((r) => `${r.packageName}:${r.kind}:${r.count}`)
+        .map((r) => `${r.package_name}:${r.kind}:${r.count}`)
         .sort(),
     ).toEqual([
       "@acme/product-form-mappings:package-layout:5",
@@ -79,30 +79,30 @@ describe("package-issue-stats", () => {
   });
 
   it("deleteByCommit removes rows for that commit only", async () => {
-    const otherHash = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-    await throwError(insert(dbKey, makeCommit({ hash: otherHash })));
+    const other_hash = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+    await throwError(insert(dbKey, makeCommit({ hash: other_hash })));
     await throwError(
       insertMany(dbKey, [
         {
-          commitHash,
-          packageName: "@a/pkg",
+          commit_hash,
+          package_name: "@a/pkg",
           kind: "dead-code",
           count: 2,
         },
         {
-          commitHash: otherHash,
-          packageName: "@a/pkg",
+          commit_hash: other_hash,
+          package_name: "@a/pkg",
           kind: "dead-code",
           count: 9,
         },
       ]),
     );
 
-    const deleted = await throwError(deleteByCommit(dbKey, commitHash));
+    const deleted = await throwError(deleteByCommit(dbKey, commit_hash));
     expect(deleted.deleted).toBe(1);
-    expect(await throwError(listByCommit(dbKey, commitHash))).toEqual([]);
+    expect(await throwError(listByCommit(dbKey, commit_hash))).toEqual([]);
     expect(
-      (await throwError(listByCommit(dbKey, otherHash))).map((r) => r.count),
+      (await throwError(listByCommit(dbKey, other_hash))).map((r) => r.count),
     ).toEqual([9]);
   });
 });

@@ -15,7 +15,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Seal completed; `auditSealResult.status` is `sealed`.",
+            "description": "Seal completed; `audit_seal_result.status` is `sealed`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -45,7 +45,7 @@
             }
           },
           "409": {
-            "description": "Skipped — empty active DB or concurrent seal (`auditSealResult.status: skipped`).\n",
+            "description": "Skipped — empty active DB or concurrent seal (`audit_seal_result.status: skipped`).\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -74,21 +74,21 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "auditSealResult"
+          "audit_seal_result"
         ],
         "properties": {
-          "auditSealResult": {
+          "audit_seal_result": {
             "$ref": "#/components/schemas/audit-seal-result"
           }
         }
       },
       "audit-seal-result": {
         "type": "object",
-        "description": "Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `durationMs` are present.\n",
+        "description": "Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `duration_ms` are present.\n",
         "additionalProperties": false,
         "required": [
           "status",
-          "durationMs"
+          "duration_ms"
         ],
         "properties": {
           "status": {
@@ -105,7 +105,7 @@
               "in_progress"
             ]
           },
-          "durationMs": {
+          "duration_ms": {
             "type": "integer",
             "minimum": 0
           },
@@ -114,55 +114,55 @@
             "additionalProperties": false,
             "required": [
               "filename",
-              "sizeBytes",
-              "sha256Hex",
-              "archiveKey",
-              "rowCount",
-              "headHash",
-              "tailHash",
-              "firstTs",
-              "lastTs"
+              "size_bytes",
+              "sha256_hex",
+              "archive_key",
+              "row_count",
+              "head_hash",
+              "tail_hash",
+              "first_ts",
+              "last_ts"
             ],
             "properties": {
               "filename": {
                 "type": "string"
               },
-              "sizeBytes": {
+              "size_bytes": {
                 "type": "integer",
                 "minimum": 0
               },
-              "sha256Hex": {
+              "sha256_hex": {
                 "type": "string",
                 "minLength": 64,
                 "maxLength": 64
               },
-              "archiveKey": {
+              "archive_key": {
                 "type": "string",
                 "description": "Remote archive identifier (object path, bucket key, etc.)."
               },
-              "rowCount": {
+              "row_count": {
                 "type": "integer",
                 "minimum": 1
               },
-              "headHash": {
+              "head_hash": {
                 "type": "string",
                 "minLength": 64,
                 "maxLength": 64
               },
-              "tailHash": {
+              "tail_hash": {
                 "type": "string",
                 "minLength": 64,
                 "maxLength": 64
               },
-              "firstTs": {
+              "first_ts": {
                 "type": "string",
                 "format": "date-time"
               },
-              "lastTs": {
+              "last_ts": {
                 "type": "string",
                 "format": "date-time"
               },
-              "branchCount": {
+              "branch_count": {
                 "type": "integer",
                 "minimum": 0
               }

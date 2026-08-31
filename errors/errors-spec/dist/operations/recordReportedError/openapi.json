@@ -19,7 +19,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "reportedError": {
+                  "reported_error": {
                     "type": "object",
                     "properties": {
                       "kind": {
@@ -49,7 +49,7 @@
                   }
                 },
                 "required": [
-                  "reportedError"
+                  "reported_error"
                 ]
               }
             }

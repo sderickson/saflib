@@ -26,12 +26,12 @@ describe("user-configs", () => {
       .set(makeUserHeaders(userId));
 
     expect(response.status).toBe(200);
-    expect(response.body.userConfig).toMatchObject({
-      userId,
-      displayName: "",
-      marketingEmailsOptIn: false,
-      marketingEmailsOptInAt: null,
-      termsOfServiceAgreedAt: null,
+    expect(response.body.user_config).toMatchObject({
+      user_id: userId,
+      display_name: "",
+      marketing_emails_opt_in: false,
+      marketing_emails_opt_in_at: null,
+      terms_of_service_agreed_at: null,
     });
   });
 
@@ -40,26 +40,26 @@ describe("user-configs", () => {
       .put("/user-configs/mine")
       .set(makeUserHeaders(userId))
       .send({
-        displayName: "Alex Rivera",
-        marketingEmailsOptIn: true,
+        display_name: "Alex Rivera",
+        marketing_emails_opt_in: true,
       });
 
     expect(response.status).toBe(200);
-    assert(response.body.userConfig);
-    expect(response.body.userConfig.displayName).toBe("Alex Rivera");
-    expect(response.body.userConfig.marketingEmailsOptIn).toBe(true);
-    expect(response.body.userConfig.marketingEmailsOptInAt).toEqual(
+    assert(response.body.user_config);
+    expect(response.body.user_config.display_name).toBe("Alex Rivera");
+    expect(response.body.user_config.marketing_emails_opt_in).toBe(true);
+    expect(response.body.user_config.marketing_emails_opt_in_at).toEqual(
       expect.any(String),
     );
   });
 
-  it("PUT rejects empty displayName", async () => {
+  it("PUT rejects empty display_name", async () => {
     const response = await request(ctx.app)
       .put("/user-configs/mine")
       .set(makeUserHeaders(userId))
       .send({
-        displayName: "   ",
-        marketingEmailsOptIn: false,
+        display_name: "   ",
+        marketing_emails_opt_in: false,
       });
 
     expect(response.status).toBe(400);

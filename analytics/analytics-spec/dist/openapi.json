@@ -37,7 +37,7 @@
           },
           "name": {
             "type": "string",
-            "description": "Product event name (same as productEvent.event)."
+            "description": "Product event name (same as product_event.event)."
           },
           "payload": {
             "type": "object",
@@ -82,7 +82,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "productEvent": {
+                  "product_event": {
                     "type": "object",
                     "additionalProperties": true,
                     "properties": {
@@ -109,7 +109,7 @@
                   }
                 },
                 "required": [
-                  "productEvent"
+                  "product_event"
                 ]
               }
             }
@@ -166,7 +166,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "productEvents": {
+                    "product_events": {
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/product-event-record"
@@ -174,7 +174,7 @@
                     }
                   },
                   "required": [
-                    "productEvents"
+                    "product_events"
                   ]
                 }
               }

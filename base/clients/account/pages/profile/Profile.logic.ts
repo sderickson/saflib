@@ -3,13 +3,18 @@ export type ProfileFormValues = {
   marketingEmailsOptIn: boolean;
 };
 
-export function profileFormValuesFromUserConfig(userConfig: {
-  displayName: string;
-  marketingEmailsOptIn: boolean;
-}): ProfileFormValues {
+/** Wire UserConfig shape from getMine / putMine (snake_case). */
+export type UserConfigWire = {
+  display_name: string;
+  marketing_emails_opt_in: boolean;
+};
+
+export function profileFormValuesFromUserConfig(
+  userConfig: UserConfigWire,
+): ProfileFormValues {
   return {
-    displayName: userConfig.displayName,
-    marketingEmailsOptIn: userConfig.marketingEmailsOptIn,
+    displayName: userConfig.display_name,
+    marketingEmailsOptIn: userConfig.marketing_emails_opt_in,
   };
 }
 
@@ -22,11 +27,11 @@ export function isProfileFormValid(values: ProfileFormValues): boolean {
 }
 
 export function buildPutMineUserConfigsBody(values: ProfileFormValues): {
-  displayName: string;
-  marketingEmailsOptIn: boolean;
+  display_name: string;
+  marketing_emails_opt_in: boolean;
 } {
   return {
-    displayName: values.displayName.trim(),
-    marketingEmailsOptIn: values.marketingEmailsOptIn,
+    display_name: values.displayName.trim(),
+    marketing_emails_opt_in: values.marketingEmailsOptIn,
   };
 }

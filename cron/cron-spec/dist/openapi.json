@@ -24,7 +24,7 @@
             "readOnly": true,
             "description": "Unique identifier for the job setting."
           },
-          "jobName": {
+          "job_name": {
             "type": "string",
             "description": "The unique name of the cron job."
           },
@@ -32,14 +32,14 @@
             "type": "boolean",
             "description": "Whether the job is enabled to run."
           },
-          "enabledBy": {
+          "enabled_by": {
             "type": [
               "string",
               "null"
             ],
             "description": "Kratos identity id of the admin who last enabled the job. Null for pre-migration rows until re-enabled. Ticks skip when enabled with null.\n"
           },
-          "lastRunAt": {
+          "last_run_at": {
             "type": [
               "string",
               "null"
@@ -47,7 +47,7 @@
             "format": "date-time",
             "description": "Timestamp of the last time the job ran."
           },
-          "lastRunStatus": {
+          "last_run_status": {
             "type": [
               "string",
               "null"
@@ -69,7 +69,7 @@
             "readOnly": true,
             "description": "Cron schedule string from the registered JobsMap (e.g. `*/15 * * * *`)."
           },
-          "runsNextAt": {
+          "runs_next_at": {
             "type": [
               "string",
               "null"
@@ -78,13 +78,13 @@
             "readOnly": true,
             "description": "Next scheduled tick when the job is enabled; null when disabled or schedule is unknown.\n"
           },
-          "createdAt": {
+          "created_at": {
             "type": "string",
             "format": "date-time",
             "readOnly": true,
             "description": "Timestamp when the job setting was created."
           },
-          "updatedAt": {
+          "updated_at": {
             "type": "string",
             "format": "date-time",
             "readOnly": true,
@@ -92,7 +92,7 @@
           }
         },
         "required": [
-          "jobName",
+          "job_name",
           "enabled"
         ]
       },
@@ -186,7 +186,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "jobName": {
+                  "job_name": {
                     "type": "string",
                     "description": "The name of the job to update."
                   },
@@ -196,7 +196,7 @@
                   }
                 },
                 "required": [
-                  "jobName",
+                  "job_name",
                   "enabled"
                 ]
               }

@@ -4,7 +4,7 @@ description: >
 required:
   - entities
 properties:
-  packageDirectory:
+  package_directory:
     type: string
     description: >
       Repo-relative directory of the spec package this inventory was built from (used for route YAML source links when shown from an http pane).
@@ -17,7 +17,7 @@ properties:
         - key
         - label
         - presence
-        - usedByPackages
+        - used_by_packages
         - operations
       properties:
         key:
@@ -41,15 +41,15 @@ properties:
           type: [ object, "null" ]
           required:
             - name
-            - yamlPath
+            - yaml_path
             - properties
-            - usedBy
-            - referencedByOperations
+            - used_by
+            - referenced_by_operations
           properties:
             name:
               type: string
               description: components/schemas name (e.g. Matter).
-            yamlPath:
+            yaml_path:
               type: string
               description: Package-relative path to the schema YAML.
             description:
@@ -60,25 +60,25 @@ properties:
                 type: object
                 required:
                   - name
-                  - typeKind
+                  - type_kind
                 properties:
                   name:
                     type: string
-                  typeKind:
+                  type_kind:
                     type: string
                   docstring:
                     type: [ string, "null" ]
-            usedBy:
+            used_by:
               type: array
               description: Non-test product files importing schemas/<Name>.
               items:
-                $ref: "#/properties/entities/items/properties/operations/items/properties/usedBy/items"
-            referencedByOperations:
+                $ref: "#/properties/entities/items/properties/operations/items/properties/used_by/items"
+            referenced_by_operations:
               type: array
-              description: operationIds whose request/2xx response $ref this schema.
+              description: operation_ids whose request/2xx response $ref this schema.
               items:
                 type: string
-        usedByPackages:
+        used_by_packages:
           type: array
           description: >
             Distinct packages importing this entity's schema and/or the SDK request modules for its operations.
@@ -90,17 +90,17 @@ properties:
           items:
             type: object
             required:
-              - operationId
+              - operation_id
               - method
               - path
               - tags
-              - yamlPath
-              - requestSchemas
-              - responseSchemas
-              - handlerTests
-              - usedBy
+              - yaml_path
+              - request_schemas
+              - response_schemas
+              - handler_tests
+              - used_by
             properties:
-              operationId:
+              operation_id:
                 type: string
               method:
                 type: string
@@ -113,10 +113,10 @@ properties:
                 description: OpenAPI operation tags.
                 items:
                   type: string
-              yamlPath:
+              yaml_path:
                 type: string
                 description: Package-relative route YAML under the spec package.
-              routeStem:
+              route_stem:
                 type: [ string, "null" ]
                 description: >
                   Isomorphic stem after routes/handlers/requests (e.g. matters/core/create).
@@ -124,89 +124,89 @@ properties:
                 type: [ object, "null" ]
                 description: Sibling HTTP handler file when present.
                 required:
-                  - filePath
-                  - repoPath
+                  - file_path
+                  - repo_path
                 properties:
-                  filePath:
+                  file_path:
                     type: string
-                  repoPath:
+                  repo_path:
                     type: string
               request:
                 type: [ object, "null" ]
                 description: Sibling SDK request module when present.
                 required:
-                  - filePath
-                  - repoPath
+                  - file_path
+                  - repo_path
                 properties:
-                  filePath:
+                  file_path:
                     type: string
-                  repoPath:
+                  repo_path:
                     type: string
               fake:
                 type: [ object, "null" ]
                 description: >
                   Sibling SDK fake/MSW module (`*.fake.ts`) when present beside the request.
                 required:
-                  - filePath
-                  - repoPath
+                  - file_path
+                  - repo_path
                 properties:
-                  filePath:
+                  file_path:
                     type: string
-                  repoPath:
+                  repo_path:
                     type: string
-              handlerTests:
+              handler_tests:
                 type: array
                 description: >
-                  describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses " > " nesting).
+                  describe/it/test specifications extracted from colocated HTTP handler test files (full_name uses " > " nesting).
                 items:
                   type: object
                   required:
-                    - fullName
+                    - full_name
                   properties:
-                    fullName:
+                    full_name:
                       type: string
                       description: Nested describe/it titles joined with " > ".
                       example: "createMatter > creates a matter for the org"
-              requestSchemas:
+              request_schemas:
                 type: array
                 description: >
                   Business objects in the request body (one layer deep into object/array bags of schema refs).
                 items:
                   type: string
-              responseSchemas:
+              response_schemas:
                 type: array
                 description: >
                   Business objects in 2xx responses (one layer deep into object/array bags of schema refs).
                 items:
                   type: string
-              usedBy:
+              used_by:
                 type: array
                 description: >
                   Non-test product files importing the sibling SDK request module for this route stem.
                 items:
                   type: object
                   required:
-                    - packageName
-                    - filePath
-                    - repoPath
+                    - package_name
+                    - file_path
+                    - repo_path
                   properties:
-                    packageName:
+                    package_name:
                       type: string
-                    filePath:
+                    file_path:
                       type: string
                       description: Path within the importing package (no package-root prefix).
-                    repoPath:
+                    repo_path:
                       type: string
                       description: Repo-relative path for source links.
               enqueues:
                 type: array
                 description: >
-                  operationIds this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map.
+                  operation_ids this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map.
                 items:
                   type: string
-              enqueuedBy:
+              enqueued_by:
                 type: array
                 description: >
-                  operationIds or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map.
+                  operation_ids or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map.
                 items:
                   type: string

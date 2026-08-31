@@ -17,7 +17,7 @@ export const cancelJobsByOriginalRequestHandler = createHandler(
     const { result } = await cancelByOriginalRequestIdJob(
       ctx.dbKey,
       {
-        originalRequestId: data.originalRequestId,
+        original_request_id: data.original_request_id,
         now: new Date(),
       },
     );

@@ -9,13 +9,13 @@ import { getDevSiteHttpContext } from "../../context.ts";
 import { getCommitPackage } from "../../get-package.ts";
 
 export const getCommitPackageHandler = createHandler(async (req, res) => {
-  const { dbKey, repoRoot, productRoot, mainRef } = getDevSiteHttpContext();
-  const { hash, packageName: rawName } =
+  const { dbKey, repo_root, product_root, mainRef } = getDevSiteHttpContext();
+  const { hash, package_name: rawName } =
     req.params as PathParams["getCommitPackage"];
-  const packageName = decodeURIComponent(rawName);
-  const { result, error } = await getCommitPackage(dbKey, hash, packageName, {
-    repoRoot,
-    productRoot,
+  const package_name = decodeURIComponent(rawName);
+  const { result, error } = await getCommitPackage(dbKey, hash, package_name, {
+    repo_root,
+    product_root,
     mainRef,
   });
   if (error) {
@@ -29,7 +29,7 @@ export const getCommitPackageHandler = createHandler(async (req, res) => {
     }
   }
   const response: ResponseBody["getCommitPackage"][200] = {
-    packageDetail: result as ResponseBody["getCommitPackage"][200]["packageDetail"],
+    package_detail: result as ResponseBody["getCommitPackage"][200]["package_detail"],
   };
   res.status(200).json(response);
 });

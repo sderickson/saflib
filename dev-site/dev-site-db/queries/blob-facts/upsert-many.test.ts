@@ -26,9 +26,9 @@ describe("blob-facts", () => {
     await throwError(
       upsertMany(dbKey, [
         {
-          blobHash: hash,
-          analyzerVersion: "1",
-          lineCount: 3,
+          blob_hash: hash,
+          analyzer_version: "1",
+          line_count: 3,
           specialty: {
             kind: "source",
             exports: [
@@ -63,9 +63,9 @@ describe("blob-facts", () => {
     await throwError(
       upsertMany(dbKey, [
         {
-          blobHash: hash,
-          analyzerVersion: "1",
-          lineCount: 1,
+          blob_hash: hash,
+          analyzer_version: "1",
+          line_count: 1,
           specialty: {
             kind: "source",
             exports: [],
@@ -79,9 +79,9 @@ describe("blob-facts", () => {
     await throwError(
       upsertMany(dbKey, [
         {
-          blobHash: hash,
-          analyzerVersion: "2",
-          lineCount: 2,
+          blob_hash: hash,
+          analyzer_version: "2",
+          line_count: 2,
           specialty: {
             kind: "source",
             exports: [
@@ -100,8 +100,8 @@ describe("blob-facts", () => {
       ]),
     );
     const listed = await throwError(getByHashes(dbKey, [hash]));
-    expect(listed[0]!.analyzerVersion).toBe("2");
-    expect(listed[0]!.lineCount).toBe(2);
+    expect(listed[0]!.analyzer_version).toBe("2");
+    expect(listed[0]!.line_count).toBe(2);
     expect(blobFactExports(listed[0]!)).toEqual([
       { name: "x", kind: "const", signature: "= 1", docstring: "X value." },
     ]);

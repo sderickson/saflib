@@ -21,30 +21,30 @@ function jobParams(
 ): CreateJobParams {
   return {
     status: "pending",
-    operationId: "jobsDemoStepB",
+    operation_id: "jobsDemoStepB",
     request: { body: {} },
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request",
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-1",
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: now,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-1",
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: now,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -97,9 +97,9 @@ describe("recoverStalledJob", () => {
         id: "job-stale",
         status: "running",
         attempt: 2,
-        maxAttempts: 5,
-        startedAt: staleHeartbeat,
-        heartbeatAt: staleHeartbeat,
+        max_attempts: 5,
+        started_at: staleHeartbeat,
+        heartbeat_at: staleHeartbeat,
       }),
     );
 
@@ -112,9 +112,9 @@ describe("recoverStalledJob", () => {
     expect(result[0]!.id).toBe("job-stale");
     expect(result[0]!.status).toBe("retrying");
     expect(result[0]!.attempt).toBe(2);
-    expect(result[0]!.runAt).toEqual(now);
-    expect(result[0]!.finishedAt).toBeNull();
-    expect(result[0]!.updatedAt).toEqual(now);
+    expect(result[0]!.run_at).toEqual(now);
+    expect(result[0]!.finished_at).toBeNull();
+    expect(result[0]!.updated_at).toEqual(now);
   });
 
   it("moves stalled running jobs with no attempts remaining to dead/exhausted", async () => {
@@ -124,10 +124,10 @@ describe("recoverStalledJob", () => {
         id: "job-exhausted",
         status: "running",
         attempt: 5,
-        maxAttempts: 5,
-        startedAt: staleHeartbeat,
-        heartbeatAt: staleHeartbeat,
-        originalRequestId: "r-2",
+        max_attempts: 5,
+        started_at: staleHeartbeat,
+        heartbeat_at: staleHeartbeat,
+        original_request_id: "r-2",
       }),
     );
 
@@ -139,8 +139,8 @@ describe("recoverStalledJob", () => {
     expect(result).toHaveLength(1);
     expect(result[0]!.id).toBe("job-exhausted");
     expect(result[0]!.status).toBe("dead");
-    expect(result[0]!.result).toEqual({ terminalReason: "exhausted" });
-    expect(result[0]!.finishedAt).toEqual(now);
+    expect(result[0]!.result).toEqual({ terminal_reason: "exhausted" });
+    expect(result[0]!.finished_at).toEqual(now);
   });
 
   it("recovers both outcomes in one pass and ignores non-matching ids", async () => {
@@ -150,9 +150,9 @@ describe("recoverStalledJob", () => {
         id: "job-retry",
         status: "running",
         attempt: 1,
-        maxAttempts: 3,
-        startedAt: staleHeartbeat,
-        heartbeatAt: staleHeartbeat,
+        max_attempts: 3,
+        started_at: staleHeartbeat,
+        heartbeat_at: staleHeartbeat,
       }),
     );
     await createJob(
@@ -161,10 +161,10 @@ describe("recoverStalledJob", () => {
         id: "job-dead",
         status: "running",
         attempt: 3,
-        maxAttempts: 3,
-        startedAt: staleHeartbeat,
-        heartbeatAt: staleHeartbeat,
-        originalRequestId: "r-2",
+        max_attempts: 3,
+        started_at: staleHeartbeat,
+        heartbeat_at: staleHeartbeat,
+        original_request_id: "r-2",
       }),
     );
     await createJob(
@@ -173,7 +173,7 @@ describe("recoverStalledJob", () => {
         id: "job-pending",
         status: "pending",
         attempt: 0,
-        originalRequestId: "r-4",
+        original_request_id: "r-4",
       }),
     );
 

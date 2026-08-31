@@ -9,8 +9,8 @@ export function formatLoc(n: number): string {
 }
 
 /** Checkout-style pair: `32k/4k` or `432/80`. */
-export function formatLocPair(sourceLines: number, testLines: number): string {
-  return `${formatLoc(sourceLines)}/${formatLoc(testLines)}`;
+export function formatLocPair(source_lines: number, test_lines: number): string {
+  return `${formatLoc(source_lines)}/${formatLoc(test_lines)}`;
 }
 
 /** Signed delta for compare mode (`+12`, `−4`, `0`). */

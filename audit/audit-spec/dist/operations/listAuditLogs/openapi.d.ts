@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * List audit log events (admin)
-         * @description Paginated keyset scan of the audit database, ordered by timestamp then id. `headAt` / `tailAt` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.
+         * @description Paginated keyset scan of the audit database, ordered by timestamp then id. `head_at` / `tail_at` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.
          */
         get: operations["listAuditLogs"];
         put?: never;
@@ -33,22 +33,22 @@ export interface components {
             id: string;
             /** Format: date-time */
             ts: string;
-            prevHash: string;
-            rowHash: string;
-            schemaVersion: number;
+            prev_hash: string;
+            row_hash: string;
+            schema_version: number;
             /** @enum {string} */
             source: "http" | "cron" | "kratos" | "system" | "webhook";
-            actorUserId?: string | null;
-            onBehalfOfUserId?: string | null;
-            authMethod?: string | null;
-            requestId?: string | null;
-            clientIp?: string | null;
-            eventType: string;
-            resourceType?: string | null;
-            resourceId?: string | null;
+            actor_user_id?: string | null;
+            on_behalf_of_user_id?: string | null;
+            auth_method?: string | null;
+            request_id?: string | null;
+            client_ip?: string | null;
+            event_type: string;
+            resource_type?: string | null;
+            resource_id?: string | null;
             outcome: string;
-            gitCommitRoot: string;
-            gitCommitSaflib: string;
+            git_commit_root: string;
+            git_commit_saflib: string;
             env: string;
             /** @description Event-specific JSON payload; shape depends on `source`. */
             details?: {
@@ -78,7 +78,7 @@ export interface operations {
             query?: {
                 /** @description Only return events with `ts` greater than or equal to this instant (ISO-8601). */
                 from?: string;
-                /** @description Opaque pagination cursor from a previous response's `nextCursor`. */
+                /** @description Opaque pagination cursor from a previous response's `next_cursor`. */
                 cursor?: string;
                 /** @description Page size (default 100, max 1000). */
                 limit?: number;
@@ -98,19 +98,19 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        auditLogs: components["schemas"]["audit-log"][];
+                        audit_logs: components["schemas"]["audit-log"][];
                         /**
                          * Format: date-time
                          * @description Earliest `ts` in the audit table, if any rows exist.
                          */
-                        headAt: string | null;
+                        head_at: string | null;
                         /**
                          * Format: date-time
                          * @description Latest `ts` in the audit table, if any rows exist.
                          */
-                        tailAt: string | null;
+                        tail_at: string | null;
                         /** @description Pass as `cursor` to fetch the next page, if more rows exist. */
-                        nextCursor: string | null;
+                        next_cursor: string | null;
                     };
                 };
             };

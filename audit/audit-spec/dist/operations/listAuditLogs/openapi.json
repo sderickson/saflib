@@ -8,7 +8,7 @@
     "/audit-logs": {
       "get": {
         "summary": "List audit log events (admin)",
-        "description": "Paginated keyset scan of the audit database, ordered by timestamp then id. `headAt` / `tailAt` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.\n",
+        "description": "Paginated keyset scan of the audit database, ordered by timestamp then id. `head_at` / `tail_at` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.\n",
         "operationId": "listAuditLogs",
         "tags": [
           "site-admin-only"
@@ -28,7 +28,7 @@
             "name": "cursor",
             "in": "query",
             "required": false,
-            "description": "Opaque pagination cursor from a previous response's `nextCursor`.",
+            "description": "Opaque pagination cursor from a previous response's `next_cursor`.",
             "schema": {
               "type": "string"
             }
@@ -67,19 +67,19 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "auditLogs",
-                    "headAt",
-                    "tailAt",
-                    "nextCursor"
+                    "audit_logs",
+                    "head_at",
+                    "tail_at",
+                    "next_cursor"
                   ],
                   "properties": {
-                    "auditLogs": {
+                    "audit_logs": {
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/audit-log"
                       }
                     },
-                    "headAt": {
+                    "head_at": {
                       "type": [
                         "string",
                         "null"
@@ -87,7 +87,7 @@
                       "format": "date-time",
                       "description": "Earliest `ts` in the audit table, if any rows exist."
                     },
-                    "tailAt": {
+                    "tail_at": {
                       "type": [
                         "string",
                         "null"
@@ -95,7 +95,7 @@
                       "format": "date-time",
                       "description": "Latest `ts` in the audit table, if any rows exist."
                     },
-                    "nextCursor": {
+                    "next_cursor": {
                       "type": [
                         "string",
                         "null"
@@ -149,14 +149,14 @@
         "required": [
           "id",
           "ts",
-          "prevHash",
-          "rowHash",
-          "schemaVersion",
+          "prev_hash",
+          "row_hash",
+          "schema_version",
           "source",
-          "eventType",
+          "event_type",
           "outcome",
-          "gitCommitRoot",
-          "gitCommitSaflib",
+          "git_commit_root",
+          "git_commit_saflib",
           "env"
         ],
         "properties": {
@@ -167,13 +167,13 @@
             "type": "string",
             "format": "date-time"
           },
-          "prevHash": {
+          "prev_hash": {
             "type": "string"
           },
-          "rowHash": {
+          "row_hash": {
             "type": "string"
           },
-          "schemaVersion": {
+          "schema_version": {
             "type": "integer"
           },
           "source": {
@@ -186,46 +186,46 @@
               "webhook"
             ]
           },
-          "actorUserId": {
+          "actor_user_id": {
             "type": [
               "string",
               "null"
             ]
           },
-          "onBehalfOfUserId": {
+          "on_behalf_of_user_id": {
             "type": [
               "string",
               "null"
             ]
           },
-          "authMethod": {
+          "auth_method": {
             "type": [
               "string",
               "null"
             ]
           },
-          "requestId": {
+          "request_id": {
             "type": [
               "string",
               "null"
             ]
           },
-          "clientIp": {
+          "client_ip": {
             "type": [
               "string",
               "null"
             ]
           },
-          "eventType": {
+          "event_type": {
             "type": "string"
           },
-          "resourceType": {
+          "resource_type": {
             "type": [
               "string",
               "null"
             ]
           },
-          "resourceId": {
+          "resource_id": {
             "type": [
               "string",
               "null"
@@ -234,10 +234,10 @@
           "outcome": {
             "type": "string"
           },
-          "gitCommitRoot": {
+          "git_commit_root": {
             "type": "string"
           },
-          "gitCommitSaflib": {
+          "git_commit_saflib": {
             "type": "string"
           },
           "env": {

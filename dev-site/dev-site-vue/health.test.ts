@@ -4,14 +4,14 @@ import type { CommitSummary } from "@saflib/dev-site-spec";
 import { summaryMetricsFixture } from "./test-fixtures.ts";
 
 function summary(
-  sourceLines: number,
-  testLines: number,
-): Pick<CommitSummary, "summaryMetrics"> {
+  source_lines: number,
+  test_lines: number,
+): Pick<CommitSummary, "summary_metrics"> {
   return {
-    summaryMetrics: summaryMetricsFixture({
-      sourceLines,
-      testLines,
-      testFiles: testLines > 0 ? 1 : 0,
+    summary_metrics: summaryMetricsFixture({
+      source_lines,
+      test_lines,
+      test_files: test_lines > 0 ? 1 : 0,
     }),
   };
 }

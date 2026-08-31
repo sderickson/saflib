@@ -75,7 +75,7 @@ export interface operations {
                             /** @description Path relative to the repo root. */
                             path: string;
                             /** @description Git blob object hash. Empty string for working-tree-only files at HEAD that are not in the commit tree. */
-                            blobHash: string;
+                            blob_hash: string;
                             /** @description UTF-8 file text when `content=true`. */
                             content?: string;
                         }[];

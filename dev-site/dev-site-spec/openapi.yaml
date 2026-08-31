@@ -14,10 +14,10 @@ paths:
   /api/commits/{hash}:
     get:
       $ref: "./routes/commits/get.yaml#/getCommits"
-  /api/commits/{hash}/diff/{otherHash}:
+  /api/commits/{hash}/diff/{other_hash}:
     get:
       $ref: "./routes/commits/diff.yaml#/diffCommits"
-  /api/commits/{hash}/packages/{packageName}:
+  /api/commits/{hash}/packages/{package_name}:
     get:
       $ref: "./routes/commits/package.yaml#/getCommitPackage"
   /api/scan:

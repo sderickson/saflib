@@ -33,21 +33,21 @@ function mix(a: Rgb, b: Rgb, t: number): string {
 }
 
 /** Issues per 1000 lines of analyzed source (floors LOC at 1). */
-export function debtDensityPerKloc(debtCount: number, sourceLines: number): number {
-  const loc = Math.max(1, sourceLines);
-  return (Math.max(0, debtCount) / loc) * 1000;
+export function debtDensityPerKloc(debt_count: number, source_lines: number): number {
+  const loc = Math.max(1, source_lines);
+  return (Math.max(0, debt_count) / loc) * 1000;
 }
 
 /**
  * Solid-circle color from debt density (issues / kLOC): green → yellow → red.
  */
 export function debtDotColor(
-  debtCount: number,
-  sourceLines = 0,
+  debt_count: number,
+  source_lines = 0,
   densityCapPerKloc = DEBT_DENSITY_CAP_PER_KLOC,
 ): string {
-  if (debtCount <= 0) return mix(GREEN, GREEN, 0);
-  const density = debtDensityPerKloc(debtCount, sourceLines);
+  if (debt_count <= 0) return mix(GREEN, GREEN, 0);
+  const density = debtDensityPerKloc(debt_count, source_lines);
   const t = Math.min(1, density / Math.max(densityCapPerKloc, 1e-6));
   if (t <= 0.5) return mix(GREEN, YELLOW, t / 0.5);
   return mix(YELLOW, RED, (t - 0.5) / 0.5);
@@ -58,20 +58,20 @@ export function debtDotSizePx(tier: PackageSizeTier | undefined): number {
 }
 
 export interface DebtTooltipInput {
-  debtCount: number;
-  issueCountsByKind: IssueCountsByKind;
+  debt_count: number;
+  issue_counts_by_kind: IssueCountsByKind;
   packageSize?: PackageSizeTier;
-  sourceLines?: number;
-  testLines?: number;
+  source_lines?: number;
+  test_lines?: number;
 }
 
 /** Short tooltip for package nav debt dots. */
 export function debtTooltipText(input: DebtTooltipInput): string {
-  const k = input.issueCountsByKind;
-  const loc = input.sourceLines ?? 0;
-  const density = debtDensityPerKloc(input.debtCount, loc);
+  const k = input.issue_counts_by_kind;
+  const loc = input.source_lines ?? 0;
+  const density = debtDensityPerKloc(input.debt_count, loc);
   const parts = [
-    `Debt ${input.debtCount}`,
+    `Debt ${input.debt_count}`,
     `${density.toFixed(1)}/kLOC`,
     `dead ${k["dead-code"]}`,
     `oversized ${k["oversized-file"]}`,
@@ -80,8 +80,8 @@ export function debtTooltipText(input: DebtTooltipInput): string {
   if (input.packageSize) {
     parts.push(`size ${PACKAGE_SIZE_LABELS[input.packageSize]}`);
   }
-  if (input.sourceLines != null && input.testLines != null) {
-    parts.push(`${formatLocPair(input.sourceLines, input.testLines)} LOC`);
+  if (input.source_lines != null && input.test_lines != null) {
+    parts.push(`${formatLocPair(input.source_lines, input.test_lines)} LOC`);
   }
   return parts.join(" · ");
 }

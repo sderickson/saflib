@@ -17,9 +17,9 @@ export function createListProductEventsHandler() {
       }
     }
 
-    const productEvents = listProductEvents({ name, limit });
+    const product_events = listProductEvents({ name, limit });
     res
       .status(200)
-      .json({ productEvents } satisfies AnalyticsResponseBody["listProductEvents"][200]);
+      .json({ product_events } satisfies AnalyticsResponseBody["listProductEvents"][200]);
   });
 }

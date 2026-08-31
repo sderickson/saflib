@@ -3,8 +3,8 @@
     <header class="route-card__head">
       <span class="route-card__method">{{ operation.method.toUpperCase() }}</span>
       <code class="route-card__path">{{ operation.path }}</code>
-      <span v-if="operation.operationId" class="route-card__op-id">
-        {{ operation.operationId }}
+      <span v-if="operation.operation_id" class="route-card__op-id">
+        {{ operation.operation_id }}
       </span>
     </header>
 
@@ -22,12 +22,12 @@
       <div class="route-card__bo-row">
         <dt>in</dt>
         <dd>
-          <template v-if="operation.requestSchemas.length">
+          <template v-if="operation.request_schemas.length">
             <code
-              v-for="(name, i) in operation.requestSchemas"
+              v-for="(name, i) in operation.request_schemas"
               :key="'req-' + name"
             >
-              {{ name }}<span v-if="i < operation.requestSchemas.length - 1">, </span>
+              {{ name }}<span v-if="i < operation.request_schemas.length - 1">, </span>
             </code>
           </template>
           <span v-else class="route-card__empty">—</span>
@@ -36,12 +36,12 @@
       <div class="route-card__bo-row">
         <dt>out</dt>
         <dd>
-          <template v-if="operation.responseSchemas.length">
+          <template v-if="operation.response_schemas.length">
             <code
-              v-for="(name, i) in operation.responseSchemas"
+              v-for="(name, i) in operation.response_schemas"
               :key="'res-' + name"
             >
-              {{ name }}<span v-if="i < operation.responseSchemas.length - 1">, </span>
+              {{ name }}<span v-if="i < operation.response_schemas.length - 1">, </span>
             </code>
           </template>
           <span v-else class="route-card__empty">—</span>
@@ -62,7 +62,7 @@
         v-if="operation.handler"
         href="#"
         class="route-card__file"
-        @click.prevent="openFile(operation.handler.repoPath)"
+        @click.prevent="openFile(operation.handler.repo_path)"
       >
         handler
       </a>
@@ -71,7 +71,7 @@
         v-if="operation.request"
         href="#"
         class="route-card__file"
-        @click.prevent="openFile(operation.request.repoPath)"
+        @click.prevent="openFile(operation.request.repo_path)"
       >
         request
       </a>
@@ -80,7 +80,7 @@
         v-if="operation.fake"
         href="#"
         class="route-card__file"
-        @click.prevent="openFile(operation.fake.repoPath)"
+        @click.prevent="openFile(operation.fake.repo_path)"
       >
         fake
       </a>
@@ -88,33 +88,33 @@
     </div>
 
     <template v-if="!throughFiles">
-      <section v-if="operation.handlerTests.length" class="route-card__section">
+      <section v-if="operation.handler_tests.length" class="route-card__section">
         <h4 class="route-card__section-title">Handler tests</h4>
         <ul class="route-card__specs">
           <li
-            v-for="t in operation.handlerTests"
-            :key="t.fullName"
+            v-for="t in operation.handler_tests"
+            :key="t.full_name"
             class="route-card__spec"
           >
-            {{ t.fullName }}
+            {{ t.full_name }}
           </li>
         </ul>
       </section>
       <p v-else class="route-card__hint">No handler test specs</p>
 
-      <section v-if="operation.usedBy.length" class="route-card__section">
+      <section v-if="operation.used_by.length" class="route-card__section">
         <h4 class="route-card__section-title">SDK importers</h4>
         <ul class="route-card__list">
           <li
-            v-for="u in operation.usedBy"
-            :key="u.packageName + ':' + u.repoPath"
+            v-for="u in operation.used_by"
+            :key="u.package_name + ':' + u.repo_path"
           >
             <a
               href="#"
               class="route-card__file"
-              @click.prevent="openFile(u.repoPath)"
+              @click.prevent="openFile(u.repo_path)"
             >
-              {{ u.packageName }}/{{ u.filePath }}
+              {{ u.package_name }}/{{ u.file_path }}
             </a>
           </li>
         </ul>
@@ -122,7 +122,7 @@
       <p v-else class="route-card__hint">No non-test SDK importers</p>
 
       <section
-        v-if="operation.enqueues?.length || operation.enqueuedBy?.length"
+        v-if="operation.enqueues?.length || operation.enqueued_by?.length"
         class="route-card__section"
       >
         <h4 class="route-card__section-title">Jobs</h4>
@@ -135,11 +135,11 @@
               }}</code>
             </dd>
           </div>
-          <div v-if="operation.enqueuedBy?.length" class="route-card__job-row">
+          <div v-if="operation.enqueued_by?.length" class="route-card__job-row">
             <dt>enqueued by</dt>
             <dd>
               <code class="route-card__job-id">{{
-                operation.enqueuedBy.join(", ")
+                operation.enqueued_by.join(", ")
               }}</code>
             </dd>
           </div>
@@ -153,48 +153,48 @@
 import { computed } from "vue";
 
 export interface RouteCardFileRef {
-  filePath: string;
-  repoPath: string;
+  file_path: string;
+  repo_path: string;
 }
 
 export interface RouteCardUsedBy {
-  packageName: string;
-  filePath: string;
-  repoPath: string;
+  package_name: string;
+  file_path: string;
+  repo_path: string;
 }
 
 export interface RouteCardTestSpec {
-  fullName: string;
+  full_name: string;
 }
 
 /** Shared route triangle card — used by spec (and later http/sdk) panes. */
 export interface RouteCardOperation {
-  operationId: string;
+  operation_id: string;
   method: string;
   path: string;
   summary?: string | null;
   tags: string[];
-  yamlPath: string;
-  routeStem?: string | null;
+  yaml_path: string;
+  route_stem?: string | null;
   handler: RouteCardFileRef | null;
   request: RouteCardFileRef | null;
   /** SDK `*.fake.ts` beside the request, when present. */
   fake: RouteCardFileRef | null;
-  handlerTests: RouteCardTestSpec[];
-  requestSchemas: string[];
-  responseSchemas: string[];
-  usedBy: RouteCardUsedBy[];
+  handler_tests: RouteCardTestSpec[];
+  request_schemas: string[];
+  response_schemas: string[];
+  used_by: RouteCardUsedBy[];
   /** Job targets this op may enqueue (from product trigger map). */
   enqueues?: string[];
   /** Callers (ops or `cron:…`) that may enqueue this op. */
-  enqueuedBy?: string[];
+  enqueued_by?: string[];
 }
 
 const props = defineProps<{
   operation: RouteCardOperation;
   /** Repo-relative path for the route YAML (spec package–prefixed). */
   routeRepoPath: string;
-  openFile: (repoPath: string) => void;
+  openFile: (repo_path: string) => void;
   /** Vue loader cards: keep header through file links, omit tests/importers/jobs. */
   throughFiles?: boolean;
 }>();

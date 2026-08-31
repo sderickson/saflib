@@ -9,14 +9,14 @@ sealAuditLog:
     - site-admin-only
   responses:
     "200":
-      description: Seal completed; `auditSealResult.status` is `sealed`.
+      description: Seal completed; `audit_seal_result.status` is `sealed`.
       content:
         application/json:
           schema:
             $ref: "../../schemas/seal-audit-log-response.yaml"
     "409":
       description: >
-        Skipped — empty active DB or concurrent seal (`auditSealResult.status: skipped`).
+        Skipped — empty active DB or concurrent seal (`audit_seal_result.status: skipped`).
       content:
         application/json:
           schema:

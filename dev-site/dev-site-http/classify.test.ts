@@ -84,13 +84,13 @@ describe("classify", () => {
         [...nameByPath.keys()],
         nameByPath,
       );
-      expect(packageForPath("packages/a/nested/x.ts", roots).packageName).toBe(
+      expect(packageForPath("packages/a/nested/x.ts", roots).package_name).toBe(
         "@scope/nested",
       );
-      expect(packageForPath("packages/a/y.ts", roots).packageName).toBe(
+      expect(packageForPath("packages/a/y.ts", roots).package_name).toBe(
         "@scope/a",
       );
-      expect(packageForPath("z.ts", roots).packageName).toBe("@root/app");
+      expect(packageForPath("z.ts", roots).package_name).toBe("@root/app");
     });
 
     it("parses package.json name", () => {

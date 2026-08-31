@@ -11,12 +11,12 @@ import {
 export type ListByCommitResult = ReturnsError<PackageMetricsEntity[], never>;
 
 export const listByCommit = queryWrapper(
-  async (dbKey: DbKey, commitHash: string): Promise<ListByCommitResult> => {
+  async (dbKey: DbKey, commit_hash: string): Promise<ListByCommitResult> => {
     const db = devSiteDbManager.get(dbKey)!;
     const result = await db
       .select()
       .from(packageMetricsTable)
-      .where(eq(packageMetricsTable.commitHash, commitHash));
+      .where(eq(packageMetricsTable.commit_hash, commit_hash));
     return { result };
   },
 );

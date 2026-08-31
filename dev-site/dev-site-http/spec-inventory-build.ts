@@ -3,39 +3,42 @@
  * Linking: schema ↔ routes/<resource>/ via normalized stems → object | both | routes.
  */
 import { parse as parseYaml } from "yaml";
-import type { ImportUsedBy } from "./import-resolution.ts";
 
 export type SpecEntityPresence = "object" | "routes" | "both";
 
-export type SpecInventoryUsedBy = ImportUsedBy;
+export type SpecInventoryUsedBy = {
+  package_name: string;
+  file_path: string;
+  repo_path: string;
+};
 
 export interface SpecInventoryFileRef {
   /** Path within the owning package (no package-root prefix). */
-  filePath: string;
+  file_path: string;
   /** Repo-relative path for source links. */
-  repoPath: string;
+  repo_path: string;
 }
 
 /** One extracted describe/it/test specification for a handler. */
 export interface SpecInventoryTestSpec {
   /** Nested titles joined with `" > "` (from blob facts / `@saflib/parser`). */
-  fullName: string;
+  full_name: string;
 }
 
 export interface SpecInventoryOperation {
-  operationId: string;
+  operation_id: string;
   method: string;
   path: string;
   summary: string | null;
   /** OpenAPI `tags` on the operation. */
   tags: string[];
   /** Package-relative route YAML (under the `-spec` package). */
-  yamlPath: string;
+  yaml_path: string;
   /**
    * Isomorphic stem after `routes/` / `handlers/` / `requests/`
    * (e.g. `matters/core/create`).
    */
-  routeStem: string | null;
+  route_stem: string | null;
   /** HTTP handler implementation, when a sibling `-http` package matches. */
   handler: SpecInventoryFileRef | null;
   /** SDK request module, when a sibling `-sdk` package matches. */
@@ -43,38 +46,38 @@ export interface SpecInventoryOperation {
   /** SDK MSW/fake handler module (`*.fake.ts`) when present beside the request. */
   fake: SpecInventoryFileRef | null;
   /** describe/it specifications from colocated handler test files. */
-  handlerTests: SpecInventoryTestSpec[];
+  handler_tests: SpecInventoryTestSpec[];
   /**
    * Business objects in the request body — named schemas, expanding one layer
    * into object/array properties when the body is a bag of BOs.
    */
-  requestSchemas: string[];
-  /** Same as requestSchemas for 2xx responses. */
-  responseSchemas: string[];
+  request_schemas: string[];
+  /** Same as request_schemas for 2xx responses. */
+  response_schemas: string[];
   /** Non-test product files importing the SDK request module for this route. */
-  usedBy: SpecInventoryUsedBy[];
+  used_by: SpecInventoryUsedBy[];
   /**
-   * operationIds this op may enqueue (product trigger map), when annotated.
+   * operation_ids this op may enqueue (product trigger map), when annotated.
    * Empty when unknown / not a caller.
    */
   enqueues?: string[];
   /**
-   * operationIds (or `cron:…` keys) that may enqueue this op, when annotated.
+   * operation_ids (or `cron:…` keys) that may enqueue this op, when annotated.
    */
-  enqueuedBy?: string[];
+  enqueued_by?: string[];
 }
 
 export interface SpecInventorySchema {
   name: string;
-  yamlPath: string;
+  yaml_path: string;
   description: string | null;
   properties: Array<{
     name: string;
-    typeKind: string;
+    type_kind: string;
     docstring: string | null;
   }>;
-  usedBy: SpecInventoryUsedBy[];
-  referencedByOperations: string[];
+  used_by: SpecInventoryUsedBy[];
+  referenced_by_operations: string[];
 }
 
 export interface SpecInventoryEntity {
@@ -84,13 +87,13 @@ export interface SpecInventoryEntity {
   resource: string | null;
   schema: SpecInventorySchema | null;
   operations: SpecInventoryOperation[];
-  usedByPackages: string[];
+  used_by_packages: string[];
 }
 
 export interface PackageSpecInventory {
   entities: SpecInventoryEntity[];
   /** Repo-relative directory of the `-spec` package this inventory was built from. */
-  packageDirectory?: string;
+  package_directory?: string;
 }
 
 const HTTP_METHODS = new Set([
@@ -211,7 +214,7 @@ function extractProperties(
       isRecord(prop) && typeof prop.description === "string"
         ? firstLine(prop.description)
         : null;
-    out.push({ name, typeKind: propTypeKind(prop), docstring });
+    out.push({ name, type_kind: propTypeKind(prop), docstring });
   }
   return out;
 }
@@ -267,7 +270,7 @@ function businessObjectsFromSchemaNode(
   node: unknown,
   resolveName: (ref: string, fromFile: string) => string | null,
   fromFile: string,
-  schemaDocByName: Map<string, { yamlPath: string; doc: unknown }>,
+  schemaDocByName: Map<string, { yaml_path: string; doc: unknown }>,
 ): string[] {
   if (node == null) return [];
 
@@ -280,7 +283,7 @@ function businessObjectsFromSchemaNode(
         const nested = directPropertySchemaNames(
           meta.doc,
           resolveName,
-          meta.yamlPath,
+          meta.yaml_path,
         );
         if (nested.length > 0) return nested;
       }
@@ -304,7 +307,7 @@ function extractOperationSchemas(
   op: Record<string, unknown>,
   resolveName: (ref: string, fromFile: string) => string | null,
   fromFile: string,
-  schemaDocByName: Map<string, { yamlPath: string; doc: unknown }>,
+  schemaDocByName: Map<string, { yaml_path: string; doc: unknown }>,
 ): { request: string[]; response: string[] } {
   const request = new Set<string>();
   const response = new Set<string>();
@@ -344,8 +347,8 @@ function extractOperationSchemas(
 }
 
 /** `routes/matters/core/create.yaml` → `matters/core/create`. */
-export function routeStemFromYamlPath(yamlPath: string): string | null {
-  const m = /^routes\/(.+)\.ya?ml$/i.exec(yamlPath.replace(/\\/g, "/"));
+export function routeStemFromYamlPath(yaml_path: string): string | null {
+  const m = /^routes\/(.+)\.ya?ml$/i.exec(yaml_path.replace(/\\/g, "/"));
   return m?.[1] ?? null;
 }
 
@@ -370,7 +373,7 @@ export function buildSpecInventoryFromFiles(
   }
   if (!isRecord(openapiDoc)) return { entities: [] };
 
-  const schemaByName = new Map<string, { yamlPath: string }>();
+  const schemaByName = new Map<string, { yaml_path: string }>();
   const nameByYamlPath = new Map<string, string>();
 
   const components = isRecord(openapiDoc.components)
@@ -384,11 +387,11 @@ export function buildSpecInventoryFromFiles(
     if (!isRecord(entry) || typeof entry.$ref !== "string") continue;
     const { file } = parseRef(entry.$ref);
     if (!file) continue;
-    const yamlPath = resolvePackageRelative(openapiPath, file);
+    const yaml_path = resolvePackageRelative(openapiPath, file);
     // Business objects: schemas/ only (skip events/, responses/, …).
-    if (!yamlPath.startsWith("schemas/")) continue;
-    schemaByName.set(name, { yamlPath });
-    nameByYamlPath.set(yamlPath, name);
+    if (!yaml_path.startsWith("schemas/")) continue;
+    schemaByName.set(name, { yaml_path });
+    nameByYamlPath.set(yaml_path, name);
   }
 
   const resolveSchemaName = (ref: string, fromFile: string): string | null => {
@@ -404,9 +407,9 @@ export function buildSpecInventoryFromFiles(
   };
 
   const schemas: SpecInventorySchema[] = [];
-  const schemaDocByName = new Map<string, { yamlPath: string; doc: unknown }>();
+  const schemaDocByName = new Map<string, { yaml_path: string; doc: unknown }>();
   for (const [name, meta] of schemaByName) {
-    const text = files.get(meta.yamlPath);
+    const text = files.get(meta.yaml_path);
     let doc: unknown = null;
     if (text != null) {
       try {
@@ -415,24 +418,24 @@ export function buildSpecInventoryFromFiles(
         doc = null;
       }
     }
-    schemaDocByName.set(name, { yamlPath: meta.yamlPath, doc });
+    schemaDocByName.set(name, { yaml_path: meta.yaml_path, doc });
     const description =
       isRecord(doc) && typeof doc.description === "string"
         ? firstLine(doc.description)
         : null;
     schemas.push({
       name,
-      yamlPath: meta.yamlPath,
+      yaml_path: meta.yaml_path,
       description,
       properties: extractProperties(doc),
-      usedBy: [],
-      referencedByOperations: [],
+      used_by: [],
+      referenced_by_operations: [],
     });
   }
 
   type RawOp = Omit<
     SpecInventoryOperation,
-    "usedBy" | "handler" | "request" | "fake" | "handlerTests"
+    "used_by" | "handler" | "request" | "fake" | "handler_tests"
   > & { resource: string };
   const opsByResource = new Map<string, RawOp[]>();
 
@@ -445,12 +448,12 @@ export function buildSpecInventoryFromFiles(
 
       const { file, fragment } = parseRef(opRef.$ref);
       if (!file) continue;
-      const yamlPath = resolvePackageRelative(openapiPath, file);
-      const resourceMatch = /^routes\/([^/]+)\//.exec(yamlPath);
+      const yaml_path = resolvePackageRelative(openapiPath, file);
+      const resourceMatch = /^routes\/([^/]+)\//.exec(yaml_path);
       if (!resourceMatch) continue;
       const resource = resourceMatch[1]!;
 
-      const routeText = files.get(yamlPath);
+      const routeText = files.get(yaml_path);
       if (routeText == null) continue;
       let routeDoc: unknown;
       try {
@@ -471,7 +474,8 @@ export function buildSpecInventoryFromFiles(
         null;
       if (!opNode) continue;
 
-      const operationId =
+      // OpenAPI route YAML uses the standard `operationId` key; inventory wire uses snake_case.
+      const operation_id =
         typeof opNode.operationId === "string"
           ? opNode.operationId
           : fragKey ?? `${method}_${apiPath}`;
@@ -483,20 +487,20 @@ export function buildSpecInventoryFromFiles(
       const { request, response } = extractOperationSchemas(
         opNode,
         resolveSchemaName,
-        yamlPath,
+        yaml_path,
         schemaDocByName,
       );
 
       const raw: RawOp = {
-        operationId,
+        operation_id,
         method: method.toLowerCase(),
         path: apiPath,
         summary,
         tags,
-        yamlPath,
-        routeStem: routeStemFromYamlPath(yamlPath),
-        requestSchemas: request,
-        responseSchemas: response,
+        yaml_path,
+        route_stem: routeStemFromYamlPath(yaml_path),
+        request_schemas: request,
+        response_schemas: response,
         resource,
       };
       let list = opsByResource.get(resource);
@@ -513,7 +517,7 @@ export function buildSpecInventoryFromFiles(
       (a, b) =>
         a.path.localeCompare(b.path) ||
         a.method.localeCompare(b.method) ||
-        a.operationId.localeCompare(b.operationId),
+        a.operation_id.localeCompare(b.operation_id),
     );
   }
 
@@ -538,20 +542,20 @@ export function buildSpecInventoryFromFiles(
     }
 
     const ops = (opsByResource.get(resource) ?? []).map((o) => ({
-      operationId: o.operationId,
+      operation_id: o.operation_id,
       method: o.method,
       path: o.path,
       summary: o.summary,
       tags: o.tags,
-      yamlPath: o.yamlPath,
-      routeStem: o.routeStem,
+      yaml_path: o.yaml_path,
+      route_stem: o.route_stem,
       handler: null as SpecInventoryOperation["handler"],
       request: null as SpecInventoryOperation["request"],
       fake: null as SpecInventoryOperation["fake"],
-      handlerTests: [] as SpecInventoryTestSpec[],
-      requestSchemas: o.requestSchemas,
-      responseSchemas: o.responseSchemas,
-      usedBy: [] as SpecInventoryUsedBy[],
+      handler_tests: [] as SpecInventoryTestSpec[],
+      request_schemas: o.request_schemas,
+      response_schemas: o.response_schemas,
+      used_by: [] as SpecInventoryUsedBy[],
     }));
 
     if (best) {
@@ -563,7 +567,7 @@ export function buildSpecInventoryFromFiles(
         resource,
         schema: best.schema,
         operations: ops,
-        usedByPackages: [],
+        used_by_packages: [],
       });
     } else {
       entities.push({
@@ -573,7 +577,7 @@ export function buildSpecInventoryFromFiles(
         resource,
         schema: null,
         operations: ops,
-        usedByPackages: [],
+        used_by_packages: [],
       });
     }
   }
@@ -586,27 +590,27 @@ export function buildSpecInventoryFromFiles(
       resource: null,
       schema,
       operations: [],
-      usedByPackages: [],
+      used_by_packages: [],
     });
   }
 
-  // referencedByOperations across all ops
+  // referenced_by_operations across all ops
   const opsAll = entities.flatMap((e) => e.operations);
   const refsBySchema = new Map<string, Set<string>>();
   for (const op of opsAll) {
-    for (const name of [...op.requestSchemas, ...op.responseSchemas]) {
+    for (const name of [...op.request_schemas, ...op.response_schemas]) {
       let set = refsBySchema.get(name);
       if (!set) {
         set = new Set();
         refsBySchema.set(name, set);
       }
-      set.add(op.operationId);
+      set.add(op.operation_id);
     }
   }
   for (const e of entities) {
     if (!e.schema) continue;
     const set = refsBySchema.get(e.schema.name);
-    e.schema.referencedByOperations = set
+    e.schema.referenced_by_operations = set
       ? [...set].sort((a, b) => a.localeCompare(b))
       : [];
   }

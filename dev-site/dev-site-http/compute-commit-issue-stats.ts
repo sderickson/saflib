@@ -9,7 +9,6 @@ import {
   DEFAULT_MAX_SOURCE_LINES,
   listPackageJsonExportTargetFiles,
   type PackageJsonLayoutFields,
-  type PackageLayoutIssue,
   type ReturnsError,
 } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
@@ -29,8 +28,8 @@ import {
   collectPackageIssues,
   countIssuesByKind,
   PACKAGE_ISSUE_KINDS,
-  type PackageIssue,
 } from "./package-issues.ts";
+import { toPackageDetailForIssues } from "./wire-maps.ts";
 import {
   ensureBlobFacts,
   type AnalyzeCommitOptions,
@@ -43,15 +42,15 @@ import {
   packageRootsFromPackageJsonPaths,
   parsePackageName,
 } from "./classify.ts";
-import { assemblePackageDbInventory } from "./assemble-package-db-inventory.ts";
+import { assemblePackageDbInventory, type PackageDbInventory } from "./assemble-package-db-inventory.ts";
 import {
   exportUsedByKey,
   type ExportUsedBy,
 } from "./assemble-export-used-by.ts";
 
-function underProductRoot(path: string, productRoot: string): boolean {
-  if (!productRoot) return true;
-  return path === productRoot || path.startsWith(productRoot + "/");
+function underProductRoot(path: string, product_root: string): boolean {
+  if (!product_root) return true;
+  return path === product_root || path.startsWith(product_root + "/");
 }
 
 function joinRepoPath(...parts: Array<string | undefined>): string {
@@ -62,16 +61,16 @@ function joinRepoPath(...parts: Array<string | undefined>): string {
 }
 
 function packageLocalFromRepo(
-  repoPath: string,
+  repo_path: string,
   packageRepoPath: string,
 ): string {
-  if (!packageRepoPath) return repoPath;
+  if (!packageRepoPath) return repo_path;
   const prefix = packageRepoPath.endsWith("/")
     ? packageRepoPath
     : `${packageRepoPath}/`;
-  if (repoPath === packageRepoPath) return ".";
-  if (repoPath.startsWith(prefix)) return repoPath.slice(prefix.length);
-  return repoPath;
+  if (repo_path === packageRepoPath) return ".";
+  if (repo_path.startsWith(prefix)) return repo_path.slice(prefix.length);
+  return repo_path;
 }
 
 function parsePackageJsonFields(text: string): PackageJsonLayoutFields | null {
@@ -88,35 +87,35 @@ export interface ComputeCommitIssueStatsOptions extends AnalyzeCommitOptions {
    * (same discovery as analyzeCommit). Prefer passing scan metrics.
    */
   packages?: Array<
-    Pick<InsertPackageMetricsParams, "packageName" | "directory">
+    Pick<InsertPackageMetricsParams, "package_name" | "directory">
   >;
 }
 
 /**
- * Count issues by kind for every package at `commitHash`.
+ * Count issues by kind for every package at `commit_hash`.
  * Returns sparse insert rows (only kinds with count > 0).
  */
 export async function computeCommitIssueStats(
   dbKey: DbKey,
-  commitHash: string,
+  commit_hash: string,
   options: ComputeCommitIssueStatsOptions,
 ): Promise<
-  ReturnsError<Omit<InsertPackageIssueStatsParams, "commitHash">[], GitCommandError>
+  ReturnsError<Omit<InsertPackageIssueStatsParams, "commit_hash">[], GitCommandError>
 > {
-  const repoRoot = options.repoRoot;
-  const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
+  const repo_root = options.repo_root;
+  const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
 
-  const treeResult = listTree(repoRoot, commitHash);
+  const treeResult = listTree(repo_root, commit_hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) =>
-    underProductRoot(e.path, productRoot),
+    underProductRoot(e.path, product_root),
   );
 
   const packageJsonEntries = tree.filter(
     (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
   );
   const pkgBlobs = readBlobs(
-    repoRoot,
+    repo_root,
     packageJsonEntries.map((e) => e.blobHash),
   );
   if (pkgBlobs.error) return { error: pkgBlobs.error };
@@ -142,12 +141,12 @@ export async function computeCommitIssueStats(
   const packages =
     options.packages ??
     roots.map((r) => ({
-      packageName: r.packageName,
-      directory: productRoot
-        ? r.directory === productRoot
+      package_name: r.package_name,
+      directory: product_root
+        ? r.directory === product_root
           ? ""
-          : r.directory.startsWith(productRoot + "/")
-            ? r.directory.slice(productRoot.length + 1)
+          : r.directory.startsWith(product_root + "/")
+            ? r.directory.slice(product_root.length + 1)
             : r.directory
         : r.directory,
     }));
@@ -155,7 +154,7 @@ export async function computeCommitIssueStats(
   const allSourceEntries = tree.filter((e) => isSourcePath(e.path));
   const factsResult = await ensureBlobFacts(
     dbKey,
-    repoRoot,
+    repo_root,
     allSourceEntries.map((e) => e.blobHash),
   );
   if (factsResult.error) return { error: factsResult.error };
@@ -164,18 +163,18 @@ export async function computeCommitIssueStats(
   const importers: UsedByImporterUnit[] = [];
   const exportsByPackage = new Map<
     string,
-    Array<{ filePath: string; name: string; kind: string }>
+    Array<{ file_path: string; name: string; kind: string }>
   >();
 
   for (const entry of allSourceEntries) {
-    const fileName = entry.path.split("/").pop() ?? entry.path;
+    const file_name = entry.path.split("/").pop() ?? entry.path;
     const fact = facts.get(entry.blobHash);
     if (!fact) continue;
     const importerRoot = packageForPath(entry.path, roots);
-    const isTest = isTestSourcePath(entry.path, fileName);
+    const isTest = isTestSourcePath(entry.path, file_name);
     importers.push({
       path: entry.path,
-      packageName: importerRoot.packageName,
+      packageName: importerRoot.package_name,
       packageDirectory: importerRoot.directory,
       isTest,
       imports: blobFactImports(fact),
@@ -183,22 +182,22 @@ export async function computeCommitIssueStats(
     });
 
     if (isTest || isScaffoldTemplatePath(entry.path)) continue;
-    const list = exportsByPackage.get(importerRoot.packageName) ?? [];
+    const list = exportsByPackage.get(importerRoot.package_name) ?? [];
     for (const exp of blobFactExports(fact)) {
       list.push({
-        filePath: entry.path,
+        file_path: entry.path,
         name: exp.name,
         kind: exp.kind,
       });
     }
-    exportsByPackage.set(importerRoot.packageName, list);
+    exportsByPackage.set(importerRoot.package_name, list);
   }
 
-  const rows: Omit<InsertPackageIssueStatsParams, "commitHash">[] = [];
+  const rows: Omit<InsertPackageIssueStatsParams, "commit_hash">[] = [];
 
   for (const pkg of packages) {
-    const packageRepoPath = joinRepoPath(productRoot, pkg.directory);
-    const packageAbsDir = roots.find((r) => r.packageName === pkg.packageName)
+    const packageRepoPath = joinRepoPath(product_root, pkg.directory);
+    const packageAbsDir = roots.find((r) => r.package_name === pkg.package_name)
       ?.directory;
     const pj =
       packageJsonByDir.get(packageAbsDir ?? packageRepoPath) ??
@@ -221,25 +220,25 @@ export async function computeCommitIssueStats(
       if (!inPkg) continue;
 
       const local = packageLocalFromRepo(entry.path, packageRepoPath);
-      const fileName = entry.path.split("/").pop() ?? entry.path;
-      const isTest = isTestSourcePath(entry.path, fileName);
+      const file_name = entry.path.split("/").pop() ?? entry.path;
+      const isTest = isTestSourcePath(entry.path, file_name);
 
       // Root-level TS: local path has no slash
       if (
         !local.includes("/") &&
-        (fileName.endsWith(".ts") || fileName.endsWith(".tsx")) &&
-        !fileName.endsWith(".d.ts")
+        (file_name.endsWith(".ts") || file_name.endsWith(".tsx")) &&
+        !file_name.endsWith(".d.ts")
       ) {
-        rootTsFiles.push(fileName);
+        rootTsFiles.push(file_name);
       }
 
       if (isTest) continue;
       const fact = facts.get(entry.blobHash);
       if (!fact) continue;
-      sourceFiles.push({ localPath: local, lineCount: fact.lineCount });
+      sourceFiles.push({ localPath: local, lineCount: fact.line_count });
     }
 
-    const layoutIssues: PackageIssue[] = checkPackageLayoutFromInputs({
+    const layout_issues = checkPackageLayoutFromInputs({
       packageJson: pj,
       packageDirBasename: (packageAbsDir ?? (pkg.directory || "package"))
         .split("/")
@@ -248,82 +247,63 @@ export async function computeCommitIssueStats(
       rootTsFiles,
       sourceFiles,
       maxSourceLines: DEFAULT_MAX_SOURCE_LINES,
-    }).map((i: PackageLayoutIssue) => ({
-      kind: i.kind,
-      title: i.title,
-      name: i.name,
-      kindLabel: i.kindLabel,
-      filePath: i.filePath,
-      repoPath: i.repoPath,
-    }));
+    });
 
     const isDb = classifySafPackage(pj).kind === "db";
-    let dbInventory:
-      | {
-          entities: Array<{
-            entity: string;
-            queries: Array<{
-              fileName: string;
-              filePath: string;
-              exportName?: string | null;
-              usedBy?: ExportUsedBy[] | null;
-            }>;
-          }>;
-        }
-      | undefined;
+    let db_inventory: PackageDbInventory | undefined;
 
-    const rawExports = exportsByPackage.get(pkg.packageName) ?? [];
+    const rawExports = exportsByPackage.get(pkg.package_name) ?? [];
     let usedByMap = new Map<string, ExportUsedBy[]>();
 
     if (isDb) {
       const inv = await assemblePackageDbInventory(
         dbKey,
-        commitHash,
-        pkg.packageName,
+        commit_hash,
+        pkg.package_name,
         options,
       );
       if (!inv.error) {
-        dbInventory = inv.result;
+        db_inventory = inv.result;
       }
     } else {
-      const targetRoot = roots.find((r) => r.packageName === pkg.packageName);
+      const targetRoot = roots.find((r) => r.package_name === pkg.package_name);
       if (targetRoot && rawExports.length > 0) {
         usedByMap = assembleUsedBy(
-          pkg.packageName,
+          pkg.package_name,
           targetRoot.directory,
-          rawExports,
+          rawExports.map((e) => ({ filePath: e.file_path, name: e.name })),
           importers,
         );
       }
     }
 
     const issues = collectPackageIssues(
-      {
-        packageName: pkg.packageName,
+      toPackageDetailForIssues({
+        package_name: pkg.package_name,
         directory: pkg.directory,
-        productRoot,
+        product_root,
         exports: isDb
           ? undefined
           : rawExports.map((e) => ({
               name: e.name,
               kind: e.kind,
-              filePath: e.filePath,
-              usedBy: usedByMap.get(exportUsedByKey(e.filePath, e.name)) ?? [],
+              file_path: e.file_path,
+              used_by: usedByMap.get(exportUsedByKey(e.file_path, e.name)) ?? [],
             })),
-        dbInventory,
-        layoutIssues,
-        publicExportFilePaths: listPackageJsonExportTargetFiles(pj.exports).map(
+        db_inventory,
+        layout_issues,
+        public_export_file_paths: listPackageJsonExportTargetFiles(pj.exports).map(
           (rel) => joinRepoPath(packageRepoPath, rel),
         ),
-      },
-      { packageDirectory: pkg.directory, productRoot },
+      }),
+      { packageDirectory: pkg.directory, productRoot: product_root },
     );
 
     const counts = countIssuesByKind(issues);
     for (const kind of PACKAGE_ISSUE_KINDS) {
       if (counts[kind] <= 0) continue;
       rows.push({
-        packageName: pkg.packageName,
+        package_name: pkg.package_name,
         kind,
         count: counts[kind],
       });

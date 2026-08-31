@@ -94,8 +94,8 @@
         </v-chip>
       </template>
 
-      <template #[`item.createdAt`]="{ item }">
-        {{ formatDateTime(item.createdAt) }}
+      <template #[`item.created_at`]="{ item }">
+        {{ formatDateTime(item.created_at) }}
       </template>
 
       <template #[`item.actions`]="{ item }">
@@ -158,15 +158,15 @@
           <h2 class="text-h6 mb-2">Lineage</h2>
           <pre class="detail-block mb-4">{{
             formatJson({
-              originalRequestId: jobDetail.job.originalRequestId,
-              parentJobId: jobDetail.job.parentJobId,
-              enqueuedByOperationId: jobDetail.job.enqueuedByOperationId,
+              original_request_id: jobDetail.job.original_request_id,
+              parent_job_id: jobDetail.job.parent_job_id,
+              enqueued_by_operation_id: jobDetail.job.enqueued_by_operation_id,
             })
           }}</pre>
 
           <h2 class="text-h6 mb-2">Authority Assertion</h2>
           <pre class="detail-block">{{
-            formatJson(jobDetail.authorityAssertion)
+            formatJson(jobDetail.authority_assertion)
           }}</pre>
         </template>
       </v-card-text>
@@ -211,11 +211,11 @@ const statusOptions: Job["status"][] = [
 const headers = [
   { title: "Id", key: "id", sortable: true },
   { title: "Status", key: "status", sortable: true },
-  { title: "Operation", key: "operationId", sortable: true },
-  { title: "User", key: "userId", sortable: true },
-  { title: "Original Request Id", key: "originalRequestId", sortable: true },
+  { title: "Operation", key: "operation_id", sortable: true },
+  { title: "User", key: "user_id", sortable: true },
+  { title: "Original Request Id", key: "original_request_id", sortable: true },
   { title: "Attempt", key: "attempt", sortable: true },
-  { title: "Created At", key: "createdAt", sortable: true },
+  { title: "Created At", key: "created_at", sortable: true },
   { title: "Actions", key: "actions", sortable: false },
 ];
 
@@ -279,7 +279,7 @@ const cancelJob = (id: string) => {
 
 const massCancelChain = () => {
   if (!originalRequestIdFilter.value) return;
-  massCancelMutate({ originalRequestId: originalRequestIdFilter.value });
+  massCancelMutate({ original_request_id: originalRequestIdFilter.value });
 };
 
 const prevPage = () => {

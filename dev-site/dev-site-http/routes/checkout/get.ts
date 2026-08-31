@@ -6,19 +6,19 @@ import { getDevSiteHttpContext } from "../../context.ts";
 import { getCheckoutStatus } from "../../checkout.ts";
 
 export const getCheckoutHandler = createHandler(async (req, res) => {
-  const { dbKey, repoRoot, productRoot, mainRef } = getDevSiteHttpContext();
-  const compareRef =
-    typeof req.query.compareRef === "string" ? req.query.compareRef : undefined;
+  const { dbKey, repo_root, product_root, mainRef } = getDevSiteHttpContext();
+  const compare_ref =
+    typeof req.query.compare_ref === "string" ? req.query.compare_ref : undefined;
   const { result, error } = await getCheckoutStatus(dbKey, {
-    repoRoot,
-    productRoot,
+    repo_root,
+    product_root,
     mainRef,
-    compareRef,
+    compare_ref,
   });
   if (error) {
     switch (true) {
       case error instanceof GitCommandError:
-        if (compareRef?.trim()) {
+        if (compare_ref?.trim()) {
           throw createError(400, error.message, {
             code: "COMPARE_REF_NOT_FOUND",
           });
@@ -31,7 +31,7 @@ export const getCheckoutHandler = createHandler(async (req, res) => {
   const ctx = getDevSiteHttpContext();
   const response: ResponseBody["getCheckout"][200] = {
     ...result,
-    ...(ctx.githubRepo ? { githubRepo: ctx.githubRepo } : {}),
+    ...(ctx.github_repo ? { github_repo: ctx.github_repo } : {}),
   };
   res.status(200).json(response);
 });

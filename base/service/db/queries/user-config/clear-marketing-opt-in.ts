@@ -6,7 +6,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { eq } from "drizzle-orm";
 
 export interface ClearMarketingEmailsOptInParams {
-  userId: (typeof userConfigTable.$inferSelect)["userId"];
+  user_id: (typeof userConfigTable.$inferSelect)["user_id"];
 }
 
 export type ClearMarketingEmailsOptInError = never;
@@ -28,12 +28,12 @@ export const clearMarketingEmailsOptIn = queryWrapper(
     const result = await db
       .update(userConfigTable)
       .set({
-        marketingEmailsOptIn: false,
-        marketingEmailsOptInAt: null,
-        updatedAt: now,
+        marketing_emails_opt_in: false,
+        marketing_emails_opt_in_at: null,
+        updated_at: now,
       })
-      .where(eq(userConfigTable.userId, params.userId))
-      .returning({ userId: userConfigTable.userId });
+      .where(eq(userConfigTable.user_id, params.user_id))
+      .returning({ user_id: userConfigTable.user_id });
 
     return { result: { updated: result.length > 0 } };
   },

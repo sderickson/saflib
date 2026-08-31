@@ -41,8 +41,8 @@ export const addScanCommand = (program: Command) => {
       "With --recompute-issues, only this analyzed commit; otherwise scan only this hash",
     )
     .action(async (opts: {
-      repoRoot?: string;
-      productRoot?: string;
+      repo_root?: string;
+      product_root?: string;
       mainRef?: string;
       db?: string;
       limit?: number;
@@ -50,20 +50,20 @@ export const addScanCommand = (program: Command) => {
       force?: boolean;
       commit?: string;
     }) => {
-      const repoRoot = resolveRepoRoot(opts.repoRoot);
-      const dbPath = resolveDbPath(repoRoot, opts.db);
+      const repo_root = resolveRepoRoot(opts.repo_root);
+      const dbPath = resolveDbPath(repo_root, opts.db);
       ensureCliDbAvailable(dbPath, "write");
-      const productRoot = resolveProductRoot(opts.productRoot, dbPath);
+      const product_root = resolveProductRoot(opts.product_root, dbPath);
       const mainRef = resolveMainRef(opts.mainRef);
       const dbKey = devSiteDb.connect({ onDisk: dbPath });
       try {
         if (opts.recomputeIssues) {
           const result = await throwError(
             recomputeIssueStats(dbKey, {
-              repoRoot,
-              productRoot: productRoot || undefined,
+              repo_root,
+              product_root: product_root || undefined,
               mainRef,
-              commitHash: opts.commit,
+              commit_hash: opts.commit,
               limit: opts.limit,
               force: opts.force,
             }),
@@ -73,11 +73,11 @@ export const addScanCommand = (program: Command) => {
         }
         const result = await throwError(
           scanCommits(dbKey, {
-            repoRoot,
-            productRoot: productRoot || undefined,
+            repo_root,
+            product_root: product_root || undefined,
             mainRef,
             limit: opts.limit,
-            commitHash: opts.commit,
+            commit_hash: opts.commit,
           }),
         );
         console.log(JSON.stringify(result, null, 2));

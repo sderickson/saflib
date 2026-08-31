@@ -5,7 +5,7 @@ diffCommits:
     - no-auth
   description: >
     Compare the analysis snapshots of two commits. `hash` is the baseline
-    ("before"); `otherHash` is the comparison ("after"). Returns added/removed
+    ("before"); `other_hash` is the comparison ("after"). Returns added/removed
     (and changed, for package metrics) inventories.
   parameters:
     - name: hash
@@ -14,7 +14,7 @@ diffCommits:
       schema:
         type: string
       description: Baseline commit hash (the "before").
-    - name: otherHash
+    - name: other_hash
       in: path
       required: true
       schema:
@@ -28,9 +28,9 @@ diffCommits:
           schema:
             type: object
             required:
-              - commitDiff
+              - commit_diff
             properties:
-              commitDiff:
+              commit_diff:
                 $ref: "../../schemas/commit-diff.yaml"
     "404":
       description: One or both commit hashes have no analysis snapshot.

@@ -70,7 +70,7 @@ const { productEventsQuery } = useProductEventsPageLoader();
 const nameFilter = ref("");
 
 const productEvents = computed(
-  () => productEventsQuery.data.value?.productEvents ?? [],
+  () => productEventsQuery.data.value?.product_events ?? [],
 );
 
 const filteredEvents = computed(() => {

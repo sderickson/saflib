@@ -16,41 +16,41 @@ export type AnalyzedCommitRefType = (typeof analyzedCommitRefTypeEnum)[number];
 export interface AnalyzedCommitRef {
   name: string;
   type: AnalyzedCommitRefType;
-  isMainAncestor: boolean;
+  is_main_ancestor: boolean;
 }
 
 export interface AnalyzedCommitEntity {
   hash: string;
-  parentHashes: string[];
-  authoredAt: Date;
+  parent_hashes: string[];
+  authored_at: Date;
   message: string;
   refs: AnalyzedCommitRef[];
-  analyzerVersion: string;
+  analyzer_version: string;
   computed_at: Date;
   status: AnalyzedCommitStatus;
-  exportCount: number;
-  testCaseCount: number;
+  export_count: number;
+  test_case_count: number;
 }
 
 export const analyzedCommitsTable = sqliteTable(
   "analyzed_commits",
   {
     hash: text("hash").primaryKey(),
-    parentHashes: text("parent_hashes", { mode: "json" })
+    parent_hashes: text("parent_hashes", { mode: "json" })
       .$type<string[]>()
       .notNull(),
-    authoredAt: integer("authored_at", { mode: "timestamp" }).notNull(),
+    authored_at: integer("authored_at", { mode: "timestamp" }).notNull(),
     message: text("message").notNull(),
     refs: text("refs", { mode: "json" })
       .$type<AnalyzedCommitRef[]>()
       .notNull(),
-    analyzerVersion: text("analyzer_version").notNull(),
+    analyzer_version: text("analyzer_version").notNull(),
     computed_at: integer("computed_at", { mode: "timestamp" }).notNull(),
     status: text("status", { enum: analyzedCommitStatusEnum }).notNull(),
-    exportCount: integer("export_count").notNull(),
-    testCaseCount: integer("test_case_count").notNull(),
+    export_count: integer("export_count").notNull(),
+    test_case_count: integer("test_case_count").notNull(),
   },
-  (table) => [index("analyzed_commits_authored_at_idx").on(table.authoredAt)],
+  (table) => [index("analyzed_commits_authored_at_idx").on(table.authored_at)],
 );
 
 export type AnalyzedCommitEntityTest = Expect<

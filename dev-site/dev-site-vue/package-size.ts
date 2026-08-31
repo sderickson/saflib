@@ -24,8 +24,8 @@ export const PACKAGE_SIZE_LOC_BOUNDS = {
 
 export interface PackageSizeInput {
   /** Total analyzed lines (prod + test), as stored on package metrics. */
-  sourceLines: number;
-  testFiles?: number;
+  source_lines: number;
+  test_files?: number;
 }
 
 /**
@@ -33,8 +33,8 @@ export interface PackageSizeInput {
  * can nudge M→L or L→XL when near a boundary (many concerns / surfaces).
  */
 export function classifyPackageSize(input: PackageSizeInput): PackageSizeTier {
-  const loc = Math.max(0, input.sourceLines);
-  const tests = Math.max(0, input.testFiles ?? 0);
+  const loc = Math.max(0, input.source_lines);
+  const tests = Math.max(0, input.test_files ?? 0);
 
   let tier: PackageSizeTier;
   if (loc < PACKAGE_SIZE_LOC_BOUNDS.S) tier = "S";

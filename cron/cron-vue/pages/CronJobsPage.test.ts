@@ -14,37 +14,37 @@ type UpdateSettingsRequest = CronRequestBody["updateCronJobSettings"];
 // Mock data based on job_settings.yaml and component usage
 const mockJobs: ListCronJobsResponse = [
   {
-    jobName: "job-1",
+    job_name: "job-1",
     enabled: true,
-    enabledBy: "admin-user-1",
-    lastRunAt: new Date(Date.now() - 3600 * 1000).toISOString(),
-    lastRunStatus: "success",
+    enabled_by: "admin-user-1",
+    last_run_at: new Date(Date.now() - 3600 * 1000).toISOString(),
+    last_run_status: "success",
     schedule: "*/15 * * * *",
-    runsNextAt: new Date(Date.now() + 900 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 86400 * 1000 * 7).toISOString(),
-    updatedAt: new Date(Date.now() - 86400 * 1000).toISOString(),
+    runs_next_at: new Date(Date.now() + 900 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 86400 * 1000 * 7).toISOString(),
+    updated_at: new Date(Date.now() - 86400 * 1000).toISOString(),
   },
   {
-    jobName: "job-2",
+    job_name: "job-2",
     enabled: false,
-    enabledBy: null,
-    lastRunAt: null,
-    lastRunStatus: null,
+    enabled_by: null,
+    last_run_at: null,
+    last_run_status: null,
     schedule: "0 3 * * *",
-    runsNextAt: null,
-    createdAt: new Date(Date.now() - 86400 * 1000 * 14).toISOString(),
-    updatedAt: new Date(Date.now() - 86400 * 1000 * 2).toISOString(),
+    runs_next_at: null,
+    created_at: new Date(Date.now() - 86400 * 1000 * 14).toISOString(),
+    updated_at: new Date(Date.now() - 86400 * 1000 * 2).toISOString(),
   },
   {
-    jobName: "job-3",
+    job_name: "job-3",
     enabled: true,
-    enabledBy: null,
-    lastRunAt: new Date(Date.now() - 60 * 1000).toISOString(),
-    lastRunStatus: "fail",
+    enabled_by: null,
+    last_run_at: new Date(Date.now() - 60 * 1000).toISOString(),
+    last_run_status: "fail",
     schedule: "* * * * *",
-    runsNextAt: null,
-    createdAt: new Date(Date.now() - 86400 * 1000 * 1).toISOString(),
-    updatedAt: new Date(Date.now() - 3600 * 1000).toISOString(),
+    runs_next_at: null,
+    created_at: new Date(Date.now() - 86400 * 1000 * 1).toISOString(),
+    updated_at: new Date(Date.now() - 3600 * 1000).toISOString(),
   },
 ];
 
@@ -75,9 +75,9 @@ const handlers = [
     async ({ request }) => {
       const body = await request.json();
       return HttpResponse.json({
-        jobName: body.jobName,
+        job_name: body.job_name,
         enabled: body.enabled,
-        enabledBy: body.enabled ? "admin-user-1" : null,
+        enabled_by: body.enabled ? "admin-user-1" : null,
       });
     },
   ),
@@ -175,8 +175,8 @@ describe("CronJobsAsync", () => {
     expect(
       row1.findComponent({ name: "v-chip", text: "success" }).exists(),
     ).toBe(true); // Last Run Status Chip
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].lastRunAt));
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].runsNextAt));
+    expect(row1.text()).toContain(formatDateTime(mockJobs[0].last_run_at));
+    expect(row1.text()).toContain(formatDateTime(mockJobs[0].runs_next_at));
     expect(getActionButton(wrapper, "job-1", "Disable").exists()).toBe(true);
   });
 
@@ -204,9 +204,9 @@ describe("CronJobsAsync", () => {
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({
-            jobName: jobToDisable,
+            job_name: jobToDisable,
             enabled: false,
-            enabledBy: "admin-user-1",
+            enabled_by: "admin-user-1",
           });
         },
       ),
@@ -225,7 +225,7 @@ describe("CronJobsAsync", () => {
       expect(receivedRequestBody).not.toBeNull();
     });
     expect(receivedRequestBody).toEqual({
-      jobName: jobToDisable,
+      job_name: jobToDisable,
       enabled: false,
     });
 
@@ -247,9 +247,9 @@ describe("CronJobsAsync", () => {
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({
-            jobName: jobToEnable,
+            job_name: jobToEnable,
             enabled: true,
-            enabledBy: "admin-user-1",
+            enabled_by: "admin-user-1",
           });
         },
       ),
@@ -268,7 +268,7 @@ describe("CronJobsAsync", () => {
       expect(receivedRequestBody).not.toBeNull();
     });
     expect(receivedRequestBody).toEqual({
-      jobName: jobToEnable,
+      job_name: jobToEnable,
       enabled: true,
     });
   });

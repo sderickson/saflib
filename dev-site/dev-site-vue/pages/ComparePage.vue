@@ -7,7 +7,7 @@
         <v-row class="mb-4" density="comfortable">
           <v-col cols="12" md="5">
             <v-select
-              v-model="fromHash"
+              v-model="from_hash"
               :items="commitOptions"
               label="Before (baseline)"
               item-title="title"
@@ -18,7 +18,7 @@
           </v-col>
           <v-col cols="12" md="5">
             <v-select
-              v-model="toHash"
+              v-model="to_hash"
               :items="commitOptions"
               label="After"
               item-title="title"
@@ -40,39 +40,39 @@
 
         <template v-if="diff">
           <p class="text-body-2 mb-4">
-            <code>{{ shortHash(diff.fromHash) }}</code>
+            <code>{{ shortHash(diff.from_hash) }}</code>
             →
-            <code>{{ shortHash(diff.toHash) }}</code>
+            <code>{{ shortHash(diff.to_hash) }}</code>
           </p>
 
           <h2 class="text-h6 mb-2">
-            Packages — +{{ diff.packageMetrics.added.length }} /
-            −{{ diff.packageMetrics.removed.length }} /
-            ~{{ diff.packageMetrics.changed.length }}
+            Packages — +{{ diff.package_metrics.added.length }} /
+            −{{ diff.package_metrics.removed.length }} /
+            ~{{ diff.package_metrics.changed.length }}
           </h2>
           <v-list v-if="hasPackageChanges" density="compact" class="mb-4">
             <v-list-item
-              v-for="pkg in diff.packageMetrics.added"
-              :key="'a-' + pkg.packageName"
+              v-for="pkg in diff.package_metrics.added"
+              :key="'a-' + pkg.package_name"
             >
               <v-chip color="success" size="x-small" class="mr-2">added</v-chip>
-              {{ pkg.packageName }}
+              {{ pkg.package_name }}
             </v-list-item>
             <v-list-item
-              v-for="pkg in diff.packageMetrics.removed"
-              :key="'r-' + pkg.packageName"
+              v-for="pkg in diff.package_metrics.removed"
+              :key="'r-' + pkg.package_name"
             >
               <v-chip color="error" size="x-small" class="mr-2">removed</v-chip>
-              {{ pkg.packageName }}
+              {{ pkg.package_name }}
             </v-list-item>
             <v-list-item
-              v-for="chg in diff.packageMetrics.changed"
-              :key="'c-' + chg.after.packageName"
+              v-for="chg in diff.package_metrics.changed"
+              :key="'c-' + chg.after.package_name"
             >
               <v-chip color="warning" size="x-small" class="mr-2">changed</v-chip>
-              {{ chg.after.packageName }}:
-              {{ formatLoc(chg.before.sourceLines) }}→{{ formatLoc(chg.after.sourceLines) }} src LOC,
-              {{ formatLoc(chg.before.testLines) }}→{{ formatLoc(chg.after.testLines) }} test LOC
+              {{ chg.after.package_name }}:
+              {{ formatLoc(chg.before.source_lines) }}→{{ formatLoc(chg.after.source_lines) }} src LOC,
+              {{ formatLoc(chg.before.test_lines) }}→{{ formatLoc(chg.after.test_lines) }} test LOC
             </v-list-item>
           </v-list>
           <p v-else class="text-body-2 mb-4">No package metric changes.</p>
@@ -100,11 +100,11 @@
           <p v-else class="text-body-2 mb-6">No export changes.</p>
 
           <h2 class="text-h6 mb-2">
-            Test cases — +{{ diff.testCases.added.length }} /
-            −{{ diff.testCases.removed.length }}
+            Test cases — +{{ diff.test_cases.added.length }} /
+            −{{ diff.test_cases.removed.length }}
           </h2>
           <v-data-table
-            v-if="diff.testCases.added.length + diff.testCases.removed.length > 0"
+            v-if="diff.test_cases.added.length + diff.test_cases.removed.length > 0"
             :headers="testHeaders"
             :items="testRows"
             class="elevation-1"
@@ -123,11 +123,11 @@
 
           <h2 class="text-h6 mt-6 mb-2">
             Database schemas —
-            tables +{{ diff.dbSchemas.tables.added.length }} /
-            −{{ diff.dbSchemas.tables.removed.length }},
-            columns +{{ diff.dbSchemas.columns.added.length }} /
-            −{{ diff.dbSchemas.columns.removed.length }} /
-            ~{{ diff.dbSchemas.columns.changed.length }}
+            tables +{{ diff.db_schemas.tables.added.length }} /
+            −{{ diff.db_schemas.tables.removed.length }},
+            columns +{{ diff.db_schemas.columns.added.length }} /
+            −{{ diff.db_schemas.columns.removed.length }} /
+            ~{{ diff.db_schemas.columns.changed.length }}
           </h2>
           <v-list
             v-if="hasDbSchemaChanges"
@@ -135,49 +135,49 @@
             class="mb-4"
           >
             <v-list-item
-              v-for="t in diff.dbSchemas.tables.added"
-              :key="'ta-' + t.packageName + t.tableName"
+              v-for="t in diff.db_schemas.tables.added"
+              :key="'ta-' + t.package_name + t.table_name"
             >
               <v-chip color="success" size="x-small" class="mr-2">table+</v-chip>
-              {{ t.packageName }} · <code>{{ t.tableName }}</code>
+              {{ t.package_name }} · <code>{{ t.table_name }}</code>
             </v-list-item>
             <v-list-item
-              v-for="t in diff.dbSchemas.tables.removed"
-              :key="'tr-' + t.packageName + t.tableName"
+              v-for="t in diff.db_schemas.tables.removed"
+              :key="'tr-' + t.package_name + t.table_name"
             >
               <v-chip color="error" size="x-small" class="mr-2">table−</v-chip>
-              {{ t.packageName }} · <code>{{ t.tableName }}</code>
+              {{ t.package_name }} · <code>{{ t.table_name }}</code>
             </v-list-item>
             <v-list-item
-              v-for="c in diff.dbSchemas.columns.added"
-              :key="'ca-' + c.packageName + c.tableName + c.sqlName"
+              v-for="c in diff.db_schemas.columns.added"
+              :key="'ca-' + c.package_name + c.table_name + c.sql_name"
             >
               <v-chip color="success" size="x-small" class="mr-2">col+</v-chip>
-              <code>{{ c.tableName }}.{{ c.sqlName }}</code>
-              · {{ c.typeKind }}
+              <code>{{ c.table_name }}.{{ c.sql_name }}</code>
+              · {{ c.type_kind }}
             </v-list-item>
             <v-list-item
-              v-for="c in diff.dbSchemas.columns.removed"
-              :key="'cr-' + c.packageName + c.tableName + c.sqlName"
+              v-for="c in diff.db_schemas.columns.removed"
+              :key="'cr-' + c.package_name + c.table_name + c.sql_name"
             >
               <v-chip color="error" size="x-small" class="mr-2">col−</v-chip>
-              <code>{{ c.tableName }}.{{ c.sqlName }}</code>
-              · {{ c.typeKind }}
+              <code>{{ c.table_name }}.{{ c.sql_name }}</code>
+              · {{ c.type_kind }}
             </v-list-item>
             <v-list-item
-              v-for="chg in diff.dbSchemas.columns.changed"
-              :key="'cc-' + chg.after.packageName + chg.after.tableName + chg.after.sqlName"
+              v-for="chg in diff.db_schemas.columns.changed"
+              :key="'cc-' + chg.after.package_name + chg.after.table_name + chg.after.sql_name"
             >
               <v-chip color="warning" size="x-small" class="mr-2">col~</v-chip>
-              <code>{{ chg.after.tableName }}.{{ chg.after.sqlName }}</code>:
-              {{ chg.before.typeKind }}→{{ chg.after.typeKind }}
+              <code>{{ chg.after.table_name }}.{{ chg.after.sql_name }}</code>:
+              {{ chg.before.type_kind }}→{{ chg.after.type_kind }}
             </v-list-item>
           </v-list>
           <p v-else class="text-body-2 mb-4">No database schema changes.</p>
         </template>
 
         <p
-          v-else-if="!isLoadingDiff && fromHash && toHash && !diffError"
+          v-else-if="!isLoadingDiff && from_hash && to_hash && !diffError"
           class="text-body-1"
         >
           Select two commits to compare.
@@ -200,14 +200,14 @@ const props = defineProps<{
   initialToHash?: string;
 }>();
 
-const fromHash = ref(props.initialFromHash ?? "");
-const toHash = ref(props.initialToHash ?? "");
+const from_hash = ref(props.initialFromHash ?? "");
+const to_hash = ref(props.initialToHash ?? "");
 
 watch(
   () => [props.initialFromHash, props.initialToHash] as const,
   ([from, to]) => {
-    if (from) fromHash.value = from;
-    if (to) toHash.value = to;
+    if (from) from_hash.value = from;
+    if (to) to_hash.value = to;
   },
 );
 
@@ -228,17 +228,17 @@ const {
   data: diffData,
   isLoading: isLoadingDiff,
   error: diffError,
-} = useCommitDiff(props.subdomain, fromHash, toHash);
+} = useCommitDiff(props.subdomain, from_hash, to_hash);
 
-const diff = computed(() => diffData.value?.commitDiff);
+const diff = computed(() => diffData.value?.commit_diff);
 
 const hasPackageChanges = computed(() => {
   const d = diff.value;
   if (!d) return false;
   return (
-    d.packageMetrics.added.length +
-      d.packageMetrics.removed.length +
-      d.packageMetrics.changed.length >
+    d.package_metrics.added.length +
+      d.package_metrics.removed.length +
+      d.package_metrics.changed.length >
     0
   );
 });
@@ -246,7 +246,7 @@ const hasPackageChanges = computed(() => {
 const hasDbSchemaChanges = computed(() => {
   const d = diff.value;
   if (!d) return false;
-  const s = d.dbSchemas;
+  const s = d.db_schemas;
   return (
     s.tables.added.length +
       s.tables.removed.length +
@@ -259,17 +259,17 @@ const hasDbSchemaChanges = computed(() => {
 
 const exportHeaders = [
   { title: "Change", key: "change" },
-  { title: "Package", key: "packageName" },
-  { title: "File", key: "filePath" },
+  { title: "Package", key: "package_name" },
+  { title: "File", key: "file_path" },
   { title: "Name", key: "name" },
   { title: "Kind", key: "kind" },
 ];
 
 const testHeaders = [
   { title: "Change", key: "change" },
-  { title: "Package", key: "packageName" },
-  { title: "File", key: "filePath" },
-  { title: "Full name", key: "fullName" },
+  { title: "Package", key: "package_name" },
+  { title: "File", key: "file_path" },
+  { title: "Full name", key: "full_name" },
 ];
 
 const exportRows = computed(() => {
@@ -285,8 +285,8 @@ const testRows = computed(() => {
   const d = diff.value;
   if (!d) return [];
   return [
-    ...d.testCases.added.map((t) => ({ ...t, change: "added" as const })),
-    ...d.testCases.removed.map((t) => ({ ...t, change: "removed" as const })),
+    ...d.test_cases.added.map((t) => ({ ...t, change: "added" as const })),
+    ...d.test_cases.removed.map((t) => ({ ...t, change: "removed" as const })),
   ];
 });
 

@@ -18,7 +18,7 @@
         <v-list density="compact" nav class="elevation-1">
           <v-list-item
             v-for="(email, index) in emails"
-            :key="`${email.timeSent}-${email.subject}-${index}`"
+            :key="`${email.time_sent}-${email.subject}-${index}`"
             :active="selectedIndex === index"
             @click="selectedIndex = index"
           >
@@ -27,8 +27,8 @@
             </v-list-item-title>
             <v-list-item-subtitle class="text-wrap">
               {{ formatRecipients(email.to) }}
-              <span v-if="email.timeSent">
-                · {{ new Date(email.timeSent).toLocaleString() }}
+              <span v-if="email.time_sent">
+                · {{ new Date(email.time_sent).toLocaleString() }}
               </span>
             </v-list-item-subtitle>
           </v-list-item>
@@ -51,9 +51,9 @@
             />
           </v-card-title>
           <v-card-text>
-            <div v-if="selectedEmail.timeSent" class="mb-2">
+            <div v-if="selectedEmail.time_sent" class="mb-2">
               <strong>Time Sent:</strong>
-              {{ new Date(selectedEmail.timeSent).toLocaleString() }}
+              {{ new Date(selectedEmail.time_sent).toLocaleString() }}
             </div>
             <div
               v-if="selectedEmail.to && selectedEmail.to.length > 0"
@@ -81,11 +81,11 @@
               >: {{ formatRecipients(selectedEmail.from) }}
             </div>
             <div
-              v-if="selectedEmail.replyTo && selectedEmail.replyTo.length > 0"
+              v-if="selectedEmail.reply_to && selectedEmail.reply_to.length > 0"
               class="mb-2"
             >
               <strong>{{ strings.email_details.replyTo }}</strong
-              >: {{ selectedEmail.replyTo.join(", ") }}
+              >: {{ selectedEmail.reply_to.join(", ") }}
             </div>
             <hr />
             <div

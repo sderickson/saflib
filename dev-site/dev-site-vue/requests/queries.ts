@@ -85,7 +85,7 @@ export function useCommit(
 export function useCommitPackage(
   subdomain: string,
   hash: MaybeRefOrGetter<string>,
-  packageName: MaybeRefOrGetter<string>,
+  package_name: MaybeRefOrGetter<string>,
   options: { allowMissing?: MaybeRefOrGetter<boolean> } = {},
 ) {
   const client = createDevSiteClient(subdomain);
@@ -93,16 +93,16 @@ export function useCommitPackage(
     DevSiteResponseBody["getCommitPackage"][200] | null,
     TanstackError
   >({
-    queryKey: ["dev-site", "commit-package", hash, packageName],
-    enabled: () => Boolean(toValue(hash) && toValue(packageName)),
+    queryKey: ["dev-site", "commit-package", hash, package_name],
+    enabled: () => Boolean(toValue(hash) && toValue(package_name)),
     queryFn: async () => {
       try {
         return await handleClientMethod(
-          client.GET("/api/commits/{hash}/packages/{packageName}", {
+          client.GET("/api/commits/{hash}/packages/{package_name}", {
             params: {
               path: {
                 hash: toValue(hash),
-                packageName: toValue(packageName),
+                package_name: toValue(package_name),
               },
             },
           }),
@@ -123,20 +123,20 @@ export function useCommitPackage(
 
 export function useCommitDiff(
   subdomain: string,
-  fromHash: MaybeRefOrGetter<string>,
-  toHash: MaybeRefOrGetter<string>,
+  from_hash: MaybeRefOrGetter<string>,
+  to_hash: MaybeRefOrGetter<string>,
 ) {
   const client = createDevSiteClient(subdomain);
   return useQuery<DevSiteResponseBody["diffCommits"][200], TanstackError>({
-    queryKey: ["dev-site", "diff", fromHash, toHash],
-    enabled: () => Boolean(toValue(fromHash) && toValue(toHash)),
+    queryKey: ["dev-site", "diff", from_hash, to_hash],
+    enabled: () => Boolean(toValue(from_hash) && toValue(to_hash)),
     queryFn: () => {
       return handleClientMethod(
-        client.GET("/api/commits/{hash}/diff/{otherHash}", {
+        client.GET("/api/commits/{hash}/diff/{other_hash}", {
           params: {
             path: {
-              hash: toValue(fromHash),
-              otherHash: toValue(toHash),
+              hash: toValue(from_hash),
+              other_hash: toValue(to_hash),
             },
           },
         }),
@@ -168,17 +168,17 @@ export function useScanMutation(subdomain: string) {
 
 export function useCheckout(
   subdomain: string,
-  compareRef: MaybeRefOrGetter<string | undefined> = undefined,
+  compare_ref: MaybeRefOrGetter<string | undefined> = undefined,
 ) {
   const client = createDevSiteClient(subdomain);
   return useQuery<DevSiteResponseBody["getCheckout"][200], TanstackError>({
-    queryKey: ["dev-site", "checkout", compareRef],
+    queryKey: ["dev-site", "checkout", compare_ref],
     queryFn: () => {
-      const ref = toValue(compareRef);
+      const ref = toValue(compare_ref);
       return handleClientMethod(
         client.GET("/api/checkout", {
           params: {
-            query: ref ? { compareRef: ref } : {},
+            query: ref ? { compare_ref: ref } : {},
           },
         }),
       );

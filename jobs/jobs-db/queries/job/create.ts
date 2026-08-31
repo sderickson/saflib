@@ -10,13 +10,13 @@ import { and, count, eq, inArray } from "drizzle-orm";
 const queuedDedupeStatuses = ["pending", "retrying"] as const;
 
 export type CreateJobParams = typeof jobTable.$inferInsert & {
-  /** Max jobs allowed for `originalRequestId`; reject when count is already ≥ this. */
+  /** Max jobs allowed for `original_request_id`; reject when count is already ≥ this. */
   spawnCap: number;
 };
 
 export type CreateJobData = {
   job: typeof jobTable.$inferSelect;
-  /** True when an existing queued row with the same `dedupeKey` was upserted. */
+  /** True when an existing queued row with the same `dedupe_key` was upserted. */
   deduped: boolean;
 };
 
@@ -31,13 +31,13 @@ export const createJob = queryWrapper(
     const { spawnCap, ...jobValues } = params;
 
     return db.transaction((tx) => {
-      if (jobValues.dedupeKey != null) {
+      if (jobValues.dedupe_key != null) {
         const existing = tx
           .select()
           .from(jobTable)
           .where(
             and(
-              eq(jobTable.dedupeKey, jobValues.dedupeKey),
+              eq(jobTable.dedupe_key, jobValues.dedupe_key),
               inArray(jobTable.status, queuedDedupeStatuses),
             ),
           )
@@ -48,9 +48,9 @@ export const createJob = queryWrapper(
           const updated = tx
             .update(jobTable)
             .set({
-              runAt: jobValues.runAt,
+              run_at: jobValues.run_at,
               request: jobValues.request,
-              updatedAt: jobValues.updatedAt,
+              updated_at: jobValues.updated_at,
             })
             .where(eq(jobTable.id, existing[0].id))
             .returning()
@@ -65,7 +65,7 @@ export const createJob = queryWrapper(
       const countRow = tx
         .select({ value: count() })
         .from(jobTable)
-        .where(eq(jobTable.originalRequestId, jobValues.originalRequestId))
+        .where(eq(jobTable.original_request_id, jobValues.original_request_id))
         .all()[0]!;
 
       if (countRow.value >= spawnCap) {

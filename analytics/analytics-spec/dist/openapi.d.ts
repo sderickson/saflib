@@ -58,7 +58,7 @@ export interface components {
         "product-event-record": {
             /** @description Monotonic id for pagination. */
             id: number;
-            /** @description Product event name (same as productEvent.event). */
+            /** @description Product event name (same as product_event.event). */
             name: string;
             /** @description Full product event JSON as recorded. */
             payload: {
@@ -91,7 +91,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    productEvent: {
+                    product_event: {
                         event: string;
                         client?: string;
                         view?: string;
@@ -145,7 +145,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        productEvents: components["schemas"]["product-event-record"][];
+                        product_events: components["schemas"]["product-event-record"][];
                     };
                 };
             };

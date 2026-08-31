@@ -9,10 +9,37 @@ import {
   AuditSealUploadError,
 } from "@saflib/audit-db/seal-errors";
 
+type AuditSealResultWire =
+  AuditResponseBody["sealAuditLog"][200]["audit_seal_result"];
+
+/** Map internal camelCase {@link AuditSealResult} to OpenAPI snake_case wire. */
 export function auditSealResultToJsonBody(
   result: AuditSealResult,
 ): AuditResponseBody["sealAuditLog"][200] {
-  return { auditSealResult: result };
+  const wire: AuditSealResultWire = {
+    status: result.status,
+    duration_ms: result.durationMs,
+    ...(result.reason !== undefined ? { reason: result.reason } : {}),
+    ...(result.archive
+      ? {
+          archive: {
+            filename: result.archive.filename,
+            size_bytes: result.archive.sizeBytes,
+            sha256_hex: result.archive.sha256Hex,
+            archive_key: result.archive.archiveKey,
+            row_count: result.archive.rowCount,
+            head_hash: result.archive.headHash,
+            tail_hash: result.archive.tailHash,
+            first_ts: result.archive.firstTs,
+            last_ts: result.archive.lastTs,
+            ...(result.archive.branchCount !== undefined
+              ? { branch_count: result.archive.branchCount }
+              : {}),
+          },
+        }
+      : {}),
+  };
+  return { audit_seal_result: wire };
 }
 
 export function mapSealPipelineErrorTo500(

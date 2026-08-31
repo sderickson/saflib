@@ -61,12 +61,12 @@ listRepoFiles:
                   type: object
                   required:
                     - path
-                    - blobHash
+                    - blob_hash
                   properties:
                     path:
                       type: string
                       description: Path relative to the repo root.
-                    blobHash:
+                    blob_hash:
                       type: string
                       description: >
                         Git blob object hash. Empty string for working-tree-only

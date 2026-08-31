@@ -6,20 +6,20 @@ import {
 
 describe("classifyPackageSize", () => {
   it("maps LOC bands", () => {
-    expect(classifyPackageSize({ sourceLines: 500 })).toBe("S");
-    expect(classifyPackageSize({ sourceLines: 3_000 })).toBe("M");
-    expect(classifyPackageSize({ sourceLines: 12_000 })).toBe("L");
-    expect(classifyPackageSize({ sourceLines: 50_000 })).toBe("XL");
+    expect(classifyPackageSize({ source_lines: 500 })).toBe("S");
+    expect(classifyPackageSize({ source_lines: 3_000 })).toBe("M");
+    expect(classifyPackageSize({ source_lines: 12_000 })).toBe("L");
+    expect(classifyPackageSize({ source_lines: 50_000 })).toBe("XL");
   });
 
   it("uses bound edges", () => {
     expect(
-      classifyPackageSize({ sourceLines: PACKAGE_SIZE_LOC_BOUNDS.S - 1 }),
+      classifyPackageSize({ source_lines: PACKAGE_SIZE_LOC_BOUNDS.S - 1 }),
     ).toBe("S");
-    expect(classifyPackageSize({ sourceLines: PACKAGE_SIZE_LOC_BOUNDS.S })).toBe(
+    expect(classifyPackageSize({ source_lines: PACKAGE_SIZE_LOC_BOUNDS.S })).toBe(
       "M",
     );
-    expect(classifyPackageSize({ sourceLines: PACKAGE_SIZE_LOC_BOUNDS.L })).toBe(
+    expect(classifyPackageSize({ source_lines: PACKAGE_SIZE_LOC_BOUNDS.L })).toBe(
       "XL",
     );
   });
@@ -27,8 +27,8 @@ describe("classifyPackageSize", () => {
   it("nudges up when many test files near a ceiling", () => {
     expect(
       classifyPackageSize({
-        sourceLines: Math.floor(PACKAGE_SIZE_LOC_BOUNDS.M * 0.8),
-        testFiles: 45,
+        source_lines: Math.floor(PACKAGE_SIZE_LOC_BOUNDS.M * 0.8),
+        test_files: 45,
       }),
     ).toBe("L");
   });

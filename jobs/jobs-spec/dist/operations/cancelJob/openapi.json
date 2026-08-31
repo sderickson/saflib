@@ -8,7 +8,7 @@
     "/jobs/{id}/cancel": {
       "post": {
         "summary": "Cancel a pending or retrying job",
-        "description": "Cancels a pending or retrying job (`terminalReason: cancelled-by-admin`). Running jobs are not interrupted (409). Mounted as monolith chrome (`site-admin-only`).\n",
+        "description": "Cancels a pending or retrying job (`terminal_reason: cancelled-by-admin`). Running jobs are not interrupted (409). Mounted as monolith chrome (`site-admin-only`).\n",
         "operationId": "cancelJob",
         "tags": [
           "site-admin-only"
@@ -93,7 +93,7 @@
     "schemas": {
       "job": {
         "type": "object",
-        "description": "Wire form of a queued API-call job. CamelCase projection of the `job` row; omits internal columns (`heartbeatAt`, `updatedAt`). Authority is the discriminated evidence grant without the raw enqueue assertion token (detail endpoints may return that separately as `authorityAssertion`).\n",
+        "description": "Wire form of a queued API-call job; field names match the `job` row and nested JSON. Omits internal columns (`heartbeat_at`, `updated_at`). Authority is the discriminated evidence grant without the raw enqueue assertion token (detail endpoints may return that separately as `authority_assertion`).\n",
         "properties": {
           "id": {
             "type": "string",
@@ -113,7 +113,7 @@
             "description": "Lifecycle state. `pending`/`retrying` are claimable; `running` is in delivery; `succeeded`/`dead`/`cancelled` are terminal.\n",
             "example": "pending"
           },
-          "operationId": {
+          "operation_id": {
             "type": "string",
             "description": "Target OpenAPI operationId resolved at delivery time.",
             "example": "jobsDemoStepB"
@@ -123,7 +123,7 @@
             "description": "Capped request payload delivered to the target operation (serialized size ≤ 16 KB). Path params, query, and body are optional and substituted into the operation's path template / request.\n",
             "additionalProperties": false,
             "properties": {
-              "pathParams": {
+              "path_params": {
                 "type": "object",
                 "description": "Path template substitutions keyed by parameter name.",
                 "additionalProperties": true
@@ -139,11 +139,11 @@
             },
             "example": {
               "body": {
-                "failuresBeforeSuccess": 2
+                "failures_before_success": 2
               }
             }
           },
-          "userId": {
+          "user_id": {
             "type": "string",
             "description": "Acting user whose authority the job runs under.",
             "example": "Us7k_pQ2"
@@ -160,8 +160,8 @@
                 "additionalProperties": false,
                 "required": [
                   "kind",
-                  "userId",
-                  "requestId"
+                  "user_id",
+                  "request_id"
                 ],
                 "properties": {
                   "kind": {
@@ -171,12 +171,12 @@
                     ],
                     "example": "request"
                   },
-                  "userId": {
+                  "user_id": {
                     "type": "string",
                     "description": "User who made the originating request.",
                     "example": "Us7k_pQ2"
                   },
-                  "requestId": {
+                  "request_id": {
                     "type": "string",
                     "description": "Originating request id (e.g. X-Request-ID).",
                     "example": "r-abc123"
@@ -189,8 +189,8 @@
                 "additionalProperties": false,
                 "required": [
                   "kind",
-                  "userId",
-                  "importerId"
+                  "user_id",
+                  "importer_id"
                 ],
                 "properties": {
                   "kind": {
@@ -200,12 +200,12 @@
                     ],
                     "example": "importer"
                   },
-                  "userId": {
+                  "user_id": {
                     "type": "string",
                     "description": "Importer creator whose authority is used.",
                     "example": "Us7k_pQ2"
                   },
-                  "importerId": {
+                  "importer_id": {
                     "type": "string",
                     "description": "Short id of the importer row that authorized the chain.",
                     "example": "Im7k_mN2"
@@ -218,8 +218,8 @@
                 "additionalProperties": false,
                 "required": [
                   "kind",
-                  "userId",
-                  "cronJobName"
+                  "user_id",
+                  "cron_job_name"
                 ],
                 "properties": {
                   "kind": {
@@ -229,12 +229,12 @@
                     ],
                     "example": "cron"
                   },
-                  "userId": {
+                  "user_id": {
                     "type": "string",
                     "description": "Admin who enabled the cron job (`enabled_by`).",
                     "example": "Us7k_pQ2"
                   },
-                  "cronJobName": {
+                  "cron_job_name": {
                     "type": "string",
                     "description": "Name of the cron job that enqueued this chain.",
                     "example": "recoverySweep"
@@ -243,17 +243,17 @@
               }
             ]
           },
-          "originalRequestId": {
+          "original_request_id": {
             "type": "string",
             "description": "Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Copied from parent on chained enqueues; joins audit_event.request_id.\n",
             "example": "r-abc123"
           },
-          "enqueuedByOperationId": {
+          "enqueued_by_operation_id": {
             "type": "string",
             "description": "Calling operationId that enqueued this job (trigger-map edge).",
             "example": "startJobsDemo"
           },
-          "parentJobId": {
+          "parent_job_id": {
             "type": [
               "string",
               "null"
@@ -261,21 +261,21 @@
             "description": "Short id of the job that enqueued this one, or null at the chain root.",
             "example": null
           },
-          "runAt": {
+          "run_at": {
             "type": "string",
             "format": "date-time",
             "description": "Earliest time the job may be claimed for delivery.",
             "example": "2026-08-06T21:00:00.000Z"
           },
-          "dedupeKey": {
+          "dedupe_key": {
             "type": [
               "string",
               "null"
             ],
-            "description": "Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts (pushes runAt, refreshes request) and returns the existing job.\n",
+            "description": "Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts (pushes run_at, refreshes request) and returns the existing job.\n",
             "example": "matter:demo-1:claim"
           },
-          "concurrencyKey": {
+          "concurrency_key": {
             "type": [
               "string",
               "null"
@@ -293,7 +293,7 @@
             "description": "Number of delivery attempts consumed so far (0 before first claim).",
             "example": 0
           },
-          "maxAttempts": {
+          "max_attempts": {
             "type": "integer",
             "description": "Maximum delivery attempts before the job becomes dead (exhausted).",
             "example": 5
@@ -303,15 +303,15 @@
               "object",
               "null"
             ],
-            "description": "Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `errorBody` is set only on failure and capped at 8 KB.\n",
+            "description": "Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `error_body` is set only on failure and capped at 8 KB.\n",
             "additionalProperties": false,
             "properties": {
-              "statusCode": {
+              "status_code": {
                 "type": "integer",
                 "description": "HTTP status code from the delivery attempt, when available.",
                 "example": 500
               },
-              "errorBody": {
+              "error_body": {
                 "type": [
                   "string",
                   "null"
@@ -319,7 +319,7 @@
                 "description": "Capped error response body recorded only on failure.",
                 "example": "{\"error\":\"upstream timeout\"}"
               },
-              "terminalReason": {
+              "terminal_reason": {
                 "type": [
                   "string",
                   "null"
@@ -338,13 +338,13 @@
               }
             }
           },
-          "createdAt": {
+          "created_at": {
             "type": "string",
             "format": "date-time",
             "description": "When the job row was created.",
             "example": "2026-08-06T20:59:55.000Z"
           },
-          "startedAt": {
+          "started_at": {
             "type": [
               "string",
               "null"
@@ -353,7 +353,7 @@
             "description": "When the current (or last) delivery attempt started; null if never claimed.",
             "example": null
           },
-          "finishedAt": {
+          "finished_at": {
             "type": [
               "string",
               "null"
@@ -366,23 +366,23 @@
         "required": [
           "id",
           "status",
-          "operationId",
+          "operation_id",
           "request",
-          "userId",
+          "user_id",
           "authority",
-          "originalRequestId",
-          "enqueuedByOperationId",
-          "parentJobId",
-          "runAt",
-          "dedupeKey",
-          "concurrencyKey",
+          "original_request_id",
+          "enqueued_by_operation_id",
+          "parent_job_id",
+          "run_at",
+          "dedupe_key",
+          "concurrency_key",
           "priority",
           "attempt",
-          "maxAttempts",
+          "max_attempts",
           "result",
-          "createdAt",
-          "startedAt",
-          "finishedAt"
+          "created_at",
+          "started_at",
+          "finished_at"
         ]
       },
       "error": {

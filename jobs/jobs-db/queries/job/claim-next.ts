@@ -21,7 +21,7 @@ const claimableStatuses = ["pending", "retrying"] as const;
 const runningJob = alias(jobTable, "running_job");
 
 export type ClaimNextJobParams = {
-  /** Claim cutoff; eligible jobs must have `runAt <= now`. */
+  /** Claim cutoff; eligible jobs must have `run_at <= now`. */
   now: Date;
 };
 
@@ -30,9 +30,9 @@ export type ClaimNextJobError = never;
 /**
  * Atomically claim the highest-priority eligible job.
  *
- * Eligibility: `pending`/`retrying`, `runAt <= now`, and no other `running`
- * job sharing a non-null `concurrencyKey`. Sets `running`, `startedAt`,
- * `heartbeatAt`, increments `attempt`. Returns the claimed row, or `null`.
+ * Eligibility: `pending`/`retrying`, `run_at <= now`, and no other `running`
+ * job sharing a non-null `concurrency_key`. Sets `running`, `started_at`,
+ * `heartbeat_at`, increments `attempt`. Returns the claimed row, or `null`.
  */
 export const claimNextJob = queryWrapper(
   async (
@@ -51,9 +51,9 @@ export const claimNextJob = queryWrapper(
         .where(
           and(
             inArray(jobTable.status, claimableStatuses),
-            lte(jobTable.runAt, now),
+            lte(jobTable.run_at, now),
             or(
-              isNull(jobTable.concurrencyKey),
+              isNull(jobTable.concurrency_key),
               notExists(
                 tx
                   .select({ id: runningJob.id })
@@ -61,7 +61,7 @@ export const claimNextJob = queryWrapper(
                   .where(
                     and(
                       eq(runningJob.status, "running"),
-                      eq(runningJob.concurrencyKey, jobTable.concurrencyKey),
+                      eq(runningJob.concurrency_key, jobTable.concurrency_key),
                     ),
                   ),
               ),
@@ -70,7 +70,7 @@ export const claimNextJob = queryWrapper(
         )
         .orderBy(
           desc(jobTable.priority),
-          asc(jobTable.runAt),
+          asc(jobTable.run_at),
           asc(jobTable.id),
         )
         .limit(1)
@@ -84,10 +84,10 @@ export const claimNextJob = queryWrapper(
         .update(jobTable)
         .set({
           status: "running",
-          startedAt: now,
-          heartbeatAt: now,
+          started_at: now,
+          heartbeat_at: now,
           attempt: candidate.attempt + 1,
-          updatedAt: now,
+          updated_at: now,
         })
         .where(eq(jobTable.id, candidate.id))
         .returning()

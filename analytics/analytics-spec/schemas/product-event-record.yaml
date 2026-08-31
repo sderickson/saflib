@@ -6,7 +6,7 @@ properties:
     description: Monotonic id for pagination.
   name:
     type: string
-    description: Product event name (same as productEvent.event).
+    description: Product event name (same as product_event.event).
   payload:
     type: object
     additionalProperties: true

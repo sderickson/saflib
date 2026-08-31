@@ -22,30 +22,30 @@ function jobParams(
 ): CreateJobParams {
   return {
     status: "pending",
-    operationId: "jobsDemoStepB",
+    operation_id: "jobsDemoStepB",
     request: { body: {} },
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request",
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-1",
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: now,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-1",
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: now,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -79,9 +79,9 @@ describe("cancelByIdJob", () => {
       expect(error).toBeUndefined();
       assert(result);
       expect(result.status).toBe("cancelled");
-      expect(result.result).toEqual({ terminalReason: "cancelled-by-admin" });
-      expect(result.finishedAt).toEqual(later);
-      expect(result.updatedAt).toEqual(later);
+      expect(result.result).toEqual({ terminal_reason: "cancelled-by-admin" });
+      expect(result.finished_at).toEqual(later);
+      expect(result.updated_at).toEqual(later);
     },
   );
 
@@ -104,8 +104,8 @@ describe("cancelByIdJob", () => {
           id: "job-1",
           status,
           attempt: status === "running" ? 1 : 0,
-          startedAt: status === "running" ? now : null,
-          finishedAt:
+          started_at: status === "running" ? now : null,
+          finished_at:
             status === "succeeded" ||
             status === "dead" ||
             status === "cancelled"
@@ -113,9 +113,9 @@ describe("cancelByIdJob", () => {
               : null,
           result:
             status === "cancelled"
-              ? { terminalReason: "cancelled-by-admin" }
+              ? { terminal_reason: "cancelled-by-admin" }
               : status === "dead"
-                ? { terminalReason: "exhausted" }
+                ? { terminal_reason: "exhausted" }
                 : null,
         }),
       );

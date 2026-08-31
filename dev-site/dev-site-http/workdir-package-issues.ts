@@ -26,29 +26,30 @@ import {
   packageRootsFromPackageJsonPaths,
   parsePackageName,
 } from "./classify.ts";
+import { toPackageDetailForIssues } from "./wire-maps.ts";
 
 export interface WorkdirPackageIssuesOptions {
-  repoRoot: string;
+  repo_root: string;
   /** Limit walk to this prefix (e.g. `product`). Empty = whole repo. */
-  productRoot?: string;
-  packageName: string;
+  product_root?: string;
+  package_name: string;
   /** When true (default), include monorepo layout + LoC findings. */
   includeLayout?: boolean;
 }
 
 export interface WorkdirPackageIssuesResult {
-  packageName: string;
+  package_name: string;
   directory: string;
-  productRoot: string;
+  product_root: string;
   source: "workdir";
   issueCount: number;
   issues: PackageIssue[];
-  exportCount: number;
+  export_count: number;
 }
 
-function underProductRoot(repoPath: string, productRoot: string): boolean {
-  if (!productRoot) return true;
-  return repoPath === productRoot || repoPath.startsWith(`${productRoot}/`);
+function underProductRoot(repo_path: string, product_root: string): boolean {
+  if (!product_root) return true;
+  return repo_path === product_root || repo_path.startsWith(`${product_root}/`);
 }
 
 async function walkRepoFiles(
@@ -77,20 +78,20 @@ async function walkRepoFiles(
 }
 
 /**
- * Scan the working tree under productRoot and list issues for one package.
+ * Scan the working tree under product_root and list issues for one package.
  */
 export async function collectWorkdirPackageIssues(
   options: WorkdirPackageIssuesOptions,
 ): Promise<WorkdirPackageIssuesResult> {
-  const repoRoot = options.repoRoot;
-  const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
-  const packageName = options.packageName;
+  const repo_root = options.repo_root;
+  const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
+  const package_name = options.package_name;
   const includeLayout = options.includeLayout !== false;
 
-  const walkRoot = productRoot ? path.join(repoRoot, productRoot) : repoRoot;
-  const walkPrefix = productRoot;
+  const walkRoot = product_root ? path.join(repo_root, product_root) : repo_root;
+  const walkPrefix = product_root;
   const allFiles = await walkRepoFiles(walkRoot, walkPrefix);
-  const treePaths = allFiles.filter((p) => underProductRoot(p, productRoot));
+  const treePaths = allFiles.filter((p) => underProductRoot(p, product_root));
 
   const packageJsonPaths = treePaths.filter(
     (p) => p === "package.json" || p.endsWith("/package.json"),
@@ -98,7 +99,7 @@ export async function collectWorkdirPackageIssues(
   const nameByPath = new Map<string, string>();
   const exportsByPkgJson = new Map<string, Record<string, unknown> | string>();
   for (const pkgPath of packageJsonPaths) {
-    const text = await readFile(path.join(repoRoot, pkgPath), "utf-8");
+    const text = await readFile(path.join(repo_root, pkgPath), "utf-8");
     const name = parsePackageName(text);
     if (name) nameByPath.set(pkgPath, name);
     try {
@@ -111,43 +112,43 @@ export async function collectWorkdirPackageIssues(
     }
   }
   const roots = packageRootsFromPackageJsonPaths(packageJsonPaths, nameByPath);
-  const targetRoot = roots.find((r) => r.packageName === packageName);
+  const targetRoot = roots.find((r) => r.package_name === package_name);
   if (!targetRoot) {
     return {
-      packageName,
+      package_name,
       directory: "",
-      productRoot,
+      product_root,
       source: "workdir",
       issueCount: 0,
       issues: [],
-      exportCount: 0,
+      export_count: 0,
     };
   }
 
-  const underPackage = (repoPath: string) => {
+  const underPackage = (repo_path: string) => {
     const d = targetRoot.directory;
     if (!d) return true;
-    return repoPath === d || repoPath.startsWith(`${d}/`);
+    return repo_path === d || repo_path.startsWith(`${d}/`);
   };
 
   const sourcePaths = treePaths.filter((p) => isSourcePath(p));
   const specialtyByPath = new Map<string, FileSpecialty>();
-  for (const repoPath of sourcePaths) {
-    const text = await readFile(path.join(repoRoot, repoPath), "utf-8");
-    specialtyByPath.set(repoPath, buildFileSpecialty(text));
+  for (const repo_path of sourcePaths) {
+    const text = await readFile(path.join(repo_root, repo_path), "utf-8");
+    specialtyByPath.set(repo_path, buildFileSpecialty(text));
   }
 
-  const exports: Array<{ filePath: string; name: string; kind: string }> = [];
-  for (const repoPath of sourcePaths) {
-    if (!underPackage(repoPath)) continue;
-    const fileName = repoPath.split("/").pop() ?? repoPath;
-    if (isTestSourcePath(repoPath, fileName)) continue;
-    if (isScaffoldTemplatePath(repoPath)) continue;
-    const specialty = specialtyByPath.get(repoPath);
+  const exports: Array<{ file_path: string; name: string; kind: string }> = [];
+  for (const repo_path of sourcePaths) {
+    if (!underPackage(repo_path)) continue;
+    const file_name = repo_path.split("/").pop() ?? repo_path;
+    if (isTestSourcePath(repo_path, file_name)) continue;
+    if (isScaffoldTemplatePath(repo_path)) continue;
+    const specialty = specialtyByPath.get(repo_path);
     if (!specialty) continue;
     for (const exp of specialty.exports) {
       exports.push({
-        filePath: repoPath,
+        file_path: repo_path,
         name: exp.name,
         kind: exp.kind,
       });
@@ -155,71 +156,64 @@ export async function collectWorkdirPackageIssues(
   }
 
   const importers: UsedByImporterUnit[] = [];
-  for (const repoPath of sourcePaths) {
-    const fileName = repoPath.split("/").pop() ?? repoPath;
-    const specialty = specialtyByPath.get(repoPath);
+  for (const repo_path of sourcePaths) {
+    const file_name = repo_path.split("/").pop() ?? repo_path;
+    const specialty = specialtyByPath.get(repo_path);
     if (!specialty) continue;
-    const importerRoot = packageForPath(repoPath, roots);
+    const importerRoot = packageForPath(repo_path, roots);
     importers.push({
-      path: repoPath,
-      packageName: importerRoot.packageName,
+      path: repo_path,
+      packageName: importerRoot.package_name,
       packageDirectory: importerRoot.directory,
-      isTest: isTestSourcePath(repoPath, fileName),
+      isTest: isTestSourcePath(repo_path, file_name),
       imports: specialty.imports,
       localExportUsages: specialty.localExportUsages,
     });
   }
 
   const usedByMap = assembleUsedBy(
-    packageName,
+    package_name,
     targetRoot.directory,
-    exports,
+    exports.map((e) => ({ filePath: e.file_path, name: e.name })),
     importers,
   );
 
   const directory = targetRoot.directory;
   const pkgJsonPath = directory ? `${directory}/package.json` : "package.json";
-  const publicExportFilePaths = listPackageJsonExportTargetFiles(
+  const public_export_file_paths = listPackageJsonExportTargetFiles(
     exportsByPkgJson.get(pkgJsonPath),
   ).map((rel) => (directory ? `${directory}/${rel}` : rel));
-  const layoutIssues: PackageIssue[] = includeLayout
+  const layout_issues: PackageIssue[] = includeLayout
     ? checkPackageLayout({
-        packageDir: path.join(repoRoot, directory || "."),
+        packageDir: path.join(repo_root, directory || "."),
         packageRepoPath: directory,
-      }).map((i) => ({
-        kind: i.kind,
-        title: i.title,
-        name: i.name,
-        kindLabel: i.kindLabel,
-        filePath: i.filePath,
-        repoPath: i.repoPath,
-      }))
+      })
     : [];
 
   const issues = collectPackageIssues(
-    {
-      packageName,
+    toPackageDetailForIssues({
+      package_name,
       directory,
-      productRoot,
+      product_root,
       exports: exports.map((e) => ({
         name: e.name,
         kind: e.kind,
-        filePath: e.filePath,
-        usedBy: usedByMap.get(exportUsedByKey(e.filePath, e.name)) ?? [],
+        file_path: e.file_path,
+        used_by: usedByMap.get(exportUsedByKey(e.file_path, e.name)) ?? [],
       })),
-      layoutIssues,
-      publicExportFilePaths,
-    },
-    { packageDirectory: directory, productRoot },
+      layout_issues,
+      public_export_file_paths,
+    }),
+    { packageDirectory: directory, productRoot: product_root },
   );
 
   return {
-    packageName,
+    package_name,
     directory,
-    productRoot,
+    product_root,
     source: "workdir",
     issueCount: issues.length,
     issues,
-    exportCount: exports.length,
+    export_count: exports.length,
   };
 }

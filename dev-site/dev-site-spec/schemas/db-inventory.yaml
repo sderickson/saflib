@@ -9,7 +9,7 @@ properties:
       type: object
       required:
         - entity
-        - usedByPackages
+        - used_by_packages
         - queries
       properties:
         entity:
@@ -18,16 +18,16 @@ properties:
         table:
           type: [ object, "null" ]
           required:
-            - exportName
-            - tableName
+            - export_name
+            - table_name
             - columns
-            - filePath
+            - file_path
           properties:
-            exportName:
+            export_name:
               type: string
-            tableName:
+            table_name:
               type: string
-            filePath:
+            file_path:
               type: string
             docstring:
               type: [ string, "null" ]
@@ -37,20 +37,20 @@ properties:
               items:
                 type: object
                 required:
-                  - propName
-                  - sqlName
-                  - typeKind
+                  - prop_name
+                  - sql_name
+                  - type_kind
                 properties:
-                  propName:
+                  prop_name:
                     type: string
-                  sqlName:
+                  sql_name:
                     type: string
-                  typeKind:
+                  type_kind:
                     type: string
                   docstring:
                     type: [ string, "null" ]
                     description: First prose line of leading JSDoc on the column.
-        usedByPackages:
+        used_by_packages:
           type: array
           description: Distinct packages (non-test) that import any query under this entity.
           items:
@@ -61,35 +61,35 @@ properties:
           items:
             type: object
             required:
-              - fileName
-              - filePath
-              - usedBy
+              - file_name
+              - file_path
+              - used_by
             properties:
-              fileName:
+              file_name:
                 type: string
-              filePath:
+              file_path:
                 type: string
-              exportName:
+              export_name:
                 type: [ string, "null" ]
               signature:
                 type: [ string, "null" ]
               docstring:
                 type: [ string, "null" ]
-              usedBy:
+              used_by:
                 type: array
                 description: Non-test product files that import this leaf query module.
                 items:
                   type: object
                   required:
-                    - packageName
-                    - filePath
-                    - repoPath
+                    - package_name
+                    - file_path
+                    - repo_path
                   properties:
-                    packageName:
+                    package_name:
                       type: string
-                    filePath:
+                    file_path:
                       type: string
                       description: Path within the importing package (no package-root prefix).
-                    repoPath:
+                    repo_path:
                       type: string
                       description: Repo-relative path for source links.

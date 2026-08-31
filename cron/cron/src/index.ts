@@ -123,7 +123,7 @@ export const startJobs = async (
             if (!currentJobSetting.enabled) {
               return;
             }
-            if (!currentJobSetting.enabledBy) {
+            if (!currentJobSetting.enabled_by) {
               log.warn(
                 `Cron job '${jobName}' is enabled but enabled_by is null; skipping tick until an admin re-enables to record authority.`,
               );
@@ -134,7 +134,7 @@ export const startJobs = async (
               jobName,
               jobConfig,
               dbKey,
-              currentJobSetting.enabledBy,
+              currentJobSetting.enabled_by,
               enqueueJob,
             );
           } catch (error) {

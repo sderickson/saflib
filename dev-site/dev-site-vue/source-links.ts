@@ -1,22 +1,22 @@
 /**
  * Build links to open a repo path in GitHub and/or a local IDE.
  *
- * `githubRepo` is `owner/name`. `localRepoRoot` is an absolute host path to the
+ * `github_repo` is `owner/name`. `localRepoRoot` is an absolute host path to the
  * checkout (for `cursor://` / `vscode://` file URLs). Either may be omitted.
  *
  * GitHub blob links prefer a branch/tag (`githubRef`). When omitted, fall back to
- * `commitHash` (detached HEAD), then `main`.
+ * `commit_hash` (detached HEAD), then `main`.
  */
 export function resolveGithubSourceRef(options: {
   branch?: string | null;
-  commitHash?: string | null;
+  commit_hash?: string | null;
   fallbackRef?: string;
 }): string {
   if (options.branch) {
     return options.branch;
   }
-  if (options.commitHash) {
-    return options.commitHash;
+  if (options.commit_hash) {
+    return options.commit_hash;
   }
   return options.fallbackRef ?? "main";
 }
@@ -27,9 +27,9 @@ export function sourceOpenUrls(
     /** Branch, tag, or commit SHA for GitHub blob URLs. */
     githubRef?: string;
     /** Used when {@link githubRef} is omitted (e.g. detached HEAD). */
-    commitHash?: string;
+    commit_hash?: string;
     line?: number;
-    githubRepo?: string;
+    github_repo?: string;
     localRepoRoot?: string;
     ideScheme?: "cursor" | "vscode";
   } = {},
@@ -37,13 +37,13 @@ export function sourceOpenUrls(
   const path = repoRelativePath.replace(/^\/+/, "");
   const out: { github?: string; ide?: string } = {};
 
-  if (options.githubRepo) {
+  if (options.github_repo) {
     const ref =
       options.githubRef ||
-      options.commitHash ||
+      options.commit_hash ||
       "main";
     const line = options.line ? `#L${options.line}` : "";
-    out.github = `https://github.com/${options.githubRepo}/blob/${ref}/${path}${line}`;
+    out.github = `https://github.com/${options.github_repo}/blob/${ref}/${path}${line}`;
   }
 
   if (options.localRepoRoot) {
@@ -59,11 +59,11 @@ export function sourceOpenUrls(
 
 /** GitHub compare URL for changes between two refs (branch names or SHAs). */
 export function githubCompareUrl(
-  githubRepo: string,
+  github_repo: string,
   baseRef: string,
   headRef: string,
 ): string {
-  return `https://github.com/${githubRepo}/compare/${baseRef}...${headRef}`;
+  return `https://github.com/${github_repo}/compare/${baseRef}...${headRef}`;
 }
 
 export function openSource(

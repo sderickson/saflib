@@ -5,7 +5,7 @@ import { recordReportedError } from "../lib/reportedErrorBuffer.ts";
 export function createRecordReportedErrorHandler() {
   return createHandler(async (req, res) => {
     const body = req.body as ErrorsRequestBody["recordReportedError"];
-    const input = body.reportedError;
+    const input = body.reported_error;
     recordReportedError({
       kind: "client",
       message: input.message,

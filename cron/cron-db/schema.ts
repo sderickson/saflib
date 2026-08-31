@@ -10,27 +10,27 @@ export type LastRunStatus = (typeof lastRunStatusEnum)[number];
  */
 export interface JobSetting {
   id: number;
-  jobName: string;
+  job_name: string;
   enabled: boolean;
   /** Kratos identity id of the admin who last enabled the job; null until re-enabled post-migration. */
-  enabledBy: string | null;
-  lastRunAt: Date | null;
-  lastRunStatus: (typeof lastRunStatusEnum)[number] | null;
-  createdAt: Date;
-  updatedAt: Date;
+  enabled_by: string | null;
+  last_run_at: Date | null;
+  last_run_status: (typeof lastRunStatusEnum)[number] | null;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export const jobSettings = sqliteTable("job_settings", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  jobName: text("job_name").notNull().unique(),
+  job_name: text("job_name").notNull().unique(),
   enabled: integer("enabled", { mode: "boolean" }).notNull(), // Store boolean as integer 0/1
-  enabledBy: text("enabled_by"), // Nullable Kratos identity id
-  lastRunAt: integer("last_run_at", { mode: "timestamp" }), // Nullable timestamp
-  lastRunStatus: text("last_run_status", {
+  enabled_by: text("enabled_by"), // Nullable Kratos identity id
+  last_run_at: integer("last_run_at", { mode: "timestamp" }), // Nullable timestamp
+  last_run_status: text("last_run_status", {
     enum: lastRunStatusEnum,
   }), // Nullable status enum
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  created_at: integer("created_at", { mode: "timestamp" }).notNull(),
+  updated_at: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
 export type JobSettingTest1 = Expect<

@@ -50,13 +50,13 @@ describe("setLastRunStatus", () => {
       setLastRunStatus(dbKey, jobName, "success"),
     );
 
-    expect(updatedJob.lastRunStatus).toBe("success");
-    expect(updatedJob.lastRunAt).toBeInstanceOf(Date);
-    expect(updatedJob.lastRunAt?.getTime()).toBeGreaterThan(
-      initialJob.updatedAt.getTime(),
+    expect(updatedJob.last_run_status).toBe("success");
+    expect(updatedJob.last_run_at).toBeInstanceOf(Date);
+    expect(updatedJob.last_run_at?.getTime()).toBeGreaterThan(
+      initialJob.updated_at.getTime(),
     );
-    expect(updatedJob.updatedAt.getTime()).toEqual(
-      updatedJob.lastRunAt?.getTime(),
+    expect(updatedJob.updated_at.getTime()).toEqual(
+      updatedJob.last_run_at?.getTime(),
     );
   });
 
@@ -69,16 +69,16 @@ describe("setLastRunStatus", () => {
     await setLastRunStatus(dbKey, jobName, "running");
     const finalJob = await throwError(getByName(dbKey, jobName)); // Re-fetch to confirm
 
-    expect(finalJob.lastRunStatus).toBe("running");
-    expect(finalJob.lastRunAt).toBeInstanceOf(Date);
-    // Check that lastRunAt is roughly the advanced time
-    expect(finalJob.lastRunAt?.getTime()).toBeGreaterThanOrEqual(
-      initialJob.updatedAt.getTime() + 1000, // Allow for slight variations
+    expect(finalJob.last_run_status).toBe("running");
+    expect(finalJob.last_run_at).toBeInstanceOf(Date);
+    // Check that last_run_at is roughly the advanced time
+    expect(finalJob.last_run_at?.getTime()).toBeGreaterThanOrEqual(
+      initialJob.updated_at.getTime() + 1000, // Allow for slight variations
     );
-    // Check that updatedAt matches lastRunAt when status is 'running'
-    expect(finalJob.updatedAt.getTime()).toEqual(finalJob.lastRunAt?.getTime());
-    expect(finalJob.updatedAt.getTime()).toBeGreaterThan(
-      initialJob.updatedAt.getTime(),
+    // Check that updated_at matches last_run_at when status is 'running'
+    expect(finalJob.updated_at.getTime()).toEqual(finalJob.last_run_at?.getTime());
+    expect(finalJob.updated_at.getTime()).toBeGreaterThan(
+      initialJob.updated_at.getTime(),
     );
   });
 

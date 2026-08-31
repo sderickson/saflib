@@ -21,31 +21,31 @@ export const setEnabled = queryWrapper(
     const db = cronDbManager.get(dbKey)!;
     const now = new Date();
     const values = {
-      jobName,
+      job_name: jobName,
       enabled,
-      enabledBy:
+      enabled_by:
         enabled && enabledBy !== undefined ? enabledBy : (null as string | null),
-      createdAt: now,
-      updatedAt: now,
+      created_at: now,
+      updated_at: now,
     };
 
     const updateSet: {
       enabled: boolean;
-      updatedAt: Date;
-      enabledBy?: string | null;
+      updated_at: Date;
+      enabled_by?: string | null;
     } = {
       enabled,
-      updatedAt: now,
+      updated_at: now,
     };
     if (enabled && enabledBy !== undefined) {
-      updateSet.enabledBy = enabledBy;
+      updateSet.enabled_by = enabledBy;
     }
 
     const result = await db
       .insert(jobSettings)
       .values(values)
       .onConflictDoUpdate({
-        target: jobSettings.jobName,
+        target: jobSettings.job_name,
         set: updateSet,
       })
       .returning();

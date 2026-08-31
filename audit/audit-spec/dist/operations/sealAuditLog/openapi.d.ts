@@ -29,29 +29,29 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         "seal-audit-log-response": {
-            auditSealResult: components["schemas"]["audit-seal-result"];
+            audit_seal_result: components["schemas"]["audit-seal-result"];
         };
-        /** @description Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `durationMs` are present. */
+        /** @description Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `duration_ms` are present. */
         "audit-seal-result": {
             /** @enum {string} */
             status: "sealed" | "skipped";
             /** @enum {string} */
             reason?: "empty" | "in_progress";
-            durationMs: number;
+            duration_ms: number;
             archive?: {
                 filename: string;
-                sizeBytes: number;
-                sha256Hex: string;
+                size_bytes: number;
+                sha256_hex: string;
                 /** @description Remote archive identifier (object path, bucket key, etc.). */
-                archiveKey: string;
-                rowCount: number;
-                headHash: string;
-                tailHash: string;
+                archive_key: string;
+                row_count: number;
+                head_hash: string;
+                tail_hash: string;
                 /** Format: date-time */
-                firstTs: string;
+                first_ts: string;
                 /** Format: date-time */
-                lastTs: string;
-                branchCount?: number;
+                last_ts: string;
+                branch_count?: number;
             };
         };
         error: {
@@ -88,7 +88,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Seal completed; `auditSealResult.status` is `sealed`. */
+            /** @description Seal completed; `audit_seal_result.status` is `sealed`. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -115,7 +115,7 @@ export interface operations {
                     "application/json": components["schemas"]["error"];
                 };
             };
-            /** @description Skipped — empty active DB or concurrent seal (`auditSealResult.status: skipped`). */
+            /** @description Skipped — empty active DB or concurrent seal (`audit_seal_result.status: skipped`). */
             409: {
                 headers: {
                     [name: string]: unknown;

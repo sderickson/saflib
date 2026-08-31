@@ -1,7 +1,7 @@
 listAuditLogs:
   summary: List audit log events (admin)
   description: >
-    Paginated keyset scan of the audit database, ordered by timestamp then id. `headAt` / `tailAt` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.
+    Paginated keyset scan of the audit database, ordered by timestamp then id. `head_at` / `tail_at` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.
   operationId: listAuditLogs
 
   tags:
@@ -18,7 +18,7 @@ listAuditLogs:
     - name: cursor
       in: query
       required: false
-      description: Opaque pagination cursor from a previous response's `nextCursor`.
+      description: Opaque pagination cursor from a previous response's `next_cursor`.
       schema:
         type: string
     - name: limit
@@ -46,24 +46,24 @@ listAuditLogs:
           schema:
             type: object
             required:
-              - auditLogs
-              - headAt
-              - tailAt
-              - nextCursor
+              - audit_logs
+              - head_at
+              - tail_at
+              - next_cursor
             properties:
-              auditLogs:
+              audit_logs:
                 type: array
                 items:
                   $ref: "../schemas/audit-log.yaml"
-              headAt:
+              head_at:
                 type: [ string, "null" ]
                 format: date-time
                 description: Earliest `ts` in the audit table, if any rows exist.
-              tailAt:
+              tail_at:
                 type: [ string, "null" ]
                 format: date-time
                 description: Latest `ts` in the audit table, if any rows exist.
-              nextCursor:
+              next_cursor:
                 type: [ string, "null" ]
                 description: Pass as `cursor` to fetch the next page, if more rows exist.
 

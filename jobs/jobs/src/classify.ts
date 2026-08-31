@@ -18,13 +18,13 @@ type AttemptDeadTerminalReason = Extract<
 export type DeliveryClassification =
   | {
       kind: "succeeded";
-      statusCode: number;
+      status_code: number;
       metricStatus: "succeeded";
     }
   | {
       kind: "retry";
-      statusCode?: number;
-      errorBody?: string;
+      status_code?: number;
+      error_body?: string;
       /** Prefer this delay when set (e.g. from Retry-After). */
       retryAfterMs?: number;
       metricStatus: Extract<
@@ -34,9 +34,9 @@ export type DeliveryClassification =
     }
   | {
       kind: "dead";
-      statusCode?: number;
-      errorBody?: string;
-      terminalReason: AttemptDeadTerminalReason;
+      status_code?: number;
+      error_body?: string;
+      terminal_reason: AttemptDeadTerminalReason;
       metricStatus: Extract<JobsDeliveryMetricStatus, "dead" | "timeout">;
     };
 
@@ -96,15 +96,15 @@ async function readErrorBody(response: Response): Promise<string | undefined> {
   }
 }
 
-function isAuthUnresolvable(statusCode: number, errorBody: string | undefined): boolean {
-  if (statusCode !== 401 || errorBody == null) {
+function isAuthUnresolvable(status_code: number, error_body: string | undefined): boolean {
+  if (status_code !== 401 || error_body == null) {
     return false;
   }
   try {
-    const parsed = JSON.parse(errorBody) as { code?: unknown };
+    const parsed = JSON.parse(error_body) as { code?: unknown };
     return parsed.code === "auth_unresolvable";
   } catch {
-    return errorBody.includes("auth_unresolvable");
+    return error_body.includes("auth_unresolvable");
   }
 }
 
@@ -115,10 +115,10 @@ export interface ClassifyDeliveryInput {
   networkError?: boolean;
   response?: Response;
   /** Pre-read body; when omitted and response is present, body is read. */
-  errorBody?: string;
+  error_body?: string;
   /** Current 1-based attempt number after claim. */
   attempt: number;
-  maxAttempts: number;
+  max_attempts: number;
   now?: Date;
 }
 
@@ -129,7 +129,7 @@ export async function classifyDelivery(
   input: ClassifyDeliveryInput,
 ): Promise<DeliveryClassification> {
   const now = input.now ?? new Date();
-  const attemptsRemain = input.attempt < input.maxAttempts;
+  const attemptsRemain = input.attempt < input.max_attempts;
 
   const finishRetry = (
     partial: Omit<Extract<DeliveryClassification, { kind: "retry" }>, "kind">,
@@ -137,9 +137,9 @@ export async function classifyDelivery(
     if (!attemptsRemain) {
       return {
         kind: "dead",
-        statusCode: partial.statusCode,
-        errorBody: partial.errorBody,
-        terminalReason: "exhausted",
+        status_code: partial.status_code,
+        error_body: partial.error_body,
+        terminal_reason: "exhausted",
         metricStatus: partial.metricStatus === "timeout" ? "timeout" : "dead",
       };
     }
@@ -149,93 +149,93 @@ export async function classifyDelivery(
   if (input.timedOut) {
     return finishRetry({
       metricStatus: "timeout",
-      errorBody: input.errorBody ?? "delivery timed out",
+      error_body: input.error_body ?? "delivery timed out",
     });
   }
 
   if (input.networkError || !input.response) {
     return finishRetry({
       metricStatus: "retryable-failure",
-      errorBody: input.errorBody ?? "network error",
+      error_body: input.error_body ?? "network error",
     });
   }
 
   const response = input.response;
-  const statusCode = response.status;
-  const errorBody =
-    statusCode >= 200 && statusCode < 300
+  const status_code = response.status;
+  const error_body =
+    status_code >= 200 && status_code < 300
       ? undefined
-      : capErrorBody(input.errorBody ?? (await readErrorBody(response)));
+      : capErrorBody(input.error_body ?? (await readErrorBody(response)));
 
   const retryHeader = response.headers.get("x-jobs-retry")?.toLowerCase();
 
   if (retryHeader === "never") {
-    if (statusCode >= 200 && statusCode < 300) {
-      return { kind: "succeeded", statusCode, metricStatus: "succeeded" };
+    if (status_code >= 200 && status_code < 300) {
+      return { kind: "succeeded", status_code, metricStatus: "succeeded" };
     }
     return {
       kind: "dead",
-      statusCode,
-      errorBody,
-      terminalReason: "rejected-by-endpoint",
+      status_code,
+      error_body,
+      terminal_reason: "rejected-by-endpoint",
       metricStatus: "dead",
     };
   }
 
   if (retryHeader === "always") {
     return finishRetry({
-      statusCode,
-      errorBody,
+      status_code,
+      error_body,
       metricStatus: "retryable-failure",
       retryAfterMs: parseRetryAfterMs(response.headers.get("retry-after"), now),
     });
   }
 
-  if (statusCode >= 200 && statusCode < 300) {
-    return { kind: "succeeded", statusCode, metricStatus: "succeeded" };
+  if (status_code >= 200 && status_code < 300) {
+    return { kind: "succeeded", status_code, metricStatus: "succeeded" };
   }
 
-  if (isAuthUnresolvable(statusCode, errorBody)) {
+  if (isAuthUnresolvable(status_code, error_body)) {
     return {
       kind: "dead",
-      statusCode,
-      errorBody,
-      terminalReason: "auth-unresolvable",
+      status_code,
+      error_body,
+      terminal_reason: "auth-unresolvable",
       metricStatus: "dead",
     };
   }
 
-  if (statusCode === 429) {
+  if (status_code === 429) {
     return finishRetry({
-      statusCode,
-      errorBody,
+      status_code,
+      error_body,
       metricStatus: "retryable-failure",
       retryAfterMs: parseRetryAfterMs(response.headers.get("retry-after"), now),
     });
   }
 
-  if (statusCode >= 500) {
+  if (status_code >= 500) {
     return finishRetry({
-      statusCode,
-      errorBody,
+      status_code,
+      error_body,
       metricStatus: "retryable-failure",
     });
   }
 
-  if (statusCode >= 400) {
+  if (status_code >= 400) {
     return {
       kind: "dead",
-      statusCode,
-      errorBody,
-      terminalReason: "permanent-status",
+      status_code,
+      error_body,
+      terminal_reason: "permanent-status",
       metricStatus: "dead",
     };
   }
 
   // Unexpected 1xx/3xx — treat as retryable.
   return finishRetry({
-    statusCode,
-    errorBody,
+    status_code,
+    error_body,
     metricStatus: "retryable-failure",
   });
 }

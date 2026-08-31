@@ -3,11 +3,11 @@ type: object
 description: >
   Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the
   sealed time range plus chain/upload metadata. On `skipped`, only `status`,
-  `reason`, and `durationMs` are present.
+  `reason`, and `duration_ms` are present.
 additionalProperties: false
 required:
   - status
-  - durationMs
+  - duration_ms
 properties:
   status:
     type: string
@@ -19,7 +19,7 @@ properties:
     enum:
       - empty
       - in_progress
-  durationMs:
+  duration_ms:
     type: integer
     minimum: 0
   archive:
@@ -27,44 +27,44 @@ properties:
     additionalProperties: false
     required:
       - filename
-      - sizeBytes
-      - sha256Hex
-      - archiveKey
-      - rowCount
-      - headHash
-      - tailHash
-      - firstTs
-      - lastTs
+      - size_bytes
+      - sha256_hex
+      - archive_key
+      - row_count
+      - head_hash
+      - tail_hash
+      - first_ts
+      - last_ts
     properties:
       filename:
         type: string
-      sizeBytes:
+      size_bytes:
         type: integer
         minimum: 0
-      sha256Hex:
+      sha256_hex:
         type: string
         minLength: 64
         maxLength: 64
-      archiveKey:
+      archive_key:
         type: string
         description: Remote archive identifier (object path, bucket key, etc.).
-      rowCount:
+      row_count:
         type: integer
         minimum: 1
-      headHash:
+      head_hash:
         type: string
         minLength: 64
         maxLength: 64
-      tailHash:
+      tail_hash:
         type: string
         minLength: 64
         maxLength: 64
-      firstTs:
+      first_ts:
         type: string
         format: date-time
-      lastTs:
+      last_ts:
         type: string
         format: date-time
-      branchCount:
+      branch_count:
         type: integer
         minimum: 0

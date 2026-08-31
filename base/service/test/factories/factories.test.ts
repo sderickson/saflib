@@ -4,9 +4,9 @@ import { TEST_USER_ID } from "../shared/defaults.ts";
 
 describe("testUserConfig", () => {
   it("fills required fields and applies overrides", () => {
-    const row = testUserConfig({ displayName: "Ada" });
-    expect(row.userId).toBe(TEST_USER_ID);
-    expect(row.displayName).toBe("Ada");
-    expect(row.marketingEmailsOptIn).toBe(false);
+    const row = testUserConfig({ display_name: "Ada" });
+    expect(row.user_id).toBe(TEST_USER_ID);
+    expect(row.display_name).toBe("Ada");
+    expect(row.marketing_emails_opt_in).toBe(false);
   });
 });

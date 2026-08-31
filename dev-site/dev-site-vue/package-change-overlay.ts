@@ -23,12 +23,12 @@ export function changeColor(
 
 export interface OverlaySpecProperty {
   name: string;
-  typeKind: string;
+  type_kind: string;
   docstring?: string | null;
 }
 
 export interface OverlaySpecOperation {
-  operationId: string;
+  operation_id: string;
   method: string;
   path: string;
 }
@@ -44,31 +44,31 @@ export interface OverlaySpecEntity {
 }
 
 export interface OverlayDbColumn {
-  sqlName: string;
-  typeKind: string;
-  propName?: string;
+  sql_name: string;
+  type_kind: string;
+  prop_name?: string;
   docstring?: string | null;
 }
 
 export interface OverlayDbEntity {
   entity: string;
   table?: {
-    tableName?: string;
+    table_name?: string;
     docstring?: string | null;
     columns: OverlayDbColumn[];
   } | null;
 }
 
 export interface OverlayPackageDetail {
-  packageName: string;
+  package_name: string;
   directory?: string;
   exports?: ExportLike[];
-  testCases?: TestCaseLike[];
-  specInventory?: {
-    packageDirectory?: string;
+  test_cases?: TestCaseLike[];
+  spec_inventory?: {
+    package_directory?: string;
     entities: OverlaySpecEntity[];
   } | null;
-  dbInventory?: { entities: OverlayDbEntity[] } | null;
+  db_inventory?: { entities: OverlayDbEntity[] } | null;
 }
 
 export interface PackageChangeOverlay {
@@ -86,33 +86,33 @@ export interface PackageChangeOverlay {
 }
 
 export interface PathRename {
-  fromPath: string;
-  toPath: string;
+  from_path: string;
+  to_path: string;
 }
 
 export interface CommitDiffLike {
-  packageMetrics: {
-    added: Array<{ packageName: string }>;
-    removed: Array<{ packageName: string }>;
-    changed: Array<{ after: { packageName: string } }>;
+  package_metrics: {
+    added: Array<{ package_name: string }>;
+    removed: Array<{ package_name: string }>;
+    changed: Array<{ after: { package_name: string } }>;
   };
   exports: {
-    added: Array<{ packageName: string }>;
-    removed: Array<{ packageName: string }>;
+    added: Array<{ package_name: string }>;
+    removed: Array<{ package_name: string }>;
   };
-  testCases: {
-    added: Array<{ packageName: string }>;
-    removed: Array<{ packageName: string }>;
+  test_cases: {
+    added: Array<{ package_name: string }>;
+    removed: Array<{ package_name: string }>;
   };
-  dbSchemas: {
+  db_schemas: {
     tables: {
-      added: Array<{ packageName: string }>;
-      removed: Array<{ packageName: string }>;
+      added: Array<{ package_name: string }>;
+      removed: Array<{ package_name: string }>;
     };
     columns: {
-      added: Array<{ packageName: string }>;
-      removed: Array<{ packageName: string }>;
-      changed: Array<{ after: { packageName: string } }>;
+      added: Array<{ package_name: string }>;
+      removed: Array<{ package_name: string }>;
+      changed: Array<{ after: { package_name: string } }>;
     };
   };
 }
@@ -132,30 +132,30 @@ export function emptyOverlay(): PackageChangeOverlay {
 }
 
 export function exportIdentityKey(e: {
-  filePath: string;
+  file_path: string;
   name: string;
   kind: string;
 }): string {
-  return `${e.filePath}\0${e.name}\0${e.kind}`;
+  return `${e.file_path}\0${e.name}\0${e.kind}`;
 }
 
 export function testIdentityKey(t: {
-  filePath: string;
-  fullName: string;
+  file_path: string;
+  full_name: string;
 }): string {
-  return `${t.filePath}\0${t.fullName}`;
+  return `${t.file_path}\0${t.full_name}`;
 }
 
 export function specOperationKey(op: OverlaySpecOperation): string {
-  return `${op.operationId}\0${op.method}\0${op.path}`;
+  return `${op.operation_id}\0${op.method}\0${op.path}`;
 }
 
-export function specPropertyKey(entityKey: string, propName: string): string {
-  return `${entityKey}\0${propName}`;
+export function specPropertyKey(entityKey: string, prop_name: string): string {
+  return `${entityKey}\0${prop_name}`;
 }
 
-export function dbColumnKey(entity: string, sqlName: string): string {
-  return `${entity}\0${sqlName}`;
+export function dbColumnKey(entity: string, sql_name: string): string {
+  return `${entity}\0${sql_name}`;
 }
 
 function sameText(a: string | null | undefined, b: string | null | undefined): boolean {
@@ -165,8 +165,8 @@ function sameText(a: string | null | undefined, b: string | null | undefined): b
 function renameMap(renames: PathRename[]): Map<string, string> {
   const map = new Map<string, string>();
   for (const r of renames) {
-    if (r.fromPath && r.toPath && r.fromPath !== r.toPath) {
-      map.set(r.fromPath, r.toPath);
+    if (r.from_path && r.to_path && r.from_path !== r.to_path) {
+      map.set(r.from_path, r.to_path);
     }
   }
   return map;
@@ -182,7 +182,7 @@ function findOldPath(
   return undefined;
 }
 
-function collapsePathRenames<T extends { filePath: string }>(
+function collapsePathRenames<T extends { file_path: string }>(
   overlayMap: Record<string, ChangeKind>,
   before: T[],
   after: T[],
@@ -193,10 +193,10 @@ function collapsePathRenames<T extends { filePath: string }>(
   if (!oldToNew.size) return;
   const afterByKey = new Map(after.map((item) => [keyOf(item), item]));
   for (const beforeItem of before) {
-    const newPath = oldToNew.get(beforeItem.filePath);
+    const newPath = oldToNew.get(beforeItem.file_path);
     if (!newPath) continue;
     const oldKey = keyOf(beforeItem);
-    const rewritten = { ...beforeItem, filePath: newPath };
+    const rewritten = { ...beforeItem, file_path: newPath };
     const newKey = keyOf(rewritten);
     const afterItem = afterByKey.get(newKey);
     if (!afterItem) continue;
@@ -251,19 +251,19 @@ function isEmptyDetail(detail: OverlayPackageDetail | null | undefined): boolean
   if (!detail) return true;
   return (
     !(detail.exports ?? []).length &&
-    !(detail.testCases ?? []).length &&
-    !(detail.specInventory?.entities ?? []).length &&
-    !(detail.dbInventory?.entities ?? []).length
+    !(detail.test_cases ?? []).length &&
+    !(detail.spec_inventory?.entities ?? []).length &&
+    !(detail.db_inventory?.entities ?? []).length
   );
 }
 
 export function lookupExportChange(
   overlay: PackageChangeOverlay,
-  filePath: string | null | undefined,
+  file_path: string | null | undefined,
   name: string | null | undefined,
 ): ChangeKind | undefined {
-  if (!filePath || !name) return undefined;
-  const prefix = `${filePath}\0${name}\0`;
+  if (!file_path || !name) return undefined;
+  const prefix = `${file_path}\0${name}\0`;
   const hits: ChangeKind[] = [];
   for (const [key, kind] of Object.entries(overlay.exports)) {
     if (key.startsWith(prefix)) hits.push(kind);
@@ -276,30 +276,30 @@ export function packageChangesFromDiff(
   diff: CommitDiffLike,
 ): Record<string, ChangeKind> {
   const out: Record<string, ChangeKind> = {};
-  for (const pkg of diff.packageMetrics.added) {
-    out[pkg.packageName] = "added";
+  for (const pkg of diff.package_metrics.added) {
+    out[pkg.package_name] = "added";
   }
-  for (const pkg of diff.packageMetrics.removed) {
-    out[pkg.packageName] = "removed";
+  for (const pkg of diff.package_metrics.removed) {
+    out[pkg.package_name] = "removed";
   }
-  const bumpModified = (packageName: string) => {
-    if (!out[packageName]) out[packageName] = "modified";
+  const bumpModified = (package_name: string) => {
+    if (!out[package_name]) out[package_name] = "modified";
   };
-  for (const chg of diff.packageMetrics.changed) {
-    bumpModified(chg.after.packageName);
+  for (const chg of diff.package_metrics.changed) {
+    bumpModified(chg.after.package_name);
   }
   for (const item of [
     ...diff.exports.added,
     ...diff.exports.removed,
-    ...diff.testCases.added,
-    ...diff.testCases.removed,
-    ...diff.dbSchemas.tables.added,
-    ...diff.dbSchemas.tables.removed,
-    ...diff.dbSchemas.columns.added,
-    ...diff.dbSchemas.columns.removed,
-    ...diff.dbSchemas.columns.changed.map((c) => c.after),
+    ...diff.test_cases.added,
+    ...diff.test_cases.removed,
+    ...diff.db_schemas.tables.added,
+    ...diff.db_schemas.tables.removed,
+    ...diff.db_schemas.columns.added,
+    ...diff.db_schemas.columns.removed,
+    ...diff.db_schemas.columns.changed.map((c) => c.after),
   ]) {
-    bumpModified(item.packageName);
+    bumpModified(item.package_name);
   }
   return out;
 }
@@ -307,21 +307,21 @@ export function packageChangesFromDiff(
 export function diffPackageDetails(
   before: OverlayPackageDetail | null | undefined,
   after: OverlayPackageDetail | null | undefined,
-  options: { productRoot?: string; pathRenames?: PathRename[] } = {},
+  options: { product_root?: string; pathRenames?: PathRename[] } = {},
 ): PackageChangeOverlay {
   const overlay = emptyOverlay();
   const emptyBefore = isEmptyDetail(before);
   const emptyAfter = isEmptyDetail(after);
   if (emptyBefore && emptyAfter) return overlay;
 
-  const packageName =
-    after?.packageName ?? before?.packageName ?? "";
+  const package_name =
+    after?.package_name ?? before?.package_name ?? "";
   const directory = after?.directory ?? before?.directory ?? "";
-  const productRoot = options.productRoot ?? "";
+  const product_root = options.product_root ?? "";
   const beforeExports = before?.exports ?? [];
   const afterExports = after?.exports ?? [];
-  const beforeTests = before?.testCases ?? [];
-  const afterTests = after?.testCases ?? [];
+  const beforeTests = before?.test_cases ?? [];
+  const afterTests = after?.test_cases ?? [];
   const oldToNew = renameMap(options.pathRenames ?? []);
 
   overlay.exports = identityDiff(
@@ -336,11 +336,11 @@ export function diffPackageDetails(
     afterTests,
     testIdentityKey,
     (b, a) =>
-      !sameText(b.subjectName, a.subjectName) ||
-      !sameText(b.subjectSignature, a.subjectSignature) ||
-      !sameText(b.subjectDocstring, a.subjectDocstring) ||
-      !sameText(b.subjectFilePath, a.subjectFilePath) ||
-      !sameText(b.subjectConfidence, a.subjectConfidence),
+      !sameText(b.subject_name, a.subject_name) ||
+      !sameText(b.subject_signature, a.subject_signature) ||
+      !sameText(b.subject_docstring, a.subject_docstring) ||
+      !sameText(b.subject_file_path, a.subject_file_path) ||
+      !sameText(b.subject_confidence, a.subject_confidence),
   );
   collapsePathRenames(
     overlay.exports,
@@ -358,26 +358,26 @@ export function diffPackageDetails(
     testIdentityKey,
     oldToNew,
     (b, a) =>
-      !sameText(b.subjectName, a.subjectName) ||
-      !sameText(b.subjectSignature, a.subjectSignature) ||
-      !sameText(b.subjectDocstring, a.subjectDocstring) ||
-      !sameText(b.subjectFilePath, a.subjectFilePath) ||
-      !sameText(b.subjectConfidence, a.subjectConfidence),
+      !sameText(b.subject_name, a.subject_name) ||
+      !sameText(b.subject_signature, a.subject_signature) ||
+      !sameText(b.subject_docstring, a.subject_docstring) ||
+      !sameText(b.subject_file_path, a.subject_file_path) ||
+      !sameText(b.subject_confidence, a.subject_confidence),
   );
 
   const vueBundles = packageHasVueFiles(
     [...beforeExports, ...afterExports],
     [...beforeTests, ...afterTests],
-    packageName,
+    package_name,
   );
-  const stemOf = (filePath: string) => {
-    const local = packageLocalPath(filePath, directory, productRoot);
+  const stemOf = (file_path: string) => {
+    const local = packageLocalPath(file_path, directory, product_root);
     return vueBundles ? toVueBundleStem(local) : toModuleStem(local);
   };
 
   const stemKeys = new Map<string, Set<string>>();
-  const addStemKey = (filePath: string, key: string, mapName: "exports" | "tests") => {
-    const stem = stemOf(filePath);
+  const addStemKey = (file_path: string, key: string, mapName: "exports" | "tests") => {
+    const stem = stemOf(file_path);
     let set = stemKeys.get(stem);
     if (!set) {
       set = new Set();
@@ -386,10 +386,10 @@ export function diffPackageDetails(
     set.add(`${mapName}:${key}`);
   };
   for (const e of [...beforeExports, ...afterExports]) {
-    addStemKey(e.filePath, exportIdentityKey(e), "exports");
+    addStemKey(e.file_path, exportIdentityKey(e), "exports");
   }
   for (const t of [...beforeTests, ...afterTests]) {
-    addStemKey(t.filePath, testIdentityKey(t), "tests");
+    addStemKey(t.file_path, testIdentityKey(t), "tests");
   }
   for (const [stem, keys] of stemKeys) {
     let change: ChangeKind | undefined;
@@ -415,8 +415,8 @@ export function diffPackageDetails(
     }
   }
 
-  const beforeSpec = before?.specInventory?.entities ?? [];
-  const afterSpec = after?.specInventory?.entities ?? [];
+  const beforeSpec = before?.spec_inventory?.entities ?? [];
+  const afterSpec = after?.spec_inventory?.entities ?? [];
   overlay.specOperations = identityDiff(
     beforeSpec.flatMap((e) => e.operations),
     afterSpec.flatMap((e) => e.operations),
@@ -437,7 +437,7 @@ export function diffPackageDetails(
     ),
     (p) => specPropertyKey(p.entityKey, p.name),
     (b, a) =>
-      b.typeKind !== a.typeKind || !sameText(b.docstring, a.docstring),
+      b.type_kind !== a.type_kind || !sameText(b.docstring, a.docstring),
   );
   overlay.specEntities = identityDiff(
     beforeSpec,
@@ -467,8 +467,8 @@ export function diffPackageDetails(
     }
   }
 
-  const beforeDb = before?.dbInventory?.entities ?? [];
-  const afterDb = after?.dbInventory?.entities ?? [];
+  const beforeDb = before?.db_inventory?.entities ?? [];
+  const afterDb = after?.db_inventory?.entities ?? [];
   overlay.dbColumns = identityDiff(
     beforeDb.flatMap((e) =>
       (e.table?.columns ?? []).map((c) => ({ entity: e.entity, ...c })),
@@ -476,10 +476,10 @@ export function diffPackageDetails(
     afterDb.flatMap((e) =>
       (e.table?.columns ?? []).map((c) => ({ entity: e.entity, ...c })),
     ),
-    (c) => dbColumnKey(c.entity, c.sqlName),
+    (c) => dbColumnKey(c.entity, c.sql_name),
     (b, a) =>
-      b.typeKind !== a.typeKind ||
-      !sameText(b.propName, a.propName) ||
+      b.type_kind !== a.type_kind ||
+      !sameText(b.prop_name, a.prop_name) ||
       !sameText(b.docstring, a.docstring),
   );
   overlay.dbEntities = identityDiff(
@@ -489,7 +489,7 @@ export function diffPackageDetails(
     (b, a) =>
       Boolean(b.table) !== Boolean(a.table) ||
       !sameText(b.table?.docstring, a.table?.docstring) ||
-      !sameText(b.table?.tableName, a.table?.tableName),
+      !sameText(b.table?.table_name, a.table?.table_name),
   );
   for (const [key, kind] of Object.entries(overlay.dbColumns)) {
     const entity = key.split("\0")[0] ?? "";
@@ -576,8 +576,8 @@ export function filterPackageDirTree(
   const out: PackageDirNode[] = [];
   for (const node of nodes) {
     if (node.kind === "package") {
-      const change = node.packageName
-        ? changeByPackage[node.packageName]
+      const change = node.package_name
+        ? changeByPackage[node.package_name]
         : undefined;
       if (!change) continue;
       out.push({ ...node, change, children: [] });
@@ -622,10 +622,10 @@ export function tagSpecTree(
 ): TestTreeNode[] {
   return nodes.map((node) => {
     if (node.kind === "test") {
-      const fullName = [...suiteParts, node.label].join(" > ");
-      const filePath = node.sourcePath ?? "";
-      const change = filePath
-        ? overlay.tests[testIdentityKey({ filePath, fullName })]
+      const full_name = [...suiteParts, node.label].join(" > ");
+      const file_path = node.sourcePath ?? "";
+      const change = file_path
+        ? overlay.tests[testIdentityKey({ file_path, full_name })]
         : undefined;
       return { ...node, change };
     }
@@ -636,8 +636,8 @@ export function tagSpecTree(
       ]);
       const exportChange = lookupExportChange(
         overlay,
-        node.subjectFilePath,
-        node.subjectName ?? node.label,
+        node.subject_file_path,
+        node.subject_name ?? node.label,
       );
       let change = exportChange;
       for (const child of children) {

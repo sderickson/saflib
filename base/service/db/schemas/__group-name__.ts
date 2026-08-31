@@ -17,9 +17,9 @@ export interface __GroupName__Entity
   {
   id: string;
   name: string;
-  createdAt: Date;
-  updatedAt: Date;
-  someEnum: SomeEnum;
+  created_at: Date;
+  updated_at: Date;
+  some_enum: SomeEnum;
 }
 
 // TODO: Replace this table with actual tables for your database
@@ -28,9 +28,9 @@ export const __groupName__Table = sqliteTable("__group_name___table", {
     .primaryKey()
     .$defaultFn(() => generateShortId()),
   name: text("name").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
-  someEnum: text("stub_enum", { enum: someEnum }).notNull(),
+  created_at: integer("created_at", { mode: "timestamp" }).notNull(),
+  updated_at: integer("updated_at", { mode: "timestamp" }).notNull(),
+  some_enum: text("stub_enum", { enum: someEnum }).notNull(),
   // BEGIN ONCE WORKFLOW AREA tableColumns FOR drizzle/update-schema IF file
   ...fileMetadataColumns,
   // END WORKFLOW AREA

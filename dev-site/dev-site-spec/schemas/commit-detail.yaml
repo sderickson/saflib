@@ -5,7 +5,7 @@ description: >
 properties:
   commit:
     $ref: "./commit.yaml"
-  packageMetrics:
+  package_metrics:
     type: array
     items:
       $ref: "./package-metrics.yaml"
@@ -13,12 +13,12 @@ properties:
     type: array
     items:
       $ref: "./export-entry.yaml"
-  testCases:
+  test_cases:
     type: array
     items:
       $ref: "./test-case.yaml"
 required:
   - commit
-  - packageMetrics
+  - package_metrics
   - exports
-  - testCases
+  - test_cases

@@ -8,7 +8,7 @@ import { and, inArray, lt } from "drizzle-orm";
 const terminalStatuses = ["succeeded", "dead", "cancelled"] as const;
 
 export type DeleteExpiredTerminalJobParams = {
-  /** Delete terminal jobs with `finishedAt` strictly before this. */
+  /** Delete terminal jobs with `finished_at` strictly before this. */
   cutoff: Date;
 };
 
@@ -30,7 +30,7 @@ export const deleteExpiredTerminalJob = queryWrapper(
       .where(
         and(
           inArray(jobTable.status, terminalStatuses),
-          lt(jobTable.finishedAt, params.cutoff),
+          lt(jobTable.finished_at, params.cutoff),
         ),
       )
       .returning({ id: jobTable.id });

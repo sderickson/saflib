@@ -78,20 +78,20 @@
               <a
                 href="#"
                 class="table-card__file"
-                @click.prevent="openFile(repoPath(e.schema.yamlPath))"
+                @click.prevent="openFile(repo_path(e.schema.yaml_path))"
               >
-                {{ e.schema.yamlPath }}
+                {{ e.schema.yaml_path }}
               </a>
             </div>
             <p v-if="e.schema.description" class="table-card__doc">
               {{ e.schema.description }}
             </p>
             <ul
-              v-if="e.usedByPackages.length"
+              v-if="e.used_by_packages.length"
               class="table-card__pkgs"
             >
               <li
-                v-for="pkg in e.usedByPackages"
+                v-for="pkg in e.used_by_packages"
                 :key="pkg"
                 class="table-card__pkg"
               >
@@ -99,31 +99,31 @@
               </li>
             </ul>
             <p
-              v-if="e.schema.referencedByOperations.length"
+              v-if="e.schema.referenced_by_operations.length"
               class="table-card__refs"
             >
               Referenced by:
               <template
-                v-for="(opId, i) in e.schema.referencedByOperations"
+                v-for="(opId, i) in e.schema.referenced_by_operations"
                 :key="opId"
               >
-                <code>{{ opId }}</code><span v-if="i < e.schema.referencedByOperations.length - 1">, </span>
+                <code>{{ opId }}</code><span v-if="i < e.schema.referenced_by_operations.length - 1">, </span>
               </template>
             </p>
             <ul
-              v-if="e.schema.usedBy.length"
+              v-if="e.schema.used_by.length"
               class="table-card__used"
             >
               <li
-                v-for="u in e.schema.usedBy"
-                :key="u.packageName + ':' + u.repoPath"
+                v-for="u in e.schema.used_by"
+                :key="u.package_name + ':' + u.repo_path"
               >
                 <a
                   href="#"
                   class="table-card__file"
-                  @click.prevent="openFile(u.repoPath)"
+                  @click.prevent="openFile(u.repo_path)"
                 >
-                  {{ u.packageName }}/{{ u.filePath }}
+                  {{ u.package_name }}/{{ u.file_path }}
                 </a>
               </li>
             </ul>
@@ -140,7 +140,7 @@
               >
                 <div class="table-card__col-main">
                   <code>{{ c.name }}</code>
-                  <span class="text-medium-emphasis">{{ c.typeKind }}</span>
+                  <span class="text-medium-emphasis">{{ c.type_kind }}</span>
                   <ChangeChip :change="c.change" />
                 </div>
                 <p v-if="c.docstring" class="table-card__col-doc">
@@ -154,11 +154,11 @@
               REST resource <code>{{ e.resource }}</code> — no matching business-object schema.
             </p>
             <ul
-              v-if="e.usedByPackages.length"
+              v-if="e.used_by_packages.length"
               class="table-card__pkgs mb-3"
             >
               <li
-                v-for="pkg in e.usedByPackages"
+                v-for="pkg in e.used_by_packages"
                 :key="pkg"
                 class="table-card__pkg"
               >
@@ -174,7 +174,7 @@
           <ul v-if="e.operations.length" class="op-list">
             <li
               v-for="op in e.operations"
-              :key="op.operationId + op.method + op.path"
+              :key="op.operation_id + op.method + op.path"
               :class="{
                 'op-list__item--added': op.change === 'added',
                 'op-list__item--removed': op.change === 'removed',
@@ -184,7 +184,7 @@
               <ChangeChip :change="op.change" />
               <PackageRouteCard
                 :operation="normalizeOp(op)"
-                :route-repo-path="repoPath(op.yamlPath)"
+                :route-repo-path="repo_path(op.yaml_path)"
                 :open-file="openFile"
               />
             </li>
@@ -223,18 +223,18 @@ import {
 type SpecPresence = "object" | "routes" | "both";
 
 interface SpecUsedBy {
-  packageName: string;
-  filePath: string;
-  repoPath: string;
+  package_name: string;
+  file_path: string;
+  repo_path: string;
 }
 
 interface SpecFileRef {
-  filePath: string;
-  repoPath: string;
+  file_path: string;
+  repo_path: string;
 }
 
 interface SpecTestSpec {
-  fullName: string;
+  full_name: string;
 }
 
 interface SpecEntity {
@@ -244,35 +244,35 @@ interface SpecEntity {
   resource: string | null;
   schema: {
     name: string;
-    yamlPath: string;
+    yaml_path: string;
     description?: string | null;
     properties: Array<{
       name: string;
-      typeKind: string;
+      type_kind: string;
       docstring?: string | null;
       change?: "added" | "removed" | "modified";
     }>;
-    usedBy: SpecUsedBy[];
-    referencedByOperations: string[];
+    used_by: SpecUsedBy[];
+    referenced_by_operations: string[];
   } | null;
-  usedByPackages: string[];
+  used_by_packages: string[];
   operations: Array<{
-    operationId: string;
+    operation_id: string;
     method: string;
     path: string;
     summary?: string | null;
     tags?: string[];
-    yamlPath: string;
-    routeStem?: string | null;
+    yaml_path: string;
+    route_stem?: string | null;
     handler?: SpecFileRef | null;
     request?: SpecFileRef | null;
     fake?: SpecFileRef | null;
-    handlerTests?: SpecTestSpec[];
-    requestSchemas: string[];
-    responseSchemas: string[];
-    usedBy: SpecUsedBy[];
+    handler_tests?: SpecTestSpec[];
+    request_schemas: string[];
+    response_schemas: string[];
+    used_by: SpecUsedBy[];
     enqueues?: string[];
-    enqueuedBy?: string[];
+    enqueued_by?: string[];
     change?: "added" | "removed" | "modified";
   }>;
   change?: "added" | "removed" | "modified";
@@ -306,16 +306,16 @@ const {
   () => props.packageName,
   {
     compareFromHash: () => props.compareFromHash,
-    productRoot: () => props.productRoot,
+    product_root: () => props.productRoot,
     pathRenames: () => props.pathRenames,
   },
 );
 
 const rawEntities = computed(() => {
-  const before = (beforeDetail.value?.specInventory?.entities ??
+  const before = (beforeDetail.value?.spec_inventory?.entities ??
     []) as SpecEntity[];
-  const after = (afterDetail.value?.specInventory?.entities ??
-    detail.value?.specInventory?.entities ??
+  const after = (afterDetail.value?.spec_inventory?.entities ??
+    detail.value?.spec_inventory?.entities ??
     []) as SpecEntity[];
   return { before, after };
 });
@@ -376,7 +376,7 @@ function presenceTitle(p: SpecPresence): string {
   return "Schema only";
 }
 
-function repoPath(packageRelative: string): string {
+function repo_path(packageRelative: string): string {
   const prefix = repoPathPrefix(props.productRoot, props.packageDirectory);
   if (!prefix) return packageRelative;
   return `${prefix}/${packageRelative}`;
@@ -386,29 +386,29 @@ function normalizeOp(
   op: SpecEntity["operations"][number],
 ): RouteCardOperation {
   return {
-    operationId: op.operationId,
+    operation_id: op.operation_id,
     method: op.method,
     path: op.path,
     summary: op.summary,
     tags: op.tags ?? [],
-    yamlPath: op.yamlPath,
-    routeStem: op.routeStem ?? null,
+    yaml_path: op.yaml_path,
+    route_stem: op.route_stem ?? null,
     handler: op.handler ?? null,
     request: op.request ?? null,
     fake: op.fake ?? null,
-    handlerTests: op.handlerTests ?? [],
-    requestSchemas: op.requestSchemas,
-    responseSchemas: op.responseSchemas,
-    usedBy: op.usedBy ?? [],
+    handler_tests: op.handler_tests ?? [],
+    request_schemas: op.request_schemas,
+    response_schemas: op.response_schemas,
+    used_by: op.used_by ?? [],
     enqueues: op.enqueues,
-    enqueuedBy: op.enqueuedBy,
+    enqueued_by: op.enqueued_by,
   };
 }
 
 function openFile(path: string) {
   openSource(path, {
     githubRef: props.githubRef,
-    githubRepo: props.githubRepo,
+    github_repo: props.githubRepo,
     localRepoRoot: props.localRepoRoot,
   });
 }

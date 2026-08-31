@@ -16,10 +16,10 @@ export function useJobsLoader() {
       offset: offset.value,
     };
     if (statusFilter.value) filters.status = statusFilter.value;
-    if (operationIdFilter.value) filters.operationId = operationIdFilter.value;
-    if (userIdFilter.value) filters.userId = userIdFilter.value;
+    if (operationIdFilter.value) filters.operation_id = operationIdFilter.value;
+    if (userIdFilter.value) filters.user_id = userIdFilter.value;
     if (originalRequestIdFilter.value) {
-      filters.originalRequestId = originalRequestIdFilter.value;
+      filters.original_request_id = originalRequestIdFilter.value;
     }
     return filters;
   });

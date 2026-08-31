@@ -15,9 +15,9 @@ import { createDevSiteHttpApp } from "../../http.ts";
 import { releaseSlimRouteTest } from "../../testing/slim-route-test.ts";
 import type { DevSiteHttpAppLease } from "../../http.ts";
 
-function git(repoRoot: string, args: string[]): string {
+function git(repo_root: string, args: string[]): string {
   return execFileSync("git", args, {
-    cwd: repoRoot,
+    cwd: repo_root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     env: {
@@ -32,25 +32,25 @@ function git(repoRoot: string, args: string[]): string {
 
 describe("repo routes", () => {
   let lease: DevSiteHttpAppLease;
-  let repoRoot: string;
+  let repo_root: string;
   let headHash: string;
 
   beforeAll(() => {
-    repoRoot = mkdtempSync(join(tmpdir(), "dev-site-repo-route-"));
-    git(repoRoot, ["init"]);
-    git(repoRoot, ["checkout", "-b", "main"]);
-    mkdirSync(join(repoRoot, "docs"));
-    mkdirSync(join(repoRoot, "src"));
-    writeFileSync(join(repoRoot, "docs/guide.md"), "# Guide\n");
-    writeFileSync(join(repoRoot, "docs/notes.txt"), "notes\n");
-    writeFileSync(join(repoRoot, "src/a.ts"), "export const a = 1;\n");
-    writeFileSync(join(repoRoot, "README.md"), "hello\n");
-    git(repoRoot, ["add", "."]);
-    git(repoRoot, ["commit", "-m", "init"]);
-    headHash = git(repoRoot, ["rev-parse", "HEAD"]);
+    repo_root = mkdtempSync(join(tmpdir(), "dev-site-repo-route-"));
+    git(repo_root, ["init"]);
+    git(repo_root, ["checkout", "-b", "main"]);
+    mkdirSync(join(repo_root, "docs"));
+    mkdirSync(join(repo_root, "src"));
+    writeFileSync(join(repo_root, "docs/guide.md"), "# Guide\n");
+    writeFileSync(join(repo_root, "docs/notes.txt"), "notes\n");
+    writeFileSync(join(repo_root, "src/a.ts"), "export const a = 1;\n");
+    writeFileSync(join(repo_root, "README.md"), "hello\n");
+    git(repo_root, ["add", "."]);
+    git(repo_root, ["commit", "-m", "init"]);
+    headHash = git(repo_root, ["rev-parse", "HEAD"]);
 
     lease = createDevSiteHttpApp({
-      repoRoot,
+      repo_root,
       mainRef: "main",
       mounts: [{ kind: "router", createRouter: createRepoRouter }],
     });
@@ -58,7 +58,7 @@ describe("repo routes", () => {
 
   afterAll(() => {
     releaseSlimRouteTest(lease);
-    rmSync(repoRoot, { recursive: true, force: true });
+    rmSync(repo_root, { recursive: true, force: true });
   });
 
   it("GET /api/repo/files lists blobs at ref", async () => {
@@ -74,7 +74,7 @@ describe("repo routes", () => {
       "src/a.ts",
     ]);
     for (const f of response.body.files) {
-      expect(f.blobHash).toMatch(/^[0-9a-f]{40}$/);
+      expect(f.blob_hash).toMatch(/^[0-9a-f]{40}$/);
     }
   });
 
@@ -116,8 +116,8 @@ describe("repo routes", () => {
   });
 
   it("GET /api/repo/file prefers working tree at HEAD", async () => {
-    writeFileSync(join(repoRoot, "docs/guide.md"), "# Guide (edited)\n");
-    writeFileSync(join(repoRoot, "docs/new-readme.md"), "# New\n");
+    writeFileSync(join(repo_root, "docs/guide.md"), "# Guide (edited)\n");
+    writeFileSync(join(repo_root, "docs/new-readme.md"), "# New\n");
     const edited = await request(lease.app)
       .get("/api/repo/file")
       .query({ ref: headHash, path: "docs/guide.md" });
@@ -131,7 +131,7 @@ describe("repo routes", () => {
     expect(created.body.content).toBe("# New\n");
 
     // Restore for other tests / cleanup cleanliness
-    writeFileSync(join(repoRoot, "docs/guide.md"), "# Guide\n");
+    writeFileSync(join(repo_root, "docs/guide.md"), "# Guide\n");
   });
 
   it("GET /api/repo/file returns 404 when missing", async () => {

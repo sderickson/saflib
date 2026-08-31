@@ -21,72 +21,72 @@ const mockList: ListResponse = {
   commits: [
     {
       hash: TO,
-      parentHashes: [FROM],
-      authoredAt: "2026-01-02T00:00:00.000Z",
+      parent_hashes: [FROM],
+      authored_at: "2026-01-02T00:00:00.000Z",
       message: "after",
       refs: [],
-      analyzerVersion: "1",
+      analyzer_version: "1",
       computed_at: "2026-01-02T01:00:00.000Z",
       status: "complete",
-      summaryMetrics: summaryMetricsFixture({
-        packageCount: 1,
-        sourceFiles: 1,
-        sourceLines: 20,
-        testFiles: 1,
-        testLines: 5,
-        exportCount: 2,
-        testCaseCount: 2,
+      summary_metrics: summaryMetricsFixture({
+        package_count: 1,
+        source_files: 1,
+        source_lines: 20,
+        test_files: 1,
+        test_lines: 5,
+        export_count: 2,
+        test_case_count: 2,
       }),
     },
     {
       hash: FROM,
-      parentHashes: [],
-      authoredAt: "2026-01-01T00:00:00.000Z",
+      parent_hashes: [],
+      authored_at: "2026-01-01T00:00:00.000Z",
       message: "before",
       refs: [],
-      analyzerVersion: "1",
+      analyzer_version: "1",
       computed_at: "2026-01-01T01:00:00.000Z",
       status: "complete",
-      summaryMetrics: summaryMetricsFixture({
-        packageCount: 1,
-        sourceFiles: 1,
-        sourceLines: 10,
-        testFiles: 0,
-        testLines: 0,
-        exportCount: 1,
-        testCaseCount: 1,
+      summary_metrics: summaryMetricsFixture({
+        package_count: 1,
+        source_files: 1,
+        source_lines: 10,
+        test_files: 0,
+        test_lines: 0,
+        export_count: 1,
+        test_case_count: 1,
       }),
     },
   ],
-  nextCursor: null,
+  next_cursor: null,
 };
 
 const mockDiff: DiffResponse = {
-  commitDiff: {
-    fromHash: FROM,
-    toHash: TO,
-    packageMetrics: {
+  commit_diff: {
+    from_hash: FROM,
+    to_hash: TO,
+    package_metrics: {
       added: [],
       removed: [],
       changed: [
         {
           before: packageMetricsFixture({
-            packageName: "@fixture/root",
+            package_name: "@fixture/root",
             directory: "",
-            sourceFiles: 1,
-            sourceLines: 10,
-            prodLines: 10,
-            testLines: 0,
-            testFiles: 0,
+            source_files: 1,
+            source_lines: 10,
+            prod_lines: 10,
+            test_lines: 0,
+            test_files: 0,
           }),
           after: packageMetricsFixture({
-            packageName: "@fixture/root",
+            package_name: "@fixture/root",
             directory: "",
-            sourceFiles: 1,
-            sourceLines: 20,
-            prodLines: 15,
-            testLines: 5,
-            testFiles: 1,
+            source_files: 1,
+            source_lines: 20,
+            prod_lines: 15,
+            test_lines: 5,
+            test_files: 1,
           }),
         },
       ],
@@ -94,8 +94,8 @@ const mockDiff: DiffResponse = {
     exports: {
       added: [
         {
-          packageName: "@fixture/root",
-          filePath: "src/b.ts",
+          package_name: "@fixture/root",
+          file_path: "src/b.ts",
           name: "b",
           kind: "const",
           signature: "= 1",
@@ -104,21 +104,21 @@ const mockDiff: DiffResponse = {
       ],
       removed: [],
     },
-    testCases: {
+    test_cases: {
       added: [
         {
-          packageName: "@fixture/root",
-          filePath: "src/a.test.ts",
-          fullName: "a > works",
-          subjectName: "a",
-          subjectSignature: "= 1",
-          subjectFilePath: "src/a.ts",
-          subjectConfidence: "adjacent",
+          package_name: "@fixture/root",
+          file_path: "src/a.test.ts",
+          full_name: "a > works",
+          subject_name: "a",
+          subject_signature: "= 1",
+          subject_file_path: "src/a.ts",
+          subject_confidence: "adjacent",
         },
       ],
       removed: [],
     },
-    dbSchemas: {
+    db_schemas: {
       tables: { added: [], removed: [] },
       columns: { added: [], removed: [], changed: [] },
     },

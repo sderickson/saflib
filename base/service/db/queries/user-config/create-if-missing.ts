@@ -9,7 +9,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { eq } from "drizzle-orm";
 
 export interface CreateIfMissingUserConfigParams {
-  userId: (typeof userConfigTable.$inferSelect)["userId"];
+  user_id: (typeof userConfigTable.$inferSelect)["user_id"];
 }
 
 export type CreateIfMissingUserConfigError = never;
@@ -31,16 +31,16 @@ export const createIfMissingUserConfig = queryWrapper(
     const inserted = await db
       .insert(userConfigTable)
       .values({
-        userId: params.userId,
-        displayName: "",
-        marketingEmailsOptIn: false,
-        marketingEmailsOptInAt: null,
-        termsOfServiceAgreedAt: null,
-        createdAt: now,
-        updatedAt: now,
+        user_id: params.user_id,
+        display_name: "",
+        marketing_emails_opt_in: false,
+        marketing_emails_opt_in_at: null,
+        terms_of_service_agreed_at: null,
+        created_at: now,
+        updated_at: now,
       })
       .onConflictDoNothing({
-        target: userConfigTable.userId,
+        target: userConfigTable.user_id,
       })
       .returning();
 
@@ -51,7 +51,7 @@ export const createIfMissingUserConfig = queryWrapper(
     const existing = await db
       .select()
       .from(userConfigTable)
-      .where(eq(userConfigTable.userId, params.userId))
+      .where(eq(userConfigTable.user_id, params.user_id))
       .limit(1);
 
     return { result: existing[0]! };

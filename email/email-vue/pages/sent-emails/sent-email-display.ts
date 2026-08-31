@@ -3,7 +3,7 @@ import type { SentEmail } from "@saflib/email-spec";
 export function sortSentEmailsNewestFirst(
   emails: readonly SentEmail[],
 ): SentEmail[] {
-  return [...emails].sort((a, b) => (b.timeSent || 0) - (a.timeSent || 0));
+  return [...emails].sort((a, b) => (b.time_sent || 0) - (a.time_sent || 0));
 }
 
 export function formatRecipients(

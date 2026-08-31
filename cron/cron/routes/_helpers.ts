@@ -24,7 +24,7 @@ export function computeRunsNextAt(
 
 /**
  * Maps a database job setting object to the format expected by the API response.
- * Converts Date objects to ISO strings.
+ * Converts Date objects to ISO strings and computes runs_next_at.
  */
 export function mapJobSettingToResponse(
   setting: JobSetting,
@@ -32,14 +32,14 @@ export function mapJobSettingToResponse(
 ): JobSettings {
   return {
     id: setting.id,
-    jobName: setting.jobName,
+    job_name: setting.job_name,
     enabled: setting.enabled,
-    enabledBy: setting.enabledBy,
-    lastRunAt: setting.lastRunAt ? setting.lastRunAt.toISOString() : null,
-    lastRunStatus: setting.lastRunStatus,
+    enabled_by: setting.enabled_by,
+    last_run_at: setting.last_run_at ? setting.last_run_at.toISOString() : null,
+    last_run_status: setting.last_run_status,
     schedule: schedule ?? null,
-    runsNextAt: computeRunsNextAt(schedule, setting.enabled),
-    createdAt: setting.createdAt.toISOString(),
-    updatedAt: setting.updatedAt.toISOString(),
+    runs_next_at: computeRunsNextAt(schedule, setting.enabled),
+    created_at: setting.created_at.toISOString(),
+    updated_at: setting.updated_at.toISOString(),
   };
 }

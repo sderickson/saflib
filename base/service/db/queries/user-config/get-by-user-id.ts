@@ -9,7 +9,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { eq } from "drizzle-orm";
 
 export interface GetByUserIdUserConfigParams {
-  userId: (typeof userConfigTable.$inferSelect)["userId"];
+  user_id: (typeof userConfigTable.$inferSelect)["user_id"];
 }
 
 export type GetByUserIdUserConfigError = never;
@@ -26,7 +26,7 @@ export const getByUserIdUserConfig = queryWrapper(
     const result = await db
       .select()
       .from(userConfigTable)
-      .where(eq(userConfigTable.userId, params.userId))
+      .where(eq(userConfigTable.user_id, params.user_id))
       .limit(1);
 
     return { result: result[0] ?? null };

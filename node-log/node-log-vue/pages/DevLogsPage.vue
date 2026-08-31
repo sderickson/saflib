@@ -162,7 +162,7 @@ const filteredLogs = computed(() => {
       metaStr.includes(q) ||
       (entry.subsystem_name?.toLowerCase().includes(q) ?? false) ||
       (entry.operation_name?.toLowerCase().includes(q) ?? false) ||
-      (entry.reqId?.toLowerCase().includes(q) ?? false)
+      (entry.req_id?.toLowerCase().includes(q) ?? false)
     );
   });
 });

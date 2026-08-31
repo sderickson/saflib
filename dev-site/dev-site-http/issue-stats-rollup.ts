@@ -9,24 +9,24 @@ import {
  * `__meta__` rows mark that stats were computed but are ignored in counts.
  */
 export function rollupIssueCounts(
-  rows: Array<{ packageName: string; kind: string; count: number }>,
+  rows: Array<{ package_name: string; kind: string; count: number }>,
 ): {
   byPackage: Map<string, IssueCountsByKind>;
   totals: IssueCountsByKind;
-  hasIssueStats: boolean;
+  has_issue_stats: boolean;
 } {
   const byPackage = new Map<string, IssueCountsByKind>();
   const totals = emptyIssueCountsByKind();
-  let hasIssueStats = false;
+  let has_issue_stats = false;
   for (const row of rows) {
-    hasIssueStats = true;
-    if (row.packageName === "__meta__") continue;
+    has_issue_stats = true;
+    if (row.package_name === "__meta__") continue;
     const kind = row.kind as PackageIssueKind;
     if (!(kind in totals)) continue;
     totals[kind] += row.count;
-    const pkg = byPackage.get(row.packageName) ?? emptyIssueCountsByKind();
+    const pkg = byPackage.get(row.package_name) ?? emptyIssueCountsByKind();
     pkg[kind] += row.count;
-    byPackage.set(row.packageName, pkg);
+    byPackage.set(row.package_name, pkg);
   }
-  return { byPackage, totals, hasIssueStats };
+  return { byPackage, totals, has_issue_stats };
 }

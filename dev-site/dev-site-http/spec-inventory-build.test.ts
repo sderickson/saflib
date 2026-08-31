@@ -173,7 +173,7 @@ properties:
 
     expect(byLabel.Matter?.presence).toBe("both");
     expect(byLabel.Matter?.resource).toBe("matters");
-    expect(byLabel.Matter?.operations.map((o) => o.operationId)).toEqual([
+    expect(byLabel.Matter?.operations.map((o) => o.operation_id)).toEqual([
       "createMatter",
       "listMattersEverything",
     ]);
@@ -181,31 +181,31 @@ properties:
       "id",
       "name",
     ]);
-    expect(byLabel.Matter?.schema?.referencedByOperations).toEqual([
+    expect(byLabel.Matter?.schema?.referenced_by_operations).toEqual([
       "createMatter",
       "listMattersEverything",
     ]);
 
     const create = byLabel.Matter?.operations.find(
-      (o) => o.operationId === "createMatter",
+      (o) => o.operation_id === "createMatter",
     );
     expect(create?.tags).toEqual(["email-verified"]);
-    expect(create?.routeStem).toBe("matters/create");
-    expect(create?.requestSchemas).toEqual([]);
-    expect(create?.responseSchemas).toEqual(["Matter"]);
+    expect(create?.route_stem).toBe("matters/create");
+    expect(create?.request_schemas).toEqual([]);
+    expect(create?.response_schemas).toEqual(["Matter"]);
 
     const listAll = byLabel.Matter?.operations.find(
-      (o) => o.operationId === "listMattersEverything",
+      (o) => o.operation_id === "listMattersEverything",
     );
     expect(listAll?.tags).toEqual(["email-verified", "mfa-required"]);
-    expect(listAll?.responseSchemas).toEqual(["Importer", "Matter"]);
+    expect(listAll?.response_schemas).toEqual(["Importer", "Matter"]);
 
     expect(byLabel.Error?.presence).toBe("object");
     expect(byLabel.Error?.operations).toEqual([]);
 
     expect(byLabel.admin?.presence).toBe("routes");
     expect(byLabel.admin?.schema).toBeNull();
-    expect(byLabel.admin?.operations.map((o) => o.operationId)).toEqual([
+    expect(byLabel.admin?.operations.map((o) => o.operation_id)).toEqual([
       "postAdminTestError",
     ]);
 

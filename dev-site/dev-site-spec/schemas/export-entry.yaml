@@ -1,11 +1,11 @@
 type: object
 description: One exported symbol extracted from a source file at a commit.
 properties:
-  packageName:
+  package_name:
     type: string
     description: npm package that owns this file.
     example: "@saflib/git"
-  filePath:
+  file_path:
     type: string
     description: Path relative to the repo root.
     example: "saflib/git/log.ts"
@@ -32,34 +32,34 @@ properties:
     type: [ string, "null" ]
     description: >
       Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.
-    example: "(repoRoot: string, options?: LogOptions)"
+    example: "(repo_root: string, options?: LogOptions)"
   docstring:
     type: [ string, "null" ]
     description: >
       First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).
     example: "Walk commits newest-first without checking out."
-  usedBy:
+  used_by:
     type: array
     description: >
       Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty).
     items:
       type: object
       required:
-        - packageName
-        - filePath
-        - repoPath
+        - package_name
+        - file_path
+        - repo_path
       properties:
-        packageName:
+        package_name:
           type: string
-        filePath:
+        file_path:
           type: string
           description: Path within the importing package (no package-root prefix).
-        repoPath:
+        repo_path:
           type: string
           description: Repo-relative path for source links.
 required:
-  - packageName
-  - filePath
+  - package_name
+  - file_path
   - name
   - kind
   - signature

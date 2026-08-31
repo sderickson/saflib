@@ -57,11 +57,11 @@ describe("debtTooltipText", () => {
     counts["oversized-file"] = 1;
     expect(
       debtTooltipText({
-        debtCount: 3,
-        issueCountsByKind: counts,
+        debt_count: 3,
+        issue_counts_by_kind: counts,
         packageSize: "M",
-        sourceLines: 1000,
-        testLines: 40,
+        source_lines: 1000,
+        test_lines: 40,
       }),
     ).toBe(
       "Debt 3 · 3.0/kLOC · dead 2 · oversized 1 · layout 0 · size medium · 1k/40 LOC",

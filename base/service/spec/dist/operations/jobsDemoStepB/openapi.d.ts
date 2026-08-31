@@ -30,11 +30,11 @@ export interface components {
     schemas: {
         "jobs-demo-options": {
             /** @description Optional dedupe key forwarded to the enqueued job. */
-            dedupeKey?: string | null;
+            dedupe_key?: string | null;
             /** @description Optional concurrency key forwarded to the enqueued job. */
-            concurrencyKey?: string | null;
+            concurrency_key?: string | null;
             /** @description For step-b demos: respond 503 this many times before succeeding and enqueueing step-c. */
-            failuresBeforeSuccess?: number;
+            failures_before_success?: number;
             /** @description Arbitrary JSON echoed through the demo chain. */
             payload?: {
                 [key: string]: unknown;

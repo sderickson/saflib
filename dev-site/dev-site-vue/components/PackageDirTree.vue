@@ -7,7 +7,7 @@
         :class="{
           'pkg-tree__row--package': node.kind === 'package',
           'pkg-tree__row--selected':
-            node.kind === 'package' && node.packageName === selectedPackageName,
+            node.kind === 'package' && node.package_name === selectedPackageName,
           'pkg-tree__row--added': node.change === 'added',
           'pkg-tree__row--removed': node.change === 'removed',
           'pkg-tree__row--modified': node.change === 'modified',
@@ -68,19 +68,19 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  select: [packageName: string];
+  select: [package_name: string];
 }>();
 
 const onClick = (node: PackageDirNode) => {
-  if (node.kind === "package" && node.packageName) {
-    emit("select", node.packageName);
+  if (node.kind === "package" && node.package_name) {
+    emit("select", node.package_name);
   }
 };
 
 const debtStyle = (node: PackageDirNode) => {
   const px = debtDotSizePx(node.packageSize);
   return {
-    background: debtDotColor(node.debtCount ?? 0, node.sourceLines ?? 0),
+    background: debtDotColor(node.debt_count ?? 0, node.source_lines ?? 0),
     width: `${px}px`,
     height: `${px}px`,
   };
@@ -88,11 +88,11 @@ const debtStyle = (node: PackageDirNode) => {
 
 const debtTip = (node: PackageDirNode) =>
   debtTooltipText({
-    debtCount: node.debtCount ?? 0,
-    issueCountsByKind: node.issueCountsByKind ?? emptyIssueCountsByKind(),
+    debt_count: node.debt_count ?? 0,
+    issue_counts_by_kind: node.issue_counts_by_kind ?? emptyIssueCountsByKind(),
     packageSize: node.packageSize,
-    sourceLines: node.sourceLines,
-    testLines: node.testLines,
+    source_lines: node.source_lines,
+    test_lines: node.test_lines,
   });
 </script>
 

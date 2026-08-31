@@ -28,7 +28,7 @@ export class MockEmailService implements EmailService {
     }
     sentEmails.push({
       ...options,
-      timeSent: Date.now(),
+      time_sent: Date.now(),
     });
     return {
       messageId: "1234567890",

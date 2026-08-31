@@ -9,7 +9,7 @@ type ListProductEventsResponse =
   AnalyticsResponseBody["listProductEvents"][200];
 
 const mockEvents: ListProductEventsResponse = {
-  productEvents: [
+  product_events: [
     {
       id: 1,
       name: "login",

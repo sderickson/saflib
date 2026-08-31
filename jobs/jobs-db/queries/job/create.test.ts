@@ -14,38 +14,38 @@ import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
 function baseParams(
   overrides: Partial<CreateJobParams> &
-    Pick<CreateJobParams, "id" | "originalRequestId">,
+    Pick<CreateJobParams, "id" | "original_request_id">,
 ): CreateJobParams {
   const now = new Date("2026-08-06T12:00:00.000Z");
   return {
     status: "pending",
-    operationId: "jobsDemoStepB",
-    request: { body: { failuresBeforeSuccess: 0 } },
-    userId: "user-1",
+    operation_id: "jobsDemoStepB",
+    request: { body: { failures_before_success: 0 } },
+    user_id: "user-1",
     authority: {
       kind: "request",
-      userId: "user-1",
-      requestId: "r-root",
+      user_id: "user-1",
+      request_id: "r-root",
       assertion: {
         payload: "p",
         signature: "s",
-        keyId: "k1",
+        key_id: "k1",
       },
     },
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: now,
-    dedupeKey: null,
-    concurrencyKey: null,
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: now,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -69,7 +69,7 @@ describe("createJob", () => {
   it("inserts a new job", async () => {
     const { result, error } = await createJob(
       dbKey,
-      baseParams({ id: "job-1", originalRequestId: "r-1" }),
+      baseParams({ id: "job-1", original_request_id: "r-1" }),
     );
 
     expect(error).toBeUndefined();
@@ -77,9 +77,11 @@ describe("createJob", () => {
     expect(result.deduped).toBe(false);
     expect(result.job.id).toBe("job-1");
     expect(result.job.status).toBe("pending");
-    expect(result.job.operationId).toBe("jobsDemoStepB");
-    expect(result.job.request).toEqual({ body: { failuresBeforeSuccess: 0 } });
-    expect(result.job.originalRequestId).toBe("r-1");
+    expect(result.job.operation_id).toBe("jobsDemoStepB");
+    expect(result.job.request).toEqual({
+      body: { failures_before_success: 0 },
+    });
+    expect(result.job.original_request_id).toBe("r-1");
   });
 
   it.each(["pending", "retrying"] as const)(
@@ -89,11 +91,11 @@ describe("createJob", () => {
         dbKey,
         baseParams({
           id: "job-1",
-          originalRequestId: "r-1",
+          original_request_id: "r-1",
           status,
-          dedupeKey: "matter:1:claim",
+          dedupe_key: "matter:1:claim",
           request: { body: { n: 1 } },
-          runAt: new Date("2026-08-06T12:00:00.000Z"),
+          run_at: new Date("2026-08-06T12:00:00.000Z"),
         }),
       );
       assert(first.result);
@@ -105,11 +107,11 @@ describe("createJob", () => {
         dbKey,
         baseParams({
           id: "job-2",
-          originalRequestId: "r-1",
-          dedupeKey: "matter:1:claim",
+          original_request_id: "r-1",
+          dedupe_key: "matter:1:claim",
           request: { body: { n: 2 } },
-          runAt: laterRunAt,
-          updatedAt: laterUpdatedAt,
+          run_at: laterRunAt,
+          updated_at: laterUpdatedAt,
         }),
       );
 
@@ -119,8 +121,8 @@ describe("createJob", () => {
       expect(second.result.job.id).toBe("job-1");
       expect(second.result.job.status).toBe(status);
       expect(second.result.job.request).toEqual({ body: { n: 2 } });
-      expect(second.result.job.runAt).toEqual(laterRunAt);
-      expect(second.result.job.updatedAt).toEqual(laterUpdatedAt);
+      expect(second.result.job.run_at).toEqual(laterRunAt);
+      expect(second.result.job.updated_at).toEqual(laterUpdatedAt);
     },
   );
 
@@ -129,10 +131,10 @@ describe("createJob", () => {
       dbKey,
       baseParams({
         id: "job-running",
-        originalRequestId: "r-1",
+        original_request_id: "r-1",
         status: "running",
-        dedupeKey: "matter:1:auto-claim",
-        startedAt: new Date("2026-08-06T12:00:01.000Z"),
+        dedupe_key: "matter:1:auto-claim",
+        started_at: new Date("2026-08-06T12:00:01.000Z"),
       }),
     );
 
@@ -140,8 +142,8 @@ describe("createJob", () => {
       dbKey,
       baseParams({
         id: "job-follow-up",
-        originalRequestId: "r-1",
-        dedupeKey: "matter:1:auto-claim",
+        original_request_id: "r-1",
+        dedupe_key: "matter:1:auto-claim",
         request: { body: { drain: true } },
       }),
     );
@@ -161,10 +163,10 @@ describe("createJob", () => {
         dbKey,
         baseParams({
           id: "job-1",
-          originalRequestId: "r-1",
-          dedupeKey: "matter:1:claim",
+          original_request_id: "r-1",
+          dedupe_key: "matter:1:claim",
           status,
-          finishedAt: new Date("2026-08-06T12:01:00.000Z"),
+          finished_at: new Date("2026-08-06T12:01:00.000Z"),
         }),
       );
       assert(first.result);
@@ -174,8 +176,8 @@ describe("createJob", () => {
         dbKey,
         baseParams({
           id: "job-2",
-          originalRequestId: "r-1",
-          dedupeKey: "matter:1:claim",
+          original_request_id: "r-1",
+          dedupe_key: "matter:1:claim",
         }),
       );
 
@@ -189,34 +191,34 @@ describe("createJob", () => {
   it("returns JobSpawnCapExceededError when spawn cap is already reached", async () => {
     const first = await createJob(
       dbKey,
-      baseParams({ id: "job-1", originalRequestId: "r-1", spawnCap: 1 }),
+      baseParams({ id: "job-1", original_request_id: "r-1", spawnCap: 1 }),
     );
     expect(first.error).toBeUndefined();
 
     const { result, error } = await createJob(
       dbKey,
-      baseParams({ id: "job-2", originalRequestId: "r-1", spawnCap: 1 }),
+      baseParams({ id: "job-2", original_request_id: "r-1", spawnCap: 1 }),
     );
 
     expect(result).toBeUndefined();
     expect(error).toBeInstanceOf(JobSpawnCapExceededError);
   });
 
-  it("counts all statuses toward the spawn cap for an originalRequestId", async () => {
+  it("counts all statuses toward the spawn cap for an original_request_id", async () => {
     await createJob(
       dbKey,
       baseParams({
         id: "job-1",
-        originalRequestId: "r-1",
+        original_request_id: "r-1",
         status: "succeeded",
-        finishedAt: new Date("2026-08-06T12:01:00.000Z"),
+        finished_at: new Date("2026-08-06T12:01:00.000Z"),
         spawnCap: 1,
       }),
     );
 
     const { result, error } = await createJob(
       dbKey,
-      baseParams({ id: "job-2", originalRequestId: "r-1", spawnCap: 1 }),
+      baseParams({ id: "job-2", original_request_id: "r-1", spawnCap: 1 }),
     );
 
     expect(result).toBeUndefined();
@@ -228,8 +230,8 @@ describe("createJob", () => {
       dbKey,
       baseParams({
         id: "job-1",
-        originalRequestId: "r-1",
-        dedupeKey: "k",
+        original_request_id: "r-1",
+        dedupe_key: "k",
         spawnCap: 1,
       }),
     );
@@ -238,11 +240,11 @@ describe("createJob", () => {
       dbKey,
       baseParams({
         id: "job-2",
-        originalRequestId: "r-1",
-        dedupeKey: "k",
+        original_request_id: "r-1",
+        dedupe_key: "k",
         spawnCap: 1,
         request: { body: { refreshed: true } },
-        runAt: new Date("2026-08-06T14:00:00.000Z"),
+        run_at: new Date("2026-08-06T14:00:00.000Z"),
       }),
     );
 
@@ -253,21 +255,21 @@ describe("createJob", () => {
     expect(result.job.request).toEqual({ body: { refreshed: true } });
   });
 
-  it("inserts independently when dedupeKey is null", async () => {
+  it("inserts independently when dedupe_key is null", async () => {
     const first = await createJob(
       dbKey,
       baseParams({
         id: "job-1",
-        originalRequestId: "r-1",
-        dedupeKey: null,
+        original_request_id: "r-1",
+        dedupe_key: null,
       }),
     );
     const second = await createJob(
       dbKey,
       baseParams({
         id: "job-2",
-        originalRequestId: "r-1",
-        dedupeKey: null,
+        original_request_id: "r-1",
+        dedupe_key: null,
       }),
     );
 

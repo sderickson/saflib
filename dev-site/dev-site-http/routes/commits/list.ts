@@ -24,7 +24,7 @@ export const listCommitsHandler = createHandler(async (req, res) => {
   }
   const response: ResponseBody["listCommits"][200] = {
     commits: result.commits,
-    nextCursor: result.nextCursor,
+    next_cursor: result.next_cursor,
   };
   res.status(200).json(response);
 });

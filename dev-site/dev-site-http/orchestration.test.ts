@@ -18,9 +18,9 @@ import { getCommit, listCommitSummaries } from "./get-commit.ts";
 import { diffCommits } from "./diff-commits.ts";
 import { ANALYZER_VERSION } from "./analyze-commit.ts";
 
-function git(repoRoot: string, args: string[]): string {
+function git(repo_root: string, args: string[]): string {
   return execFileSync("git", args, {
-    cwd: repoRoot,
+    cwd: repo_root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     env: {
@@ -34,35 +34,35 @@ function git(repoRoot: string, args: string[]): string {
 }
 
 describe("orchestration", () => {
-  let repoRoot: string;
+  let repo_root: string;
   let dbKey: DbKey;
   let commit1: string;
   let commit2: string;
 
   beforeAll(() => {
-    repoRoot = mkdtempSync(join(tmpdir(), "dev-site-http-"));
-    git(repoRoot, ["init"]);
-    git(repoRoot, ["checkout", "-b", "main"]);
+    repo_root = mkdtempSync(join(tmpdir(), "dev-site-http-"));
+    git(repo_root, ["init"]);
+    git(repo_root, ["checkout", "-b", "main"]);
 
     writeFileSync(
-      join(repoRoot, "package.json"),
+      join(repo_root, "package.json"),
       JSON.stringify({ name: "@fixture/root" }),
     );
-    mkdirSync(join(repoRoot, "src"));
+    mkdirSync(join(repo_root, "src"));
     writeFileSync(
-      join(repoRoot, "src/math.ts"),
+      join(repo_root, "src/math.ts"),
       "export function add(a: number, b: number) { return a + b; }\n",
     );
     writeFileSync(
-      join(repoRoot, "src/math.test.ts"),
+      join(repo_root, "src/math.test.ts"),
       'import { describe, it } from "vitest";\ndescribe("math", () => {\n  it("adds", () => {});\n});\n',
     );
-    git(repoRoot, ["add", "."]);
+    git(repo_root, ["add", "."]);
     execFileSync(
       "git",
       ["commit", "-m", "first: add math"],
       {
-        cwd: repoRoot,
+        cwd: repo_root,
         env: {
           ...process.env,
           GIT_AUTHOR_NAME: "Test",
@@ -74,22 +74,22 @@ describe("orchestration", () => {
         },
       },
     );
-    commit1 = git(repoRoot, ["rev-parse", "HEAD"]);
+    commit1 = git(repo_root, ["rev-parse", "HEAD"]);
 
     writeFileSync(
-      join(repoRoot, "src/math.ts"),
+      join(repo_root, "src/math.ts"),
       "export function add(a: number, b: number) { return a + b; }\nexport const ZERO = 0;\n",
     );
     writeFileSync(
-      join(repoRoot, "src/math.test.ts"),
+      join(repo_root, "src/math.test.ts"),
       'import { describe, it } from "vitest";\ndescribe("math", () => {\n  it("adds", () => {});\n  it("zero", () => {});\n});\n',
     );
-    git(repoRoot, ["add", "."]);
+    git(repo_root, ["add", "."]);
     execFileSync(
       "git",
       ["commit", "-m", "second: add ZERO + test"],
       {
-        cwd: repoRoot,
+        cwd: repo_root,
         env: {
           ...process.env,
           GIT_AUTHOR_NAME: "Test",
@@ -101,14 +101,14 @@ describe("orchestration", () => {
         },
       },
     );
-    commit2 = git(repoRoot, ["rev-parse", "HEAD"]);
+    commit2 = git(repo_root, ["rev-parse", "HEAD"]);
 
     dbKey = devSiteDb.connect();
   });
 
   afterAll(() => {
     devSiteDb.disconnect(dbKey);
-    rmSync(repoRoot, { recursive: true, force: true });
+    rmSync(repo_root, { recursive: true, force: true });
   });
 
   beforeEach(() => {
@@ -117,14 +117,14 @@ describe("orchestration", () => {
 
   it("scanCommits ingests mainline commits then skips on re-scan", async () => {
     const first = await throwError(
-      scanCommits(dbKey, { repoRoot, mainRef: "main" }),
+      scanCommits(dbKey, { repo_root, mainRef: "main" }),
     );
     expect(first.scanned).toEqual([commit2, commit1]);
     expect(first.skipped).toEqual([]);
     expect(first.failed).toEqual([]);
 
     const second = await throwError(
-      scanCommits(dbKey, { repoRoot, mainRef: "main" }),
+      scanCommits(dbKey, { repo_root, mainRef: "main" }),
     );
     expect(second.scanned).toEqual([]);
     expect(second.skipped).toEqual([commit2, commit1]);
@@ -133,63 +133,63 @@ describe("orchestration", () => {
 
   it("scanCommits with limit analyzes newest main commits first", async () => {
     const first = await throwError(
-      scanCommits(dbKey, { repoRoot, mainRef: "main", limit: 1 }),
+      scanCommits(dbKey, { repo_root, mainRef: "main", limit: 1 }),
     );
     expect(first.scanned).toEqual([commit2]);
     expect(first.skipped).toEqual([]);
 
     const second = await throwError(
-      scanCommits(dbKey, { repoRoot, mainRef: "main", limit: 1 }),
+      scanCommits(dbKey, { repo_root, mainRef: "main", limit: 1 }),
     );
     expect(second.scanned).toEqual([commit1]);
     expect(second.skipped).toEqual([commit2]);
   });
 
   it("getCommit returns metrics, exports, and test cases", async () => {
-    await throwError(scanCommits(dbKey, { repoRoot, mainRef: "main" }));
+    await throwError(scanCommits(dbKey, { repo_root, mainRef: "main" }));
 
     const detail = await throwError(
-      getCommit(dbKey, commit2, { repoRoot, mainRef: "main" }),
+      getCommit(dbKey, commit2, { repo_root, mainRef: "main" }),
     );
     expect(detail.commit.hash).toBe(commit2);
-    expect(detail.commit.analyzerVersion).toBe(ANALYZER_VERSION);
+    expect(detail.commit.analyzer_version).toBe(ANALYZER_VERSION);
     expect(detail.commit.status).toBe("complete");
-    expect(detail.packageMetrics.length).toBeGreaterThan(0);
+    expect(detail.package_metrics.length).toBeGreaterThan(0);
     expect(detail.exports.map((e) => e.name).sort()).toEqual(["ZERO", "add"]);
-    expect(detail.testCases.map((t) => t.fullName).sort()).toEqual([
+    expect(detail.test_cases.map((t) => t.full_name).sort()).toEqual([
       "math > adds",
       "math > zero",
     ]);
   });
 
   it("listCommitSummaries pages newest-first with rollups", async () => {
-    await throwError(scanCommits(dbKey, { repoRoot, mainRef: "main" }));
+    await throwError(scanCommits(dbKey, { repo_root, mainRef: "main" }));
 
     const page = await throwError(listCommitSummaries(dbKey, { limit: 1 }));
     expect(page.commits).toHaveLength(1);
     expect(page.commits[0].hash).toBe(commit2);
-    expect(page.commits[0].summaryMetrics.exportCount).toBe(2);
-    expect(page.commits[0].summaryMetrics.testCaseCount).toBe(2);
-    expect(page.nextCursor).toBe(commit2);
+    expect(page.commits[0].summary_metrics.export_count).toBe(2);
+    expect(page.commits[0].summary_metrics.test_case_count).toBe(2);
+    expect(page.next_cursor).toBe(commit2);
 
     const page2 = await throwError(
       listCommitSummaries(dbKey, { cursor: commit2, limit: 10 }),
     );
     expect(page2.commits.map((c) => c.hash)).toEqual([commit1]);
-    expect(page2.nextCursor).toBeNull();
+    expect(page2.next_cursor).toBeNull();
   });
 
   it("diffCommits reports added exports and test cases", async () => {
-    await throwError(scanCommits(dbKey, { repoRoot, mainRef: "main" }));
+    await throwError(scanCommits(dbKey, { repo_root, mainRef: "main" }));
 
     const diff = await throwError(
-      diffCommits(dbKey, commit1, commit2, { repoRoot, mainRef: "main" }),
+      diffCommits(dbKey, commit1, commit2, { repo_root, mainRef: "main" }),
     );
-    expect(diff.fromHash).toBe(commit1);
-    expect(diff.toHash).toBe(commit2);
+    expect(diff.from_hash).toBe(commit1);
+    expect(diff.to_hash).toBe(commit2);
     expect(diff.exports.added.map((e) => e.name)).toEqual(["ZERO"]);
     expect(diff.exports.removed).toEqual([]);
-    expect(diff.testCases.added.map((t) => t.fullName)).toEqual([
+    expect(diff.test_cases.added.map((t) => t.full_name)).toEqual([
       "math > zero",
     ]);
   });

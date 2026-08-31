@@ -9,8 +9,8 @@ import { and, eq, inArray } from "drizzle-orm";
 const cancellableStatuses = ["pending", "retrying"] as const;
 
 export type CancelByOriginalRequestIdJobParams = {
-  originalRequestId: (typeof jobTable.$inferSelect)["originalRequestId"];
-  /** Written to `finishedAt` and `updatedAt`. */
+  original_request_id: (typeof jobTable.$inferSelect)["original_request_id"];
+  /** Written to `finished_at` and `updated_at`. */
   now: Date;
 };
 
@@ -18,7 +18,7 @@ export type CancelByOriginalRequestIdJobError = never;
 
 /**
  * Cancel every pending/retrying job in a chain
- * (`terminalReason: cancelled-by-chain`). Running and terminal jobs are left
+ * (`terminal_reason: cancelled-by-chain`). Running and terminal jobs are left
  * alone. Returns the cancelled rows (possibly empty).
  */
 export const cancelByOriginalRequestIdJob = queryWrapper(
@@ -37,13 +37,13 @@ export const cancelByOriginalRequestIdJob = queryWrapper(
       .update(jobTable)
       .set({
         status: "cancelled",
-        result: { terminalReason: "cancelled-by-chain" },
-        finishedAt: params.now,
-        updatedAt: params.now,
+        result: { terminal_reason: "cancelled-by-chain" },
+        finished_at: params.now,
+        updated_at: params.now,
       })
       .where(
         and(
-          eq(jobTable.originalRequestId, params.originalRequestId),
+          eq(jobTable.original_request_id, params.original_request_id),
           inArray(jobTable.status, cancellableStatuses),
         ),
       )

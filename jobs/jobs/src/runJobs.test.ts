@@ -91,32 +91,32 @@ type ScriptedResponse =
       status: number;
       body?: unknown;
       headers?: Record<string, string>;
-      delayMs?: number;
+      delay_ms?: number;
     }
   | ((req: express.Request, res: express.Response) => void | Promise<void>);
 
 type SeedJob = {
   id: string;
   status?: JobStatus;
-  operationId?: string;
+  operation_id?: string;
   request?: JobRequest;
-  userId?: string;
+  user_id?: string;
   authority?: JobAuthority;
-  originalRequestId?: string;
-  enqueuedByOperationId?: string;
-  parentJobId?: string | null;
-  runAt?: Date;
-  dedupeKey?: string | null;
-  concurrencyKey?: string | null;
+  original_request_id?: string;
+  enqueued_by_operation_id?: string;
+  parent_job_id?: string | null;
+  run_at?: Date;
+  dedupe_key?: string | null;
+  concurrency_key?: string | null;
   priority?: number;
   attempt?: number;
-  maxAttempts?: number;
-  heartbeatAt?: Date | null;
+  max_attempts?: number;
+  heartbeat_at?: Date | null;
   result?: null;
-  createdAt?: Date;
-  updatedAt?: Date;
-  startedAt?: Date | null;
-  finishedAt?: Date | null;
+  created_at?: Date;
+  updated_at?: Date;
+  started_at?: Date | null;
+  finished_at?: Date | null;
   spawnCap?: number;
 };
 
@@ -124,30 +124,30 @@ function jobParams(overrides: SeedJob) {
   const now = new Date();
   return {
     status: "pending" as const,
-    operationId: "jobsDemoWork",
+    operation_id: "jobsDemoWork",
     request: { body: {} } satisfies JobRequest,
-    userId: "user-1",
+    user_id: "user-1",
     authority: {
       kind: "request" as const,
-      userId: "user-1",
-      requestId: "r-root",
-      assertion: { payload: "p", signature: "s", keyId: "k1" },
+      user_id: "user-1",
+      request_id: "r-root",
+      assertion: { payload: "p", signature: "s", key_id: "k1" },
     },
-    originalRequestId: "r-chain-1",
-    enqueuedByOperationId: "startJobsDemo",
-    parentJobId: null,
-    runAt: now,
-    dedupeKey: null,
-    concurrencyKey: null,
+    original_request_id: "r-chain-1",
+    enqueued_by_operation_id: "startJobsDemo",
+    parent_job_id: null,
+    run_at: now,
+    dedupe_key: null,
+    concurrency_key: null,
     priority: 0,
     attempt: 0,
-    maxAttempts: 5,
-    heartbeatAt: null,
+    max_attempts: 5,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: 1000,
     ...overrides,
   };
@@ -190,11 +190,11 @@ describe("classifyDelivery", () => {
     const classification = await classifyDelivery({
       response: new Response(null, { status: 204 }),
       attempt: 1,
-      maxAttempts: 5,
+      max_attempts: 5,
     });
     expect(classification).toEqual({
       kind: "succeeded",
-      statusCode: 204,
+      status_code: 204,
       metricStatus: "succeeded",
     });
   });
@@ -203,11 +203,11 @@ describe("classifyDelivery", () => {
     const classification = await classifyDelivery({
       response: new Response("boom", { status: 503 }),
       attempt: 1,
-      maxAttempts: 5,
+      max_attempts: 5,
     });
     expect(classification.kind).toBe("retry");
     if (classification.kind === "retry") {
-      expect(classification.statusCode).toBe(503);
+      expect(classification.status_code).toBe(503);
       expect(classification.metricStatus).toBe("retryable-failure");
     }
   });
@@ -216,11 +216,11 @@ describe("classifyDelivery", () => {
     const classification = await classifyDelivery({
       response: new Response("boom", { status: 500 }),
       attempt: 5,
-      maxAttempts: 5,
+      max_attempts: 5,
     });
     expect(classification).toMatchObject({
       kind: "dead",
-      terminalReason: "exhausted",
+      terminal_reason: "exhausted",
       metricStatus: "dead",
     });
   });
@@ -229,12 +229,12 @@ describe("classifyDelivery", () => {
     const classification = await classifyDelivery({
       response: new Response("nope", { status: 422 }),
       attempt: 1,
-      maxAttempts: 5,
+      max_attempts: 5,
     });
     expect(classification).toMatchObject({
       kind: "dead",
-      terminalReason: "permanent-status",
-      statusCode: 422,
+      terminal_reason: "permanent-status",
+      status_code: 422,
     });
   });
 
@@ -245,11 +245,11 @@ describe("classifyDelivery", () => {
         headers: { "X-Jobs-Retry": "never" },
       }),
       attempt: 1,
-      maxAttempts: 5,
+      max_attempts: 5,
     });
     expect(classification).toMatchObject({
       kind: "dead",
-      terminalReason: "rejected-by-endpoint",
+      terminal_reason: "rejected-by-endpoint",
     });
   });
 
@@ -260,11 +260,11 @@ describe("classifyDelivery", () => {
         headers: { "X-Jobs-Retry": "never" },
       }),
       attempt: 1,
-      maxAttempts: 5,
+      max_attempts: 5,
     });
     expect(classification).toEqual({
       kind: "succeeded",
-      statusCode: 204,
+      status_code: 204,
       metricStatus: "succeeded",
     });
   });
@@ -276,7 +276,7 @@ describe("classifyDelivery", () => {
         headers: { "X-Jobs-Retry": "always" },
       }),
       attempt: 1,
-      maxAttempts: 5,
+      max_attempts: 5,
     });
     expect(classification.kind).toBe("retry");
   });
@@ -288,7 +288,7 @@ describe("classifyDelivery", () => {
         headers: { "Retry-After": "42" },
       }),
       attempt: 1,
-      maxAttempts: 5,
+      max_attempts: 5,
     });
     expect(classification.kind).toBe("retry");
     if (classification.kind === "retry") {
@@ -302,11 +302,11 @@ describe("classifyDelivery", () => {
         status: 401,
       }),
       attempt: 1,
-      maxAttempts: 5,
+      max_attempts: 5,
     });
     expect(classification).toMatchObject({
       kind: "dead",
-      terminalReason: "auth-unresolvable",
+      terminal_reason: "auth-unresolvable",
     });
   });
 
@@ -314,7 +314,7 @@ describe("classifyDelivery", () => {
     const classification = await classifyDelivery({
       timedOut: true,
       attempt: 2,
-      maxAttempts: 5,
+      max_attempts: 5,
     });
     expect(classification).toMatchObject({
       kind: "retry",
@@ -371,8 +371,8 @@ describe("runJobs", () => {
         await script(req, res);
         return;
       }
-      if (script.delayMs) {
-        await new Promise((r) => setTimeout(r, script.delayMs));
+      if (script.delay_ms) {
+        await new Promise((r) => setTimeout(r, script.delay_ms));
       }
       for (const [key, value] of Object.entries(script.headers ?? {})) {
         res.setHeader(key, value);
@@ -465,7 +465,7 @@ describe("runJobs", () => {
       "job-ok",
       (j) => j.status === "succeeded",
     );
-    expect(job.result).toEqual({ statusCode: 200 });
+    expect(job.result).toEqual({ status_code: 200 });
     expect(lastAssertion?.userId).toBe("user-1");
     expect(lastAssertion?.targetOperationId).toBe("jobsDemoWork");
     expect(lastAssertion?.claims).toMatchObject({
@@ -480,8 +480,8 @@ describe("runJobs", () => {
     await startRuntime();
 
     const job = await waitForJob(dbKey, "job-4xx", (j) => j.status === "dead");
-    expect(job.result?.terminalReason).toBe("permanent-status");
-    expect(job.result?.statusCode).toBe(422);
+    expect(job.result?.terminal_reason).toBe("permanent-status");
+    expect(job.result?.status_code).toBe(422);
   });
 
   it(
@@ -499,8 +499,8 @@ describe("runJobs", () => {
         (j) => j.status === "retrying",
       );
       expect(retrying.attempt).toBe(1);
-      expect(retrying.result?.statusCode).toBe(503);
-      const delay = retrying.runAt.getTime() - Date.now();
+      expect(retrying.result?.status_code).toBe(503);
+      const delay = retrying.run_at.getTime() - Date.now();
       expect(delay).toBeGreaterThan(BACKOFF_BASE_MS - 1_500);
       expect(delay).toBeLessThan(BACKOFF_BASE_MS + 1_500);
 
@@ -512,7 +512,7 @@ describe("runJobs", () => {
         12_000,
       );
       expect(succeeded.attempt).toBe(2);
-      expect(succeeded.result?.statusCode).toBe(200);
+      expect(succeeded.result?.status_code).toBe(200);
     },
     15_000,
   );
@@ -530,7 +530,7 @@ describe("runJobs", () => {
       "job-never",
       (j) => j.status === "dead",
     );
-    expect(dead.result?.terminalReason).toBe("rejected-by-endpoint");
+    expect(dead.result?.terminal_reason).toBe("rejected-by-endpoint");
     await runtime!.stop();
     runtime = undefined;
 
@@ -547,10 +547,10 @@ describe("runJobs", () => {
       "job-always",
       (j) => j.status === "retrying",
     );
-    expect(retrying.result?.statusCode).toBe(400);
+    expect(retrying.result?.status_code).toBe(400);
   });
 
-  it("honors Retry-After on 429 for runAt scheduling", async () => {
+  it("honors Retry-After on 429 for run_at scheduling", async () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     scripts.push({
       status: 429,
@@ -565,7 +565,7 @@ describe("runJobs", () => {
       "job-429",
       (j) => j.status === "retrying",
     );
-    expect(retrying.runAt.getTime()).toBeGreaterThanOrEqual(
+    expect(retrying.run_at.getTime()).toBeGreaterThanOrEqual(
       before + 90_000 - 2_000,
     );
   });
@@ -582,11 +582,11 @@ describe("runJobs", () => {
       "job-auth",
       (j) => j.status === "dead",
     );
-    expect(dead.result?.terminalReason).toBe("auth-unresolvable");
+    expect(dead.result?.terminal_reason).toBe("auth-unresolvable");
   });
 
   it("aborts at the operation timeout and schedules retry", async () => {
-    scripts.push({ status: 200, delayMs: 500, body: { too: "late" } });
+    scripts.push({ status: 200, delay_ms: 500, body: { too: "late" } });
     await createJob(dbKey, jobParams({ id: "job-timeout" }));
     await startRuntime({
       operationConfig: {
@@ -599,10 +599,10 @@ describe("runJobs", () => {
       (j) => j.status === "retrying",
       5_000,
     );
-    expect(retrying.result?.errorBody).toMatch(/timed out/i);
+    expect(retrying.result?.error_body).toMatch(/timed out/i);
   });
 
-  it("caps stored errorBody at 8KB", async () => {
+  it("caps stored error_body at 8KB", async () => {
     const huge = "x".repeat(ERROR_BODY_CAP_BYTES + 2048);
     scripts.push({ status: 500, body: huge });
     await createJob(dbKey, jobParams({ id: "job-cap" }));
@@ -612,7 +612,7 @@ describe("runJobs", () => {
       "job-cap",
       (j) => j.status === "retrying",
     );
-    expect(Buffer.byteLength(retrying.result?.errorBody ?? "", "utf8")).toBe(
+    expect(Buffer.byteLength(retrying.result?.error_body ?? "", "utf8")).toBe(
       ERROR_BODY_CAP_BYTES,
     );
   });
@@ -643,10 +643,10 @@ describe("runJobs", () => {
           id: "job-stalled",
           status: "running",
           attempt: 1,
-          maxAttempts: 5,
-          startedAt: stale,
-          heartbeatAt: stale,
-          runAt: stale,
+          max_attempts: 5,
+          started_at: stale,
+          heartbeat_at: stale,
+          run_at: stale,
         }),
       );
       scripts.push({ status: 200, body: { recovered: true } });
@@ -673,26 +673,26 @@ describe("runJobs", () => {
         dbKey,
         jobParams({
           id: "job-short-timeout",
-          operationId: "jobsDemoWork",
+          operation_id: "jobsDemoWork",
           status: "running",
           attempt: 1,
-          maxAttempts: 5,
-          startedAt: shortStale,
-          heartbeatAt: shortStale,
-          runAt: shortStale,
+          max_attempts: 5,
+          started_at: shortStale,
+          heartbeat_at: shortStale,
+          run_at: shortStale,
         }),
       );
       await createJob(
         dbKey,
         jobParams({
           id: "job-long-timeout",
-          operationId: "jobsDemoStepC",
+          operation_id: "jobsDemoStepC",
           status: "running",
           attempt: 1,
-          maxAttempts: 5,
-          startedAt: longStale,
-          heartbeatAt: longStale,
-          runAt: longStale,
+          max_attempts: 5,
+          started_at: longStale,
+          heartbeat_at: longStale,
+          run_at: longStale,
         }),
       );
 
@@ -726,10 +726,10 @@ describe("runJobs", () => {
       let heartbeatAtAfterInterval: Date | null | undefined;
       scripts.push(async (_req, res) => {
         const start = await getByIdJob(dbKey, { id: "job-hb" });
-        heartbeatAtStart = start.result?.heartbeatAt;
+        heartbeatAtStart = start.result?.heartbeat_at;
         await new Promise((r) => setTimeout(r, HEARTBEAT_INTERVAL_MS + 300));
         const mid = await getByIdJob(dbKey, { id: "job-hb" });
-        heartbeatAtAfterInterval = mid.result?.heartbeatAt;
+        heartbeatAtAfterInterval = mid.result?.heartbeat_at;
         res.status(200).json({ ok: true });
       });
       await createJob(dbKey, jobParams({ id: "job-hb" }));
@@ -761,13 +761,13 @@ describe("runJobs", () => {
         dbKey,
         jobParams({
           id: "job-c",
-          operationId: "jobsDemoStepC",
-          enqueuedByOperationId: "jobsDemoStepB",
-          parentJobId: "job-b",
-          originalRequestId: "r-chain-abc",
-          runAt: now,
-          createdAt: now,
-          updatedAt: now,
+          operation_id: "jobsDemoStepC",
+          enqueued_by_operation_id: "jobsDemoStepB",
+          parent_job_id: "job-b",
+          original_request_id: "r-chain-abc",
+          run_at: now,
+          created_at: now,
+          updated_at: now,
         }),
       );
       signalJobsWake();
@@ -779,9 +779,9 @@ describe("runJobs", () => {
       dbKey,
       jobParams({
         id: "job-b",
-        operationId: "jobsDemoStepB",
-        originalRequestId: "r-chain-abc",
-        enqueuedByOperationId: "startJobsDemo",
+        operation_id: "jobsDemoStepB",
+        original_request_id: "r-chain-abc",
+        enqueued_by_operation_id: "startJobsDemo",
       }),
     );
     await startRuntime();
@@ -796,10 +796,10 @@ describe("runJobs", () => {
       "job-c",
       (j) => j.status === "succeeded",
     );
-    expect(jobB.operationId).toBe("jobsDemoStepB");
-    expect(jobC.operationId).toBe("jobsDemoStepC");
-    expect(jobC.parentJobId).toBe("job-b");
-    expect(jobC.originalRequestId).toBe("r-chain-abc");
+    expect(jobB.operation_id).toBe("jobsDemoStepB");
+    expect(jobC.operation_id).toBe("jobsDemoStepC");
+    expect(jobC.parent_job_id).toBe("job-b");
+    expect(jobC.original_request_id).toBe("r-chain-abc");
   });
 
   it("throws on invalid trigger map at startup", async () => {

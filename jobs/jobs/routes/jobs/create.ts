@@ -26,7 +26,7 @@ function parseAssertionToken(token: string): JobAuthorityAssertion {
   return {
     payload: parts[0],
     signature: parts[1],
-    keyId: parts[2],
+    key_id: parts[2],
   };
 }
 
@@ -52,23 +52,23 @@ export const enqueueJobHandler = createHandler(async (req, res) => {
   }
 
   const allowed = ctx.triggerMap[callingOperationId] ?? [];
-  if (!allowed.includes(data.operationId)) {
-    observeJobsEnqueued(data.operationId, "rejected");
+  if (!allowed.includes(data.operation_id)) {
+    observeJobsEnqueued(data.operation_id, "rejected");
     throw createError(
       403,
-      `Operation "${callingOperationId}" may not enqueue "${data.operationId}"`,
+      `Operation "${callingOperationId}" may not enqueue "${data.operation_id}"`,
       { code: "trigger_map_violation" },
     );
   }
 
-  const resolved = ctx.operations.get(data.operationId);
+  const resolved = ctx.operations.get(data.operation_id);
   if (!resolved || !resolved.isBackground) {
-    observeJobsEnqueued(data.operationId, "rejected");
+    observeJobsEnqueued(data.operation_id, "rejected");
     throw createError(
       422,
       resolved
-        ? `Operation "${data.operationId}" is not tagged background`
-        : `Unknown operationId "${data.operationId}"`,
+        ? `Operation "${data.operation_id}" is not tagged background`
+        : `Unknown operation_id "${data.operation_id}"`,
       { code: "invalid_operation" },
     );
   }
@@ -76,14 +76,14 @@ export const enqueueJobHandler = createHandler(async (req, res) => {
   const request: JobRequest = data.request ?? {};
   const requestJson = JSON.stringify(request);
   if (Buffer.byteLength(requestJson, "utf8") > REQUEST_SIZE_CAP_BYTES) {
-    observeJobsEnqueued(data.operationId, "rejected");
+    observeJobsEnqueued(data.operation_id, "rejected");
     throw createError(400, "Job request exceeds 16 KB size cap", {
       code: "request_too_large",
     });
   }
 
   const assertionEvidence = parseAssertionToken(assertionHeader);
-  const actingUserId = data.onBehalfOf?.userId ?? auth.userId!;
+  const actingUserId = data.on_behalf_of?.user_id ?? auth.userId!;
   const chainRootId =
     assertion.claims?.originalRequestId ??
     originalRequestId ??
@@ -91,85 +91,85 @@ export const enqueueJobHandler = createHandler(async (req, res) => {
     "no-request-id";
 
   let authority: JobAuthority;
-  if (data.onBehalfOf) {
-    const evidence = data.onBehalfOf.authority;
+  if (data.on_behalf_of) {
+    const evidence = data.on_behalf_of.authority;
     if (evidence.kind === "request") {
       authority = {
         kind: "request",
-        userId: data.onBehalfOf.userId,
-        requestId: evidence.requestId,
+        user_id: data.on_behalf_of.user_id,
+        request_id: evidence.request_id,
         assertion: assertionEvidence,
       };
     } else if (evidence.kind === "importer") {
       authority = {
         kind: "importer",
-        userId: data.onBehalfOf.userId,
-        importerId: evidence.importerId,
+        user_id: data.on_behalf_of.user_id,
+        importer_id: evidence.importer_id,
         assertion: assertionEvidence,
       };
     } else if (evidence.kind === "cron") {
       authority = {
         kind: "cron",
-        userId: data.onBehalfOf.userId,
-        cronJobName: evidence.cronJobName,
+        user_id: data.on_behalf_of.user_id,
+        cron_job_name: evidence.cron_job_name,
         assertion: assertionEvidence,
       };
     } else {
-      throw createError(400, "onBehalfOf.authority requires evidence", {
+      throw createError(400, "on_behalf_of.authority requires evidence", {
         code: "invalid_authority",
       });
     }
   } else {
     authority = {
       kind: "request",
-      userId: actingUserId,
-      requestId: chainRootId,
+      user_id: actingUserId,
+      request_id: chainRootId,
       assertion: assertionEvidence,
     };
   }
 
   const now = new Date();
-  let runAt = now;
-  if (data.delayMs != null) {
-    runAt = new Date(now.getTime() + data.delayMs);
-  } else if (data.runAt) {
-    runAt = new Date(data.runAt);
+  let run_at = now;
+  if (data.delay_ms != null) {
+    run_at = new Date(now.getTime() + data.delay_ms);
+  } else if (data.run_at) {
+    run_at = new Date(data.run_at);
   }
 
-  const maxAttempts =
-    ctx.operationConfig[data.operationId]?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
+  const max_attempts =
+    ctx.operationConfig[data.operation_id]?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
 
-  const parentJobId = assertion.claims?.jobId ?? null;
+  const parent_job_id = assertion.claims?.jobId ?? null;
 
   const { result, error } = await createJob(ctx.dbKey, {
     status: "pending",
-    operationId: data.operationId,
+    operation_id: data.operation_id,
     request,
-    userId: actingUserId,
+    user_id: actingUserId,
     authority,
-    originalRequestId: chainRootId,
-    enqueuedByOperationId: callingOperationId,
-    parentJobId,
-    runAt,
-    dedupeKey: data.dedupeKey ?? null,
-    concurrencyKey: data.concurrencyKey ?? null,
+    original_request_id: chainRootId,
+    enqueued_by_operation_id: callingOperationId,
+    parent_job_id,
+    run_at,
+    dedupe_key: data.dedupe_key ?? null,
+    concurrency_key: data.concurrency_key ?? null,
     priority: data.priority ?? 0,
     attempt: 0,
-    maxAttempts,
-    heartbeatAt: null,
+    max_attempts,
+    heartbeat_at: null,
     result: null,
-    createdAt: now,
-    updatedAt: now,
-    startedAt: null,
-    finishedAt: null,
+    created_at: now,
+    updated_at: now,
+    started_at: null,
+    finished_at: null,
     spawnCap: SPAWN_CAP,
   });
 
   if (error) {
     switch (true) {
       case error instanceof JobSpawnCapExceededError:
-        observeJobsEnqueued(data.operationId, "rejected");
-        throw createError(429, "Spawn cap exceeded for this originalRequestId", {
+        observeJobsEnqueued(data.operation_id, "rejected");
+        throw createError(429, "Spawn cap exceeded for this original_request_id", {
           code: "spawn_cap_exceeded",
         });
       default:
@@ -178,7 +178,7 @@ export const enqueueJobHandler = createHandler(async (req, res) => {
   }
 
   observeJobsEnqueued(
-    data.operationId,
+    data.operation_id,
     result!.deduped ? "deduped" : "created",
   );
   signalJobsWake();

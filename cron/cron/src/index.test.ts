@@ -105,8 +105,8 @@ describe("startJobs", () => {
     const setting = await throwError(
       getByName(dbKey, "every-second-job"),
     );
-    expect(setting.lastRunStatus).toBe("success");
-    expect(setting.lastRunAt).toEqual(new Date(baseTime.getTime() + 1000));
+    expect(setting.last_run_status).toBe("success");
+    expect(setting.last_run_at).toEqual(new Date(baseTime.getTime() + 1000));
   });
 
   it("should not enqueue disabled job on schedule tick", async () => {
@@ -118,7 +118,7 @@ describe("startJobs", () => {
       getByName(dbKey, "disabled-job"),
     );
     expect(setting.enabled).toBe(false);
-    expect(setting.lastRunStatus).toBeNull();
+    expect(setting.last_run_status).toBeNull();
   });
 
   it("should skip and warn when enabled but enabled_by is null", async () => {
@@ -138,7 +138,7 @@ describe("startJobs", () => {
     const setting = await throwError(
       getByName(dbKey, "every-second-job"),
     );
-    expect(setting.lastRunStatus).toBeNull();
+    expect(setting.last_run_status).toBeNull();
   });
 
   it("should pass custom dedupeKey, request, and priority from JobConfig", async () => {
@@ -182,8 +182,8 @@ describe("startJobs", () => {
     const setting = await throwError(
       getByName(dbKey, "every-second-job"),
     );
-    expect(setting.lastRunStatus).toBe("fail");
-    expect(setting.lastRunAt).toEqual(new Date(baseTime.getTime() + 1000));
+    expect(setting.last_run_status).toBe("fail");
+    expect(setting.last_run_at).toEqual(new Date(baseTime.getTime() + 1000));
     expect(errorReporter).toHaveBeenCalledWith(
       expect.objectContaining({
         error: enqueueError,

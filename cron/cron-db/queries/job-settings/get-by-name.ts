@@ -12,7 +12,7 @@ export const getByName = queryWrapper(
   async (dbKey: DbKey, jobName: string): Promise<GetByNameResult> => {
     const db = cronDbManager.get(dbKey)!;
     const result = await db.query.jobSettings.findFirst({
-      where: eq(jobSettings.jobName, jobName),
+      where: eq(jobSettings.job_name, jobName),
       // No columns specified, returns the whole object
     });
 

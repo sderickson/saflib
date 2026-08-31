@@ -20,37 +20,40 @@ import {
   moduleTargetFromImport,
   packageLocalPath,
   stripTsExt,
-  type ImportUsedBy,
 } from "./import-resolution.ts";
 
 export interface DbInventoryTable {
-  exportName: string;
-  tableName: string;
+  export_name: string;
+  table_name: string;
   docstring: string | null;
   columns: Array<{
-    propName: string;
-    sqlName: string;
-    typeKind: string;
+    prop_name: string;
+    sql_name: string;
+    type_kind: string;
     docstring: string | null;
   }>;
-  filePath: string;
+  file_path: string;
 }
 
-export type DbInventoryUsedBy = ImportUsedBy;
+export type DbInventoryUsedBy = {
+  package_name: string;
+  file_path: string;
+  repo_path: string;
+};
 
 export interface DbInventoryQuery {
   /** Leaf filename without path, e.g. `create.ts`. */
-  fileName: string;
+  file_name: string;
   /** Repo-relative path to the query module. */
-  filePath: string;
+  file_path: string;
   /** Primary exported symbol name when known. */
-  exportName: string | null;
+  export_name: string | null;
   /** Syntactic signature of the primary export. */
   signature: string | null;
   /** Best-effort docstring from the query's primary export. */
   docstring: string | null;
   /** Non-test product files that import this leaf module. */
-  usedBy: DbInventoryUsedBy[];
+  used_by: DbInventoryUsedBy[];
 }
 
 export interface DbInventoryEntity {
@@ -61,7 +64,7 @@ export interface DbInventoryEntity {
    * Distinct packages (non-test) that import any query under this entity.
    * Shown on the table card.
    */
-  usedByPackages: string[];
+  used_by_packages: string[];
   queries: DbInventoryQuery[];
 }
 
@@ -73,8 +76,8 @@ function normalizeEntityKey(name: string): string {
   return name.replace(/-/g, "_").toLowerCase();
 }
 
-function entityFromTableName(tableName: string): string {
-  return tableName.replace(/_/g, "-");
+function entityFromTableName(table_name: string): string {
+  return table_name.replace(/_/g, "-");
 }
 
 /**
@@ -82,14 +85,14 @@ function entityFromTableName(tableName: string): string {
  * `{ entity, leaf }` where leaf is the module stem (`create`, not `create.ts`).
  */
 function queryTargetFromImport(
-  packageName: string,
-  packageDirectory: string,
+  package_name: string,
+  package_directory: string,
   importerPath: string,
   specifier: string,
 ): { entity: string; leaf: string } | null {
   const mod = moduleTargetFromImport(
-    packageName,
-    packageDirectory,
+    package_name,
+    package_directory,
     importerPath,
     specifier,
   );
@@ -111,7 +114,7 @@ function pickQueryExport(
   }>,
   leafStem: string,
 ): {
-  exportName: string | null;
+  export_name: string | null;
   signature: string | null;
   docstring: string | null;
 } {
@@ -127,10 +130,10 @@ function pickQueryExport(
     exports.find((e) => e.kind === "function" || e.kind === "const") ??
     exports[0];
   if (!preferred) {
-    return { exportName: null, signature: null, docstring: null };
+    return { export_name: null, signature: null, docstring: null };
   }
   return {
-    exportName: preferred.name,
+    export_name: preferred.name,
     signature: preferred.signature,
     docstring: preferred.docstring,
   };
@@ -138,30 +141,30 @@ function pickQueryExport(
 
 /**
  * Assemble drizzle tables + query dirs for one db package.
- * - `usedByPackages`: packages importing any query under the entity
- * - `queries[].usedBy`: files importing that specific leaf module
+ * - `used_by_packages`: packages importing any query under the entity
+ * - `queries[].used_by`: files importing that specific leaf module
  */
 export async function assemblePackageDbInventory(
   dbKey: DbKey,
-  commitHash: string,
-  packageName: string,
+  commit_hash: string,
+  package_name: string,
   options: AnalyzeCommitOptions,
 ): Promise<ReturnsError<PackageDbInventory, GitCommandError>> {
-  const repoRoot = options.repoRoot;
-  const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
+  const repo_root = options.repo_root;
+  const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
 
-  const treeResult = listTree(repoRoot, commitHash);
+  const treeResult = listTree(repo_root, commit_hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) => {
-    if (!productRoot) return true;
-    return e.path === productRoot || e.path.startsWith(productRoot + "/");
+    if (!product_root) return true;
+    return e.path === product_root || e.path.startsWith(product_root + "/");
   });
 
   const packageJsonEntries = tree.filter(
     (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
   );
   const pkgBlobHashes = packageJsonEntries.map((e) => e.blobHash);
-  const pkgBlobs = readBlobs(repoRoot, pkgBlobHashes);
+  const pkgBlobs = readBlobs(repo_root, pkgBlobHashes);
   if (pkgBlobs.error) return { error: pkgBlobs.error };
 
   const nameByPath = new Map<string, string>();
@@ -175,7 +178,7 @@ export async function assemblePackageDbInventory(
     packageJsonEntries.map((e) => e.path),
     nameByPath,
   );
-  const targetRoot = roots.find((r) => r.packageName === packageName);
+  const targetRoot = roots.find((r) => r.package_name === package_name);
   if (!targetRoot) {
     return { result: { entities: [] } };
   }
@@ -200,19 +203,19 @@ export async function assemblePackageDbInventory(
   const allSourceEntries = tree.filter((e) => isSourcePath(e.path));
   const factsResult = await ensureBlobFacts(
     dbKey,
-    repoRoot,
+    repo_root,
     allSourceEntries.map((e) => e.blobHash),
   );
   if (factsResult.error) return { error: factsResult.error };
   const facts = factsResult.result;
 
-  type TableWithPath = BlobTableFact & { filePath: string };
+  type TableWithPath = BlobTableFact & { file_path: string };
   const tables: TableWithPath[] = [];
   for (const entry of packageSourceEntries) {
     const fact = facts.get(entry.blobHash);
     if (!fact) continue;
     for (const t of blobFactTables(fact)) {
-      tables.push({ ...t, filePath: entry.path });
+      tables.push({ ...t, file_path: entry.path });
     }
   }
 
@@ -225,17 +228,17 @@ export async function assemblePackageDbInventory(
     const m = /^queries\/([^/]+)\/([^/]+\.ts)$/.exec(rel);
     if (!m) continue;
     const entity = m[1]!;
-    const fileName = m[2]!;
-    if (fileName === "index.ts" || fileName.endsWith(".test.ts")) continue;
+    const file_name = m[2]!;
+    if (file_name === "index.ts" || file_name.endsWith(".test.ts")) continue;
     // Match classify.isTestSourcePath — fixtures are test helpers, not product queries.
-    if (fileName.endsWith(".fixtures.ts") || fileName.endsWith(".fixtures.tsx")) {
+    if (file_name.endsWith(".fixtures.ts") || file_name.endsWith(".fixtures.tsx")) {
       continue;
     }
-    const leaf = stripTsExt(fileName);
+    const leaf = stripTsExt(file_name);
     const fact = facts.get(entry.blobHash);
     const picked = fact
       ? pickQueryExport(blobFactExports(fact), leaf)
-      : { exportName: null, signature: null, docstring: null };
+      : { export_name: null, signature: null, docstring: null };
     const eKey = normalizeEntityKey(entity);
     let byLeaf = queriesByEntity.get(eKey);
     if (!byLeaf) {
@@ -243,12 +246,12 @@ export async function assemblePackageDbInventory(
       queriesByEntity.set(eKey, byLeaf);
     }
     byLeaf.set(leaf, {
-      fileName,
-      filePath: entry.path,
-      exportName: picked.exportName,
+      file_name,
+      file_path: entry.path,
+      export_name: picked.export_name,
       signature: picked.signature,
       docstring: picked.docstring,
-      usedBy: [],
+      used_by: [],
     });
   }
 
@@ -263,7 +266,7 @@ export async function assemblePackageDbInventory(
           ? entityLabel.replace(/_/g, "-")
           : entityLabel,
         table: null,
-        usedByPackages: [],
+        used_by_packages: [],
         queries: [],
       };
       byKey.set(key, row);
@@ -276,12 +279,12 @@ export async function assemblePackageDbInventory(
     const entityLabel =
       first &&
       (() => {
-        const m = /\/queries\/([^/]+)\//.exec(first.filePath);
+        const m = /\/queries\/([^/]+)\//.exec(first.file_path);
         return m?.[1];
       })();
     const row = ensureEntity(entityLabel ?? eKey);
     row.queries = [...byLeaf.values()].sort((a, b) =>
-      a.fileName.localeCompare(b.fileName),
+      a.file_name.localeCompare(b.file_name),
     );
   }
 
@@ -289,20 +292,20 @@ export async function assemblePackageDbInventory(
     const entityGuess = entityFromTableName(t.tableName);
     const row = ensureEntity(entityGuess);
     row.table = {
-      exportName: t.exportName,
-      tableName: t.tableName,
+      export_name: t.exportName,
+      table_name: t.tableName,
       docstring: t.docstring ?? null,
       columns: t.columns.map((c) => ({
-        propName: c.propName,
-        sqlName: c.sqlName,
-        typeKind: c.typeKind,
+        prop_name: c.propName,
+        sql_name: c.sqlName,
+        type_kind: c.typeKind,
         docstring: c.docstring ?? null,
       })),
-      filePath: t.filePath,
+      file_path: t.file_path,
     };
   }
 
-  /** entityKey → leaf → usedBy map */
+  /** entityKey → leaf → used_by map */
   const queryUsedBy = new Map<
     string,
     Map<string, Map<string, DbInventoryUsedBy>>
@@ -310,16 +313,16 @@ export async function assemblePackageDbInventory(
   const entityPackages = new Map<string, Set<string>>();
 
   for (const entry of allSourceEntries) {
-    const fileName = entry.path.split("/").pop() ?? entry.path;
-    if (isTestSourcePath(entry.path, fileName)) continue;
+    const file_name = entry.path.split("/").pop() ?? entry.path;
+    if (isTestSourcePath(entry.path, file_name)) continue;
     const fact = facts.get(entry.blobHash);
     if (!fact) continue;
     const importerRoot = packageForPath(entry.path, roots);
-    const importerPkg = importerRoot.packageName;
+    const importerPkg = importerRoot.package_name;
     const localPath = packageLocalPath(entry.path, importerRoot.directory);
     for (const imp of blobFactImports(fact)) {
       const target = queryTargetFromImport(
-        packageName,
+        package_name,
         targetRoot.directory,
         entry.path,
         imp.specifier,
@@ -346,29 +349,29 @@ export async function assemblePackageDbInventory(
         byLeaf.set(target.leaf, used);
       }
       used.set(`${importerPkg}\0${entry.path}`, {
-        packageName: importerPkg,
-        filePath: localPath,
-        repoPath: entry.path,
+        package_name: importerPkg,
+        file_path: localPath,
+        repo_path: entry.path,
       });
     }
   }
 
   for (const [eKey, row] of byKey) {
     const pkgs = entityPackages.get(eKey);
-    row.usedByPackages = pkgs
+    row.used_by_packages = pkgs
       ? [...pkgs].sort((a, b) => a.localeCompare(b))
       : [];
 
     const byLeaf = queryUsedBy.get(eKey);
     if (!byLeaf) continue;
     for (const q of row.queries) {
-      const leaf = stripTsExt(q.fileName);
+      const leaf = stripTsExt(q.file_name);
       const used = byLeaf.get(leaf);
       if (!used) continue;
-      q.usedBy = [...used.values()].sort(
+      q.used_by = [...used.values()].sort(
         (a, b) =>
-          a.packageName.localeCompare(b.packageName) ||
-          a.filePath.localeCompare(b.filePath),
+          a.package_name.localeCompare(b.package_name) ||
+          a.file_path.localeCompare(b.file_path),
       );
     }
   }
@@ -382,41 +385,41 @@ export async function assemblePackageDbInventory(
 
 /** Flatten inventory tables for commit-level schema diffs. */
 export function flattenInventoryTables(
-  packageName: string,
+  package_name: string,
   inventory: PackageDbInventory,
 ): Array<{
-  packageName: string;
-  tableName: string;
-  exportName: string;
-  filePath: string;
+  package_name: string;
+  table_name: string;
+  export_name: string;
+  file_path: string;
   docstring: string | null;
   columns: Array<{
-    sqlName: string;
-    typeKind: string;
-    propName: string;
+    sql_name: string;
+    type_kind: string;
+    prop_name: string;
     docstring: string | null;
   }>;
 }> {
   const out: Array<{
-    packageName: string;
-    tableName: string;
-    exportName: string;
-    filePath: string;
+    package_name: string;
+    table_name: string;
+    export_name: string;
+    file_path: string;
     docstring: string | null;
     columns: Array<{
-      sqlName: string;
-      typeKind: string;
-      propName: string;
+      sql_name: string;
+      type_kind: string;
+      prop_name: string;
       docstring: string | null;
     }>;
   }> = [];
   for (const e of inventory.entities) {
     if (!e.table) continue;
     out.push({
-      packageName,
-      tableName: e.table.tableName,
-      exportName: e.table.exportName,
-      filePath: e.table.filePath,
+      package_name,
+      table_name: e.table.table_name,
+      export_name: e.table.export_name,
+      file_path: e.table.file_path,
       docstring: e.table.docstring,
       columns: e.table.columns,
     });

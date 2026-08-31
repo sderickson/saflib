@@ -24,9 +24,9 @@ properties:
       type: string
   from:
     type: string
-  timeSent:
+  time_sent:
     type: number
-  replyTo:
+  reply_to:
     type: array
     items:
       type: string

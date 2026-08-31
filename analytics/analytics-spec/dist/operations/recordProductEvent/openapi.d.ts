@@ -53,7 +53,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    productEvent: {
+                    product_event: {
                         event: string;
                         client?: string;
                         view?: string;

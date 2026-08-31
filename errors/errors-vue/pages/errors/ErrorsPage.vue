@@ -84,7 +84,7 @@ const kindFilter = ref<ReportedError["kind"] | undefined>();
 const sourceFilter = ref("");
 
 const reportedErrors = computed(
-  () => errorsQuery.data.value?.reportedErrors ?? [],
+  () => errorsQuery.data.value?.reported_errors ?? [],
 );
 
 const filteredErrors = computed(() => {

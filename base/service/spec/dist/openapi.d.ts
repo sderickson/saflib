@@ -75,13 +75,13 @@ export interface paths {
         };
         /**
          * Get or lazy-create the caller's user config
-         * @description Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`displayName` empty string, `marketingEmailsOptIn` false, `marketingEmailsOptInAt` null, `termsOfServiceAgreedAt` null) and returns that row.
+         * @description Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`display_name` empty string, `marketing_emails_opt_in` false, `marketing_emails_opt_in_at` null, `terms_of_service_agreed_at` null) and returns that row.
          *     **Lazy-create pattern:** empty `user_config` rows are created on first GET (not via a Kratos registration webhook). This keeps Kratos auth-only and the product DB responsible for user-facing prefs.
          */
         get: operations["getMineUserConfigs"];
         /**
          * Update the caller's user config
-         * @description Upserts the authenticated user's display name and marketing email preference. Lazy-creates the `user_config` row when missing. `displayName` is trimmed; empty or whitespace-only values are rejected. When `marketingEmailsOptIn` becomes `true`, sets `marketingEmailsOptInAt` to now if newly opted in; when set to `false`, clears `marketingEmailsOptInAt` to null. Pass `termsOfServiceAgreedAt: "now"` to record Terms of Service agreement at the server's current time (preserved once set; not overwritten). `userId`, timestamps, and client-supplied ISO values for `marketingEmailsOptInAt` / `termsOfServiceAgreedAt` may be included when echoing a prior GET but are ignored — ownership and timestamps are server-controlled.
+         * @description Upserts the authenticated user's display name and marketing email preference. Lazy-creates the `user_config` row when missing. `display_name` is trimmed; empty or whitespace-only values are rejected. When `marketing_emails_opt_in` becomes `true`, sets `marketing_emails_opt_in_at` to now if newly opted in; when set to `false`, clears `marketing_emails_opt_in_at` to null. Pass `terms_of_service_agreed_at: "now"` to record Terms of Service agreement at the server's current time (preserved once set; not overwritten). `user_id`, timestamps, and client-supplied ISO values for `marketing_emails_opt_in_at` / `terms_of_service_agreed_at` may be included when echoing a prior GET but are ignored — ownership and timestamps are server-controlled.
          */
         put: operations["putMineUserConfigs"];
         post?: never;
@@ -172,17 +172,17 @@ export interface components {
         __TargetName__: components["schemas"]["__target-name__"];
         "jobs-demo-options": {
             /** @description Optional dedupe key forwarded to the enqueued job. */
-            dedupeKey?: string | null;
+            dedupe_key?: string | null;
             /** @description Optional concurrency key forwarded to the enqueued job. */
-            concurrencyKey?: string | null;
+            concurrency_key?: string | null;
             /** @description For step-b demos: respond 503 this many times before succeeding and enqueueing step-c. */
-            failuresBeforeSuccess?: number;
+            failures_before_success?: number;
             /** @description Arbitrary JSON echoed through the demo chain. */
             payload?: {
                 [key: string]: unknown;
             };
         };
-        /** @description Wire form of a queued API-call job. CamelCase projection of the `job` row; omits internal columns (`heartbeatAt`, `updatedAt`). Authority is the discriminated evidence grant without the raw enqueue assertion token (detail endpoints may return that separately as `authorityAssertion`). */
+        /** @description Wire form of a queued API-call job; field names match the `job` row and nested JSON. Omits internal columns (`heartbeat_at`, `updated_at`). Authority is the discriminated evidence grant without the raw enqueue assertion token (detail endpoints may return that separately as `authority_assertion`). */
         job: {
             /**
              * @description Short identifier for the job (from generateShortId).
@@ -199,18 +199,18 @@ export interface components {
              * @description Target OpenAPI operationId resolved at delivery time.
              * @example jobsDemoStepB
              */
-            operationId: string;
+            operation_id: string;
             /**
              * @description Capped request payload delivered to the target operation (serialized size ≤ 16 KB). Path params, query, and body are optional and substituted into the operation's path template / request.
              * @example {
              *       "body": {
-             *         "failuresBeforeSuccess": 2
+             *         "failures_before_success": 2
              *       }
              *     }
              */
             request: {
                 /** @description Path template substitutions keyed by parameter name. */
-                pathParams?: {
+                path_params?: {
                     [key: string]: unknown;
                 };
                 /** @description Query string parameters keyed by name. */
@@ -224,7 +224,7 @@ export interface components {
              * @description Acting user whose authority the job runs under.
              * @example Us7k_pQ2
              */
-            userId: string;
+            user_id: string;
             /** @description Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token. */
             authority: {
                 /**
@@ -236,12 +236,12 @@ export interface components {
                  * @description User who made the originating request.
                  * @example Us7k_pQ2
                  */
-                userId: string;
+                user_id: string;
                 /**
                  * @description Originating request id (e.g. X-Request-ID).
                  * @example r-abc123
                  */
-                requestId: string;
+                request_id: string;
             } | {
                 /**
                  * @example importer
@@ -252,12 +252,12 @@ export interface components {
                  * @description Importer creator whose authority is used.
                  * @example Us7k_pQ2
                  */
-                userId: string;
+                user_id: string;
                 /**
                  * @description Short id of the importer row that authorized the chain.
                  * @example Im7k_mN2
                  */
-                importerId: string;
+                importer_id: string;
             } | {
                 /**
                  * @example cron
@@ -268,44 +268,44 @@ export interface components {
                  * @description Admin who enabled the cron job (`enabled_by`).
                  * @example Us7k_pQ2
                  */
-                userId: string;
+                user_id: string;
                 /**
                  * @description Name of the cron job that enqueued this chain.
                  * @example recoverySweep
                  */
-                cronJobName: string;
+                cron_job_name: string;
             };
             /**
              * @description Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Copied from parent on chained enqueues; joins audit_event.request_id.
              * @example r-abc123
              */
-            originalRequestId: string;
+            original_request_id: string;
             /**
              * @description Calling operationId that enqueued this job (trigger-map edge).
              * @example startJobsDemo
              */
-            enqueuedByOperationId: string;
+            enqueued_by_operation_id: string;
             /**
              * @description Short id of the job that enqueued this one, or null at the chain root.
              * @example null
              */
-            parentJobId: string | null;
+            parent_job_id: string | null;
             /**
              * Format: date-time
              * @description Earliest time the job may be claimed for delivery.
              * @example 2026-08-06T21:00:00.000Z
              */
-            runAt: string;
+            run_at: string;
             /**
-             * @description Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts (pushes runAt, refreshes request) and returns the existing job.
+             * @description Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts (pushes run_at, refreshes request) and returns the existing job.
              * @example matter:demo-1:claim
              */
-            dedupeKey: string | null;
+            dedupe_key: string | null;
             /**
              * @description Optional key limiting concurrency: at most one running job per key (e.g. `matter:{id}`).
              * @example matter:demo-1
              */
-            concurrencyKey: string | null;
+            concurrency_key: string | null;
             /**
              * @description Claim priority; higher values are claimed first. Default 0.
              * @example 0
@@ -320,44 +320,44 @@ export interface components {
              * @description Maximum delivery attempts before the job becomes dead (exhausted).
              * @example 5
              */
-            maxAttempts: number;
-            /** @description Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `errorBody` is set only on failure and capped at 8 KB. */
+            max_attempts: number;
+            /** @description Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `error_body` is set only on failure and capped at 8 KB. */
             result: {
                 /**
                  * @description HTTP status code from the delivery attempt, when available.
                  * @example 500
                  */
-                statusCode?: number;
+                status_code?: number;
                 /**
                  * @description Capped error response body recorded only on failure.
                  * @example {"error":"upstream timeout"}
                  */
-                errorBody?: string | null;
+                error_body?: string | null;
                 /**
                  * @description Why the job became terminal. Null when the job succeeded or result is from a non-terminal retryable failure mid-flight.
                  * @example exhausted
                  * @enum {string|null}
                  */
-                terminalReason?: "exhausted" | "permanent-status" | "rejected-by-endpoint" | "auth-unresolvable" | "cancelled-by-admin" | "cancelled-by-chain" | null;
+                terminal_reason?: "exhausted" | "permanent-status" | "rejected-by-endpoint" | "auth-unresolvable" | "cancelled-by-admin" | "cancelled-by-chain" | null;
             } | null;
             /**
              * Format: date-time
              * @description When the job row was created.
              * @example 2026-08-06T20:59:55.000Z
              */
-            createdAt: string;
+            created_at: string;
             /**
              * Format: date-time
              * @description When the current (or last) delivery attempt started; null if never claimed.
              * @example null
              */
-            startedAt: string | null;
+            started_at: string | null;
             /**
              * Format: date-time
              * @description When the job reached a terminal status; null while still active.
              * @example null
              */
-            finishedAt: string | null;
+            finished_at: string | null;
         };
         "jobs-demo-start-result": {
             job: components["schemas"]["job"];
@@ -384,13 +384,13 @@ export interface components {
         /**
          * @description Product-owned preferences for the signed-in user (owner-only). Keyed by Kratos identity id. Holds display name, marketing email consent, and Terms of Service agreement — not auth traits. Kratos owns identity/credentials/sessions; this resource is the Kratos-minimal product DB pattern.
          * @example {
-         *       "userId": "user_abc123",
-         *       "displayName": "Alex Rivera",
-         *       "marketingEmailsOptIn": false,
-         *       "marketingEmailsOptInAt": null,
-         *       "termsOfServiceAgreedAt": null,
-         *       "createdAt": "2026-07-23T00:00:00Z",
-         *       "updatedAt": "2026-07-23T12:30:00Z"
+         *       "user_id": "user_abc123",
+         *       "display_name": "Alex Rivera",
+         *       "marketing_emails_opt_in": false,
+         *       "marketing_emails_opt_in_at": null,
+         *       "terms_of_service_agreed_at": null,
+         *       "created_at": "2026-07-23T00:00:00Z",
+         *       "updated_at": "2026-07-23T12:30:00Z"
          *     }
          */
         "user-config": {
@@ -398,41 +398,41 @@ export interface components {
              * @description Kratos identity id of the owning user.
              * @example user_abc123
              */
-            userId: string;
+            user_id: string;
             /**
              * @description How the user appears to themselves and to others. May be empty after lazy-create until the first save; PUT requires a non-empty trimmed value.
              * @example Alex Rivera
              */
-            displayName: string;
+            display_name: string;
             /**
              * @description Explicit consent for product/marketing email. Defaults to false until the user opts in.
              * @example false
              */
-            marketingEmailsOptIn: boolean;
+            marketing_emails_opt_in: boolean;
             /**
              * Format: date-time
-             * @description When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketingEmailsOptIn` becomes false).
+             * @description When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketing_emails_opt_in` becomes false).
              * @example null
              */
-            marketingEmailsOptInAt: string | null;
+            marketing_emails_opt_in_at: string | null;
             /**
              * Format: date-time
-             * @description When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `termsOfServiceAgreedAt: "now"`). Once set, later preference updates do not clear or overwrite it.
+             * @description When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `terms_of_service_agreed_at: "now"`). Once set, later preference updates do not clear or overwrite it.
              * @example null
              */
-            termsOfServiceAgreedAt: string | null;
+            terms_of_service_agreed_at: string | null;
             /**
              * Format: date-time
              * @description When the user config row was created.
              * @example 2026-07-23T00:00:00Z
              */
-            createdAt: string;
+            created_at: string;
             /**
              * Format: date-time
              * @description When the user config row was last updated.
              * @example 2026-07-23T12:30:00Z
              */
-            updatedAt: string;
+            updated_at: string;
         };
         /** @description Ory Kratos identity as returned by the admin API. Extra fields from Kratos are allowed. `id` is the Kratos identity UUID (not a product `generateShortId`). */
         "kratos-identity": {
@@ -516,13 +516,13 @@ export interface components {
              * @description When the template-resource was created
              * @example 2023-01-01T00:00:00Z
              */
-            createdAt: string;
+            created_at: string;
             /**
              * Format: date-time
              * @description When the template-resource was last updated
              * @example 2023-01-01T00:00:00Z
              */
-            updatedAt: string;
+            updated_at: string;
         };
     };
     responses: never;
@@ -685,7 +685,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @description Owner-only preferences for the signed-in user. */
-                        userConfig: components["schemas"]["user-config"];
+                        user_config: components["schemas"]["user-config"];
                     };
                 };
             };
@@ -723,24 +723,24 @@ export interface operations {
                      * @description How the user appears to themselves and others. Trimmed server-side; must be non-empty after trim. Max length 80.
                      * @example Alex Rivera
                      */
-                    displayName: string;
+                    display_name: string;
                     /**
-                     * @description Explicit consent for product/marketing email. When flipped to true, `marketingEmailsOptInAt` is set; when flipped to false, that timestamp is cleared.
+                     * @description Explicit consent for product/marketing email. When flipped to true, `marketing_emails_opt_in_at` is set; when flipped to false, that timestamp is cleared.
                      * @example false
                      */
-                    marketingEmailsOptIn: boolean;
+                    marketing_emails_opt_in: boolean;
                     /**
                      * @description Pass the literal string `now` to record Terms of Service agreement using the server clock. Any other value (including ISO timestamps from a prior GET, or null) is ignored. Once recorded, the agreement timestamp is not cleared or overwritten.
                      * @example now
                      */
-                    termsOfServiceAgreedAt?: string | null;
-                    userId?: string;
+                    terms_of_service_agreed_at?: string | null;
+                    user_id?: string;
                     /** Format: date-time */
-                    marketingEmailsOptInAt?: string | null;
+                    marketing_emails_opt_in_at?: string | null;
                     /** Format: date-time */
-                    createdAt?: string;
+                    created_at?: string;
                     /** Format: date-time */
-                    updatedAt?: string;
+                    updated_at?: string;
                 };
             };
         };
@@ -753,11 +753,11 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @description Owner-only preferences for the signed-in user after upsert. */
-                        userConfig: components["schemas"]["user-config"];
+                        user_config: components["schemas"]["user-config"];
                     };
                 };
             };
-            /** @description `displayName` is empty or whitespace-only after trim. */
+            /** @description `display_name` is empty or whitespace-only after trim. */
             400: {
                 headers: {
                     [name: string]: unknown;

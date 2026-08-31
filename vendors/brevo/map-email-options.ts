@@ -70,7 +70,7 @@ export function mapSender(from: EmailOptions["from"]): SendTransacEmailRequest.S
 }
 
 function mapReplyTo(
-  replyTo: EmailOptions["replyTo"],
+  replyTo: EmailOptions["reply_to"],
 ): SendTransacEmailRequest.ReplyTo | undefined {
   if (replyTo == null) return undefined;
   if (typeof replyTo === "string") {
@@ -177,7 +177,7 @@ export async function emailOptionsToSendTransacEmail(
     to,
     cc,
     bcc,
-    replyTo: mapReplyTo(options.replyTo),
+    replyTo: mapReplyTo(options.reply_to),
     subject: options.subject,
     htmlContent,
     textContent,

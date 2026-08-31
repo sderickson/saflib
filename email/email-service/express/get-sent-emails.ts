@@ -12,19 +12,19 @@ import type {
 export function createGetSentEmailsHandler(emailService: EmailService) {
   return createHandler(async (req, res) => {
     const query = req.query as EmailRequestQuery["listSentEmails"];
-    const { userEmail } = query ?? {};
+    const { user_email } = query ?? {};
 
     if (!emailService.isMocked) {
       throw createError(403, "Forbidden - server is not mocking email sends");
     }
 
     let emails = sentEmails;
-    if (userEmail) {
+    if (user_email) {
       emails = emails.filter(
         (email) =>
-          email.to === userEmail ||
-          email.from === userEmail ||
-          email.replyTo === userEmail,
+          email.to === user_email ||
+          email.from === user_email ||
+          email.reply_to === user_email,
       );
     }
 
@@ -49,8 +49,8 @@ const convertEmailOptionsToApiResponse = (
     subject: sentEmail.subject ?? "<no subject>",
     text: convertTextFieldToString(sentEmail.text),
     html: convertTextFieldToString(sentEmail.html),
-    replyTo: convertEmailFieldToString(sentEmail.replyTo),
-    timeSent: sentEmail.timeSent,
+    reply_to: convertEmailFieldToString(sentEmail.reply_to),
+    time_sent: sentEmail.time_sent,
   };
 };
 
@@ -59,7 +59,8 @@ const convertEmailFieldToString = (
     | EmailOptions["to"]
     | EmailOptions["cc"]
     | EmailOptions["bcc"]
-    | EmailOptions["from"],
+    | EmailOptions["from"]
+    | EmailOptions["reply_to"],
 ): string[] => {
   if (Array.isArray(emailField)) {
     return emailField.map(convertEmailFieldToString).flat();

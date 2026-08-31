@@ -7,11 +7,11 @@ properties:
     type: string
     description: Full 40-char commit object hash.
     example: "a1b2c3d4e5f6789012345678901234567890abcd"
-  parentHashes:
+  parent_hashes:
     type: array
     items:
       type: string
-  authoredAt:
+  authored_at:
     type: string
     format: date-time
   message:
@@ -21,7 +21,7 @@ properties:
     type: array
     items:
       $ref: "./commit-ref.yaml"
-  analyzerVersion:
+  analyzer_version:
     type: string
   computed_at:
     type: string
@@ -29,63 +29,63 @@ properties:
   status:
     type: string
     enum: ["pending", "complete", "failed"]
-  summaryMetrics:
+  summary_metrics:
     type: object
     description: >
       Rollup counts across all packages at this commit, for timeline health
       indicators without fetching CommitDetail.
     properties:
-      packageCount:
+      package_count:
         type: integer
         minimum: 0
-      sourceFiles:
+      source_files:
         type: integer
         minimum: 0
-      sourceLines:
+      source_lines:
         type: integer
         minimum: 0
-      testFiles:
+      test_files:
         type: integer
         minimum: 0
-      testLines:
+      test_lines:
         type: integer
         minimum: 0
-      exportCount:
+      export_count:
         type: integer
         minimum: 0
-      testCaseCount:
+      test_case_count:
         type: integer
         minimum: 0
-      issueCountsByKind:
+      issue_counts_by_kind:
         $ref: "./issue-counts-by-kind.yaml"
-      debtCount:
+      debt_count:
         type: integer
         minimum: 0
         description: >
           Sum of all issue kinds (dead-code + oversized-file + package-layout).
-      hasIssueStats:
+      has_issue_stats:
         type: boolean
         description: >
           True when package_issue_stats were computed for this commit (including
           a zero-debt sentinel). False for commits scanned before issue stats.
     required:
-      - packageCount
-      - sourceFiles
-      - sourceLines
-      - testFiles
-      - testLines
-      - exportCount
-      - testCaseCount
-      - issueCountsByKind
-      - debtCount
-      - hasIssueStats
+      - package_count
+      - source_files
+      - source_lines
+      - test_files
+      - test_lines
+      - export_count
+      - test_case_count
+      - issue_counts_by_kind
+      - debt_count
+      - has_issue_stats
 required:
   - hash
-  - parentHashes
-  - authoredAt
+  - parent_hashes
+  - authored_at
   - message
   - refs
-  - analyzerVersion
+  - analyzer_version
   - computed_at
   - status
-  - summaryMetrics
+  - summary_metrics

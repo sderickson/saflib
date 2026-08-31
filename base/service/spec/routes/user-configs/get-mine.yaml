@@ -5,9 +5,9 @@ getMineUserConfigs:
   description: >
     Returns the authenticated user's `user_config` preferences (display name,
     marketing email opt-in, and Terms of Service agreement timestamp). If no row
-    exists yet, inserts defaults (`displayName` empty string,
-    `marketingEmailsOptIn` false, `marketingEmailsOptInAt` null,
-    `termsOfServiceAgreedAt` null) and returns that row.
+    exists yet, inserts defaults (`display_name` empty string,
+    `marketing_emails_opt_in` false, `marketing_emails_opt_in_at` null,
+    `terms_of_service_agreed_at` null) and returns that row.
 
     **Lazy-create pattern:** empty `user_config` rows are created on first GET
     (not via a Kratos registration webhook). This keeps Kratos auth-only and the
@@ -24,9 +24,9 @@ getMineUserConfigs:
             type: object
             additionalProperties: false
             required:
-              - userConfig
+              - user_config
             properties:
-              userConfig:
+              user_config:
                 description: Owner-only preferences for the signed-in user.
                 $ref: "../../openapi.yaml#/components/schemas/UserConfig"
 

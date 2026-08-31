@@ -31,9 +31,9 @@ export interface components {
         /** @description Full static-analysis snapshot for one commit — metadata plus per-package metrics, exports, and test cases. */
         "commit-detail": {
             commit: components["schemas"]["commit"];
-            packageMetrics: components["schemas"]["package-metrics"][];
+            package_metrics: components["schemas"]["package-metrics"][];
             exports: components["schemas"]["export-entry"][];
-            testCases: components["schemas"]["test-case"][];
+            test_cases: components["schemas"]["test-case"][];
         };
         /** @description Analyzed commit metadata — one row per scanned commit. Does not include per-package / export / test-case payloads (see CommitDetail for those). */
         commit: {
@@ -43,13 +43,13 @@ export interface components {
              */
             hash: string;
             /** @description Parent commit hashes (empty for the root commit). */
-            parentHashes: string[];
+            parent_hashes: string[];
             /**
              * Format: date-time
              * @description Author date from the commit (`%aI`).
              * @example 2026-08-12T10:00:00-07:00
              */
-            authoredAt: string;
+            authored_at: string;
             /**
              * @description Full commit message (subject + body).
              * @example Add inventory for package metrics
@@ -61,7 +61,7 @@ export interface components {
              * @description Version string of the analyzer that produced this snapshot.
              * @example 1
              */
-            analyzerVersion: string;
+            analyzer_version: string;
             /**
              * Format: date-time
              * @description When this snapshot was written to the database.
@@ -88,7 +88,7 @@ export interface components {
              */
             type: "branch" | "tag";
             /** @description True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips. */
-            isMainAncestor: boolean;
+            is_main_ancestor: boolean;
         };
         /** @description Per-package file/LOC inventory at a single commit. */
         "package-metrics": {
@@ -96,7 +96,7 @@ export interface components {
              * @description npm package name (e.g. `@saflib/git`).
              * @example @saflib/git
              */
-            packageName: string;
+            package_name: string;
             /**
              * @description Package directory relative to the analyzed product root.
              * @example saflib/git
@@ -108,18 +108,18 @@ export interface components {
              */
             kind?: "db" | "http" | "spec" | "spa" | "sdk" | "lib" | "integration" | "other";
             /** @description Count of source files (excluding tests). */
-            sourceFiles: number;
+            source_files: number;
             /** @description Total lines across source files. */
-            sourceLines: number;
+            source_lines: number;
             /** @description Production (non-test) source lines. */
-            prodLines: number;
+            prod_lines: number;
             /** @description Test file lines. */
-            testLines: number;
+            test_lines: number;
             /** @description Count of test files. */
-            testFiles: number;
-            issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+            test_files: number;
+            issue_counts_by_kind: components["schemas"]["issue-counts-by-kind"];
             /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
-            debtCount: number;
+            debt_count: number;
         };
         /** @description Per-kind issue counts for a commit or package (all kinds count as debt). */
         "issue-counts-by-kind": {
@@ -133,12 +133,12 @@ export interface components {
              * @description npm package that owns this file.
              * @example @saflib/git
              */
-            packageName: string;
+            package_name: string;
             /**
              * @description Path relative to the repo root.
              * @example saflib/git/log.ts
              */
-            filePath: string;
+            file_path: string;
             /**
              * @description Exported symbol name.
              * @example log
@@ -151,7 +151,7 @@ export interface components {
             kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable" | "component" | "prop" | "emit" | "model";
             /**
              * @description Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.
-             * @example (repoRoot: string, options?: LogOptions)
+             * @example (repo_root: string, options?: LogOptions)
              */
             signature: string | null;
             /**
@@ -160,53 +160,53 @@ export interface components {
              */
             docstring: string | null;
             /** @description Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty). */
-            usedBy?: {
-                packageName: string;
+            used_by?: {
+                package_name: string;
                 /** @description Path within the importing package (no package-root prefix). */
-                filePath: string;
+                file_path: string;
                 /** @description Repo-relative path for source links. */
-                repoPath: string;
+                repo_path: string;
             }[];
         };
-        /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
+        /** @description One `describe`/`it`/`test` case extracted from a test file. `full_name` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
         "test-case": {
             /**
              * @description npm package that owns this file.
              * @example @saflib/git
              */
-            packageName: string;
+            package_name: string;
             /**
              * @description Path relative to the repo root.
              * @example saflib/git/index.test.ts
              */
-            filePath: string;
+            file_path: string;
             /**
              * @description Nested describe/it titles joined with `" > "`.
              * @example log > returns commits newest-first (git log order)
              */
-            fullName: string;
+            full_name: string;
             /**
              * @description Linked export name when a suite title matches by convention.
              * @example log
              */
-            subjectName?: string;
+            subject_name?: string;
             /**
              * @description Signature of the linked export at this commit (null if unknown).
-             * @example (repoRoot: string, options?: LogOptions)
+             * @example (repo_root: string, options?: LogOptions)
              */
-            subjectSignature?: string | null;
+            subject_signature?: string | null;
             /** @description First JSDoc prose line of the linked export, when present. */
-            subjectDocstring?: string | null;
+            subject_docstring?: string | null;
             /**
              * @description Repo-relative path of the file that declares the linked export.
              * @example saflib/git/log.ts
              */
-            subjectFilePath?: string;
+            subject_file_path?: string;
             /**
              * @description How the link was made (`adjacent` file vs elsewhere in package).
              * @enum {string}
              */
-            subjectConfidence?: "adjacent" | "package";
+            subject_confidence?: "adjacent" | "package";
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
@@ -245,7 +245,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        commitDetail: components["schemas"]["commit-detail"];
+                        commit_detail: components["schemas"]["commit-detail"];
                     };
                 };
             };

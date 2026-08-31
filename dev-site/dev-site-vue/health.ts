@@ -4,7 +4,7 @@ import type { CommitSummary } from "@saflib/dev-site-spec";
  * Timeline health chip for a commit snapshot.
  *
  * **Review note (phase 6):** this is a deliberate first-cut heuristic, not a
- * settled product rule. Threshold: `testLines / sourceLines >= 0.2` → healthy.
+ * settled product rule. Threshold: `test_lines / source_lines >= 0.2` → healthy.
  * Below that but with some tests → thin. Source with zero test lines → untested.
  * Empty / no source → empty. Adjust here (and mirror in CLI messaging later) if
  * the bar should be package-aware or based on test-case count instead of LOC.
@@ -13,7 +13,7 @@ export type CommitHealthStatus = "healthy" | "thin" | "untested" | "empty";
 
 export interface CommitHealth {
   status: CommitHealthStatus;
-  /** testLines / sourceLines, or null when sourceLines is 0. */
+  /** test_lines / source_lines, or null when source_lines is 0. */
   testRatio: number | null;
   label: string;
   color: "success" | "warning" | "error" | "grey";
@@ -22,10 +22,10 @@ export interface CommitHealth {
 const HEALTHY_RATIO = 0.2;
 
 export function commitHealth(
-  summary: Pick<CommitSummary, "summaryMetrics">,
+  summary: Pick<CommitSummary, "summary_metrics">,
 ): CommitHealth {
-  const { sourceLines, testLines } = summary.summaryMetrics;
-  if (sourceLines <= 0) {
+  const { source_lines, test_lines } = summary.summary_metrics;
+  if (source_lines <= 0) {
     return {
       status: "empty",
       testRatio: null,
@@ -33,8 +33,8 @@ export function commitHealth(
       color: "grey",
     };
   }
-  const testRatio = testLines / sourceLines;
-  if (testLines <= 0) {
+  const testRatio = test_lines / source_lines;
+  if (test_lines <= 0) {
     return {
       status: "untested",
       testRatio: 0,

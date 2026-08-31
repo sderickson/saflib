@@ -22,8 +22,8 @@ export const setLastRunStatus = queryWrapper(
 
     const now = new Date();
     const updateData: Partial<JobSetting> = {
-      lastRunStatus: status,
-      updatedAt: now,
+      last_run_status: status,
+      updated_at: now,
     };
 
     // Record when the tick ran. Historically only "running" stamped lastRunAt
@@ -35,13 +35,13 @@ export const setLastRunStatus = queryWrapper(
       status === "fail" ||
       status === "timed out"
     ) {
-      updateData.lastRunAt = now;
+      updateData.last_run_at = now;
     }
 
     const result = await db
       .update(jobSettings)
       .set(updateData)
-      .where(eq(jobSettings.jobName, jobName))
+      .where(eq(jobSettings.job_name, jobName))
       .returning();
 
     if (result.length === 0) {

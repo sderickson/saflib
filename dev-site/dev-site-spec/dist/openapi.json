@@ -54,7 +54,7 @@
                         "$ref": "#/components/schemas/commit-summary"
                       }
                     },
-                    "nextCursor": {
+                    "next_cursor": {
                       "type": [
                         "string",
                         "null"
@@ -96,10 +96,10 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "commitDetail"
+                    "commit_detail"
                   ],
                   "properties": {
-                    "commitDetail": {
+                    "commit_detail": {
                       "$ref": "#/components/schemas/commit-detail"
                     }
                   }
@@ -120,14 +120,14 @@
         }
       }
     },
-    "/api/commits/{hash}/diff/{otherHash}": {
+    "/api/commits/{hash}/diff/{other_hash}": {
       "get": {
         "summary": "Diff two analyzed commits",
         "operationId": "diffCommits",
         "tags": [
           "no-auth"
         ],
-        "description": "Compare the analysis snapshots of two commits. `hash` is the baseline (\"before\"); `otherHash` is the comparison (\"after\"). Returns added/removed (and changed, for package metrics) inventories.\n",
+        "description": "Compare the analysis snapshots of two commits. `hash` is the baseline (\"before\"); `other_hash` is the comparison (\"after\"). Returns added/removed (and changed, for package metrics) inventories.\n",
         "parameters": [
           {
             "name": "hash",
@@ -139,7 +139,7 @@
             "description": "Baseline commit hash (the \"before\")."
           },
           {
-            "name": "otherHash",
+            "name": "other_hash",
             "in": "path",
             "required": true,
             "schema": {
@@ -156,10 +156,10 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "commitDiff"
+                    "commit_diff"
                   ],
                   "properties": {
-                    "commitDiff": {
+                    "commit_diff": {
                       "$ref": "#/components/schemas/commit-diff"
                     }
                   }
@@ -180,14 +180,14 @@
         }
       }
     },
-    "/api/commits/{hash}/packages/{packageName}": {
+    "/api/commits/{hash}/packages/{package_name}": {
       "get": {
         "summary": "Package-scoped symbols for one analyzed commit",
         "operationId": "getCommitPackage",
         "tags": [
           "no-auth"
         ],
-        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes dbInventory (drizzle tables + query dirs). For spec packages, also includes specInventory (OpenAPI schemas + REST resources). For http and sdk packages, specInventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, specInventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layoutIssues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.\n",
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes db_inventory (drizzle tables + query dirs). For spec packages, also includes spec_inventory (OpenAPI schemas + REST resources). For http and sdk packages, spec_inventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, spec_inventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layout_issues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.\n",
         "parameters": [
           {
             "name": "hash",
@@ -198,7 +198,7 @@
             }
           },
           {
-            "name": "packageName",
+            "name": "package_name",
             "in": "path",
             "required": true,
             "schema": {
@@ -215,46 +215,46 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "packageDetail"
+                    "package_detail"
                   ],
                   "properties": {
-                    "packageDetail": {
+                    "package_detail": {
                       "type": "object",
                       "required": [
-                        "commitHash",
-                        "packageName",
+                        "commit_hash",
+                        "package_name",
                         "directory",
-                        "sourceFiles",
-                        "sourceLines",
-                        "prodLines",
-                        "testLines",
-                        "testFiles",
+                        "source_files",
+                        "source_lines",
+                        "prod_lines",
+                        "test_lines",
+                        "test_files",
                         "exports",
-                        "testCases"
+                        "test_cases"
                       ],
                       "properties": {
-                        "commitHash": {
+                        "commit_hash": {
                           "type": "string"
                         },
-                        "packageName": {
+                        "package_name": {
                           "type": "string"
                         },
                         "directory": {
                           "type": "string"
                         },
-                        "sourceFiles": {
+                        "source_files": {
                           "type": "integer"
                         },
-                        "sourceLines": {
+                        "source_lines": {
                           "type": "integer"
                         },
-                        "prodLines": {
+                        "prod_lines": {
                           "type": "integer"
                         },
-                        "testLines": {
+                        "test_lines": {
                           "type": "integer"
                         },
-                        "testFiles": {
+                        "test_files": {
                           "type": "integer"
                         },
                         "exports": {
@@ -263,26 +263,26 @@
                             "$ref": "#/components/schemas/export-entry"
                           }
                         },
-                        "testCases": {
+                        "test_cases": {
                           "type": "array",
                           "items": {
                             "$ref": "#/components/schemas/test-case"
                           }
                         },
-                        "dbInventory": {
+                        "db_inventory": {
                           "$ref": "#/components/schemas/db-inventory"
                         },
-                        "specInventory": {
+                        "spec_inventory": {
                           "$ref": "#/components/schemas/spec-inventory"
                         },
-                        "layoutIssues": {
+                        "layout_issues": {
                           "type": "array",
                           "description": "Working-tree package-layout and oversized-file findings (package-local; cheap). Dead-code workdir scans are CLI-only.\n",
                           "items": {
                             "$ref": "#/components/schemas/package-issue"
                           }
                         },
-                        "publicExportFilePaths": {
+                        "public_export_file_paths": {
                           "type": "array",
                           "description": "Repo-relative files from live package.json `exports` (SPA main.ts, test-app.ts). Spec Issues skips these for dead-code so the panel matches `saf-dev-site issues --workdir`.\n",
                           "items": {
@@ -340,9 +340,9 @@
                     "type": "integer",
                     "minimum": 1,
                     "default": 1,
-                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commitHash` is set.\n"
+                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commit_hash` is set.\n"
                   },
-                  "commitHash": {
+                  "commit_hash": {
                     "type": "string",
                     "description": "Analyze exactly this commit (if not already stored). Used by Current checkout \"Scan this commit\".\n"
                   }
@@ -422,10 +422,10 @@
         "tags": [
           "no-auth"
         ],
-        "description": "Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`). Used by the Current checkout UI.\n",
+        "description": "Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compare_ref` (default `main`). Used by the Current checkout UI.\n",
         "parameters": [
           {
-            "name": "compareRef",
+            "name": "compare_ref",
             "in": "query",
             "required": false,
             "schema": {
@@ -444,12 +444,12 @@
                   "required": [
                     "hash",
                     "message",
-                    "authoredAt",
+                    "authored_at",
                     "analyzed",
-                    "productRoot",
+                    "product_root",
                     "branch",
                     "packages",
-                    "compareCandidates"
+                    "compare_candidates"
                   ],
                   "properties": {
                     "hash": {
@@ -458,14 +458,14 @@
                     "message": {
                       "type": "string"
                     },
-                    "authoredAt": {
+                    "authored_at": {
                       "type": "string",
                       "format": "date-time"
                     },
                     "analyzed": {
                       "type": "boolean"
                     },
-                    "productRoot": {
+                    "product_root": {
                       "type": "string",
                       "description": "Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths.\n"
                     },
@@ -482,14 +482,14 @@
                         "$ref": "#/components/schemas/package-metrics"
                       }
                     },
-                    "compareCandidates": {
+                    "compare_candidates": {
                       "type": "array",
-                      "description": "Local branch names that can be used as `compareRef` (current branch omitted; configured main ref always included when it exists).\n",
+                      "description": "Local branch names that can be used as `compare_ref` (current branch omitted; configured main ref always included when it exists).\n",
                       "items": {
                         "type": "string"
                       }
                     },
-                    "githubRepo": {
+                    "github_repo": {
                       "type": "string",
                       "description": "GitHub `owner/name` for source and commit links. Omitted when the server has no `DEV_SITE_GITHUB_REPO` configured.\n"
                     },
@@ -502,7 +502,7 @@
             }
           },
           "400": {
-            "description": "compareRef is not a valid git object.",
+            "description": "compare_ref is not a valid git object.",
             "content": {
               "application/json": {
                 "schema": {
@@ -592,14 +592,14 @@
                         "type": "object",
                         "required": [
                           "path",
-                          "blobHash"
+                          "blob_hash"
                         ],
                         "properties": {
                           "path": {
                             "type": "string",
                             "description": "Path relative to the repo root."
                           },
-                          "blobHash": {
+                          "blob_hash": {
                             "type": "string",
                             "description": "Git blob object hash. Empty string for working-tree-only files at HEAD that are not in the commit tree.\n"
                           },
@@ -784,7 +784,7 @@
             ],
             "description": "Whether this ref is a branch or a tag."
           },
-          "isMainAncestor": {
+          "is_main_ancestor": {
             "type": "boolean",
             "description": "True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips.\n"
           }
@@ -792,7 +792,7 @@
         "required": [
           "name",
           "type",
-          "isMainAncestor"
+          "is_main_ancestor"
         ]
       },
       "issue-counts-by-kind": {
@@ -827,13 +827,13 @@
             "description": "Full 40-char commit object hash.",
             "example": "a1b2c3d4e5f6789012345678901234567890abcd"
           },
-          "parentHashes": {
+          "parent_hashes": {
             "type": "array",
             "items": {
               "type": "string"
             }
           },
-          "authoredAt": {
+          "authored_at": {
             "type": "string",
             "format": "date-time"
           },
@@ -847,7 +847,7 @@
               "$ref": "#/components/schemas/commit-ref"
             }
           },
-          "analyzerVersion": {
+          "analyzer_version": {
             "type": "string"
           },
           "computed_at": {
@@ -862,75 +862,75 @@
               "failed"
             ]
           },
-          "summaryMetrics": {
+          "summary_metrics": {
             "type": "object",
             "description": "Rollup counts across all packages at this commit, for timeline health indicators without fetching CommitDetail.\n",
             "properties": {
-              "packageCount": {
+              "package_count": {
                 "type": "integer",
                 "minimum": 0
               },
-              "sourceFiles": {
+              "source_files": {
                 "type": "integer",
                 "minimum": 0
               },
-              "sourceLines": {
+              "source_lines": {
                 "type": "integer",
                 "minimum": 0
               },
-              "testFiles": {
+              "test_files": {
                 "type": "integer",
                 "minimum": 0
               },
-              "testLines": {
+              "test_lines": {
                 "type": "integer",
                 "minimum": 0
               },
-              "exportCount": {
+              "export_count": {
                 "type": "integer",
                 "minimum": 0
               },
-              "testCaseCount": {
+              "test_case_count": {
                 "type": "integer",
                 "minimum": 0
               },
-              "issueCountsByKind": {
+              "issue_counts_by_kind": {
                 "$ref": "#/components/schemas/issue-counts-by-kind"
               },
-              "debtCount": {
+              "debt_count": {
                 "type": "integer",
                 "minimum": 0,
                 "description": "Sum of all issue kinds (dead-code + oversized-file + package-layout).\n"
               },
-              "hasIssueStats": {
+              "has_issue_stats": {
                 "type": "boolean",
                 "description": "True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats.\n"
               }
             },
             "required": [
-              "packageCount",
-              "sourceFiles",
-              "sourceLines",
-              "testFiles",
-              "testLines",
-              "exportCount",
-              "testCaseCount",
-              "issueCountsByKind",
-              "debtCount",
-              "hasIssueStats"
+              "package_count",
+              "source_files",
+              "source_lines",
+              "test_files",
+              "test_lines",
+              "export_count",
+              "test_case_count",
+              "issue_counts_by_kind",
+              "debt_count",
+              "has_issue_stats"
             ]
           }
         },
         "required": [
           "hash",
-          "parentHashes",
-          "authoredAt",
+          "parent_hashes",
+          "authored_at",
           "message",
           "refs",
-          "analyzerVersion",
+          "analyzer_version",
           "computed_at",
           "status",
-          "summaryMetrics"
+          "summary_metrics"
         ]
       },
       "commit": {
@@ -942,14 +942,14 @@
             "description": "Full 40-char commit object hash.",
             "example": "a1b2c3d4e5f6789012345678901234567890abcd"
           },
-          "parentHashes": {
+          "parent_hashes": {
             "type": "array",
             "description": "Parent commit hashes (empty for the root commit).",
             "items": {
               "type": "string"
             }
           },
-          "authoredAt": {
+          "authored_at": {
             "type": "string",
             "format": "date-time",
             "description": "Author date from the commit (`%aI`).",
@@ -967,7 +967,7 @@
               "$ref": "#/components/schemas/commit-ref"
             }
           },
-          "analyzerVersion": {
+          "analyzer_version": {
             "type": "string",
             "description": "Version string of the analyzer that produced this snapshot.",
             "example": "1"
@@ -991,11 +991,11 @@
         },
         "required": [
           "hash",
-          "parentHashes",
-          "authoredAt",
+          "parent_hashes",
+          "authored_at",
           "message",
           "refs",
-          "analyzerVersion",
+          "analyzer_version",
           "computed_at",
           "status"
         ]
@@ -1004,7 +1004,7 @@
         "type": "object",
         "description": "Per-package file/LOC inventory at a single commit.",
         "properties": {
-          "packageName": {
+          "package_name": {
             "type": "string",
             "description": "npm package name (e.g. `@saflib/git`).",
             "example": "@saflib/git"
@@ -1028,62 +1028,62 @@
               "other"
             ]
           },
-          "sourceFiles": {
+          "source_files": {
             "type": "integer",
             "minimum": 0,
             "description": "Count of source files (excluding tests)."
           },
-          "sourceLines": {
+          "source_lines": {
             "type": "integer",
             "minimum": 0,
             "description": "Total lines across source files."
           },
-          "prodLines": {
+          "prod_lines": {
             "type": "integer",
             "minimum": 0,
             "description": "Production (non-test) source lines."
           },
-          "testLines": {
+          "test_lines": {
             "type": "integer",
             "minimum": 0,
             "description": "Test file lines."
           },
-          "testFiles": {
+          "test_files": {
             "type": "integer",
             "minimum": 0,
             "description": "Count of test files."
           },
-          "issueCountsByKind": {
+          "issue_counts_by_kind": {
             "$ref": "#/components/schemas/issue-counts-by-kind"
           },
-          "debtCount": {
+          "debt_count": {
             "type": "integer",
             "minimum": 0,
             "description": "Sum of all issue kinds (dead-code + oversized-file + package-layout).\n"
           }
         },
         "required": [
-          "packageName",
+          "package_name",
           "directory",
-          "sourceFiles",
-          "sourceLines",
-          "prodLines",
-          "testLines",
-          "testFiles",
-          "issueCountsByKind",
-          "debtCount"
+          "source_files",
+          "source_lines",
+          "prod_lines",
+          "test_lines",
+          "test_files",
+          "issue_counts_by_kind",
+          "debt_count"
         ]
       },
       "export-entry": {
         "type": "object",
         "description": "One exported symbol extracted from a source file at a commit.",
         "properties": {
-          "packageName": {
+          "package_name": {
             "type": "string",
             "description": "npm package that owns this file.",
             "example": "@saflib/git"
           },
-          "filePath": {
+          "file_path": {
             "type": "string",
             "description": "Path relative to the repo root.",
             "example": "saflib/git/log.ts"
@@ -1116,7 +1116,7 @@
               "null"
             ],
             "description": "Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.\n",
-            "example": "(repoRoot: string, options?: LogOptions)"
+            "example": "(repo_root: string, options?: LogOptions)"
           },
           "docstring": {
             "type": [
@@ -1126,25 +1126,25 @@
             "description": "First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).\n",
             "example": "Walk commits newest-first without checking out."
           },
-          "usedBy": {
+          "used_by": {
             "type": "array",
             "description": "Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty).\n",
             "items": {
               "type": "object",
               "required": [
-                "packageName",
-                "filePath",
-                "repoPath"
+                "package_name",
+                "file_path",
+                "repo_path"
               ],
               "properties": {
-                "packageName": {
+                "package_name": {
                   "type": "string"
                 },
-                "filePath": {
+                "file_path": {
                   "type": "string",
                   "description": "Path within the importing package (no package-root prefix)."
                 },
-                "repoPath": {
+                "repo_path": {
                   "type": "string",
                   "description": "Repo-relative path for source links."
                 }
@@ -1153,8 +1153,8 @@
           }
         },
         "required": [
-          "packageName",
-          "filePath",
+          "package_name",
+          "file_path",
           "name",
           "kind",
           "signature",
@@ -1163,49 +1163,49 @@
       },
       "test-case": {
         "type": "object",
-        "description": "One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `\" > \"` separator from `@saflib/parser` (e.g. `\"outer > inner > does the thing\"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export).\n",
+        "description": "One `describe`/`it`/`test` case extracted from a test file. `full_name` uses the `\" > \"` separator from `@saflib/parser` (e.g. `\"outer > inner > does the thing\"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export).\n",
         "properties": {
-          "packageName": {
+          "package_name": {
             "type": "string",
             "description": "npm package that owns this file.",
             "example": "@saflib/git"
           },
-          "filePath": {
+          "file_path": {
             "type": "string",
             "description": "Path relative to the repo root.",
             "example": "saflib/git/index.test.ts"
           },
-          "fullName": {
+          "full_name": {
             "type": "string",
             "description": "Nested describe/it titles joined with `\" > \"`.",
             "example": "log > returns commits newest-first (git log order)"
           },
-          "subjectName": {
+          "subject_name": {
             "type": "string",
             "description": "Linked export name when a suite title matches by convention.",
             "example": "log"
           },
-          "subjectSignature": {
+          "subject_signature": {
             "type": [
               "string",
               "null"
             ],
             "description": "Signature of the linked export at this commit (null if unknown).",
-            "example": "(repoRoot: string, options?: LogOptions)"
+            "example": "(repo_root: string, options?: LogOptions)"
           },
-          "subjectDocstring": {
+          "subject_docstring": {
             "type": [
               "string",
               "null"
             ],
             "description": "First JSDoc prose line of the linked export, when present."
           },
-          "subjectFilePath": {
+          "subject_file_path": {
             "type": "string",
             "description": "Repo-relative path of the file that declares the linked export.",
             "example": "saflib/git/log.ts"
           },
-          "subjectConfidence": {
+          "subject_confidence": {
             "type": "string",
             "description": "How the link was made (`adjacent` file vs elsewhere in package).",
             "enum": [
@@ -1215,9 +1215,9 @@
           }
         },
         "required": [
-          "packageName",
-          "filePath",
-          "fullName"
+          "package_name",
+          "file_path",
+          "full_name"
         ]
       },
       "commit-detail": {
@@ -1227,7 +1227,7 @@
           "commit": {
             "$ref": "#/components/schemas/commit"
           },
-          "packageMetrics": {
+          "package_metrics": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/package-metrics"
@@ -1239,7 +1239,7 @@
               "$ref": "#/components/schemas/export-entry"
             }
           },
-          "testCases": {
+          "test_cases": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/test-case"
@@ -1248,9 +1248,9 @@
         },
         "required": [
           "commit",
-          "packageMetrics",
+          "package_metrics",
           "exports",
-          "testCases"
+          "test_cases"
         ]
       },
       "error": {
@@ -1271,22 +1271,22 @@
         "type": "object",
         "description": "A drizzle table identity for schema diffs.",
         "required": [
-          "packageName",
-          "tableName",
-          "exportName",
-          "filePath"
+          "package_name",
+          "table_name",
+          "export_name",
+          "file_path"
         ],
         "properties": {
-          "packageName": {
+          "package_name": {
             "type": "string"
           },
-          "tableName": {
+          "table_name": {
             "type": "string"
           },
-          "exportName": {
+          "export_name": {
             "type": "string"
           },
-          "filePath": {
+          "file_path": {
             "type": "string"
           },
           "docstring": {
@@ -1301,26 +1301,26 @@
         "type": "object",
         "description": "A drizzle column identity for schema diffs.",
         "required": [
-          "packageName",
-          "tableName",
-          "sqlName",
-          "typeKind",
-          "propName"
+          "package_name",
+          "table_name",
+          "sql_name",
+          "type_kind",
+          "prop_name"
         ],
         "properties": {
-          "packageName": {
+          "package_name": {
             "type": "string"
           },
-          "tableName": {
+          "table_name": {
             "type": "string"
           },
-          "sqlName": {
+          "sql_name": {
             "type": "string"
           },
-          "typeKind": {
+          "type_kind": {
             "type": "string"
           },
-          "propName": {
+          "prop_name": {
             "type": "string"
           },
           "docstring": {
@@ -1333,17 +1333,17 @@
       },
       "commit-diff": {
         "type": "object",
-        "description": "Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same packageName exists on both sides with different counts.\n",
+        "description": "Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same package_name exists on both sides with different counts.\n",
         "properties": {
-          "fromHash": {
+          "from_hash": {
             "type": "string",
             "description": "Baseline commit hash (the \"before\")."
           },
-          "toHash": {
+          "to_hash": {
             "type": "string",
             "description": "Comparison commit hash (the \"after\")."
           },
-          "packageMetrics": {
+          "package_metrics": {
             "type": "object",
             "properties": {
               "added": {
@@ -1404,7 +1404,7 @@
               "removed"
             ]
           },
-          "testCases": {
+          "test_cases": {
             "type": "object",
             "properties": {
               "added": {
@@ -1425,7 +1425,7 @@
               "removed"
             ]
           },
-          "dbSchemas": {
+          "db_schemas": {
             "type": "object",
             "description": "Structural drizzle table/column deltas across both commits.",
             "properties": {
@@ -1498,12 +1498,12 @@
           }
         },
         "required": [
-          "fromHash",
-          "toHash",
-          "packageMetrics",
+          "from_hash",
+          "to_hash",
+          "package_metrics",
           "exports",
-          "testCases",
-          "dbSchemas"
+          "test_cases",
+          "db_schemas"
         ]
       },
       "db-inventory": {
@@ -1519,7 +1519,7 @@
               "type": "object",
               "required": [
                 "entity",
-                "usedByPackages",
+                "used_by_packages",
                 "queries"
               ],
               "properties": {
@@ -1533,19 +1533,19 @@
                     "null"
                   ],
                   "required": [
-                    "exportName",
-                    "tableName",
+                    "export_name",
+                    "table_name",
                     "columns",
-                    "filePath"
+                    "file_path"
                   ],
                   "properties": {
-                    "exportName": {
+                    "export_name": {
                       "type": "string"
                     },
-                    "tableName": {
+                    "table_name": {
                       "type": "string"
                     },
-                    "filePath": {
+                    "file_path": {
                       "type": "string"
                     },
                     "docstring": {
@@ -1560,18 +1560,18 @@
                       "items": {
                         "type": "object",
                         "required": [
-                          "propName",
-                          "sqlName",
-                          "typeKind"
+                          "prop_name",
+                          "sql_name",
+                          "type_kind"
                         ],
                         "properties": {
-                          "propName": {
+                          "prop_name": {
                             "type": "string"
                           },
-                          "sqlName": {
+                          "sql_name": {
                             "type": "string"
                           },
-                          "typeKind": {
+                          "type_kind": {
                             "type": "string"
                           },
                           "docstring": {
@@ -1586,7 +1586,7 @@
                     }
                   }
                 },
-                "usedByPackages": {
+                "used_by_packages": {
                   "type": "array",
                   "description": "Distinct packages (non-test) that import any query under this entity.",
                   "items": {
@@ -1599,18 +1599,18 @@
                   "items": {
                     "type": "object",
                     "required": [
-                      "fileName",
-                      "filePath",
-                      "usedBy"
+                      "file_name",
+                      "file_path",
+                      "used_by"
                     ],
                     "properties": {
-                      "fileName": {
+                      "file_name": {
                         "type": "string"
                       },
-                      "filePath": {
+                      "file_path": {
                         "type": "string"
                       },
-                      "exportName": {
+                      "export_name": {
                         "type": [
                           "string",
                           "null"
@@ -1628,25 +1628,25 @@
                           "null"
                         ]
                       },
-                      "usedBy": {
+                      "used_by": {
                         "type": "array",
                         "description": "Non-test product files that import this leaf query module.",
                         "items": {
                           "type": "object",
                           "required": [
-                            "packageName",
-                            "filePath",
-                            "repoPath"
+                            "package_name",
+                            "file_path",
+                            "repo_path"
                           ],
                           "properties": {
-                            "packageName": {
+                            "package_name": {
                               "type": "string"
                             },
-                            "filePath": {
+                            "file_path": {
                               "type": "string",
                               "description": "Path within the importing package (no package-root prefix)."
                             },
-                            "repoPath": {
+                            "repo_path": {
                               "type": "string",
                               "description": "Repo-relative path for source links."
                             }
@@ -1664,19 +1664,19 @@
       "items": {
         "type": "object",
         "required": [
-          "packageName",
-          "filePath",
-          "repoPath"
+          "package_name",
+          "file_path",
+          "repo_path"
         ],
         "properties": {
-          "packageName": {
+          "package_name": {
             "type": "string"
           },
-          "filePath": {
+          "file_path": {
             "type": "string",
             "description": "Path within the importing package (no package-root prefix)."
           },
-          "repoPath": {
+          "repo_path": {
             "type": "string",
             "description": "Repo-relative path for source links."
           }
@@ -1689,7 +1689,7 @@
           "entities"
         ],
         "properties": {
-          "packageDirectory": {
+          "package_directory": {
             "type": "string",
             "description": "Repo-relative directory of the spec package this inventory was built from (used for route YAML source links when shown from an http pane).\n"
           },
@@ -1702,7 +1702,7 @@
                 "key",
                 "label",
                 "presence",
-                "usedByPackages",
+                "used_by_packages",
                 "operations"
               ],
               "properties": {
@@ -1737,17 +1737,17 @@
                   ],
                   "required": [
                     "name",
-                    "yamlPath",
+                    "yaml_path",
                     "properties",
-                    "usedBy",
-                    "referencedByOperations"
+                    "used_by",
+                    "referenced_by_operations"
                   ],
                   "properties": {
                     "name": {
                       "type": "string",
                       "description": "components/schemas name (e.g. Matter)."
                     },
-                    "yamlPath": {
+                    "yaml_path": {
                       "type": "string",
                       "description": "Package-relative path to the schema YAML."
                     },
@@ -1763,13 +1763,13 @@
                         "type": "object",
                         "required": [
                           "name",
-                          "typeKind"
+                          "type_kind"
                         ],
                         "properties": {
                           "name": {
                             "type": "string"
                           },
-                          "typeKind": {
+                          "type_kind": {
                             "type": "string"
                           },
                           "docstring": {
@@ -1781,23 +1781,23 @@
                         }
                       }
                     },
-                    "usedBy": {
+                    "used_by": {
                       "type": "array",
                       "description": "Non-test product files importing schemas/<Name>.",
                       "items": {
                         "$ref": "#/components/schemas/items"
                       }
                     },
-                    "referencedByOperations": {
+                    "referenced_by_operations": {
                       "type": "array",
-                      "description": "operationIds whose request/2xx response $ref this schema.",
+                      "description": "operation_ids whose request/2xx response $ref this schema.",
                       "items": {
                         "type": "string"
                       }
                     }
                   }
                 },
-                "usedByPackages": {
+                "used_by_packages": {
                   "type": "array",
                   "description": "Distinct packages importing this entity's schema and/or the SDK request modules for its operations.\n",
                   "items": {
@@ -1810,18 +1810,18 @@
                   "items": {
                     "type": "object",
                     "required": [
-                      "operationId",
+                      "operation_id",
                       "method",
                       "path",
                       "tags",
-                      "yamlPath",
-                      "requestSchemas",
-                      "responseSchemas",
-                      "handlerTests",
-                      "usedBy"
+                      "yaml_path",
+                      "request_schemas",
+                      "response_schemas",
+                      "handler_tests",
+                      "used_by"
                     ],
                     "properties": {
-                      "operationId": {
+                      "operation_id": {
                         "type": "string"
                       },
                       "method": {
@@ -1843,11 +1843,11 @@
                           "type": "string"
                         }
                       },
-                      "yamlPath": {
+                      "yaml_path": {
                         "type": "string",
                         "description": "Package-relative route YAML under the spec package."
                       },
-                      "routeStem": {
+                      "route_stem": {
                         "type": [
                           "string",
                           "null"
@@ -1861,14 +1861,14 @@
                         ],
                         "description": "Sibling HTTP handler file when present.",
                         "required": [
-                          "filePath",
-                          "repoPath"
+                          "file_path",
+                          "repo_path"
                         ],
                         "properties": {
-                          "filePath": {
+                          "file_path": {
                             "type": "string"
                           },
-                          "repoPath": {
+                          "repo_path": {
                             "type": "string"
                           }
                         }
@@ -1880,14 +1880,14 @@
                         ],
                         "description": "Sibling SDK request module when present.",
                         "required": [
-                          "filePath",
-                          "repoPath"
+                          "file_path",
+                          "repo_path"
                         ],
                         "properties": {
-                          "filePath": {
+                          "file_path": {
                             "type": "string"
                           },
-                          "repoPath": {
+                          "repo_path": {
                             "type": "string"
                           }
                         }
@@ -1899,28 +1899,28 @@
                         ],
                         "description": "Sibling SDK fake/MSW module (`*.fake.ts`) when present beside the request.\n",
                         "required": [
-                          "filePath",
-                          "repoPath"
+                          "file_path",
+                          "repo_path"
                         ],
                         "properties": {
-                          "filePath": {
+                          "file_path": {
                             "type": "string"
                           },
-                          "repoPath": {
+                          "repo_path": {
                             "type": "string"
                           }
                         }
                       },
-                      "handlerTests": {
+                      "handler_tests": {
                         "type": "array",
-                        "description": "describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses \" > \" nesting).\n",
+                        "description": "describe/it/test specifications extracted from colocated HTTP handler test files (full_name uses \" > \" nesting).\n",
                         "items": {
                           "type": "object",
                           "required": [
-                            "fullName"
+                            "full_name"
                           ],
                           "properties": {
-                            "fullName": {
+                            "full_name": {
                               "type": "string",
                               "description": "Nested describe/it titles joined with \" > \".",
                               "example": "createMatter > creates a matter for the org"
@@ -1928,39 +1928,39 @@
                           }
                         }
                       },
-                      "requestSchemas": {
+                      "request_schemas": {
                         "type": "array",
                         "description": "Business objects in the request body (one layer deep into object/array bags of schema refs).\n",
                         "items": {
                           "type": "string"
                         }
                       },
-                      "responseSchemas": {
+                      "response_schemas": {
                         "type": "array",
                         "description": "Business objects in 2xx responses (one layer deep into object/array bags of schema refs).\n",
                         "items": {
                           "type": "string"
                         }
                       },
-                      "usedBy": {
+                      "used_by": {
                         "type": "array",
                         "description": "Non-test product files importing the sibling SDK request module for this route stem.\n",
                         "items": {
                           "type": "object",
                           "required": [
-                            "packageName",
-                            "filePath",
-                            "repoPath"
+                            "package_name",
+                            "file_path",
+                            "repo_path"
                           ],
                           "properties": {
-                            "packageName": {
+                            "package_name": {
                               "type": "string"
                             },
-                            "filePath": {
+                            "file_path": {
                               "type": "string",
                               "description": "Path within the importing package (no package-root prefix)."
                             },
-                            "repoPath": {
+                            "repo_path": {
                               "type": "string",
                               "description": "Repo-relative path for source links."
                             }
@@ -1969,14 +1969,14 @@
                       },
                       "enqueues": {
                         "type": "array",
-                        "description": "operationIds this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map.\n",
+                        "description": "operation_ids this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map.\n",
                         "items": {
                           "type": "string"
                         }
                       },
-                      "enqueuedBy": {
+                      "enqueued_by": {
                         "type": "array",
-                        "description": "operationIds or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map.\n",
+                        "description": "operation_ids or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map.\n",
                         "items": {
                           "type": "string"
                         }
@@ -1995,9 +1995,9 @@
           "kind",
           "title",
           "name",
-          "kindLabel",
-          "filePath",
-          "repoPath"
+          "kind_label",
+          "file_path",
+          "repo_path"
         ],
         "properties": {
           "kind": {
@@ -2014,14 +2014,14 @@
           "name": {
             "type": "string"
           },
-          "kindLabel": {
+          "kind_label": {
             "type": "string"
           },
-          "filePath": {
+          "file_path": {
             "type": "string",
             "description": "Package-local path for display"
           },
-          "repoPath": {
+          "repo_path": {
             "type": "string",
             "description": "Repo-relative path for open-source links"
           }
@@ -2031,31 +2031,31 @@
         "type": "object",
         "description": "Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode.\n",
         "required": [
-          "againstRef",
-          "mergeBaseHash",
-          "mergeBaseAnalyzed",
-          "mergeBaseMessage",
-          "mergeBaseAuthoredAt",
+          "against_ref",
+          "merge_base_hash",
+          "merge_base_analyzed",
+          "merge_base_message",
+          "merge_base_authored_at",
           "renames"
         ],
         "properties": {
-          "againstRef": {
+          "against_ref": {
             "type": "string",
             "description": "Branch/ref HEAD was compared against (e.g. `main`)."
           },
-          "mergeBaseHash": {
+          "merge_base_hash": {
             "type": "string",
-            "description": "Full hash of `git merge-base(HEAD, againstRef)`."
+            "description": "Full hash of `git merge-base(HEAD, against_ref)`."
           },
-          "mergeBaseAnalyzed": {
+          "merge_base_analyzed": {
             "type": "boolean",
             "description": "True when that fork-point commit has an analysis snapshot."
           },
-          "mergeBaseMessage": {
+          "merge_base_message": {
             "type": "string",
             "description": "Subject of the fork-point commit."
           },
-          "mergeBaseAuthoredAt": {
+          "merge_base_authored_at": {
             "type": "string",
             "format": "date-time",
             "description": "Author date of the fork-point commit."
@@ -2066,15 +2066,15 @@
             "items": {
               "type": "object",
               "required": [
-                "fromPath",
-                "toPath"
+                "from_path",
+                "to_path"
               ],
               "properties": {
-                "fromPath": {
+                "from_path": {
                   "type": "string",
                   "description": "Path at the fork-point commit."
                 },
-                "toPath": {
+                "to_path": {
                   "type": "string",
                   "description": "Path at HEAD."
                 },

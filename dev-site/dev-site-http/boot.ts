@@ -43,11 +43,11 @@ export async function startDevSiteService(
 
     const lease = createDevSiteHttpApp({
       devSiteDbKey: dbKey,
-      repoRoot: typedEnv.DEV_SITE_REPO_ROOT || process.cwd(),
-      productRoot: typedEnv.DEV_SITE_PRODUCT_ROOT ?? "",
+      repo_root: typedEnv.DEV_SITE_REPO_ROOT || process.cwd(),
+      product_root: typedEnv.DEV_SITE_PRODUCT_ROOT ?? "",
       mainRef: typedEnv.DEV_SITE_MAIN_REF || "main",
       staticDir: typedEnv.DEV_SITE_STATIC_DIR || undefined,
-      githubRepo: typedEnv.DEV_SITE_GITHUB_REPO || undefined,
+      github_repo: typedEnv.DEV_SITE_GITHUB_REPO || undefined,
     });
 
     startExpressServer(lease.app, { port });

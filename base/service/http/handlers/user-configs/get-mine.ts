@@ -15,7 +15,7 @@ export const getMineUserConfigsHandler = createHandler(async (_req, res) => {
   const { auth } = getSafContextWithAuth();
 
   const { result, error } = await createIfMissingUserConfig(ctx.baseDbKey, {
-    userId: auth.userId,
+    user_id: auth.userId,
   });
 
   if (error) {
@@ -23,7 +23,7 @@ export const getMineUserConfigsHandler = createHandler(async (_req, res) => {
   }
 
   const response: getMineUserConfigsResponseBody["getMineUserConfigs"][200] = {
-    userConfig: mapUserConfigEntityToApi(result!),
+    user_config: mapUserConfigEntityToApi(result!),
   };
 
   res.status(200).json(response);

@@ -74,7 +74,7 @@ const HTTP_METHODS = [
 ] as const satisfies readonly (keyof OpenAPIV3.PathItemObject)[];
 
 /**
- * Walk a bundled OpenAPI document and map every `operationId` to its HTTP
+ * Walk a bundled OpenAPI document and map every `operation_id` to its HTTP
  * method, path template, and whether it carries the `background` tag.
  */
 export function buildOperationMap(apiSpec: OpenApiDocument): OperationMap {
@@ -91,13 +91,13 @@ export function buildOperationMap(apiSpec: OpenApiDocument): OperationMap {
       if (!operation || typeof operation !== "object") {
         continue;
       }
-      const operationId = operation.operationId;
-      if (typeof operationId !== "string" || operationId.length === 0) {
+      const operation_id = operation.operationId;
+      if (typeof operation_id !== "string" || operation_id.length === 0) {
         continue;
       }
 
       const tags = operation.tags ?? [];
-      map.set(operationId, {
+      map.set(operation_id, {
         method: method.toUpperCase(),
         pathTemplate,
         isBackground: tags.includes(BACKGROUND_TAG),
@@ -141,13 +141,13 @@ export function validateJobsStartup(params: ValidateJobsStartupParams): void {
 
   for (const [caller, targets] of Object.entries(params.triggerMap)) {
     if (!isCronTriggerKey(caller) && !operations.has(caller)) {
-      errors.push(`trigger map key "${caller}" is not a known operationId`);
+      errors.push(`trigger map key "${caller}" is not a known operation_id`);
     }
     for (const target of targets) {
       const resolved = operations.get(target);
       if (!resolved) {
         errors.push(
-          `trigger map target "${target}" (from "${caller}") is not a known operationId`,
+          `trigger map target "${target}" (from "${caller}") is not a known operation_id`,
         );
         continue;
       }
@@ -159,12 +159,12 @@ export function validateJobsStartup(params: ValidateJobsStartupParams): void {
     }
   }
 
-  for (const [operationId, config] of Object.entries(
+  for (const [operation_id, config] of Object.entries(
     params.operationConfig ?? {},
   )) {
-    if (!operations.has(operationId)) {
+    if (!operations.has(operation_id)) {
       errors.push(
-        `operationConfig key "${operationId}" is not a known operationId`,
+        `operationConfig key "${operation_id}" is not a known operation_id`,
       );
     }
     if (
@@ -172,7 +172,7 @@ export function validateJobsStartup(params: ValidateJobsStartupParams): void {
       config.timeoutMs > TIMEOUT_CEILING_MS
     ) {
       errors.push(
-        `operationConfig "${operationId}" timeoutMs ${config.timeoutMs} exceeds ceiling ${TIMEOUT_CEILING_MS}`,
+        `operationConfig "${operation_id}" timeoutMs ${config.timeoutMs} exceeds ceiling ${TIMEOUT_CEILING_MS}`,
       );
     }
   }

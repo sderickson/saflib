@@ -39,22 +39,22 @@ function parseBool(value: unknown): boolean {
   return false;
 }
 
-function isUnderRepoRoot(repoRoot: string, abs: string): boolean {
-  const root = resolve(repoRoot);
+function isUnderRepoRoot(repo_root: string, abs: string): boolean {
+  const root = resolve(repo_root);
   return abs === root || abs.startsWith(root + sep);
 }
 
 /** Files in the prefix's parent directory that match the stem/dir prefix. */
 function listWorkingTreePrefixFiles(
-  repoRoot: string,
+  repo_root: string,
   prefix: string,
 ): string[] {
   if (!prefix) return [];
   const lastSlash = prefix.lastIndexOf("/");
   const dirRel = lastSlash === -1 ? "" : prefix.slice(0, lastSlash);
-  const root = resolve(repoRoot);
+  const root = resolve(repo_root);
   const absDir = dirRel ? resolve(root, dirRel) : root;
-  if (!isUnderRepoRoot(repoRoot, absDir) || !existsSync(absDir)) return [];
+  if (!isUnderRepoRoot(repo_root, absDir) || !existsSync(absDir)) return [];
   if (!statSync(absDir).isDirectory()) return [];
   const out: string[] = [];
   for (const name of readdirSync(absDir)) {
@@ -68,7 +68,7 @@ function listWorkingTreePrefixFiles(
 }
 
 export const listRepoFilesHandler = createHandler(async (req, res) => {
-  const { repoRoot } = getDevSiteHttpContext();
+  const { repo_root } = getDevSiteHttpContext();
   const query = (req.query ?? {}) as NonNullable<QueryParams["listRepoFiles"]> & {
     ext?: string | string[];
     content?: string | boolean | string[];
@@ -88,7 +88,7 @@ export const listRepoFilesHandler = createHandler(async (req, res) => {
     });
   }
 
-  const { result, error } = listTree(repoRoot, ref);
+  const { result, error } = listTree(repo_root, ref);
   if (error) {
     switch (true) {
       case error instanceof GitCommandError:
@@ -98,22 +98,22 @@ export const listRepoFilesHandler = createHandler(async (req, res) => {
     }
   }
 
-  const byPath = new Map<string, { path: string; blobHash: string }>();
+  const byPath = new Map<string, { path: string; blob_hash: string }>();
   for (const e of result) {
     if (!matchesPathPrefix(e.path, prefix) || !matchesExt(e.path, exts)) {
       continue;
     }
-    byPath.set(e.path, { path: e.path, blobHash: e.blobHash });
+    byPath.set(e.path, { path: e.path, blob_hash: e.blobHash });
   }
 
-  const head = resolveRef(repoRoot, "HEAD");
-  const tip = resolveRef(repoRoot, ref);
+  const head = resolveRef(repo_root, "HEAD");
+  const tip = resolveRef(repo_root, ref);
   const atHead = !head.error && !tip.error && head.result === tip.result;
   if (atHead && prefix) {
-    for (const rel of listWorkingTreePrefixFiles(repoRoot, prefix)) {
+    for (const rel of listWorkingTreePrefixFiles(repo_root, prefix)) {
       if (!matchesExt(rel, exts)) continue;
       if (!byPath.has(rel)) {
-        byPath.set(rel, { path: rel, blobHash: "" });
+        byPath.set(rel, { path: rel, blob_hash: "" });
       }
     }
   }
@@ -131,15 +131,15 @@ export const listRepoFilesHandler = createHandler(async (req, res) => {
   const contents = new Map<string, string>();
   if (atHead) {
     for (const f of files) {
-      const wt = readWorkingTreeFile(repoRoot, f.path);
+      const wt = readWorkingTreeFile(repo_root, f.path);
       if (wt != null) contents.set(f.path, wt);
     }
   }
   const missing = files
-    .filter((f) => !contents.has(f.path) && f.blobHash)
-    .map((f) => f.blobHash);
+    .filter((f) => !contents.has(f.path) && f.blob_hash)
+    .map((f) => f.blob_hash);
   if (missing.length) {
-    const blobs = readBlobs(repoRoot, missing);
+    const blobs = readBlobs(repo_root, missing);
     if (blobs.error) {
       switch (true) {
         case blobs.error instanceof GitCommandError:
@@ -152,8 +152,8 @@ export const listRepoFilesHandler = createHandler(async (req, res) => {
     }
     const hashToContent = blobs.result;
     for (const f of files) {
-      if (contents.has(f.path) || !f.blobHash) continue;
-      const text = hashToContent.get(f.blobHash);
+      if (contents.has(f.path) || !f.blob_hash) continue;
+      const text = hashToContent.get(f.blob_hash);
       if (text != null) contents.set(f.path, text);
     }
   }

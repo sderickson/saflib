@@ -9,7 +9,7 @@ export interface ClientErrorReporterOptions {
 function errorToReportedError(
   error: unknown,
   source: string,
-): ErrorsRequestBody["recordReportedError"]["reportedError"] {
+): ErrorsRequestBody["recordReportedError"]["reported_error"] {
   if (error instanceof Error) {
     return {
       kind: "client",
@@ -35,7 +35,7 @@ export async function reportClientErrorToBackend(
   const source = options.source ?? "client";
   try {
     await recordReportedError({
-      reportedError: errorToReportedError(error, source),
+      reported_error: errorToReportedError(error, source),
     });
   } catch (reportError) {
     console.error("Failed to record client error to backend", reportError);

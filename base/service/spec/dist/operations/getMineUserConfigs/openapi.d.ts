@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Get or lazy-create the caller's user config
-         * @description Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`displayName` empty string, `marketingEmailsOptIn` false, `marketingEmailsOptInAt` null, `termsOfServiceAgreedAt` null) and returns that row.
+         * @description Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`display_name` empty string, `marketing_emails_opt_in` false, `marketing_emails_opt_in_at` null, `terms_of_service_agreed_at` null) and returns that row.
          *     **Lazy-create pattern:** empty `user_config` rows are created on first GET (not via a Kratos registration webhook). This keeps Kratos auth-only and the product DB responsible for user-facing prefs.
          */
         get: operations["getMineUserConfigs"];
@@ -32,13 +32,13 @@ export interface components {
         /**
          * @description Product-owned preferences for the signed-in user (owner-only). Keyed by Kratos identity id. Holds display name, marketing email consent, and Terms of Service agreement — not auth traits. Kratos owns identity/credentials/sessions; this resource is the Kratos-minimal product DB pattern.
          * @example {
-         *       "userId": "user_abc123",
-         *       "displayName": "Alex Rivera",
-         *       "marketingEmailsOptIn": false,
-         *       "marketingEmailsOptInAt": null,
-         *       "termsOfServiceAgreedAt": null,
-         *       "createdAt": "2026-07-23T00:00:00Z",
-         *       "updatedAt": "2026-07-23T12:30:00Z"
+         *       "user_id": "user_abc123",
+         *       "display_name": "Alex Rivera",
+         *       "marketing_emails_opt_in": false,
+         *       "marketing_emails_opt_in_at": null,
+         *       "terms_of_service_agreed_at": null,
+         *       "created_at": "2026-07-23T00:00:00Z",
+         *       "updated_at": "2026-07-23T12:30:00Z"
          *     }
          */
         "user-config": {
@@ -46,41 +46,41 @@ export interface components {
              * @description Kratos identity id of the owning user.
              * @example user_abc123
              */
-            userId: string;
+            user_id: string;
             /**
              * @description How the user appears to themselves and to others. May be empty after lazy-create until the first save; PUT requires a non-empty trimmed value.
              * @example Alex Rivera
              */
-            displayName: string;
+            display_name: string;
             /**
              * @description Explicit consent for product/marketing email. Defaults to false until the user opts in.
              * @example false
              */
-            marketingEmailsOptIn: boolean;
+            marketing_emails_opt_in: boolean;
             /**
              * Format: date-time
-             * @description When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketingEmailsOptIn` becomes false).
+             * @description When the user most recently opted into marketing email. Null when never opted in or after opting out (cleared when `marketing_emails_opt_in` becomes false).
              * @example null
              */
-            marketingEmailsOptInAt: string | null;
+            marketing_emails_opt_in_at: string | null;
             /**
              * Format: date-time
-             * @description When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `termsOfServiceAgreedAt: "now"`). Once set, later preference updates do not clear or overwrite it.
+             * @description When the user agreed to the Terms of Service. Null until agreement is recorded (typically via PUT with `terms_of_service_agreed_at: "now"`). Once set, later preference updates do not clear or overwrite it.
              * @example null
              */
-            termsOfServiceAgreedAt: string | null;
+            terms_of_service_agreed_at: string | null;
             /**
              * Format: date-time
              * @description When the user config row was created.
              * @example 2026-07-23T00:00:00Z
              */
-            createdAt: string;
+            created_at: string;
             /**
              * Format: date-time
              * @description When the user config row was last updated.
              * @example 2026-07-23T12:30:00Z
              */
-            updatedAt: string;
+            updated_at: string;
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
@@ -117,7 +117,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @description Owner-only preferences for the signed-in user. */
-                        userConfig: components["schemas"]["user-config"];
+                        user_config: components["schemas"]["user-config"];
                     };
                 };
             };

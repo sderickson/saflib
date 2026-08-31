@@ -10,18 +10,18 @@ describe("resolveGithubSourceRef", () => {
     expect(
       resolveGithubSourceRef({
         branch: "feature/source-links",
-        commitHash: "abc123",
+        commit_hash: "abc123",
         fallbackRef: "main",
       }),
     ).toBe("feature/source-links");
     expect(
       resolveGithubSourceRef({
         branch: null,
-        commitHash: "abc123",
+        commit_hash: "abc123",
         fallbackRef: "main",
       }),
     ).toBe("abc123");
-    expect(resolveGithubSourceRef({ branch: null, commitHash: null })).toBe(
+    expect(resolveGithubSourceRef({ branch: null, commit_hash: null })).toBe(
       "main",
     );
   });
@@ -31,7 +31,7 @@ describe("sourceOpenUrls", () => {
   it("builds blob links on the resolved ref", () => {
     expect(
       sourceOpenUrls("workflows/core/utils.ts", {
-        githubRepo: "acme/widget",
+        github_repo: "acme/widget",
         githubRef: "feature/source-links",
         line: 15,
       }).github,
@@ -40,8 +40,8 @@ describe("sourceOpenUrls", () => {
     );
     expect(
       sourceOpenUrls("README.md", {
-        githubRepo: "acme/widget",
-        commitHash: "deadbeef",
+        github_repo: "acme/widget",
+        commit_hash: "deadbeef",
       }).github,
     ).toBe("https://github.com/acme/widget/blob/deadbeef/README.md");
   });

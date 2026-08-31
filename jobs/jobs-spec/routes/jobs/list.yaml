@@ -13,35 +13,35 @@ listJobs:
       description: Filter by job status.
       schema:
         $ref: "../../schemas/job.yaml#/properties/status"
-    - name: operationId
+    - name: operation_id
       in: query
       required: false
       description: Filter by target operationId.
       schema:
-        $ref: "../../schemas/job.yaml#/properties/operationId"
-    - name: userId
+        $ref: "../../schemas/job.yaml#/properties/operation_id"
+    - name: user_id
       in: query
       required: false
       description: Filter by acting user id.
       schema:
-        $ref: "../../schemas/job.yaml#/properties/userId"
-    - name: originalRequestId
+        $ref: "../../schemas/job.yaml#/properties/user_id"
+    - name: original_request_id
       in: query
       required: false
       description: Filter by chain-root request id.
       schema:
-        $ref: "../../schemas/job.yaml#/properties/originalRequestId"
-    - name: createdAfter
+        $ref: "../../schemas/job.yaml#/properties/original_request_id"
+    - name: created_after
       in: query
       required: false
-      description: Only include jobs with createdAt greater than or equal to this instant.
+      description: Only include jobs with created_at greater than or equal to this instant.
       schema:
         type: string
         format: date-time
-    - name: createdBefore
+    - name: created_before
       in: query
       required: false
-      description: Only include jobs with createdAt less than or equal to this instant.
+      description: Only include jobs with created_at less than or equal to this instant.
       schema:
         type: string
         format: date-time

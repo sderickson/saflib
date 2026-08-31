@@ -1,5 +1,5 @@
 export type DevSiteRuntimeConfig = {
-  githubRepo?: string;
+  github_repo?: string;
   githubRef?: string;
 };
 

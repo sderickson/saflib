@@ -9,7 +9,7 @@ properties:
     type: string
     enum: ["branch", "tag"]
     description: Whether this ref is a branch or a tag.
-  isMainAncestor:
+  is_main_ancestor:
     type: boolean
     description: >
       True when this commit is an ancestor of the configured main branch
@@ -18,4 +18,4 @@ properties:
 required:
   - name
   - type
-  - isMainAncestor
+  - is_main_ancestor

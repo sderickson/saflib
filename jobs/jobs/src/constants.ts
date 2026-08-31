@@ -19,7 +19,7 @@ export const DEFAULT_MAX_ATTEMPTS = 5;
 /** Max serialized `request` JSON size (16 KB). */
 export const REQUEST_SIZE_CAP_BYTES = 16 * 1024;
 
-/** Max stored `result.errorBody` size (8 KB). */
+/** Max stored `result.error_body` size (8 KB). */
 export const ERROR_BODY_CAP_BYTES = 8 * 1024;
 
 /** Default per-attempt delivery timeout (30s). */

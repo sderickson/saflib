@@ -10,7 +10,7 @@ describe("@saflib/dev-site-vue/app router", () => {
         "/",
         "/build",
         "/checkout",
-        "/checkout/packages/:packageName",
+        "/checkout/packages/:package_name",
         "/commits/:hash",
         "/compare",
         "/history",

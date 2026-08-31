@@ -53,7 +53,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    reportedError: {
+                    reported_error: {
                         /** @enum {string} */
                         kind: "client";
                         message: string;

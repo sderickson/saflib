@@ -91,7 +91,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "reportedError": {
+                  "reported_error": {
                     "type": "object",
                     "properties": {
                       "kind": {
@@ -121,7 +121,7 @@
                   }
                 },
                 "required": [
-                  "reportedError"
+                  "reported_error"
                 ]
               }
             }
@@ -279,7 +279,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "reportedErrors": {
+                    "reported_errors": {
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/reported-error"
@@ -287,7 +287,7 @@
                     }
                   },
                   "required": [
-                    "reportedErrors"
+                    "reported_errors"
                   ]
                 }
               }
