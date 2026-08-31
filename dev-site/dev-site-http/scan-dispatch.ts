@@ -53,7 +53,7 @@ async function runScan(
 ): Promise<ReturnsError<ScanResult, ScanError>> {
   const dbPath = options.dbPath ?? devSiteDb.getDbPath(dbKey);
   const limit =
-    options.commitHash !== undefined
+    options.commit_hash !== undefined
       ? undefined
       : (options.limit ?? DEFAULT_HTTP_SCAN_LIMIT);
 
@@ -65,17 +65,17 @@ async function runScan(
 
   const { log } = makeSubsystemReporters("http", "scan");
   log.info(
-    options.commitHash
-      ? `Dispatching scan worker for commit ${options.commitHash.slice(0, 10)}`
+    options.commit_hash
+      ? `Dispatching scan worker for commit ${options.commit_hash.slice(0, 10)}`
       : `Dispatching scan worker (limit=${limit ?? "none"})`,
   );
   return scanCommitsInWorker({
     dbPath,
-    repoRoot: options.repoRoot,
-    productRoot: options.productRoot,
+    repo_root: options.repo_root,
+    product_root: options.product_root,
     mainRef: options.mainRef,
-    limit: options.commitHash ? undefined : limit,
-    commitHash: options.commitHash,
+    limit: options.commit_hash ? undefined : limit,
+    commit_hash: options.commit_hash,
   });
 }
 

@@ -21,7 +21,7 @@ export function createCommitsRouter(): IRouter {
   );
   // More specific path before /api/commits/:hash
   router.get(
-    "/api/commits/:hash/packages/:packageName",
+    "/api/commits/:hash/packages/:package_name",
     ...createOperationScopedMiddleware(getCommitPackageOperationJsonSpec, {
       enforceAuth: false,
     }),
@@ -35,7 +35,7 @@ export function createCommitsRouter(): IRouter {
     getCommitsHandler,
   );
   router.get(
-    "/api/commits/:hash/diff/:otherHash",
+    "/api/commits/:hash/diff/:other_hash",
     ...createOperationScopedMiddleware(diffCommitsOperationJsonSpec, {
       enforceAuth: false,
     }),

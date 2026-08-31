@@ -52,24 +52,24 @@
 
               <div v-if="e.table" class="table-card">
                 <div class="table-card__head">
-                  <code class="table-card__name">{{ e.table.tableName }}</code>
+                  <code class="table-card__name">{{ e.table.table_name }}</code>
                   <a
                     href="#"
                     class="table-card__file"
-                    @click.prevent="openFile(e.table.filePath)"
+                    @click.prevent="openFile(e.table.file_path)"
                   >
-                    {{ fileName(e.table.filePath) }}
+                    {{ file_name(e.table.file_path) }}
                   </a>
                 </div>
                 <p v-if="e.table.docstring" class="table-card__doc">
                   {{ e.table.docstring }}
                 </p>
                 <ul
-                  v-if="e.usedByPackages.length"
+                  v-if="e.used_by_packages.length"
                   class="table-card__pkgs"
                 >
                   <li
-                    v-for="pkg in e.usedByPackages"
+                    v-for="pkg in e.used_by_packages"
                     :key="pkg"
                     class="table-card__pkg"
                   >
@@ -79,7 +79,7 @@
                 <ul class="table-card__cols">
                   <li
                     v-for="c in e.table.columns"
-                    :key="c.sqlName"
+                    :key="c.sql_name"
                     class="table-card__col"
                     :class="{
                       'table-card__col--added': c.change === 'added',
@@ -88,8 +88,8 @@
                     }"
                   >
                     <div class="table-card__col-main">
-                      <code>{{ c.sqlName }}</code>
-                      <span class="text-medium-emphasis">{{ c.typeKind }}</span>
+                      <code>{{ c.sql_name }}</code>
+                      <span class="text-medium-emphasis">{{ c.type_kind }}</span>
                       <ChangeChip :change="c.change" />
                     </div>
                     <p v-if="c.docstring" class="table-card__col-doc">
@@ -103,11 +103,11 @@
                   No matching drizzle table for this query directory.
                 </p>
                 <ul
-                  v-if="e.usedByPackages.length"
+                  v-if="e.used_by_packages.length"
                   class="table-card__pkgs mb-3"
                 >
                   <li
-                    v-for="pkg in e.usedByPackages"
+                    v-for="pkg in e.used_by_packages"
                     :key="pkg"
                     class="table-card__pkg"
                   >
@@ -220,32 +220,32 @@ import TestTree from "./TestTree.vue";
 import ChangeChip from "./ChangeChip.vue";
 
 interface DbQuery {
-  fileName: string;
-  filePath: string;
-  exportName?: string | null;
+  file_name: string;
+  file_path: string;
+  export_name?: string | null;
   signature?: string | null;
   docstring?: string | null;
-  usedBy: Array<{
-    packageName: string;
-    filePath: string;
-    repoPath: string;
+  used_by: Array<{
+    package_name: string;
+    file_path: string;
+    repo_path: string;
   }>;
 }
 
 interface DbEntity {
   entity: string;
   table: {
-    tableName: string;
-    filePath: string;
+    table_name: string;
+    file_path: string;
     docstring?: string | null;
     columns: Array<{
-      sqlName: string;
-      typeKind: string;
+      sql_name: string;
+      type_kind: string;
       docstring?: string | null;
       change?: "added" | "removed" | "modified";
     }>;
   } | null;
-  usedByPackages: string[];
+  used_by_packages: string[];
   queries: DbQuery[];
   change?: "added" | "removed" | "modified";
 }
@@ -292,7 +292,7 @@ const {
   () => props.packageName,
   {
     compareFromHash: () => props.compareFromHash,
-    productRoot: () => props.productRoot,
+    product_root: () => props.productRoot,
     pathRenames: () => props.pathRenames,
   },
 );
@@ -306,8 +306,8 @@ const allExports = computed(() =>
 );
 const allTests = computed(() =>
   unionByKey(
-    beforeDetail.value?.testCases ?? [],
-    afterDetail.value?.testCases ?? detail.value?.testCases ?? [],
+    beforeDetail.value?.test_cases ?? [],
+    afterDetail.value?.test_cases ?? detail.value?.test_cases ?? [],
     testIdentityKey,
   ),
 );
@@ -323,17 +323,17 @@ const specExports = computed(() => {
 const specTests = computed(() => {
   if (!overlay.value) return allTests.value;
   return pickChangedItems(
-    beforeDetail.value?.testCases ?? [],
-    afterDetail.value?.testCases ?? [],
+    beforeDetail.value?.test_cases ?? [],
+    afterDetail.value?.test_cases ?? [],
     testIdentityKey,
     overlay.value.tests,
   );
 });
 
 const rawEntities = computed(() => {
-  const before = (beforeDetail.value?.dbInventory?.entities ?? []) as DbEntity[];
-  const after = (afterDetail.value?.dbInventory?.entities ??
-    detail.value?.dbInventory?.entities ??
+  const before = (beforeDetail.value?.db_inventory?.entities ?? []) as DbEntity[];
+  const after = (afterDetail.value?.db_inventory?.entities ??
+    detail.value?.db_inventory?.entities ??
     []) as DbEntity[];
   return { before, after };
 });
@@ -354,7 +354,7 @@ const entities = computed(() => {
     const columns = pickChangedItems(
       beforeCols,
       afterCols,
-      (c) => dbColumnKey(entity.entity, c.sqlName),
+      (c) => dbColumnKey(entity.entity, c.sql_name),
       overlay.value!.dbColumns,
     );
     return {
@@ -482,12 +482,12 @@ const scopeOpenPath = computed(() => {
   return mod.sourceRepoPath || mod.testRepoPath || "";
 });
 
-function fileName(path: string): string {
+function file_name(path: string): string {
   return path.split("/").pop() ?? path;
 }
 
-function stem(fileName: string): string {
-  return fileName.replace(/\.ts$/, "");
+function stem(file_name: string): string {
+  return file_name.replace(/\.ts$/, "");
 }
 
 function walkSuites(nodes: TestTreeNode[], out: TestTreeNode[] = []): TestTreeNode[] {
@@ -507,17 +507,17 @@ function walkFiles(nodes: TestTreeNode[], out: TestTreeNode[] = []): TestTreeNod
 }
 
 function queryMatchesSuite(q: DbQuery, suite: TestTreeNode): boolean {
-  if (q.exportName && suite.subjectName === q.exportName) return true;
-  if (q.filePath && suite.subjectFilePath === q.filePath) return true;
-  if (q.exportName && suite.label === q.exportName) return true;
+  if (q.export_name && suite.subject_name === q.export_name) return true;
+  if (q.file_path && suite.subject_file_path === q.file_path) return true;
+  if (q.export_name && suite.label === q.export_name) return true;
   return false;
 }
 
 function queryMatchesTestFile(q: DbQuery, fileNode: TestTreeNode): boolean {
   const path = fileNode.sourcePath ?? "";
-  const expected = q.filePath.replace(/\.ts$/, ".test.ts");
+  const expected = q.file_path.replace(/\.ts$/, ".test.ts");
   if (path === expected) return true;
-  const base = stem(q.fileName);
+  const base = stem(q.file_name);
   return (
     fileNode.label === `${base}.test.ts` ||
     path.endsWith(`/${base}.test.ts`)
@@ -533,8 +533,8 @@ function specCardsFor(entity: DbEntity): TestTreeNode[] {
   const cases = specTests.value.filter((t) => {
     const needle = `/queries/${entity.entity}/`;
     return (
-      t.filePath.includes(needle) ||
-      t.filePath.includes(`queries/${entity.entity}/`)
+      t.file_path.includes(needle) ||
+      t.file_path.includes(`queries/${entity.entity}/`)
     );
   });
   const testTree = buildPackageTestTree(
@@ -558,9 +558,9 @@ function specCardsFor(entity: DbEntity): TestTreeNode[] {
       const file = files.find((f) => queryMatchesTestFile(q, f));
       if (file) {
         suite =
-          (q.exportName
+          (q.export_name
             ? file.children.find(
-                (c) => c.kind === "suite" && c.label === q.exportName,
+                (c) => c.kind === "suite" && c.label === q.export_name,
               )
             : undefined) ??
           file.children.find((c) => c.kind === "suite") ??
@@ -572,23 +572,23 @@ function specCardsFor(entity: DbEntity): TestTreeNode[] {
       matchedSuiteIds.add(suite.id);
       cards.push({
         ...suite,
-        subjectName: suite.subjectName ?? q.exportName,
-        subjectSignature: suite.subjectSignature ?? q.signature,
-        subjectDocstring: suite.subjectDocstring ?? q.docstring,
-        subjectFilePath: suite.subjectFilePath ?? q.filePath,
-        usedBy: q.usedBy.length ? q.usedBy : suite.usedBy ?? null,
+        subject_name: suite.subject_name ?? q.export_name,
+        subject_signature: suite.subject_signature ?? q.signature,
+        subject_docstring: suite.subject_docstring ?? q.docstring,
+        subject_file_path: suite.subject_file_path ?? q.file_path,
+        used_by: q.used_by.length ? q.used_by : suite.used_by ?? null,
       });
     } else {
       cards.push({
-        id: `query:${q.filePath}`,
-        label: q.exportName ?? q.fileName,
+        id: `query:${q.file_path}`,
+        label: q.export_name ?? q.file_name,
         kind: "suite",
         children: [],
-        subjectName: q.exportName,
-        subjectSignature: q.signature,
-        subjectDocstring: q.docstring,
-        subjectFilePath: q.filePath,
-        usedBy: q.usedBy.length ? q.usedBy : null,
+        subject_name: q.export_name,
+        subject_signature: q.signature,
+        subject_docstring: q.docstring,
+        subject_file_path: q.file_path,
+        used_by: q.used_by.length ? q.used_by : null,
       });
     }
   }
@@ -606,7 +606,7 @@ function specCardsFor(entity: DbEntity): TestTreeNode[] {
 function openFile(path: string) {
   openSource(path, {
     githubRef: props.githubRef,
-    githubRepo: props.githubRepo,
+    github_repo: props.githubRepo,
     localRepoRoot: props.localRepoRoot,
   });
 }

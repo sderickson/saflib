@@ -1,12 +1,12 @@
 export interface TestCaseLike {
-  packageName: string;
-  filePath: string;
-  fullName: string;
-  subjectName?: string | null;
-  subjectSignature?: string | null;
-  subjectDocstring?: string | null;
-  subjectFilePath?: string | null;
-  subjectConfidence?: "adjacent" | "package" | null;
+  package_name: string;
+  file_path: string;
+  full_name: string;
+  subject_name?: string | null;
+  subject_signature?: string | null;
+  subject_docstring?: string | null;
+  subject_file_path?: string | null;
+  subject_confidence?: "adjacent" | "package" | null;
 }
 
 export type TestTreeNodeKind = "dir" | "file" | "suite" | "test";
@@ -19,19 +19,19 @@ export interface TestTreeNode {
   /** Repo-relative path for file nodes (opens in IDE/GitHub). */
   sourcePath?: string | null;
   /** Linked export — only attached to matching suite nodes. */
-  subjectName?: string | null;
-  subjectSignature?: string | null;
-  subjectDocstring?: string | null;
-  subjectConfidence?: "adjacent" | "package" | null;
-  subjectFilePath?: string | null;
+  subject_name?: string | null;
+  subject_signature?: string | null;
+  subject_docstring?: string | null;
+  subject_confidence?: "adjacent" | "package" | null;
+  subject_file_path?: string | null;
   /**
    * Packages/files that import the subject.
    * Rendered under signature/doc on suite cards.
    */
-  usedBy?: Array<{
-    packageName: string;
-    filePath: string;
-    repoPath: string;
+  used_by?: Array<{
+    package_name: string;
+    file_path: string;
+    repo_path: string;
   }> | null;
   /** Present in Checkout compare mode. */
   change?: "added" | "removed" | "modified" | "moved";
@@ -77,16 +77,16 @@ export type TestScope =
   | { kind: "file"; localPath: string };
 
 export interface ExportLike {
-  packageName: string;
-  filePath: string;
+  package_name: string;
+  file_path: string;
   name: string;
   kind: string;
   signature?: string | null;
   docstring?: string | null;
-  usedBy?: Array<{
-    packageName: string;
-    filePath: string;
-    repoPath: string;
+  used_by?: Array<{
+    package_name: string;
+    file_path: string;
+    repo_path: string;
   }> | null;
   change?: "added" | "removed" | "modified" | "moved";
 }
@@ -125,13 +125,13 @@ export function toVueBundleStem(localOrFilePath: string): string {
 export function packageHasVueFiles(
   exports: ExportLike[],
   tests: TestCaseLike[],
-  packageName: string,
+  package_name: string,
 ): boolean {
-  const vueish = (filePath: string) =>
-    filePath.endsWith(".vue") || VUE_ROLE_SUFFIX_RE.test(toModuleStem(filePath));
+  const vueish = (file_path: string) =>
+    file_path.endsWith(".vue") || VUE_ROLE_SUFFIX_RE.test(toModuleStem(file_path));
   return (
-    exports.some((e) => e.packageName === packageName && vueish(e.filePath)) ||
-    tests.some((t) => t.packageName === packageName && vueish(t.filePath))
+    exports.some((e) => e.package_name === package_name && vueish(e.file_path)) ||
+    tests.some((t) => t.package_name === package_name && vueish(t.file_path))
   );
 }
 
@@ -141,24 +141,24 @@ function isHiddenVueCompanion(repoOrLocalPath: string): boolean {
 }
 
 export function packageLocalPath(
-  filePath: string,
-  packageDirectory: string,
-  productRoot: string = "",
+  file_path: string,
+  package_directory: string,
+  product_root: string = "",
 ): string {
-  const parts = [productRoot, packageDirectory]
+  const parts = [product_root, package_directory]
     .map((p) => p.replace(/^\/+|\/+$/g, ""))
     .filter(Boolean);
   const prefix = parts.join("/");
-  if (!prefix) return filePath;
+  if (!prefix) return file_path;
   const withSlash = prefix.endsWith("/") ? prefix : `${prefix}/`;
-  if (filePath === prefix) return ".";
-  if (filePath.startsWith(withSlash)) return filePath.slice(withSlash.length);
-  const dir = packageDirectory.replace(/^\/+|\/+$/g, "");
+  if (file_path === prefix) return ".";
+  if (file_path.startsWith(withSlash)) return file_path.slice(withSlash.length);
+  const dir = package_directory.replace(/^\/+|\/+$/g, "");
   if (dir) {
     const d = dir.endsWith("/") ? dir : `${dir}/`;
-    if (filePath.startsWith(d)) return filePath.slice(d.length);
+    if (file_path.startsWith(d)) return file_path.slice(d.length);
   }
-  return filePath;
+  return file_path;
 }
 
 function ensureChild(
@@ -208,38 +208,38 @@ function attachSubjectToSuite(
   t: TestCaseLike,
   suiteLabel: string,
 ): void {
-  if (!t.subjectName || t.subjectName !== suiteLabel) return;
-  if (node.subjectName) return;
-  node.subjectName = t.subjectName;
-  node.subjectSignature = t.subjectSignature ?? null;
-  node.subjectDocstring = t.subjectDocstring ?? null;
-  node.subjectConfidence = t.subjectConfidence ?? null;
-  node.subjectFilePath = t.subjectFilePath ?? null;
+  if (!t.subject_name || t.subject_name !== suiteLabel) return;
+  if (node.subject_name) return;
+  node.subject_name = t.subject_name;
+  node.subject_signature = t.subject_signature ?? null;
+  node.subject_docstring = t.subject_docstring ?? null;
+  node.subject_confidence = t.subject_confidence ?? null;
+  node.subject_file_path = t.subject_file_path ?? null;
 }
 
 function addSuitesAndLeaf(fileNode: TestTreeNode, t: TestCaseLike): void {
-  const suiteParts = t.fullName.split(" > ").map((s) => s.trim());
-  const leaf = suiteParts.pop() ?? t.fullName;
+  const suiteParts = t.full_name.split(" > ").map((s) => s.trim());
+  const leaf = suiteParts.pop() ?? t.full_name;
   let node = fileNode;
   for (const suite of suiteParts) {
     node = ensureChild(node, suite, "suite");
     attachSubjectToSuite(node, t, suite);
   }
-  ensureChild(node, leaf, "test", t.filePath);
+  ensureChild(node, leaf, "test", t.file_path);
 }
 
 function packageTests(
   tests: TestCaseLike[],
-  packageName: string,
+  package_name: string,
 ): TestCaseLike[] {
-  return tests.filter((t) => t.packageName === packageName);
+  return tests.filter((t) => t.package_name === package_name);
 }
 
 function packageExports(
   exports: ExportLike[],
-  packageName: string,
+  package_name: string,
 ): ExportLike[] {
-  return exports.filter((e) => e.packageName === packageName);
+  return exports.filter((e) => e.package_name === package_name);
 }
 
 /** Exports worth showing as Spec cards (executable surface). */
@@ -273,9 +273,9 @@ function pickPreferredSource(paths: string[]): string | null {
 function collectModuleUnits(
   exports: ExportLike[],
   tests: TestCaseLike[],
-  packageName: string,
-  packageDirectory: string,
-  productRoot: string,
+  package_name: string,
+  package_directory: string,
+  product_root: string,
   options: ModuleNavOptions = {},
 ): ModuleUnit[] {
   const byStem = new Map<string, ModuleUnit>();
@@ -285,7 +285,7 @@ function collectModuleUnits(
   const touch = (
     stem: string,
     side: "source" | "test",
-    repoPath: string,
+    repo_path: string,
     cardExport = false,
   ): void => {
     let unit = byStem.get(stem);
@@ -304,18 +304,18 @@ function collectModuleUnits(
       byStem.set(stem, unit);
     }
     if (side === "source") {
-      if (!unit.sourceRepoPaths.includes(repoPath)) {
-        unit.sourceRepoPaths.push(repoPath);
+      if (!unit.sourceRepoPaths.includes(repo_path)) {
+        unit.sourceRepoPaths.push(repo_path);
       }
       unit.sourceRepoPath = pickPreferredSource(unit.sourceRepoPaths);
       if (cardExport) unit.hasCardExports = true;
-      if (repoPath.endsWith(".vue") && !VUE_ASYNC_FILE_RE.test(repoPath)) {
+      if (repo_path.endsWith(".vue") && !VUE_ASYNC_FILE_RE.test(repo_path)) {
         unit.hasVueComponent = true;
       }
-      if (VUE_ASYNC_FILE_RE.test(repoPath)) unit.loadableAsync = true;
+      if (VUE_ASYNC_FILE_RE.test(repo_path)) unit.loadableAsync = true;
     } else {
-      if (!unit.testRepoPaths.includes(repoPath)) {
-        unit.testRepoPaths.push(repoPath);
+      if (!unit.testRepoPaths.includes(repo_path)) {
+        unit.testRepoPaths.push(repo_path);
       }
       unit.testRepoPath = unit.testRepoPaths[0] ?? null;
     }
@@ -324,21 +324,21 @@ function collectModuleUnits(
     else unit.presence = "test";
   };
 
-  for (const e of packageExports(exports, packageName)) {
-    const local = packageLocalPath(e.filePath, packageDirectory, productRoot);
+  for (const e of packageExports(exports, package_name)) {
+    const local = packageLocalPath(e.file_path, package_directory, product_root);
     if (TEST_SUFFIX_RE.test(local)) continue;
     // Fold `*.fake.ts` into the product request stem (not a separate nav leaf).
     if (FAKE_SUFFIX_RE.test(local)) continue;
     touch(
       stemOf(local),
       "source",
-      e.filePath,
-      isCardExport(e.kind) && !isHiddenVueCompanion(e.filePath),
+      e.file_path,
+      isCardExport(e.kind) && !isHiddenVueCompanion(e.file_path),
     );
   }
-  for (const t of packageTests(tests, packageName)) {
-    const local = packageLocalPath(t.filePath, packageDirectory, productRoot);
-    touch(stemOf(local), "test", t.filePath);
+  for (const t of packageTests(tests, package_name)) {
+    const local = packageLocalPath(t.file_path, package_directory, product_root);
+    touch(stemOf(local), "test", t.file_path);
   }
 
   return [...byStem.values()].sort((a, b) => a.stem.localeCompare(b.stem));
@@ -385,14 +385,14 @@ function isLoneAsyncUnit(unit: ModuleUnit): boolean {
 export function buildModuleFileNav(
   exports: ExportLike[],
   tests: TestCaseLike[],
-  packageName: string,
-  packageDirectory: string = "",
-  productRoot: string = "",
+  package_name: string,
+  package_directory: string = "",
+  product_root: string = "",
   options: ModuleNavOptions = {},
 ): TestFileNavNode[] {
   const root: TestFileNavNode = {
-    id: `nav:${packageName}`,
-    label: packageName,
+    id: `nav:${package_name}`,
+    label: package_name,
     kind: "dir",
     localPath: "",
     children: [],
@@ -401,9 +401,9 @@ export function buildModuleFileNav(
   for (const unit of collectModuleUnits(
     exports,
     tests,
-    packageName,
-    packageDirectory,
-    productRoot,
+    package_name,
+    package_directory,
+    product_root,
     options,
   )) {
     if (options.excludeStem?.(unit.stem)) continue;
@@ -490,19 +490,19 @@ export function buildDbPackageFileNav(
   entityNames: string[],
   exports: ExportLike[],
   tests: TestCaseLike[],
-  packageName: string,
-  packageDirectory: string = "",
-  productRoot: string = "",
+  package_name: string,
+  package_directory: string = "",
+  product_root: string = "",
 ): TestFileNavNode[] {
   const entitiesDir: TestFileNavNode = {
-    id: `nav:${packageName}/dir:${DB_ENTITY_NAV_DIR}`,
+    id: `nav:${package_name}/dir:${DB_ENTITY_NAV_DIR}`,
     label: DB_ENTITY_NAV_DIR,
     kind: "dir",
     localPath: DB_ENTITY_NAV_DIR,
     children: [...entityNames]
       .sort((a, b) => a.localeCompare(b))
       .map((name) => ({
-        id: `nav:${packageName}/file:${DB_ENTITY_NAV_DIR}/${name}`,
+        id: `nav:${package_name}/file:${DB_ENTITY_NAV_DIR}/${name}`,
         label: name,
         kind: "file" as const,
         localPath: `${DB_ENTITY_NAV_DIR}/${name}`,
@@ -514,9 +514,9 @@ export function buildDbPackageFileNav(
   const modules = buildModuleFileNav(
     exports,
     tests,
-    packageName,
-    packageDirectory,
-    productRoot,
+    package_name,
+    package_directory,
+    product_root,
     { excludeStem: isDbPackageHiddenModuleStem },
   );
 
@@ -526,11 +526,11 @@ export function buildDbPackageFileNav(
 /** @deprecated Prefer {@link buildModuleFileNav}. */
 export function buildTestFileNav(
   tests: TestCaseLike[],
-  packageName: string,
-  packageDirectory: string = "",
-  productRoot: string = "",
+  package_name: string,
+  package_directory: string = "",
+  product_root: string = "",
 ): TestFileNavNode[] {
-  return buildModuleFileNav([], tests, packageName, packageDirectory, productRoot);
+  return buildModuleFileNav([], tests, package_name, package_directory, product_root);
 }
 
 function suitesFromTests(tests: TestCaseLike[]): TestTreeNode[] {
@@ -561,22 +561,22 @@ function mergeExportCards(
     const suite =
       suites.find(
         (s) =>
-          s.subjectName === exp.name ||
+          s.subject_name === exp.name ||
           s.label === exp.name ||
-          (s.subjectFilePath === exp.filePath && s.subjectName === exp.name),
+          (s.subject_file_path === exp.file_path && s.subject_name === exp.name),
       ) ?? null;
     if (suite) matched.add(suite.id);
     cards.push({
-      id: suite?.id ?? `export:${exp.filePath}:${exp.name}`,
+      id: suite?.id ?? `export:${exp.file_path}:${exp.name}`,
       label: exp.name,
       kind: "suite",
       children: suite?.children ?? [],
-      subjectName: exp.name,
-      subjectSignature: exp.signature ?? suite?.subjectSignature ?? null,
-      subjectDocstring: exp.docstring ?? suite?.subjectDocstring ?? null,
-      subjectFilePath: exp.filePath,
-      subjectConfidence: suite?.subjectConfidence ?? null,
-      usedBy: exp.usedBy?.length ? exp.usedBy : null,
+      subject_name: exp.name,
+      subject_signature: exp.signature ?? suite?.subject_signature ?? null,
+      subject_docstring: exp.docstring ?? suite?.subject_docstring ?? null,
+      subject_file_path: exp.file_path,
+      subject_confidence: suite?.subject_confidence ?? null,
+      used_by: exp.used_by?.length ? exp.used_by : null,
     });
   }
 
@@ -595,18 +595,18 @@ function mergeExportCards(
 export function buildPackageSpecTree(
   exports: ExportLike[],
   tests: TestCaseLike[],
-  packageName: string,
-  packageDirectory: string = "",
-  productRoot: string = "",
+  package_name: string,
+  package_directory: string = "",
+  product_root: string = "",
   scope: TestScope = { kind: "all" },
   options: ModuleNavOptions = {},
 ): TestTreeNode[] {
   const units = collectModuleUnits(
     exports,
     tests,
-    packageName,
-    packageDirectory,
-    productRoot,
+    package_name,
+    package_directory,
+    product_root,
     options,
   ).filter(
     (u) =>
@@ -615,18 +615,18 @@ export function buildPackageSpecTree(
       matchesStemScope(u.stem, scope, options.vueBundles),
   );
 
-  const pkgExports = packageExports(exports, packageName);
-  const pkgTests = packageTests(tests, packageName);
+  const pkgExports = packageExports(exports, package_name);
+  const pkgTests = packageTests(tests, package_name);
 
   const unitExports = (unit: ModuleUnit) => {
     const paths = new Set(unit.sourceRepoPaths);
     return pkgExports.filter(
-      (e) => paths.has(e.filePath) && !isHiddenVueCompanion(e.filePath),
+      (e) => paths.has(e.file_path) && !isHiddenVueCompanion(e.file_path),
     );
   };
   const unitTests = (unit: ModuleUnit) => {
     const paths = new Set(unit.testRepoPaths);
-    return pkgTests.filter((t) => paths.has(t.filePath));
+    return pkgTests.filter((t) => paths.has(t.file_path));
   };
 
   if (scope.kind === "file") {
@@ -639,8 +639,8 @@ export function buildPackageSpecTree(
   }
 
   const root: TestTreeNode = {
-    id: `pkg:${packageName}:${scope.kind}:${scope.kind === "all" ? "" : scope.localPath}`,
-    label: packageName,
+    id: `pkg:${package_name}:${scope.kind}:${scope.kind === "all" ? "" : scope.localPath}`,
+    label: package_name,
     kind: "dir",
     children: [],
   };
@@ -685,17 +685,17 @@ export function buildPackageSpecTree(
  */
 export function buildPackageTestTree(
   tests: TestCaseLike[],
-  packageName: string,
-  packageDirectory: string = "",
-  productRoot: string = "",
+  package_name: string,
+  package_directory: string = "",
+  product_root: string = "",
   scope: TestScope = { kind: "all" },
 ): TestTreeNode[] {
   return buildPackageSpecTree(
     [],
     tests,
-    packageName,
-    packageDirectory,
-    productRoot,
+    package_name,
+    package_directory,
+    product_root,
     scope,
   );
 }

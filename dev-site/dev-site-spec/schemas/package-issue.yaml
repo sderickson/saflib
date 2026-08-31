@@ -3,9 +3,9 @@ required:
   - kind
   - title
   - name
-  - kindLabel
-  - filePath
-  - repoPath
+  - kind_label
+  - file_path
+  - repo_path
 properties:
   kind:
     type: string
@@ -17,11 +17,11 @@ properties:
     type: string
   name:
     type: string
-  kindLabel:
+  kind_label:
     type: string
-  filePath:
+  file_path:
     type: string
     description: Package-local path for display
-  repoPath:
+  repo_path:
     type: string
     description: Repo-relative path for open-source links

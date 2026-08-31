@@ -24,15 +24,15 @@ export const addShowCommand = (program: Command) => {
         hash: string,
         opts: {
           db?: string;
-          repoRoot?: string;
-          productRoot?: string;
+          repo_root?: string;
+          product_root?: string;
           mainRef?: string;
         },
       ) => {
-        const repoRoot = resolveRepoRoot(opts.repoRoot);
-        const dbPath = resolveDbPath(repoRoot, opts.db);
+        const repo_root = resolveRepoRoot(opts.repo_root);
+        const dbPath = resolveDbPath(repo_root, opts.db);
         ensureCliDbAvailable(dbPath, "read");
-        const productRoot = resolveProductRoot(opts.productRoot, dbPath);
+        const product_root = resolveProductRoot(opts.product_root, dbPath);
         const mainRef = resolveMainRef(opts.mainRef);
         const dbKey = devSiteDb.connect({
           onDisk: dbPath,
@@ -42,8 +42,8 @@ export const addShowCommand = (program: Command) => {
         try {
           const result = await throwError(
             getCommit(dbKey, hash, {
-              repoRoot,
-              productRoot: productRoot || undefined,
+              repo_root,
+              product_root: product_root || undefined,
               mainRef,
             }),
           );

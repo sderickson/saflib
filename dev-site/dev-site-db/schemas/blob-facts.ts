@@ -24,9 +24,9 @@ export type BlobSpecialty = FileSpecialty;
 
 /** Path-agnostic parse results for one git blob (Sqlite adapter over FileFact). */
 export interface BlobFactEntity {
-  blobHash: string;
-  analyzerVersion: string;
-  lineCount: number;
+  blob_hash: string;
+  analyzer_version: string;
+  line_count: number;
   specialty: FileSpecialty;
   computed_at: Date;
 }
@@ -48,9 +48,9 @@ export function blobFactTables(fact: BlobFactEntity): FileTableFact[] {
 }
 
 export const blobFactsTable = sqliteTable("blob_facts", {
-  blobHash: text("blob_hash").primaryKey(),
-  analyzerVersion: text("analyzer_version").notNull(),
-  lineCount: integer("line_count").notNull(),
+  blob_hash: text("blob_hash").primaryKey(),
+  analyzer_version: text("analyzer_version").notNull(),
+  line_count: integer("line_count").notNull(),
   specialty: text("specialty_json", { mode: "json" })
     .$type<FileSpecialty>()
     .notNull(),

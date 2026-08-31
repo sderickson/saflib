@@ -13,28 +13,28 @@ type GetResponse = DevSiteResponseBody["getCommits"][200];
 const HASH = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 const mockDetail: GetResponse = {
-  commitDetail: {
+  commit_detail: {
     commit: {
       hash: HASH,
-      parentHashes: [],
-      authoredAt: "2026-01-02T00:00:00.000Z",
+      parent_hashes: [],
+      authored_at: "2026-01-02T00:00:00.000Z",
       message: "add math helpers",
       refs: [],
-      analyzerVersion: "1",
+      analyzer_version: "1",
       computed_at: "2026-01-02T01:00:00.000Z",
       status: "complete",
     },
-    packageMetrics: [
+    package_metrics: [
       packageMetricsFixture({
-        packageName: "@fixture/root",
+        package_name: "@fixture/root",
         directory: "",
-        sourceFiles: 2,
-        sourceLines: 40,
-        prodLines: 30,
-        testLines: 10,
-        testFiles: 1,
-        debtCount: 1,
-        issueCountsByKind: {
+        source_files: 2,
+        source_lines: 40,
+        prod_lines: 30,
+        test_lines: 10,
+        test_files: 1,
+        debt_count: 1,
+        issue_counts_by_kind: {
           "dead-code": 1,
           "oversized-file": 0,
           "package-layout": 0,
@@ -43,19 +43,19 @@ const mockDetail: GetResponse = {
     ],
     exports: [
       {
-        packageName: "@fixture/root",
-        filePath: "src/math.ts",
+        package_name: "@fixture/root",
+        file_path: "src/math.ts",
         name: "add",
         kind: "function",
         signature: "(a: number, b: number)",
         docstring: null,
       },
     ],
-    testCases: [
+    test_cases: [
       {
-        packageName: "@fixture/root",
-        filePath: "src/math.test.ts",
-        fullName: "math > adds",
+        package_name: "@fixture/root",
+        file_path: "src/math.test.ts",
+        full_name: "math > adds",
       },
     ],
   },

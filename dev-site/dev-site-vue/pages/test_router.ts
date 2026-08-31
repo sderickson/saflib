@@ -15,10 +15,10 @@ export const router = createRouter({
     { path: "/history/compare", component: ComparePage },
     { path: "/checkout", component: CheckoutPage },
     {
-      path: "/checkout/packages/:packageName",
+      path: "/checkout/packages/:package_name",
       redirect: (to) => ({
         path: "/checkout",
-        query: { package: decodeURIComponent(to.params.packageName as string) },
+        query: { package: decodeURIComponent(to.params.package_name as string) },
       }),
     },
     { path: "/build", component: BuildPage },

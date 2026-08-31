@@ -8,22 +8,22 @@ describe("buildPackageDirTree", () => {
   it("stops at package roots and nests path segments", () => {
     const tree = buildPackageDirTree([
       {
-        packageName: "@example/billing-db",
+        package_name: "@example/billing-db",
         directory: "products/billing/service/db",
         kind: "db",
-        debtCount: 2,
-        issueCountsByKind: {
+        debt_count: 2,
+        issue_counts_by_kind: {
           "dead-code": 2,
           "oversized-file": 0,
           "package-layout": 0,
         },
       },
       {
-        packageName: "@example/billing-http",
+        package_name: "@example/billing-http",
         directory: "products/billing/service/http",
       },
       {
-        packageName: "@saflib/git",
+        package_name: "@saflib/git",
         directory: "saflib/git",
       },
     ]);
@@ -35,9 +35,9 @@ describe("buildPackageDirTree", () => {
       .find((c) => c.label === "service")!
       .children.find((c) => c.label === "db");
     expect(db?.kind).toBe("package");
-    expect(db?.packageName).toBe("@example/billing-db");
+    expect(db?.package_name).toBe("@example/billing-db");
     expect(db?.packageKind).toBe("db");
-    expect(db?.debtCount).toBe(2);
+    expect(db?.debt_count).toBe(2);
   });
 });
 

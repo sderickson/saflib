@@ -26,9 +26,9 @@
                     "type": "integer",
                     "minimum": 1,
                     "default": 1,
-                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commitHash` is set.\n"
+                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commit_hash` is set.\n"
                   },
-                  "commitHash": {
+                  "commit_hash": {
                     "type": "string",
                     "description": "Analyze exactly this commit (if not already stored). Used by Current checkout \"Scan this commit\".\n"
                   }

@@ -15,9 +15,9 @@ import { createDevSiteHttpApp } from "../../http.ts";
 import { releaseSlimRouteTest } from "../../testing/slim-route-test.ts";
 import type { DevSiteHttpAppLease } from "../../http.ts";
 
-function git(repoRoot: string, args: string[]): string {
+function git(repo_root: string, args: string[]): string {
   return execFileSync("git", args, {
-    cwd: repoRoot,
+    cwd: repo_root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     env: {
@@ -32,37 +32,37 @@ function git(repoRoot: string, args: string[]): string {
 
 describe("repo files routes", () => {
   let lease: DevSiteHttpAppLease;
-  let repoRoot: string;
+  let repo_root: string;
   let headHash: string;
 
   beforeAll(() => {
-    repoRoot = mkdtempSync(join(tmpdir(), "dev-site-repo-files-"));
-    git(repoRoot, ["init"]);
-    git(repoRoot, ["checkout", "-b", "main"]);
-    mkdirSync(join(repoRoot, "pages"), { recursive: true });
+    repo_root = mkdtempSync(join(tmpdir(), "dev-site-repo-files-"));
+    git(repo_root, ["init"]);
+    git(repo_root, ["checkout", "-b", "main"]);
+    mkdirSync(join(repo_root, "pages"), { recursive: true });
     writeFileSync(
-      join(repoRoot, "pages/Home.vue"),
+      join(repo_root, "pages/Home.vue"),
       "<script setup>\nconst x = 1;\n</script>\n",
     );
     writeFileSync(
-      join(repoRoot, "pages/Home.loader.ts"),
+      join(repo_root, "pages/Home.loader.ts"),
       "export async function load() {}\n",
     );
     writeFileSync(
-      join(repoRoot, "pages/Home.test.ts"),
+      join(repo_root, "pages/Home.test.ts"),
       'describe("Home", () => {});\n',
     );
     writeFileSync(
-      join(repoRoot, "pages/HomeAsync.vue"),
+      join(repo_root, "pages/HomeAsync.vue"),
       "<template>async</template>\n",
     );
-    writeFileSync(join(repoRoot, "pages/README.md"), "# Pages\n\nHome views.\n");
-    git(repoRoot, ["add", "."]);
-    git(repoRoot, ["commit", "-m", "init"]);
-    headHash = git(repoRoot, ["rev-parse", "HEAD"]);
+    writeFileSync(join(repo_root, "pages/README.md"), "# Pages\n\nHome views.\n");
+    git(repo_root, ["add", "."]);
+    git(repo_root, ["commit", "-m", "init"]);
+    headHash = git(repo_root, ["rev-parse", "HEAD"]);
 
     lease = createDevSiteHttpApp({
-      repoRoot,
+      repo_root,
       mainRef: "main",
       mounts: [{ kind: "router", createRouter: createRepoRouter }],
     });
@@ -70,7 +70,7 @@ describe("repo files routes", () => {
 
   afterAll(() => {
     releaseSlimRouteTest(lease);
-    rmSync(repoRoot, { recursive: true, force: true });
+    rmSync(repo_root, { recursive: true, force: true });
   });
 
   it("lists every file sharing a stem prefix in one response", async () => {
@@ -95,7 +95,7 @@ describe("repo files routes", () => {
 
   it("includes uncommitted HEAD working-tree files for the stem", async () => {
     writeFileSync(
-      join(repoRoot, "pages/Home.logic.ts"),
+      join(repo_root, "pages/Home.logic.ts"),
       "export function useHome() {}\n",
     );
     const response = await request(lease.app).get("/api/repo/files").query({
@@ -109,7 +109,7 @@ describe("repo files routes", () => {
     const logic = response.body.files.find(
       (f: { path: string }) => f.path === "pages/Home.logic.ts",
     );
-    expect(logic.blobHash).toBe("");
+    expect(logic.blob_hash).toBe("");
     expect(logic.content).toContain("useHome");
   });
 

@@ -2,16 +2,16 @@ type: object
 description: >
   Delta between two analyzed commits. Exports and test cases are identity-based
   (add/remove only — a rename shows up as remove + add). Package metrics include
-  a `changed` list when the same packageName exists on both sides with different
+  a `changed` list when the same package_name exists on both sides with different
   counts.
 properties:
-  fromHash:
+  from_hash:
     type: string
     description: Baseline commit hash (the "before").
-  toHash:
+  to_hash:
     type: string
     description: Comparison commit hash (the "after").
-  packageMetrics:
+  package_metrics:
     type: object
     properties:
       added:
@@ -52,7 +52,7 @@ properties:
     required:
       - added
       - removed
-  testCases:
+  test_cases:
     type: object
     properties:
       added:
@@ -66,7 +66,7 @@ properties:
     required:
       - added
       - removed
-  dbSchemas:
+  db_schemas:
     type: object
     description: Structural drizzle table/column deltas across both commits.
     properties:
@@ -115,9 +115,9 @@ properties:
       - tables
       - columns
 required:
-  - fromHash
-  - toHash
-  - packageMetrics
+  - from_hash
+  - to_hash
+  - package_metrics
   - exports
-  - testCases
-  - dbSchemas
+  - test_cases
+  - db_schemas

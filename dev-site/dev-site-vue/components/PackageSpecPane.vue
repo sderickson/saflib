@@ -177,7 +177,7 @@
             <ul class="routes-block__list">
               <li
                 v-for="op in scopedRoutes"
-                :key="op.operationId + op.method + op.path"
+                :key="op.operation_id + op.method + op.path"
                 :class="{
                   'routes-block__item--added': op.change === 'added',
                   'routes-block__item--removed': op.change === 'removed',
@@ -187,7 +187,7 @@
                 <ChangeChip :change="op.change" />
                 <PackageRouteCard
                   :operation="normalizeOp(op)"
-                  :route-repo-path="routeRepoPath(op.yamlPath)"
+                  :route-repo-path="routeRepoPath(op.yaml_path)"
                   :open-file="openFile"
                   through-files
                 />
@@ -297,7 +297,7 @@ const {
   () => props.packageName,
   {
     compareFromHash: () => props.compareFromHash,
-    productRoot: () => props.productRoot,
+    product_root: () => props.productRoot,
     pathRenames: () => props.pathRenames,
   },
 );
@@ -315,8 +315,8 @@ const allExports = computed(() =>
 );
 const allTests = computed(() =>
   unionByKey(
-    beforeDetail.value?.testCases ?? [],
-    afterDetail.value?.testCases ?? detail.value?.testCases ?? [],
+    beforeDetail.value?.test_cases ?? [],
+    afterDetail.value?.test_cases ?? detail.value?.test_cases ?? [],
     testIdentityKey,
   ),
 );
@@ -332,8 +332,8 @@ const specExports = computed(() => {
 const specTests = computed(() => {
   if (!overlay.value) return allTests.value;
   return pickChangedItems(
-    beforeDetail.value?.testCases ?? [],
-    afterDetail.value?.testCases ?? [],
+    beforeDetail.value?.test_cases ?? [],
+    afterDetail.value?.test_cases ?? [],
     testIdentityKey,
     overlay.value.tests,
   );
@@ -439,7 +439,7 @@ const bundleExports = computed(() => {
     s.kind === "file" ? toVueBundleStem(s.localPath) : s.localPath.replace(/\/+$/, "");
   return specExports.value.filter((e) => {
     const local = packageLocalPath(
-      e.filePath,
+      e.file_path,
       props.packageDirectory,
       props.productRoot ?? "",
     );
@@ -451,7 +451,7 @@ const bundleExports = computed(() => {
 
 const vueComponent = computed(() =>
   bundleExports.value.find(
-    (e) => e.kind === "component" && !/Async\.vue$/i.test(e.filePath),
+    (e) => e.kind === "component" && !/Async\.vue$/i.test(e.file_path),
   ),
 );
 const vueRootTag = computed(() => {
@@ -477,46 +477,46 @@ const showVueSurface = computed(
 );
 
 interface SpecUsedBy {
-  packageName: string;
-  filePath: string;
-  repoPath: string;
+  package_name: string;
+  file_path: string;
+  repo_path: string;
 }
 
 interface SpecFileRef {
-  filePath: string;
-  repoPath: string;
+  file_path: string;
+  repo_path: string;
 }
 
 interface SpecTestSpec {
-  fullName: string;
+  full_name: string;
 }
 
 interface SpecOperation {
-  operationId: string;
+  operation_id: string;
   method: string;
   path: string;
   summary?: string | null;
   tags?: string[];
-  yamlPath: string;
-  routeStem?: string | null;
+  yaml_path: string;
+  route_stem?: string | null;
   handler?: SpecFileRef | null;
   request?: SpecFileRef | null;
   fake?: SpecFileRef | null;
-  handlerTests?: SpecTestSpec[];
-  requestSchemas: string[];
-  responseSchemas: string[];
-  usedBy: SpecUsedBy[];
+  handler_tests?: SpecTestSpec[];
+  request_schemas: string[];
+  response_schemas: string[];
+  used_by: SpecUsedBy[];
   enqueues?: string[];
-  enqueuedBy?: string[];
+  enqueued_by?: string[];
   change?: "added" | "removed" | "modified";
 }
 
 const specPkgPrefix = computed(() => {
   const dir = (
-    afterDetail.value?.specInventory ??
-    beforeDetail.value?.specInventory ??
-    detail.value?.specInventory
-  )?.packageDirectory as string | undefined;
+    afterDetail.value?.spec_inventory ??
+    beforeDetail.value?.spec_inventory ??
+    detail.value?.spec_inventory
+  )?.package_directory as string | undefined;
   if (!dir) return "";
   return repoPathPrefix(props.productRoot, dir);
 });
@@ -524,11 +524,11 @@ const specPkgPrefix = computed(() => {
 const allOperations = computed((): SpecOperation[] => {
   const beforeOps: SpecOperation[] = [];
   const afterOps: SpecOperation[] = [];
-  for (const e of beforeDetail.value?.specInventory?.entities ?? []) {
+  for (const e of beforeDetail.value?.spec_inventory?.entities ?? []) {
     for (const op of e.operations ?? []) beforeOps.push(op as SpecOperation);
   }
-  for (const e of afterDetail.value?.specInventory?.entities ??
-    detail.value?.specInventory?.entities ??
+  for (const e of afterDetail.value?.spec_inventory?.entities ??
+    detail.value?.spec_inventory?.entities ??
     []) {
     for (const op of e.operations ?? []) afterOps.push(op as SpecOperation);
   }
@@ -550,18 +550,18 @@ const scopedRoutes = computed(() => {
     s.kind === "file"
       ? toVueBundleStem(s.localPath)
       : s.localPath.replace(/\/+$/, "");
-  const pkg = detail.value?.packageName;
+  const pkg = detail.value?.package_name;
   const seen = new Set<string>();
   const out: SpecOperation[] = [];
   for (const op of allOperations.value) {
-    const hit = (op.usedBy ?? []).some((u) => {
-      if (pkg && u.packageName !== pkg) return false;
-      const stem = toVueBundleStem(u.filePath);
+    const hit = (op.used_by ?? []).some((u) => {
+      if (pkg && u.package_name !== pkg) return false;
+      const stem = toVueBundleStem(u.file_path);
       if (s.kind === "file") return stem === wanted;
       return stem === wanted || stem.startsWith(`${wanted}/`);
     });
     if (!hit) continue;
-    const key = `${op.operationId}\0${op.method}\0${op.path}`;
+    const key = `${op.operation_id}\0${op.method}\0${op.path}`;
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(op);
@@ -580,22 +580,22 @@ function routeRepoPath(packageRelative: string): string {
 
 function normalizeOp(op: SpecOperation): RouteCardOperation {
   return {
-    operationId: op.operationId,
+    operation_id: op.operation_id,
     method: op.method,
     path: op.path,
     summary: op.summary,
     tags: op.tags ?? [],
-    yamlPath: op.yamlPath,
-    routeStem: op.routeStem ?? null,
+    yaml_path: op.yaml_path,
+    route_stem: op.route_stem ?? null,
     handler: op.handler ?? null,
     request: op.request ?? null,
     fake: op.fake ?? null,
-    handlerTests: op.handlerTests ?? [],
-    requestSchemas: op.requestSchemas,
-    responseSchemas: op.responseSchemas,
-    usedBy: op.usedBy ?? [],
+    handler_tests: op.handler_tests ?? [],
+    request_schemas: op.request_schemas,
+    response_schemas: op.response_schemas,
+    used_by: op.used_by ?? [],
     enqueues: op.enqueues,
-    enqueuedBy: op.enqueuedBy,
+    enqueued_by: op.enqueued_by,
   };
 }
 
@@ -615,7 +615,7 @@ const scopeOpenPath = computed(() => {
 const openFile = (path: string) => {
   openSource(path, {
     githubRef: props.githubRef,
-    githubRepo: props.githubRepo,
+    github_repo: props.githubRepo,
     localRepoRoot: props.localRepoRoot,
   });
 };

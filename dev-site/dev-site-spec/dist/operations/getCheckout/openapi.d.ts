@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Current checkout (HEAD) analysis status
-         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`). Used by the Current checkout UI.
+         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compare_ref` (default `main`). Used by the Current checkout UI.
          */
         get: operations["getCheckout"];
         put?: never;
@@ -34,7 +34,7 @@ export interface components {
              * @description npm package name (e.g. `@saflib/git`).
              * @example @saflib/git
              */
-            packageName: string;
+            package_name: string;
             /**
              * @description Package directory relative to the analyzed product root.
              * @example saflib/git
@@ -46,18 +46,18 @@ export interface components {
              */
             kind?: "db" | "http" | "spec" | "spa" | "sdk" | "lib" | "integration" | "other";
             /** @description Count of source files (excluding tests). */
-            sourceFiles: number;
+            source_files: number;
             /** @description Total lines across source files. */
-            sourceLines: number;
+            source_lines: number;
             /** @description Production (non-test) source lines. */
-            prodLines: number;
+            prod_lines: number;
             /** @description Test file lines. */
-            testLines: number;
+            test_lines: number;
             /** @description Count of test files. */
-            testFiles: number;
-            issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+            test_files: number;
+            issue_counts_by_kind: components["schemas"]["issue-counts-by-kind"];
             /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
-            debtCount: number;
+            debt_count: number;
         };
         /** @description Per-kind issue counts for a commit or package (all kinds count as debt). */
         "issue-counts-by-kind": {
@@ -68,24 +68,24 @@ export interface components {
         /** @description Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode. */
         "checkout-compare": {
             /** @description Branch/ref HEAD was compared against (e.g. `main`). */
-            againstRef: string;
-            /** @description Full hash of `git merge-base(HEAD, againstRef)`. */
-            mergeBaseHash: string;
+            against_ref: string;
+            /** @description Full hash of `git merge-base(HEAD, against_ref)`. */
+            merge_base_hash: string;
             /** @description True when that fork-point commit has an analysis snapshot. */
-            mergeBaseAnalyzed: boolean;
+            merge_base_analyzed: boolean;
             /** @description Subject of the fork-point commit. */
-            mergeBaseMessage: string;
+            merge_base_message: string;
             /**
              * Format: date-time
              * @description Author date of the fork-point commit.
              */
-            mergeBaseAuthoredAt: string;
+            merge_base_authored_at: string;
             /** @description File rename pairs from the fork point to HEAD (`git diff --find-renames`). Used by Checkout compare to show moved modules instead of remove+add. */
             renames: {
                 /** @description Path at the fork-point commit. */
-                fromPath: string;
+                from_path: string;
                 /** @description Path at HEAD. */
-                toPath: string;
+                to_path: string;
                 /** @description Git rename similarity (0-100). */
                 score?: number;
             }[];
@@ -112,7 +112,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Local branch name to take the merge-base against. Defaults to the server `main` ref. */
-                compareRef?: string;
+                compare_ref?: string;
             };
             header?: never;
             path?: never;
@@ -130,22 +130,22 @@ export interface operations {
                         hash: string;
                         message: string;
                         /** Format: date-time */
-                        authoredAt: string;
+                        authored_at: string;
                         analyzed: boolean;
                         /** @description Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
-                        productRoot: string;
+                        product_root: string;
                         /** @description Short branch name for HEAD, or null when detached. */
                         branch: string | null;
                         packages: components["schemas"]["package-metrics"][];
-                        /** @description Local branch names that can be used as `compareRef` (current branch omitted; configured main ref always included when it exists). */
-                        compareCandidates: string[];
+                        /** @description Local branch names that can be used as `compare_ref` (current branch omitted; configured main ref always included when it exists). */
+                        compare_candidates: string[];
                         /** @description GitHub `owner/name` for source and commit links. Omitted when the server has no `DEV_SITE_GITHUB_REPO` configured. */
-                        githubRepo?: string;
+                        github_repo?: string;
                         compare?: components["schemas"]["checkout-compare"];
                     };
                 };
             };
-            /** @description compareRef is not a valid git object. */
+            /** @description compare_ref is not a valid git object. */
             400: {
                 headers: {
                     [name: string]: unknown;

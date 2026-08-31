@@ -32,13 +32,13 @@ describe("analyzed-commits/get-latest", () => {
         dbKey,
         makeCommit({
           hash: "1111111111111111111111111111111111111111",
-          authoredAt: new Date("2026-01-01T00:00:00Z"),
+          authored_at: new Date("2026-01-01T00:00:00Z"),
         }),
       ),
     );
     const latest = makeCommit({
       hash: "2222222222222222222222222222222222222222",
-      authoredAt: new Date("2026-06-01T00:00:00Z"),
+      authored_at: new Date("2026-06-01T00:00:00Z"),
     });
     await throwError(insert(dbKey, latest));
     const result = await throwError(getLatest(dbKey));

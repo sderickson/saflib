@@ -18,13 +18,13 @@ export interface ListParams {
 
 export interface ListPage {
   commits: AnalyzedCommitEntity[];
-  nextCursor: string | null;
+  next_cursor: string | null;
 }
 
 export type ListResult = ReturnsError<ListPage, AnalyzedCommitNotFoundError>;
 
 /**
- * Paginated analyzed commits, newest-first by `authoredAt` then `hash`.
+ * Paginated analyzed commits, newest-first by `authored_at` then `hash`.
  * Cursor is the hash of the last item from the previous page.
  */
 export const list = queryWrapper(
@@ -40,11 +40,11 @@ export const list = queryWrapper(
       if (!cursorRow) {
         return { error: new AnalyzedCommitNotFoundError(params.cursor) };
       }
-      // Strictly after the cursor in (authoredAt DESC, hash DESC) order.
+      // Strictly after the cursor in (authored_at DESC, hash DESC) order.
       whereClause = or(
-        lt(analyzedCommitsTable.authoredAt, cursorRow.authoredAt),
+        lt(analyzedCommitsTable.authored_at, cursorRow.authored_at),
         and(
-          eq(analyzedCommitsTable.authoredAt, cursorRow.authoredAt),
+          eq(analyzedCommitsTable.authored_at, cursorRow.authored_at),
           sql`${analyzedCommitsTable.hash} < ${params.cursor}`,
         ),
       );
@@ -55,14 +55,14 @@ export const list = queryWrapper(
       .from(analyzedCommitsTable)
       .where(whereClause)
       .orderBy(
-        desc(analyzedCommitsTable.authoredAt),
+        desc(analyzedCommitsTable.authored_at),
         desc(analyzedCommitsTable.hash),
       )
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;
     const commits = hasMore ? rows.slice(0, limit) : rows;
-    const nextCursor = hasMore ? commits[commits.length - 1].hash : null;
-    return { result: { commits, nextCursor } };
+    const next_cursor = hasMore ? commits[commits.length - 1].hash : null;
+    return { result: { commits, next_cursor } };
   },
 );

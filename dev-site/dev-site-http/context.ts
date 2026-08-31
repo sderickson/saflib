@@ -4,16 +4,16 @@ import type { JobTriggerMap } from "./annotate-spec-inventory-jobs.ts";
 
 export interface DevSiteHttpContext {
   dbKey: DbKey;
-  repoRoot: string;
-  productRoot: string;
+  repo_root: string;
+  product_root: string;
   mainRef: string;
   /** GitHub `owner/name` for UI source/commit links. */
-  githubRepo?: string;
+  github_repo?: string;
   /** On-disk sqlite path when available; undefined for `:memory:`. */
   dbPath?: string;
   /**
    * Product job trigger map (caller → targets). When set, Spec inventory
-   * operations are annotated with `enqueues` / `enqueuedBy`.
+   * operations are annotated with `enqueues` / `enqueued_by`.
    */
   jobTriggerMap?: JobTriggerMap;
 }

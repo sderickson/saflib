@@ -23,57 +23,58 @@ import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-h
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
 import { listByCommit as listIssueStats } from "@saflib/dev-site-db/queries/package-issue-stats/list-by-commit";
 import { rollupIssueCounts } from "./issue-stats-rollup.ts";
+import { toApiRename } from "./wire-maps.ts";
 
 export interface CheckoutPackage {
-  packageName: string;
+  package_name: string;
   directory: string;
   kind?: PackageKind;
-  sourceFiles: number;
-  sourceLines: number;
-  prodLines: number;
-  testLines: number;
-  testFiles: number;
-  issueCountsByKind: IssueCountsByKind;
-  debtCount: number;
+  source_files: number;
+  source_lines: number;
+  prod_lines: number;
+  test_lines: number;
+  test_files: number;
+  issue_counts_by_kind: IssueCountsByKind;
+  debt_count: number;
 }
 
 export interface CheckoutPathRename {
-  fromPath: string;
-  toPath: string;
+  from_path: string;
+  to_path: string;
   score?: number;
 }
 
 export interface CheckoutCompare {
-  againstRef: string;
-  mergeBaseHash: string;
-  mergeBaseAnalyzed: boolean;
-  mergeBaseMessage: string;
-  mergeBaseAuthoredAt: string;
+  against_ref: string;
+  merge_base_hash: string;
+  merge_base_analyzed: boolean;
+  merge_base_message: string;
+  merge_base_authored_at: string;
   renames: CheckoutPathRename[];
 }
 
 export interface CheckoutStatus {
   hash: string;
   message: string;
-  authoredAt: string;
+  authored_at: string;
   analyzed: boolean;
   /** Path prefix used when analyzing (e.g. `products`). Empty = whole repo. */
-  productRoot: string;
+  product_root: string;
   /** Short branch name for HEAD, or null when detached. */
   branch: string | null;
   packages: CheckoutPackage[];
-  compareCandidates: string[];
+  compare_candidates: string[];
   compare?: CheckoutCompare;
 }
 
 export type GetCheckoutError = GitCommandError;
 
 export interface GetCheckoutOptions {
-  repoRoot: string;
-  productRoot?: string;
+  repo_root: string;
+  product_root?: string;
   mainRef: string;
   /** Local branch/ref to merge-base against; defaults to `mainRef`. */
-  compareRef?: string;
+  compare_ref?: string;
 }
 
 function buildCompareCandidates(
@@ -94,15 +95,15 @@ async function resolveCompare(
   dbKey: DbKey,
   options: GetCheckoutOptions,
 ): Promise<ReturnsError<CheckoutCompare | undefined, GitCommandError>> {
-  const explicit = options.compareRef?.trim() ?? "";
-  const againstRef = explicit || options.mainRef;
-  const mb = mergeBase(options.repoRoot, "HEAD", againstRef);
+  const explicit = options.compare_ref?.trim() ?? "";
+  const against_ref = explicit || options.mainRef;
+  const mb = mergeBase(options.repo_root, "HEAD", against_ref);
   if (mb.error) {
     if (explicit) return { error: mb.error };
     return { result: undefined };
   }
 
-  const tipLog = log(options.repoRoot, { ref: mb.result, limit: 1 });
+  const tipLog = log(options.repo_root, { ref: mb.result, limit: 1 });
   if (tipLog.error) {
     if (explicit) return { error: tipLog.error };
     return { result: undefined };
@@ -118,15 +119,15 @@ async function resolveCompare(
   }
 
   const existing = await getByHash(dbKey, tip.hash);
-  const renamed = listRenames(options.repoRoot, mb.result, "HEAD");
+  const renamed = listRenames(options.repo_root, mb.result, "HEAD");
   return {
     result: {
-      againstRef,
-      mergeBaseHash: tip.hash,
-      mergeBaseAnalyzed: Boolean(existing.result),
-      mergeBaseMessage: tip.subject,
-      mergeBaseAuthoredAt: tip.authoredAt,
-      renames: renamed.result ?? [],
+      against_ref,
+      merge_base_hash: tip.hash,
+      merge_base_analyzed: Boolean(existing.result),
+      merge_base_message: tip.subject,
+      merge_base_authored_at: tip.authoredAt,
+      renames: (renamed.result ?? []).map(toApiRename),
     },
   };
 }
@@ -138,26 +139,26 @@ export async function getCheckoutStatus(
   dbKey: DbKey,
   options: GetCheckoutOptions,
 ): Promise<ReturnsError<CheckoutStatus, GetCheckoutError>> {
-  const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
-  const head = resolveRef(options.repoRoot, "HEAD");
+  const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
+  const head = resolveRef(options.repo_root, "HEAD");
   if (head.error) return { error: head.error };
 
-  const branchRes = currentBranch(options.repoRoot);
+  const branchRes = currentBranch(options.repo_root);
   if (branchRes.error) return { error: branchRes.error };
   const branch = branchRes.result;
 
-  const refsRes = listRefs(options.repoRoot);
+  const refsRes = listRefs(options.repo_root);
   if (refsRes.error) return { error: refsRes.error };
   const branchNames = refsRes.result
     .filter((r) => r.type === "branch")
     .map((r) => r.name);
-  const compareCandidates = buildCompareCandidates(
+  const compare_candidates = buildCompareCandidates(
     branchNames,
     branch,
     options.mainRef,
   );
 
-  const tipLog = log(options.repoRoot, { ref: head.result, limit: 1 });
+  const tipLog = log(options.repo_root, { ref: head.result, limit: 1 });
   if (tipLog.error) return { error: tipLog.error };
   const tip = tipLog.result[0];
   if (!tip) {
@@ -182,12 +183,12 @@ export async function getCheckoutStatus(
       result: {
         hash: tip.hash,
         message: tip.subject,
-        authoredAt: tip.authoredAt,
+        authored_at: tip.authoredAt,
         analyzed: false,
-        productRoot,
+        product_root,
         branch,
         packages: [],
-        compareCandidates,
+        compare_candidates,
         ...(compare ? { compare } : {}),
       },
     };
@@ -196,38 +197,38 @@ export async function getCheckoutStatus(
   const metrics = (await listByCommit(dbKey, tip.hash)).result!;
   const issueRows = (await listIssueStats(dbKey, tip.hash)).result ?? [];
   const { byPackage } = rollupIssueCounts(issueRows);
-  const manifestsRes = loadPackageManifests(options.repoRoot, tip.hash);
+  const manifestsRes = loadPackageManifests(options.repo_root, tip.hash);
   const byDir = manifestByRepoDirectory(manifestsRes.result ?? []);
 
   return {
     result: {
       hash: tip.hash,
       message: tip.subject,
-      authoredAt: tip.authoredAt,
+      authored_at: tip.authoredAt,
       analyzed: true,
-      productRoot,
+      product_root,
       branch,
-      compareCandidates,
+      compare_candidates,
       ...(compare ? { compare } : {}),
       packages: metrics.map((m) => {
-        const issueCountsByKind =
-          byPackage.get(m.packageName) ?? emptyIssueCountsByKind();
-        const repoDir = [productRoot, m.directory]
+        const issue_counts_by_kind =
+          byPackage.get(m.package_name) ?? emptyIssueCountsByKind();
+        const repoDir = [product_root, m.directory]
           .map((p) => p.replace(/^\/+|\/+$/g, ""))
           .filter(Boolean)
           .join("/");
         const kind = byDir.get(repoDir)?.kind ?? "other";
         return {
-          packageName: m.packageName,
+          package_name: m.package_name,
           directory: m.directory,
           kind,
-          sourceFiles: m.sourceFiles,
-          sourceLines: m.sourceLines,
-          prodLines: m.prodLines,
-          testLines: m.testLines,
-          testFiles: m.testFiles,
-          issueCountsByKind,
-          debtCount: debtCountFromIssueCounts(issueCountsByKind),
+          source_files: m.source_files,
+          source_lines: m.source_lines,
+          prod_lines: m.prod_lines,
+          test_lines: m.test_lines,
+          test_files: m.test_files,
+          issue_counts_by_kind,
+          debt_count: debtCountFromIssueCounts(issue_counts_by_kind),
         };
       }),
     },

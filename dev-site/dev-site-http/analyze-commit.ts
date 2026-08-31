@@ -38,16 +38,16 @@ import { upsertMany } from "@saflib/dev-site-db/queries/blob-facts/upsert-many";
 export { ANALYZER_VERSION };
 
 export interface AnalyzeCommitOptions {
-  repoRoot: string;
+  repo_root: string;
   /** Limit analysis to paths under this prefix (e.g. `products`). Empty = whole repo. */
-  productRoot?: string;
-  /** Main branch ref for isMainAncestor. Defaults to `main`. */
+  product_root?: string;
+  /** Main branch ref for is_main_ancestor. Defaults to `main`. */
   mainRef?: string;
 }
 
 export interface AnalyzedExport {
-  packageName: string;
-  filePath: string;
+  package_name: string;
+  file_path: string;
   name: string;
   kind: InsertBlobFactParams["specialty"]["exports"][number]["kind"];
   signature: string | null;
@@ -55,41 +55,41 @@ export interface AnalyzedExport {
 }
 
 export interface AnalyzedTestCase {
-  packageName: string;
-  filePath: string;
-  fullName: string;
-  subjectName: string | null;
-  subjectSignature: string | null;
-  subjectDocstring: string | null;
-  subjectFilePath: string | null;
-  subjectConfidence: "adjacent" | "package" | null;
+  package_name: string;
+  file_path: string;
+  full_name: string;
+  subject_name: string | null;
+  subject_signature: string | null;
+  subject_docstring: string | null;
+  subject_file_path: string | null;
+  subject_confidence: "adjacent" | "package" | null;
 }
 
 export interface AnalyzedSnapshot {
-  parentHashes: string[];
-  authoredAt: Date;
+  parent_hashes: string[];
+  authored_at: Date;
   message: string;
   refs: AnalyzedCommitRef[];
-  analyzerVersion: string;
-  packageMetrics: Omit<InsertPackageMetricsParams, "commitHash">[];
+  analyzer_version: string;
+  package_metrics: Omit<InsertPackageMetricsParams, "commit_hash">[];
   exports: AnalyzedExport[];
-  testCases: AnalyzedTestCase[];
-  exportCount: number;
-  testCaseCount: number;
+  test_cases: AnalyzedTestCase[];
+  export_count: number;
+  test_case_count: number;
 }
 
 export type AnalyzeCommitError = GitCommandError;
 
-function underProductRoot(path: string, productRoot: string): boolean {
-  if (!productRoot) return true;
-  return path === productRoot || path.startsWith(productRoot + "/");
+function underProductRoot(path: string, product_root: string): boolean {
+  if (!product_root) return true;
+  return path === product_root || path.startsWith(product_root + "/");
 }
 
-function stripProductRoot(path: string, productRoot: string): string {
-  if (!productRoot) return path;
-  if (path === productRoot) return "";
-  if (path.startsWith(productRoot + "/")) {
-    return path.slice(productRoot.length + 1);
+function stripProductRoot(path: string, product_root: string): string {
+  if (!product_root) return path;
+  if (path === product_root) return "";
+  if (path.startsWith(product_root + "/")) {
+    return path.slice(product_root.length + 1);
   }
   return path;
 }
@@ -100,13 +100,13 @@ export function parseSourceSpecialty(source: string): FileSpecialty {
 }
 
 function parseBlobFact(
-  blobHash: string,
+  blob_hash: string,
   source: string,
 ): InsertBlobFactParams {
   return {
-    blobHash,
-    analyzerVersion: ANALYZER_VERSION,
-    lineCount: countSourceLines(source),
+    blob_hash,
+    analyzer_version: ANALYZER_VERSION,
+    line_count: countSourceLines(source),
     specialty: buildFileSpecialty(source),
     computed_at: new Date(),
   };
@@ -114,19 +114,19 @@ function parseBlobFact(
 
 /**
  * Ensure blob_facts rows exist for the given hashes (current analyzer version).
- * Returns a map of blobHash → fact.
+ * Returns a map of blob_hash → fact.
  */
 export async function ensureBlobFacts(
   dbKey: DbKey,
-  repoRoot: string,
+  repo_root: string,
   blobHashes: string[],
 ): Promise<ReturnsError<Map<string, BlobFactEntity>, GitCommandError>> {
   const unique = [...new Set(blobHashes)];
   const existing = (await getByHashes(dbKey, unique)).result!;
   const byHash = new Map<string, BlobFactEntity>();
   for (const row of existing) {
-    if (row.analyzerVersion === ANALYZER_VERSION) {
-      byHash.set(row.blobHash, row);
+    if (row.analyzer_version === ANALYZER_VERSION) {
+      byHash.set(row.blob_hash, row);
     }
   }
 
@@ -141,7 +141,7 @@ export async function ensureBlobFacts(
   );
   const parseStarted = Date.now();
 
-  const blobs = readBlobs(repoRoot, missing);
+  const blobs = readBlobs(repo_root, missing);
   if (blobs.error) return { error: blobs.error };
 
   const toUpsert: InsertBlobFactParams[] = [];
@@ -158,7 +158,7 @@ export async function ensureBlobFacts(
   if (toUpsert.length > 0) {
     await upsertMany(dbKey, toUpsert);
     for (const row of toUpsert) {
-      byHash.set(row.blobHash, row);
+      byHash.set(row.blob_hash, row);
     }
   }
   analyzeLog.info(
@@ -175,20 +175,20 @@ export async function analyzeCommit(
   commit: GitCommit,
   options: AnalyzeCommitOptions,
 ): Promise<ReturnsError<AnalyzedSnapshot, AnalyzeCommitError>> {
-  const repoRoot = options.repoRoot;
-  const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
+  const repo_root = options.repo_root;
+  const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
   const mainRef = options.mainRef ?? "main";
 
-  const treeResult = listTree(repoRoot, commit.hash);
+  const treeResult = listTree(repo_root, commit.hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) =>
-    underProductRoot(e.path, productRoot),
+    underProductRoot(e.path, product_root),
   );
 
-  const refsResult = listRefs(repoRoot);
+  const refsResult = listRefs(repo_root);
   if (refsResult.error) return { error: refsResult.error };
-  const ancestorResult = isAncestor(repoRoot, commit.hash, mainRef);
-  const isMainAncestor =
+  const ancestorResult = isAncestor(repo_root, commit.hash, mainRef);
+  const is_main_ancestor =
     ancestorResult.error ? false : (ancestorResult.result ?? false);
 
   const refs: AnalyzedCommitRef[] = refsResult.result
@@ -196,14 +196,14 @@ export async function analyzeCommit(
     .map((r) => ({
       name: r.name,
       type: r.type,
-      isMainAncestor,
+      is_main_ancestor,
     }));
 
   const packageJsonEntries = tree.filter(
     (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
   );
   const pkgBlobHashes = packageJsonEntries.map((e) => e.blobHash);
-  const pkgBlobs = readBlobs(repoRoot, pkgBlobHashes);
+  const pkgBlobs = readBlobs(repo_root, pkgBlobHashes);
   if (pkgBlobs.error) return { error: pkgBlobs.error };
 
   const nameByPath = new Map<string, string>();
@@ -221,20 +221,20 @@ export async function analyzeCommit(
   const sourceEntries = tree.filter((e) => isSourcePath(e.path));
   const factsResult = await ensureBlobFacts(
     dbKey,
-    repoRoot,
+    repo_root,
     sourceEntries.map((e) => e.blobHash),
   );
   if (factsResult.error) return { error: factsResult.error };
   const facts = factsResult.result;
 
   type Agg = {
-    packageName: string;
+    package_name: string;
     directory: string;
-    sourceFiles: number;
-    sourceLines: number;
-    prodLines: number;
-    testLines: number;
-    testFiles: number;
+    source_files: number;
+    source_lines: number;
+    prod_lines: number;
+    test_lines: number;
+    test_files: number;
   };
   const byPackage = new Map<string, Agg>();
   const exportsOut: AnalyzedExport[] = [];
@@ -244,44 +244,44 @@ export async function analyzeCommit(
     const fact = facts.get(entry.blobHash);
     if (!fact) continue;
 
-    const fileName = entry.path.split("/").pop() ?? entry.path;
-    const isTest = isTestSourcePath(entry.path, fileName);
+    const file_name = entry.path.split("/").pop() ?? entry.path;
+    const isTest = isTestSourcePath(entry.path, file_name);
     const pkg = packageForPath(entry.path, roots);
     const key = pkg.directory || "(root)";
     const agg = byPackage.get(key) ?? {
-      packageName: pkg.packageName,
-      directory: stripProductRoot(pkg.directory, productRoot) || pkg.directory,
-      sourceFiles: 0,
-      sourceLines: 0,
-      prodLines: 0,
-      testLines: 0,
-      testFiles: 0,
+      package_name: pkg.package_name,
+      directory: stripProductRoot(pkg.directory, product_root) || pkg.directory,
+      source_files: 0,
+      source_lines: 0,
+      prod_lines: 0,
+      test_lines: 0,
+      test_files: 0,
     };
 
-    agg.sourceFiles += 1;
-    agg.sourceLines += fact.lineCount;
+    agg.source_files += 1;
+    agg.source_lines += fact.line_count;
     if (isTest) {
-      agg.testFiles += 1;
-      agg.testLines += fact.lineCount;
+      agg.test_files += 1;
+      agg.test_lines += fact.line_count;
       for (const tc of blobFactTestCases(fact)) {
         testCasesOut.push({
-          packageName: pkg.packageName,
-          filePath: entry.path,
-          fullName: tc.fullName,
-          subjectName: null,
-          subjectSignature: null,
-          subjectDocstring: null,
-          subjectFilePath: null,
-          subjectConfidence: null,
+          package_name: pkg.package_name,
+          file_path: entry.path,
+          full_name: tc.fullName,
+          subject_name: null,
+          subject_signature: null,
+          subject_docstring: null,
+          subject_file_path: null,
+          subject_confidence: null,
         });
       }
     } else {
-      agg.prodLines += fact.lineCount;
+      agg.prod_lines += fact.line_count;
       if (!isScaffoldTemplatePath(entry.path)) {
         for (const exp of blobFactExports(fact)) {
           exportsOut.push({
-            packageName: pkg.packageName,
-            filePath: entry.path,
+            package_name: pkg.package_name,
+            file_path: entry.path,
             name: exp.name,
             kind: exp.kind,
             signature: exp.signature ?? null,
@@ -294,30 +294,30 @@ export async function analyzeCommit(
   }
 
   exportsOut.sort((a, b) =>
-    `${a.packageName}\0${a.filePath}\0${a.name}\0${a.kind}`.localeCompare(
-      `${b.packageName}\0${b.filePath}\0${b.name}\0${b.kind}`,
+    `${a.package_name}\0${a.file_path}\0${a.name}\0${a.kind}`.localeCompare(
+      `${b.package_name}\0${b.file_path}\0${b.name}\0${b.kind}`,
     ),
   );
 
   const linkedTests = linkTestSubjects(testCasesOut, exportsOut);
   linkedTests.sort((a, b) =>
-    `${a.packageName}\0${a.filePath}\0${a.fullName}`.localeCompare(
-      `${b.packageName}\0${b.filePath}\0${b.fullName}`,
+    `${a.package_name}\0${a.file_path}\0${a.full_name}`.localeCompare(
+      `${b.package_name}\0${b.file_path}\0${b.full_name}`,
     ),
   );
 
   return {
     result: {
-      parentHashes: commit.parentHashes,
-      authoredAt: new Date(commit.authoredAt),
+      parent_hashes: commit.parentHashes,
+      authored_at: new Date(commit.authoredAt),
       message: commit.subject,
       refs,
-      analyzerVersion: ANALYZER_VERSION,
-      packageMetrics: [...byPackage.values()],
+      analyzer_version: ANALYZER_VERSION,
+      package_metrics: [...byPackage.values()],
       exports: exportsOut,
-      testCases: linkedTests,
-      exportCount: exportsOut.length,
-      testCaseCount: linkedTests.length,
+      test_cases: linkedTests,
+      export_count: exportsOut.length,
+      test_case_count: linkedTests.length,
     },
   };
 }
@@ -328,16 +328,16 @@ export async function analyzeCommit(
  */
 export async function assembleCommitSymbols(
   dbKey: DbKey,
-  commitHash: string,
+  commit_hash: string,
   options: AnalyzeCommitOptions,
 ): Promise<
   ReturnsError<
-    { exports: AnalyzedExport[]; testCases: AnalyzedTestCase[] },
+    { exports: AnalyzedExport[]; test_cases: AnalyzedTestCase[] },
     AnalyzeCommitError
   >
 > {
   const synthetic: GitCommit = {
-    hash: commitHash,
+    hash: commit_hash,
     parentHashes: [],
     authoredAt: new Date(0).toISOString(),
     subject: "",
@@ -347,14 +347,14 @@ export async function assembleCommitSymbols(
   return {
     result: {
       exports: snap.result.exports,
-      testCases: snap.result.testCases,
+      test_cases: snap.result.test_cases,
     },
   };
 }
 
 export interface PackageSdkRequestImport {
   /** Repo-relative importer path. */
-  filePath: string;
+  file_path: string;
   sdkPackageName: string;
   requestStem: string;
 }
@@ -365,34 +365,34 @@ export interface PackageSdkRequestImport {
  */
 export async function assemblePackageSymbols(
   dbKey: DbKey,
-  commitHash: string,
-  packageName: string,
+  commit_hash: string,
+  package_name: string,
   options: AnalyzeCommitOptions,
 ): Promise<
   ReturnsError<
     {
       exports: AnalyzedExport[];
-      testCases: AnalyzedTestCase[];
+      test_cases: AnalyzedTestCase[];
       hasVue: boolean;
       sdkRequestImports: PackageSdkRequestImport[];
     },
     AnalyzeCommitError
   >
 > {
-  const repoRoot = options.repoRoot;
-  const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
+  const repo_root = options.repo_root;
+  const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
 
-  const treeResult = listTree(repoRoot, commitHash);
+  const treeResult = listTree(repo_root, commit_hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) =>
-    underProductRoot(e.path, productRoot),
+    underProductRoot(e.path, product_root),
   );
 
   const packageJsonEntries = tree.filter(
     (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
   );
   const pkgBlobHashes = packageJsonEntries.map((e) => e.blobHash);
-  const pkgBlobs = readBlobs(repoRoot, pkgBlobHashes);
+  const pkgBlobs = readBlobs(repo_root, pkgBlobHashes);
   if (pkgBlobs.error) return { error: pkgBlobs.error };
 
   const nameByPath = new Map<string, string>();
@@ -406,10 +406,10 @@ export async function assemblePackageSymbols(
     packageJsonEntries.map((e) => e.path),
     nameByPath,
   );
-  const targetRoot = roots.find((r) => r.packageName === packageName);
+  const targetRoot = roots.find((r) => r.package_name === package_name);
   if (!targetRoot) {
     return {
-      result: { exports: [], testCases: [], hasVue: false, sdkRequestImports: [] },
+      result: { exports: [], test_cases: [], hasVue: false, sdkRequestImports: [] },
     };
   }
 
@@ -424,7 +424,7 @@ export async function assemblePackageSymbols(
   );
   const factsResult = await ensureBlobFacts(
     dbKey,
-    repoRoot,
+    repo_root,
     sourceEntries.map((e) => e.blobHash),
   );
   if (factsResult.error) return { error: factsResult.error };
@@ -439,26 +439,26 @@ export async function assemblePackageSymbols(
     const fact = facts.get(entry.blobHash);
     if (!fact) continue;
     if (entry.path.endsWith(".vue")) hasVue = true;
-    const fileName = entry.path.split("/").pop() ?? entry.path;
-    const isTest = isTestSourcePath(entry.path, fileName);
+    const file_name = entry.path.split("/").pop() ?? entry.path;
+    const isTest = isTestSourcePath(entry.path, file_name);
     if (isTest) {
       for (const tc of blobFactTestCases(fact)) {
         testCasesOut.push({
-          packageName,
-          filePath: entry.path,
-          fullName: tc.fullName,
-          subjectName: null,
-          subjectSignature: null,
-          subjectDocstring: null,
-          subjectFilePath: null,
-          subjectConfidence: null,
+          package_name,
+          file_path: entry.path,
+          full_name: tc.fullName,
+          subject_name: null,
+          subject_signature: null,
+          subject_docstring: null,
+          subject_file_path: null,
+          subject_confidence: null,
         });
       }
     } else if (!isScaffoldTemplatePath(entry.path)) {
       for (const exp of blobFactExports(fact)) {
         exportsOut.push({
-          packageName,
-          filePath: entry.path,
+          package_name,
+          file_path: entry.path,
           name: exp.name,
           kind: exp.kind,
           signature: exp.signature ?? null,
@@ -469,7 +469,7 @@ export async function assemblePackageSymbols(
         const parsed = sdkRequestFromSpecifier(imp.specifier);
         if (!parsed) continue;
         sdkRequestImports.push({
-          filePath: entry.path,
+          file_path: entry.path,
           sdkPackageName: parsed.sdkPackageName,
           requestStem: parsed.requestStem,
         });
@@ -478,19 +478,19 @@ export async function assemblePackageSymbols(
   }
 
   exportsOut.sort((a, b) =>
-    `${a.filePath}\0${a.name}\0${a.kind}`.localeCompare(
-      `${b.filePath}\0${b.name}\0${b.kind}`,
+    `${a.file_path}\0${a.name}\0${a.kind}`.localeCompare(
+      `${b.file_path}\0${b.name}\0${b.kind}`,
     ),
   );
   const linkedTests = linkTestSubjects(testCasesOut, exportsOut);
   linkedTests.sort((a, b) =>
-    `${a.filePath}\0${a.fullName}`.localeCompare(`${b.filePath}\0${b.fullName}`),
+    `${a.file_path}\0${a.full_name}`.localeCompare(`${b.file_path}\0${b.full_name}`),
   );
 
   return {
     result: {
       exports: exportsOut,
-      testCases: linkedTests,
+      test_cases: linkedTests,
       hasVue,
       sdkRequestImports,
     },

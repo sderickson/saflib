@@ -20,28 +20,28 @@
             v-if="sortedPackages.length > 0"
             :headers="packageHeaders"
             :items="sortedPackages"
-            item-value="packageName"
+            item-value="package_name"
             class="elevation-1 mb-6"
           >
-            <template #[`item.debtCount`]="{ item }">
-              <strong>{{ item.debtCount }}</strong>
+            <template #[`item.debt_count`]="{ item }">
+              <strong>{{ item.debt_count }}</strong>
             </template>
             <template #[`item.issueBreakdown`]="{ item }">
               <span class="text-caption">
-                d{{ item.issueCountsByKind["dead-code"] }} · o{{
-                  item.issueCountsByKind["oversized-file"]
+                d{{ item.issue_counts_by_kind["dead-code"] }} · o{{
+                  item.issue_counts_by_kind["oversized-file"]
                 }}
-                · l{{ item.issueCountsByKind["package-layout"] }}
+                · l{{ item.issue_counts_by_kind["package-layout"] }}
               </span>
             </template>
-            <template #[`item.sourceLines`]="{ item }">
-              {{ formatLoc(item.sourceLines) }}
+            <template #[`item.source_lines`]="{ item }">
+              {{ formatLoc(item.source_lines) }}
             </template>
-            <template #[`item.prodLines`]="{ item }">
-              {{ formatLoc(item.prodLines) }}
+            <template #[`item.prod_lines`]="{ item }">
+              {{ formatLoc(item.prod_lines) }}
             </template>
-            <template #[`item.testLines`]="{ item }">
-              {{ formatLoc(item.testLines) }}
+            <template #[`item.test_lines`]="{ item }">
+              {{ formatLoc(item.test_lines) }}
             </template>
             <template #bottom></template>
           </v-data-table>
@@ -59,12 +59,12 @@
           <p v-else class="text-body-2 mb-6">No exports found.</p>
 
           <h2 class="text-h6 mb-2">
-            Test cases ({{ detail.testCases.length }})
+            Test cases ({{ detail.test_cases.length }})
           </h2>
           <v-data-table
-            v-if="detail.testCases.length > 0"
+            v-if="detail.test_cases.length > 0"
             :headers="testHeaders"
-            :items="detail.testCases"
+            :items="detail.test_cases"
             class="elevation-1"
           >
             <template #bottom></template>
@@ -87,31 +87,31 @@ const props = defineProps<{
 }>();
 
 const packageHeaders = [
-  { title: "Debt", key: "debtCount" },
+  { title: "Debt", key: "debt_count" },
   { title: "Breakdown", key: "issueBreakdown", sortable: false },
-  { title: "Package", key: "packageName" },
+  { title: "Package", key: "package_name" },
   { title: "Directory", key: "directory" },
-  { title: "Source files", key: "sourceFiles" },
-  { title: "Source LOC", key: "sourceLines" },
-  { title: "Prod LOC", key: "prodLines" },
-  { title: "Test LOC", key: "testLines" },
-  { title: "Test files", key: "testFiles" },
+  { title: "Source files", key: "source_files" },
+  { title: "Source LOC", key: "source_lines" },
+  { title: "Prod LOC", key: "prod_lines" },
+  { title: "Test LOC", key: "test_lines" },
+  { title: "Test files", key: "test_files" },
 ];
 
 const exportHeaders = [
-  { title: "Package", key: "packageName" },
-  { title: "File", key: "filePath" },
+  { title: "Package", key: "package_name" },
+  { title: "File", key: "file_path" },
   { title: "Name", key: "name" },
   { title: "Kind", key: "kind" },
   { title: "Signature", key: "signature" },
 ];
 
 const testHeaders = [
-  { title: "Package", key: "packageName" },
-  { title: "File", key: "filePath" },
-  { title: "Full name", key: "fullName" },
-  { title: "Subject", key: "subjectName" },
-  { title: "Signature", key: "subjectSignature" },
+  { title: "Package", key: "package_name" },
+  { title: "File", key: "file_path" },
+  { title: "Full name", key: "full_name" },
+  { title: "Subject", key: "subject_name" },
+  { title: "Signature", key: "subject_signature" },
 ];
 
 const {
@@ -120,14 +120,14 @@ const {
   error,
 } = useCommit(props.subdomain, toRef(props, "hash"));
 
-const detail = computed(() => data.value?.commitDetail);
+const detail = computed(() => data.value?.commit_detail);
 
 const sortedPackages = computed(() => {
-  const rows = detail.value?.packageMetrics ?? [];
+  const rows = detail.value?.package_metrics ?? [];
   return [...rows].sort(
     (a, b) =>
-      (b.debtCount ?? 0) - (a.debtCount ?? 0) ||
-      a.packageName.localeCompare(b.packageName),
+      (b.debt_count ?? 0) - (a.debt_count ?? 0) ||
+      a.package_name.localeCompare(b.package_name),
   );
 });
 

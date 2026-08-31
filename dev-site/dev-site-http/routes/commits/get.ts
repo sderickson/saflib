@@ -9,11 +9,11 @@ import { getDevSiteHttpContext } from "../../context.ts";
 import { getCommit } from "../../get-commit.ts";
 
 export const getCommitsHandler = createHandler(async (req, res) => {
-  const { dbKey, repoRoot, productRoot, mainRef } = getDevSiteHttpContext();
+  const { dbKey, repo_root, product_root, mainRef } = getDevSiteHttpContext();
   const { hash } = req.params as PathParams["getCommits"];
   const { result, error } = await getCommit(dbKey, hash, {
-    repoRoot,
-    productRoot,
+    repo_root,
+    product_root,
     mainRef,
   });
   if (error) {
@@ -27,7 +27,7 @@ export const getCommitsHandler = createHandler(async (req, res) => {
     }
   }
   const response: ResponseBody["getCommits"][200] = {
-    commitDetail: result,
+    commit_detail: result,
   };
   res.status(200).json(response);
 });

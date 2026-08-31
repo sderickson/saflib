@@ -40,46 +40,46 @@ export type DiffCommitsResult = ReturnsError<
 >;
 
 function packageKey(m: PackageMetrics): string {
-  return m.packageName;
+  return m.package_name;
 }
 
 function metricsEqual(a: PackageMetrics, b: PackageMetrics): boolean {
   return (
-    a.sourceFiles === b.sourceFiles &&
-    a.sourceLines === b.sourceLines &&
-    a.prodLines === b.prodLines &&
-    a.testLines === b.testLines &&
-    a.testFiles === b.testFiles &&
+    a.source_files === b.source_files &&
+    a.source_lines === b.source_lines &&
+    a.prod_lines === b.prod_lines &&
+    a.test_lines === b.test_lines &&
+    a.test_files === b.test_files &&
     a.directory === b.directory &&
-    a.debtCount === b.debtCount
+    a.debt_count === b.debt_count
   );
 }
 
 function exportKey(e: AnalyzedExport | ExportEntry): string {
-  return `${e.packageName}\0${e.filePath}\0${e.name}\0${e.kind}`;
+  return `${e.package_name}\0${e.file_path}\0${e.name}\0${e.kind}`;
 }
 
 function testCaseKey(t: AnalyzedTestCase | TestCase): string {
-  return `${t.packageName}\0${t.filePath}\0${t.fullName}`;
+  return `${t.package_name}\0${t.file_path}\0${t.full_name}`;
 }
 
 function toApiTestCase(t: AnalyzedTestCase): TestCase {
-  if (!t.subjectName || !t.subjectConfidence || !t.subjectFilePath) {
+  if (!t.subject_name || !t.subject_confidence || !t.subject_file_path) {
     return {
-      packageName: t.packageName,
-      filePath: t.filePath,
-      fullName: t.fullName,
+      package_name: t.package_name,
+      file_path: t.file_path,
+      full_name: t.full_name,
     };
   }
   return {
-    packageName: t.packageName,
-    filePath: t.filePath,
-    fullName: t.fullName,
-    subjectName: t.subjectName,
-    subjectSignature: t.subjectSignature,
-    subjectDocstring: t.subjectDocstring,
-    subjectFilePath: t.subjectFilePath,
-    subjectConfidence: t.subjectConfidence,
+    package_name: t.package_name,
+    file_path: t.file_path,
+    full_name: t.full_name,
+    subject_name: t.subject_name,
+    subject_signature: t.subject_signature,
+    subject_docstring: t.subject_docstring,
+    subject_file_path: t.subject_file_path,
+    subject_confidence: t.subject_confidence,
   };
 }
 
@@ -102,77 +102,77 @@ function diffLists<T>(
 }
 
 function issueCountsByPackage(
-  rows: Array<{ packageName: string; kind: string; count: number }>,
+  rows: Array<{ package_name: string; kind: string; count: number }>,
 ): Map<string, IssueCountsByKind> {
   const byPackage = new Map<string, IssueCountsByKind>();
   for (const row of rows) {
     const kind = row.kind as PackageIssueKind;
-    const pkg = byPackage.get(row.packageName) ?? emptyIssueCountsByKind();
+    const pkg = byPackage.get(row.package_name) ?? emptyIssueCountsByKind();
     if (kind in pkg) pkg[kind] += row.count;
-    byPackage.set(row.packageName, pkg);
+    byPackage.set(row.package_name, pkg);
   }
   return byPackage;
 }
 
 function toPackageMetrics(
   m: {
-    packageName: string;
+    package_name: string;
     directory: string;
-    sourceFiles: number;
-    sourceLines: number;
-    prodLines: number;
-    testLines: number;
-    testFiles: number;
+    source_files: number;
+    source_lines: number;
+    prod_lines: number;
+    test_lines: number;
+    test_files: number;
   },
-  issueCountsByKind: IssueCountsByKind = emptyIssueCountsByKind(),
+  issue_counts_by_kind: IssueCountsByKind = emptyIssueCountsByKind(),
 ): PackageMetrics {
   return {
-    packageName: m.packageName,
+    package_name: m.package_name,
     directory: m.directory,
-    sourceFiles: m.sourceFiles,
-    sourceLines: m.sourceLines,
-    prodLines: m.prodLines,
-    testLines: m.testLines,
-    testFiles: m.testFiles,
-    issueCountsByKind,
-    debtCount: debtCountFromIssueCounts(issueCountsByKind),
+    source_files: m.source_files,
+    source_lines: m.source_lines,
+    prod_lines: m.prod_lines,
+    test_lines: m.test_lines,
+    test_files: m.test_files,
+    issue_counts_by_kind,
+    debt_count: debtCountFromIssueCounts(issue_counts_by_kind),
   };
 }
 
 /**
- * Diff two analyzed commits. `fromHash` is the baseline ("before");
- * `toHash` is the comparison ("after").
+ * Diff two analyzed commits. `from_hash` is the baseline ("before");
+ * `to_hash` is the comparison ("after").
  */
 export async function diffCommits(
   dbKey: DbKey,
-  fromHash: string,
-  toHash: string,
+  from_hash: string,
+  to_hash: string,
   repo: RepoReadOptions,
 ): Promise<DiffCommitsResult> {
   const [fromCommit, toCommit] = await Promise.all([
-    getByHash(dbKey, fromHash),
-    getByHash(dbKey, toHash),
+    getByHash(dbKey, from_hash),
+    getByHash(dbKey, to_hash),
   ]);
   if (fromCommit.error) return { error: fromCommit.error };
   if (toCommit.error) return { error: toCommit.error };
 
   const [fromMetricsRes, toMetricsRes, fromSymbols, toSymbols, fromIssues, toIssues] =
     await Promise.all([
-      listByCommit(dbKey, fromHash),
-      listByCommit(dbKey, toHash),
-      assembleCommitSymbols(dbKey, fromHash, repo),
-      assembleCommitSymbols(dbKey, toHash, repo),
-      listIssueStats(dbKey, fromHash),
-      listIssueStats(dbKey, toHash),
+      listByCommit(dbKey, from_hash),
+      listByCommit(dbKey, to_hash),
+      assembleCommitSymbols(dbKey, from_hash, repo),
+      assembleCommitSymbols(dbKey, to_hash, repo),
+      listIssueStats(dbKey, from_hash),
+      listIssueStats(dbKey, to_hash),
     ]);
 
   const fromIssueMap = issueCountsByPackage(fromIssues.result ?? []);
   const toIssueMap = issueCountsByPackage(toIssues.result ?? []);
   const fromMetrics = fromMetricsRes.result!.map((m) =>
-    toPackageMetrics(m, fromIssueMap.get(m.packageName)),
+    toPackageMetrics(m, fromIssueMap.get(m.package_name)),
   );
   const toMetrics = toMetricsRes.result!.map((m) =>
-    toPackageMetrics(m, toIssueMap.get(m.packageName)),
+    toPackageMetrics(m, toIssueMap.get(m.package_name)),
   );
 
   const beforePkgs = new Map(fromMetrics.map((m) => [packageKey(m), m]));
@@ -196,27 +196,27 @@ export async function diffCommits(
 
   const fromExports = fromSymbols.result?.exports ?? [];
   const toExports = toSymbols.result?.exports ?? [];
-  const fromTests = fromSymbols.result?.testCases ?? [];
-  const toTests = toSymbols.result?.testCases ?? [];
+  const fromTests = fromSymbols.result?.test_cases ?? [];
+  const toTests = toSymbols.result?.test_cases ?? [];
 
   const exportDiff = diffLists(fromExports, toExports, exportKey);
   const testDiff = diffLists(fromTests, toTests, testCaseKey);
 
   const dbPkgNames = new Set<string>();
   const [fromManifests, toManifests] = [
-    loadPackageManifests(repo.repoRoot, fromHash),
-    loadPackageManifests(repo.repoRoot, toHash),
+    loadPackageManifests(repo.repo_root, from_hash),
+    loadPackageManifests(repo.repo_root, to_hash),
   ];
   const fromByName = manifestByPackageName(fromManifests.result ?? []);
   const toByName = manifestByPackageName(toManifests.result ?? []);
   for (const m of fromMetrics) {
-    if (fromByName.get(m.packageName)?.kind === "db") {
-      dbPkgNames.add(m.packageName);
+    if (fromByName.get(m.package_name)?.kind === "db") {
+      dbPkgNames.add(m.package_name);
     }
   }
   for (const m of toMetrics) {
-    if (toByName.get(m.packageName)?.kind === "db") {
-      dbPkgNames.add(m.packageName);
+    if (toByName.get(m.package_name)?.kind === "db") {
+      dbPkgNames.add(m.package_name);
     }
   }
 
@@ -225,53 +225,53 @@ export async function diffCommits(
   const fromCols: DbSchemaColumn[] = [];
   const toCols: DbSchemaColumn[] = [];
 
-  for (const packageName of dbPkgNames) {
+  for (const package_name of dbPkgNames) {
     const [fromInv, toInv] = await Promise.all([
-      assemblePackageDbInventory(dbKey, fromHash, packageName, repo),
-      assemblePackageDbInventory(dbKey, toHash, packageName, repo),
+      assemblePackageDbInventory(dbKey, from_hash, package_name, repo),
+      assemblePackageDbInventory(dbKey, to_hash, package_name, repo),
     ]);
     const fromFlat = flattenInventoryTables(
-      packageName,
+      package_name,
       fromInv.result ?? { entities: [] },
     );
     const toFlat = flattenInventoryTables(
-      packageName,
+      package_name,
       toInv.result ?? { entities: [] },
     );
     for (const t of fromFlat) {
       fromTables.push({
-        packageName: t.packageName,
-        tableName: t.tableName,
-        exportName: t.exportName,
-        filePath: t.filePath,
+        package_name: t.package_name,
+        table_name: t.table_name,
+        export_name: t.export_name,
+        file_path: t.file_path,
         docstring: t.docstring,
       });
       for (const c of t.columns) {
         fromCols.push({
-          packageName: t.packageName,
-          tableName: t.tableName,
-          sqlName: c.sqlName,
-          typeKind: c.typeKind,
-          propName: c.propName,
+          package_name: t.package_name,
+          table_name: t.table_name,
+          sql_name: c.sql_name,
+          type_kind: c.type_kind,
+          prop_name: c.prop_name,
           docstring: c.docstring,
         });
       }
     }
     for (const t of toFlat) {
       toTables.push({
-        packageName: t.packageName,
-        tableName: t.tableName,
-        exportName: t.exportName,
-        filePath: t.filePath,
+        package_name: t.package_name,
+        table_name: t.table_name,
+        export_name: t.export_name,
+        file_path: t.file_path,
         docstring: t.docstring,
       });
       for (const c of t.columns) {
         toCols.push({
-          packageName: t.packageName,
-          tableName: t.tableName,
-          sqlName: c.sqlName,
-          typeKind: c.typeKind,
-          propName: c.propName,
+          package_name: t.package_name,
+          table_name: t.table_name,
+          sql_name: c.sql_name,
+          type_kind: c.type_kind,
+          prop_name: c.prop_name,
           docstring: c.docstring,
         });
       }
@@ -279,9 +279,9 @@ export async function diffCommits(
   }
 
   const tableKey = (t: DbSchemaTable) =>
-    `${t.packageName}\0${t.tableName}`;
+    `${t.package_name}\0${t.table_name}`;
   const colKey = (c: DbSchemaColumn) =>
-    `${c.packageName}\0${c.tableName}\0${c.sqlName}`;
+    `${c.package_name}\0${c.table_name}\0${c.sql_name}`;
 
   const tableDiff = diffLists(fromTables, toTables, tableKey);
   const beforeCols = new Map(fromCols.map((c) => [colKey(c), c]));
@@ -295,8 +295,8 @@ export async function diffCommits(
     if (!before) {
       colsAdded.push(after);
     } else if (
-      before.typeKind !== after.typeKind ||
-      before.propName !== after.propName ||
+      before.type_kind !== after.type_kind ||
+      before.prop_name !== after.prop_name ||
       before.docstring !== after.docstring
     ) {
       colsChanged.push({ before, after });
@@ -306,33 +306,33 @@ export async function diffCommits(
     if (!afterCols.has(k)) colsRemoved.push(before);
   }
 
-  const commitDiff: CommitDiff = {
-    fromHash,
-    toHash,
-    packageMetrics: { added, removed, changed },
+  const commit_diff: CommitDiff = {
+    from_hash,
+    to_hash,
+    package_metrics: { added, removed, changed },
     exports: {
       added: exportDiff.added.map((e) => ({
-        packageName: e.packageName,
-        filePath: e.filePath,
+        package_name: e.package_name,
+        file_path: e.file_path,
         name: e.name,
         kind: e.kind,
         signature: e.signature,
         docstring: e.docstring,
       })),
       removed: exportDiff.removed.map((e) => ({
-        packageName: e.packageName,
-        filePath: e.filePath,
+        package_name: e.package_name,
+        file_path: e.file_path,
         name: e.name,
         kind: e.kind,
         signature: e.signature,
         docstring: e.docstring,
       })),
     },
-    testCases: {
+    test_cases: {
       added: testDiff.added.map(toApiTestCase),
       removed: testDiff.removed.map(toApiTestCase),
     },
-    dbSchemas: {
+    db_schemas: {
       tables: {
         added: tableDiff.added,
         removed: tableDiff.removed,
@@ -344,5 +344,5 @@ export async function diffCommits(
       },
     },
   };
-  return { result: commitDiff };
+  return { result: commit_diff };
 }

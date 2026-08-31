@@ -19,9 +19,9 @@ import type { DevSiteHttpAppLease } from "../../http.ts";
 import { devSiteDbManager } from "@saflib/dev-site-db/instances";
 import { scanCommits } from "../../scan.ts";
 
-function git(repoRoot: string, args: string[]): string {
+function git(repo_root: string, args: string[]): string {
   return execFileSync("git", args, {
-    cwd: repoRoot,
+    cwd: repo_root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     env: {
@@ -36,30 +36,30 @@ function git(repoRoot: string, args: string[]): string {
 
 describe("commits routes", () => {
   let lease: DevSiteHttpAppLease;
-  let repoRoot: string;
+  let repo_root: string;
   let commit1: string;
   let commit2: string;
 
   beforeAll(() => {
-    repoRoot = mkdtempSync(join(tmpdir(), "dev-site-commits-route-"));
-    git(repoRoot, ["init"]);
-    git(repoRoot, ["checkout", "-b", "main"]);
+    repo_root = mkdtempSync(join(tmpdir(), "dev-site-commits-route-"));
+    git(repo_root, ["init"]);
+    git(repo_root, ["checkout", "-b", "main"]);
     writeFileSync(
-      join(repoRoot, "package.json"),
+      join(repo_root, "package.json"),
       JSON.stringify({ name: "@fixture/root" }),
     );
-    mkdirSync(join(repoRoot, "src"));
+    mkdirSync(join(repo_root, "src"));
     writeFileSync(
-      join(repoRoot, "src/math.ts"),
+      join(repo_root, "src/math.ts"),
       "export function add(a: number, b: number) { return a + b; }\n",
     );
     writeFileSync(
-      join(repoRoot, "src/math.test.ts"),
+      join(repo_root, "src/math.test.ts"),
       'import { describe, it } from "vitest";\ndescribe("math", () => {\n  it("adds", () => {});\n});\n',
     );
-    git(repoRoot, ["add", "."]);
+    git(repo_root, ["add", "."]);
     execFileSync("git", ["commit", "-m", "first"], {
-      cwd: repoRoot,
+      cwd: repo_root,
       env: {
         ...process.env,
         GIT_AUTHOR_NAME: "Test",
@@ -71,19 +71,19 @@ describe("commits routes", () => {
       },
       stdio: ["ignore", "pipe", "pipe"],
     });
-    commit1 = git(repoRoot, ["rev-parse", "HEAD"]);
+    commit1 = git(repo_root, ["rev-parse", "HEAD"]);
 
     writeFileSync(
-      join(repoRoot, "src/math.ts"),
+      join(repo_root, "src/math.ts"),
       "export function add(a: number, b: number) { return a + b; }\nexport const ZERO = 0;\n",
     );
     writeFileSync(
-      join(repoRoot, "src/math.test.ts"),
+      join(repo_root, "src/math.test.ts"),
       'import { describe, it } from "vitest";\ndescribe("math", () => {\n  it("adds", () => {});\n  it("zero", () => {});\n});\n',
     );
-    git(repoRoot, ["add", "."]);
+    git(repo_root, ["add", "."]);
     execFileSync("git", ["commit", "-m", "second"], {
-      cwd: repoRoot,
+      cwd: repo_root,
       env: {
         ...process.env,
         GIT_AUTHOR_NAME: "Test",
@@ -95,10 +95,10 @@ describe("commits routes", () => {
       },
       stdio: ["ignore", "pipe", "pipe"],
     });
-    commit2 = git(repoRoot, ["rev-parse", "HEAD"]);
+    commit2 = git(repo_root, ["rev-parse", "HEAD"]);
 
     lease = createDevSiteHttpApp({
-      repoRoot,
+      repo_root,
       mainRef: "main",
       mounts: [{ kind: "router", createRouter: createCommitsRouter }],
     });
@@ -106,13 +106,13 @@ describe("commits routes", () => {
 
   afterAll(() => {
     releaseSlimRouteTest(lease);
-    rmSync(repoRoot, { recursive: true, force: true });
+    rmSync(repo_root, { recursive: true, force: true });
   });
 
   beforeEach(async () => {
     devSiteDbManager.clearAllTablesForTests(lease.devSiteDbKey);
     await throwError(
-      scanCommits(lease.devSiteDbKey, { repoRoot, mainRef: "main" }),
+      scanCommits(lease.devSiteDbKey, { repo_root, mainRef: "main" }),
     );
   });
 
@@ -122,12 +122,12 @@ describe("commits routes", () => {
     expect(response.body.commits.map((c: { hash: string }) => c.hash)).toEqual(
       [commit2, commit1],
     );
-    expect(response.body.commits[0].summaryMetrics).toMatchObject({
-      exportCount: 2,
-      testCaseCount: 2,
-      debtCount: expect.any(Number),
-      hasIssueStats: true,
-      issueCountsByKind: {
+    expect(response.body.commits[0].summary_metrics).toMatchObject({
+      export_count: 2,
+      test_case_count: 2,
+      debt_count: expect.any(Number),
+      has_issue_stats: true,
+      issue_counts_by_kind: {
         "dead-code": expect.any(Number),
         "oversized-file": expect.any(Number),
         "package-layout": expect.any(Number),
@@ -138,9 +138,9 @@ describe("commits routes", () => {
   it("GET /api/commits/:hash returns commit detail", async () => {
     const response = await request(lease.app).get(`/api/commits/${commit2}`);
     expect(response.status).toBe(200);
-    expect(response.body.commitDetail.commit.hash).toBe(commit2);
+    expect(response.body.commit_detail.commit.hash).toBe(commit2);
     expect(
-      response.body.commitDetail.exports
+      response.body.commit_detail.exports
         .map((e: { name: string }) => e.name)
         .sort(),
     ).toEqual(["ZERO", "add"].sort());
@@ -154,38 +154,38 @@ describe("commits routes", () => {
     expect(response.body.code).toBe("COMMIT_NOT_FOUND");
   });
 
-  it("GET /api/commits/:hash/packages/:packageName returns package detail", async () => {
+  it("GET /api/commits/:hash/packages/:package_name returns package detail", async () => {
     const encoded = encodeURIComponent("@fixture/root");
     const response = await request(lease.app).get(
       `/api/commits/${commit2}/packages/${encoded}`,
     );
     expect(response.status).toBe(200);
-    expect(response.body.packageDetail.packageName).toBe("@fixture/root");
+    expect(response.body.package_detail.package_name).toBe("@fixture/root");
     expect(
-      response.body.packageDetail.exports
+      response.body.package_detail.exports
         .map((e: { name: string }) => e.name)
         .sort(),
     ).toEqual(["ZERO", "add"].sort());
     expect(
-      response.body.packageDetail.testCases.map(
-        (t: { fullName: string }) => t.fullName,
+      response.body.package_detail.test_cases.map(
+        (t: { full_name: string }) => t.full_name,
       ),
     ).toEqual(["math > adds", "math > zero"]);
   });
 
-  it("GET /api/commits/:hash/diff/:otherHash diffs two commits", async () => {
+  it("GET /api/commits/:hash/diff/:other_hash diffs two commits", async () => {
     const response = await request(lease.app).get(
       `/api/commits/${commit1}/diff/${commit2}`,
     );
     expect(response.status).toBe(200);
-    expect(response.body.commitDiff.fromHash).toBe(commit1);
-    expect(response.body.commitDiff.toHash).toBe(commit2);
+    expect(response.body.commit_diff.from_hash).toBe(commit1);
+    expect(response.body.commit_diff.to_hash).toBe(commit2);
     expect(
-      response.body.commitDiff.exports.added.map((e: { name: string }) => e.name),
+      response.body.commit_diff.exports.added.map((e: { name: string }) => e.name),
     ).toEqual(["ZERO"]);
     expect(
-      response.body.commitDiff.testCases.added.map(
-        (t: { fullName: string }) => t.fullName,
+      response.body.commit_diff.test_cases.added.map(
+        (t: { full_name: string }) => t.full_name,
       ),
     ).toEqual(["math > zero"]);
   });

@@ -15,7 +15,7 @@
           class="checkout-strip__msg"
           :title="checkout.message"
         >{{ firstLine(checkout.message) }}</span>
-        <span class="checkout-strip__date">{{ formatDateTime(checkout.authoredAt) }}</span>
+        <span class="checkout-strip__date">{{ formatDateTime(checkout.authored_at) }}</span>
         <v-chip
           size="x-small"
           variant="tonal"
@@ -35,8 +35,8 @@
         />
         <v-select
           v-if="compareMode"
-          :model-value="compareRef"
-          :items="checkout.compareCandidates"
+          :model-value="compare_ref"
+          :items="checkout.compare_candidates"
           density="compact"
           hide-details
           variant="outlined"
@@ -47,15 +47,15 @@
           v-if="compareMode && checkout.compare"
           size="x-small"
           variant="tonal"
-          :color="checkout.compare.mergeBaseAnalyzed ? 'success' : 'warning'"
+          :color="checkout.compare.merge_base_analyzed ? 'success' : 'warning'"
           class="checkout-strip__chip"
         >
-          fork {{ shortHash(checkout.compare.mergeBaseHash) }}
+          fork {{ shortHash(checkout.compare.merge_base_hash) }}
           ·
-          {{ checkout.compare.mergeBaseAnalyzed ? "analyzed" : "not analyzed" }}
+          {{ checkout.compare.merge_base_analyzed ? "analyzed" : "not analyzed" }}
         </v-chip>
         <v-btn
-          v-if="githubRepo && githubCompareHref"
+          v-if="github_repo && githubCompareHref"
           size="small"
           variant="text"
           :href="githubCompareHref"
@@ -65,7 +65,7 @@
           Changes on GitHub
         </v-btn>
         <v-btn
-          v-if="compareMode && checkout.compare && !checkout.compare.mergeBaseAnalyzed"
+          v-if="compareMode && checkout.compare && !checkout.compare.merge_base_analyzed"
           color="primary"
           size="small"
           variant="flat"
@@ -81,7 +81,7 @@
         <p class="checkout-unscanned__title">Nothing unique on this checkout</p>
         <p class="checkout-unscanned__body">
           HEAD is the fork point of
-          <code>{{ checkout.compare?.againstRef }}</code>
+          <code>{{ checkout.compare?.against_ref }}</code>
           — there are no commits unique to this branch to compare.
         </p>
       </div>
@@ -96,15 +96,15 @@
           <template #left>
             <div class="checkout-col checkout-col--packages">
               <v-alert
-                v-if="compareMode && checkout.compare && !checkout.compare.mergeBaseAnalyzed"
+                v-if="compareMode && checkout.compare && !checkout.compare.merge_base_analyzed"
                 type="info"
                 density="compact"
                 variant="tonal"
                 class="mb-2"
               >
                 Scan the fork point
-                <code>{{ shortHash(checkout.compare.mergeBaseHash) }}</code>
-                ({{ firstLine(checkout.compare.mergeBaseMessage) }})
+                <code>{{ shortHash(checkout.compare.merge_base_hash) }}</code>
+                ({{ firstLine(checkout.compare.merge_base_message) }})
                 to filter this tree to added, removed, and modified packages.
               </v-alert>
               <v-progress-linear v-if="isLoadingDiff" indeterminate class="mb-2" />
@@ -124,8 +124,8 @@
                     :icon="packageKindIcon(selectedPkg.kind)"
                     :title="selectedPkg.kind"
                   />
-                  <span class="pkg-head__name" :title="selectedPkg.packageName">
-                    {{ selectedPkg.packageName }}
+                  <span class="pkg-head__name" :title="selectedPkg.package_name">
+                    {{ selectedPkg.package_name }}
                   </span>
                   <span
                     v-if="locDeltaText"
@@ -145,9 +145,9 @@
                   </v-chip>
                   <span
                     class="pkg-head__meta"
-                    :title="`${selectedPkg.sourceLines}/${selectedPkg.testLines} LOC`"
+                    :title="`${selectedPkg.source_lines}/${selectedPkg.test_lines} LOC`"
                   >
-                    {{ formatLocPair(selectedPkg.sourceLines, selectedPkg.testLines) }} LOC
+                    {{ formatLocPair(selectedPkg.source_lines, selectedPkg.test_lines) }} LOC
                     ·
                     <code>{{ selectedPkg.directory || "." }}</code>
                   </span>
@@ -190,10 +190,10 @@
                     :commit-hash="checkout.hash"
                     :compare-from-hash="compareFromHash"
                     :path-renames="pathRenames"
-                    :package-name="selectedPkg.packageName"
+                    :package-name="selectedPkg.package_name"
                     :package-directory="selectedPkg.directory"
-                    :product-root="checkout.productRoot"
-                    :github-repo="githubRepo"
+                    :product-root="checkout.product_root"
+                    :github-repo="github_repo"
                     :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
@@ -205,10 +205,10 @@
                     :commit-hash="checkout.hash"
                     :compare-from-hash="compareFromHash"
                     :path-renames="pathRenames"
-                    :package-name="selectedPkg.packageName"
+                    :package-name="selectedPkg.package_name"
                     :package-directory="selectedPkg.directory"
-                    :product-root="checkout.productRoot"
-                    :github-repo="githubRepo"
+                    :product-root="checkout.product_root"
+                    :github-repo="github_repo"
                     :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                   />
@@ -218,10 +218,10 @@
                     :commit-hash="checkout.hash"
                     :compare-from-hash="compareFromHash"
                     :path-renames="pathRenames"
-                    :package-name="selectedPkg.packageName"
+                    :package-name="selectedPkg.package_name"
                     :package-directory="selectedPkg.directory"
-                    :product-root="checkout.productRoot"
-                    :github-repo="githubRepo"
+                    :product-root="checkout.product_root"
+                    :github-repo="github_repo"
                     :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
@@ -233,10 +233,10 @@
                     :commit-hash="checkout.hash"
                     :compare-from-hash="compareFromHash"
                     :path-renames="pathRenames"
-                    :package-name="selectedPkg.packageName"
+                    :package-name="selectedPkg.package_name"
                     :package-directory="selectedPkg.directory"
-                    :product-root="checkout.productRoot"
-                    :github-repo="githubRepo"
+                    :product-root="checkout.product_root"
+                    :github-repo="github_repo"
                     :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
@@ -248,10 +248,10 @@
                     :commit-hash="checkout.hash"
                     :compare-from-hash="compareFromHash"
                     :path-renames="pathRenames"
-                    :package-name="selectedPkg.packageName"
+                    :package-name="selectedPkg.package_name"
                     :package-directory="selectedPkg.directory"
-                    :product-root="checkout.productRoot"
-                    :github-repo="githubRepo"
+                    :product-root="checkout.product_root"
+                    :github-repo="github_repo"
                     :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
@@ -263,10 +263,10 @@
                     :subdomain="subdomain"
                     :commit-hash="paneCommitHash"
                     :package-directory="selectedPkg.directory"
-                    :package-name="selectedPkg.packageName"
-                    :product-root="checkout.productRoot"
+                    :package-name="selectedPkg.package_name"
+                    :product-root="checkout.product_root"
                     :packages="checkout.packages"
-                    :github-repo="githubRepo"
+                    :github-repo="github_repo"
                     :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                     @navigate-package="onDocNavigatePackage"
@@ -276,16 +276,16 @@
                     :subdomain="subdomain"
                     :commit-hash="paneCommitHash"
                     :package-directory="selectedPkg.directory"
-                    :product-root="checkout.productRoot"
+                    :product-root="checkout.product_root"
                   />
                   <PackageIssuesPane
                     v-else
                     :subdomain="subdomain"
                     :commit-hash="paneCommitHash"
-                    :package-name="selectedPkg.packageName"
+                    :package-name="selectedPkg.package_name"
                     :package-directory="selectedPkg.directory"
-                    :product-root="checkout.productRoot"
-                    :github-repo="githubRepo"
+                    :product-root="checkout.product_root"
+                    :github-repo="github_repo"
                     :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
                   />
@@ -348,6 +348,7 @@ import {
 } from "../package-size";
 import { parsePackageDescription } from "../scope-docs";
 import { collectPackageIssues } from "../package-issues";
+import { toPackageDetailForIssues } from "../wire-maps";
 import { repoPathPrefix } from "../repo-paths";
 import { formatLocChangePair, formatLocPair } from "../format-loc";
 import type { TestScope } from "../test-tree";
@@ -389,22 +390,22 @@ const router = useRouter();
 
 const docsPane = ref<{ openDoc: (path: string) => void } | null>(null);
 
-const compareRef = computed(() => {
+const compare_ref = computed(() => {
   const q = route.query.compare;
   return typeof q === "string" && q ? q : undefined;
 });
-const compareMode = computed(() => Boolean(compareRef.value));
+const compareMode = computed(() => Boolean(compare_ref.value));
 
 const {
   data: checkout,
   isLoading,
   error,
   refetch,
-} = useCheckout(props.subdomain, compareRef);
+} = useCheckout(props.subdomain, compare_ref);
 
 /** Prefer server-configured repo (matches analyzed git root); router prop is fallback. */
-const githubRepo = computed(
-  () => checkout.value?.githubRepo ?? props.githubRepo,
+const github_repo = computed(
+  () => checkout.value?.github_repo ?? props.githubRepo,
 );
 
 const {
@@ -418,41 +419,41 @@ const compareReady = computed(() => {
   return Boolean(
     compareMode.value &&
       c?.analyzed &&
-      c.compare?.mergeBaseAnalyzed &&
-      c.compare.mergeBaseHash !== c.hash,
+      c.compare?.merge_base_analyzed &&
+      c.compare.merge_base_hash !== c.hash,
   );
 });
 
 const isEmptyCompare = computed(() => {
   const c = checkout.value;
   return Boolean(
-    compareMode.value && c?.compare && c.compare.mergeBaseHash === c.hash,
+    compareMode.value && c?.compare && c.compare.merge_base_hash === c.hash,
   );
 });
 
 const compareFromHash = computed(() =>
-  compareReady.value ? checkout.value?.compare?.mergeBaseHash : undefined,
+  compareReady.value ? checkout.value?.compare?.merge_base_hash : undefined,
 );
 
 const effectiveGithubRef = computed(() =>
   resolveGithubSourceRef({
     branch: checkout.value?.branch,
-    commitHash: checkout.value?.hash,
+    commit_hash: checkout.value?.hash,
     fallbackRef: props.githubRef,
   }),
 );
 
 const githubCompareHref = computed(() => {
-  if (!githubRepo.value || !compareMode.value) {
+  if (!github_repo.value || !compareMode.value) {
     return undefined;
   }
   const c = checkout.value;
-  const base = c?.compare?.mergeBaseHash;
+  const base = c?.compare?.merge_base_hash;
   const head = effectiveGithubRef.value;
   if (!c?.hash || !base || base === c.hash) {
     return undefined;
   }
-  return githubCompareUrl(githubRepo.value, base, head);
+  return githubCompareUrl(github_repo.value, base, head);
 });
 
 const pathRenames = computed(
@@ -464,32 +465,32 @@ const {
   isLoading: isLoadingDiff,
 } = useCommitDiff(
   props.subdomain,
-  () => (compareReady.value ? checkout.value?.compare?.mergeBaseHash ?? "" : ""),
+  () => (compareReady.value ? checkout.value?.compare?.merge_base_hash ?? "" : ""),
   () => (compareReady.value ? checkout.value?.hash ?? "" : ""),
 );
 
 const changeByPackage = computed((): Record<string, ChangeKind> => {
-  const diff = diffData.value?.commitDiff;
+  const diff = diffData.value?.commit_diff;
   if (!compareReady.value || !diff) return {};
   return packageChangesFromDiff(diff);
 });
 
 const mapPackageRow = (
   p: {
-    packageName: string;
+    package_name: string;
     directory: string;
     kind?: string;
-    sourceLines: number;
-    testLines: number;
-    testFiles: number;
-    debtCount?: number;
-    issueCountsByKind?: {
+    source_lines: number;
+    test_lines: number;
+    test_files: number;
+    debt_count?: number;
+    issue_counts_by_kind?: {
       "dead-code": number;
       "oversized-file": number;
       "package-layout": number;
     };
-    sourceFiles?: number;
-    prodLines?: number;
+    source_files?: number;
+    prod_lines?: number;
   },
   change?: ChangeKind,
   locDelta?: { source: number; test: number },
@@ -497,8 +498,8 @@ const mapPackageRow = (
   ...p,
   kind: classifyPackageKind(p.kind),
   size: classifyPackageSize({
-    sourceLines: p.sourceLines,
-    testFiles: p.testFiles,
+    source_lines: p.source_lines,
+    test_files: p.test_files,
   }),
   change,
   locDelta,
@@ -511,26 +512,26 @@ const headRows = computed(() =>
 const visibleRows = computed(() => {
   if (!compareReady.value) return headRows.value;
   const changes = changeByPackage.value;
-  const byName = new Map(headRows.value.map((p) => [p.packageName, p]));
-  const removed = diffData.value?.commitDiff?.packageMetrics.removed ?? [];
-  const changed = diffData.value?.commitDiff?.packageMetrics.changed ?? [];
+  const byName = new Map(headRows.value.map((p) => [p.package_name, p]));
+  const removed = diffData.value?.commit_diff?.package_metrics.removed ?? [];
+  const changed = diffData.value?.commit_diff?.package_metrics.changed ?? [];
   const rows = [];
   for (const [name, change] of Object.entries(changes)) {
     const head = byName.get(name);
-    const gone = removed.find((p) => p.packageName === name);
+    const gone = removed.find((p) => p.package_name === name);
     const src = head ?? gone;
     if (!src) continue;
     let locDelta: { source: number; test: number } | undefined;
     if (change === "added") {
-      locDelta = { source: src.sourceLines, test: src.testLines };
+      locDelta = { source: src.source_lines, test: src.test_lines };
     } else if (change === "removed") {
-      locDelta = { source: -src.sourceLines, test: -src.testLines };
+      locDelta = { source: -src.source_lines, test: -src.test_lines };
     } else {
-      const pair = changed.find((c) => c.after.packageName === name);
+      const pair = changed.find((c) => c.after.package_name === name);
       locDelta = pair
         ? {
-            source: pair.after.sourceLines - pair.before.sourceLines,
-            test: pair.after.testLines - pair.before.testLines,
+            source: pair.after.source_lines - pair.before.source_lines,
+            test: pair.after.test_lines - pair.before.test_lines,
           }
         : { source: 0, test: 0 };
     }
@@ -551,7 +552,7 @@ const selectedPackageName = computed(() => {
 });
 
 const selectedPkg = computed(() =>
-  visibleRows.value.find((p) => p.packageName === selectedPackageName.value),
+  visibleRows.value.find((p) => p.package_name === selectedPackageName.value),
 );
 
 const locDeltaText = computed(() => {
@@ -562,7 +563,7 @@ const locDeltaText = computed(() => {
 
 const paneCommitHash = computed(() => {
   if (selectedPkg.value?.change === "removed") {
-    return checkout.value?.compare?.mergeBaseHash ?? "";
+    return checkout.value?.compare?.merge_base_hash ?? "";
   }
   return checkout.value?.analyzed ? checkout.value.hash : "";
 });
@@ -574,12 +575,12 @@ const { data: packageDetailData } = useCommitPackage(
 );
 
 const issueCount = computed(() => {
-  const d = packageDetailData.value?.packageDetail;
+  const d = packageDetailData.value?.package_detail;
   const pkg = selectedPkg.value;
   if (!d || !pkg) return 0;
-  return collectPackageIssues(d, {
+  return collectPackageIssues(toPackageDetailForIssues(d), {
     packageDirectory: pkg.directory,
-    productRoot: checkout.value?.productRoot ?? "",
+    productRoot: checkout.value?.product_root ?? "",
   }).length;
 });
 
@@ -639,7 +640,7 @@ const setSpecScope = (scope: TestScope) => {
 const packageJsonPath = computed(() => {
   if (!selectedPkg.value || !paneCommitHash.value) return "";
   const prefix = repoPathPrefix(
-    checkout.value?.productRoot ?? "",
+    checkout.value?.product_root ?? "",
     selectedPkg.value.directory,
   );
   return prefix ? `${prefix}/package.json` : "package.json";
@@ -663,13 +664,13 @@ watch(
     if (!visibleRows.value.length) return;
     if (
       selectedPackageName.value &&
-      visibleRows.value.some((p) => p.packageName === selectedPackageName.value)
+      visibleRows.value.some((p) => p.package_name === selectedPackageName.value)
     ) {
       return;
     }
     const first = visibleRows.value[0];
     if (first) {
-      replaceQuery({ package: first.packageName });
+      replaceQuery({ package: first.package_name });
     }
   },
   { immediate: true },
@@ -684,9 +685,9 @@ const selectPackage = (name: string) => {
   });
 };
 
-const onDocNavigatePackage = (packageName: string, docPath: string) => {
+const onDocNavigatePackage = (package_name: string, docPath: string) => {
   replaceQuery({
-    package: packageName,
+    package: package_name,
     tab: "docs",
     file: undefined,
     dir: undefined,
@@ -699,15 +700,15 @@ const onDocNavigatePackage = (packageName: string, docPath: string) => {
 const scanThisCommit = () => {
   if (!checkout.value) return;
   scan(
-    { commitHash: checkout.value.hash },
+    { commit_hash: checkout.value.hash },
     { onSuccess: () => refetch() },
   );
 };
 
 const scanForkPoint = () => {
-  const hash = checkout.value?.compare?.mergeBaseHash;
+  const hash = checkout.value?.compare?.merge_base_hash;
   if (!hash) return;
-  scan({ commitHash: hash }, { onSuccess: () => refetch() });
+  scan({ commit_hash: hash }, { onSuccess: () => refetch() });
 };
 
 const toggleCompare = (on: unknown) => {
@@ -716,9 +717,9 @@ const toggleCompare = (on: unknown) => {
     return;
   }
   const ref =
-    compareRef.value ||
-    checkout.value?.compare?.againstRef ||
-    checkout.value?.compareCandidates?.[0] ||
+    compare_ref.value ||
+    checkout.value?.compare?.against_ref ||
+    checkout.value?.compare_candidates?.[0] ||
     "main";
   replaceQuery({ compare: ref });
 };

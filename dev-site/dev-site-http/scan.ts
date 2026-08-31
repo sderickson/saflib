@@ -22,23 +22,23 @@ import { deleteByCommit as deleteIssueStats } from "@saflib/dev-site-db/queries/
 import { listByCommit as listIssueStats } from "@saflib/dev-site-db/queries/package-issue-stats/list-by-commit";
 
 export interface ScanOptions {
-  repoRoot: string;
+  repo_root: string;
   /** Limit analysis to this path prefix (e.g. `products`). */
-  productRoot?: string;
+  product_root?: string;
   /** Main branch ref. Defaults to `main`. */
   mainRef?: string;
   /**
    * Max new commits to analyze in this run. Mainline is walked newest-first
    * (tip of `mainRef` first), skipping commits already in the DB, so repeated
    * limited scans fill history backward from HEAD.
-   * Ignored when {@link commitHash} is set.
+   * Ignored when {@link commit_hash} is set.
    */
   limit?: number;
   /**
    * Analyze exactly this commit (if not already stored). Skips history walk
    * and feature-branch tip discovery.
    */
-  commitHash?: string;
+  commit_hash?: string;
 }
 
 export interface ScanFailure {
@@ -70,31 +70,31 @@ function firstLine(message: string): string {
 
 async function persistIssueStatsForCommit(
   dbKey: DbKey,
-  commitHash: string,
+  commit_hash: string,
   options: {
-    repoRoot: string;
-    productRoot?: string;
+    repo_root: string;
+    product_root?: string;
     mainRef: string;
-    packages?: Array<{ packageName: string; directory: string }>;
+    packages?: Array<{ package_name: string; directory: string }>;
   },
 ): Promise<ReturnsError<void, GitCommandError>> {
-  const stats = await computeCommitIssueStats(dbKey, commitHash, {
-    repoRoot: options.repoRoot,
-    productRoot: options.productRoot,
+  const stats = await computeCommitIssueStats(dbKey, commit_hash, {
+    repo_root: options.repo_root,
+    product_root: options.product_root,
     mainRef: options.mainRef,
     packages: options.packages,
   });
   if (stats.error) return { error: stats.error };
 
-  await deleteIssueStats(dbKey, commitHash);
+  await deleteIssueStats(dbKey, commit_hash);
   const rows =
     stats.result.length > 0
-      ? stats.result.map((row) => ({ ...row, commitHash }))
+      ? stats.result.map((row) => ({ ...row, commit_hash }))
       : [
           {
-            commitHash,
+            commit_hash,
             // Sentinel so list APIs can tell "computed, zero issues" from "never computed".
-            packageName: "__meta__",
+            package_name: "__meta__",
             kind: "dead-code" as const,
             count: 0,
           },
@@ -107,14 +107,14 @@ async function persistCommit(
   dbKey: DbKey,
   commit: GitCommit,
   options: {
-    repoRoot: string;
-    productRoot?: string;
+    repo_root: string;
+    product_root?: string;
     mainRef: string;
   },
 ): Promise<ReturnsError<void, GitCommandError>> {
   const analyzed = await analyzeCommit(dbKey, commit, {
-    repoRoot: options.repoRoot,
-    productRoot: options.productRoot,
+    repo_root: options.repo_root,
+    product_root: options.product_root,
     mainRef: options.mainRef,
   });
   if (analyzed.error) {
@@ -124,28 +124,28 @@ async function persistCommit(
 
   await insert(dbKey, {
     hash: commit.hash,
-    parentHashes: snap.parentHashes,
-    authoredAt: snap.authoredAt,
+    parent_hashes: snap.parent_hashes,
+    authored_at: snap.authored_at,
     message: snap.message,
     refs: snap.refs,
-    analyzerVersion: snap.analyzerVersion || ANALYZER_VERSION,
+    analyzer_version: snap.analyzer_version || ANALYZER_VERSION,
     computed_at: new Date(),
     status: "complete",
-    exportCount: snap.exportCount,
-    testCaseCount: snap.testCaseCount,
+    export_count: snap.export_count,
+    test_case_count: snap.test_case_count,
   });
 
   await insertMany(
     dbKey,
-    snap.packageMetrics.map((m) => ({ ...m, commitHash: commit.hash })),
+    snap.package_metrics.map((m) => ({ ...m, commit_hash: commit.hash })),
   );
 
   const issuePersist = await persistIssueStatsForCommit(dbKey, commit.hash, {
-    repoRoot: options.repoRoot,
-    productRoot: options.productRoot,
+    repo_root: options.repo_root,
+    product_root: options.product_root,
     mainRef: options.mainRef,
-    packages: snap.packageMetrics.map((m) => ({
-      packageName: m.packageName,
+    packages: snap.package_metrics.map((m) => ({
+      package_name: m.package_name,
       directory: m.directory,
     })),
   });
@@ -158,8 +158,8 @@ async function analyzeAndPersist(
   dbKey: DbKey,
   commit: GitCommit,
   options: {
-    repoRoot: string;
-    productRoot?: string;
+    repo_root: string;
+    product_root?: string;
     mainRef: string;
   },
   progress: { index: number; total: number },
@@ -184,7 +184,7 @@ async function analyzeAndPersist(
 
 /**
  * Ingest mainline commits newest-first (tip first), plus divergent feature-branch
- * tips when `limit` is unset. Or analyze a single {@link ScanOptions.commitHash}.
+ * tips when `limit` is unset. Or analyze a single {@link ScanOptions.commit_hash}.
  */
 export async function scanCommits(
   dbKey: DbKey,
@@ -197,29 +197,29 @@ export async function scanCommits(
   const failed: ScanFailure[] = [];
   const runStarted = Date.now();
 
-  if (options.commitHash) {
+  if (options.commit_hash) {
     scanLog.info(
-      `Scan start: single commit ${shortHash(options.commitHash)} (productRoot=${options.productRoot ?? ""})`,
+      `Scan start: single commit ${shortHash(options.commit_hash)} (product_root=${options.product_root ?? ""})`,
     );
     const existing = await getByHash(
       dbKey,
-      options.commitHash,
+      options.commit_hash,
     );
     if (existing.result) {
       scanLog.info(
-        `Scan skip: ${shortHash(options.commitHash)} already analyzed`,
+        `Scan skip: ${shortHash(options.commit_hash)} already analyzed`,
       );
       return {
         result: {
           scanned: [],
-          skipped: [options.commitHash],
+          skipped: [options.commit_hash],
           failed: [],
         },
       };
     }
 
-    const tipLog = log(options.repoRoot, {
-      ref: options.commitHash,
+    const tipLog = log(options.repo_root, {
+      ref: options.commit_hash,
       limit: 1,
     });
     if (tipLog.error) return { error: tipLog.error };
@@ -231,7 +231,7 @@ export async function scanCommits(
           skipped: [],
           failed: [
             {
-              hash: options.commitHash,
+              hash: options.commit_hash,
               message: "No commit found for hash",
             },
           ],
@@ -243,8 +243,8 @@ export async function scanCommits(
       dbKey,
       commit,
       {
-        repoRoot: options.repoRoot,
-        productRoot: options.productRoot,
+        repo_root: options.repo_root,
+        product_root: options.product_root,
         mainRef,
       },
       { index: 1, total: 1 },
@@ -263,10 +263,10 @@ export async function scanCommits(
   scanLog.info(
     `Scan start: mainline ${mainRef} newest-first` +
       (options.limit !== undefined ? ` limit=${options.limit}` : " (no limit)") +
-      ` productRoot=${options.productRoot ?? ""}`,
+      ` product_root=${options.product_root ?? ""}`,
   );
 
-  const logResult = log(options.repoRoot, { ref: mainRef });
+  const logResult = log(options.repo_root, { ref: mainRef });
   if (logResult.error) {
     if (logResult.error.exitCode === 128) {
       // fall through
@@ -276,7 +276,7 @@ export async function scanCommits(
   }
   const mainline: GitCommit[] = logResult.result ?? [];
 
-  const refsResult = listRefs(options.repoRoot);
+  const refsResult = listRefs(options.repo_root);
   if (refsResult.error) return { error: refsResult.error };
 
   const toAnalyze: GitCommit[] = [];
@@ -301,13 +301,13 @@ export async function scanCommits(
       if (ref.name === mainRef) continue;
       if (scheduled.has(ref.hash)) continue;
 
-      const ancestor = isAncestor(options.repoRoot, ref.hash, mainRef);
+      const ancestor = isAncestor(options.repo_root, ref.hash, mainRef);
       if (ancestor.error && ancestor.error.exitCode !== 128) {
         return { error: ancestor.error };
       }
       if (ancestor.result) continue;
 
-      const tipLog = log(options.repoRoot, { ref: ref.hash, limit: 1 });
+      const tipLog = log(options.repo_root, { ref: ref.hash, limit: 1 });
       if (tipLog.error) {
         failed.push({ hash: ref.hash, message: tipLog.error.message });
         continue;
@@ -336,8 +336,8 @@ export async function scanCommits(
       dbKey,
       commit,
       {
-        repoRoot: options.repoRoot,
-        productRoot: options.productRoot,
+        repo_root: options.repo_root,
+        product_root: options.product_root,
         mainRef,
       },
       { index: i + 1, total: toAnalyze.length },
@@ -362,11 +362,11 @@ export async function scanCommits(
 export async function recomputeIssueStats(
   dbKey: DbKey,
   options: {
-    repoRoot: string;
-    productRoot?: string;
+    repo_root: string;
+    product_root?: string;
     mainRef?: string;
     /** Only this commit (must already be analyzed). */
-    commitHash?: string;
+    commit_hash?: string;
     /** Max commits to recompute this run (newest first). */
     limit?: number;
     /** Replace existing issue stats even when present. */
@@ -381,8 +381,8 @@ export async function recomputeIssueStats(
   const runStarted = Date.now();
 
   const targets: string[] = [];
-  if (options.commitHash) {
-    const existing = await getByHash(dbKey, options.commitHash);
+  if (options.commit_hash) {
+    const existing = await getByHash(dbKey, options.commit_hash);
     if (!existing.result) {
       return {
         result: {
@@ -390,14 +390,14 @@ export async function recomputeIssueStats(
           skipped: [],
           failed: [
             {
-              hash: options.commitHash,
+              hash: options.commit_hash,
               message: "Commit not analyzed yet — run scan first",
             },
           ],
         },
       };
     }
-    targets.push(options.commitHash);
+    targets.push(options.commit_hash);
   } else {
     let cursor: string | undefined;
     const limit = options.limit ?? 50;
@@ -422,15 +422,15 @@ export async function recomputeIssueStats(
         targets.push(c.hash);
         if (targets.length >= limit) break;
       }
-      if (!page.result.nextCursor || page.result.commits.length === 0) break;
-      cursor = page.result.nextCursor;
+      if (!page.result.next_cursor || page.result.commits.length === 0) break;
+      cursor = page.result.next_cursor;
     }
   }
 
   scanLog.info(
     `Recompute issue stats: ${targets.length} commit(s)` +
       (options.force ? " (force)" : " (skip if present)") +
-      ` productRoot=${options.productRoot ?? ""}`,
+      ` product_root=${options.product_root ?? ""}`,
   );
 
   for (let i = 0; i < targets.length; i++) {
@@ -449,11 +449,11 @@ export async function recomputeIssueStats(
     scanLog.info(`Recomputing ${label}`);
     const started = Date.now();
     const outcome = await persistIssueStatsForCommit(dbKey, hash, {
-      repoRoot: options.repoRoot,
-      productRoot: options.productRoot,
+      repo_root: options.repo_root,
+      product_root: options.product_root,
       mainRef,
       packages: metrics.map((m) => ({
-        packageName: m.packageName,
+        package_name: m.package_name,
         directory: m.directory,
       })),
     });

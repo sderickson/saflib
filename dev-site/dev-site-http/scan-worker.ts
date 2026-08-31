@@ -42,11 +42,11 @@ async function main(): Promise<void> {
   });
   try {
     const { result, error } = await scanCommits(dbKey, {
-      repoRoot: data.repoRoot,
-      productRoot: data.productRoot,
+      repo_root: data.repo_root,
+      product_root: data.product_root,
       mainRef: data.mainRef,
       limit: data.limit,
-      commitHash: data.commitHash,
+      commit_hash: data.commit_hash,
     });
     if (error) {
       const msg: ScanWorkerMessage = {

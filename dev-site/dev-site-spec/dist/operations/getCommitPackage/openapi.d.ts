@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/commits/{hash}/packages/{packageName}": {
+    "/api/commits/{hash}/packages/{package_name}": {
         parameters: {
             query?: never;
             header?: never;
@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes dbInventory (drizzle tables + query dirs). For spec packages, also includes specInventory (OpenAPI schemas + REST resources). For http and sdk packages, specInventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, specInventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layoutIssues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes db_inventory (drizzle tables + query dirs). For spec packages, also includes spec_inventory (OpenAPI schemas + REST resources). For http and sdk packages, spec_inventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, spec_inventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layout_issues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -34,12 +34,12 @@ export interface components {
              * @description npm package that owns this file.
              * @example @saflib/git
              */
-            packageName: string;
+            package_name: string;
             /**
              * @description Path relative to the repo root.
              * @example saflib/git/log.ts
              */
-            filePath: string;
+            file_path: string;
             /**
              * @description Exported symbol name.
              * @example log
@@ -52,7 +52,7 @@ export interface components {
             kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable" | "component" | "prop" | "emit" | "model";
             /**
              * @description Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.
-             * @example (repoRoot: string, options?: LogOptions)
+             * @example (repo_root: string, options?: LogOptions)
              */
             signature: string | null;
             /**
@@ -61,53 +61,53 @@ export interface components {
              */
             docstring: string | null;
             /** @description Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty). */
-            usedBy?: {
-                packageName: string;
+            used_by?: {
+                package_name: string;
                 /** @description Path within the importing package (no package-root prefix). */
-                filePath: string;
+                file_path: string;
                 /** @description Repo-relative path for source links. */
-                repoPath: string;
+                repo_path: string;
             }[];
         };
-        /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
+        /** @description One `describe`/`it`/`test` case extracted from a test file. `full_name` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
         "test-case": {
             /**
              * @description npm package that owns this file.
              * @example @saflib/git
              */
-            packageName: string;
+            package_name: string;
             /**
              * @description Path relative to the repo root.
              * @example saflib/git/index.test.ts
              */
-            filePath: string;
+            file_path: string;
             /**
              * @description Nested describe/it titles joined with `" > "`.
              * @example log > returns commits newest-first (git log order)
              */
-            fullName: string;
+            full_name: string;
             /**
              * @description Linked export name when a suite title matches by convention.
              * @example log
              */
-            subjectName?: string;
+            subject_name?: string;
             /**
              * @description Signature of the linked export at this commit (null if unknown).
-             * @example (repoRoot: string, options?: LogOptions)
+             * @example (repo_root: string, options?: LogOptions)
              */
-            subjectSignature?: string | null;
+            subject_signature?: string | null;
             /** @description First JSDoc prose line of the linked export, when present. */
-            subjectDocstring?: string | null;
+            subject_docstring?: string | null;
             /**
              * @description Repo-relative path of the file that declares the linked export.
              * @example saflib/git/log.ts
              */
-            subjectFilePath?: string;
+            subject_file_path?: string;
             /**
              * @description How the link was made (`adjacent` file vs elsewhere in package).
              * @enum {string}
              */
-            subjectConfidence?: "adjacent" | "package";
+            subject_confidence?: "adjacent" | "package";
         };
         /** @description Drizzle table inventory for one db package (schemas + query dirs). */
         "db-inventory": {
@@ -115,35 +115,35 @@ export interface components {
                 /** @description Query directory name or kebab form of table name (e.g. package-metrics). */
                 entity: string;
                 table?: {
-                    exportName: string;
-                    tableName: string;
-                    filePath: string;
+                    export_name: string;
+                    table_name: string;
+                    file_path: string;
                     /** @description First prose line of leading JSDoc on the table const. */
                     docstring?: string | null;
                     columns: {
-                        propName: string;
-                        sqlName: string;
-                        typeKind: string;
+                        prop_name: string;
+                        sql_name: string;
+                        type_kind: string;
                         /** @description First prose line of leading JSDoc on the column. */
                         docstring?: string | null;
                     }[];
                 } | null;
                 /** @description Distinct packages (non-test) that import any query under this entity. */
-                usedByPackages: string[];
+                used_by_packages: string[];
                 /** @description Leaf query modules under queries/<entity>/ (excluding index and tests). */
                 queries: {
-                    fileName: string;
-                    filePath: string;
-                    exportName?: string | null;
+                    file_name: string;
+                    file_path: string;
+                    export_name?: string | null;
                     signature?: string | null;
                     docstring?: string | null;
                     /** @description Non-test product files that import this leaf query module. */
-                    usedBy: {
-                        packageName: string;
+                    used_by: {
+                        package_name: string;
                         /** @description Path within the importing package (no package-root prefix). */
-                        filePath: string;
+                        file_path: string;
                         /** @description Repo-relative path for source links. */
-                        repoPath: string;
+                        repo_path: string;
                     }[];
                 }[];
             }[];
@@ -151,7 +151,7 @@ export interface components {
         /** @description OpenAPI inventory for one spec package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. Operations include links to HTTP handlers and SDK requests from packages that depend on this spec. Also attached to http package detail for the HTTP Spec pane. */
         "spec-inventory": {
             /** @description Repo-relative directory of the spec package this inventory was built from (used for route YAML source links when shown from an http pane). */
-            packageDirectory?: string;
+            package_directory?: string;
             /** @description Flat alphabetical list of object / both / routes entities. */
             entities: {
                 /** @description Stable entity key (e.g. both:Matter, routes:admin, object:Error). */
@@ -169,91 +169,91 @@ export interface components {
                     /** @description components/schemas name (e.g. Matter). */
                     name: string;
                     /** @description Package-relative path to the schema YAML. */
-                    yamlPath: string;
+                    yaml_path: string;
                     description?: string | null;
                     properties: {
                         name: string;
-                        typeKind: string;
+                        type_kind: string;
                         docstring?: string | null;
                     }[];
                     /** @description Non-test product files importing schemas/<Name>. */
-                    usedBy: components["schemas"]["items"][];
-                    /** @description operationIds whose request/2xx response $ref this schema. */
-                    referencedByOperations: string[];
+                    used_by: components["schemas"]["items"][];
+                    /** @description operation_ids whose request/2xx response $ref this schema. */
+                    referenced_by_operations: string[];
                 } | null;
                 /** @description Distinct packages importing this entity's schema and/or the SDK request modules for its operations. */
-                usedByPackages: string[];
+                used_by_packages: string[];
                 /** @description REST operations under the linked resource (empty for object-only). */
                 operations: {
-                    operationId: string;
+                    operation_id: string;
                     method: string;
                     path: string;
                     summary?: string | null;
                     /** @description OpenAPI operation tags. */
                     tags: string[];
                     /** @description Package-relative route YAML under the spec package. */
-                    yamlPath: string;
+                    yaml_path: string;
                     /** @description Isomorphic stem after routes/handlers/requests (e.g. matters/core/create). */
-                    routeStem?: string | null;
+                    route_stem?: string | null;
                     /** @description Sibling HTTP handler file when present. */
                     handler?: {
-                        filePath: string;
-                        repoPath: string;
+                        file_path: string;
+                        repo_path: string;
                     } | null;
                     /** @description Sibling SDK request module when present. */
                     request?: {
-                        filePath: string;
-                        repoPath: string;
+                        file_path: string;
+                        repo_path: string;
                     } | null;
                     /** @description Sibling SDK fake/MSW module (`*.fake.ts`) when present beside the request. */
                     fake?: {
-                        filePath: string;
-                        repoPath: string;
+                        file_path: string;
+                        repo_path: string;
                     } | null;
-                    /** @description describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses " > " nesting). */
-                    handlerTests: {
+                    /** @description describe/it/test specifications extracted from colocated HTTP handler test files (full_name uses " > " nesting). */
+                    handler_tests: {
                         /**
                          * @description Nested describe/it titles joined with " > ".
                          * @example createMatter > creates a matter for the org
                          */
-                        fullName: string;
+                        full_name: string;
                     }[];
                     /** @description Business objects in the request body (one layer deep into object/array bags of schema refs). */
-                    requestSchemas: string[];
+                    request_schemas: string[];
                     /** @description Business objects in 2xx responses (one layer deep into object/array bags of schema refs). */
-                    responseSchemas: string[];
+                    response_schemas: string[];
                     /** @description Non-test product files importing the sibling SDK request module for this route stem. */
-                    usedBy: {
-                        packageName: string;
+                    used_by: {
+                        package_name: string;
                         /** @description Path within the importing package (no package-root prefix). */
-                        filePath: string;
+                        file_path: string;
                         /** @description Repo-relative path for source links. */
-                        repoPath: string;
+                        repo_path: string;
                     }[];
-                    /** @description operationIds this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map. */
+                    /** @description operation_ids this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map. */
                     enqueues?: string[];
-                    /** @description operationIds or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map. */
-                    enqueuedBy?: string[];
+                    /** @description operation_ids or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map. */
+                    enqueued_by?: string[];
                 }[];
             }[];
         };
         items: {
-            packageName: string;
+            package_name: string;
             /** @description Path within the importing package (no package-root prefix). */
-            filePath: string;
+            file_path: string;
             /** @description Repo-relative path for source links. */
-            repoPath: string;
+            repo_path: string;
         };
         "package-issue": {
             /** @enum {string} */
             kind: "dead-code" | "oversized-file" | "package-layout";
             title: string;
             name: string;
-            kindLabel: string;
+            kind_label: string;
             /** @description Package-local path for display */
-            filePath: string;
+            file_path: string;
             /** @description Repo-relative path for open-source links */
-            repoPath: string;
+            repo_path: string;
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
@@ -280,7 +280,7 @@ export interface operations {
             path: {
                 hash: string;
                 /** @description npm package name (URL-encoded), e.g. `%40example%2Fbilling-http` */
-                packageName: string;
+                package_name: string;
             };
             cookie?: never;
         };
@@ -293,23 +293,23 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        packageDetail: {
-                            commitHash: string;
-                            packageName: string;
+                        package_detail: {
+                            commit_hash: string;
+                            package_name: string;
                             directory: string;
-                            sourceFiles: number;
-                            sourceLines: number;
-                            prodLines: number;
-                            testLines: number;
-                            testFiles: number;
+                            source_files: number;
+                            source_lines: number;
+                            prod_lines: number;
+                            test_lines: number;
+                            test_files: number;
                             exports: components["schemas"]["export-entry"][];
-                            testCases: components["schemas"]["test-case"][];
-                            dbInventory?: components["schemas"]["db-inventory"];
-                            specInventory?: components["schemas"]["spec-inventory"];
+                            test_cases: components["schemas"]["test-case"][];
+                            db_inventory?: components["schemas"]["db-inventory"];
+                            spec_inventory?: components["schemas"]["spec-inventory"];
                             /** @description Working-tree package-layout and oversized-file findings (package-local; cheap). Dead-code workdir scans are CLI-only. */
-                            layoutIssues?: components["schemas"]["package-issue"][];
+                            layout_issues?: components["schemas"]["package-issue"][];
                             /** @description Repo-relative files from live package.json `exports` (SPA main.ts, test-app.ts). Spec Issues skips these for dead-code so the panel matches `saf-dev-site issues --workdir`. */
-                            publicExportFilePaths?: string[];
+                            public_export_file_paths?: string[];
                         };
                     };
                 };

@@ -15,24 +15,24 @@ const mockList: ListResponse = {
   commits: [
     {
       hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      parentHashes: ["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"],
-      authoredAt: "2026-01-02T00:00:00.000Z",
+      parent_hashes: ["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"],
+      authored_at: "2026-01-02T00:00:00.000Z",
       message: "second commit\n\nbody",
-      refs: [{ name: "main", type: "branch", isMainAncestor: true }],
-      analyzerVersion: "1",
+      refs: [{ name: "main", type: "branch", is_main_ancestor: true }],
+      analyzer_version: "1",
       computed_at: "2026-01-02T01:00:00.000Z",
       status: "complete",
-      summaryMetrics: summaryMetricsFixture({
-        packageCount: 1,
-        sourceFiles: 2,
-        sourceLines: 100,
-        testFiles: 1,
-        testLines: 30,
-        exportCount: 2,
-        testCaseCount: 3,
-        debtCount: 2,
-        hasIssueStats: true,
-        issueCountsByKind: {
+      summary_metrics: summaryMetricsFixture({
+        package_count: 1,
+        source_files: 2,
+        source_lines: 100,
+        test_files: 1,
+        test_lines: 30,
+        export_count: 2,
+        test_case_count: 3,
+        debt_count: 2,
+        has_issue_stats: true,
+        issue_counts_by_kind: {
           "dead-code": 1,
           "oversized-file": 1,
           "package-layout": 0,
@@ -41,26 +41,26 @@ const mockList: ListResponse = {
     },
     {
       hash: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      parentHashes: [],
-      authoredAt: "2026-01-01T00:00:00.000Z",
+      parent_hashes: [],
+      authored_at: "2026-01-01T00:00:00.000Z",
       message: "first commit",
       refs: [],
-      analyzerVersion: "1",
+      analyzer_version: "1",
       computed_at: "2026-01-01T01:00:00.000Z",
       status: "complete",
-      summaryMetrics: summaryMetricsFixture({
-        packageCount: 1,
-        sourceFiles: 1,
-        sourceLines: 50,
-        testFiles: 0,
-        testLines: 0,
-        exportCount: 1,
-        testCaseCount: 0,
-        hasIssueStats: true,
+      summary_metrics: summaryMetricsFixture({
+        package_count: 1,
+        source_files: 1,
+        source_lines: 50,
+        test_files: 0,
+        test_lines: 0,
+        export_count: 1,
+        test_case_count: 0,
+        has_issue_stats: true,
       }),
     },
   ],
-  nextCursor: null,
+  next_cursor: null,
 };
 
 type CheckoutResponse = DevSiteResponseBody["getCheckout"][200];
@@ -68,12 +68,12 @@ type CheckoutResponse = DevSiteResponseBody["getCheckout"][200];
 const mockCheckout: CheckoutResponse = {
   hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   message: "second commit",
-  authoredAt: "2026-01-02T00:00:00.000Z",
+  authored_at: "2026-01-02T00:00:00.000Z",
   analyzed: true,
-  productRoot: "",
+  product_root: "",
   branch: "main",
   packages: [],
-  compareCandidates: ["main"],
+  compare_candidates: ["main"],
 };
 
 const handlers = [

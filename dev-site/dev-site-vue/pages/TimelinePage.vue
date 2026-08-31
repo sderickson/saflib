@@ -59,30 +59,30 @@
             {{ firstLine(item.message) }}
           </template>
 
-          <template #[`item.authoredAt`]="{ item }">
-            {{ formatDateTime(item.authoredAt) }}
+          <template #[`item.authored_at`]="{ item }">
+            {{ formatDateTime(item.authored_at) }}
           </template>
 
           <template #[`item.debt`]="{ item }">
             <v-tooltip location="top">
               <template #activator="{ props: tip }">
-                <span v-bind="tip">{{ item.summaryMetrics.debtCount }}</span>
+                <span v-bind="tip">{{ item.summary_metrics.debt_count }}</span>
               </template>
               <span>
-                dead {{ item.summaryMetrics.issueCountsByKind["dead-code"] }} ·
+                dead {{ item.summary_metrics.issue_counts_by_kind["dead-code"] }} ·
                 oversized
-                {{ item.summaryMetrics.issueCountsByKind["oversized-file"] }} ·
+                {{ item.summary_metrics.issue_counts_by_kind["oversized-file"] }} ·
                 layout
-                {{ item.summaryMetrics.issueCountsByKind["package-layout"] }}
+                {{ item.summary_metrics.issue_counts_by_kind["package-layout"] }}
               </span>
             </v-tooltip>
           </template>
 
-          <template #[`item.summaryMetrics`]="{ item }">
-            {{ formatLoc(item.summaryMetrics.sourceLines) }} src /
-            {{ formatLoc(item.summaryMetrics.testLines) }} test LOC ·
-            {{ item.summaryMetrics.testCaseCount }} tests ·
-            {{ item.summaryMetrics.exportCount }} exports
+          <template #[`item.summary_metrics`]="{ item }">
+            {{ formatLoc(item.summary_metrics.source_lines) }} src /
+            {{ formatLoc(item.summary_metrics.test_lines) }} test LOC ·
+            {{ item.summary_metrics.test_case_count }} tests ·
+            {{ item.summary_metrics.export_count }} exports
           </template>
 
           <template #[`item.actions`]="{ item }">
@@ -130,9 +130,9 @@ const headers = [
   { title: "Health", key: "health", sortable: false },
   { title: "Hash", key: "hash", sortable: false },
   { title: "Message", key: "message", sortable: false },
-  { title: "Authored", key: "authoredAt", sortable: false },
+  { title: "Authored", key: "authored_at", sortable: false },
   { title: "Debt", key: "debt", sortable: false },
-  { title: "Metrics", key: "summaryMetrics", sortable: false },
+  { title: "Metrics", key: "summary_metrics", sortable: false },
   { title: "Actions", key: "actions", sortable: false },
 ];
 

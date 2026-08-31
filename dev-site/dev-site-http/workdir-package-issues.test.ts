@@ -47,8 +47,8 @@ describe("collectWorkdirPackageIssues", () => {
     );
 
     const result = await collectWorkdirPackageIssues({
-      repoRoot: root,
-      packageName: "@test/pkg",
+      repo_root: root,
+      package_name: "@test/pkg",
     });
 
     expect(result.issues.map((i) => `${i.kind}:${i.name}`).sort()).toEqual([

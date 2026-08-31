@@ -25,8 +25,8 @@ export type GetCommitResult = ReturnsError<
 >;
 
 export interface RepoReadOptions {
-  repoRoot: string;
-  productRoot?: string;
+  repo_root: string;
+  product_root?: string;
   mainRef?: string;
 }
 
@@ -35,31 +35,31 @@ function toIso(d: Date): string {
 }
 
 function toApiTestCase(t: {
-  packageName: string;
-  filePath: string;
-  fullName: string;
-  subjectName: string | null;
-  subjectSignature: string | null;
-  subjectDocstring: string | null;
-  subjectFilePath: string | null;
-  subjectConfidence: "adjacent" | "package" | null;
+  package_name: string;
+  file_path: string;
+  full_name: string;
+  subject_name: string | null;
+  subject_signature: string | null;
+  subject_docstring: string | null;
+  subject_file_path: string | null;
+  subject_confidence: "adjacent" | "package" | null;
 }) {
-  if (!t.subjectName || !t.subjectConfidence || !t.subjectFilePath) {
+  if (!t.subject_name || !t.subject_confidence || !t.subject_file_path) {
     return {
-      packageName: t.packageName,
-      filePath: t.filePath,
-      fullName: t.fullName,
+      package_name: t.package_name,
+      file_path: t.file_path,
+      full_name: t.full_name,
     };
   }
   return {
-    packageName: t.packageName,
-    filePath: t.filePath,
-    fullName: t.fullName,
-    subjectName: t.subjectName,
-    subjectSignature: t.subjectSignature,
-    subjectDocstring: t.subjectDocstring,
-    subjectFilePath: t.subjectFilePath,
-    subjectConfidence: t.subjectConfidence,
+    package_name: t.package_name,
+    file_path: t.file_path,
+    full_name: t.full_name,
+    subject_name: t.subject_name,
+    subject_signature: t.subject_signature,
+    subject_docstring: t.subject_docstring,
+    subject_file_path: t.subject_file_path,
+    subject_confidence: t.subject_confidence,
   };
 }
 
@@ -80,50 +80,50 @@ export async function getCommit(
   const { byPackage } = rollupIssueCounts(issueRows);
 
   const symbols = await assembleCommitSymbols(dbKey, hash, {
-    repoRoot: repo.repoRoot,
-    productRoot: repo.productRoot,
+    repo_root: repo.repo_root,
+    product_root: repo.product_root,
     mainRef: repo.mainRef,
   });
   // Git errors while assembling are unexpected for an analyzed commit; surface as empty
   // rather than 500 if the tree vanished — still return metrics.
   const exportRows = symbols.result?.exports ?? [];
-  const testRows = symbols.result?.testCases ?? [];
+  const testRows = symbols.result?.test_cases ?? [];
 
   const detail: CommitDetail = {
     commit: {
       hash: commit.hash,
-      parentHashes: commit.parentHashes,
-      authoredAt: toIso(commit.authoredAt),
+      parent_hashes: commit.parent_hashes,
+      authored_at: toIso(commit.authored_at),
       message: commit.message,
       refs: commit.refs,
-      analyzerVersion: commit.analyzerVersion,
+      analyzer_version: commit.analyzer_version,
       computed_at: toIso(commit.computed_at),
       status: commit.status,
     },
-    packageMetrics: metrics.map((m) => {
-      const issueCountsByKind =
-        byPackage.get(m.packageName) ?? emptyIssueCountsByKind();
+    package_metrics: metrics.map((m) => {
+      const issue_counts_by_kind =
+        byPackage.get(m.package_name) ?? emptyIssueCountsByKind();
       return {
-        packageName: m.packageName,
+        package_name: m.package_name,
         directory: m.directory,
-        sourceFiles: m.sourceFiles,
-        sourceLines: m.sourceLines,
-        prodLines: m.prodLines,
-        testLines: m.testLines,
-        testFiles: m.testFiles,
-        issueCountsByKind,
-        debtCount: debtCountFromIssueCounts(issueCountsByKind),
+        source_files: m.source_files,
+        source_lines: m.source_lines,
+        prod_lines: m.prod_lines,
+        test_lines: m.test_lines,
+        test_files: m.test_files,
+        issue_counts_by_kind,
+        debt_count: debtCountFromIssueCounts(issue_counts_by_kind),
       };
     }),
     exports: exportRows.map((e) => ({
-      packageName: e.packageName,
-      filePath: e.filePath,
+      package_name: e.package_name,
+      file_path: e.file_path,
       name: e.name,
       kind: e.kind,
       signature: e.signature,
       docstring: e.docstring,
     })),
-    testCases: testRows.map(toApiTestCase),
+    test_cases: testRows.map(toApiTestCase),
   };
   return { result: detail };
 }
@@ -133,7 +133,7 @@ export async function listCommitSummaries(
   params: { cursor?: string; limit?: number } = {},
 ): Promise<
   ReturnsError<
-    { commits: CommitSummary[]; nextCursor: string | null },
+    { commits: CommitSummary[]; next_cursor: string | null },
     AnalyzedCommitNotFoundError
   >
 > {
@@ -144,31 +144,31 @@ export async function listCommitSummaries(
   for (const c of page.result.commits) {
     const metrics = (await listByCommit(dbKey, c.hash)).result!;
     const issueRows = (await listIssueStats(dbKey, c.hash)).result ?? [];
-    const { totals, hasIssueStats } = rollupIssueCounts(issueRows);
+    const { totals, has_issue_stats } = rollupIssueCounts(issueRows);
     commits.push({
       hash: c.hash,
-      parentHashes: c.parentHashes,
-      authoredAt: toIso(c.authoredAt),
+      parent_hashes: c.parent_hashes,
+      authored_at: toIso(c.authored_at),
       message: c.message,
       refs: c.refs,
-      analyzerVersion: c.analyzerVersion,
+      analyzer_version: c.analyzer_version,
       computed_at: toIso(c.computed_at),
       status: c.status,
-      summaryMetrics: {
-        packageCount: metrics.length,
-        sourceFiles: metrics.reduce((n, m) => n + m.sourceFiles, 0),
-        sourceLines: metrics.reduce((n, m) => n + m.sourceLines, 0),
-        testFiles: metrics.reduce((n, m) => n + m.testFiles, 0),
-        testLines: metrics.reduce((n, m) => n + m.testLines, 0),
-        exportCount: c.exportCount,
-        testCaseCount: c.testCaseCount,
-        issueCountsByKind: totals,
-        debtCount: debtCountFromIssueCounts(totals),
-        hasIssueStats,
+      summary_metrics: {
+        package_count: metrics.length,
+        source_files: metrics.reduce((n, m) => n + m.source_files, 0),
+        source_lines: metrics.reduce((n, m) => n + m.source_lines, 0),
+        test_files: metrics.reduce((n, m) => n + m.test_files, 0),
+        test_lines: metrics.reduce((n, m) => n + m.test_lines, 0),
+        export_count: c.export_count,
+        test_case_count: c.test_case_count,
+        issue_counts_by_kind: totals,
+        debt_count: debtCountFromIssueCounts(totals),
+        has_issue_stats,
       },
     });
   }
   return {
-    result: { commits, nextCursor: page.result.nextCursor },
+    result: { commits, next_cursor: page.result.next_cursor },
   };
 }

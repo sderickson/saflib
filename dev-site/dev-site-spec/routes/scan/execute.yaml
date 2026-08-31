@@ -27,8 +27,8 @@ executeScan:
               description: >
                 Max new mainline commits to analyze this run (default 1).
                 Feature-branch tips are skipped when limit is set.
-                Ignored when `commitHash` is set.
-            commitHash:
+                Ignored when `commit_hash` is set.
+            commit_hash:
               type: string
               description: >
                 Analyze exactly this commit (if not already stored). Used by

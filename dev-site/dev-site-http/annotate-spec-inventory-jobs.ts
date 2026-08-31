@@ -11,29 +11,29 @@ export function annotateSpecInventoryJobEdges(
   inventory: PackageSpecInventory,
   triggerMap: JobTriggerMap,
 ): void {
-  const enqueuedBy = new Map<string, string[]>();
+  const enqueued_by = new Map<string, string[]>();
   for (const [caller, targets] of Object.entries(triggerMap)) {
     for (const target of targets) {
-      let list = enqueuedBy.get(target);
+      let list = enqueued_by.get(target);
       if (!list) {
         list = [];
-        enqueuedBy.set(target, list);
+        enqueued_by.set(target, list);
       }
       if (!list.includes(caller)) list.push(caller);
     }
   }
-  for (const list of enqueuedBy.values()) {
+  for (const list of enqueued_by.values()) {
     list.sort((a, b) => a.localeCompare(b));
   }
 
   for (const entity of inventory.entities) {
     for (const op of entity.operations) {
-      const id = op.operationId;
+      const id = op.operation_id;
       const forwards = triggerMap[id];
       op.enqueues = forwards?.length
         ? [...forwards].sort((a, b) => a.localeCompare(b))
         : [];
-      op.enqueuedBy = enqueuedBy.get(id) ?? [];
+      op.enqueued_by = enqueued_by.get(id) ?? [];
     }
   }
 }

@@ -12,13 +12,13 @@ export interface PackageDirNode {
   label: string;
   kind: PackageDirNodeKind;
   /** Present when kind === "package". */
-  packageName?: string;
+  package_name?: string;
   packageKind?: PackageKind;
   packageSize?: PackageSizeTier;
-  debtCount?: number;
-  issueCountsByKind?: IssueCountsByKind;
-  sourceLines?: number;
-  testLines?: number;
+  debt_count?: number;
+  issue_counts_by_kind?: IssueCountsByKind;
+  source_lines?: number;
+  test_lines?: number;
   directory?: string;
   /** Present in Checkout compare mode for package nodes. */
   change?: "added" | "removed" | "modified" | "moved";
@@ -26,14 +26,14 @@ export interface PackageDirNode {
 }
 
 export interface PackageDirInput {
-  packageName: string;
+  package_name: string;
   directory: string;
   kind?: PackageKind | string;
-  sourceLines?: number;
-  testLines?: number;
-  testFiles?: number;
-  debtCount?: number;
-  issueCountsByKind?: IssueCountsByKind;
+  source_lines?: number;
+  test_lines?: number;
+  test_files?: number;
+  debt_count?: number;
+  issue_counts_by_kind?: IssueCountsByKind;
 }
 
 /**
@@ -60,23 +60,23 @@ export function buildPackageDirTree(
     let node = root;
 
     const packageFields = {
-      packageName: pkg.packageName,
+      package_name: pkg.package_name,
       packageKind: classifyPackageKind(pkg.kind),
       packageSize: classifyPackageSize({
-        sourceLines: pkg.sourceLines ?? 0,
-        testFiles: pkg.testFiles,
+        source_lines: pkg.source_lines ?? 0,
+        test_files: pkg.test_files,
       }),
-      debtCount: pkg.debtCount ?? 0,
-      issueCountsByKind: pkg.issueCountsByKind ?? emptyIssueCountsByKind(),
-      sourceLines: pkg.sourceLines ?? 0,
-      testLines: pkg.testLines ?? 0,
+      debt_count: pkg.debt_count ?? 0,
+      issue_counts_by_kind: pkg.issue_counts_by_kind ?? emptyIssueCountsByKind(),
+      source_lines: pkg.source_lines ?? 0,
+      test_lines: pkg.test_lines ?? 0,
       directory: pkg.directory,
     };
 
     if (parts.length === 0) {
       const child: PackageDirNode = {
-        id: `pkg:${pkg.packageName}`,
-        label: pkg.packageName,
+        id: `pkg:${pkg.package_name}`,
+        label: pkg.package_name,
         kind: "package",
         ...packageFields,
         children: [],
@@ -92,11 +92,11 @@ export function buildPackageDirTree(
 
       if (isLeaf) {
         let child = node.children.find(
-          (c) => c.kind === "package" && c.packageName === pkg.packageName,
+          (c) => c.kind === "package" && c.package_name === pkg.package_name,
         );
         if (!child) {
           child = {
-            id: `pkg:${pkg.packageName}`,
+            id: `pkg:${pkg.package_name}`,
             label,
             kind: "package",
             ...packageFields,

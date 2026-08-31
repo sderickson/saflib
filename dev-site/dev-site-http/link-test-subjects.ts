@@ -16,8 +16,8 @@ export function adjacentSourcePaths(testFilePath: string): string[] {
   return exts.map((ext) => `${stem}${ext}`);
 }
 
-function suiteTitles(fullName: string): string[] {
-  const parts = fullName.split(" > ").map((s) => s.trim()).filter(Boolean);
+function suiteTitles(full_name: string): string[] {
+  const parts = full_name.split(" > ").map((s) => s.trim()).filter(Boolean);
   if (parts.length <= 1) return [];
   return parts.slice(0, -1);
 }
@@ -25,22 +25,22 @@ function suiteTitles(fullName: string): string[] {
 function unlink(t: AnalyzedTestCase): AnalyzedTestCase {
   return {
     ...t,
-    subjectName: null,
-    subjectSignature: null,
-    subjectDocstring: null,
-    subjectFilePath: null,
-    subjectConfidence: null,
+    subject_name: null,
+    subject_signature: null,
+    subject_docstring: null,
+    subject_file_path: null,
+    subject_confidence: null,
   };
 }
 
 function linkTo(t: AnalyzedTestCase, exp: AnalyzedExport, confidence: SubjectConfidence): AnalyzedTestCase {
   return {
     ...t,
-    subjectName: exp.name,
-    subjectSignature: exp.signature,
-    subjectDocstring: exp.docstring,
-    subjectFilePath: exp.filePath,
-    subjectConfidence: confidence,
+    subject_name: exp.name,
+    subject_signature: exp.signature,
+    subject_docstring: exp.docstring,
+    subject_file_path: exp.file_path,
+    subject_confidence: confidence,
   };
 }
 
@@ -57,18 +57,18 @@ export function linkTestSubjects(
 ): AnalyzedTestCase[] {
   const byPackage = new Map<string, AnalyzedExport[]>();
   for (const exp of exports) {
-    const list = byPackage.get(exp.packageName) ?? [];
+    const list = byPackage.get(exp.package_name) ?? [];
     list.push(exp);
-    byPackage.set(exp.packageName, list);
+    byPackage.set(exp.package_name, list);
   }
 
   return tests.map((t) => {
-    const titles = suiteTitles(t.fullName);
+    const titles = suiteTitles(t.full_name);
     if (titles.length === 0) return unlink(t);
 
-    const pkgExports = byPackage.get(t.packageName) ?? [];
-    const adjacent = new Set(adjacentSourcePaths(t.filePath));
-    const adjacentExports = pkgExports.filter((e) => adjacent.has(e.filePath));
+    const pkgExports = byPackage.get(t.package_name) ?? [];
+    const adjacent = new Set(adjacentSourcePaths(t.file_path));
+    const adjacentExports = pkgExports.filter((e) => adjacent.has(e.file_path));
 
     for (let i = titles.length - 1; i >= 0; i--) {
       const title = titles[i]!;

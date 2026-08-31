@@ -7,12 +7,12 @@ properties:
     type: string
     description: Full 40-char commit object hash.
     example: "a1b2c3d4e5f6789012345678901234567890abcd"
-  parentHashes:
+  parent_hashes:
     type: array
     description: Parent commit hashes (empty for the root commit).
     items:
       type: string
-  authoredAt:
+  authored_at:
     type: string
     format: date-time
     description: Author date from the commit (`%aI`).
@@ -26,7 +26,7 @@ properties:
     description: Branch/tag pointers that currently resolve to this commit.
     items:
       $ref: "./commit-ref.yaml"
-  analyzerVersion:
+  analyzer_version:
     type: string
     description: Version string of the analyzer that produced this snapshot.
     example: "1"
@@ -42,10 +42,10 @@ properties:
     example: "complete"
 required:
   - hash
-  - parentHashes
-  - authoredAt
+  - parent_hashes
+  - authored_at
   - message
   - refs
-  - analyzerVersion
+  - analyzer_version
   - computed_at
   - status

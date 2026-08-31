@@ -19,9 +19,9 @@ import type { DevSiteHttpAppLease } from "../../http.ts";
 import { devSiteDbManager } from "@saflib/dev-site-db/instances";
 import { scanCommits } from "../../scan.ts";
 
-function git(repoRoot: string, args: string[]): string {
+function git(repo_root: string, args: string[]): string {
   return execFileSync("git", args, {
-    cwd: repoRoot,
+    cwd: repo_root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     env: {
@@ -36,29 +36,29 @@ function git(repoRoot: string, args: string[]): string {
 
 describe("checkout routes", () => {
   let lease: DevSiteHttpAppLease;
-  let repoRoot: string;
+  let repo_root: string;
   let headHash: string;
 
   beforeAll(() => {
-    repoRoot = mkdtempSync(join(tmpdir(), "dev-site-checkout-route-"));
-    git(repoRoot, ["init"]);
-    git(repoRoot, ["checkout", "-b", "main"]);
+    repo_root = mkdtempSync(join(tmpdir(), "dev-site-checkout-route-"));
+    git(repo_root, ["init"]);
+    git(repo_root, ["checkout", "-b", "main"]);
     writeFileSync(
-      join(repoRoot, "package.json"),
+      join(repo_root, "package.json"),
       JSON.stringify({ name: "@fixture/root" }),
     );
-    mkdirSync(join(repoRoot, "src"));
-    writeFileSync(join(repoRoot, "src/a.ts"), "export const a = 1;\n");
+    mkdirSync(join(repo_root, "src"));
+    writeFileSync(join(repo_root, "src/a.ts"), "export const a = 1;\n");
     writeFileSync(
-      join(repoRoot, "src/a.test.ts"),
+      join(repo_root, "src/a.test.ts"),
       'import { describe, it } from "vitest";\ndescribe("a", () => {\n  it("works", () => {});\n});\n',
     );
-    git(repoRoot, ["add", "."]);
-    git(repoRoot, ["commit", "-m", "init"]);
-    headHash = git(repoRoot, ["rev-parse", "HEAD"]);
+    git(repo_root, ["add", "."]);
+    git(repo_root, ["commit", "-m", "init"]);
+    headHash = git(repo_root, ["rev-parse", "HEAD"]);
 
     lease = createDevSiteHttpApp({
-      repoRoot,
+      repo_root,
       mainRef: "main",
       mounts: [{ kind: "router", createRouter: createCheckoutRouter }],
     });
@@ -66,7 +66,7 @@ describe("checkout routes", () => {
 
   afterAll(() => {
     releaseSlimRouteTest(lease);
-    rmSync(repoRoot, { recursive: true, force: true });
+    rmSync(repo_root, { recursive: true, force: true });
   });
 
   beforeEach(() => {
@@ -83,11 +83,11 @@ describe("checkout routes", () => {
       branch: "main",
     });
     expect(response.body.message).toContain("init");
-    expect(response.body.compareCandidates).toEqual(["main"]);
+    expect(response.body.compare_candidates).toEqual(["main"]);
     expect(response.body.compare).toMatchObject({
-      againstRef: "main",
-      mergeBaseHash: headHash,
-      mergeBaseAnalyzed: false,
+      against_ref: "main",
+      merge_base_hash: headHash,
+      merge_base_analyzed: false,
     });
     expect(response.body.compare.renames).toEqual([]);
   });
@@ -95,9 +95,9 @@ describe("checkout routes", () => {
   it("GET /api/checkout includes packages after scan", async () => {
     await throwError(
       scanCommits(lease.devSiteDbKey, {
-        repoRoot,
+        repo_root,
         mainRef: "main",
-        commitHash: headHash,
+        commit_hash: headHash,
       }),
     );
     const response = await request(lease.app).get("/api/checkout");
@@ -105,67 +105,67 @@ describe("checkout routes", () => {
     expect(response.body.analyzed).toBe(true);
     expect(response.body.branch).toBe("main");
     expect(response.body.packages.length).toBeGreaterThan(0);
-    expect(response.body.packages[0].packageName).toBe("@fixture/root");
+    expect(response.body.packages[0].package_name).toBe("@fixture/root");
     expect(response.body.packages[0]).toMatchObject({
       kind: "other",
-      debtCount: expect.any(Number),
-      issueCountsByKind: {
+      debt_count: expect.any(Number),
+      issue_counts_by_kind: {
         "dead-code": expect.any(Number),
         "oversized-file": expect.any(Number),
         "package-layout": expect.any(Number),
       },
     });
     expect(response.body.compare).toMatchObject({
-      againstRef: "main",
-      mergeBaseHash: headHash,
-      mergeBaseAnalyzed: true,
+      against_ref: "main",
+      merge_base_hash: headHash,
+      merge_base_analyzed: true,
     });
     expect(response.body.compare.renames).toEqual([]);
   });
 
   it("GET /api/checkout reports merge-base for a feature branch", async () => {
-    git(repoRoot, ["checkout", "-b", "feature"]);
-    writeFileSync(join(repoRoot, "src/b.ts"), "export const b = 2;\n");
-    git(repoRoot, ["add", "src/b.ts"]);
-    git(repoRoot, ["commit", "-m", "feature"]);
-    const featureHead = git(repoRoot, ["rev-parse", "HEAD"]);
+    git(repo_root, ["checkout", "-b", "feature"]);
+    writeFileSync(join(repo_root, "src/b.ts"), "export const b = 2;\n");
+    git(repo_root, ["add", "src/b.ts"]);
+    git(repo_root, ["commit", "-m", "feature"]);
+    const featureHead = git(repo_root, ["rev-parse", "HEAD"]);
 
     const response = await request(lease.app).get(
-      "/api/checkout?compareRef=main",
+      "/api/checkout?compare_ref=main",
     );
     expect(response.status).toBe(200);
     expect(response.body.hash).toBe(featureHead);
     expect(response.body.branch).toBe("feature");
-    expect(response.body.compareCandidates).toEqual(["main"]);
+    expect(response.body.compare_candidates).toEqual(["main"]);
     expect(response.body.compare).toMatchObject({
-      againstRef: "main",
-      mergeBaseHash: headHash,
-      mergeBaseAnalyzed: false,
+      against_ref: "main",
+      merge_base_hash: headHash,
+      merge_base_analyzed: false,
     });
     expect(response.body.compare.renames).toEqual([]);
 
-    git(repoRoot, ["checkout", "main"]);
+    git(repo_root, ["checkout", "main"]);
   });
 
   it("GET /api/checkout includes git find-renames pairs vs the fork point", async () => {
-    git(repoRoot, ["checkout", "-b", "renames"]);
-    git(repoRoot, ["mv", "src/a.ts", "src/moved.ts"]);
-    git(repoRoot, ["commit", "-m", "move a"]);
+    git(repo_root, ["checkout", "-b", "renames"]);
+    git(repo_root, ["mv", "src/a.ts", "src/moved.ts"]);
+    git(repo_root, ["commit", "-m", "move a"]);
 
     const response = await request(lease.app).get(
-      "/api/checkout?compareRef=main",
+      "/api/checkout?compare_ref=main",
     );
     expect(response.status).toBe(200);
     expect(response.body.compare.renames).toEqual([
-      { fromPath: "src/a.ts", toPath: "src/moved.ts", score: 100 },
+      { from_path: "src/a.ts", to_path: "src/moved.ts", score: 100 },
     ]);
 
-    git(repoRoot, ["checkout", "main"]);
+    git(repo_root, ["checkout", "main"]);
   });
 
-  it("GET /api/checkout returns 400 for an unknown compareRef", async () => {
+  it("GET /api/checkout returns 400 for an unknown compare_ref", async () => {
     const response = await request(lease.app).get(
-      "/api/checkout?compareRef=no-such-branch",
+      "/api/checkout?compare_ref=no-such-branch",
     );
     expect(response.status).toBe(400);
   });

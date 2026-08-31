@@ -24,35 +24,35 @@ export type { ExportUsedBy, ExportUsedByMap };
 export { exportUsedByKey };
 
 /**
- * Walk all product source blobs, find imports targeting `packageName`, and
- * return importers keyed by export filePath + name.
+ * Walk all product source blobs, find imports targeting `package_name`, and
+ * return importers keyed by export file_path + name.
  */
 export async function assembleExportUsedBy(
   dbKey: DbKey,
-  commitHash: string,
-  packageName: string,
-  /** Known exports in the target package (`filePath` + `name`). */
-  exports: Array<{ filePath: string; name: string }>,
+  commit_hash: string,
+  package_name: string,
+  /** Known exports in the target package (`file_path` + `name`). */
+  exports: Array<{ file_path: string; name: string }>,
   options: AnalyzeCommitOptions,
 ): Promise<ReturnsError<ExportUsedByMap, GitCommandError>> {
   const out: ExportUsedByMap = new Map();
   if (exports.length === 0) return { result: out };
 
-  const repoRoot = options.repoRoot;
-  const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
+  const repo_root = options.repo_root;
+  const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
 
-  const treeResult = listTree(repoRoot, commitHash);
+  const treeResult = listTree(repo_root, commit_hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) => {
-    if (!productRoot) return true;
-    return e.path === productRoot || e.path.startsWith(productRoot + "/");
+    if (!product_root) return true;
+    return e.path === product_root || e.path.startsWith(product_root + "/");
   });
 
   const packageJsonEntries = tree.filter(
     (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
   );
   const pkgBlobHashes = packageJsonEntries.map((e) => e.blobHash);
-  const pkgBlobs = readBlobs(repoRoot, pkgBlobHashes);
+  const pkgBlobs = readBlobs(repo_root, pkgBlobHashes);
   if (pkgBlobs.error) return { error: pkgBlobs.error };
 
   const nameByPath = new Map<string, string>();
@@ -66,13 +66,13 @@ export async function assembleExportUsedBy(
     packageJsonEntries.map((e) => e.path),
     nameByPath,
   );
-  const targetRoot = roots.find((r) => r.packageName === packageName);
+  const targetRoot = roots.find((r) => r.package_name === package_name);
   if (!targetRoot) return { result: out };
 
   const allSourceEntries = tree.filter((e) => isSourcePath(e.path));
   const factsResult = await ensureBlobFacts(
     dbKey,
-    repoRoot,
+    repo_root,
     allSourceEntries.map((e) => e.blobHash),
   );
   if (factsResult.error) return { error: factsResult.error };
@@ -80,15 +80,15 @@ export async function assembleExportUsedBy(
 
   const importers: UsedByImporterUnit[] = [];
   for (const entry of allSourceEntries) {
-    const fileName = entry.path.split("/").pop() ?? entry.path;
+    const file_name = entry.path.split("/").pop() ?? entry.path;
     const fact = facts.get(entry.blobHash);
     if (!fact) continue;
     const importerRoot = packageForPath(entry.path, roots);
     importers.push({
       path: entry.path,
-      packageName: importerRoot.packageName,
+      packageName: importerRoot.package_name,
       packageDirectory: importerRoot.directory,
-      isTest: isTestSourcePath(entry.path, fileName),
+      isTest: isTestSourcePath(entry.path, file_name),
       imports: blobFactImports(fact),
       localExportUsages: specialtyLocalExportUsages(fact.specialty),
     });
@@ -96,9 +96,9 @@ export async function assembleExportUsedBy(
 
   return {
     result: assembleUsedBy(
-      packageName,
+      package_name,
       targetRoot.directory,
-      exports,
+      exports.map((e) => ({ filePath: e.file_path, name: e.name })),
       importers,
     ),
   };

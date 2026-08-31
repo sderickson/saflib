@@ -12,16 +12,16 @@ import {
 } from "../../scan-dispatch.ts";
 
 export const executeScanHandler = createHandler(async (req, res) => {
-  const { dbKey, repoRoot, productRoot, mainRef, dbPath } =
+  const { dbKey, repo_root, product_root, mainRef, dbPath } =
     getDevSiteHttpContext();
   const body = (req.body ?? {}) as NonNullable<RequestBody["executeScan"]>;
   const { result, error } = await dispatchScan(dbKey, {
-    repoRoot,
-    productRoot,
+    repo_root,
+    product_root,
     mainRef,
     dbPath,
-    limit: body.commitHash ? undefined : (body.limit ?? DEFAULT_HTTP_SCAN_LIMIT),
-    commitHash: body.commitHash,
+    limit: body.commit_hash ? undefined : (body.limit ?? DEFAULT_HTTP_SCAN_LIMIT),
+    commit_hash: body.commit_hash,
   });
   if (error) {
     switch (true) {

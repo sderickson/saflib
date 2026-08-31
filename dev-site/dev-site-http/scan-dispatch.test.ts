@@ -13,9 +13,9 @@ import { throwError } from "@saflib/monorepo";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import { scanCommitsInWorker } from "./scan-dispatch.ts";
 
-function git(repoRoot: string, args: string[]): string {
+function git(repo_root: string, args: string[]): string {
   return execFileSync("git", args, {
-    cwd: repoRoot,
+    cwd: repo_root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     env: {
@@ -29,26 +29,26 @@ function git(repoRoot: string, args: string[]): string {
 }
 
 describe("scanCommitsInWorker", () => {
-  let repoRoot: string;
+  let repo_root: string;
   let dbPath: string;
-  let commitHash: string;
+  let commit_hash: string;
 
   beforeAll(() => {
     const dir = mkdtempSync(join(tmpdir(), "dev-site-scan-worker-"));
-    repoRoot = join(dir, "repo");
+    repo_root = join(dir, "repo");
     dbPath = join(dir, "dev-site.sqlite");
-    mkdirSync(repoRoot);
-    git(repoRoot, ["init"]);
-    git(repoRoot, ["checkout", "-b", "main"]);
+    mkdirSync(repo_root);
+    git(repo_root, ["init"]);
+    git(repo_root, ["checkout", "-b", "main"]);
     writeFileSync(
-      join(repoRoot, "package.json"),
+      join(repo_root, "package.json"),
       JSON.stringify({ name: "@fixture/worker" }),
     );
-    mkdirSync(join(repoRoot, "src"));
-    writeFileSync(join(repoRoot, "src/a.ts"), "export const a = 1;\n");
-    git(repoRoot, ["add", "."]);
-    git(repoRoot, ["commit", "-m", "init"]);
-    commitHash = git(repoRoot, ["rev-parse", "HEAD"]);
+    mkdirSync(join(repo_root, "src"));
+    writeFileSync(join(repo_root, "src/a.ts"), "export const a = 1;\n");
+    git(repo_root, ["add", "."]);
+    git(repo_root, ["commit", "-m", "init"]);
+    commit_hash = git(repo_root, ["rev-parse", "HEAD"]);
 
     // Migrate schema on the main thread first.
     const dbKey = devSiteDb.connect({
@@ -60,19 +60,19 @@ describe("scanCommitsInWorker", () => {
   });
 
   afterAll(() => {
-    rmSync(join(repoRoot, ".."), { recursive: true, force: true });
+    rmSync(join(repo_root, ".."), { recursive: true, force: true });
   });
 
   it("analyzes one commit in a worker without blocking the caller thread's sync path", async () => {
     const result = await throwError(
       scanCommitsInWorker({
         dbPath,
-        repoRoot,
+        repo_root,
         mainRef: "main",
         limit: 1,
       }),
     );
-    expect(result.scanned).toEqual([commitHash]);
+    expect(result.scanned).toEqual([commit_hash]);
     expect(result.failed).toEqual([]);
   });
 });

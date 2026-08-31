@@ -20,7 +20,7 @@ export const getLatest = queryWrapper(
       .select()
       .from(analyzedCommitsTable)
       .orderBy(
-        desc(analyzedCommitsTable.authoredAt),
+        desc(analyzedCommitsTable.authored_at),
         desc(analyzedCommitsTable.hash),
       )
       .limit(1);

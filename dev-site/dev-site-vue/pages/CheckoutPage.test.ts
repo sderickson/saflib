@@ -22,26 +22,26 @@ function checkoutFixture(
   return {
     hash: HEAD,
     message: "feature work",
-    authoredAt: "2026-01-02T00:00:00.000Z",
+    authored_at: "2026-01-02T00:00:00.000Z",
     analyzed: true,
-    productRoot: "",
+    product_root: "",
     branch: "feature",
     packages: [
       packageMetricsFixture({
-        packageName: "@demo/keep",
+        package_name: "@demo/keep",
         directory: "products/keep",
-        sourceLines: 20,
-        testFiles: 1,
-        testLines: 5,
+        source_lines: 20,
+        test_files: 1,
+        test_lines: 5,
       }),
     ],
-    compareCandidates: ["main", "other"],
+    compare_candidates: ["main", "other"],
     compare: {
-      againstRef: "main",
-      mergeBaseHash: BASE,
-      mergeBaseAnalyzed: false,
-      mergeBaseMessage: "fork parent",
-      mergeBaseAuthoredAt: "2026-01-01T00:00:00.000Z",
+      against_ref: "main",
+      merge_base_hash: BASE,
+      merge_base_analyzed: false,
+      merge_base_message: "fork parent",
+      merge_base_authored_at: "2026-01-01T00:00:00.000Z",
       renames: [],
     },
     ...partial,
@@ -49,17 +49,17 @@ function checkoutFixture(
 }
 
 const emptyPackage: PackageResponse = {
-  packageDetail: {
-    commitHash: HEAD,
-    packageName: "@demo/keep",
+  package_detail: {
+    commit_hash: HEAD,
+    package_name: "@demo/keep",
     directory: "products/keep",
-    sourceFiles: 1,
-    sourceLines: 20,
-    prodLines: 15,
-    testLines: 5,
-    testFiles: 1,
+    source_files: 1,
+    source_lines: 20,
+    prod_lines: 15,
+    test_lines: 5,
+    test_files: 1,
     exports: [],
-    testCases: [],
+    test_cases: [],
   },
 };
 
@@ -82,11 +82,11 @@ describe("CheckoutPage compare query param", () => {
       "http://test.localhost:3000/api/checkout",
       () => HttpResponse.json(checkoutFixture()),
     ),
-    http.post<PathParams, { commitHash?: string }, ScanResponse>(
+    http.post<PathParams, { commit_hash?: string }, ScanResponse>(
       "http://test.localhost:3000/api/scan",
       async ({ request }) => {
-        const body = (await request.json()) as { commitHash?: string };
-        expect(body.commitHash).toBe(BASE);
+        const body = (await request.json()) as { commit_hash?: string };
+        expect(body.commit_hash).toBe(BASE);
         return HttpResponse.json({
           scanned: [BASE],
           skipped: [],
@@ -125,11 +125,11 @@ describe("CheckoutPage compare package tree", () => {
         HttpResponse.json(
           checkoutFixture({
             compare: {
-              againstRef: "main",
-              mergeBaseHash: BASE,
-              mergeBaseAnalyzed: true,
-              mergeBaseMessage: "fork parent",
-              mergeBaseAuthoredAt: "2026-01-01T00:00:00.000Z",
+              against_ref: "main",
+              merge_base_hash: BASE,
+              merge_base_analyzed: true,
+              merge_base_message: "fork parent",
+              merge_base_authored_at: "2026-01-01T00:00:00.000Z",
               renames: [],
             },
           }),
@@ -139,40 +139,40 @@ describe("CheckoutPage compare package tree", () => {
       `http://test.localhost:3000/api/commits/${BASE}/diff/${HEAD}`,
       () =>
         HttpResponse.json({
-          commitDiff: {
-            fromHash: BASE,
-            toHash: HEAD,
-            packageMetrics: {
+          commit_diff: {
+            from_hash: BASE,
+            to_hash: HEAD,
+            package_metrics: {
               added: [],
               removed: [
                 packageMetricsFixture({
-                  packageName: "@demo/gone",
+                  package_name: "@demo/gone",
                   directory: "products/gone",
-                  sourceLines: 8,
-                  testFiles: 0,
-                  testLines: 0,
+                  source_lines: 8,
+                  test_files: 0,
+                  test_lines: 0,
                 }),
               ],
               changed: [
                 {
                   before: packageMetricsFixture({
-                    packageName: "@demo/keep",
+                    package_name: "@demo/keep",
                     directory: "products/keep",
-                    sourceLines: 10,
+                    source_lines: 10,
                   }),
                   after: packageMetricsFixture({
-                    packageName: "@demo/keep",
+                    package_name: "@demo/keep",
                     directory: "products/keep",
-                    sourceLines: 20,
-                    testFiles: 1,
-                    testLines: 5,
+                    source_lines: 20,
+                    test_files: 1,
+                    test_lines: 5,
                   }),
                 },
               ],
             },
             exports: { added: [], removed: [] },
-            testCases: { added: [], removed: [] },
-            dbSchemas: {
+            test_cases: { added: [], removed: [] },
+            db_schemas: {
               tables: { added: [], removed: [] },
               columns: { added: [], removed: [], changed: [] },
             },

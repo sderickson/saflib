@@ -1,21 +1,21 @@
 type: object
 description: A drizzle column identity for schema diffs.
 required:
-  - packageName
-  - tableName
-  - sqlName
-  - typeKind
-  - propName
+  - package_name
+  - table_name
+  - sql_name
+  - type_kind
+  - prop_name
 properties:
-  packageName:
+  package_name:
     type: string
-  tableName:
+  table_name:
     type: string
-  sqlName:
+  sql_name:
     type: string
-  typeKind:
+  type_kind:
     type: string
-  propName:
+  prop_name:
     type: string
   docstring:
     type: [ string, "null" ]

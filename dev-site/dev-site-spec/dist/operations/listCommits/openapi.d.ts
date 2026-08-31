@@ -35,31 +35,31 @@ export interface components {
              * @example a1b2c3d4e5f6789012345678901234567890abcd
              */
             hash: string;
-            parentHashes: string[];
+            parent_hashes: string[];
             /** Format: date-time */
-            authoredAt: string;
+            authored_at: string;
             /** @description Full commit message (subject + body). */
             message: string;
             refs: components["schemas"]["commit-ref"][];
-            analyzerVersion: string;
+            analyzer_version: string;
             /** Format: date-time */
             computed_at: string;
             /** @enum {string} */
             status: "pending" | "complete" | "failed";
             /** @description Rollup counts across all packages at this commit, for timeline health indicators without fetching CommitDetail. */
-            summaryMetrics: {
-                packageCount: number;
-                sourceFiles: number;
-                sourceLines: number;
-                testFiles: number;
-                testLines: number;
-                exportCount: number;
-                testCaseCount: number;
-                issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+            summary_metrics: {
+                package_count: number;
+                source_files: number;
+                source_lines: number;
+                test_files: number;
+                test_lines: number;
+                export_count: number;
+                test_case_count: number;
+                issue_counts_by_kind: components["schemas"]["issue-counts-by-kind"];
                 /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
-                debtCount: number;
+                debt_count: number;
                 /** @description True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats. */
-                hasIssueStats: boolean;
+                has_issue_stats: boolean;
             };
         };
         /** @description A branch or tag pointer observed at scan time for a commit. */
@@ -75,7 +75,7 @@ export interface components {
              */
             type: "branch" | "tag";
             /** @description True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips. */
-            isMainAncestor: boolean;
+            is_main_ancestor: boolean;
         };
         /** @description Per-kind issue counts for a commit or package (all kinds count as debt). */
         "issue-counts-by-kind": {
@@ -115,7 +115,7 @@ export interface operations {
                     "application/json": {
                         commits: components["schemas"]["commit-summary"][];
                         /** @description Pass as `cursor` on the next request. Null when there are no more pages. */
-                        nextCursor?: string | null;
+                        next_cursor?: string | null;
                     };
                 };
             };

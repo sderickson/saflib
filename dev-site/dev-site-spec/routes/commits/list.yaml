@@ -36,7 +36,7 @@ listCommits:
                 type: array
                 items:
                   $ref: "../../schemas/commit-summary.yaml"
-              nextCursor:
+              next_cursor:
                 type: [ string, "null" ]
                 description: >
                   Pass as `cursor` on the next request. Null when there are no more pages.

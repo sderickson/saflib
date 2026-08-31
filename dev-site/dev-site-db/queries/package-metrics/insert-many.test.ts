@@ -10,7 +10,7 @@ import { makeCommit } from "../test-helpers.ts";
 import { insert } from "@saflib/dev-site-db/queries/analyzed-commits/insert";
 describe("package-metrics", () => {
   let dbKey: DbKey;
-  const commitHash = "ffffffffffffffffffffffffffffffffffffffff";
+  const commit_hash = "ffffffffffffffffffffffffffffffffffffffff";
 
   beforeAll(() => {
     dbKey = devSiteDbManager.connect();
@@ -23,7 +23,7 @@ describe("package-metrics", () => {
   beforeEach(async () => {
     devSiteDbManager.clearAllTablesForTests(dbKey);
     await throwError(
-      insert(dbKey, makeCommit({ hash: commitHash })),
+      insert(dbKey, makeCommit({ hash: commit_hash })),
     );
   });
 
@@ -31,32 +31,32 @@ describe("package-metrics", () => {
     const inserted = await throwError(
       insertMany(dbKey, [
         {
-          commitHash,
-          packageName: "@saflib/git",
+          commit_hash,
+          package_name: "@saflib/git",
           directory: "saflib/git",
-          sourceFiles: 3,
-          sourceLines: 100,
-          prodLines: 80,
-          testLines: 20,
-          testFiles: 1,
+          source_files: 3,
+          source_lines: 100,
+          prod_lines: 80,
+          test_lines: 20,
+          test_files: 1,
         },
         {
-          commitHash,
-          packageName: "@saflib/parser",
+          commit_hash,
+          package_name: "@saflib/parser",
           directory: "saflib/parser",
-          sourceFiles: 2,
-          sourceLines: 50,
-          prodLines: 40,
-          testLines: 10,
-          testFiles: 1,
+          source_files: 2,
+          source_lines: 50,
+          prod_lines: 40,
+          test_lines: 10,
+          test_files: 1,
         },
       ]),
     );
     expect(inserted).toHaveLength(2);
     expect(inserted[0].id).toBeTruthy();
 
-    const listed = await throwError(listByCommit(dbKey, commitHash));
-    expect(listed.map((r) => r.packageName).sort()).toEqual([
+    const listed = await throwError(listByCommit(dbKey, commit_hash));
+    expect(listed.map((r) => r.package_name).sort()).toEqual([
       "@saflib/git",
       "@saflib/parser",
     ]);

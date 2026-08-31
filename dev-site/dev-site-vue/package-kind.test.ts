@@ -24,30 +24,30 @@ describe("classifyPackageKind", () => {
 
 const fixtureTests = [
   {
-    packageName: "@fixture/root",
-    filePath: "src/math.test.ts",
-    fullName: "math > adds",
-    subjectName: "math",
-    subjectSignature: "(a: number, b: number)",
-    subjectConfidence: "adjacent" as const,
+    package_name: "@fixture/root",
+    file_path: "src/math.test.ts",
+    full_name: "math > adds",
+    subject_name: "math",
+    subject_signature: "(a: number, b: number)",
+    subject_confidence: "adjacent" as const,
   },
   {
-    packageName: "@fixture/root",
-    filePath: "src/math.test.ts",
-    fullName: "math > zero",
-    subjectName: "math",
-    subjectSignature: "(a: number, b: number)",
-    subjectConfidence: "adjacent" as const,
+    package_name: "@fixture/root",
+    file_path: "src/math.test.ts",
+    full_name: "math > zero",
+    subject_name: "math",
+    subject_signature: "(a: number, b: number)",
+    subject_confidence: "adjacent" as const,
   },
   {
-    packageName: "@fixture/root",
-    filePath: "src/util/fmt.test.ts",
-    fullName: "fmt > pads",
+    package_name: "@fixture/root",
+    file_path: "src/util/fmt.test.ts",
+    full_name: "fmt > pads",
   },
   {
-    packageName: "@other/pkg",
-    filePath: "x.test.ts",
-    fullName: "ignored",
+    package_name: "@other/pkg",
+    file_path: "x.test.ts",
+    full_name: "ignored",
   },
 ];
 
@@ -81,14 +81,14 @@ describe("buildPackageTestTree", () => {
     expect(mathFile.sourcePath).toBe("src/math.test.ts");
     expect(mathFile.children[0].kind).toBe("suite");
     expect(mathFile.children[0].label).toBe("math");
-    expect(mathFile.children[0].subjectSignature).toBe("(a: number, b: number)");
+    expect(mathFile.children[0].subject_signature).toBe("(a: number, b: number)");
     expect(mathFile.children[0].children.map((c) => c.label).sort()).toEqual([
       "adds",
       "zero",
     ]);
     for (const leaf of mathFile.children[0].children) {
       expect(leaf.kind).toBe("test");
-      expect(leaf.subjectSignature).toBeUndefined();
+      expect(leaf.subject_signature).toBeUndefined();
     }
   });
 
@@ -117,9 +117,9 @@ describe("buildPackageTestTree", () => {
     const tree = buildPackageTestTree(
       [
         {
-          packageName: "@saflib/git",
-          filePath: "saflib/git/index.test.ts",
-          fullName: "log > newest-first",
+          package_name: "@saflib/git",
+          file_path: "saflib/git/index.test.ts",
+          full_name: "log > newest-first",
         },
       ],
       "@saflib/git",

@@ -10,14 +10,14 @@ import { analyzedCommitsTable } from "./analyzed-commits.ts";
 
 export interface PackageMetricsEntity {
   id: string;
-  commitHash: string;
-  packageName: string;
+  commit_hash: string;
+  package_name: string;
   directory: string;
-  sourceFiles: number;
-  sourceLines: number;
-  prodLines: number;
-  testLines: number;
-  testFiles: number;
+  source_files: number;
+  source_lines: number;
+  prod_lines: number;
+  test_lines: number;
+  test_files: number;
 }
 
 export const packageMetricsTable = sqliteTable(
@@ -26,19 +26,19 @@ export const packageMetricsTable = sqliteTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => generateShortId()),
-    commitHash: text("commit_hash")
+    commit_hash: text("commit_hash")
       .notNull()
       .references(() => analyzedCommitsTable.hash),
-    packageName: text("package_name").notNull(),
+    package_name: text("package_name").notNull(),
     directory: text("directory").notNull(),
-    sourceFiles: integer("source_files").notNull(),
-    sourceLines: integer("source_lines").notNull(),
-    prodLines: integer("prod_lines").notNull(),
-    testLines: integer("test_lines").notNull(),
-    testFiles: integer("test_files").notNull(),
+    source_files: integer("source_files").notNull(),
+    source_lines: integer("source_lines").notNull(),
+    prod_lines: integer("prod_lines").notNull(),
+    test_lines: integer("test_lines").notNull(),
+    test_files: integer("test_files").notNull(),
   },
   (table) => [
-    index("package_metrics_commit_hash_idx").on(table.commitHash),
+    index("package_metrics_commit_hash_idx").on(table.commit_hash),
   ],
 );
 

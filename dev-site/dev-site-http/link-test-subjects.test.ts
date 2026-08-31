@@ -21,19 +21,19 @@ describe("adjacentSourcePaths", () => {
 describe("linkTestSubjects", () => {
   const exports: AnalyzedExport[] = [
     {
-      packageName: "@saflib/git",
-      filePath: "saflib/git/log.ts",
+      package_name: "@saflib/git",
+      file_path: "saflib/git/log.ts",
       name: "log",
       kind: "function",
-      signature: "(repoRoot: string)",
+      signature: "(repo_root: string)",
       docstring: null,
     },
     {
-      packageName: "@saflib/git",
-      filePath: "saflib/git/read-blob.ts",
+      package_name: "@saflib/git",
+      file_path: "saflib/git/read-blob.ts",
       name: "readBlobs",
       kind: "function",
-      signature: "(repoRoot: string, hashes: string[])",
+      signature: "(repo_root: string, hashes: string[])",
       docstring: null,
     },
   ];
@@ -41,61 +41,61 @@ describe("linkTestSubjects", () => {
   it("links suite title to adjacent file export", () => {
     const tests: AnalyzedTestCase[] = [
       {
-        packageName: "@saflib/git",
-        filePath: "saflib/git/log.test.ts",
-        fullName: "log > newest-first",
-        subjectName: null,
-        subjectSignature: null,
-        subjectDocstring: null,
-        subjectFilePath: null,
-        subjectConfidence: null,
+        package_name: "@saflib/git",
+        file_path: "saflib/git/log.test.ts",
+        full_name: "log > newest-first",
+        subject_name: null,
+        subject_signature: null,
+        subject_docstring: null,
+        subject_file_path: null,
+        subject_confidence: null,
       },
     ];
     const [linked] = linkTestSubjects(tests, exports);
     expect(linked).toMatchObject({
-      subjectName: "log",
-      subjectSignature: "(repoRoot: string)",
-      subjectFilePath: "saflib/git/log.ts",
-      subjectConfidence: "adjacent",
+      subject_name: "log",
+      subject_signature: "(repo_root: string)",
+      subject_file_path: "saflib/git/log.ts",
+      subject_confidence: "adjacent",
     });
   });
 
   it("falls back to package-wide export match", () => {
     const tests: AnalyzedTestCase[] = [
       {
-        packageName: "@saflib/git",
-        filePath: "saflib/git/index.test.ts",
-        fullName: "readBlobs > batch-reads",
-        subjectName: null,
-        subjectSignature: null,
-        subjectDocstring: null,
-        subjectFilePath: null,
-        subjectConfidence: null,
+        package_name: "@saflib/git",
+        file_path: "saflib/git/index.test.ts",
+        full_name: "readBlobs > batch-reads",
+        subject_name: null,
+        subject_signature: null,
+        subject_docstring: null,
+        subject_file_path: null,
+        subject_confidence: null,
       },
     ];
     const [linked] = linkTestSubjects(tests, exports);
     expect(linked).toMatchObject({
-      subjectName: "readBlobs",
-      subjectConfidence: "package",
-      subjectFilePath: "saflib/git/read-blob.ts",
+      subject_name: "readBlobs",
+      subject_confidence: "package",
+      subject_file_path: "saflib/git/read-blob.ts",
     });
   });
 
   it("leaves unmatched suites unlinked", () => {
     const tests: AnalyzedTestCase[] = [
       {
-        packageName: "@saflib/git",
-        filePath: "saflib/git/index.test.ts",
-        fullName: "misc > does something",
-        subjectName: null,
-        subjectSignature: null,
-        subjectDocstring: null,
-        subjectFilePath: null,
-        subjectConfidence: null,
+        package_name: "@saflib/git",
+        file_path: "saflib/git/index.test.ts",
+        full_name: "misc > does something",
+        subject_name: null,
+        subject_signature: null,
+        subject_docstring: null,
+        subject_file_path: null,
+        subject_confidence: null,
       },
     ];
     const [linked] = linkTestSubjects(tests, exports);
-    expect(linked.subjectName).toBeNull();
-    expect(linked.subjectConfidence).toBeNull();
+    expect(linked.subject_name).toBeNull();
+    expect(linked.subject_confidence).toBeNull();
   });
 });

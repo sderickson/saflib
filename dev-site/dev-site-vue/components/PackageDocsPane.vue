@@ -77,7 +77,7 @@ const props = defineProps<{
   packageName: string;
   productRoot?: string;
   /** All analyzed packages — used to resolve cross-package doc links. */
-  packages: Array<{ packageName: string; directory: string }>;
+  packages: Array<{ package_name: string; directory: string }>;
   githubRepo?: string;
   /** Branch/tag for GitHub links (default `main`). */
   githubRef?: string;
@@ -85,7 +85,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  "navigate-package": [packageName: string, docPath: string];
+  "navigate-package": [package_name: string, docPath: string];
 }>();
 
 const prefix = computed(() =>
@@ -154,7 +154,7 @@ const openSelected = () => {
   if (!selectedPath.value) return;
   openSource(selectedPath.value, {
     githubRef: props.githubRef,
-    githubRepo: props.githubRepo,
+    github_repo: props.githubRepo,
     localRepoRoot: props.localRepoRoot,
   });
 };
@@ -199,7 +199,7 @@ const packageForPath = (path: string): string | null => {
         repoPathPrefix(props.productRoot, b.directory).length -
         repoPathPrefix(props.productRoot, a.directory).length,
     );
-  return matches[0]?.packageName ?? null;
+  return matches[0]?.package_name ?? null;
 };
 
 const onDocClick = (ev: MouseEvent) => {
@@ -216,7 +216,7 @@ const onDocClick = (ev: MouseEvent) => {
   if (resolved.kind === "source") {
     openSource(resolved.path, {
       githubRef: props.githubRef,
-      githubRepo: props.githubRepo,
+      github_repo: props.githubRepo,
       localRepoRoot: props.localRepoRoot,
     });
     return;

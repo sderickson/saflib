@@ -9,11 +9,11 @@ import { getDevSiteHttpContext } from "../../context.ts";
 import { diffCommits } from "../../diff-commits.ts";
 
 export const diffCommitsHandler = createHandler(async (req, res) => {
-  const { dbKey, repoRoot, productRoot, mainRef } = getDevSiteHttpContext();
-  const { hash, otherHash } = req.params as PathParams["diffCommits"];
-  const { result, error } = await diffCommits(dbKey, hash, otherHash, {
-    repoRoot,
-    productRoot,
+  const { dbKey, repo_root, product_root, mainRef } = getDevSiteHttpContext();
+  const { hash, other_hash } = req.params as PathParams["diffCommits"];
+  const { result, error } = await diffCommits(dbKey, hash, other_hash, {
+    repo_root,
+    product_root,
     mainRef,
   });
   if (error) {
@@ -27,7 +27,7 @@ export const diffCommitsHandler = createHandler(async (req, res) => {
     }
   }
   const response: ResponseBody["diffCommits"][200] = {
-    commitDiff: result,
+    commit_diff: result,
   };
   res.status(200).json(response);
 });

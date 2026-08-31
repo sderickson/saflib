@@ -27,8 +27,8 @@ describe("packageHasVueFiles", () => {
       packageHasVueFiles(
         [
           {
-            packageName: "@p",
-            filePath: "spa/Foo.logic.ts",
+            package_name: "@p",
+            file_path: "spa/Foo.logic.ts",
             name: "x",
             kind: "function",
           },
@@ -41,8 +41,8 @@ describe("packageHasVueFiles", () => {
       packageHasVueFiles(
         [
           {
-            packageName: "@p",
-            filePath: "spa/log.ts",
+            package_name: "@p",
+            file_path: "spa/log.ts",
             name: "log",
             kind: "function",
           },
@@ -60,26 +60,26 @@ describe("buildDbPackageFileNav", () => {
       ["matter", "org"],
       [
         {
-          packageName: "@pkg/db",
-          filePath: "db/errors/index.ts",
+          package_name: "@pkg/db",
+          file_path: "db/errors/index.ts",
           name: "MatterNotFoundError",
           kind: "class",
         },
         {
-          packageName: "@pkg/db",
-          filePath: "db/schemas/matter.ts",
+          package_name: "@pkg/db",
+          file_path: "db/schemas/matter.ts",
           name: "matterTable",
           kind: "const",
         },
         {
-          packageName: "@pkg/db",
-          filePath: "db/instances/registry.ts",
+          package_name: "@pkg/db",
+          file_path: "db/instances/registry.ts",
           name: "productDbManager",
           kind: "const",
         },
         {
-          packageName: "@pkg/db",
-          filePath: "db/queries/matter/create.ts",
+          package_name: "@pkg/db",
+          file_path: "db/queries/matter/create.ts",
           name: "createMatter",
           kind: "function",
         },
@@ -125,35 +125,35 @@ describe("sdk module nav", () => {
     const nav = buildModuleFileNav(
       [
         {
-          packageName: "@pkg/sdk",
-          filePath: "sdk/requests/forms/get.ts",
+          package_name: "@pkg/sdk",
+          file_path: "sdk/requests/forms/get.ts",
           name: "getForm",
           kind: "function",
         },
         {
-          packageName: "@pkg/sdk",
-          filePath: "sdk/requests/forms/get.fake.ts",
+          package_name: "@pkg/sdk",
+          file_path: "sdk/requests/forms/get.fake.ts",
           name: "getFormHandler",
           kind: "const",
         },
         {
-          packageName: "@pkg/sdk",
-          filePath: "sdk/requests/forms/index.fakes.ts",
+          package_name: "@pkg/sdk",
+          file_path: "sdk/requests/forms/index.fakes.ts",
           name: "formsFakes",
           kind: "const",
         },
         {
-          packageName: "@pkg/sdk",
-          filePath: "sdk/requests/forms/index.ts",
+          package_name: "@pkg/sdk",
+          file_path: "sdk/requests/forms/index.ts",
           name: "default",
           kind: "const",
         },
       ],
       [
         {
-          packageName: "@pkg/sdk",
-          filePath: "sdk/requests/forms/get.test.ts",
-          fullName: "getForm > ok",
+          package_name: "@pkg/sdk",
+          file_path: "sdk/requests/forms/get.test.ts",
+          full_name: "getForm > ok",
         },
       ],
       "@pkg/sdk",
@@ -180,30 +180,30 @@ describe("buildModuleFileNav", () => {
     const nav = buildModuleFileNav(
       [
         {
-          packageName: "@pkg",
-          filePath: "pkg/document-requirements/validate-document-requirements.ts",
+          package_name: "@pkg",
+          file_path: "pkg/document-requirements/validate-document-requirements.ts",
           name: "validateDocumentRequirementsShape",
           kind: "function",
         },
         {
-          packageName: "@pkg",
-          filePath: "pkg/document-requirements/normalize-document-requirements.ts",
+          package_name: "@pkg",
+          file_path: "pkg/document-requirements/normalize-document-requirements.ts",
           name: "normalize",
           kind: "function",
         },
         {
-          packageName: "@pkg",
-          filePath: "pkg/lib/types.ts",
+          package_name: "@pkg",
+          file_path: "pkg/lib/types.ts",
           name: "FileInput",
           kind: "type",
         },
       ],
       [
         {
-          packageName: "@pkg",
-          filePath:
+          package_name: "@pkg",
+          file_path:
             "pkg/document-requirements/normalize-document-requirements.test.ts",
-          fullName: "normalize > works",
+          full_name: "normalize > works",
         },
       ],
       "@pkg",
@@ -230,9 +230,9 @@ describe("buildModuleFileNav", () => {
       [],
       [
         {
-          packageName: "@pkg",
-          filePath: "pkg/forms-artifacts.integration.test.ts",
-          fullName: "form artifacts > ok",
+          package_name: "@pkg",
+          file_path: "pkg/forms-artifacts.integration.test.ts",
+          full_name: "form artifacts > ok",
         },
       ],
       "@pkg",
@@ -245,21 +245,21 @@ describe("buildModuleFileNav", () => {
 });
 
 describe("buildPackageSpecTree", () => {
-  it("shows source-only exports as cards with docstring and usedBy", () => {
+  it("shows source-only exports as cards with docstring and used_by", () => {
     const cards = buildPackageSpecTree(
       [
         {
-          packageName: "@pkg",
-          filePath: "pkg/validate-document-requirements.ts",
+          package_name: "@pkg",
+          file_path: "pkg/validate-document-requirements.ts",
           name: "validateDocumentRequirementsShape",
           kind: "function",
           signature: "(formName: string, requirements: unknown)",
           docstring: "Validate compiled document-requirements shape.",
-          usedBy: [
+          used_by: [
             {
-              packageName: "@runtime",
-              filePath: "forms-artifacts.integration.test.ts",
-              repoPath: "runtime/forms-artifacts.integration.test.ts",
+              package_name: "@runtime",
+              file_path: "forms-artifacts.integration.test.ts",
+              repo_path: "runtime/forms-artifacts.integration.test.ts",
             },
           ],
         },
@@ -273,8 +273,8 @@ describe("buildPackageSpecTree", () => {
 
     expect(cards).toHaveLength(1);
     expect(cards[0]!.label).toBe("validateDocumentRequirementsShape");
-    expect(cards[0]!.subjectDocstring).toContain("Validate compiled");
-    expect(cards[0]!.usedBy).toHaveLength(1);
+    expect(cards[0]!.subject_docstring).toContain("Validate compiled");
+    expect(cards[0]!.used_by).toHaveLength(1);
     expect(cards[0]!.children).toHaveLength(0);
   });
 });
@@ -282,64 +282,64 @@ describe("buildPackageSpecTree", () => {
 describe("vue bundle nav", () => {
   const vueExports = [
     {
-      packageName: "@pkg/spa",
-      filePath: "spa/pages/home/Home.vue",
+      package_name: "@pkg/spa",
+      file_path: "spa/pages/home/Home.vue",
       name: "default",
       kind: "component",
     },
     {
-      packageName: "@pkg/spa",
-      filePath: "spa/pages/home/Home.vue",
+      package_name: "@pkg/spa",
+      file_path: "spa/pages/home/Home.vue",
       name: "title",
       kind: "prop",
     },
     {
-      packageName: "@pkg/spa",
-      filePath: "spa/pages/home/HomeAsync.vue",
+      package_name: "@pkg/spa",
+      file_path: "spa/pages/home/HomeAsync.vue",
       name: "default",
       kind: "component",
     },
     {
-      packageName: "@pkg/spa",
-      filePath: "spa/pages/home/Home.loader.ts",
+      package_name: "@pkg/spa",
+      file_path: "spa/pages/home/Home.loader.ts",
       name: "useHomeLoader",
       kind: "function",
     },
     {
-      packageName: "@pkg/spa",
-      filePath: "spa/pages/home/Home.logic.ts",
+      package_name: "@pkg/spa",
+      file_path: "spa/pages/home/Home.logic.ts",
       name: "homeViewMode",
       kind: "function",
     },
     {
-      packageName: "@pkg/spa",
-      filePath: "spa/pages/home/Home.strings.ts",
+      package_name: "@pkg/spa",
+      file_path: "spa/pages/home/Home.strings.ts",
       name: "home",
       kind: "const",
     },
     {
-      packageName: "@pkg/spa",
-      filePath: "spa/pages/home/HomeNavList.vue",
+      package_name: "@pkg/spa",
+      file_path: "spa/pages/home/HomeNavList.vue",
       name: "default",
       kind: "component",
     },
     {
-      packageName: "@pkg/spa",
-      filePath: "spa/i18n.ts",
+      package_name: "@pkg/spa",
+      file_path: "spa/i18n.ts",
       name: "useReverseT",
       kind: "function",
     },
   ];
   const vueTests = [
     {
-      packageName: "@pkg/spa",
-      filePath: "spa/pages/home/Home.test.ts",
-      fullName: "Home > renders",
+      package_name: "@pkg/spa",
+      file_path: "spa/pages/home/Home.test.ts",
+      full_name: "Home > renders",
     },
     {
-      packageName: "@pkg/spa",
-      filePath: "spa/pages/home/Home.logic.test.ts",
-      fullName: "homeViewMode > list",
+      package_name: "@pkg/spa",
+      file_path: "spa/pages/home/Home.logic.test.ts",
+      full_name: "homeViewMode > list",
     },
   ];
 
@@ -389,15 +389,15 @@ describe("vue bundle nav", () => {
     const nav = buildModuleFileNav(
       [
         {
-          packageName: "@pkg/spa",
-          filePath:
+          package_name: "@pkg/spa",
+          file_path:
             "spa/components/profile-contact-fields/ProfileContactFields.logic.ts",
           name: "initialSameAsMobileChecked",
           kind: "function",
         },
         {
-          packageName: "@pkg/spa",
-          filePath:
+          package_name: "@pkg/spa",
+          file_path:
             "spa/components/profile-contact-fields/ProfileContactFields.strings.ts",
           name: "profile_contact_fields",
           kind: "const",
@@ -405,10 +405,10 @@ describe("vue bundle nav", () => {
       ],
       [
         {
-          packageName: "@pkg/spa",
-          filePath:
+          package_name: "@pkg/spa",
+          file_path:
             "spa/components/profile-contact-fields/ProfileContactFields.logic.test.ts",
-          fullName: "initialSameAsMobileChecked > starts checked when phones match",
+          full_name: "initialSameAsMobileChecked > starts checked when phones match",
         },
       ],
       "@pkg/spa",
@@ -427,29 +427,29 @@ describe("vue bundle nav", () => {
     const cards = buildPackageSpecTree(
       [
         {
-          packageName: "@pkg/spa",
-          filePath:
+          package_name: "@pkg/spa",
+          file_path:
             "spa/components/profile-contact-fields/ProfileContactFields.vue",
           name: "default",
           kind: "component",
         },
         {
-          packageName: "@pkg/spa",
-          filePath:
+          package_name: "@pkg/spa",
+          file_path:
             "spa/components/profile-contact-fields/ProfileContactFields.vue",
           name: "contact",
           kind: "model",
         },
         {
-          packageName: "@pkg/spa",
-          filePath:
+          package_name: "@pkg/spa",
+          file_path:
             "spa/components/profile-contact-fields/ProfileContactFields.logic.ts",
           name: "initialSameAsMobileChecked",
           kind: "function",
         },
         {
-          packageName: "@pkg/spa",
-          filePath:
+          package_name: "@pkg/spa",
+          file_path:
             "spa/components/profile-contact-fields/ProfileContactFields.strings.ts",
           name: "profile_contact_fields",
           kind: "const",
@@ -457,12 +457,12 @@ describe("vue bundle nav", () => {
       ],
       [
         {
-          packageName: "@pkg/spa",
-          filePath:
+          package_name: "@pkg/spa",
+          file_path:
             "spa/components/profile-contact-fields/ProfileContactFields.logic.test.ts",
-          fullName:
+          full_name:
             "initialSameAsMobileChecked > starts checked when phones match",
-          subjectName: "initialSameAsMobileChecked",
+          subject_name: "initialSameAsMobileChecked",
         },
       ],
       "@pkg/spa",

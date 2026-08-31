@@ -67,6 +67,7 @@
 import { computed, ref } from "vue";
 import { useCommitPackage } from "../requests/queries";
 import { collectPackageIssues } from "../package-issues";
+import { toPackageDetailForIssues } from "../wire-maps";
 import { openSource } from "../source-links";
 
 const props = defineProps<{
@@ -87,12 +88,12 @@ const { data, isLoading, error } = useCommitPackage(
 );
 
 const issues = computed(() => {
-  const d = data.value?.packageDetail;
+  const d = data.value?.package_detail;
   if (!d) return [];
-  // Commit graph for dead code (already paid for Spec) + live layoutIssues.
+  // Commit graph for dead code (already paid for Spec) + live layout_issues.
   // Full `saf-dev-site issues --workdir` re-parses the product tree (~seconds)
   // and stays CLI-only so Spec stays fast.
-  return collectPackageIssues(d, {
+  return collectPackageIssues(toPackageDetailForIssues(d), {
     packageDirectory: props.packageDirectory,
     productRoot: props.productRoot ?? "",
   });
@@ -127,7 +128,7 @@ function shellQuote(s: string): string {
 const openFile = (path: string) => {
   openSource(path, {
     githubRef: props.githubRef,
-    githubRepo: props.githubRepo,
+    github_repo: props.githubRepo,
     localRepoRoot: props.localRepoRoot,
   });
 };

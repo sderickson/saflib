@@ -45,7 +45,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/commits/{hash}/diff/{otherHash}": {
+    "/api/commits/{hash}/diff/{other_hash}": {
         parameters: {
             query?: never;
             header?: never;
@@ -54,7 +54,7 @@ export interface paths {
         };
         /**
          * Diff two analyzed commits
-         * @description Compare the analysis snapshots of two commits. `hash` is the baseline ("before"); `otherHash` is the comparison ("after"). Returns added/removed (and changed, for package metrics) inventories.
+         * @description Compare the analysis snapshots of two commits. `hash` is the baseline ("before"); `other_hash` is the comparison ("after"). Returns added/removed (and changed, for package metrics) inventories.
          */
         get: operations["diffCommits"];
         put?: never;
@@ -65,7 +65,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/commits/{hash}/packages/{packageName}": {
+    "/api/commits/{hash}/packages/{package_name}": {
         parameters: {
             query?: never;
             header?: never;
@@ -74,7 +74,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes dbInventory (drizzle tables + query dirs). For spec packages, also includes specInventory (OpenAPI schemas + REST resources). For http and sdk packages, specInventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, specInventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layoutIssues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes db_inventory (drizzle tables + query dirs). For spec packages, also includes spec_inventory (OpenAPI schemas + REST resources). For http and sdk packages, spec_inventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, spec_inventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layout_issues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -114,7 +114,7 @@ export interface paths {
         };
         /**
          * Current checkout (HEAD) analysis status
-         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compareRef` (default `main`). Used by the Current checkout UI.
+         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compare_ref` (default `main`). Used by the Current checkout UI.
          */
         get: operations["getCheckout"];
         put?: never;
@@ -199,7 +199,7 @@ export interface components {
              */
             type: "branch" | "tag";
             /** @description True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips. */
-            isMainAncestor: boolean;
+            is_main_ancestor: boolean;
         };
         /** @description Per-kind issue counts for a commit or package (all kinds count as debt). */
         "issue-counts-by-kind": {
@@ -214,31 +214,31 @@ export interface components {
              * @example a1b2c3d4e5f6789012345678901234567890abcd
              */
             hash: string;
-            parentHashes: string[];
+            parent_hashes: string[];
             /** Format: date-time */
-            authoredAt: string;
+            authored_at: string;
             /** @description Full commit message (subject + body). */
             message: string;
             refs: components["schemas"]["commit-ref"][];
-            analyzerVersion: string;
+            analyzer_version: string;
             /** Format: date-time */
             computed_at: string;
             /** @enum {string} */
             status: "pending" | "complete" | "failed";
             /** @description Rollup counts across all packages at this commit, for timeline health indicators without fetching CommitDetail. */
-            summaryMetrics: {
-                packageCount: number;
-                sourceFiles: number;
-                sourceLines: number;
-                testFiles: number;
-                testLines: number;
-                exportCount: number;
-                testCaseCount: number;
-                issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+            summary_metrics: {
+                package_count: number;
+                source_files: number;
+                source_lines: number;
+                test_files: number;
+                test_lines: number;
+                export_count: number;
+                test_case_count: number;
+                issue_counts_by_kind: components["schemas"]["issue-counts-by-kind"];
                 /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
-                debtCount: number;
+                debt_count: number;
                 /** @description True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats. */
-                hasIssueStats: boolean;
+                has_issue_stats: boolean;
             };
         };
         /** @description Analyzed commit metadata — one row per scanned commit. Does not include per-package / export / test-case payloads (see CommitDetail for those). */
@@ -249,13 +249,13 @@ export interface components {
              */
             hash: string;
             /** @description Parent commit hashes (empty for the root commit). */
-            parentHashes: string[];
+            parent_hashes: string[];
             /**
              * Format: date-time
              * @description Author date from the commit (`%aI`).
              * @example 2026-08-12T10:00:00-07:00
              */
-            authoredAt: string;
+            authored_at: string;
             /**
              * @description Full commit message (subject + body).
              * @example Add inventory for package metrics
@@ -267,7 +267,7 @@ export interface components {
              * @description Version string of the analyzer that produced this snapshot.
              * @example 1
              */
-            analyzerVersion: string;
+            analyzer_version: string;
             /**
              * Format: date-time
              * @description When this snapshot was written to the database.
@@ -287,7 +287,7 @@ export interface components {
              * @description npm package name (e.g. `@saflib/git`).
              * @example @saflib/git
              */
-            packageName: string;
+            package_name: string;
             /**
              * @description Package directory relative to the analyzed product root.
              * @example saflib/git
@@ -299,18 +299,18 @@ export interface components {
              */
             kind?: "db" | "http" | "spec" | "spa" | "sdk" | "lib" | "integration" | "other";
             /** @description Count of source files (excluding tests). */
-            sourceFiles: number;
+            source_files: number;
             /** @description Total lines across source files. */
-            sourceLines: number;
+            source_lines: number;
             /** @description Production (non-test) source lines. */
-            prodLines: number;
+            prod_lines: number;
             /** @description Test file lines. */
-            testLines: number;
+            test_lines: number;
             /** @description Count of test files. */
-            testFiles: number;
-            issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+            test_files: number;
+            issue_counts_by_kind: components["schemas"]["issue-counts-by-kind"];
             /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
-            debtCount: number;
+            debt_count: number;
         };
         /** @description One exported symbol extracted from a source file at a commit. */
         "export-entry": {
@@ -318,12 +318,12 @@ export interface components {
              * @description npm package that owns this file.
              * @example @saflib/git
              */
-            packageName: string;
+            package_name: string;
             /**
              * @description Path relative to the repo root.
              * @example saflib/git/log.ts
              */
-            filePath: string;
+            file_path: string;
             /**
              * @description Exported symbol name.
              * @example log
@@ -336,7 +336,7 @@ export interface components {
             kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable" | "component" | "prop" | "emit" | "model";
             /**
              * @description Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.
-             * @example (repoRoot: string, options?: LogOptions)
+             * @example (repo_root: string, options?: LogOptions)
              */
             signature: string | null;
             /**
@@ -345,60 +345,60 @@ export interface components {
              */
             docstring: string | null;
             /** @description Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty). */
-            usedBy?: {
-                packageName: string;
+            used_by?: {
+                package_name: string;
                 /** @description Path within the importing package (no package-root prefix). */
-                filePath: string;
+                file_path: string;
                 /** @description Repo-relative path for source links. */
-                repoPath: string;
+                repo_path: string;
             }[];
         };
-        /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
+        /** @description One `describe`/`it`/`test` case extracted from a test file. `full_name` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
         "test-case": {
             /**
              * @description npm package that owns this file.
              * @example @saflib/git
              */
-            packageName: string;
+            package_name: string;
             /**
              * @description Path relative to the repo root.
              * @example saflib/git/index.test.ts
              */
-            filePath: string;
+            file_path: string;
             /**
              * @description Nested describe/it titles joined with `" > "`.
              * @example log > returns commits newest-first (git log order)
              */
-            fullName: string;
+            full_name: string;
             /**
              * @description Linked export name when a suite title matches by convention.
              * @example log
              */
-            subjectName?: string;
+            subject_name?: string;
             /**
              * @description Signature of the linked export at this commit (null if unknown).
-             * @example (repoRoot: string, options?: LogOptions)
+             * @example (repo_root: string, options?: LogOptions)
              */
-            subjectSignature?: string | null;
+            subject_signature?: string | null;
             /** @description First JSDoc prose line of the linked export, when present. */
-            subjectDocstring?: string | null;
+            subject_docstring?: string | null;
             /**
              * @description Repo-relative path of the file that declares the linked export.
              * @example saflib/git/log.ts
              */
-            subjectFilePath?: string;
+            subject_file_path?: string;
             /**
              * @description How the link was made (`adjacent` file vs elsewhere in package).
              * @enum {string}
              */
-            subjectConfidence?: "adjacent" | "package";
+            subject_confidence?: "adjacent" | "package";
         };
         /** @description Full static-analysis snapshot for one commit — metadata plus per-package metrics, exports, and test cases. */
         "commit-detail": {
             commit: components["schemas"]["commit"];
-            packageMetrics: components["schemas"]["package-metrics"][];
+            package_metrics: components["schemas"]["package-metrics"][];
             exports: components["schemas"]["export-entry"][];
-            testCases: components["schemas"]["test-case"][];
+            test_cases: components["schemas"]["test-case"][];
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
@@ -411,28 +411,28 @@ export interface components {
         };
         /** @description A drizzle table identity for schema diffs. */
         "db-schema-table": {
-            packageName: string;
-            tableName: string;
-            exportName: string;
-            filePath: string;
+            package_name: string;
+            table_name: string;
+            export_name: string;
+            file_path: string;
             docstring?: string | null;
         };
         /** @description A drizzle column identity for schema diffs. */
         "db-schema-column": {
-            packageName: string;
-            tableName: string;
-            sqlName: string;
-            typeKind: string;
-            propName: string;
+            package_name: string;
+            table_name: string;
+            sql_name: string;
+            type_kind: string;
+            prop_name: string;
             docstring?: string | null;
         };
-        /** @description Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same packageName exists on both sides with different counts. */
+        /** @description Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same package_name exists on both sides with different counts. */
         "commit-diff": {
             /** @description Baseline commit hash (the "before"). */
-            fromHash: string;
+            from_hash: string;
             /** @description Comparison commit hash (the "after"). */
-            toHash: string;
-            packageMetrics: {
+            to_hash: string;
+            package_metrics: {
                 added: components["schemas"]["package-metrics"][];
                 removed: components["schemas"]["package-metrics"][];
                 changed: {
@@ -444,12 +444,12 @@ export interface components {
                 added: components["schemas"]["export-entry"][];
                 removed: components["schemas"]["export-entry"][];
             };
-            testCases: {
+            test_cases: {
                 added: components["schemas"]["test-case"][];
                 removed: components["schemas"]["test-case"][];
             };
             /** @description Structural drizzle table/column deltas across both commits. */
-            dbSchemas: {
+            db_schemas: {
                 tables: {
                     added: components["schemas"]["db-schema-table"][];
                     removed: components["schemas"]["db-schema-table"][];
@@ -470,50 +470,50 @@ export interface components {
                 /** @description Query directory name or kebab form of table name (e.g. package-metrics). */
                 entity: string;
                 table?: {
-                    exportName: string;
-                    tableName: string;
-                    filePath: string;
+                    export_name: string;
+                    table_name: string;
+                    file_path: string;
                     /** @description First prose line of leading JSDoc on the table const. */
                     docstring?: string | null;
                     columns: {
-                        propName: string;
-                        sqlName: string;
-                        typeKind: string;
+                        prop_name: string;
+                        sql_name: string;
+                        type_kind: string;
                         /** @description First prose line of leading JSDoc on the column. */
                         docstring?: string | null;
                     }[];
                 } | null;
                 /** @description Distinct packages (non-test) that import any query under this entity. */
-                usedByPackages: string[];
+                used_by_packages: string[];
                 /** @description Leaf query modules under queries/<entity>/ (excluding index and tests). */
                 queries: {
-                    fileName: string;
-                    filePath: string;
-                    exportName?: string | null;
+                    file_name: string;
+                    file_path: string;
+                    export_name?: string | null;
                     signature?: string | null;
                     docstring?: string | null;
                     /** @description Non-test product files that import this leaf query module. */
-                    usedBy: {
-                        packageName: string;
+                    used_by: {
+                        package_name: string;
                         /** @description Path within the importing package (no package-root prefix). */
-                        filePath: string;
+                        file_path: string;
                         /** @description Repo-relative path for source links. */
-                        repoPath: string;
+                        repo_path: string;
                     }[];
                 }[];
             }[];
         };
         items: {
-            packageName: string;
+            package_name: string;
             /** @description Path within the importing package (no package-root prefix). */
-            filePath: string;
+            file_path: string;
             /** @description Repo-relative path for source links. */
-            repoPath: string;
+            repo_path: string;
         };
         /** @description OpenAPI inventory for one spec package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. Operations include links to HTTP handlers and SDK requests from packages that depend on this spec. Also attached to http package detail for the HTTP Spec pane. */
         "spec-inventory": {
             /** @description Repo-relative directory of the spec package this inventory was built from (used for route YAML source links when shown from an http pane). */
-            packageDirectory?: string;
+            package_directory?: string;
             /** @description Flat alphabetical list of object / both / routes entities. */
             entities: {
                 /** @description Stable entity key (e.g. both:Matter, routes:admin, object:Error). */
@@ -531,71 +531,71 @@ export interface components {
                     /** @description components/schemas name (e.g. Matter). */
                     name: string;
                     /** @description Package-relative path to the schema YAML. */
-                    yamlPath: string;
+                    yaml_path: string;
                     description?: string | null;
                     properties: {
                         name: string;
-                        typeKind: string;
+                        type_kind: string;
                         docstring?: string | null;
                     }[];
                     /** @description Non-test product files importing schemas/<Name>. */
-                    usedBy: components["schemas"]["items"][];
-                    /** @description operationIds whose request/2xx response $ref this schema. */
-                    referencedByOperations: string[];
+                    used_by: components["schemas"]["items"][];
+                    /** @description operation_ids whose request/2xx response $ref this schema. */
+                    referenced_by_operations: string[];
                 } | null;
                 /** @description Distinct packages importing this entity's schema and/or the SDK request modules for its operations. */
-                usedByPackages: string[];
+                used_by_packages: string[];
                 /** @description REST operations under the linked resource (empty for object-only). */
                 operations: {
-                    operationId: string;
+                    operation_id: string;
                     method: string;
                     path: string;
                     summary?: string | null;
                     /** @description OpenAPI operation tags. */
                     tags: string[];
                     /** @description Package-relative route YAML under the spec package. */
-                    yamlPath: string;
+                    yaml_path: string;
                     /** @description Isomorphic stem after routes/handlers/requests (e.g. matters/core/create). */
-                    routeStem?: string | null;
+                    route_stem?: string | null;
                     /** @description Sibling HTTP handler file when present. */
                     handler?: {
-                        filePath: string;
-                        repoPath: string;
+                        file_path: string;
+                        repo_path: string;
                     } | null;
                     /** @description Sibling SDK request module when present. */
                     request?: {
-                        filePath: string;
-                        repoPath: string;
+                        file_path: string;
+                        repo_path: string;
                     } | null;
                     /** @description Sibling SDK fake/MSW module (`*.fake.ts`) when present beside the request. */
                     fake?: {
-                        filePath: string;
-                        repoPath: string;
+                        file_path: string;
+                        repo_path: string;
                     } | null;
-                    /** @description describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses " > " nesting). */
-                    handlerTests: {
+                    /** @description describe/it/test specifications extracted from colocated HTTP handler test files (full_name uses " > " nesting). */
+                    handler_tests: {
                         /**
                          * @description Nested describe/it titles joined with " > ".
                          * @example createMatter > creates a matter for the org
                          */
-                        fullName: string;
+                        full_name: string;
                     }[];
                     /** @description Business objects in the request body (one layer deep into object/array bags of schema refs). */
-                    requestSchemas: string[];
+                    request_schemas: string[];
                     /** @description Business objects in 2xx responses (one layer deep into object/array bags of schema refs). */
-                    responseSchemas: string[];
+                    response_schemas: string[];
                     /** @description Non-test product files importing the sibling SDK request module for this route stem. */
-                    usedBy: {
-                        packageName: string;
+                    used_by: {
+                        package_name: string;
                         /** @description Path within the importing package (no package-root prefix). */
-                        filePath: string;
+                        file_path: string;
                         /** @description Repo-relative path for source links. */
-                        repoPath: string;
+                        repo_path: string;
                     }[];
-                    /** @description operationIds this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map. */
+                    /** @description operation_ids this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map. */
                     enqueues?: string[];
-                    /** @description operationIds or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map. */
-                    enqueuedBy?: string[];
+                    /** @description operation_ids or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map. */
+                    enqueued_by?: string[];
                 }[];
             }[];
         };
@@ -604,33 +604,33 @@ export interface components {
             kind: "dead-code" | "oversized-file" | "package-layout";
             title: string;
             name: string;
-            kindLabel: string;
+            kind_label: string;
             /** @description Package-local path for display */
-            filePath: string;
+            file_path: string;
             /** @description Repo-relative path for open-source links */
-            repoPath: string;
+            repo_path: string;
         };
         /** @description Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode. */
         "checkout-compare": {
             /** @description Branch/ref HEAD was compared against (e.g. `main`). */
-            againstRef: string;
-            /** @description Full hash of `git merge-base(HEAD, againstRef)`. */
-            mergeBaseHash: string;
+            against_ref: string;
+            /** @description Full hash of `git merge-base(HEAD, against_ref)`. */
+            merge_base_hash: string;
             /** @description True when that fork-point commit has an analysis snapshot. */
-            mergeBaseAnalyzed: boolean;
+            merge_base_analyzed: boolean;
             /** @description Subject of the fork-point commit. */
-            mergeBaseMessage: string;
+            merge_base_message: string;
             /**
              * Format: date-time
              * @description Author date of the fork-point commit.
              */
-            mergeBaseAuthoredAt: string;
+            merge_base_authored_at: string;
             /** @description File rename pairs from the fork point to HEAD (`git diff --find-renames`). Used by Checkout compare to show moved modules instead of remove+add. */
             renames: {
                 /** @description Path at the fork-point commit. */
-                fromPath: string;
+                from_path: string;
                 /** @description Path at HEAD. */
-                toPath: string;
+                to_path: string;
                 /** @description Git rename similarity (0-100). */
                 score?: number;
             }[];
@@ -700,7 +700,7 @@ export interface operations {
                     "application/json": {
                         commits: components["schemas"]["commit-summary"][];
                         /** @description Pass as `cursor` on the next request. Null when there are no more pages. */
-                        nextCursor?: string | null;
+                        next_cursor?: string | null;
                     };
                 };
             };
@@ -725,7 +725,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        commitDetail: components["schemas"]["commit-detail"];
+                        commit_detail: components["schemas"]["commit-detail"];
                     };
                 };
             };
@@ -748,7 +748,7 @@ export interface operations {
                 /** @description Baseline commit hash (the "before"). */
                 hash: string;
                 /** @description Comparison commit hash (the "after"). */
-                otherHash: string;
+                other_hash: string;
             };
             cookie?: never;
         };
@@ -761,7 +761,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        commitDiff: components["schemas"]["commit-diff"];
+                        commit_diff: components["schemas"]["commit-diff"];
                     };
                 };
             };
@@ -783,7 +783,7 @@ export interface operations {
             path: {
                 hash: string;
                 /** @description npm package name (URL-encoded), e.g. `%40example%2Fbilling-http` */
-                packageName: string;
+                package_name: string;
             };
             cookie?: never;
         };
@@ -796,23 +796,23 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        packageDetail: {
-                            commitHash: string;
-                            packageName: string;
+                        package_detail: {
+                            commit_hash: string;
+                            package_name: string;
                             directory: string;
-                            sourceFiles: number;
-                            sourceLines: number;
-                            prodLines: number;
-                            testLines: number;
-                            testFiles: number;
+                            source_files: number;
+                            source_lines: number;
+                            prod_lines: number;
+                            test_lines: number;
+                            test_files: number;
                             exports: components["schemas"]["export-entry"][];
-                            testCases: components["schemas"]["test-case"][];
-                            dbInventory?: components["schemas"]["db-inventory"];
-                            specInventory?: components["schemas"]["spec-inventory"];
+                            test_cases: components["schemas"]["test-case"][];
+                            db_inventory?: components["schemas"]["db-inventory"];
+                            spec_inventory?: components["schemas"]["spec-inventory"];
                             /** @description Working-tree package-layout and oversized-file findings (package-local; cheap). Dead-code workdir scans are CLI-only. */
-                            layoutIssues?: components["schemas"]["package-issue"][];
+                            layout_issues?: components["schemas"]["package-issue"][];
                             /** @description Repo-relative files from live package.json `exports` (SPA main.ts, test-app.ts). Spec Issues skips these for dead-code so the panel matches `saf-dev-site issues --workdir`. */
-                            publicExportFilePaths?: string[];
+                            public_export_file_paths?: string[];
                         };
                     };
                 };
@@ -848,12 +848,12 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commitHash` is set.
+                     * @description Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commit_hash` is set.
                      * @default 1
                      */
                     limit?: number;
                     /** @description Analyze exactly this commit (if not already stored). Used by Current checkout "Scan this commit". */
-                    commitHash?: string;
+                    commit_hash?: string;
                 };
             };
         };
@@ -892,7 +892,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Local branch name to take the merge-base against. Defaults to the server `main` ref. */
-                compareRef?: string;
+                compare_ref?: string;
             };
             header?: never;
             path?: never;
@@ -910,22 +910,22 @@ export interface operations {
                         hash: string;
                         message: string;
                         /** Format: date-time */
-                        authoredAt: string;
+                        authored_at: string;
                         analyzed: boolean;
                         /** @description Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
-                        productRoot: string;
+                        product_root: string;
                         /** @description Short branch name for HEAD, or null when detached. */
                         branch: string | null;
                         packages: components["schemas"]["package-metrics"][];
-                        /** @description Local branch names that can be used as `compareRef` (current branch omitted; configured main ref always included when it exists). */
-                        compareCandidates: string[];
+                        /** @description Local branch names that can be used as `compare_ref` (current branch omitted; configured main ref always included when it exists). */
+                        compare_candidates: string[];
                         /** @description GitHub `owner/name` for source and commit links. Omitted when the server has no `DEV_SITE_GITHUB_REPO` configured. */
-                        githubRepo?: string;
+                        github_repo?: string;
                         compare?: components["schemas"]["checkout-compare"];
                     };
                 };
             };
-            /** @description compareRef is not a valid git object. */
+            /** @description compare_ref is not a valid git object. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -974,7 +974,7 @@ export interface operations {
                             /** @description Path relative to the repo root. */
                             path: string;
                             /** @description Git blob object hash. Empty string for working-tree-only files at HEAD that are not in the commit tree. */
-                            blobHash: string;
+                            blob_hash: string;
                             /** @description UTF-8 file text when `content=true`. */
                             content?: string;
                         }[];

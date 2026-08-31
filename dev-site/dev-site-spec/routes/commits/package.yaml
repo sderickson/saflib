@@ -7,12 +7,12 @@ getCommitPackage:
     Returns metrics, exports, and test cases for a single package at a commit.
     Prefer this over full commit detail for the checkout Spec panel — assembly
     only touches that package's source blobs. For db packages, also includes
-    dbInventory (drizzle tables + query dirs). For spec packages, also
-    includes specInventory (OpenAPI schemas + REST resources). For http and
-    sdk packages, specInventory is joined from a spec package this package
+    db_inventory (drizzle tables + query dirs). For spec packages, also
+    includes spec_inventory (OpenAPI schemas + REST resources). For http and
+    sdk packages, spec_inventory is joined from a spec package this package
     depends on, while exports/tests remain this package's own source modules.
-    For spa packages, specInventory is joined through SDK request imports so
-    Spec can show loader routes on a component bundle. layoutIssues are live
+    For spa packages, spec_inventory is joined through SDK request imports so
+    Spec can show loader routes on a component bundle. layout_issues are live
     working-tree layout/LoC findings for the package directory (cheap;
     package-local). Full dead-code workdir scans stay on
     saf-dev-site issues --workdir — not on this Spec package load.
@@ -22,7 +22,7 @@ getCommitPackage:
       required: true
       schema:
         type: string
-    - name: packageName
+    - name: package_name
       in: path
       required: true
       schema:
@@ -36,58 +36,58 @@ getCommitPackage:
           schema:
             type: object
             required:
-              - packageDetail
+              - package_detail
             properties:
-              packageDetail:
+              package_detail:
                 type: object
                 required:
-                  - commitHash
-                  - packageName
+                  - commit_hash
+                  - package_name
                   - directory
-                  - sourceFiles
-                  - sourceLines
-                  - prodLines
-                  - testLines
-                  - testFiles
+                  - source_files
+                  - source_lines
+                  - prod_lines
+                  - test_lines
+                  - test_files
                   - exports
-                  - testCases
+                  - test_cases
                 properties:
-                  commitHash:
+                  commit_hash:
                     type: string
-                  packageName:
+                  package_name:
                     type: string
                   directory:
                     type: string
-                  sourceFiles:
+                  source_files:
                     type: integer
-                  sourceLines:
+                  source_lines:
                     type: integer
-                  prodLines:
+                  prod_lines:
                     type: integer
-                  testLines:
+                  test_lines:
                     type: integer
-                  testFiles:
+                  test_files:
                     type: integer
                   exports:
                     type: array
                     items:
                       $ref: "../../schemas/export-entry.yaml"
-                  testCases:
+                  test_cases:
                     type: array
                     items:
                       $ref: "../../schemas/test-case.yaml"
-                  dbInventory:
+                  db_inventory:
                     $ref: "../../schemas/db-inventory.yaml"
-                  specInventory:
+                  spec_inventory:
                     $ref: "../../schemas/spec-inventory.yaml"
-                  layoutIssues:
+                  layout_issues:
                     type: array
                     description: >
                       Working-tree package-layout and oversized-file findings
                       (package-local; cheap). Dead-code workdir scans are CLI-only.
                     items:
                       $ref: "../../schemas/package-issue.yaml"
-                  publicExportFilePaths:
+                  public_export_file_paths:
                     type: array
                     description: >
                       Repo-relative files from live package.json `exports`

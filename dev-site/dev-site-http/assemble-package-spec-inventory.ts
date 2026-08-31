@@ -55,14 +55,14 @@ export {
  * return the inventory key kind + name.
  */
 function specTargetFromImport(
-  packageName: string,
-  packageDirectory: string,
+  package_name: string,
+  package_directory: string,
   importerPath: string,
   specifier: string,
 ): { kind: "operations" | "schemas"; name: string } | null {
   const mod = moduleTargetFromImport(
-    packageName,
-    packageDirectory,
+    package_name,
+    package_directory,
     importerPath,
     specifier,
   );
@@ -84,23 +84,23 @@ export function servicePackageNamesForSpec(
 } {
   return {
     http: packagesDependingOn(manifests, specPackageName, "http").map(
-      (m) => m.packageName,
+      (m) => m.package_name,
     ),
     sdk: packagesDependingOn(manifests, specPackageName, "sdk").map(
-      (m) => m.packageName,
+      (m) => m.package_name,
     ),
   };
 }
 
-function handlerTestStem(filePath: string, stem: string): boolean {
+function handlerTestStem(file_path: string, stem: string): boolean {
   const prefix = `handlers/${stem}`;
-  if (filePath === `${prefix}.test.ts` || filePath === `${prefix}.test.tsx`) {
+  if (file_path === `${prefix}.test.ts` || file_path === `${prefix}.test.tsx`) {
     return true;
   }
   // e.g. handlers/matters/comms/upload-resource.enqueue.test.ts
   return (
-    filePath.startsWith(`${prefix}.`) &&
-    (filePath.endsWith(".test.ts") || filePath.endsWith(".test.tsx"))
+    file_path.startsWith(`${prefix}.`) &&
+    (file_path.endsWith(".test.ts") || file_path.endsWith(".test.tsx"))
   );
 }
 
@@ -109,25 +109,25 @@ function handlerTestStem(filePath: string, stem: string): boolean {
  */
 export async function assemblePackageSpecInventory(
   dbKey: DbKey,
-  commitHash: string,
-  packageName: string,
+  commit_hash: string,
+  package_name: string,
   options: AnalyzeCommitOptions,
 ): Promise<ReturnsError<PackageSpecInventory, GitCommandError>> {
-  const repoRoot = options.repoRoot;
-  const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
+  const repo_root = options.repo_root;
+  const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
 
-  const treeResult = listTree(repoRoot, commitHash);
+  const treeResult = listTree(repo_root, commit_hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) => {
-    if (!productRoot) return true;
-    return e.path === productRoot || e.path.startsWith(productRoot + "/");
+    if (!product_root) return true;
+    return e.path === product_root || e.path.startsWith(product_root + "/");
   });
 
   const packageJsonEntries = tree.filter(
     (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
   );
   const pkgBlobHashes = packageJsonEntries.map((e) => e.blobHash);
-  const pkgBlobs = readBlobs(repoRoot, pkgBlobHashes);
+  const pkgBlobs = readBlobs(repo_root, pkgBlobHashes);
   if (pkgBlobs.error) return { error: pkgBlobs.error };
 
   const nameByPath = new Map<string, string>();
@@ -141,7 +141,7 @@ export async function assemblePackageSpecInventory(
     packageJsonEntries.map((e) => e.path),
     nameByPath,
   );
-  const targetRoot = roots.find((r) => r.packageName === packageName);
+  const targetRoot = roots.find((r) => r.package_name === package_name);
   if (!targetRoot) {
     return { result: { entities: [] } };
   }
@@ -176,7 +176,7 @@ export async function assemblePackageSpecInventory(
   }
 
   const yamlBlobs = readBlobs(
-    repoRoot,
+    repo_root,
     yamlEntries.map((e) => e.blobHash),
   );
   if (yamlBlobs.error) return { error: yamlBlobs.error };
@@ -203,26 +203,26 @@ export async function assemblePackageSpecInventory(
         : entry.path.slice(0, -"/package.json".length);
     const classified = classifySafPackage({ ...json, name });
     manifests.push({
-      packageName: name,
+      package_name: name,
       directory,
       json,
       kind: classified.kind,
       mixedIdentifiers: classified.mixedIdentifiers,
     });
   }
-  const services = servicePackageNamesForSpec(packageName, manifests);
+  const services = servicePackageNamesForSpec(package_name, manifests);
   const httpRoots = services.http
-    .map((name) => roots.find((r) => r.packageName === name))
+    .map((name) => roots.find((r) => r.package_name === name))
     .filter((r): r is NonNullable<typeof r> => Boolean(r));
   const sdkRoots = services.sdk
-    .map((name) => roots.find((r) => r.packageName === name))
+    .map((name) => roots.find((r) => r.package_name === name))
     .filter((r): r is NonNullable<typeof r> => Boolean(r));
 
   const handlerByStem = new Map<string, SpecInventoryFileRef>();
   /** Test file repo paths keyed by route stem (resolved to specs after blob facts). */
   const handlerTestFilesByStem = new Map<
     string,
-    Array<{ path: string; blobHash: string }>
+    Array<{ path: string; blob_hash: string }>
   >();
   for (const httpRoot of httpRoots) {
     for (const entry of tree) {
@@ -240,7 +240,7 @@ export async function assemblePackageSpecInventory(
         ) {
           continue;
         }
-        handlerByStem.set(stem, { filePath: local, repoPath: entry.path });
+        handlerByStem.set(stem, { file_path: local, repo_path: entry.path });
       }
     }
     for (const entry of tree) {
@@ -255,7 +255,7 @@ export async function assemblePackageSpecInventory(
           list = [];
           handlerTestFilesByStem.set(stem, list);
         }
-        list.push({ path: entry.path, blobHash: entry.blobHash });
+        list.push({ path: entry.path, blob_hash: entry.blobHash });
       }
     }
   }
@@ -285,19 +285,19 @@ export async function assemblePackageSpecInventory(
           .slice("requests/".length)
           .replace(/\.fake\.tsx?$/, "");
         if (!stem || stem.includes(".logic")) continue;
-        fakeByStem.set(stem, { filePath: local, repoPath: entry.path });
+        fakeByStem.set(stem, { file_path: local, repo_path: entry.path });
         continue;
       }
       const stem = local.slice("requests/".length).replace(/\.tsx?$/, "");
       if (!stem || stem === "index" || stem.endsWith("/index")) continue;
       if (stem.includes(".logic")) continue;
-      requestByStem.set(stem, { filePath: local, repoPath: entry.path });
+      requestByStem.set(stem, { file_path: local, repo_path: entry.path });
     }
   }
 
   for (const e of inventory.entities) {
     for (const op of e.operations) {
-      const stem = op.routeStem;
+      const stem = op.route_stem;
       if (!stem) continue;
       op.handler = handlerByStem.get(stem) ?? null;
       op.request = requestByStem.get(stem) ?? null;
@@ -305,13 +305,13 @@ export async function assemblePackageSpecInventory(
     }
   }
 
-  // Schema usedBy: importers of schemas/* (still useful on object cards).
-  // Operation usedBy: importers of the SDK request module (not operations/*).
+  // Schema used_by: importers of schemas/* (still useful on object cards).
+  // Operation used_by: importers of the SDK request module (not operations/*).
   // Handler tests: describe/it specs from colocated HTTP test blobs.
   const allSourceEntries = tree.filter((e) => isSourcePath(e.path));
   const factsResult = await ensureBlobFacts(
     dbKey,
-    repoRoot,
+    repo_root,
     allSourceEntries.map((e) => e.blobHash),
   );
   if (factsResult.error) return { error: factsResult.error };
@@ -322,25 +322,25 @@ export async function assemblePackageSpecInventory(
     const seen = new Set<string>();
     const specs: SpecInventoryTestSpec[] = [];
     for (const file of files) {
-      const fact = facts.get(file.blobHash);
+      const fact = facts.get(file.blob_hash);
       if (!fact) continue;
       for (const tc of blobFactTestCases(fact)) {
         if (seen.has(tc.fullName)) continue;
         seen.add(tc.fullName);
-        specs.push({ fullName: tc.fullName });
+        specs.push({ full_name: tc.fullName });
       }
     }
-    specs.sort((a, b) => a.fullName.localeCompare(b.fullName));
+    specs.sort((a, b) => a.full_name.localeCompare(b.full_name));
     handlerTestsByStem.set(stem, specs);
   }
 
   for (const e of inventory.entities) {
     for (const op of e.operations) {
-      if (!op.routeStem) {
-        op.handlerTests = [];
+      if (!op.route_stem) {
+        op.handler_tests = [];
         continue;
       }
-      op.handlerTests = handlerTestsByStem.get(op.routeStem) ?? [];
+      op.handler_tests = handlerTestsByStem.get(op.route_stem) ?? [];
     }
   }
 
@@ -351,33 +351,33 @@ export async function assemblePackageSpecInventory(
   const schemaToEntityKey = new Map<string, string>();
   const stemToOps = new Map<
     string,
-    Array<{ entityKey: string; operationId: string }>
+    Array<{ entityKey: string; operation_id: string }>
   >();
   for (const e of inventory.entities) {
     if (e.schema) schemaToEntityKey.set(e.schema.name, e.key);
     for (const op of e.operations) {
-      if (!op.routeStem) continue;
-      let list = stemToOps.get(op.routeStem);
+      if (!op.route_stem) continue;
+      let list = stemToOps.get(op.route_stem);
       if (!list) {
         list = [];
-        stemToOps.set(op.routeStem, list);
+        stemToOps.set(op.route_stem, list);
       }
-      list.push({ entityKey: e.key, operationId: op.operationId });
+      list.push({ entityKey: e.key, operation_id: op.operation_id });
     }
   }
 
   for (const entry of allSourceEntries) {
-    const fileName = entry.path.split("/").pop() ?? entry.path;
-    if (isTestSourcePath(entry.path, fileName)) continue;
+    const file_name = entry.path.split("/").pop() ?? entry.path;
+    if (isTestSourcePath(entry.path, file_name)) continue;
     const fact = facts.get(entry.blobHash);
     if (!fact) continue;
     const importerRoot = packageForPath(entry.path, roots);
-    const importerPkg = importerRoot.packageName;
+    const importerPkg = importerRoot.package_name;
     const localPath = packageLocalPath(entry.path, importerRoot.directory);
 
     for (const imp of blobFactImports(fact)) {
       const schemaTarget = specTargetFromImport(
-        packageName,
+        package_name,
         targetRoot.directory,
         entry.path,
         imp.specifier,
@@ -386,9 +386,9 @@ export async function assemblePackageSpecInventory(
         const entityKey = schemaToEntityKey.get(schemaTarget.name);
         if (entityKey) {
           const used: SpecInventoryUsedBy = {
-            packageName: importerPkg,
-            filePath: localPath,
-            repoPath: entry.path,
+            package_name: importerPkg,
+            file_path: localPath,
+            repo_path: entry.path,
           };
           const usedKey = `${importerPkg}\0${entry.path}`;
           let byFile = schemaUsedBy.get(schemaTarget.name);
@@ -408,7 +408,7 @@ export async function assemblePackageSpecInventory(
 
       for (const sdkRoot of sdkRoots) {
         const mod = moduleTargetFromImport(
-          sdkRoot.packageName,
+          sdkRoot.package_name,
           sdkRoot.directory,
           entry.path,
           imp.specifier,
@@ -418,9 +418,9 @@ export async function assemblePackageSpecInventory(
           const ops = stemToOps.get(stem);
           if (ops?.length) {
             const used: SpecInventoryUsedBy = {
-              packageName: importerPkg,
-              filePath: localPath,
-              repoPath: entry.path,
+              package_name: importerPkg,
+              file_path: localPath,
+              repo_path: entry.path,
             };
             const usedKey = `${importerPkg}\0${entry.path}`;
             let byFile = sdkUsedBy.get(stem);
@@ -447,62 +447,62 @@ export async function assemblePackageSpecInventory(
   const sortUsed = (list: SpecInventoryUsedBy[]) =>
     list.sort(
       (a, b) =>
-        a.packageName.localeCompare(b.packageName) ||
-        a.filePath.localeCompare(b.filePath),
+        a.package_name.localeCompare(b.package_name) ||
+        a.file_path.localeCompare(b.file_path),
     );
 
   for (const e of inventory.entities) {
     const pkgs = entityPackages.get(e.key);
-    e.usedByPackages = pkgs
+    e.used_by_packages = pkgs
       ? [...pkgs].sort((a, b) => a.localeCompare(b))
       : [];
 
     if (e.schema) {
       const used = schemaUsedBy.get(e.schema.name);
-      e.schema.usedBy = used ? sortUsed([...used.values()]) : [];
+      e.schema.used_by = used ? sortUsed([...used.values()]) : [];
     }
     for (const op of e.operations) {
-      if (!op.routeStem) {
-        op.usedBy = [];
+      if (!op.route_stem) {
+        op.used_by = [];
         continue;
       }
-      const used = sdkUsedBy.get(op.routeStem);
-      op.usedBy = used ? sortUsed([...used.values()]) : [];
+      const used = sdkUsedBy.get(op.route_stem);
+      op.used_by = used ? sortUsed([...used.values()]) : [];
     }
   }
 
-  inventory.packageDirectory = targetRoot.directory;
+  inventory.package_directory = targetRoot.directory;
   return { result: inventory };
 }
 
 /** Flatten operations for future commit diffs. */
 export function flattenInventoryOperations(
-  packageName: string,
+  package_name: string,
   inventory: PackageSpecInventory,
 ): Array<{
-  packageName: string;
-  operationId: string;
+  package_name: string;
+  operation_id: string;
   method: string;
   path: string;
-  yamlPath: string;
+  yaml_path: string;
   summary: string | null;
 }> {
   const out: Array<{
-    packageName: string;
-    operationId: string;
+    package_name: string;
+    operation_id: string;
     method: string;
     path: string;
-    yamlPath: string;
+    yaml_path: string;
     summary: string | null;
   }> = [];
   for (const e of inventory.entities) {
     for (const op of e.operations) {
       out.push({
-        packageName,
-        operationId: op.operationId,
+        package_name,
+        operation_id: op.operation_id,
         method: op.method,
         path: op.path,
-        yamlPath: op.yamlPath,
+        yaml_path: op.yaml_path,
         summary: op.summary,
       });
     }

@@ -1,18 +1,18 @@
 type: object
 description: A drizzle table identity for schema diffs.
 required:
-  - packageName
-  - tableName
-  - exportName
-  - filePath
+  - package_name
+  - table_name
+  - export_name
+  - file_path
 properties:
-  packageName:
+  package_name:
     type: string
-  tableName:
+  table_name:
     type: string
-  exportName:
+  export_name:
     type: string
-  filePath:
+  file_path:
     type: string
   docstring:
     type: [ string, "null" ]

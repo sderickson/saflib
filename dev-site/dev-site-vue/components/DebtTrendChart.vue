@@ -173,7 +173,7 @@ const emptyMessage = computed(() => {
   if (!props.headHash) {
     return "Waiting for checkout…";
   }
-  if (!props.commits.some((c) => c.summaryMetrics.hasIssueStats)) {
+  if (!props.commits.some((c) => c.summary_metrics.has_issue_stats)) {
     return "No debt data yet — scan commits or run saf-dev-site scan --recompute-issues.";
   }
   return "No issue-stats commits on the current branch ancestry yet. Scan this checkout or recompute issues.";
@@ -264,7 +264,7 @@ const xLabels = computed(() => {
   const unique = [...new Set(idxs)];
   return unique.map((i) => ({
     x: xAt(i, n),
-    text: formatDate(pts[i]!.authoredAt),
+    text: formatDate(pts[i]!.authored_at),
   }));
 });
 

@@ -2,26 +2,26 @@ type: object
 description: >
   Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode.
 required:
-  - againstRef
-  - mergeBaseHash
-  - mergeBaseAnalyzed
-  - mergeBaseMessage
-  - mergeBaseAuthoredAt
+  - against_ref
+  - merge_base_hash
+  - merge_base_analyzed
+  - merge_base_message
+  - merge_base_authored_at
   - renames
 properties:
-  againstRef:
+  against_ref:
     type: string
     description: Branch/ref HEAD was compared against (e.g. `main`).
-  mergeBaseHash:
+  merge_base_hash:
     type: string
-    description: Full hash of `git merge-base(HEAD, againstRef)`.
-  mergeBaseAnalyzed:
+    description: Full hash of `git merge-base(HEAD, against_ref)`.
+  merge_base_analyzed:
     type: boolean
     description: True when that fork-point commit has an analysis snapshot.
-  mergeBaseMessage:
+  merge_base_message:
     type: string
     description: Subject of the fork-point commit.
-  mergeBaseAuthoredAt:
+  merge_base_authored_at:
     type: string
     format: date-time
     description: Author date of the fork-point commit.
@@ -33,13 +33,13 @@ properties:
     items:
       type: object
       required:
-        - fromPath
-        - toPath
+        - from_path
+        - to_path
       properties:
-        fromPath:
+        from_path:
           type: string
           description: Path at the fork-point commit.
-        toPath:
+        to_path:
           type: string
           description: Path at HEAD.
         score:

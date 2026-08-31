@@ -7,14 +7,14 @@ function commit(
   partial: Partial<CommitSummary> & { hash: string },
 ): CommitSummary {
   return {
-    parentHashes: [],
-    authoredAt: "2026-01-01T00:00:00.000Z",
+    parent_hashes: [],
+    authored_at: "2026-01-01T00:00:00.000Z",
     message: "msg",
     refs: [],
-    analyzerVersion: "1",
+    analyzer_version: "1",
     computed_at: "2026-01-01T01:00:00.000Z",
     status: "complete",
-    summaryMetrics: summaryMetricsFixture({ hasIssueStats: true }),
+    summary_metrics: summaryMetricsFixture({ has_issue_stats: true }),
     ...partial,
   };
 }
@@ -39,13 +39,13 @@ describe("buildDebtTrendSeries", () => {
     const commits = [
       commit({
         hash: feat,
-        parentHashes: [main2],
-        authoredAt: "2026-01-03T00:00:00.000Z",
-        refs: [{ name: "feat", type: "branch", isMainAncestor: false }],
-        summaryMetrics: summaryMetricsFixture({
-          debtCount: 3,
-          hasIssueStats: true,
-          issueCountsByKind: {
+        parent_hashes: [main2],
+        authored_at: "2026-01-03T00:00:00.000Z",
+        refs: [{ name: "feat", type: "branch", is_main_ancestor: false }],
+        summary_metrics: summaryMetricsFixture({
+          debt_count: 3,
+          has_issue_stats: true,
+          issue_counts_by_kind: {
             "dead-code": 3,
             "oversized-file": 0,
             "package-layout": 0,
@@ -54,32 +54,32 @@ describe("buildDebtTrendSeries", () => {
       }),
       commit({
         hash: main2,
-        parentHashes: [main1],
-        authoredAt: "2026-01-02T00:00:00.000Z",
-        refs: [{ name: "main", type: "branch", isMainAncestor: true }],
-        summaryMetrics: summaryMetricsFixture({
-          debtCount: 1,
-          hasIssueStats: true,
+        parent_hashes: [main1],
+        authored_at: "2026-01-02T00:00:00.000Z",
+        refs: [{ name: "main", type: "branch", is_main_ancestor: true }],
+        summary_metrics: summaryMetricsFixture({
+          debt_count: 1,
+          has_issue_stats: true,
         }),
       }),
       commit({
         hash: main1,
-        parentHashes: [],
-        authoredAt: "2026-01-01T00:00:00.000Z",
+        parent_hashes: [],
+        authored_at: "2026-01-01T00:00:00.000Z",
         refs: [],
-        summaryMetrics: summaryMetricsFixture({
-          debtCount: 0,
-          hasIssueStats: true,
+        summary_metrics: summaryMetricsFixture({
+          debt_count: 0,
+          has_issue_stats: true,
         }),
       }),
       commit({
         hash: other,
-        parentHashes: [main1],
-        authoredAt: "2026-01-04T00:00:00.000Z",
-        refs: [{ name: "other", type: "branch", isMainAncestor: false }],
-        summaryMetrics: summaryMetricsFixture({
-          debtCount: 9,
-          hasIssueStats: true,
+        parent_hashes: [main1],
+        authored_at: "2026-01-04T00:00:00.000Z",
+        refs: [{ name: "other", type: "branch", is_main_ancestor: false }],
+        summary_metrics: summaryMetricsFixture({
+          debt_count: 9,
+          has_issue_stats: true,
         }),
       }),
     ];
@@ -106,27 +106,27 @@ describe("buildDebtTrendSeries", () => {
     const commits = [
       commit({
         hash: c,
-        parentHashes: [b],
-        authoredAt: "2026-01-03T00:00:00.000Z",
-        refs: [{ name: "main", type: "branch", isMainAncestor: true }],
-        summaryMetrics: summaryMetricsFixture({
-          debtCount: 2,
-          hasIssueStats: true,
+        parent_hashes: [b],
+        authored_at: "2026-01-03T00:00:00.000Z",
+        refs: [{ name: "main", type: "branch", is_main_ancestor: true }],
+        summary_metrics: summaryMetricsFixture({
+          debt_count: 2,
+          has_issue_stats: true,
         }),
       }),
       commit({
         hash: b,
-        parentHashes: [a],
-        authoredAt: "2026-01-02T00:00:00.000Z",
-        summaryMetrics: summaryMetricsFixture({ hasIssueStats: false }),
+        parent_hashes: [a],
+        authored_at: "2026-01-02T00:00:00.000Z",
+        summary_metrics: summaryMetricsFixture({ has_issue_stats: false }),
       }),
       commit({
         hash: a,
-        parentHashes: [],
-        authoredAt: "2026-01-01T00:00:00.000Z",
-        summaryMetrics: summaryMetricsFixture({
-          debtCount: 1,
-          hasIssueStats: true,
+        parent_hashes: [],
+        authored_at: "2026-01-01T00:00:00.000Z",
+        summary_metrics: summaryMetricsFixture({
+          debt_count: 1,
+          has_issue_stats: true,
         }),
       }),
     ];

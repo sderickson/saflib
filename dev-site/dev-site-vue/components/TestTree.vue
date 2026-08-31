@@ -13,10 +13,10 @@
       >
         <header class="suite-card__head">
           <a
-            v-if="node.subjectFilePath"
+            v-if="node.subject_file_path"
             href="#"
             class="suite-card__name suite-card__name--link"
-            @click.prevent="$emit('open-source', node.subjectFilePath!)"
+            @click.prevent="$emit('open-source', node.subject_file_path!)"
           >
             {{ node.label }}
           </a>
@@ -32,26 +32,26 @@
         </header>
 
         <div
-          v-if="node.subjectSignature || node.subjectDocstring || (node.usedBy && node.usedBy.length) || isUnusedExport(node)"
+          v-if="node.subject_signature || node.subject_docstring || (node.used_by && node.used_by.length) || isUnusedExport(node)"
           class="suite-card__spec"
         >
-          <code v-if="node.subjectSignature" class="suite-card__sig">{{
-            node.subjectSignature
+          <code v-if="node.subject_signature" class="suite-card__sig">{{
+            node.subject_signature
           }}</code>
-          <p v-if="node.subjectDocstring" class="suite-card__doc">
-            {{ node.subjectDocstring }}
+          <p v-if="node.subject_docstring" class="suite-card__doc">
+            {{ node.subject_docstring }}
           </p>
-          <ul v-if="node.usedBy?.length" class="suite-card__used">
+          <ul v-if="node.used_by?.length" class="suite-card__used">
             <li
-              v-for="u in node.usedBy"
-              :key="u.packageName + ':' + u.repoPath"
+              v-for="u in node.used_by"
+              :key="u.package_name + ':' + u.repo_path"
             >
               <a
                 href="#"
                 class="suite-card__importer"
-                @click.prevent="$emit('open-source', u.repoPath)"
+                @click.prevent="$emit('open-source', u.repo_path)"
               >
-                {{ u.packageName }}/{{ u.filePath }}
+                {{ u.package_name }}/{{ u.file_path }}
               </a>
             </li>
           </ul>
@@ -136,7 +136,7 @@ withDefaults(
 );
 
 defineEmits<{
-  "open-source": [filePath: string];
+  "open-source": [file_path: string];
 }>();
 
 const testLeaves = (node: TestTreeNode) =>
@@ -147,9 +147,9 @@ const nestedSuites = (node: TestTreeNode) =>
 
 /** Export/query card with no recorded non-test importers. */
 const isUnusedExport = (node: TestTreeNode) =>
-  // `usedBy === null` is set on export/query cards with zero importers;
-  // orphan suites leave `usedBy` undefined.
-  Boolean(node.subjectFilePath && node.subjectName) && node.usedBy === null;
+  // `used_by === null` is set on export/query cards with zero importers;
+  // orphan suites leave `used_by` undefined.
+  Boolean(node.subject_file_path && node.subject_name) && node.used_by === null;
 </script>
 
 <style scoped>

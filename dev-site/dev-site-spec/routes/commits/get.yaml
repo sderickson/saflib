@@ -21,9 +21,9 @@ getCommits:
           schema:
             type: object
             required:
-              - commitDetail
+              - commit_detail
             properties:
-              commitDetail:
+              commit_detail:
                 $ref: "../../schemas/commit-detail.yaml"
     "404":
       description: No analysis snapshot found for this commit hash.

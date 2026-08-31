@@ -14,27 +14,27 @@ export const addDiffCommand = (program: Command) => {
   program
     .command("diff")
     .description("Diff two analyzed commits (before after).")
-    .argument("<fromHash>", "Baseline commit hash (before)")
-    .argument("<toHash>", "Comparison commit hash (after)")
+    .argument("<from_hash>", "Baseline commit hash (before)")
+    .argument("<to_hash>", "Comparison commit hash (after)")
     .option("--repo-root <path>", "Git repository root")
     .option("--product-root <path>", "Path prefix within the repo")
     .option("--main-ref <ref>", "Main branch ref")
     .option("--db <path>", "SQLite file path")
     .action(
       async (
-        fromHash: string,
-        toHash: string,
+        from_hash: string,
+        to_hash: string,
         opts: {
           db?: string;
-          repoRoot?: string;
-          productRoot?: string;
+          repo_root?: string;
+          product_root?: string;
           mainRef?: string;
         },
       ) => {
-        const repoRoot = resolveRepoRoot(opts.repoRoot);
-        const dbPath = resolveDbPath(repoRoot, opts.db);
+        const repo_root = resolveRepoRoot(opts.repo_root);
+        const dbPath = resolveDbPath(repo_root, opts.db);
         ensureCliDbAvailable(dbPath, "read");
-        const productRoot = resolveProductRoot(opts.productRoot, dbPath);
+        const product_root = resolveProductRoot(opts.product_root, dbPath);
         const mainRef = resolveMainRef(opts.mainRef);
         const dbKey = devSiteDb.connect({
           onDisk: dbPath,
@@ -43,9 +43,9 @@ export const addDiffCommand = (program: Command) => {
         });
         try {
           const result = await throwError(
-            diffCommits(dbKey, fromHash, toHash, {
-              repoRoot,
-              productRoot: productRoot || undefined,
+            diffCommits(dbKey, from_hash, to_hash, {
+              repo_root,
+              product_root: product_root || undefined,
               mainRef,
             }),
           );

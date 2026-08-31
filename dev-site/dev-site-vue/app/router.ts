@@ -13,7 +13,7 @@ import { readDevSiteRuntimeConfig } from "./runtime-config.ts";
 const apiSubdomain = "";
 
 export type CreateDevSiteRouterOptions = {
-  githubRepo?: string;
+  github_repo?: string;
   githubRef?: string;
   localRepoRoot?: string;
 };
@@ -28,9 +28,9 @@ function envString(key: string, fallback: string): string {
 
 export function createDevSiteRouter(options: CreateDevSiteRouterOptions = {}) {
   const runtime = readDevSiteRuntimeConfig();
-  const githubRepo =
-    options.githubRepo ??
-    runtime.githubRepo ??
+  const github_repo =
+    options.github_repo ??
+    runtime.github_repo ??
     envString("VITE_DEV_SITE_GITHUB_REPO", "sderickson/saflib");
   const githubRef =
     options.githubRef ??
@@ -83,17 +83,17 @@ export function createDevSiteRouter(options: CreateDevSiteRouterOptions = {}) {
         props: {
           subdomain: apiSubdomain,
           hubPath: "/",
-          githubRepo,
+          github_repo,
           githubRef,
           localRepoRoot,
         },
       },
       {
-        path: "/checkout/packages/:packageName",
+        path: "/checkout/packages/:package_name",
         redirect: (to) => ({
           path: "/checkout",
           query: {
-            package: decodeURIComponent(to.params.packageName as string),
+            package: decodeURIComponent(to.params.package_name as string),
           },
         }),
       },

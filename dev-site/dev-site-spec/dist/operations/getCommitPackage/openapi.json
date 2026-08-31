@@ -5,14 +5,14 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/commits/{hash}/packages/{packageName}": {
+    "/api/commits/{hash}/packages/{package_name}": {
       "get": {
         "summary": "Package-scoped symbols for one analyzed commit",
         "operationId": "getCommitPackage",
         "tags": [
           "no-auth"
         ],
-        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes dbInventory (drizzle tables + query dirs). For spec packages, also includes specInventory (OpenAPI schemas + REST resources). For http and sdk packages, specInventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, specInventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layoutIssues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.\n",
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes db_inventory (drizzle tables + query dirs). For spec packages, also includes spec_inventory (OpenAPI schemas + REST resources). For http and sdk packages, spec_inventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, spec_inventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layout_issues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.\n",
         "parameters": [
           {
             "name": "hash",
@@ -23,7 +23,7 @@
             }
           },
           {
-            "name": "packageName",
+            "name": "package_name",
             "in": "path",
             "required": true,
             "schema": {
@@ -40,46 +40,46 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "packageDetail"
+                    "package_detail"
                   ],
                   "properties": {
-                    "packageDetail": {
+                    "package_detail": {
                       "type": "object",
                       "required": [
-                        "commitHash",
-                        "packageName",
+                        "commit_hash",
+                        "package_name",
                         "directory",
-                        "sourceFiles",
-                        "sourceLines",
-                        "prodLines",
-                        "testLines",
-                        "testFiles",
+                        "source_files",
+                        "source_lines",
+                        "prod_lines",
+                        "test_lines",
+                        "test_files",
                         "exports",
-                        "testCases"
+                        "test_cases"
                       ],
                       "properties": {
-                        "commitHash": {
+                        "commit_hash": {
                           "type": "string"
                         },
-                        "packageName": {
+                        "package_name": {
                           "type": "string"
                         },
                         "directory": {
                           "type": "string"
                         },
-                        "sourceFiles": {
+                        "source_files": {
                           "type": "integer"
                         },
-                        "sourceLines": {
+                        "source_lines": {
                           "type": "integer"
                         },
-                        "prodLines": {
+                        "prod_lines": {
                           "type": "integer"
                         },
-                        "testLines": {
+                        "test_lines": {
                           "type": "integer"
                         },
-                        "testFiles": {
+                        "test_files": {
                           "type": "integer"
                         },
                         "exports": {
@@ -88,26 +88,26 @@
                             "$ref": "#/components/schemas/export-entry"
                           }
                         },
-                        "testCases": {
+                        "test_cases": {
                           "type": "array",
                           "items": {
                             "$ref": "#/components/schemas/test-case"
                           }
                         },
-                        "dbInventory": {
+                        "db_inventory": {
                           "$ref": "#/components/schemas/db-inventory"
                         },
-                        "specInventory": {
+                        "spec_inventory": {
                           "$ref": "#/components/schemas/spec-inventory"
                         },
-                        "layoutIssues": {
+                        "layout_issues": {
                           "type": "array",
                           "description": "Working-tree package-layout and oversized-file findings (package-local; cheap). Dead-code workdir scans are CLI-only.\n",
                           "items": {
                             "$ref": "#/components/schemas/package-issue"
                           }
                         },
-                        "publicExportFilePaths": {
+                        "public_export_file_paths": {
                           "type": "array",
                           "description": "Repo-relative files from live package.json `exports` (SPA main.ts, test-app.ts). Spec Issues skips these for dead-code so the panel matches `saf-dev-site issues --workdir`.\n",
                           "items": {
@@ -151,12 +151,12 @@
         "type": "object",
         "description": "One exported symbol extracted from a source file at a commit.",
         "properties": {
-          "packageName": {
+          "package_name": {
             "type": "string",
             "description": "npm package that owns this file.",
             "example": "@saflib/git"
           },
-          "filePath": {
+          "file_path": {
             "type": "string",
             "description": "Path relative to the repo root.",
             "example": "saflib/git/log.ts"
@@ -189,7 +189,7 @@
               "null"
             ],
             "description": "Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.\n",
-            "example": "(repoRoot: string, options?: LogOptions)"
+            "example": "(repo_root: string, options?: LogOptions)"
           },
           "docstring": {
             "type": [
@@ -199,25 +199,25 @@
             "description": "First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).\n",
             "example": "Walk commits newest-first without checking out."
           },
-          "usedBy": {
+          "used_by": {
             "type": "array",
             "description": "Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty).\n",
             "items": {
               "type": "object",
               "required": [
-                "packageName",
-                "filePath",
-                "repoPath"
+                "package_name",
+                "file_path",
+                "repo_path"
               ],
               "properties": {
-                "packageName": {
+                "package_name": {
                   "type": "string"
                 },
-                "filePath": {
+                "file_path": {
                   "type": "string",
                   "description": "Path within the importing package (no package-root prefix)."
                 },
-                "repoPath": {
+                "repo_path": {
                   "type": "string",
                   "description": "Repo-relative path for source links."
                 }
@@ -226,8 +226,8 @@
           }
         },
         "required": [
-          "packageName",
-          "filePath",
+          "package_name",
+          "file_path",
           "name",
           "kind",
           "signature",
@@ -236,49 +236,49 @@
       },
       "test-case": {
         "type": "object",
-        "description": "One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `\" > \"` separator from `@saflib/parser` (e.g. `\"outer > inner > does the thing\"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export).\n",
+        "description": "One `describe`/`it`/`test` case extracted from a test file. `full_name` uses the `\" > \"` separator from `@saflib/parser` (e.g. `\"outer > inner > does the thing\"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export).\n",
         "properties": {
-          "packageName": {
+          "package_name": {
             "type": "string",
             "description": "npm package that owns this file.",
             "example": "@saflib/git"
           },
-          "filePath": {
+          "file_path": {
             "type": "string",
             "description": "Path relative to the repo root.",
             "example": "saflib/git/index.test.ts"
           },
-          "fullName": {
+          "full_name": {
             "type": "string",
             "description": "Nested describe/it titles joined with `\" > \"`.",
             "example": "log > returns commits newest-first (git log order)"
           },
-          "subjectName": {
+          "subject_name": {
             "type": "string",
             "description": "Linked export name when a suite title matches by convention.",
             "example": "log"
           },
-          "subjectSignature": {
+          "subject_signature": {
             "type": [
               "string",
               "null"
             ],
             "description": "Signature of the linked export at this commit (null if unknown).",
-            "example": "(repoRoot: string, options?: LogOptions)"
+            "example": "(repo_root: string, options?: LogOptions)"
           },
-          "subjectDocstring": {
+          "subject_docstring": {
             "type": [
               "string",
               "null"
             ],
             "description": "First JSDoc prose line of the linked export, when present."
           },
-          "subjectFilePath": {
+          "subject_file_path": {
             "type": "string",
             "description": "Repo-relative path of the file that declares the linked export.",
             "example": "saflib/git/log.ts"
           },
-          "subjectConfidence": {
+          "subject_confidence": {
             "type": "string",
             "description": "How the link was made (`adjacent` file vs elsewhere in package).",
             "enum": [
@@ -288,9 +288,9 @@
           }
         },
         "required": [
-          "packageName",
-          "filePath",
-          "fullName"
+          "package_name",
+          "file_path",
+          "full_name"
         ]
       },
       "db-inventory": {
@@ -306,7 +306,7 @@
               "type": "object",
               "required": [
                 "entity",
-                "usedByPackages",
+                "used_by_packages",
                 "queries"
               ],
               "properties": {
@@ -320,19 +320,19 @@
                     "null"
                   ],
                   "required": [
-                    "exportName",
-                    "tableName",
+                    "export_name",
+                    "table_name",
                     "columns",
-                    "filePath"
+                    "file_path"
                   ],
                   "properties": {
-                    "exportName": {
+                    "export_name": {
                       "type": "string"
                     },
-                    "tableName": {
+                    "table_name": {
                       "type": "string"
                     },
-                    "filePath": {
+                    "file_path": {
                       "type": "string"
                     },
                     "docstring": {
@@ -347,18 +347,18 @@
                       "items": {
                         "type": "object",
                         "required": [
-                          "propName",
-                          "sqlName",
-                          "typeKind"
+                          "prop_name",
+                          "sql_name",
+                          "type_kind"
                         ],
                         "properties": {
-                          "propName": {
+                          "prop_name": {
                             "type": "string"
                           },
-                          "sqlName": {
+                          "sql_name": {
                             "type": "string"
                           },
-                          "typeKind": {
+                          "type_kind": {
                             "type": "string"
                           },
                           "docstring": {
@@ -373,7 +373,7 @@
                     }
                   }
                 },
-                "usedByPackages": {
+                "used_by_packages": {
                   "type": "array",
                   "description": "Distinct packages (non-test) that import any query under this entity.",
                   "items": {
@@ -386,18 +386,18 @@
                   "items": {
                     "type": "object",
                     "required": [
-                      "fileName",
-                      "filePath",
-                      "usedBy"
+                      "file_name",
+                      "file_path",
+                      "used_by"
                     ],
                     "properties": {
-                      "fileName": {
+                      "file_name": {
                         "type": "string"
                       },
-                      "filePath": {
+                      "file_path": {
                         "type": "string"
                       },
-                      "exportName": {
+                      "export_name": {
                         "type": [
                           "string",
                           "null"
@@ -415,25 +415,25 @@
                           "null"
                         ]
                       },
-                      "usedBy": {
+                      "used_by": {
                         "type": "array",
                         "description": "Non-test product files that import this leaf query module.",
                         "items": {
                           "type": "object",
                           "required": [
-                            "packageName",
-                            "filePath",
-                            "repoPath"
+                            "package_name",
+                            "file_path",
+                            "repo_path"
                           ],
                           "properties": {
-                            "packageName": {
+                            "package_name": {
                               "type": "string"
                             },
-                            "filePath": {
+                            "file_path": {
                               "type": "string",
                               "description": "Path within the importing package (no package-root prefix)."
                             },
-                            "repoPath": {
+                            "repo_path": {
                               "type": "string",
                               "description": "Repo-relative path for source links."
                             }
@@ -455,7 +455,7 @@
           "entities"
         ],
         "properties": {
-          "packageDirectory": {
+          "package_directory": {
             "type": "string",
             "description": "Repo-relative directory of the spec package this inventory was built from (used for route YAML source links when shown from an http pane).\n"
           },
@@ -468,7 +468,7 @@
                 "key",
                 "label",
                 "presence",
-                "usedByPackages",
+                "used_by_packages",
                 "operations"
               ],
               "properties": {
@@ -503,17 +503,17 @@
                   ],
                   "required": [
                     "name",
-                    "yamlPath",
+                    "yaml_path",
                     "properties",
-                    "usedBy",
-                    "referencedByOperations"
+                    "used_by",
+                    "referenced_by_operations"
                   ],
                   "properties": {
                     "name": {
                       "type": "string",
                       "description": "components/schemas name (e.g. Matter)."
                     },
-                    "yamlPath": {
+                    "yaml_path": {
                       "type": "string",
                       "description": "Package-relative path to the schema YAML."
                     },
@@ -529,13 +529,13 @@
                         "type": "object",
                         "required": [
                           "name",
-                          "typeKind"
+                          "type_kind"
                         ],
                         "properties": {
                           "name": {
                             "type": "string"
                           },
-                          "typeKind": {
+                          "type_kind": {
                             "type": "string"
                           },
                           "docstring": {
@@ -547,23 +547,23 @@
                         }
                       }
                     },
-                    "usedBy": {
+                    "used_by": {
                       "type": "array",
                       "description": "Non-test product files importing schemas/<Name>.",
                       "items": {
                         "$ref": "#/components/schemas/items"
                       }
                     },
-                    "referencedByOperations": {
+                    "referenced_by_operations": {
                       "type": "array",
-                      "description": "operationIds whose request/2xx response $ref this schema.",
+                      "description": "operation_ids whose request/2xx response $ref this schema.",
                       "items": {
                         "type": "string"
                       }
                     }
                   }
                 },
-                "usedByPackages": {
+                "used_by_packages": {
                   "type": "array",
                   "description": "Distinct packages importing this entity's schema and/or the SDK request modules for its operations.\n",
                   "items": {
@@ -576,18 +576,18 @@
                   "items": {
                     "type": "object",
                     "required": [
-                      "operationId",
+                      "operation_id",
                       "method",
                       "path",
                       "tags",
-                      "yamlPath",
-                      "requestSchemas",
-                      "responseSchemas",
-                      "handlerTests",
-                      "usedBy"
+                      "yaml_path",
+                      "request_schemas",
+                      "response_schemas",
+                      "handler_tests",
+                      "used_by"
                     ],
                     "properties": {
-                      "operationId": {
+                      "operation_id": {
                         "type": "string"
                       },
                       "method": {
@@ -609,11 +609,11 @@
                           "type": "string"
                         }
                       },
-                      "yamlPath": {
+                      "yaml_path": {
                         "type": "string",
                         "description": "Package-relative route YAML under the spec package."
                       },
-                      "routeStem": {
+                      "route_stem": {
                         "type": [
                           "string",
                           "null"
@@ -627,14 +627,14 @@
                         ],
                         "description": "Sibling HTTP handler file when present.",
                         "required": [
-                          "filePath",
-                          "repoPath"
+                          "file_path",
+                          "repo_path"
                         ],
                         "properties": {
-                          "filePath": {
+                          "file_path": {
                             "type": "string"
                           },
-                          "repoPath": {
+                          "repo_path": {
                             "type": "string"
                           }
                         }
@@ -646,14 +646,14 @@
                         ],
                         "description": "Sibling SDK request module when present.",
                         "required": [
-                          "filePath",
-                          "repoPath"
+                          "file_path",
+                          "repo_path"
                         ],
                         "properties": {
-                          "filePath": {
+                          "file_path": {
                             "type": "string"
                           },
-                          "repoPath": {
+                          "repo_path": {
                             "type": "string"
                           }
                         }
@@ -665,28 +665,28 @@
                         ],
                         "description": "Sibling SDK fake/MSW module (`*.fake.ts`) when present beside the request.\n",
                         "required": [
-                          "filePath",
-                          "repoPath"
+                          "file_path",
+                          "repo_path"
                         ],
                         "properties": {
-                          "filePath": {
+                          "file_path": {
                             "type": "string"
                           },
-                          "repoPath": {
+                          "repo_path": {
                             "type": "string"
                           }
                         }
                       },
-                      "handlerTests": {
+                      "handler_tests": {
                         "type": "array",
-                        "description": "describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses \" > \" nesting).\n",
+                        "description": "describe/it/test specifications extracted from colocated HTTP handler test files (full_name uses \" > \" nesting).\n",
                         "items": {
                           "type": "object",
                           "required": [
-                            "fullName"
+                            "full_name"
                           ],
                           "properties": {
-                            "fullName": {
+                            "full_name": {
                               "type": "string",
                               "description": "Nested describe/it titles joined with \" > \".",
                               "example": "createMatter > creates a matter for the org"
@@ -694,39 +694,39 @@
                           }
                         }
                       },
-                      "requestSchemas": {
+                      "request_schemas": {
                         "type": "array",
                         "description": "Business objects in the request body (one layer deep into object/array bags of schema refs).\n",
                         "items": {
                           "type": "string"
                         }
                       },
-                      "responseSchemas": {
+                      "response_schemas": {
                         "type": "array",
                         "description": "Business objects in 2xx responses (one layer deep into object/array bags of schema refs).\n",
                         "items": {
                           "type": "string"
                         }
                       },
-                      "usedBy": {
+                      "used_by": {
                         "type": "array",
                         "description": "Non-test product files importing the sibling SDK request module for this route stem.\n",
                         "items": {
                           "type": "object",
                           "required": [
-                            "packageName",
-                            "filePath",
-                            "repoPath"
+                            "package_name",
+                            "file_path",
+                            "repo_path"
                           ],
                           "properties": {
-                            "packageName": {
+                            "package_name": {
                               "type": "string"
                             },
-                            "filePath": {
+                            "file_path": {
                               "type": "string",
                               "description": "Path within the importing package (no package-root prefix)."
                             },
-                            "repoPath": {
+                            "repo_path": {
                               "type": "string",
                               "description": "Repo-relative path for source links."
                             }
@@ -735,14 +735,14 @@
                       },
                       "enqueues": {
                         "type": "array",
-                        "description": "operationIds this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map.\n",
+                        "description": "operation_ids this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map.\n",
                         "items": {
                           "type": "string"
                         }
                       },
-                      "enqueuedBy": {
+                      "enqueued_by": {
                         "type": "array",
-                        "description": "operationIds or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map.\n",
+                        "description": "operation_ids or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map.\n",
                         "items": {
                           "type": "string"
                         }
@@ -758,19 +758,19 @@
       "items": {
         "type": "object",
         "required": [
-          "packageName",
-          "filePath",
-          "repoPath"
+          "package_name",
+          "file_path",
+          "repo_path"
         ],
         "properties": {
-          "packageName": {
+          "package_name": {
             "type": "string"
           },
-          "filePath": {
+          "file_path": {
             "type": "string",
             "description": "Path within the importing package (no package-root prefix)."
           },
-          "repoPath": {
+          "repo_path": {
             "type": "string",
             "description": "Repo-relative path for source links."
           }
@@ -782,9 +782,9 @@
           "kind",
           "title",
           "name",
-          "kindLabel",
-          "filePath",
-          "repoPath"
+          "kind_label",
+          "file_path",
+          "repo_path"
         ],
         "properties": {
           "kind": {
@@ -801,14 +801,14 @@
           "name": {
             "type": "string"
           },
-          "kindLabel": {
+          "kind_label": {
             "type": "string"
           },
-          "filePath": {
+          "file_path": {
             "type": "string",
             "description": "Package-local path for display"
           },
-          "repoPath": {
+          "repo_path": {
             "type": "string",
             "description": "Repo-relative path for open-source links"
           }

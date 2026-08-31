@@ -12,7 +12,7 @@ import { listTree, readBlobs, type GitCommandError } from "@saflib/git";
 import { EXCLUDE_DIRS, packageRootsFromPackageJsonPaths } from "./classify.ts";
 
 export interface PackageManifest {
-  packageName: string;
+  package_name: string;
   /** Directory relative to repo root (posix, no trailing slash). "" for root. */
   directory: string;
   json: SafPackageJson;
@@ -26,13 +26,13 @@ export type LoadPackageManifestsResult = ReturnsError<
 >;
 
 /**
- * Read every package.json at `commitHash` and classify it.
+ * Read every package.json at `commit_hash` and classify it.
  */
 export function loadPackageManifests(
-  repoRoot: string,
-  commitHash: string,
+  repo_root: string,
+  commit_hash: string,
 ): LoadPackageManifestsResult {
-  const treeResult = listTree(repoRoot, commitHash);
+  const treeResult = listTree(repo_root, commit_hash);
   if (treeResult.error) return { error: treeResult.error };
 
   const packageJsonEntries = treeResult.result.filter((e) => {
@@ -42,7 +42,7 @@ export function loadPackageManifests(
   });
 
   const blobs = readBlobs(
-    repoRoot,
+    repo_root,
     packageJsonEntries.map((e) => e.blobHash),
   );
   if (blobs.error) return { error: blobs.error };
@@ -69,9 +69,9 @@ export function loadPackageManifests(
       ? `${root.directory}/package.json`
       : "package.json";
     const json = jsonByPath.get(pkgJsonPath) ?? {};
-    const classified = classifySafPackage({ ...json, name: root.packageName });
+    const classified = classifySafPackage({ ...json, name: root.package_name });
     manifests.push({
-      packageName: root.packageName,
+      package_name: root.package_name,
       directory: root.directory,
       json,
       kind: classified.kind,
@@ -84,10 +84,10 @@ export function loadPackageManifests(
 export function manifestByPackageName(
   manifests: PackageManifest[],
 ): Map<string, PackageManifest> {
-  return new Map(manifests.map((m) => [m.packageName, m]));
+  return new Map(manifests.map((m) => [m.package_name, m]));
 }
 
-/** Repo-relative package directory → manifest (productRoot + metrics.directory). */
+/** Repo-relative package directory → manifest (product_root + metrics.directory). */
 export function manifestByRepoDirectory(
   manifests: PackageManifest[],
 ): Map<string, PackageManifest> {
@@ -107,11 +107,11 @@ export function specPackageNamesFromDeps(
 
 export function packagesDependingOn(
   manifests: PackageManifest[],
-  packageName: string,
+  package_name: string,
   kind: PackageKind,
 ): PackageManifest[] {
   return manifests.filter((m) => {
     if (m.kind !== kind) return false;
-    return Boolean(m.json.dependencies?.[packageName]);
+    return Boolean(m.json.dependencies?.[package_name]);
   });
 }
