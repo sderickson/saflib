@@ -32,14 +32,6 @@ const htmlTagDescriptor: HtmlTagDescriptor[] = [
   {
     tag: "link",
     attrs: {
-      rel: "stylesheet",
-      href: "https://cdn.jsdelivr.net/npm/@mdi/font@7.x/css/materialdesignicons.min.css",
-    },
-    injectTo: "head",
-  },
-  {
-    tag: "link",
-    attrs: {
       rel: "preconnect",
       href: "https://fonts.googleapis.com",
     },
