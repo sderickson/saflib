@@ -47,7 +47,7 @@ describe("getSentEmails", () => {
 
     const response = await request(routerApp)
       .get(`/email/sent`)
-      .query({ userEmail: email1 });
+      .query({ user_email: email1 });
 
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
@@ -56,7 +56,7 @@ describe("getSentEmails", () => {
 
     const response2 = await request(routerApp)
       .get(`/email/sent`)
-      .query({ userEmail: email2 });
+      .query({ user_email: email2 });
 
     expect(response2.status).toBe(200);
     expect(Array.isArray(response2.body)).toBe(true);

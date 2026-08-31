@@ -3,7 +3,7 @@ get:
   summary: List all sent emails
   operationId: listSentEmails
   parameters:
-    - name: userEmail
+    - name: user_email
       in: query
       schema:
         type: string

@@ -11,7 +11,7 @@ export function sentEmailsQueryOptions(userEmail: Ref<string>) {
       const q = userEmail.value.trim();
       return handleClientMethod(
         client.GET("/email/sent", {
-          params: { query: { userEmail: q || undefined } },
+          params: { query: { user_email: q || undefined } },
         }),
       );
     },

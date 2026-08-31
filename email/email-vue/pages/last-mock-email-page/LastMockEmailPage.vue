@@ -6,9 +6,9 @@
           <h3>{{ lastEmail.subject }}</h3>
         </v-card-title>
         <v-card-text>
-          <div v-if="lastEmail.timeSent" class="mb-2">
+          <div v-if="lastEmail.time_sent" class="mb-2">
             <strong>Time Sent:</strong>
-            {{ new Date(lastEmail.timeSent).toLocaleString() }}
+            {{ new Date(lastEmail.time_sent).toLocaleString() }}
           </div>
           <div v-if="lastEmail.to && lastEmail.to.length > 0" class="mb-2">
             <strong>{{ strings.email_details.to }}</strong
@@ -27,11 +27,11 @@
             >: {{ formatRecipients(lastEmail.from) }}
           </div>
           <div
-            v-if="lastEmail.replyTo && lastEmail.replyTo.length > 0"
+            v-if="lastEmail.reply_to && lastEmail.reply_to.length > 0"
             class="mb-2"
           >
             <strong>{{ strings.email_details.replyTo }}</strong
-            >: {{ lastEmail.replyTo.join(", ") }}
+            >: {{ lastEmail.reply_to.join(", ") }}
           </div>
           <hr />
           <div v-if="lastEmail.text" class="mb-2">

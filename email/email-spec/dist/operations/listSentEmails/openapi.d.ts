@@ -34,8 +34,8 @@ export interface components {
             html?: string;
             attachments?: string[];
             from: string;
-            timeSent?: number;
-            replyTo?: string[];
+            time_sent?: number;
+            reply_to?: string[];
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
@@ -59,7 +59,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description The email address of the user to get sent emails to or from */
-                userEmail?: string;
+                user_email?: string;
             };
             header?: never;
             path?: never;

@@ -12,7 +12,7 @@ export function useLastMockEmailPageLoader() {
   const { data: session, status: sessionStatus } = useKratosSession();
 
   const userEmail = computed(() => {
-    const q = route.query.userEmail;
+    const q = route.query.user_email;
     if (typeof q === "string" && q.trim()) {
       return q.trim();
     }
@@ -21,8 +21,8 @@ export function useLastMockEmailPageLoader() {
 
   const sentEmailsEnabled = computed(() => {
     const explicitUserEmail =
-      typeof route.query.userEmail === "string" &&
-      route.query.userEmail.trim().length > 0;
+      typeof route.query.user_email === "string" &&
+      route.query.user_email.trim().length > 0;
     if (explicitUserEmail) {
       return true;
     }

@@ -6,7 +6,7 @@ export type EmailOptions = {
   cc?: EmailAddress | EmailAddress[];
   bcc?: EmailAddress | EmailAddress[];
   from?: EmailAddress;
-  replyTo?: EmailAddress | EmailAddress[];
+  reply_to?: EmailAddress | EmailAddress[];
   subject?: string;
   text?: string | Buffer;
   html?: string | Buffer;
@@ -15,7 +15,7 @@ export type EmailOptions = {
 
 /** A record of an email that was sent. Only used for mocking. */
 export interface SentEmail extends EmailOptions {
-  timeSent: number;
+  time_sent: number;
 }
 
 /** Result of sending an email. */

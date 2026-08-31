@@ -18,7 +18,7 @@ const mockEmails: EmailResponseBody["listSentEmails"][200] = [
     text: "This is a test email",
     html: "<p>This is a test email</p>",
     from: "test-sender@example.com",
-    timeSent: 1,
+    time_sent: 1,
   },
   {
     to: ["recipient@example.com"],
@@ -28,7 +28,7 @@ const mockEmails: EmailResponseBody["listSentEmails"][200] = [
     subject: "Latest Test Email",
     text: "This is the latest test email",
     html: "<p>This is the latest test email</p>",
-    timeSent: 2,
+    time_sent: 2,
   },
 ];
 
@@ -48,7 +48,7 @@ describe("LastMockEmailPage", () => {
   expect(server).toBeDefined();
 
   const mountComponent = async (component: Component) => {
-    const route = `/last-email?userEmail=recipient@example.com`;
+    const route = `/last-email?user_email=recipient@example.com`;
     await router.push(route);
     const res = mountTestApp(component);
     return res;
