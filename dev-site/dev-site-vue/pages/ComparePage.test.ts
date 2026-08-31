@@ -26,7 +26,7 @@ const mockList: ListResponse = {
       message: "after",
       refs: [],
       analyzerVersion: "1",
-      computedAt: "2026-01-02T01:00:00.000Z",
+      computed_at: "2026-01-02T01:00:00.000Z",
       status: "complete",
       summaryMetrics: summaryMetricsFixture({
         packageCount: 1,
@@ -45,7 +45,7 @@ const mockList: ListResponse = {
       message: "before",
       refs: [],
       analyzerVersion: "1",
-      computedAt: "2026-01-01T01:00:00.000Z",
+      computed_at: "2026-01-01T01:00:00.000Z",
       status: "complete",
       summaryMetrics: summaryMetricsFixture({
         packageCount: 1,

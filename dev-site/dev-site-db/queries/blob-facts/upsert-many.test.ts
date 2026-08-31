@@ -42,7 +42,7 @@ describe("blob-facts", () => {
             imports: [],
             localExportUsages: [],
           },
-          computedAt: new Date("2026-01-01T00:00:00Z"),
+          computed_at: new Date("2026-01-01T00:00:00Z"),
         },
       ]),
     );
@@ -72,7 +72,7 @@ describe("blob-facts", () => {
             imports: [],
             localExportUsages: [],
           },
-          computedAt: new Date("2026-01-01T00:00:00Z"),
+          computed_at: new Date("2026-01-01T00:00:00Z"),
         },
       ]),
     );
@@ -95,7 +95,7 @@ describe("blob-facts", () => {
             imports: [],
             localExportUsages: [],
           },
-          computedAt: new Date("2026-01-02T00:00:00Z"),
+          computed_at: new Date("2026-01-02T00:00:00Z"),
         },
       ]),
     );

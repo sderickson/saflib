@@ -21,7 +21,7 @@ const mockDetail: GetResponse = {
       message: "add math helpers",
       refs: [],
       analyzerVersion: "1",
-      computedAt: "2026-01-02T01:00:00.000Z",
+      computed_at: "2026-01-02T01:00:00.000Z",
       status: "complete",
     },
     packageMetrics: [

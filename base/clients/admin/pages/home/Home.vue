@@ -7,11 +7,11 @@
       <p class="text-medium-emphasis mb-1">{{ t(strings.gitHashesHeading) }}</p>
       <p class="mb-0">
         <span class="text-medium-emphasis">{{ t(strings.gitHashRoot) }}:</span>
-        <code class="ms-1">{{ gitHashes.root }}</code>
+        <code class="ms-1">{{ git_hashes.root }}</code>
       </p>
       <p class="mb-0">
         <span class="text-medium-emphasis">{{ t(strings.gitHashSaflib) }}:</span>
-        <code class="ms-1">{{ gitHashes.saflib }}</code>
+        <code class="ms-1">{{ git_hashes.saflib }}</code>
       </p>
     </div>
 
@@ -33,5 +33,5 @@ const { t } = useReverseT();
 
 useHomeLoader();
 
-const gitHashes = getGitHashes();
+const git_hashes = getGitHashes();
 </script>
