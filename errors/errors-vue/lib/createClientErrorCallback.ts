@@ -7,8 +7,9 @@ export interface ClientErrorCallbackOptions {
 }
 
 /**
- * Vue `createApp` callback: mirror Vue errors to `POST /errors/record`.
- * For Sentry, use `createSentryCallback` from `@saflib/vendors-sentry-client`.
+ * Vue `createApp` callback: log Vue errors (and POST `/errors/record` on
+ * localhost hosts). For Sentry, use `createSentryCallback` from
+ * `@saflib/vendors-sentry-client`.
  */
 export function createClientErrorCallback(
   options: ClientErrorCallbackOptions = {},
@@ -18,7 +19,7 @@ export function createClientErrorCallback(
   return function clientErrorCallback(app: ReturnType<typeof createApp>) {
     const priorErrorHandler = app.config.errorHandler;
     app.config.errorHandler = (error, instance, info) => {
-      void reportClientErrorToBackend(error, { source });
+      void reportClientErrorToBackend(error, { source, info });
       if (priorErrorHandler) {
         priorErrorHandler(error, instance, info);
       }

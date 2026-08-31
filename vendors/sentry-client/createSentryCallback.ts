@@ -1,6 +1,9 @@
 import * as Sentry from "@sentry/vue";
 import { createApp } from "vue";
-import { reportClientErrorToBackend } from "@saflib/errors-vue/lib/reportClientErrorToBackend.ts";
+import {
+  isLocalhostHostname,
+  reportClientErrorToBackend,
+} from "@saflib/errors-vue/lib/reportClientErrorToBackend.ts";
 
 export interface SentryCallbackOptions {
   /** SPA or client name recorded as `source`. */
@@ -8,8 +11,9 @@ export interface SentryCallbackOptions {
 }
 
 /**
- * Vue `createApp` callback: always mirror Vue errors to `POST /errors/record`;
- * init Sentry when `VITE_CLIENT_SENTRY_DSN` is set (skipped on localhost).
+ * Vue `createApp` callback: log Vue errors (and POST `/errors/record` on
+ * localhost hosts). Init Sentry when `VITE_CLIENT_SENTRY_DSN` is set (skipped
+ * on `*.localhost`).
  */
 export function createSentryCallback(options: SentryCallbackOptions = {}) {
   const source = options.source ?? "client";
@@ -17,13 +21,13 @@ export function createSentryCallback(options: SentryCallbackOptions = {}) {
   return function sentryCallback(app: ReturnType<typeof createApp>) {
     const priorErrorHandler = app.config.errorHandler;
     app.config.errorHandler = (error, instance, info) => {
-      void reportClientErrorToBackend(error, { source });
+      void reportClientErrorToBackend(error, { source, info });
       if (priorErrorHandler) {
         priorErrorHandler(error, instance, info);
       }
     };
 
-    if (document.location.hostname.includes("localhost")) {
+    if (isLocalhostHostname()) {
       console.log("Sentry disabled for localhost");
       return;
     }
@@ -36,16 +40,6 @@ export function createSentryCallback(options: SentryCallbackOptions = {}) {
       app,
       dsn: import.meta.env.VITE_CLIENT_SENTRY_DSN,
       sendDefaultPii: true,
-      beforeSend(event) {
-        const message =
-          event.message ??
-          event.exception?.values?.[0]?.value ??
-          "Unknown client error";
-        void reportClientErrorToBackend(new Error(message), {
-          source,
-        });
-        return event;
-      },
     });
   };
 }
