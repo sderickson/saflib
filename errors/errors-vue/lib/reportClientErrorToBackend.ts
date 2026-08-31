@@ -4,6 +4,8 @@ import type { ErrorsRequestBody } from "@saflib/errors-spec";
 export interface ClientErrorReporterOptions {
   /** SPA or client name recorded as `source`. */
   source?: string;
+  /** Vue errorHandler `info` (component lifecycle hook name, etc.). */
+  info?: string;
 }
 
 function errorToReportedError(
@@ -25,13 +27,31 @@ function errorToReportedError(
   };
 }
 
+/** True when the browser host is a local/dev domain (`localhost` or `*.localhost`). */
+export function isLocalhostHostname(
+  hostname: string = globalThis.location?.hostname ?? "",
+): boolean {
+  return hostname === "localhost" || hostname.endsWith(".localhost");
+}
+
 /**
- * POST a client error to the backend ring buffer (best-effort).
+ * Always `console.error`s. POSTs to the backend ring buffer only on localhost
+ * hosts (e.g. `daemon/dev`, `deploy` prod-local) — not production.
  */
 export async function reportClientErrorToBackend(
   error: unknown,
   options: ClientErrorReporterOptions = {},
 ): Promise<void> {
+  if (options.info) {
+    console.error(`[vue] ${options.info}`, error);
+  } else {
+    console.error(error);
+  }
+
+  if (!isLocalhostHostname()) {
+    return;
+  }
+
   const source = options.source ?? "client";
   try {
     await recordReportedError({
