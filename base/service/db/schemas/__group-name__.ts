@@ -1,4 +1,4 @@
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 import { generateShortId } from "@saflib/drizzle";
 // BEGIN ONCE WORKFLOW AREA drizzleImport FOR drizzle/update-schema IF file
@@ -17,6 +17,8 @@ export interface __GroupName__Entity
   {
   id: string;
   name: string;
+  created_at: Date;
+  updated_at: Date;
   some_enum: SomeEnum;
 }
 
@@ -26,6 +28,8 @@ export const __groupName__Table = sqliteTable("__group_name___table", {
     .primaryKey()
     .$defaultFn(() => generateShortId()),
   name: text("name").notNull(),
+  created_at: integer("created_at", { mode: "timestamp" }).notNull(),
+  updated_at: integer("updated_at", { mode: "timestamp" }).notNull(),
   some_enum: text("stub_enum", { enum: someEnum }).notNull(),
   // BEGIN ONCE WORKFLOW AREA tableColumns FOR drizzle/update-schema IF file
   ...fileMetadataColumns,

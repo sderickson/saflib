@@ -3,15 +3,23 @@ import { text, integer } from "drizzle-orm/sqlite-core";
 /**
  * Common file metadata columns for tables that reference files stored in Azure Blob Storage.
  * Use these columns when your table stores metadata about a file (blob_name, file_original_name, mimetype, size).
+ * Timestamps (`created_at` / `updated_at`) are not included — declare them on each table so
+ * non-file tables and file tables share the same timestamp pattern.
  *
  * @example
  * ```ts
  * import { fileMetadataColumns, generateShortId } from "@saflib/drizzle";
+ * import { integer } from "drizzle-orm/sqlite-core";
  *
  * export const myFileTable = sqliteTable("my_file", {
  *   id: text("id").primaryKey().$defaultFn(() => generateShortId()),
  *   ...fileMetadataColumns,
- *   // other columns...
+ *   created_at: integer("created_at", { mode: "timestamp" })
+ *     .notNull()
+ *     .$defaultFn(() => new Date()),
+ *   updated_at: integer("updated_at", { mode: "timestamp" })
+ *     .notNull()
+ *     .$defaultFn(() => new Date()),
  * });
  * ```
  */
@@ -21,17 +29,12 @@ export const fileMetadataColumns = {
   mimetype: text("mimetype").notNull(),
   size: integer("size").notNull(),
   md5_hash: text("md5_hash"),
-  created_at: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updated_at: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
 } as const;
 
 /**
  * TypeScript interface for file metadata fields.
  * Use this in your Entity interface when your table includes fileMetadataColumns.
+ * Add `created_at` / `updated_at` on the entity itself (not via this interface).
  *
  * @example
  * ```ts
@@ -39,6 +42,8 @@ export const fileMetadataColumns = {
  *
  * export interface MyFileEntity extends FileMetadataFields {
  *   id: string;
+ *   created_at: Date;
+ *   updated_at: Date;
  *   // other fields...
  * }
  * ```
@@ -49,6 +54,4 @@ export interface FileMetadataFields {
   mimetype: string;
   size: number;
   md5_hash: string | null;
-  created_at: Date;
-  updated_at: Date;
 }
