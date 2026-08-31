@@ -151,8 +151,30 @@ export function makeProductInitLineReplace(context: InitProductWorkflowContext) 
       prepared = prepared.replace(/,__subdomain-name__/g, "");
     }
 
+    // Vite define — looks like a placeholder but is a framework constant.
+    if (prepared.includes("__VUE_PROD_DEVTOOLS__")) {
+      return finishProductInitLineReplace(prepared, context, {
+        dockerFrom,
+        dockerTo,
+        pascal,
+        snakeUpper,
+        sourcePascal,
+        sourceSnakeUpper,
+      });
+    }
+
     if (isSkippedStubRefLine(prepared)) {
       return "";
+    }
+
+    // Generated Dockerfiles list stub package paths for base's own builds;
+    // drop those segments before placeholder replace so unknown __tokens__
+    // in COPY lines do not warn.
+    if (/^\s*COPY\b/.test(prepared)) {
+      prepared = prepared
+        .split(/\s+/)
+        .filter((tok) => !/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(tok))
+        .join(" ");
     }
 
     // Unknown __tokens__ in comments / SQL stay literal when not dropped above —
@@ -172,55 +194,83 @@ export function makeProductInitLineReplace(context: InitProductWorkflowContext) 
       }
     }
 
-    // Generated Dockerfiles list stub package paths for base's own builds;
-    // drop those segments once known tokens (e.g. __product-name__) are filled.
-    if (/^\s*COPY\b/.test(out)) {
-      out = out
-        .split(/\s+/)
-        .filter((tok) => !/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(tok))
-        .join(" ");
-    }
-
-    // Preserve the thin @saflib/templates package name / path (do not treat
-    // "templates" lines as exempt from /base/ → /product/ path renames —
-    // monolith Dockerfiles mention both).
-    const preserveTemplates =
-      out.includes("@saflib/templates") || out.includes("saflib/templates/");
-
-    out = preserveTemplates
-      ? out
-      : out.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
-    out = out
-      .split("@saflib/deploy")
-      .join(`@${context.organizationName}/deploy`);
-    out = out.split(dockerFrom).join(dockerTo);
-    out = out.split(SOURCE_DOMAIN).join(context.domainName);
-
-    // Path / token renames — avoid bare "base" (database, based, …).
-    out = out.replaceAll(`/${SOURCE_PRODUCT_NAME}/`, `/${context.productName}/`);
-    out = out.replaceAll(
-      `./${SOURCE_PRODUCT_NAME}/`,
-      `./${context.productName}/`,
-    );
-    out = out.replaceAll(`${SOURCE_PRODUCT_NAME}-`, `${context.productName}-`);
-    out = out.replaceAll(
-      `/${SOURCE_PRODUCT_NAME}-`,
-      `/${context.productName}-`,
-    );
-    out = out.replaceAll(`${sourceSnakeUpper}_`, `${snakeUpper}_`);
-    out = out.replaceAll(sourcePascal, pascal);
-
-    out = out.replace(
-      new RegExp(`\\b${SOURCE_PRODUCT_NAME}\\b`, "g"),
-      context.productName,
-    );
-    out = out.replace(
-      new RegExp(`\\b${sourceSnakeUpper}\\b`, "g"),
+    return finishProductInitLineReplace(out, context, {
+      dockerFrom,
+      dockerTo,
+      pascal,
       snakeUpper,
-    );
-
-    return out;
+      sourcePascal,
+      sourceSnakeUpper,
+    });
   };
+}
+
+function finishProductInitLineReplace(
+  out: string,
+  context: InitProductWorkflowContext,
+  names: {
+    dockerFrom: string;
+    dockerTo: string;
+    pascal: string;
+    snakeUpper: string;
+    sourcePascal: string;
+    sourceSnakeUpper: string;
+  },
+): string {
+  const {
+    dockerFrom,
+    dockerTo,
+    pascal,
+    snakeUpper,
+    sourcePascal,
+    sourceSnakeUpper,
+  } = names;
+
+  // Preserve the thin @saflib/templates package name / path (do not treat
+  // "templates" lines as exempt from /base/ → /product/ path renames —
+  // monolith Dockerfiles mention both).
+  const preserveTemplates =
+    out.includes("@saflib/templates") || out.includes("saflib/templates/");
+
+  let result = preserveTemplates
+    ? out
+    : out.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
+  result = result
+    .split("@saflib/deploy")
+    .join(`@${context.organizationName}/deploy`);
+  result = result.split(dockerFrom).join(dockerTo);
+  result = result.split(SOURCE_DOMAIN).join(context.domainName);
+
+  // Path / token renames — avoid bare "base" (database, based, …).
+  result = result.replaceAll(
+    `/${SOURCE_PRODUCT_NAME}/`,
+    `/${context.productName}/`,
+  );
+  result = result.replaceAll(
+    `./${SOURCE_PRODUCT_NAME}/`,
+    `./${context.productName}/`,
+  );
+  result = result.replaceAll(
+    `${SOURCE_PRODUCT_NAME}-`,
+    `${context.productName}-`,
+  );
+  result = result.replaceAll(
+    `/${SOURCE_PRODUCT_NAME}-`,
+    `/${context.productName}-`,
+  );
+  result = result.replaceAll(`${sourceSnakeUpper}_`, `${snakeUpper}_`);
+  result = result.replaceAll(sourcePascal, pascal);
+
+  result = result.replace(
+    new RegExp(`\\b${SOURCE_PRODUCT_NAME}\\b`, "g"),
+    context.productName,
+  );
+  result = result.replace(
+    new RegExp(`\\b${sourceSnakeUpper}\\b`, "g"),
+    snakeUpper,
+  );
+
+  return result;
 }
 
 export const InitProductWorkflowDefinition = defineWorkflow<

@@ -97,6 +97,12 @@ describe("makeProductInitLineReplace", () => {
     );
   });
 
+  it("leaves Vite framework defines literal", () => {
+    expect(
+      replace("      __VUE_PROD_DEVTOOLS__: JSON.stringify(false),"),
+    ).toBe("      __VUE_PROD_DEVTOOLS__: JSON.stringify(false),");
+  });
+
   it("strips unresolved stub path segments from Dockerfile COPY lines", () => {
     const line =
       "COPY --parents ./package.json ./saflib/base/service/integrations/__integration-name__/package.json ./saflib/templates/package.json ./";

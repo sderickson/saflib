@@ -269,7 +269,9 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
     // special case, because npm doesn't allow package names to start with an underscore
     replaceMap[`template-package`] = context["sharedPackagePrefix"];
   }
-  const interpolationRegex = /__(.+?)__/g;
+  // Only real placeholders: __token__ with identifier chars. Avoids false
+  // positives like CSS `.mkt-blurb__paragraph + .mkt-blurb__` or globs `__*__`.
+  const interpolationRegex = /__[A-Za-z][A-Za-z0-9_-]*__/g;
   return (line: string) => {
     let newLine = line;
     if (line.includes("template-package") && context["sharedPackagePrefix"]) {

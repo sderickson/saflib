@@ -3,7 +3,7 @@
   "saf": {
     "kind": "test"
   },
-  "description": "Shared factories for core service models used in unit tests (SPA, HTTP, SDK fakes). Offshoot-specific helpers live in packages like @saflib/base-__offshoot-name__-test.",
+  "description": "Shared factories for core service models used in unit tests (SPA, HTTP, SDK fakes). Offshoot-specific helpers live in each offshoot's *-test package.",
   "private": true,
   "type": "module",
   "exports": {

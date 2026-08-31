@@ -325,6 +325,18 @@ describe("templating", () => {
       );
     });
 
+    it("ignores CSS/glob lookalikes that are not placeholder tokens", () => {
+      const context = { serviceName: "identity-db" };
+      const lineReplace = makeLineReplace(context);
+
+      expect(
+        lineReplace(".mkt-blurb__paragraph + .mkt-blurb__paragraph {"),
+      ).toBe(".mkt-blurb__paragraph + .mkt-blurb__paragraph {");
+      expect(lineReplace('exclude: ["**/__*__/**", "**/e2e/**"],')).toBe(
+        'exclude: ["**/__*__/**", "**/e2e/**"],',
+      );
+    });
+
     it("should handle empty context", () => {
       const context = {};
       const lineReplace = makeLineReplace(context);

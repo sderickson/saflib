@@ -32,6 +32,11 @@ export const DEFAULT_SKIP_SOURCE_GLOBS = [
   // workflow area markers and crash validateWorkflowAreas during product/init.
   "**/*.sqlite",
   "**/*.sqlite-*",
+  // Generated / derived artifacts — regenerate after product/init (saf-env,
+  // drizzle-kit) rather than copying golden stubs with unresolved tokens.
+  "**/env.ts",
+  "**/env.schema.combined.json",
+  "**/migrations/**",
   // Local workflow runtime state (gitignored) — often contains leftover
   // __stub__ template paths that break makeLineReplace during product/init.
   "**/saf-workflow-status.json",
