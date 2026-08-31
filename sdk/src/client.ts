@@ -22,11 +22,13 @@ export const getBaseUrl = (serviceSubdomain: string) => {
 /**
  * Given a "paths" openapi generated type and a subdomain, creates a typed `openapi-fetch` client which queries the given subdomain. Uses the current domain and protocol. Handles CSRF token injection, and works in tests.
  */
+const UNRESOLVED_PATH_PARAM_RE = /\{[A-Za-z0-9_]+\}|%7B[A-Za-z0-9_]+%7D/i;
+
 export const createSafClient = <Q extends {}>(
   serviceSubdomain: string,
 ): ReturnType<typeof createClient<Q>> => {
   const baseUrl = getBaseUrl(serviceSubdomain);
-  return createClient<Q>({
+  const client = createClient<Q>({
     baseUrl,
     credentials: "include",
     fetch: (request) => {
@@ -45,6 +47,20 @@ export const createSafClient = <Q extends {}>(
       return fetch(request);
     },
   });
+
+  // openapi-fetch leaves `{param}` in the URL when a path value is null/undefined.
+  client.use({
+    onRequest({ request }) {
+      if (UNRESOLVED_PATH_PARAM_RE.test(request.url)) {
+        throw new Error(
+          `Unresolved OpenAPI path parameter in request URL: ${request.url}`,
+        );
+      }
+      return request;
+    },
+  });
+
+  return client;
 };
 
 /**
