@@ -127,6 +127,27 @@ describe("shouldSkipSourcePath", () => {
     ).toBe(true);
   });
 
+  it("skips local sqlite databases and sidecars", () => {
+    expect(
+      shouldSkipSourcePath(
+        "/repo/dev/dev-site-data/dev-site.sqlite",
+        input,
+      ),
+    ).toBe(true);
+    expect(
+      shouldSkipSourcePath(
+        "/repo/dev/dev-site-data/dev-site.sqlite-wal",
+        input,
+      ),
+    ).toBe(true);
+    expect(
+      shouldSkipSourcePath(
+        "/repo/dev/dev-site-data/dev-site.sqlite-shm",
+        input,
+      ),
+    ).toBe(true);
+  });
+
   it("still copies vitepress theme source", () => {
     expect(
       shouldSkipSourcePath(

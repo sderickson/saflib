@@ -28,6 +28,10 @@ export const DEFAULT_SKIP_SOURCE_GLOBS = [
   // vuetify_components_*.js; not source, and huge noise during product/init.
   "**/.vitepress/cache/**",
   "**/.vitepress/.temp/**",
+  // Local SQLite DBs + WAL/SHM (gitignored). Binary WAL bytes can look like
+  // workflow area markers and crash validateWorkflowAreas during product/init.
+  "**/*.sqlite",
+  "**/*.sqlite-*",
   // Local workflow runtime state (gitignored) — often contains leftover
   // __stub__ template paths that break makeLineReplace during product/init.
   "**/saf-workflow-status.json",
