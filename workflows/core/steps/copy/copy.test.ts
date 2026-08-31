@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createActor } from "xstate";
-import { CopyStepMachine } from "./copy-template-machine.ts";
+import {
+  CopyStepMachine,
+  shouldSkipSourcePath,
+} from "./copy-template-machine.ts";
 import { workflowAllSettled } from "../../utils.ts";
 import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import path from "node:path";
@@ -106,5 +109,30 @@ export default {
       "utf-8",
     );
     expect(existingFile).toBe("existing content");
+  });
+});
+
+describe("shouldSkipSourcePath", () => {
+  const input = { targetDir: "/tmp/out" };
+
+  it("skips vitepress cache and temp under default globs", () => {
+    expect(
+      shouldSkipSourcePath(
+        "/repo/clients/root/.vitepress/cache/deps/vuetify_components_VToolbar.js",
+        input,
+      ),
+    ).toBe(true);
+    expect(
+      shouldSkipSourcePath("/repo/clients/root/.vitepress/.temp/foo", input),
+    ).toBe(true);
+  });
+
+  it("still copies vitepress theme source", () => {
+    expect(
+      shouldSkipSourcePath(
+        "/repo/clients/root/.vitepress/theme/index.ts",
+        input,
+      ),
+    ).toBe(false);
   });
 });
