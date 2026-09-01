@@ -14,10 +14,10 @@ function inputNode(
   return {
     type: "input",
     group,
-    attributes: { node_type: "input", name, type },
+    attributes: { node_type: "input", name, type, disabled: false },
     messages: [],
     meta: {},
-  } as UiNode;
+  } as unknown as UiNode;
 }
 
 describe("focusableInputNames", () => {

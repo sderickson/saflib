@@ -66,14 +66,14 @@ function focusFieldByName(form: HTMLFormElement, name: string): boolean {
   }
 
   const named = form.querySelectorAll(`[name="${cssAttrEscape(name)}"]`);
-  for (const el of named) {
+  for (const el of Array.from(named)) {
     if (el instanceof HTMLElement && isVisibleFocusable(el)) {
       el.focus();
       return true;
     }
   }
 
-  for (const el of named) {
+  for (const el of Array.from(named)) {
     if (!(el instanceof HTMLElement)) continue;
     const container =
       el.closest(".v-input, .kratos-flow-form__field, fieldset") ??
@@ -94,7 +94,7 @@ export function focusFirstFocusableInForm(form: HTMLFormElement): boolean {
   const candidates = form.querySelectorAll<HTMLElement>(
     "input:not([type='hidden']):not([type='submit']):not([type='button']), textarea, select",
   );
-  for (const el of candidates) {
+  for (const el of Array.from(candidates)) {
     if (isVisibleFocusable(el)) {
       el.focus();
       return true;
