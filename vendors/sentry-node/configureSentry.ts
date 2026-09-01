@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/node";
-import { addErrorCollector, getSafReporters, sanitizeTelemetryEvent } from "@saflib/node";
+import { addErrorCollector, getSafReporters } from "@saflib/node";
+import { sanitizeTelemetryEvent } from "@saflib/utils/telemetry-sanitize";
 import { installReportedErrorCollector } from "@saflib/errors-http/lib/initErrorsServer";
 import { typedEnv } from "./env.ts";
 

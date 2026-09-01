@@ -7,7 +7,6 @@ export * from "./src/git-hashes.ts";
 export * from "./src/metrics.ts";
 export * from "./src/types.ts";
 export * from "./src/signAssertion.ts";
-export * from "./src/telemetrySanitize.ts";
 export {
   configureInternalAssertionKeys,
   SAF_INTERNAL_ASSERTION_KEYS_NAME,

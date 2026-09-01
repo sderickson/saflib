@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/vue";
-import { sanitizeTelemetryEvent } from "@saflib/node";
+import { sanitizeTelemetryEvent } from "@saflib/utils/telemetry-sanitize";
 import { createApp } from "vue";
 import {
   isLocalhostHostname,

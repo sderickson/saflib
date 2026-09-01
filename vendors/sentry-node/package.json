@@ -22,6 +22,7 @@
     "@saflib/env": "*",
     "@saflib/errors-http": "*",
     "@saflib/node": "*",
+    "@saflib/utils": "*",
     "@sentry/node": "^10.0.0",
     "@sentry/vite-plugin": "^5.2.1"
   },

@@ -8,7 +8,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./auth-error-codes": "./auth-error-codes.ts"
+    "./auth-error-codes": "./auth-error-codes.ts",
+    "./telemetry-sanitize": "./telemetrySanitize.ts"
   },
   "scripts": {
     "test": "vitest run",

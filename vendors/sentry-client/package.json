@@ -18,7 +18,7 @@
   "dependencies": {
     "@ory/client": "*",
     "@saflib/errors-vue": "*",
-    "@saflib/node": "*",
+    "@saflib/utils": "*",
     "@sentry/vue": "^10.0.0"
   },
   "peerDependencies": {
