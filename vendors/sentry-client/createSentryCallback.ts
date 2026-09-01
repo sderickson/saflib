@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/vue";
+import { sanitizeTelemetryEvent } from "@saflib/node";
 import { createApp } from "vue";
 import {
   isLocalhostHostname,
@@ -39,7 +40,10 @@ export function createSentryCallback(options: SentryCallbackOptions = {}) {
     Sentry.init({
       app,
       dsn: import.meta.env.VITE_CLIENT_SENTRY_DSN,
-      sendDefaultPii: true,
+      sendDefaultPii: false,
+      beforeSend(event) {
+        return sanitizeTelemetryEvent(event);
+      },
     });
   };
 }
