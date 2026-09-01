@@ -110,7 +110,16 @@ export const handleClientMethod = async <T>(
     // This is because UI should not render the untranslated error message, but instead
     // give the user a message based on the HTTP status or, if that's not sufficient,
     // the error code.
-    throw new TanstackError(result.response.status, result.error.code);
+    const errorBody = result.error as Record<string, unknown>;
+    const { code, message, status, ...fields } = errorBody;
+    const extraFields = Object.fromEntries(
+      Object.entries(fields).filter(([, value]) => value !== undefined),
+    );
+    throw new TanstackError(
+      result.response.status,
+      typeof code === "string" ? code : undefined,
+      Object.keys(extraFields).length > 0 ? extraFields : undefined,
+    );
   }
   if (result.data === undefined) {
     if (result.response.status === 204) {

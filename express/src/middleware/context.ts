@@ -22,13 +22,19 @@ function defaultKratosBrowserUrl(): string {
   return "http://kratos:4433";
 }
 
-async function resolveKratosAuth(cookie: string): Promise<Auth> {
+async function resolveKratosAuth(
+  cookie: string | undefined,
+): Promise<Auth | undefined> {
   const baseUrl = defaultKratosBrowserUrl().replace(/\/$/, "");
-  const res = await fetch(`${baseUrl}/sessions/whoami`, {
-    headers: {
-      Cookie: cookie,
-    },
-  });
+  const headers: Record<string, string> = {};
+  if (cookie) {
+    headers.Cookie = cookie;
+  }
+  const res = await fetch(`${baseUrl}/sessions/whoami`, { headers });
+  // Stale/missing session after Caddy forward_auth — treat as anonymous, not gateway failure.
+  if (res.status === 401 || res.status === 403) {
+    return undefined;
+  }
   if (!res.ok) {
     throw createError(502, `Kratos session lookup failed: ${res.status}`);
   }
@@ -195,7 +201,14 @@ async function resolveAuth(req: Request): Promise<AuthResolution> {
 
   const kratosId = req.headers["x-kratos-authenticated-identity-id"];
   if (typeof kratosId === "string" && kratosId.length > 0) {
-    return { auth: await resolveKratosAuth(req.headers.cookie as string) };
+    const cookie =
+      typeof req.headers.cookie === "string" ? req.headers.cookie : undefined;
+    const auth = await resolveKratosAuth(cookie);
+    if (auth) {
+      return { auth };
+    }
+    // Edge stamped identity id but session cookie no longer valid (logout, expiry, test teardown).
+    return {};
   }
   if (typedEnv.NODE_ENV === "test") {
     return { auth: resolveTestAuth(req) };
