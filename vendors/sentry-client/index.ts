@@ -8,3 +8,4 @@ export {
   sentryCallback,
   type SentryCallbackOptions,
 } from "./createSentryCallback.ts";
+export { identifyToSentry, resetSentryUser } from "./identify.ts";
