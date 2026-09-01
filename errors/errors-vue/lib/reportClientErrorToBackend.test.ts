@@ -13,8 +13,8 @@ import { recordReportedError } from "@saflib/errors-sdk";
 describe("isLocalhostHostname", () => {
   it("matches localhost and *.localhost", () => {
     expect(isLocalhostHostname("localhost")).toBe(true);
-    expect(isLocalhostHostname("app.daemon.docker.localhost")).toBe(true);
-    expect(isLocalhostHostname("casedaemon.com")).toBe(false);
+    expect(isLocalhostHostname("app.myapp.docker.localhost")).toBe(true);
+    expect(isLocalhostHostname("example.com")).toBe(false);
     expect(isLocalhostHostname("localhost.com")).toBe(false);
   });
 });
@@ -32,7 +32,7 @@ describe("reportClientErrorToBackend", () => {
   });
 
   it("always console.errors and posts on *.localhost", async () => {
-    vi.stubGlobal("location", { hostname: "app.daemon.docker.localhost" });
+    vi.stubGlobal("location", { hostname: "app.myapp.docker.localhost" });
     const err = new Error("boom");
     await reportClientErrorToBackend(err, { source: "app", info: "render" });
     expect(consoleError).toHaveBeenCalledWith("[vue] render", err);
@@ -40,7 +40,7 @@ describe("reportClientErrorToBackend", () => {
   });
 
   it("console.errors but does not post on production hosts", async () => {
-    vi.stubGlobal("location", { hostname: "app.casedaemon.com" });
+    vi.stubGlobal("location", { hostname: "app.example.com" });
     const err = new Error("boom");
     await reportClientErrorToBackend(err, { source: "app" });
     expect(consoleError).toHaveBeenCalledWith(err);

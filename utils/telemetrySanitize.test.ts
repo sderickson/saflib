@@ -12,12 +12,12 @@ describe("sanitizeTelemetryCookieMap", () => {
       sanitizeTelemetryCookieMap({
         _csrf_token: "[Filtered]",
         ory_kratos_session: "secret-session",
-        pathclerk_currentOrgId: "Org1",
+        app_currentOrgId: "Org1",
       }),
     ).toEqual({
       _csrf_token: "[Filtered]",
       ory_kratos_session: TELEMETRY_FILTERED_VALUE,
-      pathclerk_currentOrgId: "Org1",
+      app_currentOrgId: "Org1",
     });
   });
 });
@@ -26,10 +26,10 @@ describe("sanitizeTelemetryCookieHeader", () => {
   it("filters sensitive cookies in a Cookie header string", () => {
     expect(
       sanitizeTelemetryCookieHeader(
-        "ory_kratos_session=abc123; pathclerk.currentOrgId=Org1",
+        "ory_kratos_session=abc123; app.currentOrgId=Org1",
       ),
     ).toBe(
-      `ory_kratos_session=${TELEMETRY_FILTERED_VALUE}; pathclerk.currentOrgId=Org1`,
+      `ory_kratos_session=${TELEMETRY_FILTERED_VALUE}; app.currentOrgId=Org1`,
     );
   });
 });
@@ -47,8 +47,8 @@ describe("sanitizeTelemetryEvent", () => {
       },
       contexts: {
         vue: {
-          componentName: "CommunicationsPage",
-          propsData: { matterId: "Mt_secret" },
+          componentName: "SettingsPage",
+          propsData: { itemId: "item_secret" },
         },
       },
       extra: {
@@ -67,7 +67,7 @@ describe("sanitizeTelemetryEvent", () => {
       },
       contexts: {
         vue: {
-          componentName: "CommunicationsPage",
+          componentName: "SettingsPage",
         },
       },
       extra: {},
