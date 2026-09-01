@@ -85,4 +85,16 @@ describe("workspaceDepsOf", () => {
     );
     expect(deps).toEqual(["@saflib/utils"]);
   });
+
+  it("resolves subpath dependency keys to workspace package roots", () => {
+    const packages = new Set(["@saflib/utils"]);
+    const deps = workspaceDepsOf(
+      {
+        name: "@test/pkg",
+        dependencies: { "@saflib/utils/telemetry-sanitize": "*" },
+      },
+      packages,
+    );
+    expect(deps).toEqual(["@saflib/utils"]);
+  });
 });

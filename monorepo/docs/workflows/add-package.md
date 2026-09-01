@@ -30,7 +30,7 @@ When run, the workflow will:
 - Ensure the new package path 'my-product/lib/my-lib' is included in the "workspaces" array in the root `package.json`.
 - Change working directory to my-product/lib/my-lib
 - Run `npm install`
-- Run `saf-imports tsconfig generate --write` (also runs on root `npm install` via `postinstall`)
+- Run `npm run tsconfig:sync` (also runs on root `npm install` via `postinstall`)
 - Run `npm run test`
 
 ## Help Docs
