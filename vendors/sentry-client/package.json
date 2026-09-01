@@ -8,13 +8,17 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./createSentryCallback": "./createSentryCallback.ts"
+    "./createSentryCallback": "./createSentryCallback.ts",
+    "./identify": "./identify.ts"
   },
   "scripts": {
+    "test": "vitest run",
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@ory/client": "*",
     "@saflib/errors-vue": "*",
+    "@saflib/utils": "*",
     "@sentry/vue": "^10.0.0"
   },
   "peerDependencies": {

@@ -95,3 +95,26 @@ export const getServiceName = (): string => {
   }
   return serviceName;
 };
+
+/**
+ * Run `fn` with `auth.userId` set on the current {@link SafContext}. Use when a
+ * request is anonymous (webhooks, jobs) but should be attributed to the user who
+ * created the related resource for logging, analytics, and error reporting.
+ */
+export async function runWithActingUser<T>(
+  userId: string,
+  fn: () => T | Promise<T>,
+): Promise<T> {
+  const parent = getSafContext();
+  return safContextStorage.run(
+    {
+      ...parent,
+      auth: {
+        ...parent.auth,
+        userId,
+        mfaCompleted: parent.auth?.mfaCompleted ?? true,
+      },
+    },
+    fn,
+  );
+}

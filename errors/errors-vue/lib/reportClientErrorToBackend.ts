@@ -36,7 +36,7 @@ export function isLocalhostHostname(
 
 /**
  * Always `console.error`s. POSTs to the backend ring buffer only on localhost
- * hosts (e.g. `daemon/dev`, `deploy` prod-local) — not production.
+ * hosts (e.g. local Docker dev stacks) — not production.
  */
 export async function reportClientErrorToBackend(
   error: unknown,

@@ -21,11 +21,16 @@
     "outDir": "./dist/types",
     "noEmit": false,
     "emitDeclarationOnly": true,
-    "types": ["vite/client"]
+    "types": [
+      "vite/client"
+    ]
   },
   "references": [
     {
       "path": "../../errors/errors-vue"
+    },
+    {
+      "path": "../../utils"
     }
   ]
 }

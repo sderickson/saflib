@@ -23,6 +23,28 @@ function relFromCwd(absPath: string): string {
   return path.relative(process.cwd(), absPath) || absPath;
 }
 
+function resolveWriteFlag(options: GenerateOptions): boolean {
+  if (options.write) return true;
+  // `npm exec saf-imports tsconfig generate --write` treats `--write` as an npm
+  // flag unless callers use `npm exec -- saf-imports …`. Accept it from argv too.
+  return process.argv.includes("--write");
+}
+
+function printGenerateWriteResult(preview: ReturnType<typeof previewReferencesGenerate>): void {
+  console.log(`Tsconfig generate root: ${preview.rootDir}`);
+  console.log(
+    `Wrote ${preview.written.length} file(s); ${preview.unchanged.length} unchanged.`,
+  );
+  for (const file of preview.written) {
+    console.log(`  wrote ${relFromCwd(file)}`);
+  }
+  if (preview.missingTsconfig.length > 0) {
+    console.log(
+      `\nMissing tsconfig (${preview.missingTsconfig.length}): ${preview.missingTsconfig.join(", ")}`,
+    );
+  }
+}
+
 export const addTsconfigCommand = (program: Command) => {
   const tsconfigCmd = program
     .command("tsconfig")
@@ -79,26 +101,29 @@ export const addTsconfigCommand = (program: Command) => {
     .action((options: GenerateOptions) => {
       const preview = previewReferencesGenerate({
         root: options.root ? path.resolve(options.root) : undefined,
-        write: options.write,
+        write: resolveWriteFlag(options),
       });
 
-      if (options.write) {
-        console.log(`Tsconfig generate root: ${preview.rootDir}`);
-        console.log(
-          `Wrote ${preview.written.length} file(s); ${preview.unchanged.length} unchanged.`,
-        );
-        for (const file of preview.written) {
-          console.log(`  wrote ${relFromCwd(file)}`);
-        }
-        if (preview.missingTsconfig.length > 0) {
-          console.log(
-            `\nMissing tsconfig (${preview.missingTsconfig.length}): ${preview.missingTsconfig.join(", ")}`,
-          );
-        }
+      if (preview.write) {
+        printGenerateWriteResult(preview);
         return;
       }
 
       console.log(JSON.stringify(preview, null, 2));
+    });
+
+  tsconfigCmd
+    .command("sync")
+    .description(
+      "Write package and solution tsconfig references (same as generate --write)",
+    )
+    .option("--root <dir>", "Monorepo root (default: auto-detect from cwd)")
+    .action((options: TsconfigRootOptions) => {
+      const preview = previewReferencesGenerate({
+        root: options.root ? path.resolve(options.root) : undefined,
+        write: true,
+      });
+      printGenerateWriteResult(preview);
     });
 
   tsconfigCmd
@@ -133,7 +158,7 @@ export const addTsconfigCommand = (program: Command) => {
           );
         }
         console.log(
-          "\nRemediation: run `saf-imports tsconfig generate --write`.",
+          "\nRemediation: run `npm run tsconfig:sync` or `npm exec saf-imports -- tsconfig sync`.",
         );
       }
 

@@ -124,6 +124,9 @@ function isUnderDir(dir: string, parentDir: string): boolean {
  * Dev dependencies (test harnesses, vitest, playwright, etc.) are omitted —
  * they are not installed in production Docker builds and must not become
  * composite project references.
+ *
+ * Subpath dependency keys (e.g. `@saflib/utils/telemetry-sanitize`) resolve to
+ * their workspace package root (`@saflib/utils`).
  */
 export function workspaceDepsOf(
   pj: PackageJson,
@@ -131,9 +134,31 @@ export function workspaceDepsOf(
 ): string[] {
   const names = new Set<string>();
   for (const dep of Object.keys(pj.dependencies ?? {})) {
-    if (packages.has(dep)) names.add(dep);
+    const resolved = workspacePackageNameForDep(dep, packages);
+    if (resolved) names.add(resolved);
   }
   return [...names].sort();
+}
+
+function workspacePackageNameForDep(
+  dep: string,
+  packages: Set<string>,
+): string | undefined {
+  if (packages.has(dep)) {
+    return dep;
+  }
+  if (dep.startsWith("@")) {
+    const scopedRoot = /^(@[^/]+\/[^/]+)/.exec(dep)?.[1];
+    if (scopedRoot && packages.has(scopedRoot)) {
+      return scopedRoot;
+    }
+    return undefined;
+  }
+  const unscopedRoot = dep.split("/")[0];
+  if (unscopedRoot && packages.has(unscopedRoot)) {
+    return unscopedRoot;
+  }
+  return undefined;
 }
 
 /**

@@ -4,10 +4,16 @@
 export class TanstackError extends Error {
   status: number;
   code: string | undefined;
-  constructor(status: number, code?: string) {
+  fields: Record<string, unknown> | undefined;
+  constructor(
+    status: number,
+    code?: string,
+    fields?: Record<string, unknown>,
+  ) {
     super("Network error caught by Tanstack");
     this.status = status;
     this.code = code;
+    this.fields = fields;
   }
 }
 

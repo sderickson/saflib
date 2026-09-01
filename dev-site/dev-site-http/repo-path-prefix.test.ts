@@ -3,8 +3,7 @@ import { matchesPathPrefix } from "./repo-path-prefix.ts";
 
 describe("matchesPathPrefix", () => {
   it("matches exact, descendants, and file-stem siblings", () => {
-    const prefix =
-      "product/clients/app/pages/home/settings/CommunicationsPage";
+    const prefix = "product/clients/app/pages/home/settings/SettingsPage";
     expect(matchesPathPrefix(`${prefix}.vue`, prefix)).toBe(true);
     expect(matchesPathPrefix(`${prefix}.loader.ts`, prefix)).toBe(true);
     expect(matchesPathPrefix(`${prefix}.test.ts`, prefix)).toBe(true);
