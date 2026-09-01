@@ -41,6 +41,7 @@
       :label="t(strings.code_label)"
       :disabled="isPending || bootstrapping || !activeFlow"
       autocomplete="one-time-code"
+      autofocus
       class="mb-4"
       hide-details="auto"
       @keyup.enter="submitCode"
