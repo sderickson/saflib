@@ -20,9 +20,7 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow commander/add-cli
-
-- Upsert 1 templates.
+- Upsert 1 template.
 - Update **index.ts**, resolving any TODOs.
 - Run `chmod +x bin/example-cli/index.ts`
 - Add bin/example-cli/index.ts to the package's bin folder.

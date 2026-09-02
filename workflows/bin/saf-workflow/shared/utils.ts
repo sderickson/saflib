@@ -89,7 +89,9 @@ export const runWorkflow = async (
     manageVersionControl: options.manageVersionControl,
     skipTodos: options.skipTodos,
   });
-  console.log("Kicking off workflow", workflow.definition.id);
+  if (!["dry", "checklist", "script"].includes(runMode)) {
+    console.log("Kicking off workflow", workflow.definition.id);
+  }
   await workflow.kickoff({
     onSnapshot: () => {
       if (["dry", "checklist", "script"].includes(runMode)) {

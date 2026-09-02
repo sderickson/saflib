@@ -20,9 +20,7 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow commander/add-command
-
-- Upsert 1 templates.
+- Upsert 1 template.
 - Update **example-command.ts**
 - Add the new command to the adjacent index.ts file.
 - Run `npm install @saflib/dev-tools --save-dev`
