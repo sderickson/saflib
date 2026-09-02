@@ -45,11 +45,11 @@ import {
 } from "@saflib/base-service-common/context";
 import { baseDb } from "@saflib/base-db/instances";
 import { createJobsDemoRouter } from "./index.ts";
+import { demoStepCCompletions } from "./_helpers.ts";
 import {
-  demoStepCCompletions,
   resetDemoFailureCountersForTests,
   resetDemoStepCCompletionsForTests,
-} from "./_helpers.ts";
+} from "./_helpers.test-helpers.ts";
 
 const TEST_SECRET = Buffer.from("base-jobs-demo-integration-secret").toString(
   "base64",

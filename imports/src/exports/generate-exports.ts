@@ -55,6 +55,11 @@ function isExportableTs(name: string): boolean {
   return true;
 }
 
+function isExportableSource(name: string): boolean {
+  if (name.endsWith(".vue")) return true;
+  return isExportableTs(name);
+}
+
 function walkExportableFiles(dir: string, out: string[]) {
   let entries: fs.Dirent[];
   try {
@@ -70,7 +75,7 @@ function walkExportableFiles(dir: string, out: string[]) {
       walkExportableFiles(full, out);
     } else if (
       e.isFile() &&
-      isExportableTs(e.name) &&
+      isExportableSource(e.name) &&
       !SKIP_FILES.has(e.name)
     ) {
       out.push(full);
@@ -86,6 +91,48 @@ export function listExportableFiles(pkgDir: string): string[] {
   const out: string[] = [];
   walkExportableFiles(pkgDir, out);
   return out.sort();
+}
+
+/**
+ * Repo-relative paths of source files that are direct `package.json` export
+ * targets (including pattern exports). Used to skip dead-code on public API.
+ */
+export function collectPublicExportRepoPaths(
+  packageDir: string,
+  packageRepoPath: string,
+): string[] {
+  let exports: unknown;
+  try {
+    const pj = JSON.parse(
+      fs.readFileSync(path.join(packageDir, "package.json"), "utf8"),
+    ) as { exports?: unknown };
+    exports = pj.exports;
+  } catch {
+    return [];
+  }
+  if (!exports) return [];
+
+  const pkg: PackageInfo = { dir: packageDir, exports };
+  const out = new Set<string>();
+  for (const abs of listExportableFiles(packageDir)) {
+    const rel = path.relative(packageDir, abs).split(path.sep).join("/");
+    const withoutExt = rel.replace(/\.(tsx?|vue)$/, "");
+    let subpath = withoutExt;
+    if (subpath === "index") {
+      subpath = "";
+    } else if (subpath.endsWith("/index")) {
+      subpath = subpath.slice(0, -"/index".length);
+    }
+    const exportPath = resolvePackageExportPath(pkg, subpath);
+    if (!exportPath) continue;
+    const resolved = existsResolve(exportPath);
+    if (resolved && path.normalize(resolved) === path.normalize(abs)) {
+      out.add(
+        packageRepoPath ? `${packageRepoPath}/${rel}` : rel,
+      );
+    }
+  }
+  return [...out].sort();
 }
 
 function readExportsAliases(pkgDir: string): ExportsMap {

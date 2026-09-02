@@ -6,7 +6,7 @@ import {
 import type { ReturnsError } from "@saflib/monorepo";
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import { eq } from "drizzle-orm";
+import { getByUserIdUserConfig } from "./get-by-user-id.ts";
 
 export interface UpsertUserConfigParams {
   user_id: (typeof userConfigTable.$inferSelect)["user_id"];
@@ -30,23 +30,25 @@ export const upsertUserConfig = queryWrapper(
     const now = new Date();
     const display_name = params.display_name.trim();
 
-    const existing = await db
-      .select()
-      .from(userConfigTable)
-      .where(eq(userConfigTable.user_id, params.user_id))
-      .limit(1);
+    const { result: existing, error: lookupError } = await getByUserIdUserConfig(
+      dbKey,
+      { user_id: params.user_id },
+    );
+    if (lookupError) {
+      return { error: lookupError };
+    }
 
     let marketing_emails_opt_in_at: Date | null;
     if (!params.marketing_emails_opt_in) {
       marketing_emails_opt_in_at = null;
-    } else if (!existing[0]?.marketing_emails_opt_in) {
+    } else if (!existing?.marketing_emails_opt_in) {
       marketing_emails_opt_in_at = now;
     } else {
-      marketing_emails_opt_in_at = existing[0].marketing_emails_opt_in_at;
+      marketing_emails_opt_in_at = existing.marketing_emails_opt_in_at;
     }
 
     let terms_of_service_agreed_at: Date | null =
-      existing[0]?.terms_of_service_agreed_at ?? null;
+      existing?.terms_of_service_agreed_at ?? null;
     if (params.agreeToTermsOfServiceNow && !terms_of_service_agreed_at) {
       terms_of_service_agreed_at = now;
     }

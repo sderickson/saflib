@@ -1,5 +1,5 @@
 import { getSafReporters } from "@saflib/node";
-import { passwordReset } from "@saflib/base-email/password-reset";
+import { passwordReset } from "@saflib/base-email/emails/password-reset";
 import { getEmailClient } from "@saflib/base-service-common/dependencies";
 import type { RecoveryCodeValidPayload } from "@saflib/ory-kratos";
 

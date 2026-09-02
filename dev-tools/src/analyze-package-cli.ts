@@ -3,6 +3,7 @@
 /**
  * Umbrella static-analysis CLI: package layout/LoC + exports + graph issues.
  */
+import { readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { Command } from "commander";
@@ -13,9 +14,14 @@ import {
   buildPackageIndex,
   checkExports,
   collectPackageIssues,
+  collectPublicExportRepoPaths,
   exportUsedByKey,
+  existsResolve,
   findMonorepoRoot,
+  matchExportPattern,
   resolvePackageDir,
+  resolveSpecifier,
+  sortExportPatternKeys,
   type FileSpecialty,
   type PackageIssue,
   type UsedByImporterUnit,
@@ -50,15 +56,51 @@ async function walkFiles(absDir: string, relDir: string): Promise<string[]> {
   return out;
 }
 
-function isAnalyzableTs(rel: string): boolean {
+function isAnalyzableSource(rel: string): boolean {
   return (
-    (rel.endsWith(".ts") || rel.endsWith(".tsx")) && !rel.endsWith(".d.ts")
+    (rel.endsWith(".ts") || rel.endsWith(".tsx") || rel.endsWith(".vue")) &&
+    !rel.endsWith(".d.ts")
   );
+}
+
+function resolveImportsMapSpecifier(
+  specifier: string,
+  importsMap: Record<string, string>,
+): string | null {
+  const exact = importsMap[specifier];
+  if (exact) return exact;
+
+  const patternKeys = sortExportPatternKeys(
+    Object.keys(importsMap).filter((key) => key.includes("*")),
+  );
+  for (const patternKey of patternKeys) {
+    const substituted = matchExportPattern(
+      specifier,
+      patternKey,
+      importsMap[patternKey]!,
+    );
+    if (substituted) return substituted;
+  }
+  return null;
+}
+
+function readPackageImportsMap(
+  packageDir: string,
+): Record<string, string> | undefined {
+  try {
+    const pj = JSON.parse(
+      readFileSync(path.join(packageDir, "package.json"), "utf8"),
+    ) as { imports?: Record<string, string> };
+    return pj.imports;
+  } catch {
+    return undefined;
+  }
 }
 
 function isTestPath(rel: string): boolean {
   const base = rel.split("/").pop() ?? rel;
   if (/\.(test|spec)\.(ts|tsx)$/.test(base)) return true;
+  if (/\.test-helpers\.(ts|tsx)$/.test(base)) return true;
   if (/\.fixtures\.(ts|tsx)$/.test(base)) return true;
   const parts = rel.split("/");
   return (
@@ -69,7 +111,10 @@ function isTestPath(rel: string): boolean {
 }
 
 function isScaffoldTemplatePath(rel: string): boolean {
-  return rel.split("/").some((part) => /^__[^/]+__$/.test(part));
+  return rel.split("/").some((part) => {
+    const stem = part.replace(/\.[^.]+$/, "");
+    return /^__[^/]+__$/.test(stem);
+  });
 }
 
 function packageForRepoPath(
@@ -131,13 +176,19 @@ async function analyzeOnePackage(opts: {
       .join("/"),
   }));
 
+  const importsMap = readPackageImportsMap(opts.packageDir);
+  const publicExportFilePaths = collectPublicExportRepoPaths(
+    opts.packageDir,
+    opts.packageRepoPath,
+  );
+
   const walkRoot = opts.productRoot
     ? path.join(opts.monorepoRoot, opts.productRoot)
     : opts.monorepoRoot;
   const allFiles = await walkFiles(walkRoot, opts.productRoot || "");
   const specialtyByPath = new Map<string, FileSpecialty>();
   for (const rel of allFiles) {
-    if (!isAnalyzableTs(rel)) continue;
+    if (!isAnalyzableSource(rel)) continue;
     const text = await readFile(path.join(opts.monorepoRoot, rel), "utf8");
     specialtyByPath.set(rel, buildFileSpecialty(text));
   }
@@ -169,11 +220,45 @@ async function analyzeOnePackage(opts: {
     });
   }
 
+  const resolveImportTarget = (
+    importerPath: string,
+    specifier: string,
+  ): string | null => {
+    if (specifier.startsWith("#") && importsMap) {
+      const mapped = resolveImportsMapSpecifier(specifier, importsMap);
+      if (mapped) {
+        const resolved = existsResolve(
+          path.resolve(opts.packageDir, mapped),
+        );
+        if (resolved) {
+          return path
+            .relative(opts.monorepoRoot, resolved)
+            .split(path.sep)
+            .join("/");
+        }
+      }
+    }
+
+    const resolved = resolveSpecifier(
+      specifier,
+      path.join(opts.monorepoRoot, importerPath),
+      index,
+    );
+    if (resolved?.kind === "file") {
+      return path
+        .relative(opts.monorepoRoot, resolved.path)
+        .split(path.sep)
+        .join("/");
+    }
+    return null;
+  };
+
   const usedBy = assembleUsedBy(
     opts.packageName,
     opts.packageRepoPath,
     exports,
     importers,
+    { resolveImportTarget },
   );
 
   issues.push(
@@ -181,6 +266,7 @@ async function analyzeOnePackage(opts: {
       {
         packageName: opts.packageName,
         directory: opts.packageRepoPath,
+        publicExportFilePaths,
         exports: exports.map((e) => ({
           name: e.name,
           kind: e.kind,

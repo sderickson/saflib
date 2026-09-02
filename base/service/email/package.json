@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./*": "./emails/*.ts"
+    "./emails/password-reset": "./emails/password-reset.ts",
+    "./emails/verify-email": "./emails/verify-email.ts"
   },
   "scripts": {
     "test": "vitest run",

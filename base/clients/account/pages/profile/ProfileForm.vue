@@ -69,6 +69,7 @@ import type { VForm } from "vuetify/components";
 import {
   buildPutMineUserConfigsBody,
   isDisplayNameValid,
+  isProfileFormValid,
   type ProfileFormValues,
 } from "./Profile.logic.ts";
 import { profile_form as strings } from "./Profile.strings.ts";
@@ -120,11 +121,16 @@ async function onSave() {
     return;
   }
 
+  const values: ProfileFormValues = {
+    displayName: displayName.value,
+    marketingEmailsOptIn: marketingEmailsOptIn.value,
+  };
+  if (!isProfileFormValid(values)) {
+    return;
+  }
+
   saveMutation.mutate(
-    buildPutMineUserConfigsBody({
-      displayName: displayName.value,
-      marketingEmailsOptIn: marketingEmailsOptIn.value,
-    }),
+    buildPutMineUserConfigsBody(values),
     {
       onSuccess: () => {
         saveSuccess.value = true;

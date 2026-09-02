@@ -22,6 +22,7 @@
     "typecheck": "vue-tsc -b"
   },
   "devDependencies": {
+    "@saflib/base-test": "*",
     "@saflib/vitest": "*",
     "@testing-library/vue": "^8.1.0"
   },

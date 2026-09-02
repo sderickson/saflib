@@ -1,5 +1,5 @@
 import { getSafReporters } from "@saflib/node";
-import { verifyEmail } from "@saflib/base-email/verify-email";
+import { verifyEmail } from "@saflib/base-email/emails/verify-email";
 import { getEmailClient } from "@saflib/base-service-common/dependencies";
 import type { VerificationCodeValidPayload } from "@saflib/ory-kratos";
 

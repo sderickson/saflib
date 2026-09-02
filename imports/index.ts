@@ -1,3 +1,4 @@
+export { readSource } from "./src/graph/read-source.ts";
 export { measureGraph } from "./src/graph/walk-graph.ts";
 export { findPath } from "./src/graph/find-path.ts";
 export {
@@ -51,6 +52,7 @@ export {
   checkExportPatternCoverage,
   generateExports,
   listExportableFiles,
+  collectPublicExportRepoPaths,
   packageHasWorkflowMarkers,
   resolvePackageDir,
   leafExportRemapDiffs,
@@ -61,8 +63,10 @@ export {
   buildPackageIndex,
   findMonorepoRoot,
   matchExportPattern,
+  sortExportPatternKeys,
   resolvePackageExportPath,
   resolveSpecifier,
+  existsResolve,
 } from "./src/resolve/index.ts";
 export {
   generateSnapshot,
