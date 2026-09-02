@@ -39,4 +39,6 @@ services:
 
 volumes:
   caddy_data:
+    name: __product-name__-prod-local-caddy-data
   caddy_config:
+    name: __product-name__-prod-local-caddy-config
