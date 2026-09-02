@@ -15,12 +15,11 @@ import {
 import {
   buildPackageIndex,
   existsResolve,
-  matchExportPattern,
   resolveSpecifier,
-  sortExportPatternKeys,
   type PackageIndex,
 } from "../resolve/index.ts";
 import { checkExports, collectPublicExportRepoPaths } from "../exports/generate-exports.ts";
+import { resolveImportsMapSpecifier } from "../graph/tree-import-resolution.ts";
 import {
   collectPackageIssues,
   type PackageIssue,
@@ -88,27 +87,6 @@ export interface WorkdirGraphContext {
     packageDir: string;
   }>;
   specialtyByPath: Map<string, FileSpecialty>;
-}
-
-function resolveImportsMapSpecifier(
-  specifier: string,
-  importsMap: Record<string, string>,
-): string | null {
-  const exact = importsMap[specifier];
-  if (exact) return exact;
-
-  const patternKeys = sortExportPatternKeys(
-    Object.keys(importsMap).filter((key) => key.includes("*")),
-  );
-  for (const patternKey of patternKeys) {
-    const substituted = matchExportPattern(
-      specifier,
-      patternKey,
-      importsMap[patternKey]!,
-    );
-    if (substituted) return substituted;
-  }
-  return null;
 }
 
 function readPackageImportsMap(

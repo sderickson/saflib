@@ -13,6 +13,11 @@ export {
   type UsedByImporterUnit,
 } from "./src/graph/assemble-used-by.ts";
 export {
+  collectPublicExportPathsFromTree,
+  createTreeResolveImportTarget,
+  resolveImportsMapSpecifier,
+} from "./src/graph/tree-import-resolution.ts";
+export {
   exportUsedByKey,
   moduleTargetFromImport,
   packageLocalPath,
@@ -119,4 +124,6 @@ export type {
   MeasureGraphResult,
   GraphWalkOptions,
   FindPathResult,
+  PackageIndex,
+  PackageInfo,
 } from "./src/types.ts";

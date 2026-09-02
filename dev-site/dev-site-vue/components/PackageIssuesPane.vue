@@ -6,7 +6,8 @@
     <div class="pane-scroll">
       <div class="issues-cli mb-4">
         <div class="text-caption text-medium-emphasis mb-1">
-          Deeper working-tree scan (seconds; not used for this panel):
+          Deeper working-tree scan (seconds; not used for this panel). From the
+          saflib repo root with product scope:
         </div>
         <div class="issues-cli__row">
           <code class="issues-cli__cmd">{{ cliCommand }}</code>
@@ -99,10 +100,13 @@ const issues = computed(() => {
   });
 });
 
-const cliCommand = computed(
-  () =>
-    `npm exec -- saf-dev-site issues --workdir --package ${shellQuote(props.packageName)}`,
-);
+const cliCommand = computed(() => {
+  const productRoot = props.productRoot?.trim();
+  const envPrefix = productRoot
+    ? `DEV_SITE_REPO_ROOT=<saflib-repo> DEV_SITE_PRODUCT_ROOT=${shellQuote(productRoot)} `
+    : "";
+  return `${envPrefix}npm exec -- saf-dev-site issues --workdir --package ${shellQuote(props.packageName)}`;
+});
 
 const copied = ref(false);
 let copyTimer: ReturnType<typeof setTimeout> | undefined;

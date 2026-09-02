@@ -20,6 +20,7 @@ export function isTestSourcePath(relPosix: string): boolean {
   if (/\.fixtures?\.(ts|tsx)$/.test(base)) return true;
   const parts = relPosix.split("/");
   return (
+    parts.includes("test") ||
     parts.includes("testing") ||
     parts.includes("tests") ||
     parts.includes("__tests__")

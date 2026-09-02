@@ -5,10 +5,12 @@ import { listTree, readBlobs } from "@saflib/git";
 import { blobFactImports } from "@saflib/dev-site-db/types";
 import {
   assembleUsedBy,
+  createTreeResolveImportTarget,
   exportUsedByKey,
   specialtyLocalExportUsages,
   type ExportUsedBy,
   type ExportUsedByMap,
+  type PackageIndex,
   type UsedByImporterUnit,
 } from "@saflib/imports";
 import { ensureBlobFacts, type AnalyzeCommitOptions } from "./analyze-commit.ts";
@@ -22,6 +24,22 @@ import {
 
 export type { ExportUsedBy, ExportUsedByMap };
 export { exportUsedByKey };
+
+function parsePackageJson(text: string): {
+  name?: string;
+  exports?: unknown;
+  imports?: Record<string, string>;
+} | null {
+  try {
+    return JSON.parse(text) as {
+      name?: string;
+      exports?: unknown;
+      imports?: Record<string, string>;
+    };
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Walk all product source blobs, find imports targeting `package_name`, and
@@ -56,12 +74,24 @@ export async function assembleExportUsedBy(
   if (pkgBlobs.error) return { error: pkgBlobs.error };
 
   const nameByPath = new Map<string, string>();
+  const importsMapByPackageDir = new Map<string, Record<string, string>>();
+  const index: PackageIndex = new Map();
+
   for (const entry of packageJsonEntries) {
     const text = pkgBlobs.result.get(entry.blobHash);
     if (text === undefined) continue;
-    const name = parsePackageName(text);
-    if (name) nameByPath.set(entry.path, name);
+    const pj = parsePackageJson(text);
+    if (!pj) continue;
+    const dir = entry.path.replace(/\/?package\.json$/, "");
+    if (pj.name) {
+      nameByPath.set(entry.path, pj.name);
+      index.set(pj.name, { dir, exports: pj.exports });
+    }
+    if (pj.imports) {
+      importsMapByPackageDir.set(dir, pj.imports);
+    }
   }
+
   const roots = packageRootsFromPackageJsonPaths(
     packageJsonEntries.map((e) => e.path),
     nameByPath,
@@ -70,6 +100,7 @@ export async function assembleExportUsedBy(
   if (!targetRoot) return { result: out };
 
   const allSourceEntries = tree.filter((e) => isSourcePath(e.path));
+  const treePaths = new Set(tree.map((e) => e.path));
   const factsResult = await ensureBlobFacts(
     dbKey,
     repo_root,
@@ -77,6 +108,16 @@ export async function assembleExportUsedBy(
   );
   if (factsResult.error) return { error: factsResult.error };
   const facts = factsResult.result;
+
+  const resolveImportTarget = createTreeResolveImportTarget({
+    treePaths,
+    index,
+    importsMapByPackageDir,
+    packageRoots: roots.map((r) => ({
+      packageName: r.package_name,
+      directory: r.directory,
+    })),
+  });
 
   const importers: UsedByImporterUnit[] = [];
   for (const entry of allSourceEntries) {
@@ -100,6 +141,7 @@ export async function assembleExportUsedBy(
       targetRoot.directory,
       exports.map((e) => ({ filePath: e.file_path, name: e.name })),
       importers,
+      { resolveImportTarget },
     ),
   };
 }

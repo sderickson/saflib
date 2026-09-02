@@ -1,11 +1,10 @@
 import type { DbKey } from "@saflib/drizzle";
 import {
   checkPackageLayout,
-  listPackageJsonExportTargetFiles,
   type ReturnsError,
 } from "@saflib/monorepo";
+import { collectPublicExportRepoPaths } from "@saflib/imports";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
-import fs from "node:fs";
 import path from "node:path";
 
 import { assemblePackageSymbols } from "./analyze-commit.ts";
@@ -71,8 +70,8 @@ function collectLiveLayoutIssues(
 }
 
 /**
- * Repo-relative files from live `package.json` `exports` (`main.ts`, `test-app.ts`).
- * Same skip list as `saf-dev-site issues --workdir` so Spec Issues matches CLI.
+ * Repo-relative public export targets from live `package.json` (patterns, Vue).
+ * Same logic as `saf-dev-site issues --workdir` / `analyze-package`.
  */
 function collectPublicExportFilePaths(
   repo_root: string,
@@ -80,18 +79,8 @@ function collectPublicExportFilePaths(
   package_directory: string,
 ): string[] {
   const packageRepoPath = joinRepoPath(product_root, package_directory);
-  const pkgJsonPath = path.join(repo_root, packageRepoPath || ".", "package.json");
-  let parsed: { exports?: Record<string, unknown> | string };
-  try {
-    parsed = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8")) as {
-      exports?: Record<string, unknown> | string;
-    };
-  } catch {
-    return [];
-  }
-  return listPackageJsonExportTargetFiles(parsed.exports).map((rel) =>
-    joinRepoPath(packageRepoPath, rel),
-  );
+  const packageDir = path.join(repo_root, packageRepoPath || ".");
+  return collectPublicExportRepoPaths(packageDir, packageRepoPath);
 }
 
 export interface CommitPackageDetail {
