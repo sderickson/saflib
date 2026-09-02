@@ -10,7 +10,7 @@ See [Code Reference](./ref/index.md) for more info.
 
 ## Package issues
 
-When clearing `saf-dev-site issues` / `analyze-package` findings (dead code, layout, oversized files), follow [Package issues triage](./package-issues.md).
+When clearing `saf-dev-site issues` / `saf-analyze-package` findings (dead code, layout, oversized files), follow [Package issues triage](./package-issues.md).
 
 ## CLI
 

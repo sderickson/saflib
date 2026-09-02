@@ -3,7 +3,7 @@
 import { execSync } from "node:child_process";
 import { Command } from "commander";
 import { generateDockerfiles } from "./docker.ts";
-import { buildMonorepoContext } from "./workspace.ts";
+import { buildMonorepoContext } from "@saflib/monorepo/workspace";
 import { setupContext } from "@saflib/commander";
 
 const program = new Command()

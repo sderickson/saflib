@@ -5,7 +5,7 @@ import {
   stripPackageJsonForInstall,
 } from "./docker.ts";
 import { monorepoPackageMock } from "./monorepo.mock.ts";
-import { buildMonorepoContext } from "./workspace.ts";
+import { buildMonorepoContext } from "@saflib/monorepo/workspace";
 vi.mock("node:fs");
 vi.mock("node:fs/promises");
 

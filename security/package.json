@@ -16,7 +16,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc -b",
-    "analyze": "analyze-package --package @saflib/security"
+    "analyze": "saf-analyze-package --package @saflib/security"
   },
   "dependencies": {
     "@playwright/test": "^1.53.2",

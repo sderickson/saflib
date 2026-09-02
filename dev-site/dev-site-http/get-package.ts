@@ -71,7 +71,7 @@ function collectLiveLayoutIssues(
 
 /**
  * Repo-relative public export targets from live `package.json` (patterns, Vue).
- * Same logic as `saf-dev-site issues --workdir` / `analyze-package`.
+ * Same logic as `saf-dev-site issues --workdir` / `saf-analyze-package`.
  */
 function collectPublicExportFilePaths(
   repo_root: string,

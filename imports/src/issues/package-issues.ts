@@ -1,6 +1,6 @@
 /**
  * Package-level architecture issues from export usedBy / layout / LoC.
- * Pure — safe for CLI, Spec UI, and analyze-package.
+ * Pure — safe for CLI, Spec UI, and saf-analyze-package.
  */
 
 const CARD_EXPORT_KINDS = new Set(["function", "class", "const"]);

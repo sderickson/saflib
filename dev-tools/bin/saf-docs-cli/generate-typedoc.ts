@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { type MonorepoContext } from "@saflib/dev-tools";
+import { type MonorepoContext } from "@saflib/monorepo/workspace";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 

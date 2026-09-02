@@ -3,7 +3,7 @@
 How to clear findings from:
 
 - `saf-dev-site issues [--workdir] --package <name>`
-- `analyze-package --package <name>`
+- `saf-analyze-package --package <name>`
 - Spec Issues UI
 
 Do **not** blindly delete exports. Triage each item.
@@ -45,14 +45,14 @@ Do **not** blindly delete exports. Triage each item.
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `oversized-file` (>800 LoC) | Split into folders/modules; don't silence without splitting                                                                                                                                                                                                                                                                                                                                                              |
 | `package-layout`            | No `.ts` at package root except allowlisted entry/config files (`index.ts`, `client.ts`, `drizzle.config.ts`, Vue SPA `main.ts` / `router.ts` / `vite.config.ts` / `vitest.config.ts` / `playwright.config.ts`) **or** files that are direct package exports (`"."` → `./main.ts`, `./name` → `./name.ts`); `bin` → `./bin/…`; `saf-ts-run` → `./scripts/` or `./bin/`; ban `node --experimental-strip-types` in scripts |
-| exports remaps              | Make import path = file path; `saf-imports exports check` / `analyze-package`                                                                                                                                                                                                                                                                                                                                            |
+| exports remaps              | Make import path = file path; `saf-imports exports check` / `saf-analyze-package`                                                                                                                                                                                                                                                                                                                                            |
 
 ## Verify
 
 ```bash
 npm exec -- saf-dev-site issues --workdir --package <name>
 # or
-npm exec -- analyze-package --package <name>
+npm exec -- saf-analyze-package --package <name>
 ```
 
 Prefer small, coherent batches (one pattern at a time) over boiling the ocean.

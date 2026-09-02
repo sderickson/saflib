@@ -9,7 +9,7 @@ import path from "node:path";
 import {
   getAllPackageWorkspaceDependencies,
   type MonorepoContext,
-} from "./workspace.ts";
+} from "@saflib/monorepo/workspace";
 
 const DEPS_PACKAGE_JSON_KEYS = [
   "name",

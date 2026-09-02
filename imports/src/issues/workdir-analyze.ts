@@ -1,5 +1,5 @@
 /**
- * Working-tree package issue analysis — shared by `analyze-package` and
+ * Working-tree package issue analysis — shared by `saf-analyze-package` and
  * `saf-dev-site issues --workdir`.
  */
 import { readFileSync } from "node:fs";

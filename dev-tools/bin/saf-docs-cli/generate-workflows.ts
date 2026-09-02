@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
-import type { MonorepoContext } from "../../src/workspace.ts";
+import type { MonorepoContext } from "@saflib/monorepo/workspace";
 
 export interface GenerateWorkflowDocsOptions {
   packageName: string;

@@ -14,7 +14,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc -b",
-    "analyze": "analyze-package --package template-package"
+    "analyze": "saf-analyze-package --package template-package"
   },
   "dependencies": {},
   "devDependencies": {

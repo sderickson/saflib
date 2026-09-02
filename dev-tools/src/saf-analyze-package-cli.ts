@@ -39,7 +39,7 @@ function printPackageIssues(
 }
 
 const program = new Command()
-  .name("analyze-package")
+  .name("saf-analyze-package")
   .description(
     "Run package layout, LoC, exports, and dead-code checks on the working tree",
   )
@@ -128,6 +128,6 @@ const program = new Command()
     },
   );
 
-setupContext({ serviceName: "analyze-package" }, () => {
+setupContext({ serviceName: "saf-analyze-package" }, () => {
   program.parse(process.argv);
 });

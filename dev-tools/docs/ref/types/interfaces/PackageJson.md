@@ -9,21 +9,17 @@ Interface of package.json fields which are used in this package.
 See [NPM docs](https://docs.npmjs.com/cli/v10/configuring-npm/package-json)
 for more information.
 
-## Extended by
-
-- [`PackageMetadata`](PackageMetadata.md)
-
 ## Properties
 
 ### bin?
 
-> `optional` **bin**: `Record`\<`string`, `string`\>
+> `optional` **bin**: `Record`\<`string`, `string`>\>
 
 ---
 
 ### dependencies?
 
-> `optional` **dependencies**: `Record`\<`string`, `string`\>
+> `optional` **dependencies**: `Record`\<`string`, `string`>\>
 
 ---
 
@@ -35,19 +31,19 @@ for more information.
 
 ### devDependencies?
 
-> `optional` **devDependencies**: `Record`\<`string`, `string`\>
+> `optional` **devDependencies**: `Record`\<`string`, `string`>\>
 
 ---
 
 ### engines?
 
-> `optional` **engines**: `Record`\<`string`, `string`\>
+> `optional` **engines**: `Record`\<`string`, `string`>\>
 
 ---
 
 ### exports?
 
-> `optional` **exports**: `Record`\<`string`, `string`\>
+> `optional` **exports**: `Record`\<`string`, `string`>\>
 
 ---
 
@@ -59,13 +55,13 @@ for more information.
 
 ### optionalDependencies?
 
-> `optional` **optionalDependencies**: `Record`\<`string`, `string`\>
+> `optional` **optionalDependencies**: `Record`\<`string`, `string`>\>
 
 ---
 
 ### overrides?
 
-> `optional` **overrides**: `Record`\<`string`, `string`\>
+> `optional` **overrides**: `Record`\<`string`, `string`>\>
 
 ---
 
@@ -77,7 +73,7 @@ for more information.
 
 ### scripts?
 
-> `optional` **scripts**: `Record`\<`string`, `string`\>
+> `optional` **scripts**: `Record`\<`string`, `string`>\>
 
 ---
 

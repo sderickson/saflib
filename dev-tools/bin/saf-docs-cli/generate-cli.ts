@@ -1,5 +1,6 @@
-import { type MonorepoContext } from "@saflib/dev-tools";
+import { type MonorepoContext } from "@saflib/monorepo/workspace";
 import { execSync } from "node:child_process";
+import path from "node:path";
 
 import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 
@@ -8,9 +9,17 @@ export interface GenerateCliDocsOptions {
   packageName: string;
 }
 
+function runBinHelp(binScriptPath: string): string {
+  return execSync(
+    `node --experimental-strip-types --disable-warning=ExperimentalWarning "${binScriptPath}" --help`,
+    { encoding: "utf8" },
+  );
+}
+
 export function generateCliDocs(options: GenerateCliDocsOptions) {
   const { monorepoContext, packageName } = options;
   const currentPackageJson = monorepoContext.monorepoPackageJsons[packageName];
+  const packageDir = monorepoContext.monorepoPackageDirectories[packageName];
 
   const bin = currentPackageJson.bin;
   if (bin && Object.keys(bin).length > 0) {
@@ -23,8 +32,9 @@ export function generateCliDocs(options: GenerateCliDocsOptions) {
     const sortedCommands = Object.keys(bin).sort();
 
     for (const command of sortedCommands) {
-      const result = execSync(`npm exec ${command} -- --help`);
-      const wrappedResult = `# ${command}\n\n\`\`\`\n${result.toString()}\n\`\`\`\n`;
+      const binScriptPath = path.join(packageDir, bin[command]!);
+      const result = runBinHelp(binScriptPath);
+      const wrappedResult = `# ${command}\n\n\`\`\`\n${result}\n\`\`\`\n`;
       writeFileSync(`docs/cli/${command}.md`, wrappedResult);
       console.log(`- ${command}`);
     }
