@@ -51,6 +51,10 @@ function isWorkspaceFolderName(name: string): boolean {
   return !name.startsWith(".") && name !== "node_modules";
 }
 
+function isGeneratedSafDockerPath(dirPath: string): boolean {
+  return dirPath.includes(`${path.sep}.saf-docker${path.sep}`);
+}
+
 /**
  * Not for public use. Helper function for `buildMonorepoContext`.
  */
@@ -91,7 +95,10 @@ export function getMonorepoPackages(
         withFileTypes: true,
       });
       for (const file of workspacesFolders) {
-        if (file.parentPath.includes("node_modules")) {
+        if (
+          file.parentPath.includes("node_modules") ||
+          isGeneratedSafDockerPath(file.parentPath)
+        ) {
           continue;
         }
         if (!isWorkspaceFolderName(path.basename(file.parentPath))) {
@@ -145,6 +152,9 @@ export function getMonorepoPackages(
   }
 
   for (const workspacePackageDirectory of workspacePackageDirectories) {
+    if (isGeneratedSafDockerPath(workspacePackageDirectory)) {
+      continue;
+    }
     const workspacePackageJsonPath = path.join(
       workspacePackageDirectory,
       "package.json",

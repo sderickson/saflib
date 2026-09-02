@@ -7,7 +7,9 @@ npm install --omit=dev
 `;
 
 export const monorepoPackageMock = {
-  // Root package.json
+  "/app/package-lock.json": "{}",
+  "/app/scripts/postinstall-tsconfig-refs.mjs": "// postinstall",
+  "/app/scripts/dedupe-vue-runtime.mjs": "// dedupe",
   "/app/package.json": JSON.stringify({
     name: "@foo/foo",
     workspaces: [

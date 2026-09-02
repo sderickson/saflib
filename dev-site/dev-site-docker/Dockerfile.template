@@ -13,7 +13,7 @@ RUN npm install -g npm@11.14.1
 WORKDIR /app
 
 #{ copy_packages }#
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 #{ copy_src }#
 

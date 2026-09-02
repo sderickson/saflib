@@ -1,3 +1,5 @@
+name: saflib-base-dev
+
 # Dev stack for the base product (sibling of saflib library packages).
 # Compose / build context is the saflib monorepo root (`../..` from this directory).
 # product/init rewrites the `../..:/app` volume to product + saflib mounts.
@@ -29,16 +31,16 @@ services:
       - ./env.dev
     volumes:
       # Entire saflib monorepo at /app (packages are siblings of base/, not under /app/saflib).
-      # Anonymous volume keeps the image's Linux node_modules (host bind would overwrite with Darwin).
+      # Named volume keeps the image's Linux node_modules (host bind would overwrite with Darwin).
       - ../..:/app
-      - /app/node_modules
+      - clients_node_modules:/app/node_modules
     command: npm run dev
 
   base-monolith:
     image: saflib-base-monolith:latest
     volumes:
       - ../..:/app
-      - /app/node_modules
+      - monolith_node_modules:/app/node_modules
       - ../../base/service/db/data:/app/base/service/db/data
       - ../../base/service/cron/data:/app/base/service/cron/data
       - ../../base/service/jobs/data:/app/base/service/jobs/data
@@ -67,6 +69,7 @@ services:
       - LOG_LEVEL=warn
     volumes:
       # Persists SQLite (identities, sessions, flows) across container restarts
+      - kratos_home:/home/ory
       - ./kratos/data:/var/lib/sqlite
       - ./kratos:/etc/config/kratos
 
@@ -81,6 +84,7 @@ services:
     env_file:
       - ./env.kratos.config
     volumes:
+      - kratos_home:/home/ory
       - ./kratos/data:/var/lib/sqlite
       - ./kratos:/etc/config/kratos
 
@@ -113,4 +117,12 @@ services:
 
 volumes:
   caddy_data:
+    name: saflib-base-dev-caddy-data
   caddy_config:
+    name: saflib-base-dev-caddy-config
+  clients_node_modules:
+    name: saflib-base-dev-clients-node-modules
+  monolith_node_modules:
+    name: saflib-base-dev-monolith-node-modules
+  kratos_home:
+    name: saflib-base-dev-kratos-home
