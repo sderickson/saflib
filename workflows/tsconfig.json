@@ -5,6 +5,7 @@
   ],
   "exclude": [
     "node_modules",
+    "dist",
     "dist/types",
     "e2e",
     "playwright-report",
