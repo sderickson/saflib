@@ -30,7 +30,7 @@
     "http-errors": "^2.0.0",
     "morgan": "^1.0.0",
     "multer": "^2.0.2",
-    "undici": "^6.24.0"
+    "undici": "^8.0.0"
   },
   "devDependencies": {
     "@saflib/service": "*",
