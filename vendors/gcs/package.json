@@ -16,7 +16,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.19.0",
+    "@google-cloud/storage": "^8.0.0",
     "@saflib/env": "*",
     "@saflib/node": "*",
     "@saflib/object-store": "*"
