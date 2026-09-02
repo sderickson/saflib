@@ -6,3 +6,5 @@ node_modules
 dist
 coverage
 **/data/*.sqlite
+!.saf-docker
+!.saf-docker/**
