@@ -58,6 +58,7 @@ services:
       - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc&_journal_mode=WAL&_busy_timeout=5000
       - LOG_LEVEL=warn
     volumes:
+      - kratos_home:/home/ory
       - /opt/kratos/data:/var/lib/sqlite
 
   kratos:
@@ -71,6 +72,7 @@ services:
     env_file:
       - ./.env.kratos.secrets
     volumes:
+      - kratos_home:/home/ory
       - /opt/kratos/data:/var/lib/sqlite
     restart: unless-stopped
 
@@ -105,3 +107,5 @@ volumes:
     name: __product-name__-prod-caddy-data
   caddy_config:
     name: __product-name__-prod-caddy-config
+  kratos_home:
+    name: __product-name__-prod-kratos-home

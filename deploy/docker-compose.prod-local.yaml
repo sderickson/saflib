@@ -22,6 +22,7 @@ services:
       file: remote-assets/docker-compose.prod.yaml
       service: kratos-migrate
     volumes: !override
+      - kratos_home:/home/ory
       - ./kratos-prod-local/data:/var/lib/sqlite
       - ./kratos-prod-local:/etc/config/kratos
 
@@ -34,6 +35,7 @@ services:
       - ./env.kratos.config.prod-local
       - ./env.kratos.prod-local
     volumes: !override
+      - kratos_home:/home/ory
       - ./kratos-prod-local/data:/var/lib/sqlite
       - ./kratos-prod-local:/etc/config/kratos
 
@@ -42,3 +44,5 @@ volumes:
     name: __product-name__-prod-local-caddy-data
   caddy_config:
     name: __product-name__-prod-local-caddy-config
+  kratos_home:
+    name: __product-name__-prod-local-kratos-home

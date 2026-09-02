@@ -69,6 +69,7 @@ services:
       - LOG_LEVEL=warn
     volumes:
       # Persists SQLite (identities, sessions, flows) across container restarts
+      - kratos_home:/home/ory
       - ./kratos/data:/var/lib/sqlite
       - ./kratos:/etc/config/kratos
 
@@ -83,6 +84,7 @@ services:
     env_file:
       - ./env.kratos.config
     volumes:
+      - kratos_home:/home/ory
       - ./kratos/data:/var/lib/sqlite
       - ./kratos:/etc/config/kratos
 
@@ -122,3 +124,5 @@ volumes:
     name: saflib-base-dev-clients-node-modules
   monolith_node_modules:
     name: saflib-base-dev-monolith-node-modules
+  kratos_home:
+    name: saflib-base-dev-kratos-home
