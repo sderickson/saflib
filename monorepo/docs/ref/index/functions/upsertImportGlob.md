@@ -4,7 +4,7 @@
 
 # Function: upsertImportGlob()
 
-> **upsertImportGlob**(`imports`, `topLevelSegment`): `Record`\<`string`, `unknown`\>
+> **upsertImportGlob**(`imports`, `topLevelSegment`): `Record`\<`string`, `unknown`>\>
 
 ## Parameters
 

@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: DEFAULT_MAX_SOURCE_LINES
+# Variable: DEFAULT\_MAX\_SOURCE\_LINES
 
-> `const` **DEFAULT_MAX_SOURCE_LINES**: `800` = `800`
+> `const` **DEFAULT\_MAX\_SOURCE\_LINES**: `800` = `800`

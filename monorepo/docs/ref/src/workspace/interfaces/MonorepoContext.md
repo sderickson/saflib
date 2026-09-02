@@ -26,13 +26,13 @@ and pass it around.
 
 ### packages
 
-> **packages**: `Set`\<`string`\>
+> **packages**: `Set`\<`string`>\>
 
 ---
 
 ### packagesWithDockerfileTemplates
 
-> **packagesWithDockerfileTemplates**: `Set`\<`string`\>
+> **packagesWithDockerfileTemplates**: `Set`\<`string`>\>
 
 Subset of packages for quickly finding those which produce Docker images.
 

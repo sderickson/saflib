@@ -30,8 +30,6 @@ program
     console.log("Done.");
   });
 
-console.log("Parsing...");
 setupContext({ serviceName: "saf-docker" }, () => {
   program.parse(process.argv);
 });
-console.log("Done done.");

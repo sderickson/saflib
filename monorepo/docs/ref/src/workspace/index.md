@@ -12,7 +12,7 @@
 | [MonorepoPackageDirectories](interfaces/MonorepoPackageDirectories.md) | Absolute paths.                                                                                                                                     |
 | [MonorepoPackageJsons](interfaces/MonorepoPackageJsons.md)             | Raw package.json files.                                                                                                                             |
 | [PackageJson](interfaces/PackageJson.md)                               | Interface of package.json fields which are used in workspace discovery.                                                                             |
-| [WorkspaceDependencyGraph](interfaces/WorkspaceDependencyGraph.md)     | Lists of direct "@saflib/\*" dependencies.                                                                                                          |
+| [WorkspaceDependencyGraph](interfaces/WorkspaceDependencyGraph.md)     | Lists of direct "@saflib/*" dependencies.                                                                                                           |
 
 ## Type Aliases
 
@@ -28,6 +28,6 @@
 | [buildMonorepoContext](functions/buildMonorepoContext.md)                               | Creates a MonorepoContext. If no rootdir is provided, it will find the first parent directory with a package-lock.json and use that as the root, effectively returning "this" package's monorepo context. |
 | [buildWorkspaceDependencyGraph](functions/buildWorkspaceDependencyGraph.md)             | Not for public use.                                                                                                                                                                                       |
 | [findPackagesWithDockerfileTemplates](functions/findPackagesWithDockerfileTemplates.md) | Not for public use.                                                                                                                                                                                       |
-| [getAllPackageWorkspaceDependencies](functions/getAllPackageWorkspaceDependencies.md)   | Returns all direct and transitive "@saflib/\*" dependencies for a given package.                                                                                                                          |
+| [getAllPackageWorkspaceDependencies](functions/getAllPackageWorkspaceDependencies.md)   | Returns all direct and transitive "@saflib/*" dependencies for a given package.                                                                                                                           |
 | [getCurrentPackageName](functions/getCurrentPackageName.md)                             | Finds the name of the package for the current working directory.                                                                                                                                          |
 | [getMonorepoPackages](functions/getMonorepoPackages.md)                                 | Not for public use. Helper function for `buildMonorepoContext`.                                                                                                                                           |

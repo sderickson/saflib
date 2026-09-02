@@ -21,10 +21,10 @@
 
 ## Variables
 
-| Variable                                                          | Description                                                                                                                                                                                                                |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [DEFAULT_MAX_SOURCE_LINES](variables/DEFAULT_MAX_SOURCE_LINES.md) | -                                                                                                                                                                                                                          |
-| [ROOT_TS_ALLOWLIST](variables/ROOT_TS_ALLOWLIST.md)               | `.ts` / `.tsx` basenames always allowed at the package root. Everything else should live in a thematic folder — unless it is a direct package export target (see [isAllowedRootTsFile](functions/isAllowedRootTsFile.md)). |
+| Variable                                                             | Description                                                                                                                                                                                                                |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [DEFAULT\_MAX\_SOURCE\_LINES](variables/DEFAULT_MAX_SOURCE_LINES.md) | -                                                                                                                                                                                                                          |
+| [ROOT\_TS\_ALLOWLIST](variables/ROOT_TS_ALLOWLIST.md)                | `.ts` / `.tsx` basenames always allowed at the package root. Everything else should live in a thematic folder — unless it is a direct package export target (see [isAllowedRootTsFile](functions/isAllowedRootTsFile.md)). |
 
 ## Functions
 
@@ -33,4 +33,6 @@
 | [checkPackageLayout](functions/checkPackageLayout.md)                             | Check bin/scripts layout conventions, no root-level TS, and oversized files.                                                          |
 | [checkPackageLayoutFromInputs](functions/checkPackageLayoutFromInputs.md)         | Layout + oversized checks from already-loaded inputs (git commit / FS).                                                               |
 | [isAllowedRootTsFile](functions/isAllowedRootTsFile.md)                           | Root source file is allowed when allowlisted, or when `package.json` exports it (`"."` → `./main.ts`, or `./<stem>` → `./<stem>.ts`). |
+| [isColocatedRootTestFile](functions/isColocatedRootTestFile.md)                   | Root `foo.test.ts` colocated with root `foo.ts` (same stem, not `index`).                                                             |
+| [isLinksPackageRootTsFile](functions/isLinksPackageRootTsFile.md)                 | `*-links` packages keep link modules at the package root by convention.                                                               |
 | [listPackageJsonExportTargetFiles](functions/listPackageJsonExportTargetFiles.md) | Concrete `package.json` `exports` file targets (`main.ts`, `test-app.ts`). Skips glob remaps (`./foo/*`).                             |

@@ -25,7 +25,7 @@
     "full-deploy": "npm run build:linux && npm run push && npm run remote-pull && npm run sync && npm run remote-deploy"
   },
   "dependencies": {
-    "@saflib/dev-tools": "*"
+    "@saflib/docker": "*"
   },
   "sideEffects": false
 }

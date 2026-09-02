@@ -1,0 +1,26 @@
+{
+  "name": "@saflib/docs",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Documentation generation for SAF packages",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "bin": {
+    "saf-docs": "./bin/saf-docs-cli/index.ts"
+  },
+  "dependencies": {
+    "@saflib/commander": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/utils": "*"
+  },
+  "devDependencies": {
+    "typedoc": "^0.28.10",
+    "typedoc-plugin-markdown": "^4.8.1",
+    "@types/node": "^24.0.0"
+  },
+  "sideEffects": false
+}

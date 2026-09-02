@@ -30,6 +30,8 @@
   },
   "dependencies": {
     "@saflib/dev-tools": "*",
+    "@saflib/docker": "*",
+    "@saflib/docs": "*",
     "@saflib/secret-store": "file:secret-store",
     "@saflib/vendors-azure": "file:vendors/azure",
     "@saflib/vendors-brevo": "file:vendors/brevo",

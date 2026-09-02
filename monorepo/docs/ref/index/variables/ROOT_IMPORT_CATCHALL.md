@@ -2,9 +2,9 @@
 
 ---
 
-# Variable: ROOT_IMPORT_CATCHALL
+# Variable: ROOT\_IMPORT\_CATCHALL
 
-> `const` **ROOT_IMPORT_CATCHALL**: `object`
+> `const` **ROOT\_IMPORT\_CATCHALL**: `object`
 
 Catch-all only when `exports` includes `./*`.
 

@@ -26,7 +26,6 @@
     "@saflib/secret-store": "*"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },

@@ -19,7 +19,6 @@
     "@saflib/monorepo": "*"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
     "@saflib/vitest": "*"
   },
   "sideEffects": false

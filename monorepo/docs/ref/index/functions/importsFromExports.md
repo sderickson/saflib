@@ -4,7 +4,7 @@
 
 # Function: importsFromExports()
 
-> **importsFromExports**(`exports`): `Record`\<`string`, `unknown`\>
+> **importsFromExports**(`exports`): `Record`\<`string`, `unknown`>\>
 
 Build a default `imports` map from an `exports` map.
 

@@ -4,7 +4,7 @@
 
 # Function: throwError()
 
-> **throwError**\<`T`\>(`promise`, `ErrorClass`): `Promise`\<`NonUndefined`\<`T`\>\>
+> **throwError**\<`T`>\>(`promise`, `ErrorClass`): `Promise`\<`NonUndefined`\<`T`>>\>\>
 
 If a Promise which uses ReturnsError is unlikely to error,
 use this function to throw a chained error and return the result.

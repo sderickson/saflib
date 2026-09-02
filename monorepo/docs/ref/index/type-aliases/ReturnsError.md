@@ -4,7 +4,7 @@
 
 # Type Alias: ReturnsError\<T, E\>
 
-> **ReturnsError**\<`T`, `E`\> = `OneOf`\<\{ `error`: `E`; `result`: `T`; \}\>
+> **ReturnsError**\<`T`, `E`> \> = `OneOf`\<\{ `error`: `E`; `result`: `T`; \}\>
 
 An object with either a `result` or an `error`.
 Async functions which are exported by packages, such as database queries and integration calls,

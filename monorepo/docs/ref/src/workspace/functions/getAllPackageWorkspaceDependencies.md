@@ -4,9 +4,9 @@
 
 # Function: getAllPackageWorkspaceDependencies()
 
-> **getAllPackageWorkspaceDependencies**(`packageName`, `monorepoContext`): `Set`\<`string`\>
+> **getAllPackageWorkspaceDependencies**(`packageName`, `monorepoContext`): `Set`\<`string`>\>
 
-Returns all direct and transitive "@saflib/\*" dependencies for a given package.
+Returns all direct and transitive "@saflib/*" dependencies for a given package.
 
 ## Parameters
 

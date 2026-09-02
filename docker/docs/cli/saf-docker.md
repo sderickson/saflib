@@ -1,7 +1,6 @@
 # saf-docker
 
 ```
-Parsing...
 Usage: saf-docker [options] [command]
 
 Helps manage Docker-related files in SAF packages.

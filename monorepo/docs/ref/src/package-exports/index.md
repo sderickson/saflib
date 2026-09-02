@@ -37,7 +37,7 @@ Re-exports [importsFromExports](../../index/functions/importsFromExports.md)
 
 ---
 
-### ROOT_IMPORT_CATCHALL
+### ROOT\_IMPORT\_CATCHALL
 
 Re-exports [ROOT_IMPORT_CATCHALL](../../index/variables/ROOT_IMPORT_CATCHALL.md)
 

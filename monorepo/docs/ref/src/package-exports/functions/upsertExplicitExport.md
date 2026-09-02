@@ -4,7 +4,7 @@
 
 # Function: upsertExplicitExport()
 
-> **upsertExplicitExport**(`exports`, `stem`): `Record`\<`string`, `unknown`\>
+> **upsertExplicitExport**(`exports`, `stem`): `Record`\<`string`, `unknown`>\>
 
 ## Parameters
 

@@ -166,6 +166,12 @@ export function generateDockerfiles(
     }
 
     const copySrcCommand = `COPY --parents ${packageRelativePaths.join(" ")} ./`;
+    const gitHashesStep = [
+      "RUN apt-get update \\",
+      "  && apt-get install -y --no-install-recommends git \\",
+      "  && rm -rf /var/lib/apt/lists/* \\",
+      "  && npm exec saf-git-hashes",
+    ].join("\n");
 
     const packageRel = path
       .relative(ctx.rootDir, ctx.monorepoPackageDirectories[packageName])
@@ -175,7 +181,11 @@ export function generateDockerfiles(
 
     const dockerfileContents = dockerTemplate
       .replace("#{ copy_packages }#", copyPackageJsonCommand)
-      .replace("#{ copy_src }#", copySrcCommand)
+      .replace(
+        "#{ copy_src }#",
+        `${copySrcCommand}\n${gitHashesStep}`,
+      )
+      .replace("#{ git_hashes }#", gitHashesStep)
       .replace(/#\{ package_root \}#/g, packageRoot);
 
     const dockerfilePath = path.join(

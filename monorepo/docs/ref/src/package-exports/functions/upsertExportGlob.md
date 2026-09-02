@@ -4,7 +4,7 @@
 
 # Function: upsertExportGlob()
 
-> **upsertExportGlob**(`exports`, `topLevelSegment`): `Record`\<`string`, `unknown`\>
+> **upsertExportGlob**(`exports`, `topLevelSegment`): `Record`\<`string`, `unknown`>\>
 
 ## Parameters
 

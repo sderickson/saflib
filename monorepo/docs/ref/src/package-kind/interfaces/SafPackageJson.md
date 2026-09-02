@@ -12,7 +12,7 @@
 
 ### dependencies?
 
-> `optional` **dependencies**: `Record`\<`string`, `string`\>
+> `optional` **dependencies**: `Record`\<`string`, `string`>\>
 
 ---
 
@@ -30,7 +30,7 @@
 
 ### optionalDependencies?
 
-> `optional` **optionalDependencies**: `Record`\<`string`, `string`\>
+> `optional` **optionalDependencies**: `Record`\<`string`, `string`>\>
 
 ---
 

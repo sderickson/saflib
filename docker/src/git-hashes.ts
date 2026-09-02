@@ -26,7 +26,7 @@ function execGit(
 }
 
 /**
- * saflib root: this file lives at `saflib/dev-tools/src/git-hashes.ts`.
+ * saflib root: this file lives at `saflib/docker/src/git-hashes.ts`.
  * Prefer that over assuming `./saflib` under the git root (submodules / nested monorepos).
  */
 export function findSaflibDir(): string {

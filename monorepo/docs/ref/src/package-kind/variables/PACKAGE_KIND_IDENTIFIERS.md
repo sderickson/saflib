@@ -2,9 +2,9 @@
 
 ---
 
-# Variable: PACKAGE_KIND_IDENTIFIERS
+# Variable: PACKAGE\_KIND\_IDENTIFIERS
 
-> `const` **PACKAGE_KIND_IDENTIFIERS**: `object`
+> `const` **PACKAGE\_KIND\_IDENTIFIERS**: `object`
 
 Identifier packages that imply a product layer. The packages themselves are `lib`.
 

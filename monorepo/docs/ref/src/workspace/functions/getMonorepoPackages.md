@@ -4,7 +4,7 @@
 
 # Function: getMonorepoPackages()
 
-> **getMonorepoPackages**(`rootDir`): `Pick`\<[`MonorepoContext`](../interfaces/MonorepoContext.md), `"monorepoPackageJsons"` \| `"monorepoPackageDirectories"`\>
+> **getMonorepoPackages**(`rootDir`): `Pick`\<[`MonorepoContext`](../interfaces/MonorepoContext.md), `"monorepoPackageJsons"` \| `"monorepoPackageDirectories"`>\>
 
 Not for public use. Helper function for `buildMonorepoContext`.
 

@@ -4,7 +4,7 @@
 
 # Function: stripTemplateExportPlaceholders()
 
-> **stripTemplateExportPlaceholders**(`exports`): `Record`\<`string`, `unknown`\>
+> **stripTemplateExportPlaceholders**(`exports`): `Record`\<`string`, `unknown`>\>
 
 Remove template placeholder export keys/values (e.g. `./__group-name__/*`).
 

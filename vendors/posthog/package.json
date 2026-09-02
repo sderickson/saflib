@@ -24,7 +24,6 @@
     "posthog-node": "^5.33.2"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },

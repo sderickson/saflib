@@ -2,9 +2,9 @@
 
 ---
 
-# Variable: ROOT_TS_ALLOWLIST
+# Variable: ROOT\_TS\_ALLOWLIST
 
-> `const` **ROOT_TS_ALLOWLIST**: `Set`\<`string`\>
+> `const` **ROOT\_TS\_ALLOWLIST**: `Set`\<`string`>\>
 
 `.ts` / `.tsx` basenames always allowed at the package root.
 Everything else should live in a thematic folder — unless it is a

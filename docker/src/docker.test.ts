@@ -60,6 +60,7 @@ describe("generateDockerfiles", () => {
     expect(dockerfile).toContain(
       "COPY --parents ./clients/web-auth ./saflib/auth-vue ./saflib/auth-spec ./saflib/openapi-specs ./saflib/vue-spa ./",
     );
+    expect(dockerfile).toContain("npm exec saf-git-hashes");
 
     const stagedPackageJson = JSON.parse(
       vol.readFileSync(

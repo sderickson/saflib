@@ -20,14 +20,12 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow monorepo/add-export
-
 - Upsert 2 templates.
-- Add glob export for ./lib/\*
+- Add glob export for ./lib/*
 - Update **myFunction.ts** to implement the myFunction export.
 - Update **myFunction.test.ts** to test the myFunction functionality.
 - Run `npm run test`
-- Run `npm exec saf-imports exports check --package @saflib/saflib`
+- Run `npm exec saf-imports exports check --package @saflib/monorepo`
 - Run `npm exec saf-docs generate`
 
 ## Help Docs

@@ -19,10 +19,10 @@
 
 ## Variables
 
-| Variable                                                          | Description                                                                        |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [PACKAGE_KIND_IDENTIFIERS](variables/PACKAGE_KIND_IDENTIFIERS.md) | Identifier packages that imply a product layer. The packages themselves are `lib`. |
-| [PACKAGE_KINDS](variables/PACKAGE_KINDS.md)                       | Product package kinds for inventory / layout.                                      |
+| Variable                                                            | Description                                                                        |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [PACKAGE\_KIND\_IDENTIFIERS](variables/PACKAGE_KIND_IDENTIFIERS.md) | Identifier packages that imply a product layer. The packages themselves are `lib`. |
+| [PACKAGE\_KINDS](variables/PACKAGE_KINDS.md)                        | Product package kinds for inventory / layout.                                      |
 
 ## Functions
 

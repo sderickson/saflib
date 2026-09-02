@@ -14,13 +14,13 @@ In-memory package.json fields used by layout checks.
 
 ### bin?
 
-> `optional` **bin**: `string` \| `Record`\<`string`, `string`\>
+> `optional` **bin**: `string` \| `Record`\<`string`, `string`>\>
 
 ---
 
 ### dependencies?
 
-> `optional` **dependencies**: `Record`\<`string`, `string`\>
+> `optional` **dependencies**: `Record`\<`string`, `string`>\>
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ In-memory package.json fields used by layout checks.
 
 ### exports?
 
-> `optional` **exports**: `Record`\<`string`, `unknown`\>
+> `optional` **exports**: `Record`\<`string`, `unknown`>\>
 
 Subpath exports map (`"./foo": "./foo.ts"`).
 
@@ -42,7 +42,7 @@ Subpath exports map (`"./foo": "./foo.ts"`).
 
 ### imports?
 
-> `optional` **imports**: `Record`\<`string`, `unknown`\>
+> `optional` **imports**: `Record`\<`string`, `unknown`>\>
 
 Package-local `#` imports map (`"#foo.ts": "./foo.ts"`).
 
@@ -60,7 +60,7 @@ Package-local `#` imports map (`"#foo.ts": "./foo.ts"`).
 
 ### optionalDependencies?
 
-> `optional` **optionalDependencies**: `Record`\<`string`, `string`\>
+> `optional` **optionalDependencies**: `Record`\<`string`, `string`>\>
 
 #### Inherited from
 
@@ -84,4 +84,4 @@ Package-local `#` imports map (`"#foo.ts": "./foo.ts"`).
 
 ### scripts?
 
-> `optional` **scripts**: `Record`\<`string`, `string`\>
+> `optional` **scripts**: `Record`\<`string`, `string`>\>

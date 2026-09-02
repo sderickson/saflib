@@ -10,13 +10,13 @@ Interface of package.json fields which are used in workspace discovery.
 
 ### bin?
 
-> `optional` **bin**: `Record`\<`string`, `string`\>
+> `optional` **bin**: `Record`\<`string`, `string`>\>
 
 ---
 
 ### dependencies?
 
-> `optional` **dependencies**: `Record`\<`string`, `string`\>
+> `optional` **dependencies**: `Record`\<`string`, `string`>\>
 
 ---
 
@@ -28,19 +28,19 @@ Interface of package.json fields which are used in workspace discovery.
 
 ### devDependencies?
 
-> `optional` **devDependencies**: `Record`\<`string`, `string`\>
+> `optional` **devDependencies**: `Record`\<`string`, `string`>\>
 
 ---
 
 ### engines?
 
-> `optional` **engines**: `Record`\<`string`, `string`\>
+> `optional` **engines**: `Record`\<`string`, `string`>\>
 
 ---
 
 ### exports?
 
-> `optional` **exports**: `Record`\<`string`, `string`\>
+> `optional` **exports**: `Record`\<`string`, `string`>\>
 
 ---
 
@@ -52,13 +52,13 @@ Interface of package.json fields which are used in workspace discovery.
 
 ### optionalDependencies?
 
-> `optional` **optionalDependencies**: `Record`\<`string`, `string`\>
+> `optional` **optionalDependencies**: `Record`\<`string`, `string`>\>
 
 ---
 
 ### overrides?
 
-> `optional` **overrides**: `Record`\<`string`, `string`\>
+> `optional` **overrides**: `Record`\<`string`, `string`>\>
 
 ---
 
@@ -86,7 +86,7 @@ SAF package metadata (`kind` is db / http / spec / sdk / spa / lib / …).
 
 ### scripts?
 
-> `optional` **scripts**: `Record`\<`string`, `string`\>
+> `optional` **scripts**: `Record`\<`string`, `string`>\>
 
 ---
 

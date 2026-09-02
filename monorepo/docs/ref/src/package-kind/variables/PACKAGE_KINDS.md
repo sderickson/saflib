@@ -2,9 +2,9 @@
 
 ---
 
-# Variable: PACKAGE_KINDS
+# Variable: PACKAGE\_KINDS
 
-> `const` **PACKAGE_KINDS**: readonly \[`"db"`, `"http"`, `"spec"`, `"spa"`, `"sdk"`, `"lib"`, `"integration"`, `"other"`\]
+> `const` **PACKAGE\_KINDS**: readonly \[`"db"`, `"http"`, `"spec"`, `"spa"`, `"sdk"`, `"lib"`, `"integration"`, `"other"`\]
 
 Product package kinds for inventory / layout.
 

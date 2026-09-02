@@ -179,6 +179,12 @@
       "path": "./dev-tools"
     },
     {
+      "path": "./docker"
+    },
+    {
+      "path": "./docs"
+    },
+    {
       "path": "./drizzle"
     },
     {

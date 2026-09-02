@@ -12,9 +12,9 @@
 
 ## Variables
 
-| Variable                                                  | Description                                   |
-| --------------------------------------------------------- | --------------------------------------------- |
-| [ROOT_IMPORT_CATCHALL](variables/ROOT_IMPORT_CATCHALL.md) | Catch-all only when `exports` includes `./*`. |
+| Variable                                                    | Description                                   |
+| ----------------------------------------------------------- | --------------------------------------------- |
+| [ROOT\_IMPORT\_CATCHALL](variables/ROOT_IMPORT_CATCHALL.md) | Catch-all only when `exports` includes `./*`. |
 
 ## Functions
 
@@ -58,7 +58,7 @@ Re-exports [classifySafPackage](../src/package-kind/functions/classifySafPackage
 
 ---
 
-### DEFAULT_MAX_SOURCE_LINES
+### DEFAULT\_MAX\_SOURCE\_LINES
 
 Re-exports [DEFAULT_MAX_SOURCE_LINES](../src/package-layout/variables/DEFAULT_MAX_SOURCE_LINES.md)
 
@@ -100,13 +100,13 @@ Re-exports [listPackageJsonExportTargetFiles](../src/package-layout/functions/li
 
 ---
 
-### PACKAGE_KIND_IDENTIFIERS
+### PACKAGE\_KIND\_IDENTIFIERS
 
 Re-exports [PACKAGE_KIND_IDENTIFIERS](../src/package-kind/variables/PACKAGE_KIND_IDENTIFIERS.md)
 
 ---
 
-### PACKAGE_KINDS
+### PACKAGE\_KINDS
 
 Re-exports [PACKAGE_KINDS](../src/package-kind/variables/PACKAGE_KINDS.md)
 
@@ -160,7 +160,7 @@ Re-exports [resolveExportModulePathLayout](../src/package-exports/functions/reso
 
 ---
 
-### ROOT_TS_ALLOWLIST
+### ROOT\_TS\_ALLOWLIST
 
 Re-exports [ROOT_TS_ALLOWLIST](../src/package-layout/variables/ROOT_TS_ALLOWLIST.md)
 

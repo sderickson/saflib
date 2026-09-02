@@ -9,7 +9,7 @@
   "dependencies": {
     "@saflib/dev-site-docker-app": "*",
     "@saflib/dev-site-docker-http": "*",
-    "@saflib/dev-tools": "*"
+    "@saflib/docker": "*"
   },
   "sideEffects": false
 }

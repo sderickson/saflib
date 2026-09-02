@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow monorepo/add-package
-
 - Upsert 3 templates.
 - Clear template export placeholders in my-product/lib/my-lib/package.json
 - The file 'my-product/lib/my-lib/package.json' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.

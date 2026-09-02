@@ -4,7 +4,7 @@
 
 # Function: stripTemplateImportPlaceholders()
 
-> **stripTemplateImportPlaceholders**(`imports`): `Record`\<`string`, `unknown`\>
+> **stripTemplateImportPlaceholders**(`imports`): `Record`\<`string`, `unknown`>\>
 
 Remove template placeholder import keys/values (e.g. `#__group-name__/*`).
 

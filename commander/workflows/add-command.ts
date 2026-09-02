@@ -89,7 +89,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["install", "@saflib/dev-tools", "--save-dev"],
+      args: ["install", "@saflib/docs", "--save-dev"],
     })),
 
     step(CommandStepMachine, () => ({

@@ -4,7 +4,7 @@
 
 # Function: upsertPackageExportForModule()
 
-> **upsertPackageExportForModule**(`exports`, `groupName`, `targetName`): `Record`\<`string`, `unknown`\>
+> **upsertPackageExportForModule**(`exports`, `groupName`, `targetName`): `Record`\<`string`, `unknown`>\>
 
 ## Parameters
 
