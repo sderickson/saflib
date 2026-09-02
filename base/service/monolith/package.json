@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc -b",
-    "start": "saf-ts-run ./run.ts"
+    "start": "node --experimental-strip-types --disable-warning=ExperimentalWarning ./run.ts"
   },
   "exports": {
     "./env": "./env.ts",

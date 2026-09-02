@@ -301,14 +301,17 @@ export function checkPackageLayoutFromInputs(
 
   for (const [scriptName, script] of Object.entries(pj.scripts ?? {})) {
     if (usesStripTypesDirectly(script) && !usesSafTsRun(script)) {
-      issues.push({
-        kind: "package-layout",
-        title: "Package layout",
-        name: `scripts.${scriptName} uses node --experimental-strip-types (use saf-ts-run)`,
-        kindLabel: "scripts",
-        filePath: "package.json",
-        repoPath: repoPathFor("package.json"),
-      });
+      const target = scriptTargetPath(script);
+      if (!target || !isAllowedSafTsRunTarget(target)) {
+        issues.push({
+          kind: "package-layout",
+          title: "Package layout",
+          name: `scripts.${scriptName} uses node --experimental-strip-types (use saf-ts-run)`,
+          kindLabel: "scripts",
+          filePath: "package.json",
+          repoPath: repoPathFor("package.json"),
+        });
+      }
     }
     if (usesSafTsRun(script)) {
       const target = scriptTargetPath(script);

@@ -115,6 +115,20 @@ describe("checkPackageLayoutFromInputs", () => {
     expect(issues).toEqual([]);
   });
 
+  it("allows monolith run.ts start via node strip-types (Docker / no dev-tools)", () => {
+    const issues = checkPackageLayoutFromInputs({
+      packageJson: {
+        exports: { "./run": "./run.ts" },
+        scripts: {
+          start:
+            "node --experimental-strip-types --disable-warning=ExperimentalWarning ./run.ts",
+        },
+      },
+      rootTsFiles: ["run.ts"],
+    });
+    expect(issues).toEqual([]);
+  });
+
   it("allows root tests colocated with a root source file of the same stem", () => {
     expect(
       isColocatedRootTestFile("audit-map.test.ts", [
