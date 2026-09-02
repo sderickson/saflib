@@ -1,7 +1,7 @@
 import { startExpressServer } from "@saflib/express";
 import { createBaseHttpApp } from "@saflib/base-http/http";
 import { baseDb } from "@saflib/base-db/instances";
-import { getBaseAuditDbKey } from "@saflib/base-audit";
+import { connectBaseAuditDb } from "@saflib/base-audit";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { makeContext } from "@saflib/base-service-common/context";
@@ -21,8 +21,7 @@ export async function startBaseService() {
     log.info("Starting up base service...");
     log.info("Connecting to base-db...");
     const dbKey = baseDb.connect({ onDisk: true });
-    const auditDbKey = getBaseAuditDbKey();
-    const context = makeContext({ baseDbKey: dbKey, auditDbKey });
+    const context = connectBaseAuditDb(makeContext({ baseDbKey: dbKey }));
     log.info("base-db connection complete.");
 
     const jobsSocketPath =

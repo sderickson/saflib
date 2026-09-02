@@ -23,9 +23,6 @@ const cronDbAccessor = createOnDiskDbKeyAccessor({
   connect: cronDb.connect,
 });
 
-/** Absolute path to the cron job-settings SQLite file under this package's `data/`. */
-export const getBaseCronSqlitePath = cronDbAccessor.getSqlitePath;
-
 /**
  * Opaque key for `@saflib/cron-db` (not the main app DB key). Use this for
  * `createCronRouter` and `runCron`.

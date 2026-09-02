@@ -2,7 +2,7 @@ import { h } from "vue";
 import type { IconProps, IconSet } from "vuetify";
 import type { VuetifyOptions } from "vuetify";
 import { aliases, mdi as mdiSvg } from "vuetify/iconsets/mdi-svg";
-import { mdiIconPaths } from "./mdi-icons.ts";
+import { mdiIconPaths } from "./assets/mdi-icons.ts";
 
 /** Resolve `mdi-*` class names to SVG paths; pass through paths / other values. */
 function resolveMdiIcon(icon: IconProps["icon"]): IconProps["icon"] {

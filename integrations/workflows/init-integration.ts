@@ -102,9 +102,9 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
     secrets: path.join(integrationStubRoot, "secrets.json"),
     envFile: path.join(integrationStubRoot, "env.ts"),
     client: path.join(integrationStubRoot, "client.ts"),
-    clientMocks: path.join(integrationStubRoot, "client.mocks.ts"),
+    clientMocks: path.join(integrationStubRoot, "mocks/client.ts"),
     index: path.join(integrationStubRoot, "index.ts"),
-    test: path.join(integrationStubRoot, "index.test.ts"),
+    test: path.join(integrationStubRoot, "test/index.test.ts"),
     tsconfig: path.join(integrationStubRoot, "tsconfig.json"),
     vitestConfig: path.join(integrationStubRoot, "vitest.config.js"),
     callsPing: path.join(integrationStubRoot, "calls/ping.ts"),
@@ -191,7 +191,7 @@ Read the overview doc first: ${context.docFiles?.overview}
 2. Keep fetching credentials via \`store.getSecretByName(...)\` and \`secrets.json\` (already wired). Update the secret name if you renamed it in \`secrets.json\`.
 3. **Do not change the configure / isMocked pattern** (test mode mocks; missing secret warns; \`"mock"\` sentinel selects mocks). See the docs for why.
 4. Define a scoped client type using \`Pick\` to select only the SDK methods this integration will use. For nested SDKs, pick from each namespace. See the docs for patterns.
-5. Implement the **mock client** in \`client.mocks.ts\` (already imported). Put all mock data and mock method implementations there — keep \`client.mocks.ts\` **SDK-free** (\`import type\` only from the vendor package). Tests import mocks via \`@<package>/mocks\`.
+5. Implement the **mock client** in \`mocks/client.ts\` (already imported). Put all mock data and mock method implementations there — keep \`mocks/client.ts\` **SDK-free** (\`import type\` only from the vendor package). Tests import mocks via \`@<package>/mocks\`.
 6. For SDK-backed integrations, split real SDK wiring into \`client.real.ts\` and wire production configure from the product's \`dependencies.integrations.ts\` (see existing integration packages in the monorepo).
 7. Implement the **real client** by initialising the SDK and casting it to the scoped type.
 8. Update the export name and types.`,

@@ -10,7 +10,6 @@ import { baseJobs } from "@saflib/base-cron";
 import {
   baseJobOperations,
   baseTriggerMap,
-  getBaseJobsSqlitePath,
   runBaseJobs,
 } from "./jobs.ts";
 
@@ -107,13 +106,6 @@ describe("startup validation crashes on bad map entries", () => {
         operations: validationSpec,
       }),
     ).toThrow(/exceeds ceiling/);
-  });
-});
-
-describe("getBaseJobsSqlitePath", () => {
-  it("uses jobs/data/jobs-db-{DEPLOYMENT_NAME}.sqlite", () => {
-    const sqlitePath = getBaseJobsSqlitePath();
-    expect(sqlitePath).toMatch(/jobs[/\\]data[/\\]jobs-db-.+\.sqlite$/);
   });
 });
 

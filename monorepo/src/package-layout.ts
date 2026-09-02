@@ -192,6 +192,19 @@ function isTestOrFixtureFileName(name: string): boolean {
 }
 
 /**
+ * `*-links` packages keep link modules at the package root by convention.
+ */
+export function isLinksPackageRootTsFile(
+  fileName: string,
+  packageName?: string,
+): boolean {
+  if (!packageName?.endsWith("-links")) return false;
+  if (!fileName.endsWith(".ts") && !fileName.endsWith(".tsx")) return false;
+  if (fileName.endsWith(".d.ts")) return false;
+  return !isTestOrFixtureFileName(fileName);
+}
+
+/**
  * Root `foo.test.ts` colocated with root `foo.ts` (same stem, not `index`).
  */
 export function isColocatedRootTestFile(
@@ -317,6 +330,7 @@ export function checkPackageLayoutFromInputs(
       (name.endsWith(".ts") || name.endsWith(".tsx")) &&
       !name.endsWith(".d.ts") &&
       !isAllowedRootTsFile(name, pj.exports) &&
+      !isLinksPackageRootTsFile(name, pj.name) &&
       !isColocatedRootTestFile(name, options.rootTsFiles ?? [])
     ) {
       issues.push({

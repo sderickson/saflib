@@ -7,7 +7,7 @@ import { linkToHrefWithHost } from "@saflib/links";
 import { appLinks } from "@saflib/base-links";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
 import { configureAuthApp } from "@saflib/ory-kratos-spa";
-import DevSignupAdminHint from "./DevSignupAdminHint.vue";
+import DevSignupAdminHint from "./components/dev-signup-admin-hint/DevSignupAdminHint.vue";
 
 configureAuthApp({
   requireMfaAfterLogin: false,

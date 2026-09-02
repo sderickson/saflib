@@ -14,9 +14,6 @@ const auditDbAccessor = createOnDiskDbKeyAccessor({
   connect: auditDb.connect,
 });
 
-/** Absolute path to the audit SQLite file under this package's `data/`. */
-export const getBaseAuditSqlitePath = auditDbAccessor.getSqlitePath;
-
 /** Opaque key for `@saflib/audit-db` (separate from the main app DB). */
 export const getBaseAuditDbKey = auditDbAccessor.getDbKey;
 
@@ -31,14 +28,6 @@ export const baseAuditRecorder = createAuditRecorder({
 
 export function baseAuditRecorderMiddleware() {
   return baseAuditRecorder.middleware();
-}
-
-export function appendFailClosedBaseHttpAuditIfRequired(
-  ...args: Parameters<
-    typeof baseAuditRecorder.appendFailClosedHttpAuditIfRequired
-  >
-) {
-  return baseAuditRecorder.appendFailClosedHttpAuditIfRequired(...args);
 }
 
 export function createBaseAuditRouter() {

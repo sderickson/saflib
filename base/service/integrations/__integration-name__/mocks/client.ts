@@ -6,7 +6,7 @@
  * wiring belongs in `client.real.ts` (see a scoped integration package for the
  * reference split).
  */
-import type { Scoped__IntegrationName__Client } from "./client.ts";
+import type { Scoped__IntegrationName__Client } from "../client.ts";
 
 // TODO: Implement mock responses returning realistic placeholder data.
 // Each method in the scoped client type needs a mock that returns the
