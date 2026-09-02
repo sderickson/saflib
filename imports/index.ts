@@ -68,7 +68,6 @@ export {
   resolveSpecifier,
   existsResolve,
 } from "./src/resolve/index.ts";
-
 export {
   generateSnapshot,
   checkSnapshot,
