@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Request } from "express";
-import { isPublicMonolithRoute } from "../app/is-public-monolith-route.ts";
+import { isPublicMonolithRoute } from "./is-public-monolith-route.ts";
 
 function req(method: string, path: string): Request {
   return { method, path } as Request;

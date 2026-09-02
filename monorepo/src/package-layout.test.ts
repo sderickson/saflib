@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   checkPackageLayoutFromInputs,
   isAllowedRootTsFile,
+  isColocatedRootTestFile,
   listPackageJsonExportTargetFiles,
 } from "./package-layout.ts";
 
@@ -97,5 +98,27 @@ describe("checkPackageLayoutFromInputs", () => {
       rootTsFiles: ["run.ts"],
     });
     expect(issues).toEqual([]);
+  });
+
+  it("allows root tests colocated with a root source file of the same stem", () => {
+    expect(
+      isColocatedRootTestFile("audit-map.test.ts", [
+        "audit-map.ts",
+        "audit.ts",
+      ]),
+    ).toBe(true);
+    const issues = checkPackageLayoutFromInputs({
+      packageJson: {
+        exports: { ".": "./audit.ts", "./audit-map": "./audit-map.ts" },
+      },
+      rootTsFiles: ["audit-map.ts", "audit-map.test.ts", "audit.ts"],
+    });
+    expect(issues.map((i) => i.filePath)).toEqual([]);
+  });
+
+  it("does not allow root index.test.ts via colocation rule", () => {
+    expect(
+      isColocatedRootTestFile("index.test.ts", ["index.ts"]),
+    ).toBe(false);
   });
 });

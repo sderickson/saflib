@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { sentEmails } from "@saflib/email-service";
-import { callbacks } from "../callbacks/index.ts";
+import { callbacks } from "./index.ts";
 
 describe("callbacks", () => {
   afterEach(() => {

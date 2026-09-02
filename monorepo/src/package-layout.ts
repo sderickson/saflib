@@ -191,6 +191,20 @@ function isTestOrFixtureFileName(name: string): boolean {
   );
 }
 
+/**
+ * Root `foo.test.ts` colocated with root `foo.ts` (same stem, not `index`).
+ */
+export function isColocatedRootTestFile(
+  fileName: string,
+  rootTsFiles: readonly string[],
+): boolean {
+  const match = fileName.match(/^(.+)\.(test|spec)\.(ts|tsx)$/);
+  if (!match) return false;
+  const stem = match[1]!;
+  if (stem === "index") return false;
+  return rootTsFiles.includes(`${stem}.ts`) || rootTsFiles.includes(`${stem}.tsx`);
+}
+
 function walkSourceFiles(dir: string, out: string[]) {
   let entries: fs.Dirent[];
   try {
@@ -302,7 +316,8 @@ export function checkPackageLayoutFromInputs(
     if (
       (name.endsWith(".ts") || name.endsWith(".tsx")) &&
       !name.endsWith(".d.ts") &&
-      !isAllowedRootTsFile(name, pj.exports)
+      !isAllowedRootTsFile(name, pj.exports) &&
+      !isColocatedRootTestFile(name, options.rootTsFiles ?? [])
     ) {
       issues.push({
         kind: "package-layout",
