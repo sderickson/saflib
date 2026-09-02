@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@saflib/vitest": "*",
-    "@types/better-sqlite3": "^7.0.0",
+    "@types/better-sqlite3": "^9.0.0",
     "better-sqlite3": "12.11.1"
   },
   "sideEffects": false
