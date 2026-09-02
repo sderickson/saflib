@@ -4,10 +4,10 @@ M8 introduced static bundle budgets for gate SPAs: **app**, **admin**, **account
 
 ## Shell vs page chunks
 
-| Metric | What it includes |
-| --- | --- |
-| **Shell** | SPA entry + all `*Async.vue` + `*.loader.ts` chunks (by design — loaders live in shell) |
-| **Page chunks** | Lazy `.vue` page files per route key from router analysis |
+| Metric          | What it includes                                                                        |
+| --------------- | --------------------------------------------------------------------------------------- |
+| **Shell**       | SPA entry + all `*Async.vue` + `*.loader.ts` chunks (by design — loaders live in shell) |
+| **Page chunks** | Lazy `.vue` page files per route key from router analysis                               |
 
 Shell gzip JS is a primary budget target when comparing local snapshots. Per-route page chunk
 regressions are warn-only in snapshot check until nested-route `pageVueFiles` includes full ancestor

@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "@saflib/drizzle": "*",
-    "@saflib/env": "*"
+    "@saflib/env": "*",
+    "drizzle-orm": "0.45.2"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

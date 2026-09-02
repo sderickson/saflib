@@ -17,6 +17,18 @@ A step in a workflow with an actor and its corresponding input.
 
 ## Properties
 
+### commitAfter?
+
+> `optional` **commitAfter**: `object`
+
+Whether to commit the changes after the step has been executed, and with what message.
+
+#### message
+
+> **message**: `string` \| (`arg`) => `string`
+
+---
+
 ### input()
 
 > **input**: (`arg`) => `InputFrom`\<`M`\>

@@ -17,7 +17,7 @@ Do **not** blindly delete exports. Triage each item.
 
 2. **Tested helper only used in that file (+ tests)** — unit tests import the export  
    → **Backend / shared libs:** split into its own module; production parent imports the leaf.  
-   Rule of thumb: *if it has a focused unit test, it deserves its own file.*  
+   Rule of thumb: _if it has a focused unit test, it deserves its own file._  
    → **Vue SPA `.logic.ts` next to a component:** do **not** split each function into its own file (Spec folds companions into one bundle). Either use the helper from the Vue (or sibling) or **delete** it and its tests.
 
 3. **CLI / validate / generate entrypoint** — only called from `*.test.ts` or nowhere  
@@ -41,11 +41,11 @@ Do **not** blindly delete exports. Triage each item.
 
 ## Other issue kinds
 
-| Kind | Typical fix |
-| --- | --- |
-| `oversized-file` (>800 LoC) | Split into folders/modules; don't silence without splitting |
-| `package-layout` | No `.ts` at package root except allowlisted entry/config files (`index.ts`, `client.ts`, `drizzle.config.ts`, Vue SPA `main.ts` / `router.ts` / `vite.config.ts` / `vitest.config.ts` / `playwright.config.ts`) **or** files that are direct package exports (`"."` → `./main.ts`, `./name` → `./name.ts`); `bin` → `./bin/…`; `saf-ts-run` → `./scripts/` or `./bin/`; ban `node --experimental-strip-types` in scripts |
-| exports remaps | Make import path = file path; `saf-imports exports check` / `analyze-package` |
+| Kind                        | Typical fix                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `oversized-file` (>800 LoC) | Split into folders/modules; don't silence without splitting                                                                                                                                                                                                                                                                                                                                                              |
+| `package-layout`            | No `.ts` at package root except allowlisted entry/config files (`index.ts`, `client.ts`, `drizzle.config.ts`, Vue SPA `main.ts` / `router.ts` / `vite.config.ts` / `vitest.config.ts` / `playwright.config.ts`) **or** files that are direct package exports (`"."` → `./main.ts`, `./name` → `./name.ts`); `bin` → `./bin/…`; `saf-ts-run` → `./scripts/` or `./bin/`; ban `node --experimental-strip-types` in scripts |
+| exports remaps              | Make import path = file path; `saf-imports exports check` / `analyze-package`                                                                                                                                                                                                                                                                                                                                            |
 
 ## Verify
 

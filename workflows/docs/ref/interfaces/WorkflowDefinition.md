@@ -42,10 +42,10 @@ The context specific to this workflow, generated from the input and available to
 
 #### Parameters
 
-| Parameter   | Type                                               |
-| ----------- | -------------------------------------------------- |
-| `arg`       | \{ `input`: `CreateArgsType`\<`I`\> & `object`; \} |
-| `arg.input` | `CreateArgsType`\<`I`\> & `object`                 |
+| Parameter   | Type                                                                                                                                                        |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `arg`       | \{ `input`: `Omit`\<`CreateArgsTypeBase`\<`I`\>, `FlagKeys`\<`I`\>\> & `Partial`\<`Pick`\<`CreateArgsTypeBase`\<`I`\>, `FlagKeys`\<`I`\>\>\> & `object`; \} |
+| `arg.input` | `Omit`\<`CreateArgsTypeBase`\<`I`\>, `FlagKeys`\<`I`\>\> & `Partial`\<`Pick`\<`CreateArgsTypeBase`\<`I`\>, `FlagKeys`\<`I`\>\>\> & `object`                 |
 
 #### Returns
 
@@ -117,4 +117,8 @@ Configure version control for the workflow. Right now, just provide paths which 
 
 #### allowPaths?
 
-> `optional` **allowPaths**: `string`[]
+> `optional` **allowPaths**: `string`[] \| (`__namedParameters`) => `string`[]
+
+#### commitEachStep?
+
+> `optional` **commitEachStep**: `boolean`

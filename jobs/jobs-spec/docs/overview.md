@@ -5,10 +5,10 @@ the `Job` wire schema and the internal + admin HTTP surfaces.
 
 ## Surfaces
 
-| Surface | Operations | Auth |
-| --- | --- | --- |
-| Internal (jobs app socket) | `enqueueJob` | M1 signed assertion (not `site-admin-only`) |
-| Admin (mounted into the product public app) | `listJobs`, `getJob`, `retryJob`, `cancelJob`, `cancelJobsByOriginalRequest` | `site-admin-only` |
+| Surface                                     | Operations                                                                   | Auth                                        |
+| ------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------- |
+| Internal (jobs app socket)                  | `enqueueJob`                                                                 | M1 signed assertion (not `site-admin-only`) |
+| Admin (mounted into the product public app) | `listJobs`, `getJob`, `retryJob`, `cancelJob`, `cancelJobsByOriginalRequest` | `site-admin-only`                           |
 
 ## `background` tag
 

@@ -23,7 +23,7 @@ export function generateCliDocs(options: GenerateCliDocsOptions) {
     const sortedCommands = Object.keys(bin).sort();
 
     for (const command of sortedCommands) {
-      const result = execSync(`npm exec ${command} help`);
+      const result = execSync(`npm exec ${command} -- --help`);
       const wrappedResult = `# ${command}\n\n\`\`\`\n${result.toString()}\n\`\`\`\n`;
       writeFileSync(`docs/cli/${command}.md`, wrappedResult);
       console.log(`- ${command}`);

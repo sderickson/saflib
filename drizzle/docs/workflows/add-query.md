@@ -20,13 +20,10 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **example-query.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/queries/__group-name__/__target-name__.ts)
-  - Upsert **example-query.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/queries/__group-name__/__target-name__.test.ts)
-  - Upsert **types.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/types.ts)
-  - Upsert **errors.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/errors.ts)
-- Add parameters and results to the root types.ts file and errors to the errors.ts files.
-- Implement the new query following the documentation guidelines (import the leaf via `@scope/my-db/queries/<group>/<name>`; do not create a group barrel).
+Kicking off workflow drizzle/add-query
+
+- Upsert 4 templates.
+- Implement the new query following the documentation guidelines.
 - Run `npm run typecheck`
 - Implement the generated test file.
 - Run `npm run typecheck`

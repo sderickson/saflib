@@ -4,7 +4,7 @@
 
 # Function: typedCreateHandler()
 
-> **typedCreateHandler**\<`Paths`\>(`__namedParameters`): `object`
+> **typedCreateHandler**\<`Paths`\>(): `object`
 
 Use to create a typed helper function for creating typesafe mock API handlers.
 
@@ -13,13 +13,6 @@ Use to create a typed helper function for creating typesafe mock API handlers.
 | Type Parameter                                |
 | --------------------------------------------- |
 | `Paths` _extends_ `Record`\<`string`, `any`\> |
-
-## Parameters
-
-| Parameter                     | Type                         |
-| ----------------------------- | ---------------------------- |
-| `__namedParameters`           | \{ `subdomain`: `string`; \} |
-| `__namedParameters.subdomain` | `string`                     |
 
 ## Returns
 

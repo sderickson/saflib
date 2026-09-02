@@ -6,8 +6,8 @@
 
 > **listExportableFiles**(`pkgDir`): `string`[]
 
-List exportable source files: top-level package `.ts`/`.tsx` plus everything
-under `src/` (recursive). Excludes tests, fixtures, bin, docs, workflows.
+List exportable source files: all `.ts`/`.tsx` under the package directory
+(recursive). Excludes tests, fixtures, bin, docs, workflows, and `env.ts`.
 
 ## Parameters
 

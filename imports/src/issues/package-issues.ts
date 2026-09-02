@@ -81,7 +81,7 @@ export interface PackageIssue {
   repoPath: string;
 }
 
-type UsedBy = { packageName: string; filePath: string; repoPath: string };
+export type UsedBy = { packageName: string; filePath: string; repoPath: string };
 
 export interface PackageDetailForIssues {
   packageName: string;

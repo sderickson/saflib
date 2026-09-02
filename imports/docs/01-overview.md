@@ -4,15 +4,15 @@ SAF-specific import-graph measurement and enforcement tooling.
 
 ## Documentation
 
-| Doc | Topic |
-| --- | --- |
-| [01-overview.md](./01-overview.md) | This page — CLI summary, snapshot tool |
-| [02-ci.md](./02-ci.md) | ESLint import-graph rules, PR checklist |
-| [03-project-references.md](./03-project-references.md) | TypeScript project references (`saf-imports tsconfig`, `src/tsconfig/`) |
-| [04-composite-type-guidance.md](./04-composite-type-guidance.md) | Types across composite packages |
-| [05-scaffold.md](./05-scaffold.md) | Init workflow defaults (`sideEffects`, exports, `#` imports) |
-| [06-spa-bundles.md](./06-spa-bundles.md) | SPA shell vs page chunk measurement |
-| [cli/](./cli/index.md) | Generated CLI reference |
+| Doc                                                              | Topic                                                                   |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [01-overview.md](./01-overview.md)                               | This page — CLI summary, snapshot tool                                  |
+| [02-ci.md](./02-ci.md)                                           | ESLint import-graph rules, PR checklist                                 |
+| [03-project-references.md](./03-project-references.md)           | TypeScript project references (`saf-imports tsconfig`, `src/tsconfig/`) |
+| [04-composite-type-guidance.md](./04-composite-type-guidance.md) | Types across composite packages                                         |
+| [05-scaffold.md](./05-scaffold.md)                               | Init workflow defaults (`sideEffects`, exports, `#` imports)            |
+| [06-spa-bundles.md](./06-spa-bundles.md)                         | SPA shell vs page chunk measurement                                     |
+| [cli/](./cli/index.md)                                           | Generated CLI reference                                                 |
 
 ## Principles (summary)
 
@@ -47,7 +47,6 @@ npm exec saf-imports -- measure --verbose myproduct/service/http/routes/audit-lo
 ```
 
 See [03-project-references.md](./03-project-references.md) for the dev loop and troubleshooting, and [04-composite-type-guidance.md](./04-composite-type-guidance.md) for do's and don'ts when writing types across composite packages.
-
 
 ## Vitest reporter (opt-in)
 

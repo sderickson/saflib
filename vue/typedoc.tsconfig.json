@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.integration.test.ts",
+    "**/*.integration.test.tsx",
+    "**/workflows/template/**",
+    "**/workflows/templates/**",
+    "**/workflows/server-templates/**",
+    "**/vitest.config.ts",
+    "**/playwright.config.ts",
+    "**/drizzle.config.ts"
+  ]
+}

@@ -16,9 +16,9 @@ Wrapper around an openapi-fetch client fetch method to handle errors and return 
 
 ## Parameters
 
-| Parameter | Type                                                                |
-| --------- | ------------------------------------------------------------------- |
-| `request` | `Promise`\<[`ClientResult`](../interfaces/ClientResult.md)\<`T`\>\> |
+| Parameter | Type                               |
+| --------- | ---------------------------------- |
+| `request` | `Promise`\<`ClientResult`\<`T`\>\> |
 
 ## Returns
 

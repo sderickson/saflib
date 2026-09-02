@@ -5,12 +5,12 @@ with correct `exports`, `imports`, and `sideEffects` without manual follow-up.
 
 ## `package.json` fields
 
-| Field | Default | Notes |
-| --- | --- | --- |
-| `sideEffects` | `false` | Vue/client: `["**/*.css", "**/*.scss"]` + entry files with side effects (`client.ts`) |
-| `exports` | **Single-star globs** | `./dir/*` → `./dir/*.ts` — not per-file leaf maps |
-| `imports` | **Package-local `#` maps** | Extension-preserving; see below |
-| `exportsAliases` | optional | Short paths, legacy names, remaps (e.g. `lib.ts`) |
+| Field            | Default                    | Notes                                                                                 |
+| ---------------- | -------------------------- | ------------------------------------------------------------------------------------- |
+| `sideEffects`    | `false`                    | Vue/client: `["**/*.css", "**/*.scss"]` + entry files with side effects (`client.ts`) |
+| `exports`        | **Single-star globs**      | `./dir/*` → `./dir/*.ts` — not per-file leaf maps                                     |
+| `imports`        | **Package-local `#` maps** | Extension-preserving; see below                                                       |
+| `exportsAliases` | optional                   | Short paths, legacy names, remaps (e.g. `lib.ts`)                                     |
 
 ## Package-local `#` imports
 
@@ -60,15 +60,15 @@ internal-only paths that are not in `exports` (e.g. integration `#calls/*`, `#cl
 Node subpath exports allow **only one `*` per pattern key** (and per target). That `*` is
 **string substitution** and may include `/` (nested paths). Do **not** use `./foo/*/*`.
 
-| Package kind | Pattern shape |
-| --- | --- |
-| SDK requests | `./requests/*` → `./requests/*.ts` |
-| DB queries | `./queries/*` → `./queries/*.ts` |
-| DB schemas | `./schemas/*` → `./schemas/*.ts` |
-| HTTP handlers | `./handlers/*` → `./handlers/*.ts` |
-| Service common / forms | `./*` → `./*.ts` (plus aliases when useful) |
-| Vue clients-common | `./components/*` → `./components/*.ts` |
-| Spec operations | `./operations/*` → `./dist/operations/*/index.ts` |
+| Package kind           | Pattern shape                                     |
+| ---------------------- | ------------------------------------------------- |
+| SDK requests           | `./requests/*` → `./requests/*.ts`                |
+| DB queries             | `./queries/*` → `./queries/*.ts`                  |
+| DB schemas             | `./schemas/*` → `./schemas/*.ts`                  |
+| HTTP handlers          | `./handlers/*` → `./handlers/*.ts`                |
+| Service common / forms | `./*` → `./*.ts` (plus aliases when useful)       |
+| Vue clients-common     | `./components/*` → `./components/*.ts`            |
+| Spec operations        | `./operations/*` → `./dist/operations/*/index.ts` |
 
 Import leaf query functions **explicitly** (no group `index` barrels):
 

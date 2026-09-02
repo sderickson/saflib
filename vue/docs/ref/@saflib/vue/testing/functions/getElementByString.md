@@ -4,17 +4,17 @@
 
 # Function: getElementByString()
 
-> **getElementByString**(`wrapper`, `stringObj`): `DOMWrapper`\<`Element`\>
+> **getElementByString**(`wrapper`, `stringObj`): `ElementWrapper`
 
 This should always be used to find elements in tests.
 
 ## Parameters
 
-| Parameter   | Type            |
-| ----------- | --------------- |
-| `wrapper`   | `VueWrapper`    |
-| `stringObj` | `ElementString` |
+| Parameter   | Type             |
+| ----------- | ---------------- |
+| `wrapper`   | `ElementWrapper` |
+| `stringObj` | `ElementString`  |
 
 ## Returns
 
-`DOMWrapper`\<`Element`\>
+`ElementWrapper`

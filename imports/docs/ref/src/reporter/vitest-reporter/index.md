@@ -6,9 +6,9 @@
 
 ## Classes
 
-| Class                                                 | Description                                                                 |
-| ----------------------------------------------------- | --------------------------------------------------------------------------- |
-| [ImportGraphReporter](classes/ImportGraphReporter.md) | Vitest reporter that prints static import-graph stats after each test file. |
+| Class                                                 | Description                                                                                                                              |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| [ImportGraphReporter](classes/ImportGraphReporter.md) | Vitest reporter that prints static import-graph stats after each test file, plus a run summary (collect timing stats and slowest files). |
 
 ## Functions
 

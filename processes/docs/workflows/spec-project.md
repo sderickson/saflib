@@ -20,9 +20,15 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **example-project.spec.md** from [template](https://github.com/sderickson/saflib/blob/main/processes/workflows/templates/template-file.spec.md)
+Kicking off workflow processes/spec-project
+
+- Upsert 3 templates.
 - Update **example-project.spec.md**.
+- Check with the user that the spec is complete and correct.
+- Update **example-project.plan.md**.
+- Have the user review the plan and make sure it's good to go.
+- Update **example-project.workflow.ts**.
+- Run `npm exec saf-workflow dry-run /Users/scotterickson/src/saf-2025/saflib/notes/2026-09-02-example-project/example-project.workflow.ts`
 
 ## Help Docs
 

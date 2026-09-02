@@ -293,10 +293,10 @@ email:
 
 ### Quick reference
 
-| Goal            | OpenAPI 3.1 (use this)                                      | Do not use                                      |
-| --------------- | ----------------------------------------------------------- | ----------------------------------------------- |
-| Optional string | `type: [string, "null"]`                                    | `nullable: true`                                |
-| Optional object | `oneOf: [{ type: "null" }, { $ref: … }]`                    | `type: object` + `nullable: true` + `allOf`     |
-| Optional array  | `type: [array, "null"]`                                     | `nullable: true` on `type: array`               |
-| Unset on create | Document “omitted → null”; client may omit key              | —                                               |
-| Clear on update | Explicit `null` is fine with the patterns above             | Empty `{}` as a stand-in for null               |
+| Goal            | OpenAPI 3.1 (use this)                          | Do not use                                  |
+| --------------- | ----------------------------------------------- | ------------------------------------------- |
+| Optional string | `type: [string, "null"]`                        | `nullable: true`                            |
+| Optional object | `oneOf: [{ type: "null" }, { $ref: … }]`        | `type: object` + `nullable: true` + `allOf` |
+| Optional array  | `type: [array, "null"]`                         | `nullable: true` on `type: array`           |
+| Unset on create | Document “omitted → null”; client may omit key  | —                                           |
+| Clear on update | Explicit `null` is fine with the patterns above | Empty `{}` as a stand-in for null           |

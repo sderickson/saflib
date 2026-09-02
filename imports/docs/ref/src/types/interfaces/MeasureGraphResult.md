@@ -14,6 +14,22 @@ Distinct external npm package roots.
 
 ---
 
+### externals?
+
+> `optional` **externals**: `string`[]
+
+Sorted external package roots (only when `verbose: true`).
+
+---
+
+### files?
+
+> `optional` **files**: `string`[]
+
+Repo-root-relative first-party paths (only when `verbose: true`).
+
+---
+
 ### lines
 
 > **lines**: `number`

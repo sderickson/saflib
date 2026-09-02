@@ -4,13 +4,13 @@
 
 # Function: showError()
 
-> **showError**(`error`): `void`
+> **showError**(`input`): `void`
 
 ## Parameters
 
-| Parameter | Type     |
-| --------- | -------- |
-| `error`   | `string` |
+| Parameter | Type                                                  |
+| --------- | ----------------------------------------------------- |
+| `input`   | [`ShowErrorInput`](../type-aliases/ShowErrorInput.md) |
 
 ## Returns
 

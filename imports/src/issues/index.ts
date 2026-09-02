@@ -9,4 +9,5 @@ export {
   type PackageDetailForIssues,
   type PackageIssue,
   type PackageIssueKind,
+  type UsedBy,
 } from "./package-issues.ts";

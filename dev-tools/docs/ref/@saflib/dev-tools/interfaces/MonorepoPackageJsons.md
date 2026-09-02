@@ -8,4 +8,4 @@ Raw package.json files.
 
 ## Indexable
 
-\[`key`: `string`\]: [`PackageJson`](../../../types/interfaces/PackageJson.md)
+\[`key`: `string`\]: `PackageJson`

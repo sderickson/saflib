@@ -33,6 +33,18 @@ for more information.
 
 ---
 
+### devDependencies?
+
+> `optional` **devDependencies**: `Record`\<`string`, `string`\>
+
+---
+
+### engines?
+
+> `optional` **engines**: `Record`\<`string`, `string`\>
+
+---
+
 ### exports?
 
 > `optional` **exports**: `Record`\<`string`, `string`\>
@@ -45,9 +57,39 @@ for more information.
 
 ---
 
+### optionalDependencies?
+
+> `optional` **optionalDependencies**: `Record`\<`string`, `string`\>
+
+---
+
+### overrides?
+
+> `optional` **overrides**: `Record`\<`string`, `string`\>
+
+---
+
+### private?
+
+> `optional` **private**: `boolean`
+
+---
+
 ### scripts?
 
 > `optional` **scripts**: `Record`\<`string`, `string`\>
+
+---
+
+### type?
+
+> `optional` **type**: `string`
+
+---
+
+### version?
+
+> `optional` **version**: `string`
 
 ---
 

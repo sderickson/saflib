@@ -45,6 +45,26 @@ for more information.
 
 ---
 
+### devDependencies?
+
+> `optional` **devDependencies**: `Record`\<`string`, `string`\>
+
+#### Inherited from
+
+[`PackageJson`](PackageJson.md).[`devDependencies`](PackageJson.md#devdependencies)
+
+---
+
+### engines?
+
+> `optional` **engines**: `Record`\<`string`, `string`\>
+
+#### Inherited from
+
+[`PackageJson`](PackageJson.md).[`engines`](PackageJson.md#engines)
+
+---
+
 ### exports?
 
 > `optional` **exports**: `Record`\<`string`, `string`\>
@@ -65,6 +85,36 @@ for more information.
 
 ---
 
+### optionalDependencies?
+
+> `optional` **optionalDependencies**: `Record`\<`string`, `string`\>
+
+#### Inherited from
+
+[`PackageJson`](PackageJson.md).[`optionalDependencies`](PackageJson.md#optionaldependencies)
+
+---
+
+### overrides?
+
+> `optional` **overrides**: `Record`\<`string`, `string`\>
+
+#### Inherited from
+
+[`PackageJson`](PackageJson.md).[`overrides`](PackageJson.md#overrides)
+
+---
+
+### private?
+
+> `optional` **private**: `boolean`
+
+#### Inherited from
+
+[`PackageJson`](PackageJson.md).[`private`](PackageJson.md#private)
+
+---
+
 ### repoPath
 
 > **repoPath**: `string`
@@ -81,9 +131,29 @@ for more information.
 
 ---
 
+### type?
+
+> `optional` **type**: `string`
+
+#### Inherited from
+
+[`PackageJson`](PackageJson.md).[`type`](PackageJson.md#type)
+
+---
+
 ### typechecked
 
 > **typechecked**: `boolean`
+
+---
+
+### version?
+
+> `optional` **version**: `string`
+
+#### Inherited from
+
+[`PackageJson`](PackageJson.md).[`version`](PackageJson.md#version)
 
 ---
 

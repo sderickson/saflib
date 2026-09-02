@@ -17,7 +17,7 @@ Composite builds enforce **package boundaries**:
 - Declaration files emit to **`dist/types/`** per package (gitignored), not next to
   sources.
 
-Types are not automatically *simpler* in every file, but they are **more
+Types are not automatically _simpler_ in every file, but they are **more
 contained**: coupling is explicit in workspace deps and `references`, and
 incremental typecheck only rebuilds what changed.
 
@@ -129,14 +129,14 @@ overload resolution:
 
 ## When types feel "wrong" after enabling composite
 
-| Symptom | Likely cause | Fix |
-| --- | --- | --- |
-| `TS6059` / `TS6307` | Cross-package relative import | Switch to package export import |
-| Mass `TS6305` after clean | Stale `.tsbuildinfo` | `--force` or delete `node_modules/.tmp/*.tsbuildinfo` |
-| `TS2769` on `useQuery` | Bad `QueryOptions` annotation or `queryKey` cast | Remove wide return type; fix key shape |
-| `TS7056` on export | Inferred type too large | Short alias, impl/export split, or `: any` on export only |
-| `Property X does not exist on type '{}'` | Upstream query typed as `unknown` | Fix query factory typing (see above) |
-| Reference cycle reported | Workspace dep cycle | Restructure packages, don't drop edges |
+| Symptom                                  | Likely cause                                     | Fix                                                       |
+| ---------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| `TS6059` / `TS6307`                      | Cross-package relative import                    | Switch to package export import                           |
+| Mass `TS6305` after clean                | Stale `.tsbuildinfo`                             | `--force` or delete `node_modules/.tmp/*.tsbuildinfo`     |
+| `TS2769` on `useQuery`                   | Bad `QueryOptions` annotation or `queryKey` cast | Remove wide return type; fix key shape                    |
+| `TS7056` on export                       | Inferred type too large                          | Short alias, impl/export split, or `: any` on export only |
+| `Property X does not exist on type '{}'` | Upstream query typed as `unknown`                | Fix query factory typing (see above)                      |
+| Reference cycle reported                 | Workspace dep cycle                              | Restructure packages, don't drop edges                    |
 
 ## Summary for agents
 

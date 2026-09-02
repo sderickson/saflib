@@ -2,12 +2,12 @@
 
 Vue components are broken down into these classifications:
 
-* Views
-  * Pages
-  * Dialogs
-* Sub-Components
-  * Forms
-  * Displays
+- Views
+  - Pages
+  - Dialogs
+- Sub-Components
+  - Forms
+  - Displays
 
 ## Views
 
@@ -140,7 +140,12 @@ These functions take plain values and return plain values — no Vue reactivity,
 
 ```typescript
 // EvalCreateDialog.logic.ts
-export function canCreate(name: string, prompt: string, formId: string | null, selectedGroupHeaders: string[]): boolean {
+export function canCreate(
+  name: string,
+  prompt: string,
+  formId: string | null,
+  selectedGroupHeaders: string[],
+): boolean {
   if (!name.trim() || !prompt.trim()) return false;
   if (!formId) return false;
   return selectedGroupHeaders.length > 0;
@@ -196,7 +201,9 @@ import { formsFakeHandlers } from "@acme/product-sdk/requests/forms/index.fakes"
 setupMockServer([...evalsFakeHandlers, ...formsFakeHandlers]);
 
 it("create without file: creates eval, calls onClose", async () => {
-  const [flow, app] = withVueQuery(() => useEvalCreateFlow({ onClose, onCreated }));
+  const [flow, app] = withVueQuery(() =>
+    useEvalCreateFlow({ onClose, onCreated }),
+  );
   flow.createName.value = "Test Eval";
   // ... set up state ...
   flow.handleCreate();
@@ -211,7 +218,6 @@ it("create without file: creates eval, calls onClose", async () => {
 Component tests are optional. Prefer `.logic.test.ts`, `use*.test.ts`, and Playwright. When a page needs a component test, mount the async component (or `<RouterView />` for nested routes) only to exercise **behavior** — not render-only smokes.
 
 See [testing](./04-testing.md) for more info.
-
 
 ### Fixture: the Playwright Kind
 
@@ -269,11 +275,11 @@ All components should avoid custom CSS if they can. Instead, take advantage of V
 
 When a look should apply product-wide, put it in the clients design-system files rather than a component `<style>` block:
 
-| File | Use for |
-| --- | --- |
-| `clients/build/vuetify-settings.scss` | Vuetify Sass variables (`@use "vuetify/settings" with (…)`) |
-| `clients/build/vuetify-overrides.scss` | CSS that restyles `.v-*` components |
-| `clients/build/globals.scss` | App utility / layout classes that are not Vuetify restyles |
+| File                                   | Use for                                                     |
+| -------------------------------------- | ----------------------------------------------------------- |
+| `clients/build/vuetify-settings.scss`  | Vuetify Sass variables (`@use "vuetify/settings" with (…)`) |
+| `clients/build/vuetify-overrides.scss` | CSS that restyles `.v-*` components                         |
+| `clients/build/globals.scss`           | App utility / layout classes that are not Vuetify restyles  |
 
 To see what Vuetify ships, open `node_modules/vuetify/lib/components/<VComponent>/` (e.g. `VBtn.sass`, `_variables.scss`) and `node_modules/vuetify/lib/styles/settings/`.
 

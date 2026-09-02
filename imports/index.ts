@@ -44,6 +44,7 @@ export {
   type PackageDetailForIssues,
   type PackageIssue,
   type PackageIssueKind,
+  type UsedBy,
 } from "./src/issues/index.ts";
 export {
   computeExportsMap,

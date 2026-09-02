@@ -29,16 +29,16 @@ The HTTP status code is a transport detail between you and the third-party API. 
 
 ## When to return vs. throw
 
-| Scenario | HTTP status | Application meaning | TanStack path |
-|---|---|---|---|
-| Form validation failed | 400 | Expected — re-render with errors | **Return** (success) |
-| Browser redirect required | 422 | Expected — navigate to URL | **Return** (success) |
-| Flow expired | 410 | Partially expected — create a new flow | **Throw** `TanstackError` |
-| Rate limited | 429 | Unexpected — generic retry message | **Throw** `TanstackError` |
-| Server error | 5xx | Unexpected — generic error message | **Throw** `TanstackError` |
-| Auth required | 401 | Unexpected — redirect to login | **Throw** `TanstackError` |
-| Forbidden | 403 | Unexpected — generic permission error | **Throw** `TanstackError` |
-| Not found | 404 | Unexpected — generic not-found message | **Throw** `TanstackError` |
+| Scenario                  | HTTP status | Application meaning                    | TanStack path             |
+| ------------------------- | ----------- | -------------------------------------- | ------------------------- |
+| Form validation failed    | 400         | Expected — re-render with errors       | **Return** (success)      |
+| Browser redirect required | 422         | Expected — navigate to URL             | **Return** (success)      |
+| Flow expired              | 410         | Partially expected — create a new flow | **Throw** `TanstackError` |
+| Rate limited              | 429         | Unexpected — generic retry message     | **Throw** `TanstackError` |
+| Server error              | 5xx         | Unexpected — generic error message     | **Throw** `TanstackError` |
+| Auth required             | 401         | Unexpected — redirect to login         | **Throw** `TanstackError` |
+| Forbidden                 | 403         | Unexpected — generic permission error  | **Throw** `TanstackError` |
+| Not found                 | 404         | Unexpected — generic not-found message | **Throw** `TanstackError` |
 
 The key question is: **does the consumer need the response body to decide what to do?** If yes, return it. If the consumer just needs to know "something went wrong" and show a generic message based on the status code, throw a `TanstackError`.
 

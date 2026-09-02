@@ -14,6 +14,18 @@ When in "run" mode, specify which agent to use.
 
 ---
 
+### resetTimeoutEachStep?
+
+> `optional` **resetTimeoutEachStep**: `boolean`
+
+---
+
 ### sessionId?
 
 > `optional` **sessionId**: `string`
+
+---
+
+### totalTimeMs
+
+> **totalTimeMs**: `number`

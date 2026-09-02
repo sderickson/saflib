@@ -12,7 +12,7 @@ Input for the NpmScriptStepMachine.
 
 > `optional` **args**: `string`[]
 
-Arguments forwarded after `--` to the underlying npm script.
+Arguments forwarded after `--` to the underlying script.
 
 ---
 
@@ -20,15 +20,14 @@ Arguments forwarded after `--` to the underlying npm script.
 
 > `optional` **errorPrompt**: `string`
 
-The message to show to the agent if the command fails.
-
 ---
 
 ### forceInScript?
 
 > `optional` **forceInScript**: `boolean`
 
-When true, run this script even in script mode if it would otherwise be treated as a skipped validation command (typecheck/test).
+When true, run this script even in script mode if it would otherwise be
+treated as a skipped validation command (typecheck/test).
 
 ---
 

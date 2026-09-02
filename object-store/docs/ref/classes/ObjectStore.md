@@ -6,49 +6,24 @@
 
 ## Extended by
 
-- [`AzureObjectStore`](AzureObjectStore.md)
+- [`DiskObjectStore`](DiskObjectStore.md)
+- [`TestObjectStore`](TestObjectStore.md)
 
 ## Constructors
 
 ### Constructor
 
-> **new ObjectStore**(`containerName`, `folderPath`, `tier`): `ObjectStore`
-
-#### Parameters
-
-| Parameter       | Type         | Default value |
-| --------------- | ------------ | ------------- |
-| `containerName` | `string`     | `undefined`   |
-| `folderPath`    | `string`     | `""`          |
-| `tier`          | `AccessTier` | `"Hot"`       |
+> **new ObjectStore**(): `ObjectStore`
 
 #### Returns
 
 `ObjectStore`
 
-## Properties
-
-### containerName
-
-> `protected` `readonly` **containerName**: `string`
-
----
-
-### folderPath
-
-> `protected` `readonly` **folderPath**: `string`
-
----
-
-### tier
-
-> `protected` `readonly` **tier**: `AccessTier`
-
 ## Methods
 
 ### deleteFile()
 
-> `abstract` **deleteFile**(`path`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}\>\>
+> `abstract` **deleteFile**(`path`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
 
 #### Parameters
 
@@ -58,7 +33,7 @@
 
 #### Returns
 
-`Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}\>\>
+`Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
 
 ---
 
@@ -80,7 +55,7 @@
 
 ### listFiles()
 
-> `abstract` **listFiles**(`prefix?`): `Promise`\<`ReturnsError`\<`object`[]\>\>
+> `abstract` **listFiles**(`prefix?`): `Promise`\<`ReturnsError`\<`object`[], [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
 
 #### Parameters
 
@@ -90,7 +65,7 @@
 
 #### Returns
 
-`Promise`\<`ReturnsError`\<`object`[]\>\>
+`Promise`\<`ReturnsError`\<`object`[], [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
 
 ---
 
@@ -112,7 +87,7 @@
 
 ### readFile()
 
-> `abstract` **readFile**(`path`): `Promise`\<`ReturnsError`\<`Readable`\>\>
+> `abstract` **readFile**(`path`): `Promise`\<`ReturnsError`\<`Readable`, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md) \| [`FileNotFoundError`](FileNotFoundError.md)\>\>
 
 #### Parameters
 
@@ -122,13 +97,13 @@
 
 #### Returns
 
-`Promise`\<`ReturnsError`\<`Readable`\>\>
+`Promise`\<`ReturnsError`\<`Readable`, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md) \| [`FileNotFoundError`](FileNotFoundError.md)\>\>
 
 ---
 
 ### uploadFile()
 
-> `abstract` **uploadFile**(`path`, `stream`, `metadata?`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}\>\>
+> `abstract` **uploadFile**(`path`, `stream`, `metadata?`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
 
 #### Parameters
 
@@ -140,7 +115,17 @@
 
 #### Returns
 
-`Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}\>\>
+`Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
+
+---
+
+### upsertContainer()
+
+> `abstract` **upsertContainer**(): `Promise`\<`ReturnsError`\<\{ `created?`: `boolean`; `skipped?`: `boolean`; `success`: `boolean`; `updated?`: `boolean`; `url?`: `string`; \}, [`StorageError`](StorageError.md)\>\>
+
+#### Returns
+
+`Promise`\<`ReturnsError`\<\{ `created?`: `boolean`; `skipped?`: `boolean`; `success`: `boolean`; `updated?`: `boolean`; `url?`: `string`; \}, [`StorageError`](StorageError.md)\>\>
 
 ---
 

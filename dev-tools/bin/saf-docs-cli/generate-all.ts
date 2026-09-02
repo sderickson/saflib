@@ -28,7 +28,6 @@ export const addGenerateAllCommand = (program: Command) => {
       packagesWithDocs.forEach((pkg) => console.log(`- ${pkg}`));
 
       for (const packageName of packagesWithDocs) {
-        if (packageName === "@saflib/sdk") continue; // todo: fix
         console.log(`\n=== Generating docs for ${packageName} ===`);
         generateCommand({ monorepoContext, packageName });
         console.log(`✓ Successfully generated docs for ${packageName}`);

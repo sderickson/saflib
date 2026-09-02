@@ -20,13 +20,9 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/client-templates/package.json)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/client-templates/index.ts)
-  - Upsert **env.ts** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/client-templates/env.ts)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/client-templates/rpcs/health/index.ts)
-  - Upsert **get-health.fake.ts** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/client-templates/rpcs/health/get-health.fake.ts)
-  - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/client-templates/tsconfig.json)
+Kicking off workflow grpc/init-client
+
+- Upsert 6 templates.
 - Change working directory to identity/identity-grpc-client
 - Run `npm exec saf-env generate`
 - Run `npm run typecheck`

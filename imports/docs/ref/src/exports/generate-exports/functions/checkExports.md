@@ -7,6 +7,7 @@
 > **checkExports**(`pkgDir`): [`CheckExportsResult`](../interfaces/CheckExportsResult.md)
 
 Diff generated exports against committed `package.json` exports.
+Packages with wildcard export keys use pattern coverage validation instead.
 
 ## Parameters
 

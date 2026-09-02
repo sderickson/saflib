@@ -40,7 +40,9 @@ let _isMocked = isTest;
 let _configured = isTest;
 let apiKey: string | undefined;
 
-export async function configureMyIntegration(store: SecretStore): Promise<void> {
+export async function configureMyIntegration(
+  store: SecretStore,
+): Promise<void> {
   if (_configured) return;
   const result = await store.getSecretByName("MY_API_KEY", packageSecrets);
   if (result.result !== undefined) {
@@ -53,12 +55,12 @@ export async function configureMyIntegration(store: SecretStore): Promise<void> 
 
 ### Why this matters
 
-| Scenario                  | `apiKey`      | `isTest` | Behavior                                     |
-| ------------------------- | ------------- | -------- | -------------------------------------------- |
-| Unit tests (`vitest run`) | `undefined`   | `true`   | Skip configure fetch, `isMocked = true`      |
-| Dev with secret set       | `"sk-abc..."` | `false`  | `isMocked = false` → real client             |
-| Dev forgot secret         | `undefined`   | `false`  | Warn on configure; real client may throw     |
-| CI with `MY_API_KEY=mock` | `"mock"`      | `false`  | `isMocked = true` → mock client              |
+| Scenario                  | `apiKey`      | `isTest` | Behavior                                 |
+| ------------------------- | ------------- | -------- | ---------------------------------------- |
+| Unit tests (`vitest run`) | `undefined`   | `true`   | Skip configure fetch, `isMocked = true`  |
+| Dev with secret set       | `"sk-abc..."` | `false`  | `isMocked = false` → real client         |
+| Dev forgot secret         | `undefined`   | `false`  | Warn on configure; real client may throw |
+| CI with `MY_API_KEY=mock` | `"mock"`      | `false`  | `isMocked = true` → mock client          |
 
 Use the `"mock"` sentinel (via the env-backed secret store or Infisical) to opt into mocks outside tests.
 

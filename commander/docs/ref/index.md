@@ -10,8 +10,8 @@
 | -------------------------------------------------------- | ----------- |
 | [SetupContextOptions](interfaces/SetupContextOptions.md) | Name.       |
 
-## Variables
+## Functions
 
-| Variable                                  | Description                                                                            |
+| Function                                  | Description                                                                            |
 | ----------------------------------------- | -------------------------------------------------------------------------------------- |
-| [setupContext](variables/setupContext.md) | Builds and runs the `@saflib/node` context and reporter storage for your CLI commands. |
+| [setupContext](functions/setupContext.md) | Builds and runs the `@saflib/node` context and reporter storage for your CLI commands. |

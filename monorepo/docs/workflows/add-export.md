@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff monorepo/add-export <name> <path>
+npm exec saf-workflow kickoff monorepo/add-export <path>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -20,26 +20,25 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **myFunction.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/template-file.ts)
-  - Upsert **myFunction.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/template-file.test.ts)
+Kicking off workflow monorepo/add-export
+
+- Upsert 2 templates.
+- Add glob export for ./lib/\*
 - Update **myFunction.ts** to implement the myFunction export.
 - Update **myFunction.test.ts** to test the myFunction functionality.
 - Run `npm run test`
-- Add the myFunction export to the package's index.ts file. Import and export the new functionality from /Users/scotterickson/src/saf-2025/saflib/src/utils/myFunction.ts.
+- Run `npm exec saf-imports exports check --package @saflib/saflib`
 - Run `npm exec saf-docs generate`
 
 ## Help Docs
 
 ```bash
-Usage: npm exec saf-workflow kickoff monorepo/add-export <name> <path>
+Usage: npm exec saf-workflow kickoff monorepo/add-export <path>
 
 Add new exports (functions, classes, interfaces) to packages
 
 Arguments:
-  name        The name of the export to create (e.g., 'myFunction' or 'MyClass')
-              Example: "myFunction"
-  path        The relative path where the export should be added (e.g., 'src/utils' or 'src/components')
-              Example: "src/utils"
+  path        Path of the new export module (e.g., './lib/myFunction.ts' or './http/headers.ts')
+              Example: "./lib/myFunction.ts"
 
 ```

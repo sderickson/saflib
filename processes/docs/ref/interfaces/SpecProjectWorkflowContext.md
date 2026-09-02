@@ -6,24 +6,12 @@
 
 ## Properties
 
-### name
-
-> **name**: `string`
-
----
-
-### safDocOutput
-
-> **safDocOutput**: `string`
-
----
-
-### safWorkflowHelpOutput
-
-> **safWorkflowHelpOutput**: `string`
-
----
-
 ### targetDir
 
 > **targetDir**: `string`
+
+---
+
+### targetName
+
+> **targetName**: `string`

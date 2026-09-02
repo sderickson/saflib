@@ -50,13 +50,13 @@ This is where having strings stored separately really pays off. Instead of hard-
 
 The testing approach for Vue views prioritizes testing **logic**, not **rendering**. The layers are:
 
-| What to test | How to test | File pattern |
-|---|---|---|
-| Pure business logic (validation, transforms, formatting) | Plain vitest unit tests | `ComponentName.logic.test.ts` |
-| Stateful logic with networking (mutations, flows, state machines) | `withVueQuery` + `setupMockServer` | `useComponentFlow.test.ts` |
-| Data layer (queries, mutations, cache invalidation) | SDK tests with MSW fakes | (in the SDK package) |
-| Full user flows | Playwright E2E tests | (in the test suite) |
-| Component behavior (clicks, emits, navigation) | Mount async component + interactions | `PageName.test.ts` (only when behavior is worth unit-testing) |
+| What to test                                                      | How to test                          | File pattern                                                  |
+| ----------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------- |
+| Pure business logic (validation, transforms, formatting)          | Plain vitest unit tests              | `ComponentName.logic.test.ts`                                 |
+| Stateful logic with networking (mutations, flows, state machines) | `withVueQuery` + `setupMockServer`   | `useComponentFlow.test.ts`                                    |
+| Data layer (queries, mutations, cache invalidation)               | SDK tests with MSW fakes             | (in the SDK package)                                          |
+| Full user flows                                                   | Playwright E2E tests                 | (in the test suite)                                           |
+| Component behavior (clicks, emits, navigation)                    | Mount async component + interactions | `PageName.test.ts` (only when behavior is worth unit-testing) |
 
 ### Logic File Tests
 
@@ -70,7 +70,10 @@ it("returns false when name is empty", () => {
 });
 
 it("preserves falsy non-null values", () => {
-  expect(buildExpectedResponse({ flag: false, count: 0 })).toEqual({ flag: false, count: 0 });
+  expect(buildExpectedResponse({ flag: false, count: 0 })).toEqual({
+    flag: false,
+    count: 0,
+  });
 });
 ```
 
@@ -161,10 +164,10 @@ export default defaultConfigWithCoverageEnforcement;
 
 This enables automatic coverage collection on every `npm run test` and enforces per-file thresholds on logic and composables:
 
-| Pattern | Lines | Branches | Functions | Statements |
-|---|---|---|---|---|
-| `**/*.logic.ts` | 90% | 90% | 90% | 90% |
-| `**/use*.ts` (composables) | 80% | 70% | — | 80% |
+| Pattern                    | Lines | Branches | Functions | Statements |
+| -------------------------- | ----- | -------- | --------- | ---------- |
+| `**/*.logic.ts`            | 90%   | 90%      | 90%       | 90%        |
+| `**/use*.ts` (composables) | 80%   | 70%      | —         | 80%        |
 
 Vue SFCs are excluded from coverage (see **Excluded Files** above). Branch and function thresholds are omitted for composables where async paths are only exercised in Playwright.
 
