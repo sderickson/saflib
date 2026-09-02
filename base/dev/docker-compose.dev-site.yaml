@@ -1,3 +1,5 @@
+name: saflib-base-dev-site
+
 # Standalone dev-site (built image only). UI + API at http://localhost:3099
 services:
   site:

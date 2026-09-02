@@ -1,3 +1,5 @@
+name: saflib-base-dev
+
 # Dev stack for the base product (sibling of saflib library packages).
 # Compose / build context is the saflib monorepo root (`../..` from this directory).
 # product/init rewrites the `../..:/app` volume to product + saflib mounts.
