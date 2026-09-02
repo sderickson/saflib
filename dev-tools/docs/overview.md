@@ -1,6 +1,6 @@
 # Overview
 
-`@saflib/dev-tools` is a utility package, providing code and bin commands for working across a SAF project.
+`@saflib/dev-tools` is a utility package, providing mainly a central list of bin commands for working across a SAF project. Code within this package should be small; if a command grows large then it should be split out into a separate package and called from here.
 
 ## Code
 
