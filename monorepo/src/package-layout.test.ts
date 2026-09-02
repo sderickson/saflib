@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   checkPackageLayoutFromInputs,
   isAllowedRootTsFile,
+  isColocatedRootTestFile,
+  isLinksPackageRootTsFile,
   listPackageJsonExportTargetFiles,
 } from "./package-layout.ts";
 
@@ -39,6 +41,20 @@ describe("isAllowedRootTsFile", () => {
 
   it("does not allow arbitrary root helpers", () => {
     expect(isAllowedRootTsFile("org-router-guard.ts", spaExports)).toBe(false);
+  });
+});
+
+describe("isLinksPackageRootTsFile", () => {
+  it("allows production root modules in *-links packages", () => {
+    expect(
+      isLinksPackageRootTsFile("account-links.ts", "@saflib/base-links"),
+    ).toBe(true);
+    expect(
+      isLinksPackageRootTsFile("account-links.ts", "@saflib/base-clients"),
+    ).toBe(false);
+    expect(
+      isLinksPackageRootTsFile("account-links.test.ts", "@saflib/base-links"),
+    ).toBe(false);
   });
 });
 
@@ -86,5 +102,63 @@ describe("checkPackageLayoutFromInputs", () => {
       ],
     });
     expect(issues.map((i) => i.filePath)).toEqual(["org-router-guard.ts"]);
+  });
+
+  it("allows monolith run.ts as root file and saf-ts-run entrypoint", () => {
+    const issues = checkPackageLayoutFromInputs({
+      packageJson: {
+        exports: { "./run": "./run.ts" },
+        scripts: { start: "saf-ts-run ./run.ts" },
+      },
+      rootTsFiles: ["run.ts"],
+    });
+    expect(issues).toEqual([]);
+  });
+
+  it("allows monolith run.ts start via node strip-types (Docker / no dev-tools)", () => {
+    const issues = checkPackageLayoutFromInputs({
+      packageJson: {
+        exports: { "./run": "./run.ts" },
+        scripts: {
+          start:
+            "node --experimental-strip-types --disable-warning=ExperimentalWarning ./run.ts",
+        },
+      },
+      rootTsFiles: ["run.ts"],
+    });
+    expect(issues).toEqual([]);
+  });
+
+  it("allows root tests colocated with a root source file of the same stem", () => {
+    expect(
+      isColocatedRootTestFile("audit-map.test.ts", [
+        "audit-map.ts",
+        "audit.ts",
+      ]),
+    ).toBe(true);
+    const issues = checkPackageLayoutFromInputs({
+      packageJson: {
+        exports: { ".": "./audit.ts", "./audit-map": "./audit-map.ts" },
+      },
+      rootTsFiles: ["audit-map.ts", "audit-map.test.ts", "audit.ts"],
+    });
+    expect(issues.map((i) => i.filePath)).toEqual([]);
+  });
+
+  it("allows root link modules in *-links packages", () => {
+    const issues = checkPackageLayoutFromInputs({
+      packageJson: {
+        name: "@saflib/base-links",
+        exports: { ".": "./index.ts" },
+      },
+      rootTsFiles: ["account-links.ts", "admin-links.ts", "index.ts"],
+    });
+    expect(issues.map((i) => i.filePath)).toEqual([]);
+  });
+
+  it("does not allow root index.test.ts via colocation rule", () => {
+    expect(
+      isColocatedRootTestFile("index.test.ts", ["index.ts"]),
+    ).toBe(false);
   });
 });

@@ -3,10 +3,11 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc -b",
-    "start": "node --experimental-strip-types ./run.ts"
+    "start": "node --experimental-strip-types --disable-warning=ExperimentalWarning ./run.ts"
   },
   "exports": {
-    "./env": "./env.ts"
+    "./env": "./env.ts",
+    "./run": "./run.ts"
   },
   "dependencies": {
     "@saflib/base-audit": "*",

@@ -11,7 +11,7 @@ Tests should mainly test the API interface per [best practices](../../best-pract
 Route handler tests should **not** build the full HTTP app from `http.ts` on every test.
 
 1. Mount the **production group router** from `routes/<group>/index.ts` (e.g. `createTodosRouter`).
-2. Use the slim harness from `testing/slim-route-test.ts` (`acquireRouterSlimRouteTest`, `releaseSlimRouteTest`).
+2. Use the slim harness from `test/slim-route-test.ts` (`acquireRouterSlimRouteTest`, `releaseSlimRouteTest`).
 3. Use `beforeAll` / `afterAll` — not `beforeEach` — so OpenAPI middleware is not re-installed per test.
 4. Use `@saflib/express`'s `makeUserHeaders` (or product fixtures) for identity-shaped headers.
 5. Use `supertest`'s `request` against `ctx.app`.
@@ -21,7 +21,7 @@ import { createTodosRouter } from "./index.ts";
 import {
   acquireRouterSlimRouteTest,
   releaseSlimRouteTest,
-} from "../../testing/slim-route-test.ts";
+} from "../../test/slim-route-test.ts";
 
 describe("createTodos", () => {
   let ctx: SlimRouteTestContext;
@@ -48,7 +48,6 @@ describe("createTodos", () => {
 
 Use `create…HttpApp()` from `http.ts` (default mount list) only for:
 
-- Monolith smoke tests (`index.test.ts` at package root).
 - Explicit `*.integration.test.ts` files that need multiple routers or monolith chrome (cron, jobs, OAuth, etc.).
 
 For a small multi-router chain, prefer `acquireRouterSlimRouteTestMulti([createA, createB])` over the full app when possible.

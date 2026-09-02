@@ -1,5 +1,5 @@
 import { makeConfig } from "@saflib/vite";
-import { htmlHeaderPlugin } from "./html-header-plugin.ts";
+import { htmlHeaderPlugin } from "./vite/html-header-plugin.ts";
 import path from "path";
 import { defineConfig, mergeConfig } from "vite";
 import { validateEnv } from "@saflib/env";

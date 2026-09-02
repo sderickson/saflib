@@ -54,7 +54,6 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
     packageJson: path.join(offshootSdkRoot, "package.json"),
     tsconfig: path.join(offshootSdkRoot, "tsconfig.json"),
     vitestConfig: path.join(offshootSdkRoot, "vitest.config.js"),
-    test: path.join(offshootSdkRoot, "index.test.ts"),
   },
 
   docFiles: {

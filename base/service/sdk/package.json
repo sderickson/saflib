@@ -11,9 +11,9 @@
     "./i18n": "./i18n.ts",
     "./strings": "./strings.ts",
     "./test-app": "./test-app.ts",
-    "./typed-fake": "./typed-fake.ts",
-    "./requests/*": "./requests/*.ts",
-    "./*": "./*"
+    "./typed-fake": "./test/typed-fake.ts",
+    "./test/scoped-mock": "./test/scoped-mock.ts",
+    "./requests/*": "./requests/*.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -22,6 +22,7 @@
     "typecheck": "vue-tsc -b"
   },
   "devDependencies": {
+    "@saflib/base-test": "*",
     "@saflib/vitest": "*",
     "@testing-library/vue": "^8.1.0"
   },
@@ -42,6 +43,9 @@
     "./client.ts"
   ],
   "imports": {
-    "#*": "./*"
+    "#client.ts": "./client.ts",
+    "#test/typed-fake.ts": "./test/typed-fake.ts",
+    "#test/scoped-mock.ts": "./test/scoped-mock.ts",
+    "#requests/*": "./requests/*"
   }
 }

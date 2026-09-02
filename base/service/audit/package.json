@@ -6,7 +6,8 @@
   "description": "Audit slice for the base golden product",
   "type": "module",
   "exports": {
-    ".": "./audit.ts"
+    ".": "./audit.ts",
+    "./audit-map": "./audit-map.ts"
   },
   "scripts": {
     "test": "vitest run",

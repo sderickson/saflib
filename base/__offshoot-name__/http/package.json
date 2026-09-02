@@ -8,7 +8,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./http": "./http.ts"
+    "./http": "./http.ts",
+    "./routers": "./routers.ts"
   },
   "scripts": {
     "test": "vitest run",

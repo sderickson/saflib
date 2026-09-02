@@ -4,15 +4,15 @@ import {
   buildBaseHttpApp,
   type BaseHttpAppLease,
   type HttpRouterMount,
-} from "./create-base-http-app.ts";
+} from "./app/create-base-http-app.ts";
 
 // BEGIN WORKFLOW AREA offshoot-router-imports FOR express/init
 import { create__OffshootName__Router } from "@saflib/base-__offshoot-name__-http";
 // END WORKFLOW AREA
 
-export type { BaseHttpAppLease, HttpRouterMount } from "./create-base-http-app.ts";
+export type { BaseHttpAppLease, HttpRouterMount } from "./app/create-base-http-app.ts";
 
-export { buildBaseHttpApp } from "./create-base-http-app.ts";
+export { buildBaseHttpApp } from "./app/create-base-http-app.ts";
 
 /**
  * Default product + offshoot mounts for the monolith.
@@ -40,9 +40,9 @@ export type CreateBaseHttpAppOptions = BaseServiceContextOptions & {
  * Creates the HTTP server for the base service (production wiring).
  *
  * Route handler tests should mount a **group router** via
- * {@link acquireRouterSlimRouteTest} in `testing/slim-route-test.ts`, not this
+ * {@link acquireRouterSlimRouteTest} in `test/slim-route-test.ts`, not this
  * factory with the default mount list. Use default mounts only for monolith
- * smoke tests (`index.test.ts`) or `*.integration.test.ts`.
+ * smoke tests or `*.integration.test.ts`.
  */
 export function createBaseHttpApp(
   options: CreateBaseHttpAppOptions = {},

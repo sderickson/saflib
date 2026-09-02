@@ -1,3 +1,4 @@
+export { readSource } from "./src/graph/read-source.ts";
 export { measureGraph } from "./src/graph/walk-graph.ts";
 export { findPath } from "./src/graph/find-path.ts";
 export {
@@ -11,6 +12,11 @@ export {
   type ExportUsedByMap,
   type UsedByImporterUnit,
 } from "./src/graph/assemble-used-by.ts";
+export {
+  collectPublicExportPathsFromTree,
+  createTreeResolveImportTarget,
+  resolveImportsMapSpecifier,
+} from "./src/graph/tree-import-resolution.ts";
 export {
   exportUsedByKey,
   moduleTargetFromImport,
@@ -46,11 +52,25 @@ export {
   type PackageIssueKind,
 } from "./src/issues/index.ts";
 export {
+  analyzePackageFromWorkdirContext,
+  analyzeWorkdirPackage,
+  analyzeWorkdirPackages,
+  buildWorkdirGraphContext,
+  isGraphSourcePath,
+  isScaffoldTemplatePath,
+  isTestSourcePath,
+  type WorkdirAnalyzeOptions,
+  type WorkdirAnalyzeResult,
+  type WorkdirGraphContext,
+  type WorkdirPackageAnalyzeResult,
+} from "./src/issues/workdir-analyze.ts";
+export {
   computeExportsMap,
   checkExports,
   checkExportPatternCoverage,
   generateExports,
   listExportableFiles,
+  collectPublicExportRepoPaths,
   packageHasWorkflowMarkers,
   resolvePackageDir,
   leafExportRemapDiffs,
@@ -61,8 +81,10 @@ export {
   buildPackageIndex,
   findMonorepoRoot,
   matchExportPattern,
+  sortExportPatternKeys,
   resolvePackageExportPath,
   resolveSpecifier,
+  existsResolve,
 } from "./src/resolve/index.ts";
 export {
   generateSnapshot,
@@ -102,4 +124,6 @@ export type {
   MeasureGraphResult,
   GraphWalkOptions,
   FindPathResult,
+  PackageIndex,
+  PackageInfo,
 } from "./src/types.ts";

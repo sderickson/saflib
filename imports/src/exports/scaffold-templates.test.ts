@@ -17,7 +17,6 @@ describe("scaffold template import-graph defaults", () => {
   const patternExportTemplates = [
     "saflib/base/service/sdk/package.json",
     "saflib/base/service/db/package.json",
-    "saflib/base/service/common/package.json",
     "saflib/base/service/http/package.json",
     "saflib/base/clients/common/package.json",
   ];
@@ -60,7 +59,7 @@ describe("scaffold template import-graph defaults", () => {
     const pkg = readTemplatePackageJson(
       "saflib/base/service/integrations/__integration-name__/package.json",
     );
-    expect(pkg.exports?.["./mocks"]).toBe("./client.mocks.ts");
+    expect(pkg.exports?.["./mocks"]).toBe("./mocks/client.ts");
     expect(pkg.sideEffects).toBe(false);
   });
 });

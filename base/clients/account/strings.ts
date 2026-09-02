@@ -9,6 +9,7 @@ import { home } from "./pages/home/Home.strings.ts";
 import { home_nav_list } from "./pages/home/HomeNavList.strings.ts";
 import { account_settings_section } from "./pages/account-settings/AccountSettingsSection.strings.ts";
 import { verify_email } from "./pages/email-verification/VerifyEmail.strings.ts";
+import { marketing_unsubscribe } from "./pages/marketing-unsubscribe/MarketingUnsubscribe.strings.ts";
 
 // BEGIN WORKFLOW AREA string-imports FOR vue/add-view sdk/add-component
 
@@ -24,6 +25,7 @@ export const account_strings = {
   home_nav_list,
   account_settings_section,
   verify_email,
+  marketing_unsubscribe,
   // BEGIN WORKFLOW AREA string-object FOR vue/add-view sdk/add-component
   // END WORKFLOW AREA
 };

@@ -38,6 +38,7 @@ export function createDevSiteRouter(options: CreateDevSiteRouterOptions = {}) {
     envString("VITE_DEV_SITE_GITHUB_REF", "main");
   const localRepoRoot =
     options.localRepoRoot ??
+    runtime.repo_root ??
     (import.meta as ImportMeta & { env?: Record<string, string> }).env
       ?.VITE_DEV_SITE_LOCAL_REPO_ROOT;
 

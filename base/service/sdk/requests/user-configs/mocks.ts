@@ -1,9 +1,10 @@
 import type { UserConfig } from "@saflib/base-spec/schemas/UserConfig";
+import { testUserConfig } from "@saflib/base-test/factories/user-config";
 
 /** Session user id the SDK fakes treat as the current user for user-config routes. */
 export const MOCK_SESSION_USER_ID = "user_config_session";
 
-export const MOCK_USER_CONFIG: UserConfig = {
+export const MOCK_USER_CONFIG: UserConfig = testUserConfig({
   user_id: MOCK_SESSION_USER_ID,
   display_name: "Alex Rivera",
   marketing_emails_opt_in: false,
@@ -11,7 +12,7 @@ export const MOCK_USER_CONFIG: UserConfig = {
   terms_of_service_agreed_at: null,
   created_at: "2026-07-23T00:00:00.000Z",
   updated_at: "2026-07-23T12:30:00.000Z",
-};
+});
 
 const initialMockUserConfigs: UserConfig[] = [MOCK_USER_CONFIG];
 

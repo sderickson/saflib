@@ -44,9 +44,6 @@ const jobsDbAccessor = createOnDiskDbKeyAccessor({
   connect: jobsDb.connect,
 });
 
-/** Absolute path to the jobs SQLite file under this package's `data/`. */
-export const getBaseJobsSqlitePath = jobsDbAccessor.getSqlitePath;
-
 /** Opaque key for `@saflib/jobs-db` (separate from the main app DB). */
 export const getBaseJobsDbKey = jobsDbAccessor.getDbKey;
 

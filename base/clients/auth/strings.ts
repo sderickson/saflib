@@ -1,6 +1,6 @@
 import { auth_strings as kratos_auth_strings } from "@saflib/ory-kratos-spa/strings";
 import { base_common_strings } from "@saflib/base-clients-common/strings";
-import { dev_signup } from "./DevSignupAdminHint.strings.ts";
+import { dev_signup } from "./components/dev-signup-admin-hint/DevSignupAdminHint.strings.ts";
 
 // BEGIN WORKFLOW AREA string-imports FOR vue/add-view sdk/add-component
 

@@ -1,5 +1,5 @@
 // @ts-nocheck — scaffold placeholders until sdk/add-query or sdk/add-mutation copies this file.
-import { baseHandler } from "#typed-fake.ts";
+import { baseHandler } from "#test/typed-fake.ts";
 
 // @ts-expect-error TODO: use mock data
 import { mock__GroupName__ } from "./mocks.ts";

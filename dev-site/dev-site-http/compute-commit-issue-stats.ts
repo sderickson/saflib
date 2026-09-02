@@ -7,7 +7,6 @@ import {
   checkPackageLayoutFromInputs,
   classifySafPackage,
   DEFAULT_MAX_SOURCE_LINES,
-  listPackageJsonExportTargetFiles,
   type PackageJsonLayoutFields,
   type ReturnsError,
 } from "@saflib/monorepo";
@@ -21,7 +20,10 @@ import {
 } from "@saflib/dev-site-db/types";
 import {
   assembleUsedBy,
+  collectPublicExportPathsFromTree,
+  createTreeResolveImportTarget,
   specialtyLocalExportUsages,
+  type PackageIndex,
   type UsedByImporterUnit,
 } from "@saflib/imports";
 import {
@@ -122,21 +124,40 @@ export async function computeCommitIssueStats(
 
   const nameByPath = new Map<string, string>();
   const packageJsonByDir = new Map<string, PackageJsonLayoutFields>();
+  const importsMapByPackageDir = new Map<string, Record<string, string>>();
+  const index: PackageIndex = new Map();
   for (const entry of packageJsonEntries) {
     const text = pkgBlobs.result.get(entry.blobHash);
     if (text === undefined) continue;
     const name = parsePackageName(text);
     if (name) nameByPath.set(entry.path, name);
     const fields = parsePackageJsonFields(text);
+    const dir = entry.path.replace(/\/?package\.json$/, "");
     if (fields) {
-      const dir = entry.path.replace(/\/?package\.json$/, "");
       packageJsonByDir.set(dir, fields);
+      if (name) index.set(name, { dir, exports: fields.exports });
+    }
+    try {
+      const pj = JSON.parse(text) as { imports?: Record<string, string> };
+      if (pj.imports) importsMapByPackageDir.set(dir, pj.imports);
+    } catch {
+      // skip invalid package.json
     }
   }
   const roots = packageRootsFromPackageJsonPaths(
     packageJsonEntries.map((e) => e.path),
     nameByPath,
   );
+  const treePaths = new Set(tree.map((e) => e.path));
+  const resolveImportTarget = createTreeResolveImportTarget({
+    treePaths,
+    index,
+    importsMapByPackageDir,
+    packageRoots: roots.map((r) => ({
+      packageName: r.package_name,
+      directory: r.directory,
+    })),
+  });
 
   const packages =
     options.packages ??
@@ -273,6 +294,7 @@ export async function computeCommitIssueStats(
           targetRoot.directory,
           rawExports.map((e) => ({ filePath: e.file_path, name: e.name })),
           importers,
+          { resolveImportTarget },
         );
       }
     }
@@ -292,8 +314,10 @@ export async function computeCommitIssueStats(
             })),
         db_inventory,
         layout_issues,
-        public_export_file_paths: listPackageJsonExportTargetFiles(pj.exports).map(
-          (rel) => joinRepoPath(packageRepoPath, rel),
+        public_export_file_paths: collectPublicExportPathsFromTree(
+          packageRepoPath,
+          pj.exports,
+          treePaths,
         ),
       }),
       { packageDirectory: pkg.directory, productRoot: product_root },

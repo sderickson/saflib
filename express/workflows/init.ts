@@ -61,7 +61,6 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
     packageJson: path.join(offshootHttpRoot, "package.json"),
     tsconfig: path.join(offshootHttpRoot, "tsconfig.json"),
     vitestConfig: path.join(offshootHttpRoot, "vitest.config.js"),
-    test: path.join(offshootHttpRoot, "index.test.ts"),
     parentHttp: parentHttpLive,
   },
 

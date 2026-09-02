@@ -74,4 +74,45 @@ describe("assembleUsedBy", () => {
     );
     expect(map.size).toBe(0);
   });
+
+  it("records imports resolved via resolveImportTarget", () => {
+    const map = assembleUsedBy(
+      "@pkg/email",
+      "pkg/email",
+      [{ filePath: "pkg/email/emails/password-reset.ts", name: "passwordReset" }],
+      [
+        {
+          path: "pkg/kratos/on-recovery.ts",
+          packageName: "@pkg/kratos",
+          packageDirectory: "pkg/kratos",
+          isTest: false,
+          imports: [
+            {
+              specifier: "@pkg/email/password-reset",
+              names: ["passwordReset"],
+            },
+          ],
+        },
+      ],
+      {
+        resolveImportTarget: (_importer, specifier) => {
+          if (specifier === "@pkg/email/password-reset") {
+            return "pkg/email/emails/password-reset.ts";
+          }
+          return null;
+        },
+      },
+    );
+    expect(
+      map.get(
+        exportUsedByKey("pkg/email/emails/password-reset.ts", "passwordReset"),
+      ),
+    ).toEqual([
+      {
+        packageName: "@pkg/kratos",
+        filePath: "on-recovery.ts",
+        repoPath: "pkg/kratos/on-recovery.ts",
+      },
+    ]);
+  });
 });

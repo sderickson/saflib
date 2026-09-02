@@ -68,6 +68,12 @@ function isUnderScripts(rel: string): boolean {
   return n === "scripts" || n.startsWith("scripts/");
 }
 
+/** Monolith / service process entrypoints that may be started via saf-ts-run. */
+function isAllowedSafTsRunTarget(rel: string): boolean {
+  const n = rel.replace(/^\.\//, "").replace(/\\/g, "/");
+  return isUnderScripts(rel) || isUnderBin(rel) || n === "run.ts";
+}
+
 /** Extract a path-like token after saf-ts-run or node strip-types. */
 function scriptTargetPath(script: string): string | null {
   const saf = script.match(/saf-ts-run\s+(\S+)/);
@@ -120,6 +126,8 @@ export const ROOT_TS_ALLOWLIST = new Set([
   "vitest.config.ts",
   "vitest.config.js",
   "playwright.config.ts",
+  /** Monolith / service process entry (`saf-ts-run ./run.ts`) */
+  "run.ts",
 ]);
 
 function exportTargetPath(target: unknown): string | null {
@@ -181,6 +189,33 @@ function isTestOrFixtureFileName(name: string): boolean {
     /\.fixtures?\.(ts|tsx)$/.test(name) ||
     /\.test-helpers\.(ts|tsx)$/.test(name)
   );
+}
+
+/**
+ * `*-links` packages keep link modules at the package root by convention.
+ */
+export function isLinksPackageRootTsFile(
+  fileName: string,
+  packageName?: string,
+): boolean {
+  if (!packageName?.endsWith("-links")) return false;
+  if (!fileName.endsWith(".ts") && !fileName.endsWith(".tsx")) return false;
+  if (fileName.endsWith(".d.ts")) return false;
+  return !isTestOrFixtureFileName(fileName);
+}
+
+/**
+ * Root `foo.test.ts` colocated with root `foo.ts` (same stem, not `index`).
+ */
+export function isColocatedRootTestFile(
+  fileName: string,
+  rootTsFiles: readonly string[],
+): boolean {
+  const match = fileName.match(/^(.+)\.(test|spec)\.(ts|tsx)$/);
+  if (!match) return false;
+  const stem = match[1]!;
+  if (stem === "index") return false;
+  return rootTsFiles.includes(`${stem}.ts`) || rootTsFiles.includes(`${stem}.tsx`);
 }
 
 function walkSourceFiles(dir: string, out: string[]) {
@@ -266,18 +301,21 @@ export function checkPackageLayoutFromInputs(
 
   for (const [scriptName, script] of Object.entries(pj.scripts ?? {})) {
     if (usesStripTypesDirectly(script) && !usesSafTsRun(script)) {
-      issues.push({
-        kind: "package-layout",
-        title: "Package layout",
-        name: `scripts.${scriptName} uses node --experimental-strip-types (use saf-ts-run)`,
-        kindLabel: "scripts",
-        filePath: "package.json",
-        repoPath: repoPathFor("package.json"),
-      });
+      const target = scriptTargetPath(script);
+      if (!target || !isAllowedSafTsRunTarget(target)) {
+        issues.push({
+          kind: "package-layout",
+          title: "Package layout",
+          name: `scripts.${scriptName} uses node --experimental-strip-types (use saf-ts-run)`,
+          kindLabel: "scripts",
+          filePath: "package.json",
+          repoPath: repoPathFor("package.json"),
+        });
+      }
     }
     if (usesSafTsRun(script)) {
       const target = scriptTargetPath(script);
-      if (target && !isUnderScripts(target) && !isUnderBin(target)) {
+      if (target && !isAllowedSafTsRunTarget(target)) {
         issues.push({
           kind: "package-layout",
           title: "Package layout",
@@ -294,7 +332,9 @@ export function checkPackageLayoutFromInputs(
     if (
       (name.endsWith(".ts") || name.endsWith(".tsx")) &&
       !name.endsWith(".d.ts") &&
-      !isAllowedRootTsFile(name, pj.exports)
+      !isAllowedRootTsFile(name, pj.exports) &&
+      !isLinksPackageRootTsFile(name, pj.name) &&
+      !isColocatedRootTestFile(name, options.rootTsFiles ?? [])
     ) {
       issues.push({
         kind: "package-layout",

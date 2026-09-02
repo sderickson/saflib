@@ -1,6 +1,6 @@
 import type { SecretStore } from "@saflib/secret-store";
 import { typedEnv } from "./env.ts";
-import { mock__IntegrationName__Client } from "./client.mocks.ts";
+import { mock__IntegrationName__Client } from "./mocks/client.ts";
 import packageSecrets from "./secrets.json" with { type: "json" };
 
 const isTest = typedEnv.NODE_ENV === "test";

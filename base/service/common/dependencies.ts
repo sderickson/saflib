@@ -1,13 +1,20 @@
 import type { EmailService } from "@saflib/email-service";
+import { createSecretStore, type SecretStore } from "@saflib/secret-store";
 import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
-import { configureSecretStore } from "./secrets.ts";
 // BEGIN WORKFLOW AREA integration-imports FOR integrations/init
-import { getSecretStore } from "./secrets.ts";
 import { configure__IntegrationName__ } from "@saflib/base-__integration-name__-integration";
 // END WORKFLOW AREA
 
+let secretStore: SecretStore | undefined;
 let initialized = false;
 let emailClient: EmailService | undefined;
+
+function ensureSecretStore(): SecretStore {
+  if (!secretStore) {
+    secretStore = createSecretStore({ type: "env" });
+  }
+  return secretStore;
+}
 
 /**
  * Initializes all process-level dependencies for the base service:
@@ -19,10 +26,10 @@ let emailClient: EmailService | undefined;
 export async function initializeDependencies(): Promise<void> {
   if (initialized) return;
 
-  configureSecretStore();
+  ensureSecretStore();
 
   // BEGIN WORKFLOW AREA integration-configure FOR integrations/init
-  await configure__IntegrationName__(getSecretStore());
+  await configure__IntegrationName__(ensureSecretStore());
   // END WORKFLOW AREA
 
   emailClient = resolveEmailServiceFromEnv();

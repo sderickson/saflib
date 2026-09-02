@@ -14,7 +14,7 @@ import {
   acquireRouterSlimRouteTest,
   releaseSlimRouteTest,
   type SlimRouteTestContext,
-} from "#testing/slim-route-test.ts";
+} from "#test/slim-route-test.ts";
 import { createAdminRouter } from "./index.ts";
 
 describe("getUsersByIdAdmin", () => {

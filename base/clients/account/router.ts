@@ -11,6 +11,7 @@ import EmailVerificationFlowAsync from "./pages/email-verification/EmailVerifica
 import HomeAsync from "./pages/home/HomeAsync.vue";
 import ProfileAsync from "./pages/profile/ProfileAsync.vue";
 import AccountSettingsSection from "./pages/account-settings/AccountSettingsSection.vue";
+import MarketingUnsubscribeAsync from "./pages/marketing-unsubscribe/MarketingUnsubscribeAsync.vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 // END WORKFLOW AREA
@@ -39,6 +40,11 @@ export const createAccountRouter = (options?: {
     {
       path: accountLinks.verification.path,
       component: EmailVerificationFlowAsync,
+      meta: { blankShell: true },
+    },
+    {
+      path: accountLinks.marketingUnsubscribe.path,
+      component: MarketingUnsubscribeAsync,
       meta: { blankShell: true },
     },
     {

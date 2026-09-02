@@ -37,7 +37,7 @@ When a product needs extra middleware (org context, webhook auth, public routes)
 
 ### Monolith `http.ts`
 
-List each `create…Router()` in `defaultRouterMounts()` (or equivalent). Route handler tests mount the **group router** via `testing/slim-route-test.ts`, not the full default mount list. See [Testing](./04-testing.md).
+List each `create…Router()` in `defaultRouterMounts()` (or equivalent). Route handler tests mount the **group router** via `test/slim-route-test.ts`, not the full default mount list. See [Testing](./04-testing.md).
 
 ## Typing the Interface
 

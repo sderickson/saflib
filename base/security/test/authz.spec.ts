@@ -7,8 +7,8 @@ import {
   type RegistrationPageFixture,
   type VerifyWallPageFixture,
 } from "@saflib/ory-kratos-spa/fixtures";
-import { apiOrigin, getCsrfToken } from "./fixtures/http-helpers.ts";
-import { sessionAsRegisteredUser } from "./fixtures/kratos-session.ts";
+import { apiOrigin, getCsrfToken } from "../fixtures/http-helpers.ts";
+import { sessionAsRegisteredUser } from "../fixtures/kratos-session.ts";
 
 type AuthzFixtures = {
   loginPage: LoginPageFixture;

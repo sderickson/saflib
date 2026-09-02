@@ -49,6 +49,12 @@ export const accountLinks: LinkMap = {
     path: "/new-verification",
     params: ["return_to"],
   },
+  /** Public marketing-email unsubscribe (no auth / blank shell). */
+  marketingUnsubscribe: {
+    subdomain,
+    path: "/unsubscribe",
+    params: ["email"],
+  },
   // BEGIN WORKFLOW AREA page-links FOR vue/add-view
   // END WORKFLOW AREA
 };

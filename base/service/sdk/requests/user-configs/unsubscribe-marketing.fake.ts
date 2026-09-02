@@ -1,5 +1,5 @@
 import type { ResponseBody as unsubscribeMarketingEmailsUserConfigsResponseBody } from "@saflib/base-spec/operations/unsubscribeMarketingEmailsUserConfigs";
-import { baseHandler } from "#typed-fake.ts";
+import { baseHandler } from "#test/typed-fake.ts";
 
 export const unsubscribeMarketingEmailsUserConfigsHandler = baseHandler({
   verb: "post",
