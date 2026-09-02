@@ -9,16 +9,9 @@ let secretStore: SecretStore | undefined;
 let initialized = false;
 let emailClient: EmailService | undefined;
 
-function configureSecretStore(): void {
-  if (secretStore) return;
-  secretStore = createSecretStore({ type: "env" });
-}
-
-function getSecretStore(): SecretStore {
+function ensureSecretStore(): SecretStore {
   if (!secretStore) {
-    throw new Error(
-      "Secret store not initialized. Call configureSecretStore() first.",
-    );
+    secretStore = createSecretStore({ type: "env" });
   }
   return secretStore;
 }
@@ -33,10 +26,10 @@ function getSecretStore(): SecretStore {
 export async function initializeDependencies(): Promise<void> {
   if (initialized) return;
 
-  configureSecretStore();
+  ensureSecretStore();
 
   // BEGIN WORKFLOW AREA integration-configure FOR integrations/init
-  await configure__IntegrationName__(getSecretStore());
+  await configure__IntegrationName__(ensureSecretStore());
   // END WORKFLOW AREA
 
   emailClient = resolveEmailServiceFromEnv();
