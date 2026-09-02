@@ -73,9 +73,7 @@ export function isTestSourcePath(relPosix: string, file_name: string): boolean {
  * Workflow scaffold placeholders (e.g. `handlers/__group-name__/`), not real product code.
  * Double-underscore path segments mark copy-paste templates from SAF workflows.
  */
-export function isScaffoldTemplatePath(relPosix: string): boolean {
-  return relPosix.split("/").some((part) => /^__[^/]+__$/.test(part));
-}
+export { isScaffoldTemplatePath } from "@saflib/imports";
 
 export function extOf(file_name: string): string {
   const i = file_name.lastIndexOf(".");

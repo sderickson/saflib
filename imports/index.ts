@@ -47,6 +47,19 @@ export {
   type PackageIssueKind,
 } from "./src/issues/index.ts";
 export {
+  analyzePackageFromWorkdirContext,
+  analyzeWorkdirPackage,
+  analyzeWorkdirPackages,
+  buildWorkdirGraphContext,
+  isGraphSourcePath,
+  isScaffoldTemplatePath,
+  isTestSourcePath,
+  type WorkdirAnalyzeOptions,
+  type WorkdirAnalyzeResult,
+  type WorkdirGraphContext,
+  type WorkdirPackageAnalyzeResult,
+} from "./src/issues/workdir-analyze.ts";
+export {
   computeExportsMap,
   checkExports,
   checkExportPatternCoverage,

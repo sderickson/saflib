@@ -1,344 +1,130 @@
 #!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 
 /**
- * Umbrella static-analysis CLI: package layout/LoC + exports + graph issues.
+ * Umbrella static-analysis CLI: package layout/LoC + exports + dead-code checks.
+ * Uses the same workdir analyzer as `saf-dev-site issues --workdir`.
  */
-import { readFileSync } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { Command } from "commander";
 import { setupContext } from "@saflib/commander";
 import {
-  assembleUsedBy,
-  buildFileSpecialty,
-  buildPackageIndex,
-  checkExports,
-  collectPackageIssues,
-  collectPublicExportRepoPaths,
-  exportUsedByKey,
-  existsResolve,
+  analyzeWorkdirPackages,
   findMonorepoRoot,
-  matchExportPattern,
-  resolvePackageDir,
-  resolveSpecifier,
-  sortExportPatternKeys,
-  type FileSpecialty,
   type PackageIssue,
-  type UsedByImporterUnit,
 } from "@saflib/imports";
-import { checkPackageLayout } from "@saflib/monorepo";
 
-const EXCLUDE_DIRS = new Set([
-  "node_modules",
-  ".git",
-  "dist",
-  "coverage",
-  "docs",
-  "fixtures",
-]);
-
-async function walkFiles(absDir: string, relDir: string): Promise<string[]> {
-  const out: string[] = [];
-  let entries;
-  try {
-    entries = await readdir(absDir, { withFileTypes: true });
-  } catch {
-    return out;
-  }
-  for (const e of entries) {
-    if (e.name.startsWith(".")) continue;
-    if (EXCLUDE_DIRS.has(e.name)) continue;
-    const rel = relDir ? `${relDir}/${e.name}` : e.name;
-    const abs = path.join(absDir, e.name);
-    if (e.isDirectory()) out.push(...(await walkFiles(abs, rel)));
-    else if (e.isFile()) out.push(rel.replace(/\\/g, "/"));
-  }
-  return out;
-}
-
-function isAnalyzableSource(rel: string): boolean {
-  return (
-    (rel.endsWith(".ts") || rel.endsWith(".tsx") || rel.endsWith(".vue")) &&
-    !rel.endsWith(".d.ts")
-  );
-}
-
-function resolveImportsMapSpecifier(
-  specifier: string,
-  importsMap: Record<string, string>,
-): string | null {
-  const exact = importsMap[specifier];
-  if (exact) return exact;
-
-  const patternKeys = sortExportPatternKeys(
-    Object.keys(importsMap).filter((key) => key.includes("*")),
-  );
-  for (const patternKey of patternKeys) {
-    const substituted = matchExportPattern(
-      specifier,
-      patternKey,
-      importsMap[patternKey]!,
-    );
-    if (substituted) return substituted;
-  }
-  return null;
-}
-
-function readPackageImportsMap(
-  packageDir: string,
-): Record<string, string> | undefined {
-  try {
-    const pj = JSON.parse(
-      readFileSync(path.join(packageDir, "package.json"), "utf8"),
-    ) as { imports?: Record<string, string> };
-    return pj.imports;
-  } catch {
-    return undefined;
-  }
-}
-
-function isTestPath(rel: string): boolean {
-  const base = rel.split("/").pop() ?? rel;
-  if (/\.(test|spec)\.(ts|tsx)$/.test(base)) return true;
-  if (/\.test-helpers\.(ts|tsx)$/.test(base)) return true;
-  if (/\.fixtures\.(ts|tsx)$/.test(base)) return true;
-  const parts = rel.split("/");
-  return (
-    parts.includes("testing") ||
-    parts.includes("tests") ||
-    parts.includes("__tests__")
-  );
-}
-
-function isScaffoldTemplatePath(rel: string): boolean {
-  return rel.split("/").some((part) => {
-    const stem = part.replace(/\.[^.]+$/, "");
-    return /^__[^/]+__$/.test(stem);
-  });
-}
-
-function packageForRepoPath(
-  repoPath: string,
-  roots: Array<{ packageName: string; directory: string }>,
-): { packageName: string; directory: string } {
-  let best: { packageName: string; directory: string } | null = null;
-  for (const r of roots) {
-    const d = r.directory;
-    if (!d) {
-      if (!best) best = r;
-      continue;
-    }
-    if (repoPath === d || repoPath.startsWith(`${d}/`)) {
-      if (!best || d.length >= best.directory.length) best = r;
-    }
-  }
-  return best ?? { packageName: "(unknown)", directory: "" };
-}
-
-async function analyzeOnePackage(opts: {
-  packageName: string;
-  packageDir: string;
-  packageRepoPath: string;
-  monorepoRoot: string;
-  productRoot: string;
-}): Promise<PackageIssue[]> {
-  const issues: PackageIssue[] = [];
-
-  for (const i of checkPackageLayout({
-    packageDir: opts.packageDir,
-    packageRepoPath: opts.packageRepoPath,
-  })) {
-    issues.push({ ...i });
+function printPackageIssues(
+  packageName: string,
+  issues: PackageIssue[],
+  opts: { multi: boolean },
+): void {
+  if (opts.multi) {
+    console.error(`======== ${packageName} ========`);
   }
 
-  const exportsCheck = checkExports(opts.packageDir);
-  if (!exportsCheck.ok) {
-    for (const d of exportsCheck.diffs) {
-      issues.push({
-        kind: "package-layout",
-        title: "Exports",
-        name: d,
-        kindLabel: "exports",
-        filePath: "package.json",
-        repoPath: opts.packageRepoPath
-          ? `${opts.packageRepoPath}/package.json`
-          : "package.json",
-      });
-    }
+  if (issues.length === 0) {
+    console.log(`OK: ${packageName} — no architecture issues`);
+    if (opts.multi) console.error("");
+    return;
   }
 
-  const index = buildPackageIndex(opts.monorepoRoot);
-  const roots = [...index.entries()].map(([packageName, info]) => ({
-    packageName,
-    directory: path
-      .relative(opts.monorepoRoot, info.dir)
-      .split(path.sep)
-      .join("/"),
-  }));
-
-  const importsMap = readPackageImportsMap(opts.packageDir);
-  const publicExportFilePaths = collectPublicExportRepoPaths(
-    opts.packageDir,
-    opts.packageRepoPath,
-  );
-
-  const walkRoot = opts.productRoot
-    ? path.join(opts.monorepoRoot, opts.productRoot)
-    : opts.monorepoRoot;
-  const allFiles = await walkFiles(walkRoot, opts.productRoot || "");
-  const specialtyByPath = new Map<string, FileSpecialty>();
-  for (const rel of allFiles) {
-    if (!isAnalyzableSource(rel)) continue;
-    const text = await readFile(path.join(opts.monorepoRoot, rel), "utf8");
-    specialtyByPath.set(rel, buildFileSpecialty(text));
+  console.error(`${issues.length} issue(s) for ${packageName}:`);
+  if (!opts.multi) {
+    console.error(`triage: saflib/dev-tools/docs/package-issues.md\n`);
   }
-
-  const underPkg = (rel: string) => {
-    const d = opts.packageRepoPath;
-    if (!d) return true;
-    return rel === d || rel.startsWith(`${d}/`);
-  };
-
-  const exports: Array<{ filePath: string; name: string; kind: string }> = [];
-  for (const [rel, specialty] of specialtyByPath) {
-    if (!underPkg(rel) || isTestPath(rel) || isScaffoldTemplatePath(rel)) continue;
-    for (const exp of specialty.exports) {
-      exports.push({ filePath: rel, name: exp.name, kind: exp.kind });
-    }
+  for (const i of issues) {
+    console.error(`  [${i.kind}] ${i.filePath}: ${i.name}`);
   }
-
-  const importers: UsedByImporterUnit[] = [];
-  for (const [rel, specialty] of specialtyByPath) {
-    const root = packageForRepoPath(rel, roots);
-    importers.push({
-      path: rel,
-      packageName: root.packageName,
-      packageDirectory: root.directory,
-      isTest: isTestPath(rel),
-      imports: specialty.imports,
-      localExportUsages: specialty.localExportUsages,
-    });
-  }
-
-  const resolveImportTarget = (
-    importerPath: string,
-    specifier: string,
-  ): string | null => {
-    if (specifier.startsWith("#") && importsMap) {
-      const mapped = resolveImportsMapSpecifier(specifier, importsMap);
-      if (mapped) {
-        const resolved = existsResolve(
-          path.resolve(opts.packageDir, mapped),
-        );
-        if (resolved) {
-          return path
-            .relative(opts.monorepoRoot, resolved)
-            .split(path.sep)
-            .join("/");
-        }
-      }
-    }
-
-    const resolved = resolveSpecifier(
-      specifier,
-      path.join(opts.monorepoRoot, importerPath),
-      index,
-    );
-    if (resolved?.kind === "file") {
-      return path
-        .relative(opts.monorepoRoot, resolved.path)
-        .split(path.sep)
-        .join("/");
-    }
-    return null;
-  };
-
-  const usedBy = assembleUsedBy(
-    opts.packageName,
-    opts.packageRepoPath,
-    exports,
-    importers,
-    { resolveImportTarget },
-  );
-
-  issues.push(
-    ...collectPackageIssues(
-      {
-        packageName: opts.packageName,
-        directory: opts.packageRepoPath,
-        publicExportFilePaths,
-        exports: exports.map((e) => ({
-          name: e.name,
-          kind: e.kind,
-          filePath: e.filePath,
-          usedBy: usedBy.get(exportUsedByKey(e.filePath, e.name)) ?? [],
-        })),
-      },
-      { packageDirectory: opts.packageRepoPath },
-    ),
-  );
-
-  return issues.sort(
-    (a, b) =>
-      a.filePath.localeCompare(b.filePath) || a.name.localeCompare(b.name),
-  );
+  if (opts.multi) console.error("");
 }
 
 const program = new Command()
   .name("analyze-package")
   .description(
-    "Run package layout, LoC, exports, and dead-code checks",
+    "Run package layout, LoC, exports, and dead-code checks on the working tree",
   )
-  .requiredOption("--package <name>", "Workspace package name")
+  .option(
+    "-p, --package <name>",
+    "Workspace package name (repeat for multiple)",
+    (value: string, previous: string[]) => [...previous, value],
+    [] as string[],
+  )
+  .option(
+    "--match <substring>",
+    "Analyze every workspace package whose name includes this substring",
+  )
   .option("--root <dir>", "Monorepo root (default: auto-detect)")
   .option(
     "--product-root <dir>",
-    "Limit source walk to this repo-relative prefix (e.g. product)",
+    "Limit source walk to this repo-relative prefix (e.g. saflib/base)",
   )
   .option(
     "--workdir",
-    "Analyze the working tree (default behavior; accepted for symmetry with saf-dev-site)",
+    "Analyze the working tree (default; accepted for symmetry with saf-dev-site)",
+  )
+  .option(
+    "--no-exports-check",
+    "Skip package.json exports heuristic diffs",
   )
   .action(
     async (options: {
-      package: string;
+      package: string[];
+      match?: string;
       root?: string;
       productRoot?: string;
+      exportsCheck?: boolean;
     }) => {
-      const monorepoRoot = options.root
-        ? path.resolve(options.root)
-        : findMonorepoRoot(process.cwd());
-      const { dir, error } = resolvePackageDir(options.package, monorepoRoot);
-      if (error) {
-        console.error(error);
+      const packages = options.package ?? [];
+      if (packages.length === 0 && !options.match) {
+        console.error(
+          "Provide --package <name> (repeatable) and/or --match <substring>",
+        );
         process.exitCode = 1;
         return;
       }
-      const packageRepoPath = path
-        .relative(monorepoRoot, dir)
-        .split(path.sep)
-        .join("/");
+
+      const monorepoRoot = options.root
+        ? path.resolve(options.root)
+        : findMonorepoRoot(process.cwd());
       const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
 
-      const issues = await analyzeOnePackage({
-        packageName: options.package,
-        packageDir: dir,
-        packageRepoPath,
+      const result = await analyzeWorkdirPackages({
         monorepoRoot,
-        productRoot,
+        productRoot: productRoot || undefined,
+        packageNames: packages.length > 0 ? packages : undefined,
+        packageNameMatch: options.match,
+        includeExportsCheck: options.exportsCheck !== false,
       });
 
-      if (issues.length === 0) {
-        console.log(`OK: ${options.package} — no architecture issues`);
+      if (result.packages.length === 0) {
+        console.error("No matching workspace packages found.");
+        process.exitCode = 1;
         return;
       }
 
-      console.error(`${issues.length} issue(s) for ${options.package}:`);
-      console.error(`triage: saflib/dev-tools/docs/package-issues.md\n`);
-      for (const i of issues) {
-        console.error(`  [${i.kind}] ${i.filePath}: ${i.name}`);
+      const multi = result.packages.length > 1;
+      if (multi) {
+        console.error(
+          `# ${result.packages.length} package(s) — triage: saflib/dev-tools/docs/package-issues.md\n`,
+        );
       }
-      process.exitCode = 1;
+
+      let totalIssues = 0;
+      for (const pkg of result.packages) {
+        printPackageIssues(pkg.packageName, pkg.issues, { multi });
+        totalIssues += pkg.issues.length;
+      }
+
+      if (multi) {
+        const withIssues = result.packages.filter((p) => p.issues.length > 0);
+        console.error(
+          `# Summary: ${withIssues.length}/${result.packages.length} package(s) with issues (${totalIssues} total)`,
+        );
+      }
+
+      if (totalIssues > 0) {
+        process.exitCode = 1;
+      }
     },
   );
 

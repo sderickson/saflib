@@ -10,3 +10,16 @@ export {
   type PackageIssue,
   type PackageIssueKind,
 } from "./package-issues.ts";
+export {
+  analyzePackageFromWorkdirContext,
+  analyzeWorkdirPackage,
+  analyzeWorkdirPackages,
+  buildWorkdirGraphContext,
+  isGraphSourcePath,
+  isScaffoldTemplatePath,
+  isTestSourcePath,
+  type WorkdirAnalyzeOptions,
+  type WorkdirAnalyzeResult,
+  type WorkdirGraphContext,
+  type WorkdirPackageAnalyzeResult,
+} from "./workdir-analyze.ts";
