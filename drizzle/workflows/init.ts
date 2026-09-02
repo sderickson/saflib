@@ -61,7 +61,6 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
     types: path.join(offshootDbRoot, "types.ts"),
     tsconfig: path.join(offshootDbRoot, "tsconfig.json"),
     vitestConfig: path.join(offshootDbRoot, "vitest.config.js"),
-    test: path.join(offshootDbRoot, "index.test.ts"),
     parentSchema: parentSchemaLive,
   },
 
