@@ -17,7 +17,7 @@ import type {
  */
 export const makePostKratosActionHandler =
   (handler: KratosActionHandler): Handler =>
-  async (req, res) => {
+  async (req, res, next) => {
     const body = req.body;
     if (
       typeof body !== "object" ||
@@ -36,6 +36,10 @@ export const makePostKratosActionHandler =
         forwardedFor: req.get("x-forwarded-for") ?? undefined,
       },
     };
-    await handler.onAction(action);
-    res.status(204).end();
+    try {
+      await handler.onAction(action);
+      res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
   };

@@ -1,5 +1,5 @@
 {
-  "files": [],
+  "extends": "./tsconfig.app.json",
   "compilerOptions": {
     "composite": true
   },
@@ -18,9 +18,6 @@
     },
     {
       "path": "../utils"
-    },
-    {
-      "path": "./tsconfig.app.json"
     }
   ]
 }

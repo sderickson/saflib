@@ -1,6 +1,6 @@
 {
   "extends": [
-    "@saflib/vue/tsconfig.app.json"
+    "../vue/tsconfig.app.base.json"
   ],
   "references": [
     {
