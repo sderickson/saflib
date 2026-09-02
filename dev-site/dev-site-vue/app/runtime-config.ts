@@ -1,6 +1,8 @@
 export type DevSiteRuntimeConfig = {
   github_repo?: string;
   githubRef?: string;
+  /** Absolute git repo root the dev-site server analyzes (DEV_SITE_REPO_ROOT). */
+  repo_root?: string;
 };
 
 declare global {

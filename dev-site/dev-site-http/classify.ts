@@ -40,33 +40,21 @@ export const SOURCE_EXTS = new Set([
   ".yml",
 ]);
 
-/** Heuristic: *.test.* / *.spec.* / *.fixture(s).* / *.test-helpers.*, or under testing/ / tests/ / __tests__/. */
+import { isTestSourcePath as importsIsTestSourcePath } from "@saflib/imports";
+
+/** Heuristic: *.test.* / *.spec.* / *.fixture(s).* / *.test-helpers.*, or under test/fixture/testing dirs. */
 export function isTestSourcePath(relPosix: string, file_name: string): boolean {
+  if (importsIsTestSourcePath(relPosix)) return true;
   const lower = file_name.toLowerCase();
   if (
-    lower.endsWith(".test.ts") ||
-    lower.endsWith(".test.tsx") ||
     lower.endsWith(".test.js") ||
     lower.endsWith(".test.jsx") ||
-    lower.endsWith(".spec.ts") ||
-    lower.endsWith(".spec.tsx") ||
     lower.endsWith(".spec.js") ||
-    lower.endsWith(".spec.jsx") ||
-    lower.endsWith(".fixtures.ts") ||
-    lower.endsWith(".fixtures.tsx") ||
-    lower.endsWith(".fixture.ts") ||
-    lower.endsWith(".fixture.tsx") ||
-    lower.endsWith(".test-helpers.ts") ||
-    lower.endsWith(".test-helpers.tsx")
+    lower.endsWith(".spec.jsx")
   ) {
     return true;
   }
-  const parts = relPosix.split("/");
-  return (
-    parts.includes("testing") ||
-    parts.includes("tests") ||
-    parts.includes("__tests__")
-  );
+  return false;
 }
 
 /**

@@ -23,6 +23,7 @@ export function isTestSourcePath(relPosix: string): boolean {
     parts.includes("test") ||
     parts.includes("testing") ||
     parts.includes("tests") ||
+    parts.includes("fixtures") ||
     parts.includes("__tests__")
   );
 }
