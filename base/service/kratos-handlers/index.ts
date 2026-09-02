@@ -1,2 +1,2 @@
-export { courierCallbacks, callbacks } from "./courier-callbacks.ts";
-export { makeKratosActionHandler } from "./actions.ts";
+export { makeKratosActionHandler } from "./actions/index.ts";
+export { callbacks, courierCallbacks } from "./callbacks/index.ts";

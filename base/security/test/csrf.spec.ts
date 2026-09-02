@@ -7,11 +7,11 @@ import {
   type RegistrationPageFixture,
   type VerifyWallPageFixture,
 } from "@saflib/ory-kratos-spa/fixtures";
-import { apiOrigin, evilOrigin, getCsrfToken } from "./fixtures/http-helpers.ts";
+import { apiOrigin, evilOrigin, getCsrfToken } from "../fixtures/http-helpers.ts";
 import {
   expectCsrfFailure,
   sessionAsRegisteredUser,
-} from "./fixtures/kratos-session.ts";
+} from "../fixtures/kratos-session.ts";
 
 type CsrfFixtures = {
   loginPage: LoginPageFixture;

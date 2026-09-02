@@ -58,6 +58,7 @@ export type DevSiteHttpAppLease = {
 function buildDevSiteRuntimeConfigScript(config: {
   github_repo?: string;
   githubRef?: string;
+  repo_root?: string;
 }): string | undefined {
   const payload: Record<string, string> = {};
   if (config.github_repo) {
@@ -65,6 +66,9 @@ function buildDevSiteRuntimeConfigScript(config: {
   }
   if (config.githubRef) {
     payload.githubRef = config.githubRef;
+  }
+  if (config.repo_root) {
+    payload.repo_root = config.repo_root;
   }
   if (Object.keys(payload).length === 0) {
     return undefined;
@@ -143,6 +147,7 @@ export function createDevSiteHttpApp(
     const indexHtml = path.join(staticRoot, "index.html");
     const runtimeConfigScript = buildDevSiteRuntimeConfigScript({
       github_repo,
+      repo_root,
     });
 
     const sendSpaIndex = (_req: express.Request, res: express.Response) => {

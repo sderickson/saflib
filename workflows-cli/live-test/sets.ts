@@ -321,7 +321,7 @@ export const liveTestSets: LiveTestSet[] = [
       "dossier/spec/openapi.yaml",
       "dossier/spec/package.json",
       "dossier/spec/vitest.config.js",
-      "dossier/spec/no-root-response-bodies.test.ts",
+      "dossier/spec/test/no-root-response-bodies.test.ts",
       "dossier/http/routers.ts",
       "dossier/sdk/package.json",
       "dossier/spec/schemas/item.yaml",

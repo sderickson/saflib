@@ -1,5 +1,7 @@
-/** In-memory failure counters for jobs-demo step-b retry simulation. */
-const stepBFailuresByKey = new Map<string, number>();
+import {
+  demoStepCCompletions,
+  stepBFailuresByKey,
+} from "./_helpers.state.ts";
 
 export function demoFailureKey(body: {
   dedupe_key?: string | null;
@@ -14,16 +16,8 @@ export function recordDemoFailure(key: string): number {
   return next;
 }
 
-export function resetDemoFailureCountersForTests(): void {
-  stepBFailuresByKey.clear();
-}
-
-export const demoStepCCompletions: string[] = [];
+export { demoStepCCompletions } from "./_helpers.state.ts";
 
 export function recordDemoStepCCompletion(id: string): void {
   demoStepCCompletions.push(id);
-}
-
-export function resetDemoStepCCompletionsForTests(): void {
-  demoStepCCompletions.length = 0;
 }

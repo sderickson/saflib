@@ -6,7 +6,7 @@ import envSchema from "./env.schema.combined.json" with { type: "json" };
 import { initSentry } from "@saflib/vendors-sentry-node";
 import { startOryKratosService } from "@saflib/ory-kratos";
 import {
-  courierCallbacks,
+  callbacks,
   makeKratosActionHandler,
 } from "@saflib/base-kratos-handlers";
 import { initializeDependencies } from "@saflib/base-service-common/dependencies";
@@ -21,7 +21,7 @@ collectSystemMetrics();
 await initializeDependencies();
 
 startOryKratosService({
-  courierCallbacks,
+  courierCallbacks: callbacks,
   actionHandler: makeKratosActionHandler(),
 });
 await startBaseService();

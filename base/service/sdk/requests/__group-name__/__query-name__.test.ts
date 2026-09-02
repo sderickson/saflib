@@ -3,7 +3,7 @@ import { afterEach, describe, it, expect } from "vitest";
 import { __queryName____GroupName__Query } from "./__query-name__.ts";
 import { withVueQuery } from "@saflib/sdk/testing";
 import { useQuery } from "@tanstack/vue-query";
-import { setupScopedMockServer } from "#testing.ts";
+import { setupScopedMockServer } from "#test/scoped-mock.ts";
 import { __queryName____GroupName__Handler } from "./__query-name__.fake.ts";
 // @ts-expect-error TODO: use mock data
 import { mock__GroupName__, resetMocks } from "./mocks.ts";

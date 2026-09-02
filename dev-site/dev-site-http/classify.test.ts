@@ -31,7 +31,7 @@ describe("classify", () => {
   });
 
   describe("isTestSourcePath", () => {
-    it("detects *.test.* / *.spec.* / *.fixture(s).* / *.test-helpers.* and testing/tests dirs", () => {
+    it("detects *.test.* / *.spec.* / *.fixture(s).* / *.test-helpers.* and test/testing/fixtures dirs", () => {
       expect(isTestSourcePath("a.test.ts", "a.test.ts")).toBe(true);
       expect(isTestSourcePath("b.spec.tsx", "b.spec.tsx")).toBe(true);
       expect(
@@ -47,6 +47,9 @@ describe("classify", () => {
         ),
       ).toBe(true);
       expect(isTestSourcePath("tests/foo.ts", "foo.ts")).toBe(true);
+      expect(
+        isTestSourcePath("security/fixtures/kratos-session.ts", "kratos-session.ts"),
+      ).toBe(true);
       expect(isTestSourcePath("pkg/testing/slim-route-test.ts", "slim-route-test.ts")).toBe(
         true,
       );

@@ -3,12 +3,12 @@ import { getUsersByIdAdminQuery } from "./users-by-id.ts";
 import { withVueQuery } from "@saflib/sdk/testing";
 import { useQuery } from "@tanstack/vue-query";
 import { ref } from "vue";
-import { setupScopedMockServer } from "#testing.ts";
-import { getUsersByIdAdminHandler } from "./users-by-id.fake.ts";
+import { setupScopedMockServer } from "#test/scoped-mock.ts";
+import { adminFakeHandlers } from "./index.fakes.ts";
 import { resetMocks } from "./mocks.ts";
 
 describe("getUsersByIdAdmin", () => {
-  setupScopedMockServer([getUsersByIdAdminHandler]);
+  setupScopedMockServer(adminFakeHandlers);
   afterEach(resetMocks);
 
   it("returns an identity by id", async () => {

@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./*": "./*.ts",
+    "./context": "./context.ts",
+    "./dependencies": "./dependencies.ts",
     "./env": "./env.ts"
   },
   "scripts": {
@@ -27,6 +28,8 @@
   },
   "sideEffects": false,
   "imports": {
-    "#*": "./*"
+    "#context.ts": "./context.ts",
+    "#dependencies.ts": "./dependencies.ts",
+    "#env.ts": "./env.ts"
   }
 }

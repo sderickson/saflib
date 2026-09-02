@@ -5,7 +5,7 @@ import {
   acquireRouterSlimRouteTest,
   releaseSlimRouteTest,
   type SlimRouteTestContext,
-} from "#testing/slim-route-test.ts";
+} from "#test/slim-route-test.ts";
 import { createUserConfigsRouter } from "./index.ts";
 
 describe("user-configs", () => {

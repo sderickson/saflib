@@ -25,11 +25,13 @@ describe("offshoot spec stub", () => {
     expect(pkg.devDependencies?.["@saflib/vitest"]).toBeDefined();
     expect(existsSync(path.join(stubRoot, "vitest.config.js"))).toBe(true);
     expect(
-      existsSync(path.join(stubRoot, "no-root-response-bodies.test.ts")),
+      existsSync(
+        path.join(stubRoot, "test", "no-root-response-bodies.test.ts"),
+      ),
     ).toBe(true);
-    expect(existsSync(path.join(stubRoot, "operation-tags.test.ts"))).toBe(
-      true,
-    );
+    expect(
+      existsSync(path.join(stubRoot, "test", "operation-tags.test.ts")),
+    ).toBe(true);
   });
 
   it("is the same stub openapi/init copies", () => {

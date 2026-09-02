@@ -67,13 +67,11 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
   templateFiles: {
     context: path.join(sourceDir, "context.ts"),
     dependencies: path.join(sourceDir, "dependencies.ts"),
-    secrets: path.join(sourceDir, "secrets.ts"),
     envSchema: path.join(sourceDir, "env.schema.json"),
     index: path.join(sourceDir, "index.ts"),
     packageJson: path.join(sourceDir, "package.json"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
-    test: path.join(sourceDir, "index.test.ts"),
   },
 
   docFiles: {},

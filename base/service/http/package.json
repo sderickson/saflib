@@ -7,7 +7,8 @@
   "type": "module",
   "exports": {
     "./http": "./http.ts",
-    "./testing/slim-route-test": "./testing/slim-route-test.ts",
+    "./routers": "./routers.ts",
+    "./test/slim-route-test": "./test/slim-route-test.ts",
     "./handlers/*": "./handlers/*.ts"
   },
   "scripts": {
@@ -43,6 +44,6 @@
   "imports": {
     "#handlers/*": "./handlers/*",
     "#http.ts": "./http.ts",
-    "#testing/*": "./testing/*"
+    "#test/*": "./test/*"
   }
 }

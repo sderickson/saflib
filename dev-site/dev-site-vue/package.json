@@ -27,7 +27,7 @@
     "@saflib/vite": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*",
-    "marked": "^15.0.12",
+    "marked": "^18.0.0",
     "vue-router": "*",
     "vuetify": "*"
   },

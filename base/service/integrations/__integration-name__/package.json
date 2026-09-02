@@ -11,7 +11,7 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./mocks": "./client.mocks.ts",
+    "./mocks": "./mocks/client.ts",
     "./env": "./env.ts"
   },
   "scripts": {
@@ -33,7 +33,7 @@
   "sideEffects": false,
   "imports": {
     "#calls/*": "./calls/*",
-    "#client.mocks.ts": "./client.mocks.ts",
+    "#mocks/client.ts": "./mocks/client.ts",
     "#client.ts": "./client.ts",
     "#env.ts": "./env.ts"
   }

@@ -9,8 +9,3 @@ import type { NodeEnvSchema } from "@saflib/node/env";
 export interface BaseServiceCommonEnvSchema extends Base__integrationName__IntegrationEnvSchema, DrizzleEnvSchema, NodeEnvSchema {
   BASE_SERVICE_HTTP_HOST: string;
 }
-
-/**
- * `process.env` casted to the `BaseServiceCommonEnvSchema` type.
- */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as BaseServiceCommonEnvSchema;

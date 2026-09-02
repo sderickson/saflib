@@ -6,7 +6,9 @@
     <div class="pane-scroll">
       <div class="issues-cli mb-4">
         <div class="text-caption text-medium-emphasis mb-1">
-          Deeper working-tree scan (seconds; not used for this panel):
+          Deeper working-tree scan (seconds; not used for this panel). Run from
+          the saflib repo root, or set
+          <code>DEV_SITE_REPO_ROOT</code> when invoking from a parent monorepo:
         </div>
         <div class="issues-cli__row">
           <code class="issues-cli__cmd">{{ cliCommand }}</code>
@@ -99,10 +101,19 @@ const issues = computed(() => {
   });
 });
 
-const cliCommand = computed(
-  () =>
-    `npm exec -- saf-dev-site issues --workdir --package ${shellQuote(props.packageName)}`,
-);
+const cliCommand = computed(() => {
+  const productRoot = props.productRoot?.trim();
+  const repoRoot = props.localRepoRoot?.trim();
+  const envParts: string[] = [];
+  if (repoRoot) {
+    envParts.push(`DEV_SITE_REPO_ROOT=${shellQuote(repoRoot)}`);
+  }
+  if (productRoot) {
+    envParts.push(`DEV_SITE_PRODUCT_ROOT=${shellQuote(productRoot)}`);
+  }
+  const envPrefix = envParts.length ? `${envParts.join(" ")} ` : "";
+  return `${envPrefix}npm exec -- saf-dev-site issues --workdir --package ${shellQuote(props.packageName)}`;
+});
 
 const copied = ref(false);
 let copyTimer: ReturnType<typeof setTimeout> | undefined;

@@ -29,11 +29,24 @@ export interface UsedByImporterUnit {
  *
  * Also records same-file self-usages from {@link UsedByImporterUnit.localExportUsages}.
  */
+export interface AssembleUsedByOptions {
+  /**
+   * Resolve an import to the repo-relative path of the target module file.
+   * Used for workspace package exports and `#` import maps where
+   * {@link moduleTargetFromImport} only matches disk-shaped subpaths.
+   */
+  resolveImportTarget?: (
+    importerPath: string,
+    specifier: string,
+  ) => string | null;
+}
+
 export function assembleUsedBy(
   packageName: string,
   packageDirectory: string,
   exports: Array<{ filePath: string; name: string }>,
   importers: UsedByImporterUnit[],
+  options: AssembleUsedByOptions = {},
 ): ExportUsedByMap {
   const out: ExportUsedByMap = new Map();
   if (exports.length === 0) return out;
@@ -95,6 +108,29 @@ export function assembleUsedBy(
     };
 
     for (const imp of unit.imports) {
+      const names = imp.names;
+      const fileLevel =
+        names.length === 0 || names.includes("*") || names.includes("default");
+      const wanted = new Set(names);
+
+      const targetPath = options.resolveImportTarget?.(
+        unit.path,
+        imp.specifier,
+      );
+      if (targetPath) {
+        const fileExports = exportsByRepoPath.get(targetPath);
+        if (fileExports?.length) {
+          if (fileLevel) {
+            for (const exp of fileExports) addImporter(exp, used);
+          } else {
+            for (const exp of fileExports) {
+              if (wanted.has(exp.name)) addImporter(exp, used);
+            }
+          }
+          continue;
+        }
+      }
+
       const mod = moduleTargetFromImport(
         packageName,
         packageDirectory,
@@ -105,16 +141,11 @@ export function assembleUsedBy(
       const moduleExports = exportsByModule.get(mod);
       if (!moduleExports?.length) continue;
 
-      const names = imp.names;
-      const fileLevel =
-        names.length === 0 || names.includes("*") || names.includes("default");
-
       if (fileLevel) {
         for (const exp of moduleExports) addImporter(exp, used);
         continue;
       }
 
-      const wanted = new Set(names);
       for (const exp of moduleExports) {
         if (wanted.has(exp.name)) addImporter(exp, used);
       }

@@ -28,6 +28,9 @@ const SKIP_FILES = new Set([
   "schema.ts",
   "drizzle.config.ts",
   "instances-registry.ts",
+  "vitest.config.ts",
+  "vitest.config.js",
+  "playwright.config.ts",
 ]);
 
 export type ExportsMap = Record<string, string>;
@@ -55,6 +58,11 @@ function isExportableTs(name: string): boolean {
   return true;
 }
 
+function isExportableSource(name: string): boolean {
+  if (name.endsWith(".vue")) return true;
+  return isExportableTs(name);
+}
+
 function walkExportableFiles(dir: string, out: string[]) {
   let entries: fs.Dirent[];
   try {
@@ -70,7 +78,7 @@ function walkExportableFiles(dir: string, out: string[]) {
       walkExportableFiles(full, out);
     } else if (
       e.isFile() &&
-      isExportableTs(e.name) &&
+      isExportableSource(e.name) &&
       !SKIP_FILES.has(e.name)
     ) {
       out.push(full);
@@ -86,6 +94,83 @@ export function listExportableFiles(pkgDir: string): string[] {
   const out: string[] = [];
   walkExportableFiles(pkgDir, out);
   return out.sort();
+}
+
+/**
+ * Repo-relative paths of source files that are direct `package.json` export
+ * targets (including pattern exports). Used to skip dead-code on public API.
+ */
+export function collectPublicExportRepoPaths(
+  packageDir: string,
+  packageRepoPath: string,
+): string[] {
+  let exports: unknown;
+  try {
+    const pj = JSON.parse(
+      fs.readFileSync(path.join(packageDir, "package.json"), "utf8"),
+    ) as { exports?: unknown };
+    exports = pj.exports;
+  } catch {
+    return [];
+  }
+  if (!exports) return [];
+
+  const pkg: PackageInfo = { dir: packageDir, exports };
+  const out = new Set<string>();
+  for (const abs of listExportableFiles(packageDir)) {
+    const rel = path.relative(packageDir, abs).split(path.sep).join("/");
+    const withoutExt = rel.replace(/\.(tsx?|vue)$/, "");
+    let subpath = withoutExt;
+    if (subpath === "index") {
+      subpath = "";
+    } else if (subpath.endsWith("/index")) {
+      subpath = subpath.slice(0, -"/index".length);
+    }
+    const exportPath = resolvePackageExportPath(pkg, subpath);
+    if (!exportPath) continue;
+    const resolved = existsResolve(exportPath);
+    if (resolved && path.normalize(resolved) === path.normalize(abs)) {
+      out.add(
+        packageRepoPath ? `${packageRepoPath}/${rel}` : rel,
+      );
+    }
+  }
+  for (const abs of collectExplicitExportTargetAbsPaths(packageDir, exports)) {
+    const rel = path.relative(packageDir, abs).split(path.sep).join("/");
+    out.add(packageRepoPath ? `${packageRepoPath}/${rel}` : rel);
+  }
+  return [...out].sort();
+}
+
+function exportTargetPath(target: unknown): string | null {
+  if (typeof target === "string") return target;
+  if (target && typeof target === "object" && !Array.isArray(target)) {
+    const rec = target as Record<string, unknown>;
+    for (const key of ["import", "default", "require", "module", "node"]) {
+      const inner = exportTargetPath(rec[key]);
+      if (inner) return inner;
+    }
+  }
+  return null;
+}
+
+function collectExplicitExportTargetAbsPaths(
+  packageDir: string,
+  exports: unknown,
+): string[] {
+  if (!exports || typeof exports !== "object") return [];
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const target of Object.values(exports as Record<string, unknown>)) {
+    const rel = exportTargetPath(target);
+    if (!rel || rel.includes("*")) continue;
+    const abs = path.join(packageDir, rel.replace(/^\.\//, ""));
+    const resolved = existsResolve(abs);
+    if (!resolved || seen.has(resolved)) continue;
+    seen.add(resolved);
+    out.push(resolved);
+  }
+  return out;
 }
 
 function readExportsAliases(pkgDir: string): ExportsMap {
@@ -119,6 +204,7 @@ export function computeExportsMap(pkgDir: string): ExportsMap {
 
   for (const abs of files) {
     const rel = path.relative(pkgDir, abs).split(path.sep).join("/");
+    if (rel.endsWith(".vue")) continue;
     const withoutExt = rel.replace(/\.(ts|tsx)$/, "");
     let exportKey: string;
     if (withoutExt === "index") {
@@ -147,6 +233,7 @@ export function leafExportRemapDiffs(map: ExportsMap): string[] {
       diffs.push(`remap: ${key} → ${value} (target must be a relative ./ path)`);
       continue;
     }
+    if (value.endsWith(".vue")) continue;
     const stripExt = (p: string) =>
       p.replace(/\.(tsx?|jsx?|mjs|cjs)$/, "");
     const keyPath = key === "." ? "index" : key.replace(/^\.\//, "");
