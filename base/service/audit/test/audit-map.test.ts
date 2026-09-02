@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { jsonSpec } from "@saflib/base-spec";
-import { baseAuditMap } from "./audit-map.ts";
+import { baseAuditMap } from "../audit-map.ts";
 
 const auditKeyPattern = /^[A-Z]+ \/.+$/;
 

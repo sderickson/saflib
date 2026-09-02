@@ -12,7 +12,7 @@ import {
   baseTriggerMap,
   getBaseJobsSqlitePath,
   runBaseJobs,
-} from "./jobs.ts";
+} from "../jobs.ts";
 
 const validationSpec = asOpenApiDocument({
   openapi: "3.1.0",

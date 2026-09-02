@@ -87,4 +87,15 @@ describe("checkPackageLayoutFromInputs", () => {
     });
     expect(issues.map((i) => i.filePath)).toEqual(["org-router-guard.ts"]);
   });
+
+  it("allows monolith run.ts as root file and saf-ts-run entrypoint", () => {
+    const issues = checkPackageLayoutFromInputs({
+      packageJson: {
+        exports: { "./run": "./run.ts" },
+        scripts: { start: "saf-ts-run ./run.ts" },
+      },
+      rootTsFiles: ["run.ts"],
+    });
+    expect(issues).toEqual([]);
+  });
 });

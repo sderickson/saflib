@@ -29,10 +29,10 @@ To run this workflow automatically, tell the agent to:
 
 - Handler file (`handlers/<group>/<handler>.ts`)
 - Group router (`handlers/<group>/index.ts`) with per-operation `createOperationScopedMiddleware`
-- Slim route test (`handlers/<group>/<handler>.test.ts`) using `testing/slim-route-test.ts`
+- Slim route test (`handlers/<group>/<handler>.test.ts`) using `test/slim-route-test.ts`
 - Updates to `routers.ts` `groupRouterMounts()` workflow area (main http and offshoots)
 
-Route handler tests mount the **group router**, not `create…HttpApp()` with every product router. Full app mounts are for `index.test.ts` smoke tests and `*.integration.test.ts` only.
+Route handler tests mount the **group router**, not `create…HttpApp()` with every product router. Full app mounts are for `*.integration.test.ts` only.
 
 Products with extra middleware (e.g. org tenancy) use a **product** `register*Route` helper that wraps `createOperationScopedMiddleware` — not a generic SAF registration helper.
 

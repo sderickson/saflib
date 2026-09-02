@@ -1,5 +1,5 @@
 import type { ResponseBody as getMineUserConfigsResponseBody } from "@saflib/base-spec/operations/getMineUserConfigs";
-import { baseHandler } from "#typed-fake.ts";
+import { baseHandler } from "#test/typed-fake.ts";
 import { ensureMockUserConfig } from "./mocks.ts";
 
 export const getMineUserConfigsHandler = baseHandler({

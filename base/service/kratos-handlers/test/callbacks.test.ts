@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { sentEmails } from "@saflib/email-service";
-import { courierCallbacks } from "./courier-callbacks.ts";
+import { callbacks } from "../callbacks/index.ts";
 
-describe("courierCallbacks", () => {
+describe("callbacks", () => {
   afterEach(() => {
     sentEmails.length = 0;
   });
 
   it("sends a verification email through the mock email service", async () => {
-    await courierCallbacks.onVerificationCodeValid?.({
+    await callbacks.onVerificationCodeValid?.({
       recipient: "user@example.com",
       user: {
         id: "identity-1",
@@ -28,7 +28,7 @@ describe("courierCallbacks", () => {
   });
 
   it("sends a recovery email through the mock email service", async () => {
-    await courierCallbacks.onRecoveryCodeValid?.({
+    await callbacks.onRecoveryCodeValid?.({
       recipient: "user@example.com",
       user: {
         id: "identity-1",

@@ -68,6 +68,12 @@ function isUnderScripts(rel: string): boolean {
   return n === "scripts" || n.startsWith("scripts/");
 }
 
+/** Monolith / service process entrypoints that may be started via saf-ts-run. */
+function isAllowedSafTsRunTarget(rel: string): boolean {
+  const n = rel.replace(/^\.\//, "").replace(/\\/g, "/");
+  return isUnderScripts(rel) || isUnderBin(rel) || n === "run.ts";
+}
+
 /** Extract a path-like token after saf-ts-run or node strip-types. */
 function scriptTargetPath(script: string): string | null {
   const saf = script.match(/saf-ts-run\s+(\S+)/);
@@ -120,6 +126,8 @@ export const ROOT_TS_ALLOWLIST = new Set([
   "vitest.config.ts",
   "vitest.config.js",
   "playwright.config.ts",
+  /** Monolith / service process entry (`saf-ts-run ./run.ts`) */
+  "run.ts",
 ]);
 
 function exportTargetPath(target: unknown): string | null {
@@ -277,7 +285,7 @@ export function checkPackageLayoutFromInputs(
     }
     if (usesSafTsRun(script)) {
       const target = scriptTargetPath(script);
-      if (target && !isUnderScripts(target) && !isUnderBin(target)) {
+      if (target && !isAllowedSafTsRunTarget(target)) {
         issues.push({
           kind: "package-layout",
           title: "Package layout",
