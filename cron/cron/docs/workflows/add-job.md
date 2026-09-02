@@ -20,14 +20,12 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **example-job.ts** from [template](https://github.com/sderickson/saflib/blob/main/cron/cron/workflows/templates/jobs/__group-name__/__target-name__.ts)
-  - Upsert **example-job.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/cron/cron/workflows/templates/jobs/__group-name__/__target-name__.test.ts)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/cron/cron/workflows/templates/jobs/__group-name__/index.ts)
-  - Upsert **cron.ts** from [template](https://github.com/sderickson/saflib/blob/main/cron/cron/workflows/templates/cron.ts)
-- Implement the example-job cron job handler. Make sure to:
+Kicking off workflow cron/add-job
+
+- Upsert 5 templates.
+- Finalize the example-job declarative JobConfig. Make sure to:
 - Add the new job to the rest of the package.
-- Update the generated example-job.test.ts file to test the cron job functionality.
+- Update the generated example-job.test.ts file to assert the declarative JobConfig.
 - Run `npm run typecheck`
 - Run `npm run test`
 

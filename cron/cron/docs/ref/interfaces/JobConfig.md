@@ -4,25 +4,36 @@
 
 # Interface: JobConfig
 
-Configuration for a single cron job.
+Configuration for a single cron job. Cron ticks only enqueue; work runs
+through the target background operation.
 
 ## Properties
 
-### handler()
+### enqueue
 
-> **handler**: (`reqId`) => `Promise`\<`any`\>
+> **enqueue**: `object`
 
-The async function to execute when the job runs.
+The single job this schedule enqueues.
 
-#### Parameters
+#### dedupeKey?
 
-| Parameter | Type     |
-| --------- | -------- |
-| `reqId`   | `string` |
+> `optional` **dedupeKey**: `string`
 
-#### Returns
+Defaults to `cron:{jobName}`.
 
-`Promise`\<`any`\>
+#### operationId
+
+> **operationId**: `string`
+
+#### priority?
+
+> `optional` **priority**: `number`
+
+#### request?
+
+> `optional` **request**: [`CronJobRequest`](CronJobRequest.md)
+
+Static request: { path_params?, query?, body? }.
 
 ---
 

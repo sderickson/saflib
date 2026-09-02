@@ -25,28 +25,28 @@ Declare a dependency on the package that provides the bin so workspace linking p
 
 ## How to invoke
 
-| Context | Form | Example |
-|---------|------|---------|
-| `package.json` scripts | Direct bin name | `"build": "saf-specs generate …"` |
-| Agent workflows / any cwd | `npm exec` | `npm exec saf-specs generate` |
-| Never | `npm run saf-*` | `npm run saf-specs` — bins are not npm scripts |
+| Context                   | Form            | Example                                        |
+| ------------------------- | --------------- | ---------------------------------------------- |
+| `package.json` scripts    | Direct bin name | `"build": "saf-specs generate …"`              |
+| Agent workflows / any cwd | `npm exec`      | `npm exec saf-specs generate`                  |
+| Never                     | `npm run saf-*` | `npm run saf-specs` — bins are not npm scripts |
 
 Generated-file headers and workflow steps should keep using `npm exec` so they resolve correctly outside a package that depends on the bin.
 
 ## Common platform bins
 
-| Bin | Package | Typical package script |
-|-----|---------|------------------------|
-| `saf-specs` | `@saflib/openapi` | `"build": "saf-specs generate -f openapi.yaml -o dist"` |
-| `saf-env` | `@saflib/env` | (often via `npm exec saf-env generate`) |
-| `saf-docker` | `@saflib/dev-tools` | `"generate": "saf-docker generate"` |
-| `saf-git-hashes` | `@saflib/dev-tools` | used in `dev`/`up` chains |
-| `saf-ts-run` | `@saflib/dev-tools` | `"ping": "saf-ts-run ./bin/ping.ts"` |
-| `saf-workflow` | `@saflib/workflows-cli` | kickoff / next (prefer `npm exec`) |
-| `saf-docs` | `@saflib/dev-tools` | docs generation |
-| `saf-tests` | `@saflib/dev-tools` | coverage / test assets |
-| `saf-imports` | `@saflib/imports` | import-graph tooling |
-| `saf-format` | `@saflib/monorepo` | Prettier wrapper |
+| Bin              | Package                 | Typical package script                                  |
+| ---------------- | ----------------------- | ------------------------------------------------------- |
+| `saf-specs`      | `@saflib/openapi`       | `"build": "saf-specs generate -f openapi.yaml -o dist"` |
+| `saf-env`        | `@saflib/env`           | (often via `npm exec saf-env generate`)                 |
+| `saf-docker`     | `@saflib/dev-tools`     | `"generate": "saf-docker generate"`                     |
+| `saf-git-hashes` | `@saflib/dev-tools`     | used in `dev`/`up` chains                               |
+| `saf-ts-run`     | `@saflib/dev-tools`     | `"ping": "saf-ts-run ./bin/ping.ts"`                    |
+| `saf-workflow`   | `@saflib/workflows-cli` | kickoff / next (prefer `npm exec`)                      |
+| `saf-docs`       | `@saflib/dev-tools`     | docs generation                                         |
+| `saf-tests`      | `@saflib/dev-tools`     | coverage / test assets                                  |
+| `saf-imports`    | `@saflib/imports`       | import-graph tooling                                    |
+| `saf-format`     | `@saflib/monorepo`      | Prettier wrapper                                        |
 
 ## When to add a new bin
 

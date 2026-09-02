@@ -25,7 +25,8 @@
     "cron": "^4.3.0"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@types/supertest": "^7.0.0"
   },
   "sideEffects": false
 }

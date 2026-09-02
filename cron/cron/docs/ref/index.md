@@ -6,16 +6,20 @@
 
 ## Interfaces
 
-| Interface                                              | Description                                        |
-| ------------------------------------------------------ | -------------------------------------------------- |
-| [CronServiceOptions](interfaces/CronServiceOptions.md) | Options to be passed when starting a cron service. |
-| [CustomLogErrorMeta](interfaces/CustomLogErrorMeta.md) | Data passed to the error callback.                 |
-| [JobConfig](interfaces/JobConfig.md)                   | Configuration for a single cron job.               |
+| Interface                                              | Description                                                                                                                       |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| [CronEnqueueParams](interfaces/CronEnqueueParams.md)   | Params for one cron-tick enqueue. Mirrored by `@saflib/jobs` `makeCronEnqueuer` so `@saflib/cron` does not import `@saflib/jobs`. |
+| [CronEnqueueResult](interfaces/CronEnqueueResult.md)   | -                                                                                                                                 |
+| [CronJobRequest](interfaces/CronJobRequest.md)         | Static request payload for the operation a cron tick enqueues. Dynamic fan-out belongs in the target handler.                     |
+| [CronServiceOptions](interfaces/CronServiceOptions.md) | Options to be passed when starting a cron service.                                                                                |
+| [CustomLogErrorMeta](interfaces/CustomLogErrorMeta.md) | Data passed to the error callback.                                                                                                |
+| [JobConfig](interfaces/JobConfig.md)                   | Configuration for a single cron job. Cron ticks only enqueue; work runs through the target background operation.                  |
 
 ## Type Aliases
 
 | Type Alias                                       | Description                                       |
 | ------------------------------------------------ | ------------------------------------------------- |
+| [CronEnqueuer](type-aliases/CronEnqueuer.md)     | -                                                 |
 | [CustomLogError](type-aliases/CustomLogError.md) | Callback for handling when a job throws an error. |
 | [JobsMap](type-aliases/JobsMap.md)               | Map of job names to their configurations.         |
 
