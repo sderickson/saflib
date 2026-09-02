@@ -16,8 +16,8 @@ import {
   buildPackageIndex,
   existsResolve,
   resolveSpecifier,
-  type PackageIndex,
 } from "../resolve/index.ts";
+import type { PackageIndex } from "../types.ts";
 import { checkExports, collectPublicExportRepoPaths } from "../exports/generate-exports.ts";
 import { resolveImportsMapSpecifier } from "../graph/tree-import-resolution.ts";
 import {

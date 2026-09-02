@@ -1,8 +1,7 @@
 /**
  * Package issues from the working tree — no git commit scan or sqlite.
  */
-import path from "node:path";
-import { analyzeWorkdirPackage } from "@saflib/imports";
+import { analyzeWorkdirPackage, type PackageIssue } from "@saflib/imports";
 
 export interface WorkdirPackageIssuesOptions {
   repo_root: string;

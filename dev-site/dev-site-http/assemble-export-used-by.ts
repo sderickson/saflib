@@ -19,7 +19,6 @@ import {
   isTestSourcePath,
   packageForPath,
   packageRootsFromPackageJsonPaths,
-  parsePackageName,
 } from "./classify.ts";
 
 export type { ExportUsedBy, ExportUsedByMap };
