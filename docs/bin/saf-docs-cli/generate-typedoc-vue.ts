@@ -1,5 +1,12 @@
 import { execSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { join, relative } from "node:path";
 
 interface PackageJson {
@@ -111,6 +118,74 @@ export function writeVueTypedocTsconfig(
     ),
   );
   return typedocTsconfigPath;
+}
+
+const DECLARATION_CLEANUP_SKIP_DIRS = new Set([
+  "node_modules",
+  "dist",
+  "docs",
+  ".git",
+]);
+
+export function isEmittedDeclarationArtifact(filePath: string): boolean {
+  if (filePath.endsWith(".d.ts.map")) {
+    return isEmittedDeclarationArtifact(filePath.slice(0, -".map".length));
+  }
+  if (!filePath.endsWith(".d.ts")) {
+    return false;
+  }
+  if (filePath.endsWith(".vue.d.ts")) {
+    return existsSync(filePath.slice(0, -".d.ts".length));
+  }
+  const base = filePath.slice(0, -".d.ts".length);
+  return existsSync(`${base}.ts`) || existsSync(`${base}.tsx`);
+}
+
+/** Remove declaration files emitted for TypeDoc (vue-tsc). */
+export function cleanupEmittedDeclarationArtifacts(packageDir: string): number {
+  let removed = 0;
+  const outDir = getDeclarationOutDir(packageDir);
+  if (existsSync(outDir)) {
+    removed += countFilesInDir(outDir);
+    rmSync(outDir, { recursive: true, force: true });
+  }
+  removed += removeEmittedDeclarationsInTree(packageDir);
+  return removed;
+}
+
+function countFilesInDir(dir: string): number {
+  let count = 0;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      count += countFilesInDir(fullPath);
+    } else {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function removeEmittedDeclarationsInTree(dir: string): number {
+  let removed = 0;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (DECLARATION_CLEANUP_SKIP_DIRS.has(entry.name)) {
+      continue;
+    }
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      removed += removeEmittedDeclarationsInTree(fullPath);
+      continue;
+    }
+    if (
+      (entry.name.endsWith(".d.ts") || entry.name.endsWith(".d.ts.map")) &&
+      isEmittedDeclarationArtifact(fullPath)
+    ) {
+      unlinkSync(fullPath);
+      removed += 1;
+    }
+  }
+  return removed;
 }
 
 export function emitVueDeclarations(

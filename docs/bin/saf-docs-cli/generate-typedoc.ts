@@ -90,6 +90,9 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
       JSON.stringify(
         {
           extends: tsconfigBase,
+          compilerOptions: {
+            noEmit: true,
+          },
           exclude: [
             "**/*.test.ts",
             "**/*.test.tsx",

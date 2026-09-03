@@ -4,6 +4,7 @@ import { Command } from "commander";
 import { buildMonorepoContext } from "@saflib/monorepo/workspace";
 import { generateCommand } from "./generate.ts";
 import { addGenerateAllCommand } from "./generate-all.ts";
+import { cleanupAllDeclarationArtifacts } from "./cleanup-declarations.ts";
 import { setupContext } from "@saflib/commander";
 
 const monorepoContext = buildMonorepoContext();
@@ -20,6 +21,15 @@ program
   });
 
 addGenerateAllCommand(program);
+
+program
+  .command("cleanup-declarations")
+  .description(
+    "Remove emitted .d.ts and .d.ts.map files left in package source trees.",
+  )
+  .action(() => {
+    cleanupAllDeclarationArtifacts(monorepoContext);
+  });
 
 const packagesSorted = Array.from(monorepoContext.packages).sort();
 

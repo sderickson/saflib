@@ -3,7 +3,10 @@ import {
   getCurrentPackageName,
 } from "@saflib/monorepo/workspace";
 import { generateTypeDoc } from "./generate-typedoc.ts";
-import { isVuePackage } from "./generate-typedoc-vue.ts";
+import {
+  cleanupEmittedDeclarationArtifacts,
+  isVuePackage,
+} from "./generate-typedoc-vue.ts";
 import {
   generateVueComponentDocs,
   patchVueRefIndex,
@@ -26,16 +29,23 @@ export const generateCommand = (options: GenerateOptions) => {
   const packageJson = monorepoContext.monorepoPackageJsons[targetPackage];
   const vuePackage = isVuePackage(packageDir, packageJson);
 
-  generateTypeDoc({ monorepoContext, packageName: targetPackage });
+  try {
+    generateTypeDoc({ monorepoContext, packageName: targetPackage });
 
-  if (vuePackage) {
-    generateVueComponentDocs({ packageDir, packageJson });
-    patchVueRefIndex(packageDir);
+    if (vuePackage) {
+      generateVueComponentDocs({ packageDir, packageJson });
+      patchVueRefIndex(packageDir);
+    }
+    generateCliDocs({ monorepoContext, packageName: targetPackage });
+    generateEnvDocs({ monorepoContext, packageName: targetPackage });
+    generateWorkflowDocs({ monorepoContext, packageName: targetPackage });
+
+    console.log(`Formatting docs for ${targetPackage}`);
+    formatPath(path.join(packageDir, "docs"));
+  } finally {
+    if (vuePackage) {
+      console.log("\nCleaning up emitted declaration artifacts...");
+      cleanupEmittedDeclarationArtifacts(packageDir);
+    }
   }
-  generateCliDocs({ monorepoContext, packageName: targetPackage });
-  generateEnvDocs({ monorepoContext, packageName: targetPackage });
-  generateWorkflowDocs({ monorepoContext, packageName: targetPackage });
-
-  console.log(`Formatting docs for ${targetPackage}`);
-  formatPath(path.join(packageDir, "docs"));
 };
