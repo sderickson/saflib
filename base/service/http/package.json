@@ -18,6 +18,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/analytics-http": "*",
     "@saflib/base-__offshoot-name__-http": "*",
     "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
@@ -27,11 +28,13 @@
     "@saflib/base-spec": "*",
     "@saflib/cron-http": "*",
     "@saflib/email-service": "*",
+    "@saflib/errors-http": "*",
     "@saflib/express": "*",
     "@saflib/vendors-brevo": "*",
     "@saflib/jobs": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
+    "@saflib/node-log-http": "*",
     "@saflib/node-metrics-http": "*",
     "http-errors": "^2.0.0"
   },

@@ -1,22 +1,30 @@
 # Overview
 
-The errors suite captures client, server, and CSP errors into an in-memory ring buffer and exposes them for admin review and smoke testing.
+The errors suite captures client, server, and CSP errors and exposes them for admin review and smoke testing.
 
-`createErrorsRouter` is mounted on every API service that uses `@saflib/express` global middleware. Server errors are collected via `installReportedErrorCollector` (wired by `@saflib/vendors-sentry-node` `configureSentry()` at service boot). In production you should instead forward errors to a third-party service such as Sentry.
+The errors suite provides:
 
-## Integration
+- An `ErrorService` abstraction with an in-memory mock for development
+- Express routes for recording and listing errors in the ring buffer
+- Client-side reporting helpers and an admin Errors page
 
-The expected way to integrate these into your service is:
+In development, `@saflib/base-monolith` calls `configureMockErrors()` and mounts the mock error routes. In production, wire a real implementation such as `@saflib/vendors-sentry-node` `configureSentry()` at service startup.
 
-- Include the error router in your product's http package.
-- Call `configureSentry()` (or `installReportedErrorCollector()` directly) at service startup to record server errors in the buffer.
-- Add `@saflib/errors-vue` pages to the admin SPA for browsing reported errors and triggering test failures.
+## Package structure and integration
+
+See [base HTTP](https://github.com/sderickson/saflib/tree/main/base/service/http) and [base admin SPA](https://github.com/sderickson/saflib/tree/main/base/clients/admin), which mount the mock error service and Errors page in development only. The expected way to integrate these into your service is:
+
+- Call `configureMockErrors()` from `@saflib/errors-service` at boot in development.
+- Mount `createDevErrorsRouter` from `@saflib/errors-http` on your API in development.
+- Add `@saflib/errors-vue` pages to the admin SPA for browsing reported errors.
+- In production, call `configureSentry()` (or another vendor helper) to register a real `ErrorService`.
 
 ## Packages
 
-| Package               | Role                                                           |
-| --------------------- | -------------------------------------------------------------- |
-| `@saflib/errors-spec` | OpenAPI spec and shared types                                  |
-| `@saflib/errors-http` | In-memory ring buffer and Express routes                       |
-| `@saflib/errors-sdk`  | TanStack Query hooks for recording and listing errors          |
-| `@saflib/errors-vue`  | Client reporting helpers, smoke widgets, and admin Errors page |
+| Package | Role |
+| --- | --- |
+| `@saflib/errors-spec` | OpenAPI spec and shared types |
+| `@saflib/errors-service` | `ErrorService` abstraction and in-memory mock |
+| `@saflib/errors-http` | Express routes backed by the configured error service |
+| `@saflib/errors-sdk` | TanStack Query hooks for recording and listing errors |
+| `@saflib/errors-vue` | Client reporting helpers, smoke widgets, and admin Errors page |

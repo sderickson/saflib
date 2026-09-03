@@ -4,7 +4,7 @@ import {
   recordReportedError,
   resetReportedErrorBufferForTests,
   setReportedErrorBufferCapacityForTests,
-} from "./reportedErrorBuffer.ts";
+} from "./in-memory/reportedErrorBuffer.ts";
 
 describe("reportedErrorBuffer", () => {
   beforeEach(() => {
@@ -31,18 +31,18 @@ describe("reportedErrorBuffer", () => {
 
   it("filters by kind and source", () => {
     recordReportedError({
-      kind: "csp-violation",
-      message: "csp",
-      source: "browser",
+      kind: "client",
+      message: "a",
+      source: "web-admin",
     });
     recordReportedError({
-      kind: "client",
-      message: "client",
-      source: "web-auth",
+      kind: "server",
+      message: "b",
+      source: "http",
     });
 
-    expect(listReportedErrors({ kind: "csp-violation" })).toHaveLength(1);
-    expect(listReportedErrors({ source: "auth" })).toHaveLength(1);
+    expect(listReportedErrors({ kind: "client" })).toHaveLength(1);
+    expect(listReportedErrors({ source: "admin" })).toHaveLength(1);
   });
 
   it("evicts oldest entries when over capacity", () => {
@@ -53,7 +53,7 @@ describe("reportedErrorBuffer", () => {
 
     const entries = listReportedErrors();
     expect(entries).toHaveLength(2);
-    expect(entries[0]?.message).toBe("b");
-    expect(entries[1]?.message).toBe("c");
+    expect(entries[0].message).toBe("b");
+    expect(entries[1].message).toBe("c");
   });
 });

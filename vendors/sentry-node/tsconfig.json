@@ -30,7 +30,7 @@
       "path": "../../env"
     },
     {
-      "path": "../../errors/errors-http"
+      "path": "../../errors/errors-service"
     },
     {
       "path": "../../node"

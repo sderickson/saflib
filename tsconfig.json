@@ -200,6 +200,9 @@
       "path": "./env"
     },
     {
+      "path": "./errors/errors-service"
+    },
+    {
       "path": "./errors/errors-http"
     },
     {

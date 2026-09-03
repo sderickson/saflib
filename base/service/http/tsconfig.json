@@ -6,7 +6,13 @@
       "path": "../../../cron/cron-http"
     },
     {
+      "path": "../../../analytics/analytics-http"
+    },
+    {
       "path": "../../../email/email-service"
+    },
+    {
+      "path": "../../../errors/errors-http"
     },
     {
       "path": "../../../express"
@@ -19,6 +25,9 @@
     },
     {
       "path": "../../../monorepo"
+    },
+    {
+      "path": "../../../node-log/node-log-http"
     },
     {
       "path": "../../../node-metrics/node-metrics-http"

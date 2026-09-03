@@ -1,6 +1,14 @@
-import { addErrorCollector } from "@saflib/node";
-import type { ErrorCollectorParam } from "@saflib/node";
-import { recordReportedError } from "./reportedErrorBuffer.ts";
+import { addErrorCollector, type ErrorCollectorParam } from "@saflib/node";
+import type {
+  ErrorService,
+  ListReportedErrorsOptions,
+  ReportedErrorInput,
+  ReportedErrorRecord,
+} from "../types.ts";
+import {
+  listReportedErrors,
+  recordReportedError,
+} from "./reportedErrorBuffer.ts";
 
 const CSP_INGEST_MESSAGE = "Content-Security-Policy violation (ingested)";
 
@@ -33,12 +41,22 @@ function recordFromCollector(param: ErrorCollectorParam): void {
   });
 }
 
-/**
- * Wire the error ring buffer collector (without Sentry). Safe to call once at boot.
- * For Sentry forwarding, use `@saflib/vendors-sentry-node` `configureSentry()`.
- */
-export function installReportedErrorCollector(): void {
-  addErrorCollector(recordFromCollector);
+export class InMemoryErrorService implements ErrorService {
+  readonly isMocked = true;
+
+  recordReportedError(input: ReportedErrorInput): ReportedErrorRecord {
+    return recordReportedError(input);
+  }
+
+  listReportedErrors(
+    options?: ListReportedErrorsOptions,
+  ): ReportedErrorRecord[] {
+    return listReportedErrors(options);
+  }
+
+  installServerCollector(): void {
+    addErrorCollector(recordFromCollector);
+  }
 }
 
 export { CSP_INGEST_MESSAGE };

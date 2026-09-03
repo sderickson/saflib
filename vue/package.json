@@ -7,6 +7,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./dev-product-events": "./src/dev-product-events.ts",
     "./useResolvedHref": "./src/useResolvedHref.ts",
     "./components": "./components/index.ts",
     "./composables/useAsyncPageErrorComponent": "./composables/useAsyncPageErrorComponent.ts",
@@ -26,6 +27,8 @@
     "typecheck:workflows": "tsc --project tsconfig.workflows.json"
   },
   "dependencies": {
+    "@saflib/analytics-sdk": "*",
+    "@saflib/analytics-spec": "*",
     "@saflib/links": "*",
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",

@@ -25,6 +25,9 @@
       "path": "../../node"
     },
     {
+      "path": "../errors-service"
+    },
+    {
       "path": "../errors-spec"
     }
   ]

@@ -1,24 +1,10 @@
+import type {
+  ListReportedErrorsOptions,
+  ReportedErrorInput,
+  ReportedErrorRecord,
+} from "../types.ts";
+
 const DEFAULT_CAPACITY = 1000;
-
-export type ReportedErrorKind = "csp-violation" | "client" | "server" | "test";
-
-export interface ReportedErrorInput {
-  kind: ReportedErrorKind;
-  message: string;
-  stack?: string;
-  metadata?: Record<string, unknown>;
-  source: string;
-}
-
-export interface ReportedErrorRecord {
-  id: number;
-  kind: ReportedErrorKind;
-  message: string;
-  stack?: string;
-  metadata: Record<string, unknown>;
-  source: string;
-  timestamp: string;
-}
 
 let nextId = 1;
 const buffer: ReportedErrorRecord[] = [];
@@ -36,10 +22,6 @@ function jsonSafe(value: unknown): Record<string, unknown> {
   }
 }
 
-/**
- * Append a reported error to the in-memory ring buffer.
- * Used by HTTP handlers and server-side error collectors.
- */
 export function recordReportedError(
   input: ReportedErrorInput,
 ): ReportedErrorRecord {
@@ -59,12 +41,9 @@ export function recordReportedError(
   return record;
 }
 
-/** Snapshot of buffered reported errors. */
-export function listReportedErrors(options?: {
-  kind?: ReportedErrorKind;
-  source?: string;
-  limit?: number;
-}): ReportedErrorRecord[] {
+export function listReportedErrors(
+  options?: ListReportedErrorsOptions,
+): ReportedErrorRecord[] {
   let entries = buffer.slice();
   if (options?.kind) {
     entries = entries.filter((entry) => entry.kind === options.kind);
@@ -81,14 +60,12 @@ export function listReportedErrors(options?: {
   return entries;
 }
 
-/** Clear buffer and reset ids — for tests only. */
 export function resetReportedErrorBufferForTests(): void {
   buffer.length = 0;
   nextId = 1;
   capacity = DEFAULT_CAPACITY;
 }
 
-/** Override ring buffer capacity — for tests only. */
 export function setReportedErrorBufferCapacityForTests(
   nextCapacity: number,
 ): void {

@@ -19,13 +19,12 @@
     "@saflib/base-service-common": "*",
     "@saflib/base-spec": "*",
     "@saflib/env": "*",
-    "@saflib/errors-http": "*",
+    "@saflib/errors-service": "*",
     "@saflib/express": "*",
     "@saflib/jobs": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
-    "@saflib/vendors-loki": "*",
-    "@saflib/vendors-sentry-node": "*"
+    "@saflib/vendors-loki": "*"
   },
   "sideEffects": false,
   "imports": {

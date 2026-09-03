@@ -9,6 +9,9 @@ import express, { type Router } from "express";
 import type { Request } from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { createEmailsRouter } from "@saflib/email-service";
+import { createDevErrorsRouter, createErrorsRouter } from "@saflib/errors-http";
+import { createDevAnalyticsRouter } from "@saflib/analytics-http";
+import { createDevLogsRouter } from "@saflib/node-log-http";
 import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 import { baseDb } from "@saflib/base-db/instances";
 import {
@@ -85,11 +88,18 @@ export function buildBaseHttpApp(
     });
   });
 
-  // Mock email inspection (GET /email/sent) — development only; before auth gate.
+  // Production error routes — before auth gate.
+  app.use(createErrorsRouter());
+
+  // Development-only observability routes — before auth gate.
   if (isDevelopmentDeployment()) {
+    app.use(createDevLogsRouter());
+    app.use(createDevAnalyticsRouter());
     app.use(
       createEmailsRouter({ emailService: resolveEmailServiceFromEnv() }),
     );
+    app.use(createDevErrorsRouter());
+    app.use(createMetricsRouter());
   }
 
   // Resolve identity into SafContext before the global auth gate / route handlers.
@@ -110,10 +120,6 @@ export function buildBaseHttpApp(
   });
 
   app.use(baseAuditRecorderMiddleware());
-
-  if (isDevelopmentDeployment()) {
-    app.use(createMetricsRouter());
-  }
 
   for (const mount of options.mounts) {
     app.use(mount.createRouter());
