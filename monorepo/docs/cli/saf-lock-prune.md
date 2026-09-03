@@ -1,8 +1,9 @@
 # saf-lock-prune
 
-Prune stale workspace entries from the product `package-lock.json`, verify that
-`saflib/node_modules` is not being used as an install target, and flag product
-packages that declare npm dependencies saflib already owns.
+Prune stale workspace entries from the product `package-lock.json`, remove
+product declarations of npm packages saflib already owns, and hoist misplaced
+peer dependencies from `saflib/node_modules` to the product root in the
+lockfile.
 
 Run from the product root:
 

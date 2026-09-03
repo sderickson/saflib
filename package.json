@@ -17,33 +17,11 @@
     "/**"
   ],
   "devDependencies": {
-    "@saflib/vue": "*",
-    "@types/node": "^24.3.0",
-    "@vue/tsconfig": "^0.9.1",
-    "better-sqlite3": "12.11.1",
-    "typescript": "~6.0.0",
-    "vite": "8.0.13",
-    "vue-router": "^5.0.0",
+    "vitest": "^3.2.4",
     "vue-tsc": "^3.0.6"
   },
   "engines": {
     "node": ">=22"
-  },
-  "dependencies": {
-    "@saflib/dev-tools": "*",
-    "@saflib/docker": "*",
-    "@saflib/docs": "*",
-    "@saflib/secret-store": "file:secret-store",
-    "@saflib/vendors-azure": "file:vendors/azure",
-    "@saflib/vendors-brevo": "file:vendors/brevo",
-    "@saflib/vendors-gcs": "file:vendors/gcs",
-    "@saflib/vendors-infisical": "file:vendors/infisical",
-    "@saflib/vendors-loki": "file:vendors/loki",
-    "@saflib/vendors-posthog": "file:vendors/posthog",
-    "@saflib/vendors-posthog-client": "file:vendors/posthog-client",
-    "@saflib/vendors-sentry-client": "file:vendors/sentry-client",
-    "@saflib/vendors-sentry-node": "file:vendors/sentry-node",
-    "saflib-workflows": "^0.2.0"
   },
   "overrides": {
     "vue-router": "^5.0.0",

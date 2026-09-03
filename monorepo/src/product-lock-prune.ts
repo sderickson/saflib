@@ -2,7 +2,6 @@ import {
   existsSync,
   readFileSync,
   readdirSync,
-  rmSync,
   writeFileSync,
 } from "node:fs";
 import { createInterface } from "node:readline/promises";
@@ -16,12 +15,6 @@ const DEP_FIELDS = [
   "optionalDependencies",
 ] as const;
 
-const SAFLIB_NODE_MODULES_IGNORE = new Set([
-  ".cache",
-  ".tmp",
-  ".vite-temp",
-]);
-
 type DepField = (typeof DEP_FIELDS)[number];
 
 interface PackageJsonDeps {
@@ -29,22 +22,26 @@ interface PackageJsonDeps {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
   optionalDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
 }
 
 interface LockPackageEntry {
   version?: string;
   resolved?: string;
   link?: boolean;
+  [key: string]: unknown;
 }
 
 interface PackageLock {
   packages?: Record<string, LockPackageEntry | undefined>;
 }
 
-export interface SaflibNodeModulesIssue {
-  kind: "saflib-node-modules";
-  path: string;
-  packages: string[];
+export interface HoistingHazardIssue {
+  kind: "hoisting-hazard";
+  peer: string;
+  requiredBy: string;
+  saflibLockfileKey: string;
+  rootLockfileKey: string;
 }
 
 export interface CompetingDependencyIssue {
@@ -57,6 +54,15 @@ export interface CompetingDependencyIssue {
   saflibSpecs: string[];
 }
 
+export interface RedundantDependencyIssue {
+  kind: "redundant-dependency";
+  packageJsonPath: string;
+  packageName: string;
+  field: DepField;
+  dependency: string;
+  spec: string;
+}
+
 export interface StaleLockfileIssue {
   kind: "stale-lockfile";
   lockfilePath: string;
@@ -65,23 +71,17 @@ export interface StaleLockfileIssue {
 }
 
 export type LockPruneIssue =
-  | SaflibNodeModulesIssue
+  | HoistingHazardIssue
   | CompetingDependencyIssue
+  | RedundantDependencyIssue
   | StaleLockfileIssue;
-
-export interface RedundantDependencyWarning {
-  packageJsonPath: string;
-  packageName: string;
-  field: DepField;
-  dependency: string;
-  spec: string;
-}
 
 export interface LockPruneAnalysis {
   rootDir: string;
   saflibDir: string;
+  lockfilePath: string;
   issues: LockPruneIssue[];
-  warnings: RedundantDependencyWarning[];
+  warnings: RedundantDependencyIssue[];
 }
 
 export interface LockPruneOptions {
@@ -126,18 +126,21 @@ function collectDependencySpecs(
   return out;
 }
 
-export function inspectSaflibNodeModules(
-  saflibDir: string,
-): SaflibNodeModulesIssue | null {
-  const nodeModulesPath = path.join(saflibDir, "node_modules");
-  if (!existsSync(nodeModulesPath)) return null;
+function lockfileKeyForPackage(nodeModulesPrefix: string, packageName: string): string {
+  if (packageName.startsWith("@")) {
+    const [scope, name] = packageName.split("/");
+    return path.posix.join(nodeModulesPrefix, scope, name);
+  }
+  return path.posix.join(nodeModulesPrefix, packageName);
+}
 
-  const packages: string[] = [];
-  for (const entry of readdirSync(nodeModulesPath)) {
-    if (entry.startsWith(".") || SAFLIB_NODE_MODULES_IGNORE.has(entry)) {
-      continue;
-    }
-    const entryPath = path.join(nodeModulesPath, entry);
+function listInstalledPackageNames(nodeModulesDir: string): Set<string> {
+  const names = new Set<string>();
+  if (!existsSync(nodeModulesDir)) return names;
+
+  for (const entry of readdirSync(nodeModulesDir)) {
+    if (entry.startsWith(".")) continue;
+    const entryPath = path.join(nodeModulesDir, entry);
     if (entry.startsWith("@")) {
       let scopedEntries: string[];
       try {
@@ -147,25 +150,93 @@ export function inspectSaflibNodeModules(
       }
       for (const scopedEntry of scopedEntries) {
         if (existsSync(path.join(entryPath, scopedEntry, "package.json"))) {
-          packages.push(`${entry}/${scopedEntry}`);
+          names.add(`${entry}/${scopedEntry}`);
         }
       }
       continue;
     }
     if (existsSync(path.join(entryPath, "package.json"))) {
-      packages.push(entry);
+      names.add(entry);
     }
   }
 
-  if (packages.length === 0) return null;
-  packages.sort();
-  return { kind: "saflib-node-modules", path: nodeModulesPath, packages };
+  return names;
 }
 
-export function findCompetingDependencies(
+function listPackageDirectories(nodeModulesDir: string): string[] {
+  const dirs: string[] = [];
+  if (!existsSync(nodeModulesDir)) return dirs;
+
+  for (const entry of readdirSync(nodeModulesDir)) {
+    if (entry.startsWith(".")) continue;
+    const entryPath = path.join(nodeModulesDir, entry);
+    if (entry.startsWith("@")) {
+      let scopedEntries: string[];
+      try {
+        scopedEntries = readdirSync(entryPath);
+      } catch {
+        continue;
+      }
+      for (const scopedEntry of scopedEntries) {
+        const pkgDir = path.join(entryPath, scopedEntry);
+        if (existsSync(path.join(pkgDir, "package.json"))) {
+          dirs.push(pkgDir);
+        }
+      }
+      continue;
+    }
+    if (existsSync(path.join(entryPath, "package.json"))) {
+      dirs.push(entryPath);
+    }
+  }
+
+  return dirs;
+}
+
+export function findHoistingHazards(rootDir: string): HoistingHazardIssue[] {
+  const rootNodeModules = path.join(rootDir, "node_modules");
+  const saflibNodeModules = path.join(rootDir, "saflib", "node_modules");
+  if (!existsSync(rootNodeModules) || !existsSync(saflibNodeModules)) {
+    return [];
+  }
+
+  const rootPackages = listInstalledPackageNames(rootNodeModules);
+  const saflibPackages = listInstalledPackageNames(saflibNodeModules);
+  const hazards: HoistingHazardIssue[] = [];
+
+  for (const packageDir of listPackageDirectories(rootNodeModules)) {
+    const pkg = JSON.parse(
+      readFileSync(path.join(packageDir, "package.json"), "utf8"),
+    ) as PackageJsonDeps;
+    const peerDependencies = pkg.peerDependencies ?? {};
+    const requiredBy = pkg.name ?? path.basename(packageDir);
+
+    for (const peer of Object.keys(peerDependencies)) {
+      if (rootPackages.has(peer)) continue;
+      if (!saflibPackages.has(peer)) continue;
+      hazards.push({
+        kind: "hoisting-hazard",
+        peer,
+        requiredBy,
+        saflibLockfileKey: lockfileKeyForPackage(
+          "saflib/node_modules",
+          peer,
+        ),
+        rootLockfileKey: lockfileKeyForPackage("node_modules", peer),
+      });
+    }
+  }
+
+  return hazards.sort(
+    (a, b) =>
+      a.peer.localeCompare(b.peer) || a.requiredBy.localeCompare(b.requiredBy),
+  );
+}
+
+function buildSaflibSpecs(
   rootDir: string,
   packageIndex: ReturnType<typeof buildPackageIndex>,
-): CompetingDependencyIssue[] {
+): Map<string, Set<string>> {
   const saflibSpecs = new Map<string, Set<string>>();
 
   for (const [, info] of packageIndex) {
@@ -181,7 +252,16 @@ export function findCompetingDependencies(
     }
   }
 
+  return saflibSpecs;
+}
+
+export function findCompetingDependencies(
+  rootDir: string,
+  packageIndex: ReturnType<typeof buildPackageIndex>,
+): CompetingDependencyIssue[] {
+  const saflibSpecs = buildSaflibSpecs(rootDir, packageIndex);
   const issues: CompetingDependencyIssue[] = [];
+
   for (const [, info] of packageIndex) {
     if (isSaflibPackageDir(rootDir, info.dir)) continue;
     const packageJsonPath = path.join(info.dir, "package.json");
@@ -210,35 +290,35 @@ export function findCompetingDependencies(
   );
 }
 
+function isProductAppPackage(packageJsonPath: string, rootDir: string): boolean {
+  const rel = path
+    .relative(rootDir, packageJsonPath)
+    .split(path.sep)
+    .join("/");
+  return !rel.startsWith("clients/") && !rel.startsWith("deploy/");
+}
+
 export function findRedundantDependencies(
   rootDir: string,
   packageIndex: ReturnType<typeof buildPackageIndex>,
-): RedundantDependencyWarning[] {
-  const saflibSpecs = new Map<string, Set<string>>();
+  options: { fixableOnly?: boolean } = {},
+): RedundantDependencyIssue[] {
+  const saflibSpecs = buildSaflibSpecs(rootDir, packageIndex);
+  const issues: RedundantDependencyIssue[] = [];
 
-  for (const [, info] of packageIndex) {
-    if (!isSaflibPackageDir(rootDir, info.dir)) continue;
-    const pkg = JSON.parse(
-      readFileSync(path.join(info.dir, "package.json"), "utf8"),
-    ) as PackageJsonDeps;
-    for (const { name, spec } of collectDependencySpecs(pkg)) {
-      if (isProductOwnedDependencyName(name, spec)) continue;
-      const specs = saflibSpecs.get(name) ?? new Set<string>();
-      specs.add(spec);
-      saflibSpecs.set(name, specs);
-    }
-  }
-
-  const warnings: RedundantDependencyWarning[] = [];
   for (const [, info] of packageIndex) {
     if (isSaflibPackageDir(rootDir, info.dir)) continue;
     const packageJsonPath = path.join(info.dir, "package.json");
+    if (options.fixableOnly && !isProductAppPackage(packageJsonPath, rootDir)) {
+      continue;
+    }
     const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps;
     for (const { field, name, spec } of collectDependencySpecs(pkg)) {
       if (isProductOwnedDependencyName(name, spec)) continue;
       const ownedSpecs = saflibSpecs.get(name);
       if (!ownedSpecs?.has(spec)) continue;
-      warnings.push({
+      issues.push({
+        kind: "redundant-dependency",
         packageJsonPath,
         packageName: pkg.name ?? packageJsonPath,
         field,
@@ -248,7 +328,7 @@ export function findRedundantDependencies(
     }
   }
 
-  return warnings.sort(
+  return issues.sort(
     (a, b) =>
       a.dependency.localeCompare(b.dependency) ||
       a.packageJsonPath.localeCompare(b.packageJsonPath),
@@ -295,9 +375,34 @@ export function pruneStaleLockfileEntries(
   };
 }
 
-export function analyzeProductLockPrune(
-  rootDir: string,
-): LockPruneAnalysis {
+export function hoistMisplacedLockfilePeers(
+  lockfile: PackageLock,
+  hazards: HoistingHazardIssue[],
+): string[] {
+  const packages = lockfile.packages ?? {};
+  const hoisted: string[] = [];
+
+  for (const hazard of hazards) {
+    if (packages[hazard.rootLockfileKey]) continue;
+    const nestedEntry = packages[hazard.saflibLockfileKey];
+    if (!nestedEntry) continue;
+
+    packages[hazard.rootLockfileKey] = { ...nestedEntry };
+    const keysToDelete = Object.keys(packages).filter(
+      (key) =>
+        key === hazard.saflibLockfileKey ||
+        key.startsWith(`${hazard.saflibLockfileKey}/`),
+    );
+    for (const key of keysToDelete) {
+      delete packages[key];
+    }
+    hoisted.push(hazard.peer);
+  }
+
+  return hoisted;
+}
+
+export function analyzeProductLockPrune(rootDir: string): LockPruneAnalysis {
   const saflibDir = path.join(rootDir, "saflib");
   if (!existsSync(path.join(saflibDir, "package.json"))) {
     throw new Error(
@@ -311,29 +416,45 @@ export function analyzeProductLockPrune(
   }
 
   const packageIndex = buildPackageIndex(rootDir);
-  const issues: LockPruneIssue[] = [];
-
-  const saflibNodeModules = inspectSaflibNodeModules(saflibDir);
-  if (saflibNodeModules) issues.push(saflibNodeModules);
-
-  issues.push(...findCompetingDependencies(rootDir, packageIndex));
-
-  const warnings = findRedundantDependencies(rootDir, packageIndex);
-
   const lockfile = JSON.parse(readFileSync(lockfilePath, "utf8")) as PackageLock;
+  const redundant = findRedundantDependencies(rootDir, packageIndex);
+  const fixableRedundant = findRedundantDependencies(rootDir, packageIndex, {
+    fixableOnly: true,
+  });
+  const warnings = redundant.filter(
+    (issue) =>
+      !fixableRedundant.some(
+        (fixable) =>
+          fixable.packageJsonPath === issue.packageJsonPath &&
+          fixable.dependency === issue.dependency &&
+          fixable.field === issue.field,
+      ),
+  );
+  const issues: LockPruneIssue[] = [
+    ...fixableRedundant,
+    ...findCompetingDependencies(rootDir, packageIndex),
+    ...findHoistingHazards(rootDir),
+  ];
+
   const staleLockfile = pruneStaleLockfileEntries(lockfile, rootDir);
   if (staleLockfile) issues.push(staleLockfile);
 
-  return { rootDir, saflibDir, issues, warnings };
+  return { rootDir, saflibDir, lockfilePath, issues, warnings };
 }
 
 function formatIssue(issue: LockPruneIssue): string[] {
   switch (issue.kind) {
-    case "saflib-node-modules":
+    case "hoisting-hazard":
       return [
-        `saflib/node_modules should not contain installed packages (install from the product root only).`,
-        `  path: ${issue.path}`,
-        `  packages (${issue.packages.length}): ${issue.packages.slice(0, 8).join(", ")}${issue.packages.length > 8 ? ", ..." : ""}`,
+        `${issue.peer} is only installed under saflib/node_modules but is a peer of root-hoisted ${issue.requiredBy}.`,
+        `  move lockfile entry: ${issue.saflibLockfileKey} -> ${issue.rootLockfileKey}`,
+      ];
+    case "redundant-dependency":
+      return [
+        `product redundantly declares ${issue.dependency}@${issue.spec} (saflib already owns it).`,
+        `  package: ${issue.packageName}`,
+        `  file: ${issue.packageJsonPath}`,
+        `  field: ${issue.field}`,
       ];
     case "competing-dependency":
       return [
@@ -360,53 +481,86 @@ async function defaultConfirm(message: string): Promise<boolean> {
   return /^y(es)?$/i.test(answer.trim());
 }
 
-function removeSaflibNodeModules(issue: SaflibNodeModulesIssue): void {
-  rmSync(issue.path, { recursive: true, force: true });
-}
-
-function removeCompetingDependency(issue: CompetingDependencyIssue): void {
-  const pkg = JSON.parse(
-    readFileSync(issue.packageJsonPath, "utf8"),
-  ) as PackageJsonDeps;
-  const fieldDeps = pkg[issue.field];
-  if (!fieldDeps?.[issue.dependency]) return;
-  delete fieldDeps[issue.dependency];
+function removeDeclaredDependency(
+  packageJsonPath: string,
+  field: DepField,
+  dependency: string,
+): void {
+  const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps;
+  const fieldDeps = pkg[field];
+  if (!fieldDeps?.[dependency]) return;
+  delete fieldDeps[dependency];
   if (Object.keys(fieldDeps).length === 0) {
-    delete pkg[issue.field];
+    delete pkg[field];
   }
-  writeFileSync(issue.packageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`);
+  writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`);
 }
 
-function writePrunedLockfile(issue: StaleLockfileIssue): void {
-  const lockfile = JSON.parse(
-    readFileSync(issue.lockfilePath, "utf8"),
-  ) as PackageLock;
-  pruneStaleLockfileEntries(lockfile, path.dirname(issue.lockfilePath));
-  writeFileSync(issue.lockfilePath, `${JSON.stringify(lockfile, null, 2)}\n`);
+function writePrunedLockfile(
+  lockfilePath: string,
+  mutate: (lockfile: PackageLock) => void,
+): void {
+  const lockfile = JSON.parse(readFileSync(lockfilePath, "utf8")) as PackageLock;
+  mutate(lockfile);
+  writeFileSync(lockfilePath, `${JSON.stringify(lockfile, null, 2)}\n`);
 }
 
 export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
   const applied: string[] = [];
+  const hoistingHazards: HoistingHazardIssue[] = [];
+  let wroteLockfile = false;
+
   for (const issue of analysis.issues) {
     switch (issue.kind) {
-      case "saflib-node-modules":
-        removeSaflibNodeModules(issue);
-        applied.push(`removed ${issue.path}`);
-        break;
-      case "competing-dependency":
-        removeCompetingDependency(issue);
+      case "redundant-dependency":
+        removeDeclaredDependency(
+          issue.packageJsonPath,
+          issue.field,
+          issue.dependency,
+        );
         applied.push(
-          `removed ${issue.dependency} from ${issue.packageJsonPath}`,
+          `removed redundant ${issue.dependency} from ${issue.packageJsonPath}`,
         );
         break;
+      case "competing-dependency":
+        removeDeclaredDependency(
+          issue.packageJsonPath,
+          issue.field,
+          issue.dependency,
+        );
+        applied.push(
+          `removed competing ${issue.dependency} from ${issue.packageJsonPath}`,
+        );
+        break;
+      case "hoisting-hazard":
+        hoistingHazards.push(issue);
+        break;
       case "stale-lockfile":
-        writePrunedLockfile(issue);
+        writePrunedLockfile(issue.lockfilePath, (lockfile) => {
+          pruneStaleLockfileEntries(lockfile, analysis.rootDir);
+        });
+        wroteLockfile = true;
         applied.push(
           `pruned ${issue.removedCount} stale lockfile entries in ${issue.lockfilePath}`,
         );
         break;
     }
   }
+
+  if (hoistingHazards.length > 0) {
+    writePrunedLockfile(analysis.lockfilePath, (lockfile) => {
+      const hoisted = hoistMisplacedLockfilePeers(lockfile, hoistingHazards);
+      for (const peer of hoisted) {
+        applied.push(`hoisted ${peer} to the product root in package-lock.json`);
+      }
+    });
+    wroteLockfile = true;
+  }
+
+  if (wroteLockfile) {
+    applied.push(`updated ${analysis.lockfilePath}`);
+  }
+
   return applied;
 }
 
@@ -427,7 +581,7 @@ export async function runLockPrune(
   console.log("");
 
   if (analysis.warnings.length > 0) {
-    console.log("Warnings:");
+    console.log("Warnings (not auto-fixed for clients/deploy packages):");
     for (const warning of analysis.warnings) {
       console.log(
         `  ${warning.dependency}@${warning.spec} in ${warning.packageJsonPath} is redundant (saflib already owns it).`,
