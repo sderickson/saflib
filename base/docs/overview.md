@@ -1,13 +1,7 @@
 # Overview
 
-The base suite is the golden product template that new SAF products fork from. It includes the monolith, HTTP service, admin and account SPAs, database schema, cron jobs, and shared dev tooling.
+The base package is a template for SAF products. It serves several purposes:
 
-Typical layout:
-
-- `@saflib/base-monolith` — main service entrypoint
-- `@saflib/base-http` — Express routes and handlers
-- `@saflib/base-db` — Drizzle schema and migrations
-- `@saflib/base-*-spa` — client applications (admin, account, app, auth)
-- `@saflib/base-dev` — local development scripts and workflows
-
-Nested packages under `base/service/` and `base/clients/` wire cross-cutting concerns (audit, cron, email, jobs) into the golden product.
+- Copied from to instantiate a new SAF product. See [the product init workflow](../../product/docs/workflows/init.md).
+- Used by most workflows to extend an existing (and conforming) SAF product with new pages, database tables, integrations, etc. Having product extensions in the base package keeps those files in context.
+- As a reference for people and agents to understand how all SAF products are _currently_ structured. If the platform and the product have diverged, it can help bring them back into alignment.

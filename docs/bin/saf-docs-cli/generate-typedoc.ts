@@ -123,8 +123,11 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
 
     wroteTypedocTsconfig ? "--tsconfig typedoc.tsconfig.json" : "",
 
-    // Packages with typedoc.json (e.g. vue) use alternate tsconfigs; skip TS noise.
-    hasPackageTypedoc || vuePackage ? "--skipErrorChecking" : "",
+    // Generated tsconfigs are for doc extraction; cross-package imports are not
+    // fully type-checkable without every dependency's declaration output.
+    hasPackageTypedoc || vuePackage || wroteTypedocTsconfig
+      ? "--skipErrorChecking"
+      : "",
 
     vuePackage ? "--plugin typedoc-plugin-vue" : "",
 
