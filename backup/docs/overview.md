@@ -8,12 +8,14 @@ Typical integration:
 - Use `@saflib/backup-sdk` in admin or tooling UIs.
 - Schedule backup tasks via `@saflib/backup-cron`.
 
+This suite is experimental. If your host offers a way to regularly take disk snapshots, that might be a better solution.
+
 ## Packages
 
-| Package | Role |
-| --- | --- |
-| `@saflib/backup-spec` | OpenAPI spec and shared types |
-| `@saflib/backup-http` | HTTP server |
-| `@saflib/backup-sdk` | TanStack Query hooks and shared components |
-| `@saflib/backup-cron` | Cron jobs for the backup service |
-| `@saflib/backup-service-common` | Shared types and utilities |
+| Package                         | Role                                       |
+| ------------------------------- | ------------------------------------------ |
+| `@saflib/backup-spec`           | OpenAPI spec and shared types              |
+| `@saflib/backup-http`           | HTTP server                                |
+| `@saflib/backup-sdk`            | TanStack Query hooks and shared components |
+| `@saflib/backup-cron`           | Cron jobs for the backup service           |
+| `@saflib/backup-service-common` | Shared types and utilities                 |
