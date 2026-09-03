@@ -17,6 +17,8 @@
     "e2e",
     "playwright-report",
     "test-results",
+    "**/*.test.ts",
+    "**/*.smoke.test.ts",
     "workflows/template/**",
     "workflows/templates/**",
     "**/workflows/template/**",
