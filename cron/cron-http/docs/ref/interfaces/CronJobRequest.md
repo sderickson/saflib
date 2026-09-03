@@ -1,6 +1,6 @@
 [**@saflib/cron-http**](../index.md)
 
-***
+---
 
 # Interface: CronJobRequest
 
@@ -13,14 +13,14 @@ Dynamic fan-out belongs in the target handler.
 
 > `optional` **body**: `unknown`
 
-***
+---
 
 ### path\_params?
 
-> `optional` **path\_params**: `Record`\<`string`, `unknown`\>
+> `optional` **path\_params**: `Record`\<`string`, `unknown`>\>
 
-***
+---
 
 ### query?
 
-> `optional` **query**: `Record`\<`string`, `unknown`\>
+> `optional` **query**: `Record`\<`string`, `unknown`>\>

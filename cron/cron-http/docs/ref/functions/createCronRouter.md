@@ -1,6 +1,6 @@
 [**@saflib/cron-http**](../index.md)
 
-***
+---
 
 # Function: createCronRouter()
 
@@ -16,8 +16,8 @@ Only handles `/cron/*` — other paths fall through so sibling chrome routers
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                        |
+| --------- | ----------------------------------------------------------- |
 | `options` | [`CronServiceOptions`](../interfaces/CronServiceOptions.md) |
 
 ## Returns

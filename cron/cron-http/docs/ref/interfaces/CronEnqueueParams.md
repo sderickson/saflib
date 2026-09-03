@@ -1,6 +1,6 @@
 [**@saflib/cron-http**](../index.md)
 
-***
+---
 
 # Interface: CronEnqueueParams
 
@@ -15,7 +15,7 @@ so `@saflib/cron-http` does not import `@saflib/jobs`.
 
 Defaults to `cron:{jobName}`.
 
-***
+---
 
 ### enabledBy
 
@@ -23,7 +23,7 @@ Defaults to `cron:{jobName}`.
 
 Admin who enabled the cron job (`job_settings.enabled_by`).
 
-***
+---
 
 ### jobName
 
@@ -31,7 +31,7 @@ Admin who enabled the cron job (`job_settings.enabled_by`).
 
 Cron job name (becomes `cron:{jobName}` callingOperationId / default dedupe).
 
-***
+---
 
 ### operationId
 
@@ -39,19 +39,19 @@ Cron job name (becomes `cron:{jobName}` callingOperationId / default dedupe).
 
 Target background operationId from the job's declarative enqueue config.
 
-***
+---
 
 ### priority?
 
 > `optional` **priority**: `number`
 
-***
+---
 
 ### request?
 
 > `optional` **request**: [`CronJobRequest`](CronJobRequest.md)
 
-***
+---
 
 ### requestId
 

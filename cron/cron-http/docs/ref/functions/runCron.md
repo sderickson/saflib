@@ -1,17 +1,17 @@
 [**@saflib/cron-http**](../index.md)
 
-***
+---
 
 # Function: runCron()
 
-> **runCron**(`options`): `Promise`\<`undefined` \| `CronJob`\<`null`, `null`\>[]\>
+> **runCron**(`options`): `Promise`\<`undefined` \| `CronJob`\<`null`, `null`>\>[]\>
 
 Runs the cron jobs until the process is killed. Returns an array of cron jobs.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                        |
+| --------- | ----------------------------------------------------------- |
 | `options` | [`CronServiceOptions`](../interfaces/CronServiceOptions.md) |
 
 ## Returns

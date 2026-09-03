@@ -1,6 +1,6 @@
 [**@saflib/cron-http**](../index.md)
 
-***
+---
 
 # Interface: CronEnqueueResult
 
