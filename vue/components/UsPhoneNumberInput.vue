@@ -18,6 +18,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * US phone number input that displays +1 formatting in the field and emits
+ * values in E.164 format for API calls.
+ */
 import { ref, computed, watch } from "vue";
 import {
   formatPhoneNumber,
@@ -27,11 +31,17 @@ import {
 } from "./phone-utils.ts";
 
 interface Props {
+  /** v-model value in E.164 format (for example, `+15551234567`). */
   modelValue?: string;
+  /** Additional Vuetify validation rules appended after the built-in phone rules. */
   rules?: Array<(value: string) => string | boolean>;
+  /** When true, the built-in phone validation treats the field as required. */
   required?: boolean;
+  /** Label shown on the underlying `v-text-field`. */
   label?: string;
+  /** Placeholder shown when the field is empty. */
   placeholder?: string;
+  /** External error messages passed through to `v-text-field`. */
   errorMessages?: string[];
 }
 
@@ -45,7 +55,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: "update:modelValue", value: string): void;
+  /** Emitted when the E.164 value changes. */
+  "update:modelValue": [value: string];
 }>();
 
 const displayValue = ref("");
@@ -53,7 +64,10 @@ const isFocused = ref(false);
 const inputRef = ref<{ focus: () => void } | null>(null);
 
 defineExpose({
-  focus: () => inputRef.value?.focus(),
+  /** Focus the underlying Vuetify text field. */
+  focus() {
+    inputRef.value?.focus();
+  },
 });
 
 // Handle input changes

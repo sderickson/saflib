@@ -59,6 +59,20 @@ export function getDeclarationOutDir(packageDir: string): string {
   return join(packageDir, "dist/types");
 }
 
+export function getVueComponentMetaTsconfig(packageDir: string): string | null {
+  for (const tsconfigName of ["tsconfig.app.json", "tsconfig.json"]) {
+    const tsconfigPath = join(packageDir, tsconfigName);
+    if (!existsSync(tsconfigPath)) {
+      continue;
+    }
+    const tsconfig = readFileSync(tsconfigPath, "utf-8");
+    if (tsconfig.includes("**/*.vue")) {
+      return tsconfigPath;
+    }
+  }
+  return null;
+}
+
 export function emitVueDeclarations(
   packageDir: string,
   packageJson: PackageJson,
@@ -103,24 +117,6 @@ export function buildVueTypedocEntryPoints(
     for (const file of readdirSync(composablesDir)) {
       if (file.endsWith(".d.ts")) {
         entryPoints.push(rel(join(composablesDir, file)));
-      }
-    }
-  }
-
-  const componentsDir = join(outDir, "components");
-  if (existsSync(componentsDir)) {
-    for (const file of readdirSync(componentsDir)) {
-      if (file.endsWith(".vue.d.ts")) {
-        entryPoints.push(rel(join(componentsDir, file)));
-      }
-    }
-  }
-
-  const pagesDir = join(outDir, "pages");
-  if (existsSync(pagesDir)) {
-    for (const file of readdirSync(pagesDir, { recursive: true })) {
-      if (typeof file === "string" && file.endsWith(".vue.d.ts")) {
-        entryPoints.push(rel(join(pagesDir, file)));
       }
     }
   }

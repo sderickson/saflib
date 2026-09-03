@@ -15,7 +15,8 @@
   "dependencies": {
     "@saflib/commander": "*",
     "@saflib/monorepo": "*",
-    "@saflib/utils": "*"
+    "@saflib/utils": "*",
+    "vue-component-meta": "^3.3.11"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

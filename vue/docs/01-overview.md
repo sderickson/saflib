@@ -120,3 +120,20 @@ Exports a `mountTestApp` function which wraps and extends Vue Test Utils' [`moun
 These use ones provided by `@saflib/vue` due to needs peculiar to Vue. For composite
 build conventions (app/node split, external references, query typing), see
 [@saflib/imports composite type guidance](../../imports/docs/04-composite-type-guidance.md).
+
+## Documenting components
+
+Vue SFC API reference pages are generated with `vue-component-meta` when you run
+`npm exec saf-docs generate` from a Vue package. Component docs land in
+`docs/ref/components/` and are linked from the package Code Reference index.
+
+Use these JSDoc patterns so props, models, emits, slots, and exposed members show up:
+
+- **Component** — block comment at the top of `<script setup>`
+- **Props** — `/** ... */` on fields in the props interface or inline in `defineProps<{ ... }>()`
+- **Models** — document the prop; `defineModel` and `v-model` props appear under **Models**
+- **Emits** — JSDoc on named-tuple entries in `defineEmits<{ ... }>()`
+- **Slots** — JSDoc on entries in `defineSlots<{ ... }>()`
+- **Exposed** — JSDoc on methods inside the `defineExpose({ ... })` object literal
+
+See [`UsPhoneNumberInput`](./ref/components/UsPhoneNumberInput.md) for a full example.
