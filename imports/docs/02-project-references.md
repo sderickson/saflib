@@ -1,4 +1,4 @@
-# TypeScript project references
+# TypeScript Projects
 
 SAF monorepos use TypeScript **composite** projects wired together with **project references**. Each workspace package typechecks on its own and emits declarations to `dist/types/`. The root solution (`vue-tsc -b` or `tsc -b`) walks that graph incrementally so edits rebuild only what changed.
 

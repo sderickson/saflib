@@ -1,4 +1,4 @@
-# Composite projects: type and import guidance
+# Type and Import Guide
 
 Conventions for writing TypeScript in SAF monorepos that use **composite** project
 references (`composite: true`, `emitDeclarationOnly`, per-package `dist/types/`).
