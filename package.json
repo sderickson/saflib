@@ -20,7 +20,7 @@
     "@saflib/vue": "*",
     "@vue/tsconfig": "^0.9.1",
     "better-sqlite3": "12.11.1",
-    "typescript": "~6.0.0",
+    "typescript": "~7.0.0",
     "vite": "8.0.16",
     "vue-router": "^5.0.0",
     "vue-tsc": "^3.0.6"
