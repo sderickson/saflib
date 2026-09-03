@@ -5,6 +5,12 @@
   },
   "references": [
     {
+      "path": "../commander"
+    },
+    {
+      "path": "../imports"
+    },
+    {
       "path": "../templates"
     },
     {
