@@ -39,8 +39,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@saflib/commander": "*",
-    "@saflib/imports": "*",
     "@saflib/templates": "*"
   }
 }
