@@ -119,7 +119,7 @@ Exports a `mountTestApp` function which wraps and extends Vue Test Utils' [`moun
 
 These use ones provided by `@saflib/vue` due to needs peculiar to Vue. For composite
 build conventions (app/node split, external references, query typing), see
-[@saflib/imports composite type guidance](../../imports/docs/04-composite-type-guidance.md).
+[@saflib/imports composite type guidance](../../imports/docs/03-composite-type-guidance.md).
 
 ## Documenting components
 

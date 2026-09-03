@@ -53,4 +53,4 @@ npm run typecheck -- --force
 
 ## Authoring types across packages
 
-See [composite type guidance](./04-composite-type-guidance.md) for import and typing conventions under project references.
+See [composite type guidance](./03-composite-type-guidance.md) for import and typing conventions under project references.

@@ -3,7 +3,7 @@
 Conventions for writing TypeScript in SAF monorepos that use **composite** project
 references (`composite: true`, `emitDeclarationOnly`, per-package `dist/types/`).
 
-This complements [03-project-references.md](./03-project-references.md) (tooling and
+This complements [project references](./02-project-references.md) (tooling and
 dev loop). It is aimed at humans and agents authoring or refactoring types across
 workspace packages.
 
