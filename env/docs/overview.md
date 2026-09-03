@@ -2,21 +2,11 @@
 
 `@saflib/env` provides some simple validation, typechecking, and CLI tools for env variables in SAF applications.
 
-## The Problem
+Use the [env/add-var workflow](./workflows/add-var.md) to add a new env variable to a package, or run `npm exec saf-env generate` in a package to generate an `env.ts` file with env variables from all dependencies for use in code.
 
-Environmental variables are standard inputs for running process. However, there isn't a standard way to specify what env variables a program expects, or what values it will accept.
+## Using env variables in SAF applications
 
-In a monorepo system it's worse. The package responsible for running the application may not itself use all the env variables it depends on directly. Other packages it depends on may expect their own variables. And sometimes multiple packages depend on the same variables or all expect certain ones to exist (e.g. `NODE_ENV`). There isn't a way to see, for a service, what are all the env variables it can accept or requires.
-
-## How `@saflib/env` Works
-
-This package provides tools for
-
-1. Specifying env variables for each package separately.
-2. Combining those schemas into larger schemas, or TypeScript types for individual package use.
-3. Validating those schemas at runtime.
-
-If a package would use an env variable not provided by some dependency, it should create an `env.schema.json` file in its root directory. This file should be structured like this:
+All env variables should be declared in an owning package's `env.schema.json` file, which are structured like this:
 
 ```json
 {
@@ -31,25 +21,7 @@ If a package would use an env variable not provided by some dependency, it shoul
 }
 ```
 
-Run `npm exec saf-env generate` in that package to generate an `env.ts` file. The generated file:
-
-- Declares an interface with **only this package's** schema properties.
-- `import type`s and `extends` the env interfaces of its **env parents** (direct workspace dependencies that have `env.ts` / `env.schema.json`, or an explicit `saf.envExtends` list in `package.json`).
-- Exports `typedEnv`, which is `process.env` cast to that composed type.
-
-Packages should also export `./env` from `package.json` so dependents can import the generated types:
-
-```json
-"exports": {
-  "./env": "./env.ts"
-}
-```
-
-To ensure env variables passed in at runtime are _actually_ valid, a package will need to validate against a combined schema when the application begins.
-
-To do this, go to whichever package is doing the validating (likely a `service` package or wherever execution begins) and run `npm exec saf-env generate -- --combined`. This will produce an `env.schema.combined.json` file which merges schemas along the same **env-parent graph** (not the full npm transitive closure of unrelated code dependencies). That package can then use `validateEnv` when the process begins. This function errors so the process will end if the environment is invalid.
-
-To regenerate all existing `env.ts` and `env.schema.combined.json` files in the workspace, run `npm exec saf-env generate-all`.
+These declarations are used to generate `env.ts` files so variables can be typed, and `env.schema.combined.json` so variables used by an application can be validated on startup, like [in the base application's `run.ts`](https://github.com/sderickson/saflib/blob/bc7f5cfc49d860a51877f577643998e058b77746/base/service/monolith/run.ts).
 
 ### Explicit env parents
 
