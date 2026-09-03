@@ -4,7 +4,7 @@
 
 # Type Alias: TransactionCallback\<S\>
 
-> **TransactionCallback**\<`S`\> = `Parameters`\<[`DbConnection`](DbConnection.md)\<`S`\>\[`"transaction"`\]\>\[`0`\]
+> **TransactionCallback**\<`S`> \> = `Parameters`\<[`DbConnection`](DbConnection.md)\<`S`>\>\[`"transaction"`\]\>\[`0`\]
 
 Convenience type; the first parameter of the `transaction` method, with a
 generic parameter for the schema.

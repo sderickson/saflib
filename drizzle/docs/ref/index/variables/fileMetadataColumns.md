@@ -13,25 +13,25 @@ non-file tables and file tables share the same timestamp pattern.
 
 ## Type declaration
 
-### blob_name
+### blob\_name
 
-> `readonly` **blob_name**: `NotNull`\<`SQLiteTextBuilderInitial`\<`"blob_name"`, \[`string`, `...string[]`\], `undefined` \| `number`\>\>
+> `readonly` **blob\_name**: `NotNull`\<`SQLiteTextBuilderInitial`\<`"blob_name"`, \[`string`, `...string[]`\], `undefined` \| `number`>>\>\>
 
-### file_original_name
+### file\_original\_name
 
-> `readonly` **file_original_name**: `NotNull`\<`SQLiteTextBuilderInitial`\<`"file_original_name"`, \[`string`, `...string[]`\], `undefined` \| `number`\>\>
+> `readonly` **file\_original\_name**: `NotNull`\<`SQLiteTextBuilderInitial`\<`"file_original_name"`, \[`string`, `...string[]`\], `undefined` \| `number`>>\>\>
 
-### md5_hash
+### md5\_hash
 
-> `readonly` **md5_hash**: `SQLiteTextBuilderInitial`\<`"md5_hash"`, \[`string`, `...string[]`\], `undefined` \| `number`\>
+> `readonly` **md5\_hash**: `SQLiteTextBuilderInitial`\<`"md5_hash"`, \[`string`, `...string[]`\], `undefined` \| `number`>\>
 
 ### mimetype
 
-> `readonly` **mimetype**: `NotNull`\<`SQLiteTextBuilderInitial`\<`"mimetype"`, \[`string`, `...string[]`\], `undefined` \| `number`\>\>
+> `readonly` **mimetype**: `NotNull`\<`SQLiteTextBuilderInitial`\<`"mimetype"`, \[`string`, `...string[]`\], `undefined` \| `number`>>\>\>
 
 ### size
 
-> `readonly` **size**: `NotNull`\<`SQLiteIntegerBuilderInitial`\<`"size"`\>\>
+> `readonly` **size**: `NotNull`\<`SQLiteIntegerBuilderInitial`\<`"size"`>>\>\>
 
 ## Example
 

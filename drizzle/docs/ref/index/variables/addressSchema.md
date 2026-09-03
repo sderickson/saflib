@@ -13,24 +13,24 @@ Use this in your table definitions for address fields.
 
 ### country
 
-> **country**: `SQLiteTextBuilderInitial`\<`"country"`, \[`string`, `...string[]`\], `undefined` \| `number`\>
+> **country**: `SQLiteTextBuilderInitial`\<`"country"`, \[`string`, `...string[]`\], `undefined` \| `number`>\>
 
 ### formatted
 
-> **formatted**: `SQLiteTextBuilderInitial`\<`"formatted"`, \[`string`, `...string[]`\], `undefined` \| `number`\>
+> **formatted**: `SQLiteTextBuilderInitial`\<`"formatted"`, \[`string`, `...string[]`\], `undefined` \| `number`>\>
 
 ### locality
 
-> **locality**: `SQLiteTextBuilderInitial`\<`"locality"`, \[`string`, `...string[]`\], `undefined` \| `number`\>
+> **locality**: `SQLiteTextBuilderInitial`\<`"locality"`, \[`string`, `...string[]`\], `undefined` \| `number`>\>
 
-### postal_code
+### postal\_code
 
-> **postal_code**: `SQLiteTextBuilderInitial`\<`"postal_code"`, \[`string`, `...string[]`\], `undefined` \| `number`\>
+> **postal\_code**: `SQLiteTextBuilderInitial`\<`"postal_code"`, \[`string`, `...string[]`\], `undefined` \| `number`>\>
 
 ### region
 
-> **region**: `SQLiteTextBuilderInitial`\<`"region"`, \[`string`, `...string[]`\], `undefined` \| `number`\>
+> **region**: `SQLiteTextBuilderInitial`\<`"region"`, \[`string`, `...string[]`\], `undefined` \| `number`>\>
 
-### street_address
+### street\_address
 
-> **street_address**: `SQLiteTextBuilderInitial`\<`"street_address"`, \[`string`, `...string[]`\], `undefined` \| `number`\>
+> **street\_address**: `SQLiteTextBuilderInitial`\<`"street_address"`, \[`string`, `...string[]`\], `undefined` \| `number`>\>

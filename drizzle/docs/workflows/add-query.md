@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow drizzle/add-query
-
 - Upsert 4 templates.
 - Implement the new query following the documentation guidelines.
 - Run `npm run typecheck`

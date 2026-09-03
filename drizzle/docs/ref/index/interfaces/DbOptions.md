@@ -30,7 +30,7 @@ If you need to override this behavior, set this to true.
 
 ### pragmas?
 
-> `optional` **pragmas**: `Record`\<`string`, `string` \| `number`\>
+> `optional` **pragmas**: `Record`\<`string`, `string` \| `number`>\>
 
 Optional SQLite pragmas applied immediately after the database connection
 is opened, before migrations run. Values are stringified and passed to

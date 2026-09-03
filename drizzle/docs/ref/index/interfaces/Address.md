@@ -26,9 +26,9 @@ A shared address type that can be used across the platform.
 
 ---
 
-### postal_code
+### postal\_code
 
-> **postal_code**: `null` \| `string`
+> **postal\_code**: `null` \| `string`
 
 ---
 
@@ -38,6 +38,6 @@ A shared address type that can be used across the platform.
 
 ---
 
-### street_address
+### street\_address
 
-> **street_address**: `null` \| `string`
+> **street\_address**: `null` \| `string`

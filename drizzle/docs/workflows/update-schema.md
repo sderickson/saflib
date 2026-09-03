@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow drizzle/update-schema
-
 - Upsert 2 templates.
 - Update example.ts to add the new table, or modify it.
 - Run `npm run typecheck`

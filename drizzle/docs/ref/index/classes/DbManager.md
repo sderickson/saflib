@@ -23,7 +23,7 @@ queries can use.
 
 ### Constructor
 
-> **new DbManager**\<`S`, `C`\>(`schema`, `c`, `rootUrl`, `options?`): `DbManager`\<`S`, `C`\>
+> **new DbManager**\<`S`, `C`>\>(`schema`, `c`, `rootUrl`, `options?`): `DbManager`\<`S`, `C`>\>
 
 #### Parameters
 
@@ -64,7 +64,7 @@ rotation so the process keeps the same key while replacing the file.
 
 ### backupTo()
 
-> **backupTo**(`key`, `destinationPath`): `Promise`\<`void`\>
+> **backupTo**(`key`, `destinationPath`): `Promise`\<`void`>\>
 
 Online SQLite backup of the database registered under `key` to `destinationPath`.
 Uses better-sqlite3's `db.backup()` (SQLite Online Backup API), so the
@@ -128,7 +128,7 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 ### createBackup()
 
-> **createBackup**(`key`): `Promise`\<`undefined` \| `Readable`\>
+> **createBackup**(`key`): `Promise`\<`undefined` \| `Readable`>\>
 
 Creates a backup of the database file and returns a readable stream with automatic cleanup.
 The backup file is created in the same directory as the original database file
@@ -165,7 +165,7 @@ file when it's closed or garbage collected.
 
 ### get()
 
-> **get**(`key`): `undefined` \| [`DbConnection`](../type-aliases/DbConnection.md)\<`S`\>
+> **get**(`key`): `undefined` \| [`DbConnection`](../type-aliases/DbConnection.md)\<`S`>\>
 
 #### Parameters
 
@@ -225,7 +225,7 @@ rotation so the process keeps the same key while replacing the file.
 
 ##### backupTo()
 
-> **backupTo**: (`key`, `destinationPath`) => `Promise`\<`void`\>
+> **backupTo**: (`key`, `destinationPath`) => `Promise`\<`void`>\>
 
 Online SQLite backup of the database registered under `key` to `destinationPath`.
 Uses better-sqlite3's `db.backup()` (SQLite Online Backup API), so the
@@ -283,7 +283,7 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 ##### createBackup()
 
-> **createBackup**: (`key`) => `Promise`\<`undefined` \| `Readable`\>
+> **createBackup**: (`key`) => `Promise`\<`undefined` \| `Readable`>\>
 
 Creates a backup of the database file and returns a readable stream with automatic cleanup.
 The backup file is created in the same directory as the original database file
@@ -332,7 +332,7 @@ SQLite path for the key, or `:memory:`, or `undefined` if unknown.
 
 ##### restore()
 
-> **restore**: (`key`, `stream`) => `Promise`\<`void`\>
+> **restore**: (`key`, `stream`) => `Promise`\<`void`>\>
 
 ###### Parameters
 
@@ -365,7 +365,7 @@ Flush WAL pages into the main db file and reset the WAL (SQLite backup-safe).
 
 ### restore()
 
-> **restore**(`key`, `stream`): `Promise`\<`void`\>
+> **restore**(`key`, `stream`): `Promise`\<`void`>\>
 
 #### Parameters
 

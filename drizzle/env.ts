@@ -15,6 +15,4 @@ export interface DrizzleEnvSchema extends EnvEnvSchema, NodeEnvSchema {
 /**
  * `process.env` casted to the `DrizzleEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as DrizzleEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as DrizzleEnvSchema;

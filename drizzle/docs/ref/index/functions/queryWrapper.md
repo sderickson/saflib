@@ -4,7 +4,7 @@
 
 # Function: queryWrapper()
 
-> **queryWrapper**\<`F`\>(`queryFunc`): `F`
+> **queryWrapper**\<`F`>\>(`queryFunc`): `F`
 
 All queries should use this wrapper. It will catch and obfuscate unhandled
 errors, and rethrow handled errors, though really handled errors should be

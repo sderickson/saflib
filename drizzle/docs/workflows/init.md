@@ -20,11 +20,9 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow drizzle/init
-
+- Upsert 9 templates.
 - Upsert 10 templates.
-- Upsert 11 templates.
-- Add @saflib/saflib-dossier-db dependency to parent db
+- Add @saflib/drizzle-dossier-db dependency to parent db
 - Change working directory to dossier/db
 - Run `npm install`
 - Run `npm run typecheck`

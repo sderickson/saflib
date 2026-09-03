@@ -23,21 +23,21 @@ export interface MyFileEntity extends FileMetadataFields {
 
 ## Properties
 
-### blob_name
+### blob\_name
 
-> **blob_name**: `string`
-
----
-
-### file_original_name
-
-> **file_original_name**: `string`
+> **blob\_name**: `string`
 
 ---
 
-### md5_hash
+### file\_original\_name
 
-> **md5_hash**: `null` \| `string`
+> **file\_original\_name**: `string`
+
+---
+
+### md5\_hash
+
+> **md5\_hash**: `null` \| `string`
 
 ---
 
