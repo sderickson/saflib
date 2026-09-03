@@ -1,8 +1,7 @@
 {
   "name": "@saflib/vendors-azure",
   "saf": {
-    "kind": "lib",
-    "envExtends": ["@saflib/env"]
+    "kind": "lib"
   },
   "description": "Azure Blob Storage-backed ObjectStore adapter",
   "private": true,

@@ -23,17 +23,6 @@ All env variables should be declared in an owning package's `env.schema.json` fi
 
 These declarations are used to generate `env.ts` files so variables can be typed, and `env.schema.combined.json` so variables used by an application can be validated on startup, like [in the base application's `run.ts`](https://github.com/sderickson/saflib/blob/bc7f5cfc49d860a51877f577643998e058b77746/base/service/monolith/run.ts).
 
-### Explicit env parents
-
-When a package depends on another package for code but should **not** inherit that package's env schema (for example `@saflib/sentry` depends on `@saflib/node` for git hashes, but client builds should not see server logging env), set:
-
-```json
-"saf": {
-  "kind": "lib",
-  "envExtends": ["@saflib/env"]
-}
-```
-
 ## Core Env Variables
 
 Some variables are so common throughout SAF, that this package provides them itself, so all packages have them available. See [Environmental Variables](./env/index.md) for the entire list.

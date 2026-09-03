@@ -1,8 +1,7 @@
 {
   "name": "@saflib/vendors-posthog",
   "saf": {
-    "kind": "lib",
-    "envExtends": ["@saflib/env"]
+    "kind": "lib"
   },
   "description": "PostHog-backed AnalyticsService adapter and process-level configure helpers",
   "private": true,

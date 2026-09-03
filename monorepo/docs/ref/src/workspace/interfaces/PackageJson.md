@@ -74,10 +74,6 @@ Interface of package.json fields which are used in workspace discovery.
 
 SAF package metadata (`kind` is db / http / spec / sdk / spa / lib / …).
 
-#### envExtends?
-
-> `optional` **envExtends**: `string`[]
-
 #### kind?
 
 > `optional` **kind**: `string`
