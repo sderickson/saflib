@@ -25,7 +25,7 @@
     "@saflib/base-jobs": "*",
     "@saflib/base-service-common": "*",
     "@saflib/base-spec": "*",
-    "@saflib/cron": "*",
+    "@saflib/cron-http": "*",
     "@saflib/email-service": "*",
     "@saflib/express": "*",
     "@saflib/vendors-brevo": "*",

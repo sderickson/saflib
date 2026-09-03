@@ -3,7 +3,7 @@
   "references": [
     { "path": "../../__offshoot-name__/http" },
     {
-      "path": "../../../cron/cron"
+      "path": "../../../cron/cron-http"
     },
     {
       "path": "../../../email/email-service"

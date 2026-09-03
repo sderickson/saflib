@@ -30,7 +30,7 @@
       "path": "../commander"
     },
     {
-      "path": "../cron/cron"
+      "path": "../cron/cron-http"
     },
     {
       "path": "../drizzle"

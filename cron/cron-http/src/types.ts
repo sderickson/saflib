@@ -48,7 +48,7 @@ export type JobsMap = Record<string, JobConfig>;
 
 /**
  * Params for one cron-tick enqueue. Mirrored by `@saflib/jobs` `makeCronEnqueuer`
- * so `@saflib/cron` does not import `@saflib/jobs`.
+ * so `@saflib/cron-http` does not import `@saflib/jobs`.
  */
 export interface CronEnqueueParams {
   /** Cron job name (becomes `cron:{jobName}` callingOperationId / default dedupe). */

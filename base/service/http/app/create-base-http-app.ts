@@ -20,7 +20,7 @@ import {
   type BaseServiceContextOptions,
   makeContext,
 } from "@saflib/base-service-common/context";
-import { createCronRouter } from "@saflib/cron";
+import { createCronRouter } from "@saflib/cron-http";
 import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
 import { createJobsRouter } from "@saflib/jobs";
 import { getBaseJobsDbKey } from "@saflib/base-jobs";

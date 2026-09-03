@@ -60,7 +60,7 @@ Each handler should be wrapped with [`createHandler`](https://github.com/sderick
 
 ### Router mount order
 
-In `http.ts`, mount product routers **before** any router that ends with a catch-all 404. `@saflib/cron`'s `createCronRouter` is the usual case: it terminates unmatched paths, so routers registered after it never run. Symptoms: integration tests get **404** for a route that is correctly defined and imported. Fix: move `app.use(create…Router())` above the cron mount (keep terminators last).
+In `http.ts`, mount product routers **before** any router that ends with a catch-all 404. `@saflib/cron-http`'s `createCronRouter` is the usual case: it terminates unmatched paths, so routers registered after it never run. Symptoms: integration tests get **404** for a route that is correctly defined and imported. Fix: move `app.use(create…Router())` above the cron mount (keep terminators last).
 
 ### OpenAPI nullability and express-openapi-validator
 

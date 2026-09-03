@@ -1,6 +1,6 @@
-[**@saflib/cron**](../index.md)
+[**@saflib/cron-http**](../index.md)
 
----
+***
 
 # Interface: JobConfig
 
@@ -35,10 +35,10 @@ Defaults to `cron:{jobName}`.
 
 Static request: { path_params?, query?, body? }.
 
----
+***
 
 ### schedule
 
 > **schedule**: `string`
 
-Cron schedule string (e.g., '\* \* \* \* \*')
+Cron schedule string (e.g., '* * * * *')

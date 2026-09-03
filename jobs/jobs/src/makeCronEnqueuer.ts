@@ -9,9 +9,9 @@ export interface MakeCronEnqueuerOptions {
 }
 
 /**
- * Params for one cron-tick enqueue. Kept free of `@saflib/cron` types so the
+ * Params for one cron-tick enqueue. Kept free of `@saflib/cron-http` types so the
  * cron package can inject this function without a reverse dependency.
- * Field names match `@saflib/cron` `CronEnqueueParams` (camel); mapped to
+ * Field names match `@saflib/cron-http` `CronEnqueueParams` (camel); mapped to
  * snake_case jobs API bodies inside the enqueuer.
  */
 export interface CronEnqueueParams {
@@ -40,9 +40,9 @@ export type CronEnqueuer = (
 ) => Promise<CronEnqueueResult>;
 
 /**
- * Factory for the enqueue function injected into `@saflib/cron`.
+ * Factory for the enqueue function injected into `@saflib/cron-http`.
  * Signs with `callingOperationId = cron:{jobName}` and passes `on_behalf_of`
- * cron authority for the enabling admin. Does not import `@saflib/cron`.
+ * cron authority for the enabling admin. Does not import `@saflib/cron-http`.
  */
 export function makeCronEnqueuer(
   options: MakeCronEnqueuerOptions,

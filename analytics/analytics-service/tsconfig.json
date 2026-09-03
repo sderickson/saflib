@@ -2,7 +2,7 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../node"
+      "path": "../../node"
     }
   ],
   "compilerOptions": {

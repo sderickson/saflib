@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@saflib/base-service-common": "*",
-    "@saflib/cron": "*",
+    "@saflib/cron-http": "*",
     "@saflib/cron-db": "*",
     "@saflib/drizzle": "*",
     "@saflib/env": "*",

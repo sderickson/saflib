@@ -130,7 +130,7 @@ The index file for the spec. The main properties it requires are:
 Examples:
 
 - [`@saflib/identity` openapi.yaml](https://github.com/sderickson/saflib/blob/main/identity/identity-spec/openapi.yaml)
-- [`@saflib/cron` openapi.yaml](https://github.com/sderickson/saflib/blob/main/cron/cron-spec/openapi.yaml)
+- [`@saflib/cron-http` openapi.yaml](https://github.com/sderickson/saflib/blob/main/cron/cron-spec/openapi.yaml)
 
 ### `index.ts`
 
@@ -146,7 +146,7 @@ This provides everything the application needs to verify communications, enforce
 Examples:
 
 - [`@saflib/identity` index file](https://github.com/sderickson/saflib/blob/main/identity/identity-spec/index.ts)
-- [`@saflib/cron` index file](https://github.com/sderickson/saflib/blob/main/cron/cron-spec/index.ts)
+- [`@saflib/cron-http` index file](https://github.com/sderickson/saflib/blob/main/cron/cron-spec/index.ts)
 
 ## Using Generated Files
 

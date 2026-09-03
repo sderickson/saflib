@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@saflib/commander": "*",
-    "@saflib/cron": "*",
+    "@saflib/cron-http": "*",
     "@saflib/drizzle": "*",
     "@saflib/email-service": "*",
     "@saflib/env": "*",

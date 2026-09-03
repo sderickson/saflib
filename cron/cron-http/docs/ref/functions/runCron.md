@@ -1,6 +1,6 @@
-[**@saflib/cron**](../index.md)
+[**@saflib/cron-http**](../index.md)
 
----
+***
 
 # Function: runCron()
 
@@ -10,8 +10,8 @@ Runs the cron jobs until the process is killed. Returns an array of cron jobs.
 
 ## Parameters
 
-| Parameter | Type                                                        |
-| --------- | ----------------------------------------------------------- |
+| Parameter | Type |
+| ------ | ------ |
 | `options` | [`CronServiceOptions`](../interfaces/CronServiceOptions.md) |
 
 ## Returns

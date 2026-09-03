@@ -48,7 +48,7 @@ Use these for _all_ logging and auth purposes. They will error if the applicatio
 
 By design, these helper functions will error if context and reporters have not been provided by the application, but the application may not be in the mix if you're testing smaller pieces in isolation. So these functions will return stubs if and only if the `NODE_ENV` environment variable is `test`. It will also log errors to console so they show up in test output.
 
-If you want to check that certain logs are being made in tests, you can use `getSafReporters` to get the universal loggers and spy on them. See [`@saflib/cron`'s unit tests for example](https://github.com/sderickson/saflib/blob/main/cron/cron/src/index.test.ts).
+If you want to check that certain logs are being made in tests, you can use `getSafReporters` to get the universal loggers and spy on them. See [`@saflib/cron-http`'s unit tests for example](https://github.com/sderickson/saflib/blob/main/cron/cron-http/src/index.test.ts).
 
 ## Integrate Logging
 

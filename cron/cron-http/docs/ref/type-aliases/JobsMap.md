@@ -1,6 +1,6 @@
-[**@saflib/cron**](../index.md)
+[**@saflib/cron-http**](../index.md)
 
----
+***
 
 # Type Alias: JobsMap
 

@@ -2,7 +2,7 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../../analytics-service"
+      "path": "../../analytics/analytics-service"
     },
     {
       "path": "../../env"
