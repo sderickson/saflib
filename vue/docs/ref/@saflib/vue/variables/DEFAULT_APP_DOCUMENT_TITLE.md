@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: DEFAULT_APP_DOCUMENT_TITLE
+# Variable: DEFAULT\_APP\_DOCUMENT\_TITLE
 
-> `const` **DEFAULT_APP_DOCUMENT_TITLE**: `"App"` = `"App"`
+> `const` **DEFAULT\_APP\_DOCUMENT\_TITLE**: `"App"` = `"App"`

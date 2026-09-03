@@ -14,8 +14,8 @@ which often flakes under parallel CI or CPU/memory pressure.
 
 ### interval
 
-> `readonly` **interval**: `25` = `25`
+> `readonly` **interval**: `25`
 
 ### timeout
 
-> `readonly` **timeout**: `10000` = `10_000`
+> `readonly` **timeout**: `10000`

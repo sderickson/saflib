@@ -1,0 +1,10 @@
+{
+  "extends": "../monorepo/tsconfig.base.json",
+  "include": ["dist/types/**/*.d.ts"],
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": []
+  }
+}

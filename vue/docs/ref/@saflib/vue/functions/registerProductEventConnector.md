@@ -4,9 +4,9 @@
 
 # Function: registerProductEventConnector()
 
-> **registerProductEventConnector**\<`T`\>(`connector`): `void`
+> **registerProductEventConnector**\<`T`>\>(`connector`): `void`
 
-Register an optional sink for [commonEventLogger](commonEventLogger.md) (PostHog init,
+Register an optional sink for [commonEventLogger](../variables/commonEventLogger.md) (PostHog init,
 dev backend ring buffer, etc.). Connectors run after built-in globals
 (gtag, posthog global, test-mode cookie).
 

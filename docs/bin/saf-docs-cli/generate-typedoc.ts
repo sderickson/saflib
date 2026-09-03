@@ -1,7 +1,13 @@
 import { execSync } from "node:child_process";
 import { type MonorepoContext } from "@saflib/monorepo/workspace";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
+import {
+  buildVueTypedocEntryPoints,
+  emitVueDeclarations,
+  getDeclarationOutDir,
+  isVuePackage,
+} from "./generate-typedoc-vue.ts";
 
 export interface GenerateTypeDocOptions {
   monorepoContext: MonorepoContext;
@@ -26,11 +32,18 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     return;
   }
 
+  const vuePackage = isVuePackage(currentPackageDir, currentPackageJson);
+  if (vuePackage) {
+    emitVueDeclarations(currentPackageDir, currentPackageJson);
+  }
+
   let entrypointCommands = entrypointValues
     .filter((entrypoint) => !entrypoint.includes("./workflows"))
     .filter((entrypoint) => !entrypoint.includes("./eslint.config.js"))
     .filter((entrypoint) => !entrypoint.includes("./tsconfig.json"))
-    .filter((entrypoint) => !entrypoint.includes("./components"))
+    .filter(
+      (entrypoint) => vuePackage || !entrypoint.includes("./components"),
+    )
     .filter((entrypoint) => !entrypoint.endsWith(".json"))
     .filter((entrypoint) => !entrypoint.endsWith(".yaml"))
     .filter((entrypoint) => !entrypoint.endsWith(".yml"))
@@ -39,7 +52,20 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     });
   const typedoc = `${currentPackageDir}/typedoc.json`;
   const hasPackageTypedoc = existsSync(typedoc);
-  if (hasPackageTypedoc) {
+  if (vuePackage) {
+    const declarationEntryPoints = buildVueTypedocEntryPoints(
+      currentPackageDir,
+      getDeclarationOutDir(currentPackageDir),
+    );
+    if (!declarationEntryPoints.length) {
+      throw new Error(
+        `No Vue declaration entry points found in ${packageName}. Run vue-tsc first.`,
+      );
+    }
+    entrypointCommands = declarationEntryPoints.map(
+      (entrypoint) => `--entryPoints ${entrypoint}`,
+    );
+  } else if (hasPackageTypedoc) {
     const typedocJson = readFileSync(typedoc, "utf-8");
     if (JSON.parse(typedocJson).entryPoints) {
       entrypointCommands = []; // typedoc will take entrypoints from the typedoc.json file
@@ -59,7 +85,7 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     : existsSync(join(packageDir, "tsconfig.json"))
       ? "./tsconfig.json"
       : null;
-  if (tsconfigBase && !hasPackageTypedoc) {
+  if (tsconfigBase && !hasPackageTypedoc && !vuePackage) {
     writeFileSync(
       typedocTsconfigPath,
       JSON.stringify(
@@ -82,6 +108,27 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
       ),
     );
     wroteTypedocTsconfig = true;
+  } else if (vuePackage && !hasPackageTypedoc) {
+    const outDir = getDeclarationOutDir(packageDir);
+    writeFileSync(
+      typedocTsconfigPath,
+      JSON.stringify(
+        {
+          extends: existsSync(join(packageDir, "tsconfig.app.base.json"))
+            ? "./tsconfig.app.base.json"
+            : "./tsconfig.json",
+          include: [`${relative(packageDir, outDir)}/**/*.d.ts`],
+          compilerOptions: {
+            composite: false,
+            noEmit: true,
+            skipLibCheck: true,
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    wroteTypedocTsconfig = true;
   }
 
   const command = [
@@ -93,7 +140,9 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     wroteTypedocTsconfig ? "--tsconfig typedoc.tsconfig.json" : "",
 
     // Packages with typedoc.json (e.g. vue) use alternate tsconfigs; skip TS noise.
-    hasPackageTypedoc ? "--skipErrorChecking" : "",
+    hasPackageTypedoc || vuePackage ? "--skipErrorChecking" : "",
+
+    vuePackage ? "--plugin typedoc-plugin-vue" : "",
 
     // for easy reading on GitHub, Vitepress
     "--plugin typedoc-plugin-markdown",

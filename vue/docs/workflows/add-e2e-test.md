@@ -20,9 +20,7 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow vue/add-e2e-test
-
-- Upsert 1 templates.
+- Upsert 1 template.
 - Update **test-name.spec.ts** to implement the E2E test workflow:
 - Run `npm run typecheck`
 - Run `npm run test:e2e`

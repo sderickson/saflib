@@ -20,11 +20,8 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow vue/add-spa
-
-- Upsert 20 templates.
-- Upsert 21 templates.
-- Upsert 22 templates.
+- Upsert 40 templates.
+- Upsert 41 templates.
 - Add admin to CLIENT_SUBDOMAINS in product-name/dev/env.dev
 - Add admin to CLIENT_SUBDOMAINS in deploy/env.product-name.prod-local
 - Change working directory to product-name/clients/admin

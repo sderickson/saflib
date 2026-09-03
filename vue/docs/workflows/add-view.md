@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow vue/add-view
-
 - Upsert 7 templates.
 - Update **WelcomeNewUser.vue** to render the page:
 - Now that the view is implemented, extract sub-components, testable logic, and composables, and write tests.

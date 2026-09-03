@@ -18,9 +18,10 @@
     "@saflib/utils": "*"
   },
   "devDependencies": {
+    "@types/node": "^24.0.0",
     "typedoc": "^0.28.10",
     "typedoc-plugin-markdown": "^4.8.1",
-    "@types/node": "^24.0.0"
+    "typedoc-plugin-vue": "^1.5.1"
   },
   "sideEffects": false
 }

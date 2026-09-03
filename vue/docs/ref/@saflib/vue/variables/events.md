@@ -4,4 +4,4 @@
 
 # Variable: events
 
-> `const` **events**: `Ref`\<`string`[], `string`[]\>
+> `const` **events**: `Ref`
