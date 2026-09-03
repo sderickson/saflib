@@ -9,5 +9,5 @@ These docs explain how consumers of `@saflib/express` should use this library wi
 See [base](https://github.com/sderickson/saflib/tree/main/base/service/http). HTTP packages are mainly organized as adjacent `{service-name}-http` and `{service-name}-spec` packages; `@saflib/base-http` shows how global middleware, auth, platform routers, and product mounts are composed.
 
 - [Middleware](./02-middleware.md) — global, scoped, and error middleware
-- [Routes](./03-routes.md) — handlers, OpenAPI operation fragments, and router factories
-- [Testing](./04-testing.md) — slim route tests and full-app integration tests
+- [Handlers](./03-routes.md) — OpenAPI operation implementations, layering, and error handling
+- [Testing](./04-testing.md) — slim handler tests, integration gotchas, fixtures
