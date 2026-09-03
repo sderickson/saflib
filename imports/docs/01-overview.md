@@ -13,24 +13,30 @@ Init workflows (`express/init`, `sdk/init`, `drizzle/init`, etc.) scaffold these
 
 ## Package surface
 
-Each workspace package exposes a **single-star** subpath pattern in `exports` (one `*` per key and target — `exports check` enforces this):
+Each workspace package exposes an **explicit** surface in `exports` — no package-root catch-all (no `./*`). Use **single-star** folder globs (one `*` per key and target; `exports check` enforces this) plus explicit entries for each root-level file you intend to expose:
 
-| Kind | Typical pattern |
-| --- | --- |
-| SDK | `./requests/*` → `./requests/*.ts` |
-| DB | `./queries/*`, `./schemas/*` |
-| HTTP | `./handlers/*` |
-| Service common | `./*` |
-| Spec | `./operations/*` → `./dist/operations/*/index.ts` |
+| Kind           | Typical pattern                                   |
+| -------------- | ------------------------------------------------- |
+| SDK            | `./requests/*` → `./requests/*.ts`                |
+| DB             | `./queries/*`, `./schemas/*`                      |
+| HTTP           | `./handlers/*`                                    |
+| Service common | `./lib/*`, `./context.ts`, … (per root file)      |
+| Spec           | `./operations/*` → `./dist/operations/*/index.ts` |
 
 `exports generate --package <name>` writes a leaf map for small packages. Prefer hand-authored globs for large packages. `exports check --package <name>` validates pattern coverage.
 
-**`imports`** — choose one shape per package:
+**`imports`** mirror the same explicit surface — folder globs and root files, never `"#*": "./*"`:
 
-- **Catch-all** when `exports` includes `./*`: `"#*": "./*"`
-- **Explicit folders** otherwise: `"#queries/*": "./queries/*"`, plus root files like `"#instances.ts": "./instances.ts"`
+```json
+"imports": {
+  "#queries/*": "./queries/*",
+  "#schemas/*": "./schemas/*",
+  "#instances.ts": "./instances.ts",
+  "#errors.ts": "./errors.ts"
+}
+```
 
-Do not mix a catch-all with redundant folder globs. Hand-author extra `#` keys for internal-only paths not in `exports`.
+Hand-author extra `#` keys for internal-only paths not in `exports`.
 
 See [project references](./02-project-references.md) for composite TypeScript setup and [composite type guidance](./03-composite-type-guidance.md) for cross-package typing conventions.
 
@@ -57,7 +63,9 @@ npm exec saf-imports tsconfig sync|check|cycles|cleanup-declarations [--root <di
 
 ## Vitest reporter
 
-Opt-in via `IMPORT_GRAPH_REPORT=1` (wired in `@saflib/vitest` `defaultConfig`). Prints one line per test file, then a run summary:
+Tests are an indicator of import graph issues; unit tests that pull in a great deal of the application point to hotspots.
+
+To help with this, you can run a Vitest reporter that reports the number of imports each test has. Opt-in via `IMPORT_GRAPH_REPORT=1` (wired in `@saflib/vitest` `defaultConfig`). Prints one line per test file, then a run summary and those tests with the most imports:
 
 ```
 import-graph  routes/matters/list-importers.test.ts  modules=1071  ext=56  collect=4.98s
@@ -68,6 +76,8 @@ import-graph summary (162 test files)
 ```
 
 ## Metrics snapshots
+
+A tool for measuring changes in the import graph, when doing targeted work on it or to (eventually) incorporate into tooling to flag major regressions.
 
 Configure entry probes, suite timings, and bundle targets via root `package.json` → `safImports.snapshot` (see `@saflib/imports` source for the schema).
 
