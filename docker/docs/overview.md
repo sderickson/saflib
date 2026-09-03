@@ -1,7 +1,6 @@
 # Overview
 
-`@saflib/docker` generates Dockerfiles from `Dockerfile.template` files and writes git commit metadata for Node and Vue builds.
+`@saflib/docker` provides some utility logic for managing Dockerfiles and builds:
 
-## CLI
-
-See [CLI Reference](./cli/index.md).
+- Generates Dockerfiles from `Dockerfile.template` files so packages to copy don't need to be managed by hand.
+- Writes git commit metadata to the file system where it can be accessed in the build by the browser and Node.
