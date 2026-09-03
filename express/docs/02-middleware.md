@@ -1,115 +1,40 @@
 # Middleware
 
-The `@saflib/express` package comes with a suite of standard middleware to provide a base level of features for all HTTP servers built on it. All middleware is stored in [the `middleware` directory](https://github.com/sderickson/saflib/tree/main/express/src/middleware). This document goes over them.
+`@saflib/express` ships standard middleware used by SAF HTTP services. Bundles are composed via [`createGlobalMiddleware`](./ref/functions/createGlobalMiddleware.md), [`createOperationScopedMiddleware`](./ref/functions/createScopedMiddleware.md) / [`createScopedMiddleware`](./ref/functions/createScopedMiddleware.md), and [`createErrorMiddleware`](./ref/functions/createErrorMiddleware.md). [`createInternalMiddleware`](./ref/@saflib/express/functions/createInternalMiddleware.md) is a slimmer stack for internal-only listeners.
 
-## Kinds of Middleware
+Middleware falls into three layers:
 
-Middleware fall into three categories:
+- **Global** — top of the app, every request
+- **Scoped** — per route or OpenAPI operation
+- **Error** — after all routes (404 + error handler)
 
-- **Global** - this should be used at the top of any Express application, and applies to all routes.
-- **Scoped** - Middleware scoped to routes for a given spec.
-- **Error** - Is placed after all handlers, for unsuccessful responses. See [writing error handlers](https://expressjs.com/en/guide/error-handling.html#writing-error-handlers).
+Auth assumes a reverse proxy (typically Caddy `forward_auth`) has already verified the session and forwarded trusted identity headers.
 
-A good rule of thumb for determining if some middleware is Scoped or Global is whether it depends on the OpenAPI spec for the specific route or not. A single Express server may serve multiple specs (such as one specifically for the service, as well as other common ones like metrics and health checks), and so there can be multiple sets of scoped middleware, though there should only be one set of global or error middleware, and no route should go through more than one set of scoped middleware.
+## Global
 
-## Authentication, Authorization
+- **Metrics** — Prometheus RED metrics; `/metrics` scrape endpoint (internal-only in non-dev deployments)
+- **Cache control** — `Cache-Control: no-store` on API responses
+- **Helmet** — standard security headers
+- **CSRF token** — sets the `_csrf_token` cookie used by scoped CSRF validation
+- **Health** — `GET /health` for readiness/liveness probes
+- **Request logging** — lightweight Morgan logging for every request
+- **Body parsing** — `json` and `urlencoded` parsers
+- **HTML blocking** — rejects JSON bodies that contain HTML tags
+- **CORS** — allows configured product subdomains (`DOMAIN`, `PROTOCOL`, `CLIENT_SUBDOMAINS`)
 
-Express applications in SAF assume authorization and authentication are handled by some separate service, and that headers passed in can be trusted to indicate under whose authority the requests are made. Specifically, it uses Caddy's [forward_auth](https://caddyserver.com/docs/caddyfile/directives/forward_auth) directive in conjunction with the identity service's [verify endpoint](https://github.com/sderickson/saflib/blob/main/identity/identity-spec/routes/auth/verify-auth.yaml), but a pattern like this could likely be set up by any reverse proxy.
+## Scoped
 
-The data passed in this way is limited. The only information the route is given is the user id and the scopes it has permission to use. More information about the user must be retrieved as-needed via gRPC.
+- **OpenAPI validation** — request/response validation via `express-openapi-validator`; attaches `req.openapi`
+- **CSRF** — double-submit token check on unsafe methods (honors `no-auth` and `csrf-exempt` tags)
+- **Context** — populates `@saflib/node` AsyncLocalStorage for handlers and loggers
+- **Unsafe request logging** — structured logging for mutating requests (Winston → Loki in production)
+- **Auth** — enforces OpenAPI tags (`no-auth`, `email-verified`, `mfa-required`, `site-admin-only`, etc.)
 
-> TODO: Remove email and email-verified headers from verifyAuth.
+## Error
 
-## Middleware
+- **Not found** — 404 for unmatched routes
+- **Error handler** — logs 5xx errors and returns the [standard error format](../../openapi/schemas/error.yaml)
 
-### `auth.ts`
+## Optional
 
-**Type**: Scoped
-
-The auth middleware checks the OpenAPI schema for the requested route and the auth object provided through the `forward_auth` headers to return 401s where appropriate. As such, it depends on both the `context.ts` and `openapi.ts` middleware.
-
-If a route has a `no-auth` tag associated with it, it always passes the request through (no authentication or CSRF checks for that operation).
-
-Otherwise, if the request is unauthenticated, the middleware returns 401.
-
-If a route has an `email-verified` tag, or scoped middleware was created with `emailVerificationRequired: true`, the middleware returns 403 unless `auth.emailVerified` is true.
-
-If a route has an `mfa-required` tag (or `site-admin-only`), MFA is required when enforcement is enabled.
-
-If a route has a `site-admin-only` tag, the caller must be a site admin (and satisfy verified email + MFA).
-
-Allowed operation tags are defined in `@saflib/openapi` — see [Operation tags](../../openapi/docs/03-tags.md). Unknown tags fail at startup.
-
-When creating scoped middleware, `auth.ts` can be disabled, but it's on by default.
-
-### `blockHtml.ts`
-
-**Type**: Global
-
-As a broad guard against scripting attacks, this simply checks if there are any HTML tags inside any of the body of the JSON submitted to the server, and returns 400 if it detects anything.
-
-### `changeEvent.ts`
-
-**Type**: Scoped (mount after OpenAPI so `operationId` is available)
-
-`createChangeEventMiddleware({ emitter, getOrgId, skipOperationIds? })` publishes a `@saflib/notify` `ChangeEvent` on `res.on("finish")` when the response is a successful (2xx) non-read (not GET/HEAD/OPTIONS) request with an OpenAPI `operationId`. Path params are included as a string map; `getOrgId` supplies the org channel (skip when missing). Use `skipOperationIds` for noisy writes that should not fan out to SSE clients.
-
-### `context.ts`
-
-**Type**: Scoped
-
-`@saflib/node` provides AsyncLocalStorage instances which can be depended on to provide stores within the context of any upstream system. The context middleware creates and provides that store to handlers.
-
-> TODO: Link to documentation in @saflib/node
-
-### `cors.ts`
-
-**Type**: Global
-
-The CORS middleware provides a simple guard to ensure only your site's subdomains may make requests to the API. It uses the `DOMAIN`, `PROTOCOL`, and `CLIENT_SUBDOMAINS` environment variables to only allow requests from those specific domains.
-
-### `errors.ts`
-
-**Type**: Error
-
-Logs 5xx errors and returns all intercepted errors in the [standard error format](../../openapi/schemas/error.yaml).
-
-### `express`
-
-**Type**: Global
-
-Built in Express middleware included: `json` and `urlencoded`.
-
-### `health`
-
-**Type**: Global
-
-Provides a basic health check endpoint for container orchestration readiness/liveness probes.
-
-### `helmet`
-
-**Type**: Global
-
-Basic safety measure: the [helmet](https://www.npmjs.com/package/helmet) middleware.
-
-### `httpLogger.ts`
-
-**Type**: Global, Scoped
-
-Provides two middleware: a global logger for every request (which prints out to console via `morgan`) and a scoped logger for every unsafe request, logging those to the standard logger provided by `@saflib/node`, which in practice is Winston, being sent to Loki.
-
-### `metrics.ts`
-
-**Type**: Global
-
-Provides a router and middleware. The middleware records RED metrics for every route, and the router serves the `/metrics` endpoint in the Prometheus [text format](https://prometheus.io/docs/instrumenting/exposition_formats/#text-format-example).
-
-In **development** (`DEPLOYMENT_NAME=development`), `/metrics` is reachable directly on the monolith port without the forwarded-host gate — use `GET http://localhost:<port>/metrics` while local debugging. In other deployments, requests that arrive with `X-Forwarded-Host` (public edge) receive **403**; scrape from inside the network or via an internal path.
-
-This middleware depends on [express-prom-bundle](https://github.com/jochen-schweizer/express-prom-bundle) since it does exactly what is needed, no more, no less.
-
-### `openapi.ts`
-
-**Type**: Scoped
-
-Provided a spec, this creates middleware which will validate requests and responses to check they conform with the spec. For convenience, it will also log validation errors in responses to the console for tests, since that's when those errors show up the most. It uses [express-openapi-validator](https://www.npmjs.com/package/express-openapi-validator) which also attaches `openapi` to the request which can be referenced by downstream middleware and handlers.
+- **Change events** — `createChangeEventMiddleware` publishes `@saflib/notify` change hints after successful writes (for SSE subscribers)
