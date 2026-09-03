@@ -24,6 +24,7 @@
   },
   "bin": {
     "saf-format": "./bin/format.ts",
+    "saf-lock-prune": "./bin/saf-lock-prune.ts",
     "saf-ts-run": "./bin/saf-ts-run.ts"
   },
   "devDependencies": {
@@ -38,6 +39,8 @@
   },
   "sideEffects": false,
   "dependencies": {
+    "@saflib/commander": "*",
+    "@saflib/imports": "*",
     "@saflib/templates": "*"
   }
 }
