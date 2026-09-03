@@ -7,7 +7,8 @@
     "emitDeclarationOnly": true,
     "types": [
       "vite/client"
-    ]
+    ],
+    "rootDir": "."
   },
   "references": [
     {

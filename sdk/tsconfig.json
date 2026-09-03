@@ -17,7 +17,8 @@
     "emitDeclarationOnly": true,
     "types": [
       "vite/client"
-    ]
+    ],
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",

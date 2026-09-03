@@ -19,7 +19,10 @@
     "outDir": "./dist/types",
     "noEmit": false,
     "emitDeclarationOnly": true,
-    "types": ["vite/client"]
+    "types": [
+      "vite/client"
+    ],
+    "rootDir": "."
   },
   "references": [
     {

@@ -18,7 +18,8 @@
       "node"
     ],
     "noEmit": false,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",

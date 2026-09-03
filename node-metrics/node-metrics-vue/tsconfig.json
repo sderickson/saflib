@@ -1,11 +1,16 @@
 {
-  "extends": ["../../vue/tsconfig.app.base.json"],
+  "extends": [
+    "../../vue/tsconfig.app.base.json"
+  ],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "outDir": "./dist/types",
     "noEmit": false,
     "emitDeclarationOnly": true,
-    "types": ["vite/client"]
+    "types": [
+      "vite/client"
+    ],
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",
@@ -19,10 +24,23 @@
     "**/workflows/templates/**"
   ],
   "references": [
-    { "path": "../../sdk" },
-    { "path": "../../vue" },
-    { "path": "../node-metrics-spec" },
-    { "path": "../node-metrics-sdk" }
+    {
+      "path": "../../sdk"
+    },
+    {
+      "path": "../../vue"
+    },
+    {
+      "path": "../node-metrics-spec"
+    },
+    {
+      "path": "../node-metrics-sdk"
+    }
   ],
-  "include": ["**/*.ts", "**/*.tsx", "**/*.vue", "**/*.json"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.vue",
+    "**/*.json"
+  ]
 }
