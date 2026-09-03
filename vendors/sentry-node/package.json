@@ -33,7 +33,7 @@
     "@saflib/vitest": "*",
     "@saflib/workflows": "*",
     "vite": "8.0.16",
-    "vitest": "^3.2.4"
+    "vitest": "^5.0.0"
   },
   "sideEffects": false
 }
