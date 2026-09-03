@@ -14,10 +14,10 @@ COPY ./deploy/env.__product-name__.prod-local /app/env.__product-name__.prod-loc
 RUN export $(grep -v "^#" /app/env.__product-name__.prod-local | xargs) && DOMAIN=${DOMAIN} CLIENT_SUBDOMAINS=${CLIENT_SUBDOMAINS} npm run build
 # END WORKFLOW AREA
 
-FROM caddy:2.11.3-builder-alpine AS caddy-rebuild
+FROM caddy:2.11.4-builder-alpine AS caddy-rebuild
 RUN xcaddy build v2.11.3
 
-FROM caddy:2.11.3-alpine
+FROM caddy:2.11.4-alpine
 COPY --from=caddy-rebuild /usr/bin/caddy /usr/bin/caddy
 RUN apk upgrade --no-cache && rm -rf /var/cache/apk/*
 
