@@ -1,0 +1,20 @@
+[**@saflib/jobs-http**](../index.md)
+
+---
+
+# Function: enqueueOnBehalfOf()
+
+> **enqueueOnBehalfOf**(`params`, `options?`): `Promise`\<[`EnqueueResult`](../interfaces/EnqueueResult.md)>\>
+
+Enqueue under an explicit user + authority evidence (webhooks, etc.).
+
+## Parameters
+
+| Parameter  | Type                                                                  |
+| ---------- | --------------------------------------------------------------------- |
+| `params`   | [`EnqueueOnBehalfOfParams`](../interfaces/EnqueueOnBehalfOfParams.md) |
+| `options?` | [`EnqueueClientOptions`](../interfaces/EnqueueClientOptions.md)       |
+
+## Returns
+
+`Promise`\<[`EnqueueResult`](../interfaces/EnqueueResult.md)\>

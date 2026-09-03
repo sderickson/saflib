@@ -31,7 +31,7 @@
     "@saflib/errors-http": "*",
     "@saflib/express": "*",
     "@saflib/vendors-brevo": "*",
-    "@saflib/jobs": "*",
+    "@saflib/jobs-http": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/node-log-http": "*",

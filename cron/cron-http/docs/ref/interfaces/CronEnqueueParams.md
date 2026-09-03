@@ -4,8 +4,8 @@
 
 # Interface: CronEnqueueParams
 
-Params for one cron-tick enqueue. Mirrored by `@saflib/jobs` `makeCronEnqueuer`
-so `@saflib/cron-http` does not import `@saflib/jobs`.
+Params for one cron-tick enqueue. Mirrored by `@saflib/jobs-http` `makeCronEnqueuer`
+so `@saflib/cron-http` does not import `@saflib/jobs-http`.
 
 ## Properties
 

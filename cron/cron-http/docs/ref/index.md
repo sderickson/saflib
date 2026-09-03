@@ -8,7 +8,7 @@
 
 | Interface                                              | Description                                                                                                                            |
 | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| [CronEnqueueParams](interfaces/CronEnqueueParams.md)   | Params for one cron-tick enqueue. Mirrored by `@saflib/jobs` `makeCronEnqueuer` so `@saflib/cron-http` does not import `@saflib/jobs`. |
+| [CronEnqueueParams](interfaces/CronEnqueueParams.md)   | Params for one cron-tick enqueue. Mirrored by `@saflib/jobs-http` `makeCronEnqueuer` so `@saflib/cron-http` does not import `@saflib/jobs-http`. |
 | [CronEnqueueResult](interfaces/CronEnqueueResult.md)   | -                                                                                                                                      |
 | [CronJobRequest](interfaces/CronJobRequest.md)         | Static request payload for the operation a cron tick enqueues. Dynamic fan-out belongs in the target handler.                          |
 | [CronServiceOptions](interfaces/CronServiceOptions.md) | Options to be passed when starting a cron service.                                                                                     |

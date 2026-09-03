@@ -23,7 +23,7 @@
       "path": "../../../vendors/brevo"
     },
     {
-      "path": "../../../jobs/jobs"
+      "path": "../../../jobs/jobs-http"
     },
     {
       "path": "../../../monorepo"

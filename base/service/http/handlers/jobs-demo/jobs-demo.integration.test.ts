@@ -30,7 +30,7 @@ import {
   createJobsRouter,
   runJobs,
   type JobsRuntimeHandle,
-} from "@saflib/jobs";
+} from "@saflib/jobs-http";
 import { jobsDbManager } from "@saflib/jobs-db/instances";
 import { listJob } from "@saflib/jobs-db";
 import type { DbKey } from "@saflib/drizzle";

@@ -23,7 +23,7 @@ export interface CronServiceOptions {
   jobs: JobsMap;
   /**
    * Enqueues a background job for a cron tick. Typically `makeCronEnqueuer`
-   * from `@saflib/jobs`, wired by the product monolith.
+   * from `@saflib/jobs-http`, wired by the product monolith.
    */
   enqueueJob: CronEnqueuer;
 }

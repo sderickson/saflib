@@ -17,7 +17,7 @@ Enforced by:
 | `email-verified`  | Require verified email                      | `@saflib/express` auth        |
 | `mfa-required`    | Require MFA when enforcement is on          | `@saflib/express` auth        |
 | `site-admin-only` | Require site admin (+ verified email + MFA) | `@saflib/express` auth        |
-| `background`      | Job queue may invoke this `operationId`     | `@saflib/jobs`                |
+| `background`      | Job queue may invoke this `operationId`     | `@saflib/jobs-http`                |
 
 Import constants from `@saflib/openapi` (`OPENAPI_TAG_*`) in middleware — do not
 hard-code tag strings elsewhere.

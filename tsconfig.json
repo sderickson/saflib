@@ -230,7 +230,7 @@
       "path": "./integrations"
     },
     {
-      "path": "./jobs/jobs"
+      "path": "./jobs/jobs-http"
     },
     {
       "path": "./jobs/jobs-db"

@@ -123,7 +123,7 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       
       * Make sure it's included in the adjacent index.ts file.
       * Make sure those jobs are included in the root cron.ts file (workflow areas should already upsert imports/map spreads).
-      * Ensure \`runCron\` / \`createCronRouter\` receive a required \`enqueueJob\` (e.g. \`makeCronEnqueuer\` from \`@saflib/jobs\`).
+      * Ensure \`runCron\` / \`createCronRouter\` receive a required \`enqueueJob\` (e.g. \`makeCronEnqueuer\` from \`@saflib/jobs-http\`).
       * Confirm \`service/jobs/jobs.ts\` has \`cron:${context.targetName}\` pointing at the chosen background operationId (CopyStep should have upserted the edge; update the target if still on the demo stub).`,
     })),
 

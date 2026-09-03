@@ -18,7 +18,7 @@
     "@saflib/express": "*",
     "@saflib/grpc": "*",
     "@saflib/integrations": "*",
-    "@saflib/jobs": "*",
+    "@saflib/jobs-http": "*",
     "@saflib/monorepo": "*",
     "@saflib/openapi": "*",
     "@saflib/processes": "*",

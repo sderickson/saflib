@@ -51,7 +51,7 @@
       "path": "../integrations"
     },
     {
-      "path": "../jobs/jobs"
+      "path": "../jobs/jobs-http"
     },
     {
       "path": "../monorepo"

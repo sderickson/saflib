@@ -29,6 +29,6 @@ full tag list.
 ## Related packages
 
 - `@saflib/jobs-db` — SQLite schema and queries
-- `@saflib/jobs` — runtime, internal app, admin router, client
+- `@saflib/jobs-http` — runtime, internal app, admin router, client
 - `@saflib/jobs-vue` — admin UI
 - `@saflib/openapi` — OpenAPI tooling and [tag conventions](../../../openapi/docs/03-tags.md)

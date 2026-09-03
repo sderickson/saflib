@@ -21,7 +21,7 @@
     "@saflib/env": "*",
     "@saflib/errors-service": "*",
     "@saflib/express": "*",
-    "@saflib/jobs": "*",
+    "@saflib/jobs-http": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/vendors-loki": "*"

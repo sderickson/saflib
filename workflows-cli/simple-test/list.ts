@@ -13,7 +13,7 @@ import sdkWorkflows from "@saflib/sdk/workflows";
 import serviceWorkflows from "@saflib/service/workflows";
 import grpcWorkflows from "@saflib/grpc/workflows";
 import cronWorkflows from "@saflib/cron-http/workflows";
-import jobsWorkflows from "@saflib/jobs/workflows";
+import jobsWorkflows from "@saflib/jobs-http/workflows";
 import productWorkflows from "@saflib/product/workflows";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
