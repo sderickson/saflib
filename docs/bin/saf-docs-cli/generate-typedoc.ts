@@ -1,12 +1,13 @@
 import { execSync } from "node:child_process";
 import { type MonorepoContext } from "@saflib/monorepo/workspace";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join } from "node:path";
 import {
   buildVueTypedocEntryPoints,
   emitVueDeclarations,
   getDeclarationOutDir,
   isVuePackage,
+  writeVueTypedocTsconfig,
 } from "./generate-typedoc-vue.ts";
 
 export interface GenerateTypeDocOptions {
@@ -41,9 +42,7 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     .filter((entrypoint) => !entrypoint.includes("./workflows"))
     .filter((entrypoint) => !entrypoint.includes("./eslint.config.js"))
     .filter((entrypoint) => !entrypoint.includes("./tsconfig.json"))
-    .filter(
-      (entrypoint) => vuePackage || !entrypoint.includes("./components"),
-    )
+    .filter((entrypoint) => vuePackage || !entrypoint.includes("./components"))
     .filter((entrypoint) => !entrypoint.endsWith(".json"))
     .filter((entrypoint) => !entrypoint.endsWith(".yaml"))
     .filter((entrypoint) => !entrypoint.endsWith(".yml"))
@@ -109,25 +108,7 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     );
     wroteTypedocTsconfig = true;
   } else if (vuePackage && !hasPackageTypedoc) {
-    const outDir = getDeclarationOutDir(packageDir);
-    writeFileSync(
-      typedocTsconfigPath,
-      JSON.stringify(
-        {
-          extends: existsSync(join(packageDir, "tsconfig.app.base.json"))
-            ? "./tsconfig.app.base.json"
-            : "./tsconfig.json",
-          include: [`${relative(packageDir, outDir)}/**/*.d.ts`],
-          compilerOptions: {
-            composite: false,
-            noEmit: true,
-            skipLibCheck: true,
-          },
-        },
-        null,
-        2,
-      ),
-    );
+    writeVueTypedocTsconfig(packageDir, getDeclarationOutDir(packageDir));
     wroteTypedocTsconfig = true;
   }
 

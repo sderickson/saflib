@@ -1,4 +1,7 @@
-import { type MonorepoContext, getCurrentPackageName } from "@saflib/monorepo/workspace";
+import {
+  type MonorepoContext,
+  getCurrentPackageName,
+} from "@saflib/monorepo/workspace";
 import { generateTypeDoc } from "./generate-typedoc.ts";
 import { isVuePackage } from "./generate-typedoc-vue.ts";
 import {

@@ -76,7 +76,10 @@ describe("extractComponentDescriptionFromSource", () => {
   it("reads the leading script block comment from a vue file", () => {
     const description = extractComponentDescriptionFromSource(
       fileURLToPath(
-        new URL("../../../../vue/components/UsPhoneNumberInput.vue", import.meta.url),
+        new URL(
+          "../../../../vue/components/UsPhoneNumberInput.vue",
+          import.meta.url,
+        ),
       ),
     );
     expect(description).toContain("US phone number input");

@@ -21,11 +21,6 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "exclude": [
-    "node_modules",
-    "dist/types"
-  ],
-  "include": [
-    "**/*.ts"
-  ]
+  "exclude": ["node_modules", "dist/types"],
+  "include": ["**/*.ts"]
 }

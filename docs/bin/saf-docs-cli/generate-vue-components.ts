@@ -1,4 +1,10 @@
-import type { ComponentMeta, EventMeta, ExposeMeta, PropertyMeta, SlotMeta } from "vue-component-meta";
+import type {
+  ComponentMeta,
+  EventMeta,
+  ExposeMeta,
+  PropertyMeta,
+  SlotMeta,
+} from "vue-component-meta";
 import { createChecker } from "vue-component-meta";
 import {
   existsSync,
@@ -10,7 +16,10 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, join, relative } from "node:path";
-import { getVueComponentMetaTsconfig, isVuePackage } from "./generate-typedoc-vue.ts";
+import {
+  getVueComponentMetaTsconfig,
+  isVuePackage,
+} from "./generate-typedoc-vue.ts";
 
 export interface GenerateVueComponentDocsOptions {
   packageDir: string;
@@ -145,7 +154,9 @@ export function renderComponentMarkdown(
       .map((model) => model.event?.name)
       .filter((name): name is string => Boolean(name)),
   );
-  const events = meta.events.filter((event) => !modelEventNames.has(event.name));
+  const events = meta.events.filter(
+    (event) => !modelEventNames.has(event.name),
+  );
 
   if (events.length) {
     lines.push("## Emits", "");

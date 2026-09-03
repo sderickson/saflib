@@ -1,6 +1,9 @@
 import type { Command } from "commander";
 import { addNewLinesToString } from "@saflib/utils";
-import { buildMonorepoContext, type MonorepoContext } from "@saflib/monorepo/workspace";
+import {
+  buildMonorepoContext,
+  type MonorepoContext,
+} from "@saflib/monorepo/workspace";
 import { generateCommand } from "./generate.ts";
 import { existsSync } from "node:fs";
 import { join } from "node:path";

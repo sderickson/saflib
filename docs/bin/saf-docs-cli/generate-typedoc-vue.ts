@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
 interface PackageJson {
@@ -73,6 +73,46 @@ export function getVueComponentMetaTsconfig(packageDir: string): string | null {
   return null;
 }
 
+export function getMonorepoTsconfigBaseExtends(packageDir: string): string {
+  for (const rel of [
+    "../monorepo/tsconfig.base.json",
+    "../../monorepo/tsconfig.base.json",
+    "../../../monorepo/tsconfig.base.json",
+  ]) {
+    if (existsSync(join(packageDir, rel))) {
+      return rel;
+    }
+  }
+  throw new Error(
+    `Could not find @saflib/monorepo tsconfig.base.json from ${packageDir}`,
+  );
+}
+
+export function writeVueTypedocTsconfig(
+  packageDir: string,
+  outDir: string,
+): string {
+  const typedocTsconfigPath = join(packageDir, "typedoc.tsconfig.json");
+  writeFileSync(
+    typedocTsconfigPath,
+    JSON.stringify(
+      {
+        extends: getMonorepoTsconfigBaseExtends(packageDir),
+        include: [`${relative(packageDir, outDir)}/**/*.d.ts`],
+        compilerOptions: {
+          composite: false,
+          noEmit: true,
+          skipLibCheck: true,
+          types: [],
+        },
+      },
+      null,
+      2,
+    ),
+  );
+  return typedocTsconfigPath;
+}
+
 export function emitVueDeclarations(
   packageDir: string,
   packageJson: PackageJson,
@@ -117,6 +157,18 @@ export function buildVueTypedocEntryPoints(
     for (const file of readdirSync(composablesDir)) {
       if (file.endsWith(".d.ts")) {
         entryPoints.push(rel(join(composablesDir, file)));
+      }
+    }
+  }
+
+  for (const dirName of ["lib"]) {
+    const dir = join(outDir, dirName);
+    if (!existsSync(dir)) {
+      continue;
+    }
+    for (const file of readdirSync(dir)) {
+      if (file.endsWith(".d.ts")) {
+        entryPoints.push(rel(join(dir, file)));
       }
     }
   }
