@@ -1,16 +1,14 @@
 # saf-lock-prune
 
-Prune stale workspace entries from the product `package-lock.json`, remove
-product declarations of npm packages saflib already owns, and hoist misplaced
-peer dependencies from `saflib/node_modules` to the product root in the
-lockfile.
-
-Run from the product root:
-
-```bash
-npm run lock-prune
 ```
+Usage: saf-lock-prune [options]
 
-Use `--yes` to apply fixes without prompting.
+Prune stale product lockfile entries and verify embedded saflib workspace
+hygiene.
 
-After fixes are applied, run `npm install` from the product root.
+Options:
+  --root <dir>  product monorepo root (default: auto-detect)
+  -y, --yes     apply fixes without prompting
+  -h, --help    display help for command
+
+```

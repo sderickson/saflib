@@ -49,18 +49,18 @@ Backend packages for one product. Terminology:
 - **Service** — a coordinated set of servers and workers (e.g. identity)
 - **Monolith** — runs the product's servers and workers together
 
-| Package        | Role                                              | Kind        |
-| -------------- | ------------------------------------------------- | ----------- |
-| `common`       | shared service wiring (loggers, context, deps)    | library     |
-| `spec`         | OpenAPI contract                                  | library     |
-| `db`           | drizzle schema and queries                        | library     |
-| `http`         | Express server and route handlers                 | server      |
-| `sdk`          | TanStack Query clients tied to the API contract   | library     |
-| `cron`         | scheduled job enqueuer                            | worker      |
-| `jobs`         | async job runtime and trigger map                 | worker      |
-| `integrations/`| third-party API wrappers (see below)              | integration |
-| `monolith`     | boots http, cron, jobs, and related runtimes      | monolith    |
-| `test`         | shared test factories for spec models             | test        |
+| Package         | Role                                            | Kind        |
+| --------------- | ----------------------------------------------- | ----------- |
+| `common`        | shared service wiring (loggers, context, deps)  | library     |
+| `spec`          | OpenAPI contract                                | library     |
+| `db`            | drizzle schema and queries                      | library     |
+| `http`          | Express server and route handlers               | server      |
+| `sdk`           | TanStack Query clients tied to the API contract | library     |
+| `cron`          | scheduled job enqueuer                          | worker      |
+| `jobs`          | async job runtime and trigger map               | worker      |
+| `integrations/` | third-party API wrappers (see below)            | integration |
+| `monolith`      | boots http, cron, jobs, and related runtimes    | monolith    |
+| `test`          | shared test factories for spec models           | test        |
 
 **Dependency flow:** `spec` and `db` are independent layers. `http` depends on both and translates between wire and storage models. `sdk` depends on `spec` so clients stay decoupled from storage. `monolith` composes the runnable backends. All `clients/*` packages depend on `sdk` for API access.
 
@@ -110,13 +110,13 @@ Each package still **extends** `@saflib/monorepo/tsconfig.json` (or `@saflib/vue
 
 Products can run standalone or as a shared **hub** (one domain, one identity, one monolith). Both are supported.
 
-| Aspect           | Standalone product             | Product hub                          |
-| ---------------- | ------------------------------ | ------------------------------------ |
-| Domain           | One per product                | One for all (subdomains per product) |
-| Identity         | Per-product                    | Single (hub)                         |
-| Auth UI          | Per-product auth subdomain     | Single `auth.{domain}`               |
-| Deploy monoliths | One container per product      | One container (hub monolith)         |
-| Link subdomains  | Product-specific (`app`, …)    | Product-prefixed (`app.recipes`, …)  |
+| Aspect           | Standalone product          | Product hub                          |
+| ---------------- | --------------------------- | ------------------------------------ |
+| Domain           | One per product             | One for all (subdomains per product) |
+| Identity         | Per-product                 | Single (hub)                         |
+| Auth UI          | Per-product auth subdomain  | Single `auth.{domain}`               |
+| Deploy monoliths | One container per product   | One container (hub monolith)         |
+| Link subdomains  | Product-specific (`app`, …) | Product-prefixed (`app.recipes`, …)  |
 
 Use hub dev/deploy for a single login and deployment unit; keep per-product `dev/` for focused standalone development.
 

@@ -4,9 +4,20 @@
 
 # index
 
+## Interfaces
+
+| Interface                                                  | Description                                         |
+| ---------------------------------------------------------- | --------------------------------------------------- |
+| [PackageInfo](interfaces/PackageInfo.md)                   | Package metadata indexed by workspace package name. |
+| [SideEffectFlag](interfaces/SideEffectFlag.md)             | -                                                   |
+| [SideEffectScanResult](interfaces/SideEffectScanResult.md) | -                                                   |
+
 ## Type Aliases
 
-_None._
+| Type Alias                                     | Description                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------- |
+| [PackageIndex](type-aliases/PackageIndex.md)   | Index of workspace packages discovered under a monorepo root. |
+| [ResolveResult](type-aliases/ResolveResult.md) | -                                                             |
 
 ## Variables
 
@@ -16,14 +27,40 @@ _None._
 
 ## Functions
 
-| Function                                                                        | Description                                                                                                                                                                                                        |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [importGlobForTopLevelSegment](functions/importGlobForTopLevelSegment.md)       | Derive package-local `#` import maps from `exports`.                                                                                                                                                               |
-| [importsFromExports](functions/importsFromExports.md)                           | Build a default `imports` map from an `exports` map.                                                                                                                                                               |
-| [stripTemplateImportPlaceholders](functions/stripTemplateImportPlaceholders.md) | Remove template placeholder import keys/values (e.g. `#__group-name__/*`).          |
-| [upsertImportGlob](functions/upsertImportGlob.md)                               | -                                                                                    |
+| Function                                                                        | Description                                                                        |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [buildPackageIndex](functions/buildPackageIndex.md)                             | Build a map of workspace package name → { dir, exports }.                          |
+| [existsResolve](functions/existsResolve.md)                                     | Resolve a path candidate with common TS/Vue extensions and index files.            |
+| [findMonorepoRoot](functions/findMonorepoRoot.md)                               | Walk up from `fromDir` until a package.json with a `workspaces` field is found.    |
+| [importGlobForTopLevelSegment](functions/importGlobForTopLevelSegment.md)       | Derive package-local `#` import maps from `exports`.                               |
+| [importsFromExports](functions/importsFromExports.md)                           | Build a default `imports` map from an `exports` map.                               |
+| [matchExportPattern](functions/matchExportPattern.md)                           | Match a Node.js package.json `exports` subpath pattern.                            |
+| [resolvePackageExportPath](functions/resolvePackageExportPath.md)               | Resolve a package export subpath to an absolute file path (no extension probing).  |
+| [resolveSpecifier](functions/resolveSpecifier.md)                               | Resolve an import specifier relative to `fromFile` against the package index.      |
+| [scanPackageSideEffects](functions/scanPackageSideEffects.md)                   | -                                                                                  |
+| [sortExportPatternKeys](functions/sortExportPatternKeys.md)                     | Prefer longer (more specific) pattern keys, matching Node's best-match preference. |
+| [stripTemplateImportPlaceholders](functions/stripTemplateImportPlaceholders.md) | Remove template placeholder import keys/values (e.g. `#__group-name__/*`).         |
+| [upsertImportGlob](functions/upsertImportGlob.md)                               | -                                                                                  |
 
 ## References
+
+### checkExportPatternCoverage
+
+Re-exports [checkExportPatternCoverage](../src/exports/generate-exports/functions/checkExportPatternCoverage.md)
+
+---
+
+### checkExports
+
+Re-exports [checkExports](../src/exports/generate-exports/functions/checkExports.md)
+
+---
+
+### CheckExportsResult
+
+Re-exports [CheckExportsResult](../src/exports/generate-exports/interfaces/CheckExportsResult.md)
+
+---
 
 ### checkPackageLayout
 
@@ -55,6 +92,18 @@ Re-exports [classifySafPackage](../src/package-kind/functions/classifySafPackage
 
 ---
 
+### collectPublicExportRepoPaths
+
+Re-exports [collectPublicExportRepoPaths](../src/exports/generate-exports/functions/collectPublicExportRepoPaths.md)
+
+---
+
+### computeExportsMap
+
+Re-exports [computeExportsMap](../src/exports/generate-exports/functions/computeExportsMap.md)
+
+---
+
 ### DEFAULT\_MAX\_SOURCE\_LINES
 
 Re-exports [DEFAULT_MAX_SOURCE_LINES](../src/package-layout/variables/DEFAULT_MAX_SOURCE_LINES.md)
@@ -70,6 +119,18 @@ Re-exports [exportGlobForTopLevelSegment](../src/package-exports/functions/expor
 ### ExportModulePathLayout
 
 Re-exports [ExportModulePathLayout](../src/package-exports/interfaces/ExportModulePathLayout.md)
+
+---
+
+### ExportsMap
+
+Re-exports [ExportsMap](../src/exports/generate-exports/type-aliases/ExportsMap.md)
+
+---
+
+### generateExports
+
+Re-exports [generateExports](../src/exports/generate-exports/functions/generateExports.md)
 
 ---
 
@@ -91,6 +152,18 @@ Re-exports [isPackageKind](../src/package-kind/functions/isPackageKind.md)
 
 ---
 
+### leafExportRemapDiffs
+
+Re-exports [leafExportRemapDiffs](../src/exports/generate-exports/functions/leafExportRemapDiffs.md)
+
+---
+
+### listExportableFiles
+
+Re-exports [listExportableFiles](../src/exports/generate-exports/functions/listExportableFiles.md)
+
+---
+
 ### listPackageJsonExportTargetFiles
 
 Re-exports [listPackageJsonExportTargetFiles](../src/package-layout/functions/listPackageJsonExportTargetFiles.md)
@@ -106,6 +179,12 @@ Re-exports [PACKAGE_KIND_IDENTIFIERS](../src/package-kind/variables/PACKAGE_KIND
 ### PACKAGE\_KINDS
 
 Re-exports [PACKAGE_KINDS](../src/package-kind/variables/PACKAGE_KINDS.md)
+
+---
+
+### packageHasWorkflowMarkers
+
+Re-exports [packageHasWorkflowMarkers](../src/exports/generate-exports/functions/packageHasWorkflowMarkers.md)
 
 ---
 
@@ -157,6 +236,12 @@ Re-exports [resolveExportModulePathLayout](../src/package-exports/functions/reso
 
 ---
 
+### resolvePackageDir
+
+Re-exports [resolvePackageDir](../src/exports/generate-exports/functions/resolvePackageDir.md)
+
+---
+
 ### ROOT\_TS\_ALLOWLIST
 
 Re-exports [ROOT_TS_ALLOWLIST](../src/package-layout/variables/ROOT_TS_ALLOWLIST.md)
@@ -166,6 +251,12 @@ Re-exports [ROOT_TS_ALLOWLIST](../src/package-layout/variables/ROOT_TS_ALLOWLIST
 ### SafPackageJson
 
 Re-exports [SafPackageJson](../src/package-kind/interfaces/SafPackageJson.md)
+
+---
+
+### sortExportsMap
+
+Re-exports [sortExportsMap](../src/exports/generate-exports/functions/sortExportsMap.md)
 
 ---
 

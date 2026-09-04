@@ -2,6 +2,8 @@
 
 SAF-specific import-graph measurement and enforcement tooling. Used across dev-tools (for CLI usage) and dev-site (for UI usage).
 
+Use the saf-imports tool (described below) to find and debug import graph clusters.
+
 ## Import graph principles
 
 - **No root barrels** — consumers import `@scope/pkg/subpath`, not package root. Avoid `export *` trees in `index.ts`.
