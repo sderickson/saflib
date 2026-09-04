@@ -1,6 +1,6 @@
 {
   "name": "@saflib/vite",
-  "description": "TODO: Add package description",
+  "description": "Shared Vite config and plugins for multi-SPA SAF client build packages",
   "private": true,
   "type": "module",
   "exports": {
