@@ -2,6 +2,8 @@
 
 SAF-specific import-graph measurement and enforcement tooling. Used across dev-tools (for CLI usage) and dev-site (for UI usage).
 
+Syntactic file facts (exports, tests, Drizzle tables, Vue SFC surfaces) come from [@saflib/parser](../parser/docs/01-overview.md) via `buildFileSpecialty()` in this package.
+
 Use the saf-imports tool (described below) to find and debug import graph clusters.
 
 ## Import graph principles
