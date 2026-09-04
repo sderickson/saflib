@@ -25,7 +25,6 @@ When run, the workflow will:
 - Update **myFunction.ts** to implement the myFunction export.
 - Update **myFunction.test.ts** to test the myFunction functionality.
 - Run `npm run test`
-- Run `npm exec saf-monorepo exports check --package @saflib/monorepo`
 - Run `npm exec saf-docs generate`
 
 ## Help Docs

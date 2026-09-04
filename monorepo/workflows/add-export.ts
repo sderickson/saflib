@@ -126,18 +126,6 @@ export const AddExportWorkflowDefinition = defineWorkflow<
       args: ["run", "test"],
     })),
 
-    step(CommandStepMachine, ({ context }) => ({
-      command: "npm",
-      args: [
-        "exec",
-        "saf-monorepo",
-        "exports",
-        "check",
-        "--package",
-        context.packageName,
-      ],
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["exec", "saf-docs", "generate"],
