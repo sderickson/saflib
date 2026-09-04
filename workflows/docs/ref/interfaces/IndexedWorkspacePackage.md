@@ -14,4 +14,4 @@
 
 ### scripts
 
-> **scripts**: `Record`\<`string`, `string`\>
+> **scripts**: `Record`\<`string`, `string`>\>

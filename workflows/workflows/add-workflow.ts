@@ -82,7 +82,7 @@ export const AddWorkflowDefinition = defineWorkflow<
   },
 
   docFiles: {
-    readme: path.join(import.meta.dirname, "../docs/README.md"),
+    overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
   },
 
   steps: [
@@ -107,7 +107,7 @@ export const AddWorkflowDefinition = defineWorkflow<
     })),
 
     step(CdStepMachine, () => ({
-      cwd: workflowsCliDir,
+      path: workflowsCliDir,
     })),
 
     step(CommandStepMachine, ({ context }) => ({

@@ -4,7 +4,7 @@
 
 # Function: defineWorkflow()
 
-> **defineWorkflow**\<`I`, `C`\>(`config`): [`WorkflowDefinition`](../interfaces/WorkflowDefinition.md)\<`I`, `C`\>
+> **defineWorkflow**\<`I`, `C`>\>(`config`): [`WorkflowDefinition`](../interfaces/WorkflowDefinition.md)\<`I`, `C`>\>
 
 Helper, identity function to infer types.
 

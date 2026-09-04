@@ -4,7 +4,7 @@
 
 # Function: indexWorkspacePackages()
 
-> **indexWorkspacePackages**(`repoRoot`): `Map`\<`string`, [`IndexedWorkspacePackage`](../interfaces/IndexedWorkspacePackage.md)\>
+> **indexWorkspacePackages**(`repoRoot`): `Map`\<`string`, [`IndexedWorkspacePackage`](../interfaces/IndexedWorkspacePackage.md)>\>
 
 Index every named package.json under a monorepo root (skipping vendor dirs).
 

@@ -4,7 +4,7 @@
 
 # Function: step()
 
-> **step**\<`C`, `M`\>(`machine`, `input`, `options`): [`WorkflowStep`](../type-aliases/WorkflowStep.md)\<`C`, `M`\>
+> **step**\<`C`, `M`>\>(`machine`, `input`, `options`): [`WorkflowStep`](../type-aliases/WorkflowStep.md)\<`C`, `M`>\>
 
 Helper function for defining a step in a workflow, enforcing types properly.
 

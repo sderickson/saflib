@@ -2,7 +2,7 @@
 
 I'm using [XState](https://stately.ai/docs) in SAF for:
 
-- Developer Workflows (`@saflib/workflows`)
+- Developer Workflows ([`@saflib/workflows`](../workflows/docs/01-overview.md))
 - Backend Product Processes (no example in saflib yet)
 
 I'm still figuring out the best way to use it, though. There's a lot going on in that library by itself, and getting types to do what I want with them is a bit of a challenge.

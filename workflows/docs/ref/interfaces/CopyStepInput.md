@@ -10,7 +10,7 @@ Input for the CopyStepMachine.
 
 ### flags?
 
-> `optional` **flags**: `Record`\<`string`, `boolean`\>
+> `optional` **flags**: `Record`\<`string`, `boolean`>\>
 
 Optional flags for workflow area conditionals (e.g. IF upload).
 Passed to template resolution so that BEGIN...IF flag...ELSE...END areas choose the correct branch.

@@ -4,7 +4,7 @@
 
 # Function: pollingWaitFor()
 
-> **pollingWaitFor**(`actor`, `condition`, `options?`): `Promise`\<`unknown`\>
+> **pollingWaitFor**(`actor`, `condition`, `options?`): `Promise`\<`unknown`>\>
 
 ## Parameters
 

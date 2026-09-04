@@ -162,7 +162,7 @@ Tests should stick to testing the package, API, or user interface they are targe
 
 - A great deal of peace of mind that the product continues to work as expected even when a great deal has changed.
 - Generated code that is tested is far less likely to need to be reworked when used later in the process.
-- For [automated, agentic workflows](./workflows.md), sufficient automated test coverage is required for workflow evals to work.
+- For [automated, agentic workflows](./workflows/docs/01-overview.md), sufficient automated test coverage is required for workflow evals to work.
 
 **Example application:**
 
@@ -174,7 +174,7 @@ There needs to be a source of truth for how to do things the right way specific 
 
 - **Reference** documentation should be generated from source, such as through [Typedoc](https://github.com/TypeStrong/typedoc) or [Redoc](https://github.com/Redocly/redoc).
 - **Explanation** docs should live in the package they address, such as in markdown files in a separate `docs/` directory.
-- **How-To Guides** are naturally expressed with [agentic workflows](./workflows.md), and human-readable versions should be generated from those.
+- **How-To Guides** are naturally expressed with [agentic workflows](./workflows/docs/01-overview.md), and human-readable versions should be generated from those.
 
 **Benefits:**
 

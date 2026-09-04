@@ -20,14 +20,12 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow workflows/add-workflow
-
 - Upsert 3 templates.
 - Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.
-- Upsert 1 template.
-- Register the package in **workflows-cli/list.ts** (workflow areas).
-- Run `npm install <package>` in workflows-cli
-- Run `npm exec saf-workflow checklist <name>`
+- Upsert 4 templates.
+- Change working directory to ../workflows-cli
+- Run `npm install @saflib/workflows`
+- Run `npm exec saf-workflow checklist example-package/example-workflow`
 
 ## Help Docs
 
