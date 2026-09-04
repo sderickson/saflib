@@ -7,6 +7,8 @@
 import path from "node:path";
 import { Command } from "commander";
 import { setupContext } from "@saflib/commander";
+// BEGIN WORKFLOW AREA cli-imports FOR commander/add-command
+// END WORKFLOW AREA
 import {
   analyzeWorkdirPackages,
   findMonorepoRoot,
@@ -127,6 +129,9 @@ const program = new Command()
       }
     },
   );
+
+// BEGIN WORKFLOW AREA cli-commands FOR commander/add-command
+// END WORKFLOW AREA
 
 setupContext({ serviceName: "saf-analyze-package" }, () => {
   program.parse(process.argv);

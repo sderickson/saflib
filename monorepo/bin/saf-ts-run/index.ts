@@ -12,6 +12,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { Command } from "commander";
 import { setupContext } from "@saflib/commander";
+// BEGIN WORKFLOW AREA cli-imports FOR commander/add-command
+// END WORKFLOW AREA
 
 const program = new Command()
   .name("saf-ts-run")
@@ -34,6 +36,9 @@ const program = new Command()
     const result = spawnSync(process.execPath, nodeArgs, { stdio: "inherit" });
     process.exit(result.status ?? 1);
   });
+
+// BEGIN WORKFLOW AREA cli-commands FOR commander/add-command
+// END WORKFLOW AREA
 
 setupContext({ serviceName: "saf-ts-run" }, () => {
   program.parse(process.argv);

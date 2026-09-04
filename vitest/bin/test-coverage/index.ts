@@ -7,6 +7,8 @@ import { Command } from "commander";
 import { spawn } from "child_process";
 import { writeFile } from "fs/promises";
 import { setupContext } from "@saflib/commander";
+// BEGIN WORKFLOW AREA cli-imports FOR commander/add-command
+// END WORKFLOW AREA
 
 const program = new Command()
   .name("test-coverage")
@@ -60,6 +62,9 @@ const program = new Command()
 
     process.exit(0);
   });
+
+// BEGIN WORKFLOW AREA cli-commands FOR commander/add-command
+// END WORKFLOW AREA
 
 setupContext({ serviceName: "test-coverage" }, () => {
   program.parse(process.argv);
