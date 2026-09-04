@@ -43,38 +43,6 @@ Other defaults:
 
 Pass extra Vite plugins (e.g. [`htmlHeaderPlugin`](../../base/clients/build/vite/html-header-plugin.ts)) via `plugins`. Merge product-specific `define` blocks with `mergeConfig` as in the base build config.
 
-## Typical setup
-
-```typescript
-// {product}/clients/build/vite.config.ts
-import { makeConfig } from "@saflib/vite";
-import { validateEnv } from "@saflib/env";
-import envSchema from "./env.schema.combined.json" with { type: "json" };
-import path from "node:path";
-import { defineConfig, mergeConfig } from "vite";
-
-validateEnv(process.env, envSchema);
-
-const monorepoRoot = path.resolve(import.meta.dirname, "../../..");
-
-export default mergeConfig(
-  makeConfig({
-    monorepoRoot,
-    vuetifySettings: "./vuetify-settings.scss",
-    plugins: [/* htmlHeaderPlugin(), … */],
-  }),
-  defineConfig({
-    define: {
-      "import.meta.env.VITE_DEPLOYMENT_NAME": JSON.stringify(
-        process.env.DEPLOYMENT_NAME,
-      ),
-    },
-  }),
-);
-```
-
-Run `npm run dev` / `npm run build` from the build package with `DOMAIN`, `PROTOCOL`, and `CLIENT_SUBDOMAINS` set (see [Environment variables](./env/index.md)).
-
 ## Relationship to other packages
 
 - **`@saflib/env`** — declares and validates core env vars; client build packages use combined schemas from dependencies
