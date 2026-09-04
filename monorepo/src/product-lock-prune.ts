@@ -406,7 +406,7 @@ export function analyzeProductLockPrune(rootDir: string): LockPruneAnalysis {
   const saflibDir = path.join(rootDir, "saflib");
   if (!existsSync(path.join(saflibDir, "package.json"))) {
     throw new Error(
-      "saf-lock-prune requires a product repo with an embedded saflib/ workspace. Run from the product root.",
+      "saf-monorepo lock-prune requires a product repo with an embedded saflib/ workspace. Run from the product root.",
     );
   }
 

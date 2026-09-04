@@ -25,8 +25,6 @@
   },
   "bin": {
     "saf-monorepo": "./bin/saf-monorepo/index.ts",
-    "saf-format": "./bin/saf-format/index.ts",
-    "saf-lock-prune": "./bin/saf-lock-prune/index.ts",
     "saf-ts-run": "./bin/saf-ts-run/index.ts"
   },
   "devDependencies": {

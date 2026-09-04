@@ -1,7 +1,7 @@
-# saf-format
+# saf-monorepo format
 
 ```
-Usage: saf-format [options] <filename>
+Usage: saf-monorepo format [options] <filename>
 
 Format a file with Prettier
 
@@ -10,5 +10,4 @@ Arguments:
 
 Options:
   -h, --help  display help for command
-
 ```
