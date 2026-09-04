@@ -2,6 +2,14 @@
 
 [Playwright](https://playwright.dev/) is a key part in making sure everything in the product works together, and this library provides some useful utilities for making the most of it.
 
+## Writing Tests
+
+Developers should make sure these utilities are used when creating Playwright tests. There is currently no workflows in this package since the work is tough to automate. A typical way to create a test is to:
+
+1. Run the application in the `deploy` package using `prod-local`; Playwright tests run more consistently on production builds than on Vite dev servers.
+2. Use Playwright's codegen tool to record a naive implementation of the test.
+3. Provide the result to an agent and instruct them to update it to use fixtures instead. The [vue/add-view workflow](../../vue/docs/workflows/add-view.md) automatically adds fixtures for every page so the agent should be able to use and augment those as needed.
+
 ## String Locators
 
 Despite Playwright's [wide array of locators](https://playwright.dev/docs/locators) and [helpful tools](https://playwright.dev/docs/codegen), I find I spend too much time setting up and fixing string locators as the UI changes. The main difficulty is how exact and precise they need to be, and minor changes in copy can spawn a great many fixes.
