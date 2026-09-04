@@ -24,7 +24,7 @@ When the repo follows [base/service/http](../../base/docs/01-overview.md), the H
 
 Production backends implement `AnalyticsService` in vendor packages:
 
-- [`@saflib/vendors-posthog`](../../vendors/posthog/configureAnalytics.ts) — `configureAnalytics()` / `PosthogAnalyticsService` for server-side events
-- [`@saflib/vendors-posthog-client`](../../vendors/posthog-client/init.ts) — PostHog script-tag init and Vue helpers for browser events and feature flags
+- [`@saflib/vendors-posthog`](../../vendors/posthog/docs/01-overview.md) — PostHog for server-side events
+- [`@saflib/vendors-posthog-client`](../../vendors/posthog-client/docs/01-overview.md) — PostHog browser init, feature flags, and client events
 
 Development uses the in-memory buffer; call `configureAnalytics()` at startup in production.

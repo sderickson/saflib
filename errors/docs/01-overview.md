@@ -27,8 +27,8 @@ The HTTP app mounts errors routers alongside [node-log](../../node-log/docs/01-o
 
 Production backends implement `ErrorService` in vendor packages:
 
-- [`@saflib/vendors-sentry-node`](../../vendors/sentry-node/configureSentry.ts) — `configureSentry()` / `SentryErrorService` for Node services
-- [`@saflib/vendors-sentry-client`](../../vendors/sentry-client/createSentryCallback.ts) — Sentry Vue/browser adapters for SPAs (`createSentryCallback`, user identify)
+- [`@saflib/vendors-sentry-node`](../../vendors/sentry-node/docs/01-overview.md) — Sentry for Node services
+- [`@saflib/vendors-sentry-client`](../../vendors/sentry-client/docs/01-overview.md) — Sentry Vue/browser adapters for SPAs
 
 Call `configureMockErrors()` in development; call `configureSentry()` (or another vendor helper) at startup in production.
 

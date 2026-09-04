@@ -15,8 +15,8 @@ Shared error types: `PathTraversalError`, `StorageError`, `FileNotFoundError`. M
 
 Cloud backends extend `ObjectStore` in vendor packages:
 
-- [`@saflib/vendors-gcs`](../../vendors/gcs/GcsObjectStore.ts) — Google Cloud Storage
-- [`@saflib/vendors-azure`](../../vendors/azure/AzureObjectStore.ts) — Azure Blob Storage
+- [`@saflib/vendors-gcs`](../../vendors/gcs/docs/01-overview.md) — Google Cloud Storage
+- [`@saflib/vendors-azure`](../../vendors/azure/docs/01-overview.md) — Azure Blob Storage
 
 Use `createObjectStore({ type: "disk", rootPath })` locally; wire a vendor class in production service bootstrap.
 

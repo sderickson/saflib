@@ -13,9 +13,9 @@
 
 Production backends implement `SecretStore` in vendor packages:
 
-- [`@saflib/vendors-infisical`](../../vendors/infisical/configureSecretStore.ts) — `configureSecretStore()` / `InfisicalSecretStore`
+- [`@saflib/vendors-infisical`](../../vendors/infisical/docs/01-overview.md) — Infisical vault
 
-Use `EnvSecretStore` or `INFISICAL_TOKEN=mock` locally; call `configureSecretStore()` at startup in production. Vendor packages such as [`@saflib/vendors-brevo`](../../vendors/brevo/configureEmail.ts) fetch API keys through the configured store.
+Use `EnvSecretStore` or `INFISICAL_TOKEN=mock` locally; call `configureSecretStore()` at startup in production. Vendor packages such as [`@saflib/vendors-brevo`](../../vendors/brevo/docs/01-overview.md) fetch API keys through the configured store.
 
 ## Integration
 

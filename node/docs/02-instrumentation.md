@@ -73,7 +73,7 @@ Call all these before initializing any servers or other long-running processes, 
 
 Production log shipping uses vendor Winston transports:
 
-- [`@saflib/vendors-loki`](../../vendors/loki/addLokiTransport.ts) — `addLokiTransport()` for Grafana Loki
+- [`@saflib/vendors-loki`](../../vendors/loki/docs/01-overview.md) — Grafana Loki log shipping
 
 If you have some service-specific context (which is likely, especially for shared clients to databases and other services), you should put those in a sibling `{service-name}-common` package and provide them to each of your subsystems. Some, such as `@saflib/grpc`, provide helpers for this.
 

@@ -24,6 +24,6 @@ See [base](https://github.com/sderickson/saflib/tree/main/base/service/email), w
 
 Production backends implement `EmailService` in vendor packages:
 
-- [`@saflib/vendors-brevo`](../../vendors/brevo/configureEmail.ts) — `configureEmail()` / `BrevoEmailService`
+- [`@saflib/vendors-brevo`](../../vendors/brevo/docs/01-overview.md) — Brevo transactional email
 
 Resolve API keys via [`@saflib/secret-store`](../../secret-store/docs/01-overview.md). Development uses the in-memory mock from `@saflib/email-service`.
