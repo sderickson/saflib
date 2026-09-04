@@ -13,6 +13,6 @@ Production logging still flows through Winston transports you configure at start
 
 ## Integration
 
-[`@saflib/node`](../../node/docs/01-overview.md) calls `enableDevLogBuffer` and adds `createDevLogBufferTransport()` automatically when `DEPLOYMENT_NAME=development`. The HTTP app mounts `createDevLogsRouter()` for paginated log listing and live streaming.
+[`@saflib/node`](../../node/docs/01-overview.md) calls `enableDevLogBuffer` and adds `createDevLogBufferTransport()` automatically when `DEPLOYMENT_NAME=development`. The HTTP app mounts `createDevLogsRouter()` for paginated log listing and live streaming. Live streams use SSE helpers from [`@saflib/notify`](../../notify/docs/overview.md).
 
 See [node instrumentation — Testing observability in development](../../node/docs/02-instrumentation.md#testing-observability-in-development).

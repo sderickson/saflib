@@ -32,7 +32,7 @@
       "path": "../node-log/node-log-http"
     },
     {
-      "path": "../notify/notify"
+      "path": "../notify"
     },
     {
       "path": "../openapi"

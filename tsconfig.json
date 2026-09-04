@@ -275,7 +275,7 @@
       "path": "./node-metrics/node-metrics-vue"
     },
     {
-      "path": "./notify/notify"
+      "path": "./notify"
     },
     {
       "path": "./object-store"
