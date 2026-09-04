@@ -2,77 +2,33 @@
 
 ---
 
-# `@saflib/secret-store`
+# @saflib/secret-store
 
-Fetch secrets **after** checking they are declared in the calling package’s
-`secrets.json`. Validation is package-local at the call site — there is no
-process-wide secret registry or boot-time monorepo graph walk.
+## Classes
 
-This package provides the abstract `SecretStore`, an env-backed
-implementation, and a process-level singleton (`setSecretStore` /
-`getSecretStore`). Vendor backends (e.g. Infisical) live in
-`@saflib/vendors-*` packages.
+| Class                                                       | Description                                                                             |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [EnvSecretNotFoundError](classes/EnvSecretNotFoundError.md) | Returned when `process.env[name]` is missing or blank.                                  |
+| [EnvSecretStore](classes/EnvSecretStore.md)                 | Resolves secrets from `process.env` by variable name.                                   |
+| [SecretNotDeclaredError](classes/SecretNotDeclaredError.md) | Returned when `getSecretByName` is called for a name not in the package `secrets.json`. |
+| [SecretStore](classes/SecretStore.md)                       | -                                                                                       |
 
-## Declare secrets
+## Type Aliases
 
-Add `secrets.json` next to the package’s `package.json`:
+| Type Alias                                                           | Description                                                                                                                                                  |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [CreateSecretStoreOptions](type-aliases/CreateSecretStoreOptions.md) | -                                                                                                                                                            |
+| [SecretManifest](type-aliases/SecretManifest.md)                     | Package-local list of secrets this package may fetch.                                                                                                        |
+| [SecretManifestEntry](type-aliases/SecretManifestEntry.md)           | One declared secret for a package's `secrets.json`.                                                                                                          |
+| [SecretStoreError](type-aliases/SecretStoreError.md)                 | Union of errors returned by [SecretStore#getSecretByName](classes/SecretStore.md#getsecretbyname). Vendor backends may return additional `Error` subclasses. |
 
-```json
-[
-  {
-    "name": "STRIPE_SECRET_API_KEY",
-    "description": "Stripe secret API key. Sentinel \"mock\" selects the in-memory mock client."
-  }
-]
-```
+## Functions
 
-Required fields: `name`, `description`. Metadata only — never put values here.
-
-## Fetch with the package manifest
-
-```ts
-import type { SecretStore } from "@saflib/secret-store";
-import packageSecrets from "./secrets.json" with { type: "json" };
-
-const out = await store.getSecretByName(
-  "STRIPE_SECRET_API_KEY",
-  packageSecrets,
-);
-if (out.error) {
-  // includes SecretNotDeclaredError when the name is missing from packageSecrets
-}
-```
-
-`getSecretByName(name, packageSecrets)`:
-
-1. Returns `SecretNotDeclaredError` if `name` is not in `packageSecrets`.
-2. Otherwise fetches from the configured backend.
-
-Prefer importing `./secrets.json` next to the `configure*` function that owns
-the secret.
-
-## Creating a store
-
-```ts
-import {
-  createSecretStore,
-  setSecretStore,
-  getSecretStore,
-} from "@saflib/secret-store";
-
-// Env-backed (typical for CLIs and base template):
-const store = createSecretStore({ type: "env" });
-setSecretStore(store);
-
-// Infisical (product opt-in via @saflib/vendors-infisical):
-import {
-  configureSecretStore,
-  getSecretStore,
-} from "@saflib/vendors-infisical";
-configureSecretStore();
-const store = getSecretStore();
-```
-
-Infisical connection env (`INFISICAL_TOKEN`, `INFISICAL_PROJECT_ID`,
-`INFISICAL_ENVIRONMENT`) is declared on `@saflib/vendors-infisical`.
-Sentinel `"mock"` for `INFISICAL_TOKEN` selects the mock Infisical client.
+| Function                                                          | Description                                                                                                                                                               |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [createSecretStore](functions/createSecretStore.md)               | Creates an env-backed [SecretStore](classes/SecretStore.md). For Infisical, use `@saflib/vendors-infisical`.                                                              |
+| [getSecretStore](functions/getSecretStore.md)                     | Returns the store set by [setSecretStore](functions/setSecretStore.md).                                                                                                   |
+| [hasSecretStore](functions/hasSecretStore.md)                     | Whether a process-level store has been set.                                                                                                                               |
+| [isSecretDeclared](functions/isSecretDeclared.md)                 | Returns true when `name` appears in the package secrets manifest.                                                                                                         |
+| [resetSecretStoreForTests](functions/resetSecretStoreForTests.md) | Test-only: clear the process-level store so configure / set can run again.                                                                                                |
+| [setSecretStore](functions/setSecretStore.md)                     | Sets the process-level secret store. Idempotent — subsequent calls are no-ops. Vendor packages (e.g. `@saflib/vendors-infisical`) call this from their configure helpers. |
