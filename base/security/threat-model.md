@@ -2,7 +2,7 @@
 
 > Status: **starter stub** — shipped with `saflib/base`. **Product owners** replace
 > this with a living threat model as surface grows. Companion suite:
-> Playwright specs in this folder; toolkit helpers in `@saflib/security`.
+> Playwright specs in this folder; toolkit helpers in [@saflib/security](../../security/docs/01-overview.md).
 
 This stub lists controls the golden product ships out of the box. It is **not** a
 full narrative — expand §threats / §controls as you add routes,
@@ -12,7 +12,7 @@ integrations, and deploy targets.
 
 | Layer                                                    | Owns                                                                         |
 | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `@saflib/security`                                       | Portable Playwright helpers (headers, CSRF, CORS, cookies, config factories) |
+| [@saflib/security](../../security/docs/01-overview.md) | Portable Playwright helpers (headers, CSRF, CORS, cookies, config factories) |
 | `{product}/security/` (this folder after `product/init`) | Product specs, this threat model, product Caddy allowlists, CI wiring        |
 | Product owner                                            | Ongoing threat-model maintenance, new specs for new surface, ops runbooks    |
 

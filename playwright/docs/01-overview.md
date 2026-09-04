@@ -33,7 +33,7 @@ Entrypoint: `@saflib/playwright` and `@saflib/playwright/playwright.config`.
 
 **Fixtures** — page-level Playwright fixtures (`PageName.fixture.ts`) are scaffolded by [vue/add-view](../vue/docs/workflows/add-view.md). Cross-SPA flows compose fixtures from `@saflib/ory-kratos-spa/fixtures`, product `common/fixtures`, and page fixtures (example: [`base/clients/admin/e2e`](../../base/clients/admin/e2e/admin-navigation.spec.ts)).
 
-**Security e2e** — HTTP/browser security specs in `@saflib/base-security` use `createSecurityPlaywrightConfig` from `@saflib/security/playwright/config` (see [`security/README.md`](../../security/README.md)), not this package's SPA default.
+**Security e2e** — HTTP/browser security specs in `@saflib/base-security` use `createSecurityPlaywrightConfig` from `@saflib/security/playwright/config` (see [@saflib/security](../security/docs/01-overview.md)), not this package's SPA default.
 
 ## String locators {#string-locators}
 
