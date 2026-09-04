@@ -20,9 +20,9 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Upsert 1 template.
+- Upsert 2 templates.
 - Update **example-command.ts**
-- Add the new command to the adjacent index.ts file.
+- Register the command in **index.ts** (workflow areas from the base template).
 - Run `npm install @saflib/docs --save-dev`
 - Run `npm exec saf-docs generate`
 
