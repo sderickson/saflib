@@ -1,3 +1,4 @@
+import type { Command } from "commander";
 import {
   type MonorepoContext,
   getCurrentPackageName,
@@ -48,4 +49,16 @@ export const generateCommand = (options: GenerateOptions) => {
       cleanupEmittedDeclarationArtifacts(packageDir);
     }
   }
+};
+
+export const addGenerateCommand = (
+  program: Command,
+  monorepoContext: MonorepoContext,
+) => {
+  program
+    .command("generate")
+    .description("Generate typedoc and CLI docs for the current package.")
+    .action(() => {
+      generateCommand({ monorepoContext });
+    });
 };

@@ -1,7 +1,8 @@
 #!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 
 import { runWorkflowCli } from "@saflib/workflows";
-import { workflows } from "./list.ts";
+import { setupContext } from "@saflib/commander";
+import { workflows } from "../../list.ts";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 
@@ -27,7 +28,9 @@ const systemPrompt = `
 This codebase is a SAF monorepo. It follows the recommended patterns as described in saflib/monorepo/docs/01-overview.md, read that to get oriented. Packages you'll be working on depend on generic packages that live in saflib/, and those packages have documentation if you need it.
 `;
 
-runWorkflowCli(workflows, {
-  getSourceUrl: getGitHubUrl,
-  systemPrompt,
+setupContext({ serviceName: "saf-workflow" }, () => {
+  void runWorkflowCli(workflows, {
+    getSourceUrl: getGitHubUrl,
+    systemPrompt,
+  });
 });

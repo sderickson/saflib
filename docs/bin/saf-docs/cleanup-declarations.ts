@@ -1,3 +1,4 @@
+import type { Command } from "commander";
 import type { MonorepoContext } from "@saflib/monorepo/workspace";
 import { relative } from "node:path";
 import { cleanupEmittedDeclarationArtifacts } from "./generate-typedoc-vue.ts";
@@ -32,3 +33,17 @@ export function cleanupAllDeclarationArtifacts(
     `\nCleaned ${removedArtifacts} artifact(s) across ${cleanedPackages} package(s). Hand-written ambient .d.ts files were preserved.`,
   );
 }
+
+export const addCleanupDeclarationsCommand = (
+  program: Command,
+  monorepoContext: MonorepoContext,
+) => {
+  program
+    .command("cleanup-declarations")
+    .description(
+      "Remove emitted .d.ts and .d.ts.map files left in package source trees.",
+    )
+    .action(() => {
+      cleanupAllDeclarationArtifacts(monorepoContext);
+    });
+};

@@ -17,8 +17,8 @@
     "typecheck": "tsc"
   },
   "bin": {
-    "saf-docker": "./src/saf-docker-cli.ts",
-    "saf-git-hashes": "./src/git-hashes-cli.ts"
+    "saf-docker": "./bin/saf-docker/index.ts",
+    "saf-git-hashes": "./bin/saf-git-hashes/index.ts"
   },
   "dependencies": {
     "@saflib/commander": "*",

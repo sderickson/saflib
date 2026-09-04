@@ -10,7 +10,7 @@
     "typecheck": "tsc"
   },
   "bin": {
-    "saf-analyze-package": "./src/saf-analyze-package-cli.ts"
+    "saf-analyze-package": "./bin/saf-analyze-package/index.ts"
   },
   "dependencies": {
     "@saflib/commander": "*",

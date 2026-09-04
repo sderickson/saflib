@@ -6,9 +6,10 @@
 import { Command } from "commander";
 import { spawn } from "child_process";
 import { writeFile } from "fs/promises";
+import { setupContext } from "@saflib/commander";
 
 const program = new Command()
-  .name("saf-test-coverage")
+  .name("test-coverage")
   .description("Wrapper around vitest coverage")
   .option("-c, --capture-log", "Capture the log output - but TTY is lost!")
   .action(async (options) => {
@@ -60,4 +61,6 @@ const program = new Command()
     process.exit(0);
   });
 
-program.parse(process.argv);
+setupContext({ serviceName: "test-coverage" }, () => {
+  program.parse(process.argv);
+});

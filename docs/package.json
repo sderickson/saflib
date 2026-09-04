@@ -10,7 +10,7 @@
     "typecheck": "tsc"
   },
   "bin": {
-    "saf-docs": "./bin/saf-docs-cli/index.ts"
+    "saf-docs": "./bin/saf-docs/index.ts"
   },
   "dependencies": {
     "@saflib/commander": "*",

@@ -2,18 +2,17 @@
 
 import { Command } from "commander";
 import { setupContext } from "@saflib/commander";
-import { writeGitHashesEnvFile } from "./git-hashes.ts";
+import { writeGitHashesEnvFile } from "../../src/git-hashes.ts";
 
 const program = new Command()
   .name("saf-git-hashes")
-  .description("Generate git hash files for builds to access in node and vue.");
-
-program.action(() => {
-  const { root, saflib } = writeGitHashesEnvFile({
-    cwd: process.cwd(),
+  .description("Generate git hash files for builds to access in node and vue.")
+  .action(() => {
+    const { root, saflib } = writeGitHashesEnvFile({
+      cwd: process.cwd(),
+    });
+    console.log(`Wrote hashes (root=${root} saflib=${saflib})`);
   });
-  console.log(`Wrote hashes (root=${root} saflib=${saflib})`);
-});
 
 setupContext({ serviceName: "saf-git-hashes" }, () => {
   program.parse(process.argv);

@@ -10,15 +10,18 @@
     "./import-graph-reporter.js": "./import-graph-reporter.js",
     "./local-storage-stub": "./local-storage-stub.ts"
   },
-  "devDependencies": {
-    "@vitest/coverage-v8": "^3.0.0",
-    "vitest": "^3.0.0"
+  "dependencies": {
+    "@saflib/commander": "*"
   },
   "bin": {
-    "test-coverage": "./test-coverage.ts"
+    "test-coverage": "./bin/test-coverage/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -b"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.0.0",
+    "vitest": "^3.0.0"
   },
   "sideEffects": false
 }
