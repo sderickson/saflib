@@ -16,7 +16,3 @@ Core runtime metrics collection lives in [`@saflib/node`](../../node/docs/01-ove
 When the repo follows [base/service/http](../../base/docs/overview.md), the HTTP app mounts `createMetricsRouter()` in development. The admin SPA uses `@saflib/node-metrics-vue` to fetch `/admin/metrics/snapshot` and display metric families in a table.
 
 No external observability stack or cloud keys are required for local development — metrics stay in the running Node process until scraped by this tooling or by production Prometheus.
-
-## Naming
-
-The `node-` prefix marks **server-process** metrics (Prometheus / `prom-client`), not product analytics or browser telemetry. The Vue package is an admin viewer for that server data, not a general frontend metrics SDK.

@@ -16,7 +16,3 @@ Production logging still flows through Winston transports you configure at start
 [`@saflib/node`](../../node/docs/01-overview.md) calls `enableDevLogBuffer` and adds `createDevLogBufferTransport()` automatically when `DEPLOYMENT_NAME=development`. The HTTP app mounts `createDevLogsRouter()` for paginated log listing and live streaming.
 
 See [node instrumentation — Testing observability in development](../../node/docs/02-instrumentation.md#testing-observability-in-development).
-
-## Naming
-
-The `node-` prefix marks **server-process** Winston logging. Browser console logging and client-side analytics live elsewhere. The Vue packages are admin viewers (and DevTools tabs) for server logs, not a general browser logging framework.

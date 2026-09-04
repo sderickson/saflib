@@ -5,6 +5,7 @@ For basic observability of web applications, SAF provides the logic for:
 - Logging
 - Metrics
 - Error reporting
+- Product events (analytics)
 
 All SAF-provided libraries support these systems, and this library provides all the tools for new systems to do the same.
 
@@ -12,11 +13,10 @@ While this package provides logic for cross-cutting instrumentation concerns, in
 
 - **Metrics (dev admin)** — [node-metrics](../../node-metrics/docs/01-overview.md): in-process Prometheus snapshot parsing and admin viewing. Runtime collection stays here via [`collectSystemMetrics`](./ref/index/functions/collectSystemMetrics.md) and subsystem histograms.
 - **Logs (dev admin)** — [node-log](../../node-log/docs/01-overview.md): Winston ring buffer, dev HTTP routes, and admin/DevTools viewers. `@saflib/node` enables the buffer transport automatically in development.
-- **Errors (browser + server)** — [errors](../../errors/docs/01-overview.md): reported-error storage, CSP/client ingestion, and admin UI. Hooks into [`addErrorCollector`](./ref/index/functions/addErrorCollector.md) / [`logError`](./ref/index/interfaces/SafReporters.md#logerror). Kept as `errors` (not `node-errors`) because client reporting is in scope.
+- **Errors (browser + server)** — [errors](../../errors/docs/01-overview.md): reported-error storage, CSP/client ingestion, and admin UI. Hooks into [`addErrorCollector`](./ref/index/functions/addErrorCollector.md) / [`logError`](./ref/index/interfaces/SafReporters.md#logerror).
+- **Product events (browser + server)** — [analytics](../../analytics/docs/01-overview.md): product event buffer, client logger, server typed analytics, and admin Events page.
 
-The `node-` prefix on metrics and logs marks server-process dev tooling; `errors` spans both stacks. See each suite overview for package lists and integration notes.
-
-**Tracing** is the one major area of instrumentation that SAF does not provide. That's mostly due to the other three being simpler to set up and mostly sufficient. Still, SAF is designed in a way where tracing can be added, in particular by enforcing a consistent context definition (through this library) and using wrapping functions in libraries such as [`@saflib/express`](../../express/docs/ref/@saflib/express/functions/createHandler.md) and [`@saflib/drizzle`](../../drizzle/docs/ref/index/functions/queryWrapper.md) where spans can be systematically added at package boundaries.
+**Tracing** is the one major area of instrumentation that SAF does not provide. That's mostly due to the other four being simpler to set up and mostly sufficient. Still, SAF is designed in a way where tracing can be added, in particular by enforcing a consistent context definition (through this library) and using wrapping functions in libraries such as [`@saflib/express`](../../express/docs/ref/@saflib/express/functions/createHandler.md) and [`@saflib/drizzle`](../../drizzle/docs/ref/index/functions/queryWrapper.md) where spans can be systematically added at package boundaries.
 
 ## Stores
 
