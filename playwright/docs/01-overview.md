@@ -1,43 +1,72 @@
 # Overview
 
-[Playwright](https://playwright.dev/) is a key part in making sure everything in the product works together, and this library provides some useful utilities for making the most of it.
+`@saflib/playwright` provides shared [Playwright](https://playwright.dev/) utilities for SAF products: typed string locators aligned with Vue copy, screenshot helpers for journey review, Vuetify conveniences, and a default config SPA packages extend.
 
-## Writing Tests
+E2E specs live in each client SPA under `e2e/` (see [@saflib/vue — `e2e/`](../vue/docs/01-overview.md#e2e)). Product layout and client packages are described in [base](../../base/docs/01-overview.md).
 
-Developers should make sure these utilities are used when creating Playwright tests. There is currently no workflows in this package since the work is tough to automate. A typical way to create a test is to:
+## Writing tests
 
-1. Run the application in the `deploy` package using `prod-local`; Playwright tests run more consistently on production builds than on Vite dev servers.
-2. Use Playwright's codegen tool to record a naive implementation of the test.
-3. Provide the result to an agent and instruct them to update it to use fixtures instead. The [vue/add-view workflow](../../vue/docs/workflows/add-view.md) automatically adds fixtures for every page so the agent should be able to use and augment those as needed.
+There are no Playwright workflows in this package yet; tests are authored manually or with agent help. A typical flow:
 
-## String Locators
+1. Run the app against a **production-like** build (the `prod-local` script in the `deploy/` folder). Production bundles behave more consistently under Playwright.
+2. Use Playwright [codegen](https://playwright.dev/docs/codegen) for a first pass.
+3. Refactor to **fixtures** and [`getByString`](#string-locators) using page `.strings.ts` exports. After [vue/add-view](../vue/docs/workflows/add-view.md), each page has a fixture stub to extend. This step is particularly good for an agent to do.
 
-Despite Playwright's [wide array of locators](https://playwright.dev/docs/locators) and [helpful tools](https://playwright.dev/docs/codegen), I find I spend too much time setting up and fixing string locators as the UI changes. The main difficulty is how exact and precise they need to be, and minor changes in copy can spawn a great many fixes.
+Prefer [`getByString`](#string-locators) and exported string objects over ad hoc `getByText` / CSS selectors.
 
-This is where [sharing strings](../../best-practices.md#specify-and-enforce-shared-apis-models-and-strings) really comes in handy. By structuring client strings in a consistent way and making them available outside of client packages _without_ depending on client build systems (rollup, vite, etc.), Playwright can use the same exact strings the client does and enforce that through type checking. There's no more duplicating the same strings across Playwright tests and client code.
+## What this package provides
 
-It's also important that these strings be organized to match HTML attributes. Strings are stored in objects that follow [this type](../../utils/docs/ref/interfaces/ElementStringObject.md); an object with keys such as `"aria-label"`, `"text"`, `"role"`, etc.
+| Export | Role |
+| ------ | ---- |
+| [`getByString`](./ref/@saflib/playwright/functions/getByString.md) | Locate elements from the same `ElementString` objects Vue binds (see [String locators](#string-locators)) |
+| [`attachScreenshot`](./ref/@saflib/playwright/functions/attachScreenshot.md) / [`cleanScreenshots`](./ref/@saflib/playwright/functions/cleanScreenshots.md) | Visual record of a user journey in the HTML report; Chromium copies land beside the spec for deploy bundling |
+| [`chooseVuetifySelectOption`](./ref/@saflib/playwright/functions/chooseVuetifySelectOption.md) | Open a Vuetify combobox and pick an option (handles async items and truncated labels) |
+| [`getUniqueEmail`](./ref/@saflib/playwright/functions/getUniqueEmail.md) / [`getUniqueId`](./ref/@saflib/playwright/functions/getUniqueId.md) | Ephemeral test identities |
+| [`tightAndroidViewport`](./ref/@saflib/playwright/variables/tightAndroidViewport.md) | Small mobile viewport for responsive checks |
+| [`playwright.config`](./ref/@saflib/playwright/playwright.config/index.md) | Default SAF config (browsers, health gate, timeouts) |
 
-Then, Vue can bind the entire object to the element like this:
+Entrypoint: `@saflib/playwright` and `@saflib/playwright/playwright.config`.
+
+## Integration
+
+**SPA packages** — each `{product}/clients/{spa}/` holds `e2e/**/*.spec.ts` and a `playwright.config.ts` that re-exports the shared default (see [`base/clients/common/playwright.config.ts`](../../base/clients/common/playwright.config.ts)). Set `DOMAIN` and `PROTOCOL` for the stack under test (local dev uses `docker.localhost` / `http`).
+
+**Fixtures** — page-level Playwright fixtures (`PageName.fixture.ts`) are scaffolded by [vue/add-view](../vue/docs/workflows/add-view.md). Cross-SPA flows compose fixtures from `@saflib/ory-kratos-spa/fixtures`, product `common/fixtures`, and page fixtures (example: [`base/clients/admin/e2e`](../../base/clients/admin/e2e/admin-navigation.spec.ts)).
+
+**Security e2e** — HTTP/browser security specs in `@saflib/base-security` use `createSecurityPlaywrightConfig` from `@saflib/security/playwright/config` (see [`security/README.md`](../../security/README.md)), not this package's SPA default.
+
+## String locators {#string-locators}
+
+Playwright's built-in locators are flexible, but copy-heavy UIs break tests when strings drift. SAF shares the same string objects between Vue templates and Playwright via [`ElementString`](../../utils/docs/ref/index/type-aliases/ElementString.md) / [`ElementStringObject`](../../utils/docs/ref/interfaces/ElementStringObject.md) from `@saflib/utils` — see [best-practices — shared strings](../../best-practices.md#specify-and-enforce-shared-apis-models-and-strings).
+
+Each page exports a `.strings.ts` file; the SPA re-exports them at `./strings` so Playwright imports strings **without** pulling in Vite or Vue (see [vue — `strings.ts`](../vue/docs/01-overview.md#stringsts)).
+
+String objects use keys that map to HTML attributes (`text`, `aria-label`, `data-testid`, `placeholder`, `label`, …). Bind in Vue:
 
 ```html
 <button v-bind="elementStringObject" />
 ```
 
-And Playwright, given the same object, can [use the best locator for the job](https://github.com/sderickson/saflib/blob/3d6b57ea4a4e4abcdca96826413585c3a0844c1d/playwright/index.ts#L26-L48), given what's available.
+`getByString` picks the best matching Playwright locator for whichever keys are present (label → test id → placeholder → text). For i18n interpolation patterns in plain strings, it uses the same regex helper as `@saflib/utils`.
 
-See `@saflib/vue` for more information on how to define and export strings.
+Define and organize strings in [@saflib/vue — Components](../vue/docs/02-components.md) and [i18n](../vue/docs/03-i18n.md).
 
-## User Journeys
+## User journeys
 
-Playwright tests should live in the client package which they mainly test, and they should test the important user journeys the client implements. These user journeys should come from the designs provided, so that Playwright tests enforce that designed user journeys continue to work as expected.
+Tests should cover the **designed user journeys** for the SPA they primarily exercise. Specs may cross subdomains (auth login, admin setup) when those dependencies are part of the journey — that is expected.
 
-Playwright tests can also provide a record of these user journeys, for review and feedback. Playwright tests should use the provided [`attachScreenshot`](./ref/@saflib/playwright/functions/attachScreenshot.md) function to create a visual record of the user journey for easier review. These can be shipped to where others in the organization can see them, for understanding a given client package, or for QA.
+Organize specs under `e2e/{journey}/` so screenshot artifacts stay grouped per flow.
 
-## Playwright Config
+Use [`attachScreenshot`](./ref/@saflib/playwright/functions/attachScreenshot.md) at key steps to document the journey in the HTML report. Call [`cleanScreenshots`](./ref/@saflib/playwright/functions/cleanScreenshots.md) at the start of a spec so Chromium PNGs beside the test file reflect the latest run (gitignored; optional deploy bundling).
 
-`@saflib/playwright` includes a default playwright config with the following features:
+## Default Playwright config
 
-- Firefox and Chromium browsers
-- A global setup test which checks `{PROTOCOL}://api.{DOMAIN}/health` before e2e runs.
-- Some more aggressive timeouts; by default they're 30 seconds, I changed them to 10 seconds.
+[`@saflib/playwright/playwright.config`](../../playwright/playwright.config.ts) provides:
+
+- **Projects** — Chromium and Firefox, both depending on a **server health** setup project
+- **Global health gate** — [`global.setup.ts`](../../playwright/global.setup.ts) polls `{PROTOCOL}://api.{DOMAIN}/health` until all configured API subdomains return 200 (matches product Caddy `api.{DOMAIN}`)
+- **Timeouts** — 10s action and expect timeouts (Playwright defaults are 30s)
+- **CI** — `forbidOnly`, two retries, single worker; local runs use parallel workers
+- **Tracing** — `on-first-retry`; HTML reporter
+
+Extend or replace in a SPA's `playwright.config.ts` when a product needs extra projects (mobile viewport, webkit, etc.).
