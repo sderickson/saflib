@@ -2,8 +2,8 @@
 
 ---
 
-# Variable: HTTP_ACCESS_DURATION_WIDTH
+# Variable: HTTP\_ACCESS\_DURATION\_WIDTH
 
-> `const` **HTTP_ACCESS_DURATION_WIDTH**: `6` = `6`
+> `const` **HTTP\_ACCESS\_DURATION\_WIDTH**: `6` = `6`
 
 Fixed 6-char duration (` 325ms` / ` 72.2s`).

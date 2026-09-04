@@ -41,21 +41,21 @@
 
 ## Variables
 
-| Variable                                                                          | Description                                                                                                                                |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| [defaultErrorReporter](variables/defaultErrorReporter.md)                         | Default ErrorReporter; call addErrorCollector with this to use it.                                                                         |
-| [HTTP_ACCESS_DURATION_WIDTH](variables/HTTP_ACCESS_DURATION_WIDTH.md)             | Fixed 6-char duration (` 325ms` / ` 72.2s`).                                                                                               |
-| [HTTP_ACCESS_LARGE_BYTES](variables/HTTP_ACCESS_LARGE_BYTES.md)                   | Response body at or above this size (bytes) is highlighted when ANSI styling is on.                                                        |
-| [HTTP_ACCESS_SIZE_WIDTH](variables/HTTP_ACCESS_SIZE_WIDTH.md)                     | Fixed 6-char response size; kb when > 1024 bytes.                                                                                          |
-| [HTTP_ACCESS_SLOW_MS](variables/HTTP_ACCESS_SLOW_MS.md)                           | Access-log duration above this (ms) is highlighted when ANSI styling is on.                                                                |
-| [HTTP_CHANNEL_CLIENT_PLAIN](variables/HTTP_CHANNEL_CLIENT_PLAIN.md)               | Browser/client traffic — heavy bar, arrow leans left (inbound from the edge). Unicode: BLACK LEFT-POINTING POINTER + HEAVY HORIZONTAL.     |
-| [HTTP_CHANNEL_INTERNAL_PLAIN](variables/HTTP_CHANNEL_INTERNAL_PLAIN.md)           | Internal background traffic — light bar, arrow leans right (outbound dispatch). Unicode: LIGHT HORIZONTAL + RIGHT-POINTING SMALL TRIANGLE. |
-| [HTTP_CHANNEL_MARKER_WIDTH](variables/HTTP_CHANNEL_MARKER_WIDTH.md)               | Fixed visual width for the HTTP channel marker column.                                                                                     |
-| [metricHistogramDefaultBuckets](variables/metricHistogramDefaultBuckets.md)       | -                                                                                                                                          |
-| [SAF_INTERNAL_ASSERTION_KEYS_NAME](variables/SAF_INTERNAL_ASSERTION_KEYS_NAME.md) | -                                                                                                                                          |
-| [safContextStorage](variables/safContextStorage.md)                               | Storage for SafContext.                                                                                                                    |
-| [safReportersStorage](variables/safReportersStorage.md)                           | AsyncLocalStorage for SafReporters.                                                                                                        |
-| [testContext](variables/testContext.md)                                           | Context provided during testing.                                                                                                           |
+| Variable                                                                              | Description                                                                                                                                |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| [defaultErrorReporter](variables/defaultErrorReporter.md)                             | Default ErrorReporter; call addErrorCollector with this to use it.                                                                         |
+| [HTTP\_ACCESS\_DURATION\_WIDTH](variables/HTTP_ACCESS_DURATION_WIDTH.md)              | Fixed 6-char duration (` 325ms` / ` 72.2s`).                                                                                               |
+| [HTTP\_ACCESS\_LARGE\_BYTES](variables/HTTP_ACCESS_LARGE_BYTES.md)                    | Response body at or above this size (bytes) is highlighted when ANSI styling is on.                                                        |
+| [HTTP\_ACCESS\_SIZE\_WIDTH](variables/HTTP_ACCESS_SIZE_WIDTH.md)                      | Fixed 6-char response size; kb when > 1024 bytes.                                                                                          |
+| [HTTP\_ACCESS\_SLOW\_MS](variables/HTTP_ACCESS_SLOW_MS.md)                            | Access-log duration above this (ms) is highlighted when ANSI styling is on.                                                                |
+| [HTTP\_CHANNEL\_CLIENT\_PLAIN](variables/HTTP_CHANNEL_CLIENT_PLAIN.md)                | Browser/client traffic — heavy bar, arrow leans left (inbound from the edge). Unicode: BLACK LEFT-POINTING POINTER + HEAVY HORIZONTAL.     |
+| [HTTP\_CHANNEL\_INTERNAL\_PLAIN](variables/HTTP_CHANNEL_INTERNAL_PLAIN.md)            | Internal background traffic — light bar, arrow leans right (outbound dispatch). Unicode: LIGHT HORIZONTAL + RIGHT-POINTING SMALL TRIANGLE. |
+| [HTTP\_CHANNEL\_MARKER\_WIDTH](variables/HTTP_CHANNEL_MARKER_WIDTH.md)                | Fixed visual width for the HTTP channel marker column.                                                                                     |
+| [metricHistogramDefaultBuckets](variables/metricHistogramDefaultBuckets.md)           | -                                                                                                                                          |
+| [SAF\_INTERNAL\_ASSERTION\_KEYS\_NAME](variables/SAF_INTERNAL_ASSERTION_KEYS_NAME.md) | -                                                                                                                                          |
+| [safContextStorage](variables/safContextStorage.md)                                   | Storage for SafContext.                                                                                                                    |
+| [safReportersStorage](variables/safReportersStorage.md)                               | AsyncLocalStorage for SafReporters.                                                                                                        |
+| [testContext](variables/testContext.md)                                               | Context provided during testing.                                                                                                           |
 
 ## Functions
 

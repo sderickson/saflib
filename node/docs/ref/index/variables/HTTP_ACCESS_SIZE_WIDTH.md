@@ -2,8 +2,8 @@
 
 ---
 
-# Variable: HTTP_ACCESS_SIZE_WIDTH
+# Variable: HTTP\_ACCESS\_SIZE\_WIDTH
 
-> `const` **HTTP_ACCESS_SIZE_WIDTH**: `6` = `6`
+> `const` **HTTP\_ACCESS\_SIZE\_WIDTH**: `6` = `6`
 
 Fixed 6-char response size; kb when > 1024 bytes.

@@ -2,8 +2,8 @@
 
 ---
 
-# Variable: HTTP_ACCESS_LARGE_BYTES
+# Variable: HTTP\_ACCESS\_LARGE\_BYTES
 
-> `const` **HTTP_ACCESS_LARGE_BYTES**: `number`
+> `const` **HTTP\_ACCESS\_LARGE\_BYTES**: `number`
 
 Response body at or above this size (bytes) is highlighted when ANSI styling is on.

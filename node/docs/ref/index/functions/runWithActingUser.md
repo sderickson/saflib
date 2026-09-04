@@ -4,7 +4,7 @@
 
 # Function: runWithActingUser()
 
-> **runWithActingUser**\<`T`\>(`userId`, `fn`): `Promise`\<`T`\>
+> **runWithActingUser**\<`T`>\>(`userId`, `fn`): `Promise`\<`T`>\>
 
 Run `fn` with `auth.userId` set on the current [SafContext](../interfaces/SafContext.md). Use when a
 request is anonymous (webhooks, jobs) but should be attributed to the user who

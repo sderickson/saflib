@@ -2,8 +2,8 @@
 
 ---
 
-# Variable: HTTP_ACCESS_SLOW_MS
+# Variable: HTTP\_ACCESS\_SLOW\_MS
 
-> `const` **HTTP_ACCESS_SLOW_MS**: `500` = `500`
+> `const` **HTTP\_ACCESS\_SLOW\_MS**: `500` = `500`
 
 Access-log duration above this (ms) is highlighted when ANSI styling is on.

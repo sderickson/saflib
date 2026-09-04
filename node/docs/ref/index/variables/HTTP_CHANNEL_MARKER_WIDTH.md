@@ -2,8 +2,8 @@
 
 ---
 
-# Variable: HTTP_CHANNEL_MARKER_WIDTH
+# Variable: HTTP\_CHANNEL\_MARKER\_WIDTH
 
-> `const` **HTTP_CHANNEL_MARKER_WIDTH**: `4` = `4`
+> `const` **HTTP\_CHANNEL\_MARKER\_WIDTH**: `4` = `4`
 
 Fixed visual width for the HTTP channel marker column.
