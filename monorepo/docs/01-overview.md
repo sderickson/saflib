@@ -4,7 +4,7 @@
 
 For **TypeScript** — composite project references, cross-package typing conventions, and static import-graph analysis — see [@saflib/imports](../imports/docs/01-overview.md).
 
-Use this package's `saf-monorepo` command to format docs, prune product lockfiles to make sure they don't conflict with saflib dependency versions, and
+Use this package's `saf-monorepo` command to formatting and lockfile management, and the [add-package](./workflows/add-package.md), [add-export](./workflows/add-export.md) workflows to add standalone packages.
 
 ## What this package provides
 
