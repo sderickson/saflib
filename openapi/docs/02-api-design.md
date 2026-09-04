@@ -1,6 +1,6 @@
 # API Design
 
-This document covers conventions for designing REST APIs in SAF projects. These conventions keep APIs predictable, keep implementations focused, and avoid frontend hacks (like unbounded parallel queries) when the real fix belongs in the API shape.
+This document covers conventions for designing REST APIs in SAF projects. These conventions keep interfaces predictable, implementations focused, and behaviors consistent.
 
 ## One URL Per Action
 
