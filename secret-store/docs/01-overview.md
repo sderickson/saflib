@@ -73,6 +73,10 @@ configureSecretStore();
 const store = getSecretStore();
 ```
 
+## Mock behavior
+
+As a convention throughout SAF, if a key or client id of an integration is set to `"mock"`, then the integration is mocked. This goes with the secret store as well; if the value does not exist then the secret store should return "mock" so that in tests and development, the mock is used.
+
 ## Vendor implementations
 
 Production backends implement `SecretStore` in vendor packages:
