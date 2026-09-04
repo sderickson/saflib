@@ -8,7 +8,7 @@
 
 Creates an alternative to Vue I18n's $t function, which takes the English text instead of a key. This is mainly so TypeScript enforces that keys are translated to strings.
 
-For strings with placeholders, use vue-i18n message syntax (`{name}` in the English string) and call `t(englishString, { name: value })`. Do not use `{{name}}` inside messages passed to `t` — it is invalid for the message compiler (often only fails in production builds).
+For strings with placeholders, use vue-i18n message syntax (`{name}` in the English string) and call `t(englishString, { name: value })`. Do not use Mustache-style double-brace placeholders inside messages passed to `t` — invalid for the message compiler (often only fails in production builds).
 
 ## Parameters
 
