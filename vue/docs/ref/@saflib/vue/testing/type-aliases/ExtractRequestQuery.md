@@ -4,7 +4,7 @@
 
 # Type Alias: ExtractRequestQuery\<Op\>
 
-> **ExtractRequestQuery**\<`Op`> \> = `Partial`\<`Record`\<keyof `NonNullable`\<`Op`\[`"parameters"`\]\[`"query"`\]\>, `string`>>\>\>
+> **ExtractRequestQuery**\<`Op`> > \> = `Partial`\<`Record`\<keyof `NonNullable`\<`Op`\[`"parameters"`\]\[`"query"`\]\>, `string`>>>>\>\>
 
 ## Type Parameters
 

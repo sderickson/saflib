@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-spa.ts](https://github.com/sderickson/saflib/blob/main/vue/workflows/add-spa.ts)
+[add-spa.ts](../../workflows/add-spa.ts)
 
 ## Usage
 

@@ -4,7 +4,7 @@
 
 # Type Alias: ProductEventListener()\<T\>
 
-> **ProductEventListener**\<`T`> \> = (`event`) => `void`
+> **ProductEventListener**\<`T`> > \> = (`event`) => `void`
 
 A function that receives product events as they're emitted.
 

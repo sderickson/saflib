@@ -28,7 +28,7 @@ Shared `createTestRouter` / `mountTestApp` pair used by product SPA packages.
 
 ### mountTestApp()
 
-> **mountTestApp**: \<`C`>\>(`Component`, `mountOptions?`, `overrides?`) => `VueWrapper`\<`any`, `any`>\>
+> **mountTestApp**: \<`C`>>\>(`Component`, `mountOptions?`, `overrides?`) => `VueWrapper`\<`any`, `any`>>\>
 
 #### Type Parameters
 

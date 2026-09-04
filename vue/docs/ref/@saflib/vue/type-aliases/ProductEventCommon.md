@@ -28,7 +28,7 @@ The component that triggered the event. For vue, it should be the component name
 
 ### context?
 
-> `optional` **context**: `Record`\<`string`, `unknown`>\>
+> `optional` **context**: `Record`\<`string`, `unknown`>>\>
 
 The context for the event.
 

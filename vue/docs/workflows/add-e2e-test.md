@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-e2e-test.ts](https://github.com/sderickson/saflib/blob/main/vue/workflows/add-e2e-test.ts)
+[add-e2e-test.ts](../../workflows/add-e2e-test.ts)
 
 ## Usage
 

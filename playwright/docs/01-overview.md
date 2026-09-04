@@ -6,13 +6,13 @@ E2E specs live in each client SPA under `e2e/` (see [@saflib/vue — `e2e/`](../
 
 ## Writing tests
 
-There are no Playwright workflows in this package yet; tests are authored manually or with agent help. A typical flow:
+Tests are often authored manually or with agent help. A typical flow:
 
 1. Run the app against a **production-like** build (the `prod-local` script in the `deploy/` folder). Production bundles behave more consistently under Playwright.
 2. Use Playwright [codegen](https://playwright.dev/docs/codegen) for a first pass.
 3. Refactor to **fixtures** and [`getByString`](#string-locators) using page `.strings.ts` exports. After [vue/add-view](../vue/docs/workflows/add-view.md), each page has a fixture stub to extend. This step is particularly good for an agent to do.
 
-Prefer [`getByString`](#string-locators) and exported string objects over ad hoc `getByText` / CSS selectors.
+You can also use the [vue/add-e2e-test](../../vue/docs/workflows/add-e2e-test.md) workflow to create Playwright tests, though it's a good idea to have created the codegen tests to include in the prompts.
 
 ## What this package provides
 

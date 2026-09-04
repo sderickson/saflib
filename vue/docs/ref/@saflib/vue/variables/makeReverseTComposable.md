@@ -22,7 +22,7 @@ For strings with placeholders, use vue-i18n message syntax (`{name}` in the Engl
 
 ### stringToKeyMap
 
-> **stringToKeyMap**: `Map`\<`string` \| `object`, `string`>\>
+> **stringToKeyMap**: `Map`\<`string` \| `object`, `string`>>\>
 
 ### useReverseT()
 

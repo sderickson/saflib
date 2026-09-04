@@ -4,7 +4,7 @@
 
 # Variable: pushEvent()
 
-> `const` **pushEvent**: \<`T`>\>(`event`) => `void`
+> `const` **pushEvent**: \<`T`>>\>(`event`) => `void`
 
 ## Type Parameters
 
