@@ -8,6 +8,10 @@ For basic observability of web applications, SAF provides the logic for:
 
 All SAF-provided libraries support these systems, and this library provides all the tools for new systems to do the same.
 
+While this package provides logic for cross-cutting instrumentation concerns, interfaces and integrations for these systems are in other packages:
+
+(TODO)
+
 **Tracing** is the one major area of instrumentation that SAF does not provide. That's mostly due to the other three being simpler to set up and mostly sufficient. Still, SAF is designed in a way where tracing can be added, in particular by enforcing a consistent context definition (through this library) and using wrapping functions in libraries such as [`@saflib/express`](../../express/docs/ref/@saflib/express/functions/createHandler.md) and [`@saflib/drizzle`](../../drizzle/docs/ref/index/functions/queryWrapper.md) where spans can be systematically added at package boundaries.
 
 ## Stores
@@ -82,3 +86,9 @@ See examples throughout [`@saflib`](https://github.com/search?q=repo%3Asderickso
 Metrics should be recorded through subsystem libraries as well, using [`prom-client`](https://github.com/siimon/prom-client). `@saflib/express` uses [`express-prom-bundle`](https://github.com/jochen-schweizer/express-prom-bundle) to record metrics for HTTP requests, and the other SAF libraries use `prom-client` directly to provide a similar histogram metric. See [examples](https://github.com/search?q=repo%3Asderickson%2Fsaflib%20client.Histogram&type=code).
 
 Beyond these basic RED metrics, SAF application code does not currently provide any other guidance or built-in metrics for back-end, but there's certainly room for more, potentially through traces and finite state machines.
+
+## Testing Observability in Development
+
+SAF comes with a suite of simple observability tools for use in development. When running the dev server and the repo is set up the way [base](../../base/docs/overview.md) is, you can go to the admin SPA and view logs, metrics, errors, and events that have occurred since the server was started. These are kept in memory, and their interfaces included, only in development. This way you don't need to run an entire observability stack or rely on keys to actual services in order to use or develop product or engineering instrumentation.
+
+Server logs are also integrated into the Vue developer tools. Winston logs are mostly filtered out of the terminal in development to avoid noise, so to make them easily accessible (along with any metadata sent with the log message), you can open the vue dev tools on any page and access Winston logs through one of the tabs.

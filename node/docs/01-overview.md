@@ -4,6 +4,8 @@
 
 Subsystem libraries ([`@saflib/express`](../../express/docs/01-overview.md), [`@saflib/grpc`](../../grpc/grpc/docs/01-overview.md), cron, jobs, …) wire context and reporters at operation boundaries. This package holds the core types, stores, and bootstrap helpers they share.
 
+This library does not provide any tools developer would tend to use day-to-day. This logic is mostly used for development of core SAF features.
+
 ## What this package provides
 
 - **Context** — [`SafContext`](./ref/index/interfaces/SafContext.md) in [`safContextStorage`](./ref/index/variables/safContextStorage.md); [`getSafContext`](./ref/index/functions/getSafContext.md) and [`getSafContextWithAuth`](./ref/index/functions/getSafContextWithAuth.md) for handlers and jobs
@@ -38,7 +40,3 @@ Call bootstrap functions once at process start, before initializing servers or w
 3. [`collectSystemMetrics`](./ref/index/functions/collectSystemMetrics.md) — opt into Prometheus default metrics via `prom-client`
 
 Handlers, jobs, and CLI commands then use `getSafContext`, `getSafReporters`, and related helpers — not raw `console.log` or ad hoc loggers.
-
-## Tracing
-
-SAF does not provide distributed tracing today. Logging, metrics, and error reporting cover most observability needs. The shared [`SafContext`](./ref/index/interfaces/SafContext.md) shape and subsystem boundary wrappers (Express handlers, Drizzle query wrappers, …) are designed so tracing spans could be added later without reshaping application code.
