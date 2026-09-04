@@ -35,4 +35,4 @@ This document helps guide resolving identified issues.
 
 ## Addressing issues with dev-site
 
-The [dev-site](../../dev-site/docs/overview.md) provides a UI for viewing issues across the codebase, to help with triage and decision-making. Issues are not necessarily expected to be fixed immediately, but instead debt should be monitored and addressed intermittently, especially after or before new development.
+The [dev-site](../../dev-site/docs/01-overview.md) provides a UI for viewing issues across the codebase, to help with triage and decision-making. Issues are not necessarily expected to be fixed immediately, but instead debt should be monitored and addressed intermittently, especially after or before new development.

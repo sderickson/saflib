@@ -18,4 +18,13 @@ Client SPAs call `analytics-sdk` / `analytics-vue` to POST product events to `/p
 
 [`SafContext`](../../node/docs/ref/index/interfaces/SafContext.md) fields (auth, routing metadata) feed analytics attribution; [`runWithActingUser`](../../node/docs/ref/index/functions/runWithActingUser.md) attributes anonymous operations (webhooks, jobs) to the owning user for event context.
 
-When the repo follows [base/service/http](../../base/docs/overview.md), the HTTP app mounts `createDevAnalyticsRouter()` alongside [node-log](../../node-log/docs/01-overview.md), [node-metrics](../../node-metrics/docs/01-overview.md), and [errors](../../errors/docs/01-overview.md) dev tooling. The admin SPA lists buffered events since process start.
+When the repo follows [base/service/http](../../base/docs/01-overview.md), the HTTP app mounts `createDevAnalyticsRouter()` alongside [node-log](../../node-log/docs/01-overview.md), [node-metrics](../../node-metrics/docs/01-overview.md), and [errors](../../errors/docs/01-overview.md) dev tooling. The admin SPA lists buffered events since process start.
+
+## Vendor implementations
+
+Production backends implement `AnalyticsService` in vendor packages:
+
+- [`@saflib/vendors-posthog`](../../vendors/posthog/configureAnalytics.ts) — `configureAnalytics()` / `PosthogAnalyticsService` for server-side events
+- [`@saflib/vendors-posthog-client`](../../vendors/posthog-client/init.ts) — PostHog script-tag init and Vue helpers for browser events and feature flags
+
+Development uses the in-memory buffer; call `configureAnalytics()` at startup in production.

@@ -13,11 +13,11 @@ Use this package's `saf-monorepo` command to formatting and lockfile management,
 - CLIs: [saf-monorepo](./cli/saf-monorepo.md) (`format`, `lock-prune`), [saf-ts-run](./cli/saf-ts-run.md)
 - Layout and inventory APIs: package kind classification, `exports`/`imports` helpers, root-file allowlists, workspace context ([code reference](./ref/index.md))
 
-Init workflows (`express/init`, `sdk/init`, `drizzle/init`, etc.) and [monorepo/add-package](./workflows/add-package.md) scaffold packages with these defaults. Golden stubs live under [`saflib/base`](../base/docs/overview.md) and workflow template trees.
+Init workflows (`express/init`, `sdk/init`, `drizzle/init`, etc.) and [monorepo/add-package](./workflows/add-package.md) scaffold packages with these defaults. Golden stubs live under [`saflib/base`](../base/docs/01-overview.md) and workflow template trees.
 
 ## Product layout
 
-See [base](../base/docs/overview.md). A SAF **product** is a tree of npm workspace packages. In a multi-product repo each product lives under `{product}/`; a single-product repo may place `clients/`, `service/`, and `dev/` at the repo root instead.
+See [base](../base/docs/01-overview.md). A SAF **product** is a tree of npm workspace packages. In a multi-product repo each product lives under `{product}/`; a single-product repo may place `clients/`, `service/`, and `dev/` at the repo root instead.
 
 Typical top-level layout:
 

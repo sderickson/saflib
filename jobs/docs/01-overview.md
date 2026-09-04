@@ -45,7 +45,7 @@ export const acmeTriggerMap: TriggerMap = {
 
 HTTP handlers enqueue with `enqueue({ operation_id: "processExportChunk", … })`. The runtime delivers by invoking the background handler over the internal caller, with per-attempt assertions and the handler's normal middleware.
 
-See [@saflib/jobs-spec `background` tag](../jobs-spec/docs/overview.md#background-tag) and [@saflib/openapi operation tags](../../openapi/docs/03-tags.md).
+See [@saflib/jobs-spec `background` tag](../jobs-spec/docs/01-overview.md#background-tag) and [@saflib/openapi operation tags](../../openapi/docs/03-tags.md).
 
 ## Authority
 
@@ -73,7 +73,7 @@ List/admin wire responses expose the grant **without** the embedded assertion (t
 
 - **`enqueue()`** — uses the current request's authenticated user and builds a `request` grant from `getSafContextWithAuth()`. The internal enqueue call carries a signed identity assertion (`x-saf-identity-assertion`) with `callingOperationId` and `originalRequestId` claims; those claims are checked against the trigger map.
 - **`enqueueOnBehalfOf()`** — same path, but you supply an explicit `user_id` and `authority` evidence when the acting user is not the caller. Typical for inbound events (webhooks, etc.) after you attribute the payload to a stored resource that represents the setting which substantiates user intent.
-- **Cron** — `makeCronEnqueuer` signs with `callingOperationId = cron:{jobName}` and enqueues with `on_behalf_of` cron authority for `enabledBy`. See [cron authority](../../cron/docs/overview.md#authority).
+- **Cron** — `makeCronEnqueuer` signs with `callingOperationId = cron:{jobName}` and enqueues with `on_behalf_of` cron authority for `enabledBy`. See [cron authority](../../cron/docs/01-overview.md#authority).
 
 ### At delivery
 
@@ -85,13 +85,13 @@ Chained jobs inherit lineage via assertion claims (`jobId`, `originalRequestId`)
 
 Cron schedules recurring **enqueue** only — it does not run background handlers itself. Each cron job name must have a matching `cron:{jobName}` entry in the product trigger map (validated at startup against the registered cron jobs map).
 
-See the [cron suite](../../cron/docs/overview.md#relationship-with-jobs).
+See the [cron suite](../../cron/docs/01-overview.md#relationship-with-jobs).
 
 ## Packages
 
 | Package                                                      | Role                                                                   | Docs                                                                                                 |
 | ------------------------------------------------------------ | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| [@saflib/jobs-spec](../jobs-spec/docs/ref/index.md)          | OpenAPI contract (`Job` wire schema, enqueue + admin surfaces)         | [Overview](../jobs-spec/docs/overview.md) · [Code reference](../jobs-spec/docs/ref/index.md)         |
+| [@saflib/jobs-spec](../jobs-spec/docs/ref/index.md)          | OpenAPI contract (`Job` wire schema, enqueue + admin surfaces)         | [Overview](../jobs-spec/docs/01-overview.md) · [Code reference](../jobs-spec/docs/ref/index.md)         |
 | [@saflib/jobs-db](../jobs-db/docs/ref/index.md)              | SQLite schema and queue queries                                        | [Code reference](../jobs-db/docs/ref/index.md)                                                       |
 | [@saflib/jobs-http](../jobs-http/docs/ref/index.md)          | Runtime, internal enqueue app, admin router, enqueue client, workflows | [Code reference](../jobs-http/docs/ref/index.md) · [Workflows](../jobs-http/docs/workflows/index.md) |
 | [@saflib/jobs-vue](../jobs-vue/docs/ref/components/index.md) | Admin SPA page (list, cancel, retry)                                   | [Components](../jobs-vue/docs/ref/components/index.md)                                               |

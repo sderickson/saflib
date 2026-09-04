@@ -18,4 +18,12 @@ See [base](https://github.com/sderickson/saflib/tree/main/base/service/email), w
 | ----------------------- | ---------------------------------------------------- | ------------------------------------------------- |
 | `@saflib/email-spec`    | OpenAPI spec for the mock email inspection API       | [Code reference](../email-spec/docs/ref/index.md) |
 | `@saflib/email-service` | `EmailService` types, mock store, and Express routes |                                                   |
-| `@saflib/email-vue`     | Admin SPA pages (`SentEmails`, `LastMockEmailPage`)  | [Overview](../email-vue/docs/overview.md)         |
+| `@saflib/email-vue`     | Admin SPA pages (`SentEmails`, `LastMockEmailPage`)  | [Overview](../email-vue/docs/01-overview.md)         |
+
+## Vendor implementations
+
+Production backends implement `EmailService` in vendor packages:
+
+- [`@saflib/vendors-brevo`](../../vendors/brevo/configureEmail.ts) — `configureEmail()` / `BrevoEmailService`
+
+Resolve API keys via [`@saflib/secret-store`](../../secret-store/docs/01-overview.md). Development uses the in-memory mock from `@saflib/email-service`.

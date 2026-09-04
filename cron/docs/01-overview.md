@@ -19,7 +19,7 @@ See [base](https://github.com/sderickson/saflib/tree/main/base/service/cron), wh
 
 ## Relationship with jobs
 
-The cron service only enqueues jobs on a regular interval. See the [jobs package](../../jobs/docs/overview.md) for more details on how to define background jobs in your service and allow cron to enqueue them.
+The cron service only enqueues jobs on a regular interval. See the [jobs package](../../jobs/docs/01-overview.md) for more details on how to define background jobs in your service and allow cron to enqueue them.
 
 ## Authority
 

@@ -119,7 +119,7 @@ Strings are important to keep separate from the Vue component because they:
 - need to be localized, and
 - are invaluable for testing
 
-By keeping them in separate files, they can be exported and used by processes which don't need to know about, parse, or compile Vue components, in particular: [Playwright](../../playwright/docs/overview.md).
+By keeping them in separate files, they can be exported and used by processes which don't need to know about, parse, or compile Vue components, in particular: [Playwright](../../playwright/docs/01-overview.md).
 
 **Each sub-component should have its own strings file** (e.g. `MyDialog.strings.ts`). Don't pile all strings into the view's strings file — it becomes hard to manage and makes it unclear which strings belong to which component.
 

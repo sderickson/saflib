@@ -11,8 +11,8 @@ Many of the following rules depend on the stack having a type system. Unless _ev
 - [`@saflib/drizzle`](./drizzle/docs/01-overview.md) relies heavily on Drizzle's [Type API](https://orm.drizzle.team/docs/goodies#type-api)
 - [`@saflib/express`](./express/docs/03-routes.md#typing-the-interface) and [`@saflib/sdk`](./sdk/docs/02-requests.md#creating-a-typed-client) provide documentation and utilities to enforce types generated with [`@saflib/openapi`](./openapi/docs/cli/saf-specs.md)
 - [`@saflib/vue`](./vue/docs/03-i18n.md) flips how vue-i18n typically works, so that translated strings become typechecked
-- [`@saflib/playwright`](./playwright/docs/overview.md#string-locators) provides a custom locator that takes typed objects provided by frontend packages, to ensure tests and the components they test render and check for the same strings
-- [`@saflib/env`](./env/docs/overview.md) allows typing and validating environment variables
+- [`@saflib/playwright`](./playwright/docs/01-overview.md#string-locators) provides a custom locator that takes typed objects provided by frontend packages, to ensure tests and the components they test render and check for the same strings
+- [`@saflib/env`](./env/docs/01-overview.md) allows typing and validating environment variables
 
 ## Return Errors
 

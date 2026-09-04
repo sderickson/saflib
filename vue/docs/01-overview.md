@@ -52,7 +52,7 @@ Contains Playwright tests for this SPA. These tests are likely to test pages out
 
 E2E tests are organized by directory because each of them is likely to produce artifacts, such as screenshots.
 
-For more information, see [`@saflib/playwright`](../../playwright/docs/overview.md)
+For more information, see [`@saflib/playwright`](../../playwright/docs/01-overview.md)
 
 ### `pages/`
 

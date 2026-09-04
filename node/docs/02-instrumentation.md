@@ -69,6 +69,12 @@ When you set up a new service, you will need to integrate logging with your chos
 
 Call all these before initializing any servers or other long-running processes, and start with `setServiceName` since any `log` calls will fail without one.
 
+### Vendor implementations (logging)
+
+Production log shipping uses vendor Winston transports:
+
+- [`@saflib/vendors-loki`](../../vendors/loki/addLokiTransport.ts) — `addLokiTransport()` for Grafana Loki
+
 If you have some service-specific context (which is likely, especially for shared clients to databases and other services), you should put those in a sibling `{service-name}-common` package and provide them to each of your subsystems. Some, such as `@saflib/grpc`, provide helpers for this.
 
 ## Provide Context and Reporters
@@ -93,6 +99,6 @@ Beyond these basic RED metrics, SAF application code does not currently provide 
 
 ## Testing Observability in Development
 
-SAF comes with a suite of simple observability tools for use in development. When running the dev server and the repo is set up the way [base](../../base/docs/overview.md) is, you can go to the admin SPA and view logs, metrics, errors, and events that have occurred since the server was started. These are kept in memory, and their interfaces included, only in development. This way you don't need to run an entire observability stack or rely on keys to actual services in order to use or develop product or engineering instrumentation.
+SAF comes with a suite of simple observability tools for use in development. When running the dev server and the repo is set up the way [base](../../base/docs/01-overview.md) is, you can go to the admin SPA and view logs, metrics, errors, and events that have occurred since the server was started. These are kept in memory, and their interfaces included, only in development. This way you don't need to run an entire observability stack or rely on keys to actual services in order to use or develop product or engineering instrumentation.
 
 Server logs are also integrated into the Vue developer tools. Winston logs are mostly filtered out of the terminal in development to avoid noise, so to make them easily accessible (along with any metadata sent with the log message), you can open the vue dev tools on any page and access Winston logs through one of the tabs.

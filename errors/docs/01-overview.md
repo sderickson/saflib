@@ -16,12 +16,19 @@
 
 Server errors flow from [`getSafReporters().logError`](../../node/docs/02-instrumentation.md) and [`addErrorCollector`](../../node/docs/ref/index/functions/addErrorCollector.md) into `InMemoryErrorService` when `configureMockErrors()` runs at startup (development). Client errors and CSP violations POST through `errors-sdk` / `errors-vue` to the same store.
 
-When the repo follows [base/service/http](../../base/docs/overview.md):
+When the repo follows [base/service/http](../../base/docs/01-overview.md):
 
 - Call `configureMockErrors()` from `@saflib/errors-service` at boot in development (base monolith does this automatically).
 - Mount `createDevErrorsRouter` from `@saflib/errors-http` on the API in development.
 - Add `@saflib/errors-vue` pages to the admin SPA for browsing reported errors.
-- In production, call `configureSentry()` (or another vendor helper) to register a real `ErrorService`.
-
 The HTTP app mounts errors routers alongside [node-log](../../node-log/docs/01-overview.md), [node-metrics](../../node-metrics/docs/01-overview.md), and [analytics](../../analytics/docs/01-overview.md) dev tooling.
+
+## Vendor implementations
+
+Production backends implement `ErrorService` in vendor packages:
+
+- [`@saflib/vendors-sentry-node`](../../vendors/sentry-node/configureSentry.ts) — `configureSentry()` / `SentryErrorService` for Node services
+- [`@saflib/vendors-sentry-client`](../../vendors/sentry-client/createSentryCallback.ts) — Sentry Vue/browser adapters for SPAs (`createSentryCallback`, user identify)
+
+Call `configureMockErrors()` in development; call `configureSentry()` (or another vendor helper) at startup in production.
 

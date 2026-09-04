@@ -9,14 +9,14 @@
 - **`TestObjectStore`** — in-memory store for unit tests (`setFiles` / `getFiles` helpers)
 - **`createObjectStore`** — factory; returns `TestObjectStore` when `NODE_ENV=test` (cached by root path so parallel test contexts share state)
 
-Shared error types: `PathTraversalError`, `StorageError`, `FileNotFoundError`. Methods return [`ReturnsError`](../utils/docs/overview.md) instead of throwing for expected failures.
+Shared error types: `PathTraversalError`, `StorageError`, `FileNotFoundError`. Methods return [`ReturnsError`](../../utils/docs/01-overview.md) instead of throwing for expected failures.
 
 ## Vendor implementations
 
 Cloud backends extend `ObjectStore` in vendor packages:
 
-- [`@saflib/vendors-gcs`](../vendors/gcs/GcsObjectStore.ts) — Google Cloud Storage
-- [`@saflib/vendors-azure`](../vendors/azure/AzureObjectStore.ts) — Azure Blob Storage
+- [`@saflib/vendors-gcs`](../../vendors/gcs/GcsObjectStore.ts) — Google Cloud Storage
+- [`@saflib/vendors-azure`](../../vendors/azure/AzureObjectStore.ts) — Azure Blob Storage
 
 Use `createObjectStore({ type: "disk", rootPath })` locally; wire a vendor class in production service bootstrap.
 
