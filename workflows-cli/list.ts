@@ -1,4 +1,5 @@
 // Entry point for @tools/workflows
+// BEGIN WORKFLOW AREA workflow-cli-imports FOR workflows/add-workflow
 import metaWorkflows from "@saflib/workflows/workflows";
 import processWorkflows from "@saflib/processes/workflows";
 import drizzleWorkflows from "@saflib/drizzle/workflows";
@@ -17,10 +18,11 @@ import jobsWorkflows from "@saflib/jobs-http/workflows";
 import integrationsWorkflows from "@saflib/integrations/workflows";
 import sentryWorkflows from "@saflib/vendors-sentry-node/workflows";
 import productWorkflows from "@saflib/product/workflows";
+// END WORKFLOW AREA
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 const workflowClasses: WorkflowDefinition[] = [
-  // workflows/add-workflow HOOK - do not remove this line
+  // BEGIN WORKFLOW AREA workflow-cli-spreads FOR workflows/add-workflow
   ...serviceWorkflows,
   ...openapiWorkflows,
   ...drizzleWorkflows,
@@ -39,6 +41,7 @@ const workflowClasses: WorkflowDefinition[] = [
   ...metaWorkflows,
   ...processWorkflows,
   ...productWorkflows,
+  // END WORKFLOW AREA
 ];
 
 export const workflows = workflowClasses;

@@ -24,7 +24,10 @@ Kicking off workflow workflows/add-workflow
 
 - Upsert 3 templates.
 - Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.
-- Add `@saflib/saflib`'s exported workflows to the CLI tool.
+- Upsert 1 template.
+- Register the package in **workflows-cli/list.ts** (workflow areas).
+- Run `npm install <package>` in workflows-cli
+- Run `npm exec saf-workflow checklist <name>`
 
 ## Help Docs
 

@@ -1,11 +1,12 @@
 import {
   CopyStepMachine,
-  PromptStepMachine,
+  UpdateStepMachine,
   step,
   defineWorkflow,
   getPackageName,
   makeLineReplace,
-  UpdateStepMachine,
+  CommandStepMachine,
+  CdStepMachine,
   type ParsePackageNameOutput,
   type ParsePathOutput,
   parsePath,
@@ -15,6 +16,11 @@ import path from "node:path";
 import { packageStubRoot } from "@saflib/templates";
 
 const sourceDir = path.join(packageStubRoot, "workflows");
+const workflowsCliDir = path.resolve(import.meta.dirname, "../../workflows-cli");
+const workflowsCliListTemplate = path.join(
+  import.meta.dirname,
+  "templates/list.ts",
+);
 
 const input = [
   {
@@ -91,12 +97,27 @@ export const AddWorkflowDefinition = defineWorkflow<
       promptMessage: `Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.`,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add \`${context.packageName}\`'s exported workflows to the CLI tool.
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.targetName,
+      targetDir: workflowsCliDir,
+      templateFiles: {
+        list: workflowsCliListTemplate,
+      },
+      lineReplace: makeLineReplace(context),
+    })),
 
-      * Look for the string "workflows/add-workflow HOOK", a file named "workflow-cli.ts", or a package which depends on @saflib/workflows that seems promising.
-      * If not already included, install \`${context.packageName}\` as a dependency of the package that contains that file you found, and add the exported workflows to the list.
-      * Check that it works by running "npm exec saf-workflow checklist ${context.name}"`,
+    step(CdStepMachine, () => ({
+      cwd: workflowsCliDir,
+    })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "npm",
+      args: ["install", context.packageName],
+    })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "npm",
+      args: ["exec", "saf-workflow", "checklist", context.name],
     })),
   ],
 });
