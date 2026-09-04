@@ -20,15 +20,13 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow processes/spec-project
-
 - Upsert 3 templates.
 - Update **example-project.spec.md**.
 - Check with the user that the spec is complete and correct.
 - Update **example-project.plan.md**.
 - Have the user review the plan and make sure it's good to go.
 - Update **example-project.workflow.ts**.
-- Run `npm exec saf-workflow dry-run /Users/scotterickson/src/saf-2025/saflib/notes/2026-09-02-example-project/example-project.workflow.ts`
+- Run `npm exec saf-workflow dry-run /Users/scott/src/saf-2025/saflib/processes/notes/2026-09-04-example-project/example-project.workflow.ts`
 
 ## Help Docs
 

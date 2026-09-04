@@ -4,4 +4,4 @@
 
 # Variable: GetFeedbackStep
 
-> `const` **GetFeedbackStep**: `WorkflowStep`\<`unknown`, _typeof_ `PromptStepMachine`\>
+> `const` **GetFeedbackStep**: `WorkflowStep`\<`unknown`, _typeof_ `PromptStepMachine`>\>
