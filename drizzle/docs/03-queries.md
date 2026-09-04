@@ -6,7 +6,7 @@ Queries are the bulk of the public interface for the database package. Services 
 
 All queries should use `queryWrapper` to catch and normalize unhandled errors. This way, the database layer never exposes errors emitted by SQLite. If it did, service layers may try to handle them directly and this would lead to tight coupling.
 
-Each query file exports a queryWrapper'd function that takes a DbKey as its first parameter and returns the query result. Queries return errors using the [`ReturnsError<TResult, TError>`](https://github.com/sderickson/saflib/blob/e75a8597ae497ea8d422dab1a1e96f41792b85ba/monorepo/index.ts#L5) pattern per [best practice](../../best-practices.md#return-errors).
+Each query file exports a queryWrapper'd function that takes a DbKey as its first parameter and returns the query result. Queries return errors using the [`ReturnsError<TResult, TError>`](../../utils/returns-error.ts) pattern per [best practice](../../best-practices.md#return-errors).
 
 Queries may take an object as a parameter with options for the query. However, these should be added judiciously. A query with inconsistent behavior (such as only sometimes returning related data, or accepting different query parameters) will be harder to isolate performance and reliability issues. Prefer instead creating separate queries.
 

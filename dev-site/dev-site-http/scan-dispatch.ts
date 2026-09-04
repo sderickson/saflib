@@ -2,7 +2,7 @@ import { Worker } from "node:worker_threads";
 import { fileURLToPath } from "node:url";
 import type { DbKey } from "@saflib/drizzle";
 import { GitCommandError } from "@saflib/git";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { makeSubsystemReporters } from "@saflib/node";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import {

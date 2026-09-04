@@ -1,7 +1,7 @@
 import { Readable } from "stream";
 import { buffer as streamToBuffer } from "node:stream/consumers";
 import { ObjectStore } from "../ObjectStore.ts";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import {
   PathTraversalError,
   StorageError,

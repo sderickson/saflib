@@ -20,7 +20,8 @@
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "express": "^5.0.0",
-    "http-errors": "^2.0.0"
+    "http-errors": "^2.0.0",
+    "@saflib/utils": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

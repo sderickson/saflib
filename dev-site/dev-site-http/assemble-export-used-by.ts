@@ -1,5 +1,5 @@
 import type { DbKey } from "@saflib/drizzle";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import type { GitCommandError } from "@saflib/git";
 import { listTree, readBlobs } from "@saflib/git";
 import { blobFactImports } from "@saflib/dev-site-db/types";

@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import type { DbKey } from "@saflib/drizzle";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 import { devSiteDb, devSiteDbManager } from "@saflib/dev-site-db/instances";
 import { scanCommits } from "./scan.ts";
 import { getCommit, listCommitSummaries } from "./get-commit.ts";

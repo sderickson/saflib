@@ -19,10 +19,10 @@
     "@google-cloud/storage": "^8.0.0",
     "@saflib/env": "*",
     "@saflib/node": "*",
-    "@saflib/object-store": "*"
+    "@saflib/object-store": "*",
+    "@saflib/utils": "*"
   },
   "devDependencies": {
-    "@saflib/monorepo": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },

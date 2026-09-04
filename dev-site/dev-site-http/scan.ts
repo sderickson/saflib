@@ -6,7 +6,7 @@ import {
   GitCommandError,
 } from "@saflib/git";
 import type { DbKey } from "@saflib/drizzle";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { makeSubsystemReporters } from "@saflib/node";
 
 import { analyzeCommit, ANALYZER_VERSION } from "./analyze-commit.ts";

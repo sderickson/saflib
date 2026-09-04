@@ -6,7 +6,7 @@
 
 > **setupContext**(`options`, `callback`): `void`
 
-Builds and runs the `@saflib/node` context and reporter storage for your CLI commands.
+Builds and runs CLI context and reporter storage for commander programs.
 
 ## Parameters
 

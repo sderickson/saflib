@@ -1,18 +1,13 @@
 import { expect, test, describe, beforeEach, afterEach } from "vitest";
-import { setupContext } from "./index.ts";
-import { getSafContext, getSafReporters } from "@saflib/node";
+import { setupContext, getCliContext, getCliReporters } from "./index.ts";
 
 describe("setupContext", () => {
   beforeEach(() => {
-    // Clear any existing context
-    (globalThis as any).__SAF_CONTEXT__ = undefined;
-    (globalThis as any).__SAF_REPORTERS__ = undefined;
+    process.env.NODE_ENV = "test";
   });
 
   afterEach(() => {
-    // Clean up after tests
-    (globalThis as any).__SAF_CONTEXT__ = undefined;
-    (globalThis as any).__SAF_REPORTERS__ = undefined;
+    delete process.env.NODE_ENV;
   });
 
   test("sets up context with default values", () => {
@@ -21,10 +16,10 @@ describe("setupContext", () => {
         serviceName: "cli",
       },
       () => {
-        const context = getSafContext();
+        const context = getCliContext();
         expect(context.serviceName).toBe("cli");
         expect(context.subsystemName).toBe("cli");
-        expect(context.operationName).toBe(process.argv[2]);
+        expect(context.operationName).toBe(process.argv[2] ?? "help");
         expect(context.requestId).toBeDefined();
       },
     );
@@ -36,10 +31,10 @@ describe("setupContext", () => {
         serviceName: "test-service",
       },
       () => {
-        const context = getSafContext();
+        const context = getCliContext();
         expect(context.serviceName).toBe("test-service");
         expect(context.subsystemName).toBe("cli");
-        expect(context.operationName).toBe(process.argv[2]);
+        expect(context.operationName).toBe(process.argv[2] ?? "help");
         expect(context.requestId).toBeDefined();
       },
     );
@@ -51,7 +46,7 @@ describe("setupContext", () => {
         serviceName: "cli",
       },
       () => {
-        const reporters = getSafReporters();
+        const reporters = getCliReporters();
         expect(reporters.log).toBeDefined();
         expect(reporters.logError).toBeDefined();
       },
@@ -65,10 +60,11 @@ describe("setupContext", () => {
         silentLogging: true,
       },
       () => {
-        const reporters = getSafReporters();
+        const reporters = getCliReporters();
         expect(reporters.log).toBeDefined();
         expect(reporters.logError).toBeDefined();
       },
     );
   });
 });
+

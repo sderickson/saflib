@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { GitCommandError } from "./errors.ts";
 
 export interface ExecGitOptions {

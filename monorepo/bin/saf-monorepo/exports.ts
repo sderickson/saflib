@@ -1,3 +1,4 @@
+#!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 import path from "node:path";
 import type { Command } from "commander";
 import {
@@ -28,7 +29,7 @@ export const addExportsCommand = (program: Command) => {
     )
     .requiredOption(
       "--package <name>",
-      "Workspace package name (e.g. @saflib/imports)",
+      "Workspace package name (e.g. @saflib/monorepo)",
     )
     .option("--root <dir>", "Monorepo root (default: auto-detect from cwd)")
     .action((options: ExportsOptions) => {
@@ -64,7 +65,7 @@ export const addExportsCommand = (program: Command) => {
     )
     .requiredOption(
       "--package <name>",
-      "Workspace package name (e.g. @saflib/imports)",
+      "Workspace package name (e.g. @saflib/monorepo)",
     )
     .option("--root <dir>", "Monorepo root (default: auto-detect from cwd)")
     .action((options: ExportsOptions) => {
@@ -97,7 +98,7 @@ export const addExportsCommand = (program: Command) => {
         console.error(`  ${d}`);
       }
       console.error(
-        `\nRun: npm exec saf-imports exports generate --package ${options.package}`,
+        `\nRun: npm exec saf-monorepo exports generate -- --package ${options.package}`,
       );
       process.exitCode = 1;
     });

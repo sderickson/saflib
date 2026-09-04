@@ -8,9 +8,8 @@ For **TypeScript** — composite project references, cross-package typing conven
 
 - Shared presets each workspace package extends: [`tsconfig.json`](./ref/index.md), [`eslint.config.js`](./ref/index.md)
 - Workflows: [add-package](./workflows/add-package.md), [add-export](./workflows/add-export.md)
-- CLIs: [saf-format](./cli/saf-format.md), [saf-lock-prune](./cli/saf-lock-prune.md), [saf-ts-run](./cli/saf-ts-run.md)
+- CLIs: [saf-monorepo](./cli/saf-monorepo.md), [saf-format](./cli/saf-format.md), [saf-lock-prune](./cli/saf-lock-prune.md), [saf-ts-run](./cli/saf-ts-run.md)
 - Layout and inventory APIs: package kind classification, `exports`/`imports` helpers, root-file allowlists, workspace context ([code reference](./ref/index.md))
-- [`ReturnsError`](./ref/index/type-aliases/ReturnsError.md) — typed `{ result | error }` returns for async package functions
 
 Init workflows (`express/init`, `sdk/init`, `drizzle/init`, etc.) and [monorepo/add-package](./workflows/add-package.md) scaffold packages with these defaults. Golden stubs live under [`saflib/base`](../base/docs/overview.md) and workflow template trees.
 
@@ -93,7 +92,7 @@ Each workspace package exposes an **explicit** public surface in `package.json`:
 - **`saf.kind`** — declares package role (`db`, `http`, `spec`, `spa`, `sdk`, `lib`, `integration`, `test`, …). Layout tooling infers kind from identifier deps when omitted.
 - **`sideEffects`** — `false` unless the package has explicit browser/CSS entry exceptions.
 
-[monorepo/add-export](./workflows/add-export.md) adds a module and updates `exports`/`imports`. Run `npm exec saf-imports exports check --package <name>` to validate coverage (see [@saflib/imports CLI](../imports/docs/cli/saf-imports.md)).
+[monorepo/add-export](./workflows/add-export.md) adds a module and updates `exports`/`imports`. Run `npm exec saf-monorepo exports check --package <name>` to validate coverage (see [saf-monorepo CLI](./cli/saf-monorepo.md)).
 
 **Layout rules:** production `.ts`/`.tsx` files belong in thematic folders, not loose at the package root, except for allowlisted entrypoints (`index.ts`, `main.ts`, `run.ts`, config files, …). `@saflib/dev-tools` [`saf-analyze-package`](../dev-tools/docs/package-issues.md) reports layout, dead-code, and oversized-file issues.
 

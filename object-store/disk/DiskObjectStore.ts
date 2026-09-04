@@ -8,7 +8,7 @@ import {
   StorageError,
   FileNotFoundError,
 } from "../ObjectStore.ts";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { getSafReporters } from "@saflib/node";
 import { pipeline } from "node:stream/promises";
 import { createWriteStream } from "node:fs";

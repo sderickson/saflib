@@ -1,6 +1,9 @@
 import type { Command } from "commander";
 import path from "node:path";
-import { findMonorepoRoot, buildPackageIndex } from "../../src/resolve/index.ts";
+import {
+  buildPackageIndex,
+  findMonorepoRoot,
+} from "../../src/exports/package-index.ts";
 import { scanPackageSideEffects } from "../../src/side-effects/scan-package.ts";
 
 export const addSideEffectsCommand = (program: Command) => {

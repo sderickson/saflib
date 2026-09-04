@@ -36,7 +36,8 @@
     "@saflib/node": "*",
     "@saflib/node-log-http": "*",
     "@saflib/node-metrics-http": "*",
-    "http-errors": "^2.0.0"
+    "http-errors": "^2.0.0",
+    "@saflib/utils": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

@@ -11,7 +11,7 @@ import { addErrorCollector, getSafReporters } from "@saflib/node";
 import { startJobs } from "./index.ts";
 import { cronDb, getByName, setEnabled, setLastRunStatus } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 import { mockEnqueueJob, mockJobs } from "../mock-jobs.ts";
 import type { LeveledLogMethod } from "winston";
 import type { CronEnqueuer } from "./types.ts";

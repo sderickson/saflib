@@ -21,7 +21,8 @@
     "@azure/storage-blob": "^12.28.0",
     "@saflib/env": "*",
     "@saflib/node": "*",
-    "@saflib/object-store": "*"
+    "@saflib/object-store": "*",
+    "@saflib/utils": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",

@@ -1,5 +1,5 @@
 import { InfisicalSDK } from "@infisical/sdk";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { SecretStore, type SecretStoreError } from "@saflib/secret-store";
 import { InfisicalNetworkError, mapSdkError } from "./errors.ts";
 import { mockGetSecretByName } from "./mockGetSecretByName.ts";

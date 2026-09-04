@@ -130,7 +130,7 @@ export const AddExportWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: [
         "exec",
-        "saf-imports",
+        "saf-monorepo",
         "exports",
         "check",
         "--package",

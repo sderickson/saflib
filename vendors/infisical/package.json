@@ -19,7 +19,8 @@
   "dependencies": {
     "@infisical/sdk": "^5.0.0",
     "@saflib/env": "*",
-    "@saflib/secret-store": "*"
+    "@saflib/secret-store": "*",
+    "@saflib/utils": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",

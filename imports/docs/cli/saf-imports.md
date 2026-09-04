@@ -15,10 +15,12 @@ Commands:
                                   file to a target module or package
   cycles [options]                Detect circular dependencies in the
                                   first-party import graph
-  exports                         Generate or verify package.json exports maps
-                                  from directory structure
-  baseline                        Generate or diff a committed import-graph
-                                  baseline snapshot
+  snapshot [options]              Generate or diff import-graph metric snapshots
+  tsconfig [options]              Sync, check, or repair TypeScript project
+                                  references
+  spa [options]                   Analyze SPA bundle import graphs
   help [command]                  display help for command
 
 ```
+
+For `exports` and `side-effects` commands, see [saf-monorepo](../../monorepo/docs/cli/saf-monorepo.md).

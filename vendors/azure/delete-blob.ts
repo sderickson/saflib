@@ -1,7 +1,7 @@
 import type { AccessTier } from "@azure/storage-blob";
 import { typedEnv } from "./env.ts";
 import { getBlobServiceClient } from "./client.ts";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 
 export interface DeleteBlobParams {
   tier?: AccessTier;

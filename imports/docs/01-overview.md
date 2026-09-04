@@ -13,51 +13,27 @@ Init workflows (`express/init`, `sdk/init`, `drizzle/init`, etc.) scaffold these
 
 ## Package surface
 
-Each workspace package exposes an **explicit** surface in `exports` — no package-root catch-all (no `./*`). Use **single-star** folder globs (one `*` per key and target; `exports check` enforces this) plus explicit entries for each root-level file you intend to expose:
-
-| Kind           | Typical pattern                                   |
-| -------------- | ------------------------------------------------- |
-| SDK            | `./requests/*` → `./requests/*.ts`                |
-| DB             | `./queries/*`, `./schemas/*`                      |
-| HTTP           | `./handlers/*`                                    |
-| Service common | `./lib/*`, `./context.ts`, … (per root file)      |
-| Spec           | `./operations/*` → `./dist/operations/*/index.ts` |
-
-`exports generate --package <name>` writes a leaf map for small packages. Prefer hand-authored globs for large packages. `exports check --package <name>` validates pattern coverage.
-
-**`imports`** mirror the same explicit surface — folder globs and root files, never `"#*": "./*"`:
-
-```json
-"imports": {
-  "#queries/*": "./queries/*",
-  "#schemas/*": "./schemas/*",
-  "#instances.ts": "./instances.ts",
-  "#errors.ts": "./errors.ts"
-}
-```
-
-Hand-author extra `#` keys for internal-only paths not in `exports`.
+npm `exports` / `imports` conventions and validation live in [@saflib/monorepo](../monorepo/docs/01-overview.md#npm-package-surface). This package focuses on measuring whether static imports respect those boundaries.
 
 See [project references](./02-project-references.md) for composite TypeScript setup and [composite type guidance](./03-composite-type-guidance.md) for cross-package typing conventions.
 
 ## CLI
 
-The saf-imports CLI helps analyze and debug import-graph issues — for example slow Vitest **collect** times that suggest a test pulls in too much of the app.
+The `saf-imports` CLI helps analyze and debug import-graph and TypeScript project-reference issues — for example slow Vitest **collect** times that suggest a test pulls in too much of the app.
 
 ```bash
 npm exec saf-imports -- measure <entry...>
 npm exec saf-imports -- measure --verbose path/to/my.test.ts
 npm exec saf-imports -- why <entry> <target>
 npm exec saf-imports cycles [--package <name>]
-npm exec saf-imports exports generate --package <name>
-npm exec saf-imports exports check --package <name>
 npm exec saf-imports snapshot generate --out <path> [--skip-timings]
 npm exec saf-imports snapshot check --against <path>
 npm exec saf-imports spa analyze --spa <app|admin|account|auth>
 npm exec saf-imports spa measure --spa <name>
-npm exec saf-imports side-effects scan [--package <name>]
 npm exec saf-imports tsconfig sync|check|cycles|cleanup-declarations [--root <dir>]
 ```
+
+For `exports` and `side-effects` tooling, see [saf-monorepo](../monorepo/docs/cli/saf-monorepo.md).
 
 `measure --verbose` lists every first-party file (repo-root-relative, sorted) and external package the entry statically imports.
 

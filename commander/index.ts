@@ -1,3 +1,9 @@
 // Export your public API from here
-export { setupContext } from "./context.ts";
-export type { SetupContextOptions } from "./context.ts";
+export {
+  setupContext,
+  getCliContext,
+  getCliReporters,
+  type SetupContextOptions,
+  type CliContext,
+  type CliReporters,
+} from "./context.ts";

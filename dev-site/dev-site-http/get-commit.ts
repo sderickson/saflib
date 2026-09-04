@@ -1,5 +1,5 @@
 import type { DbKey } from "@saflib/drizzle";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
 
 import type { components as GetCommitComponents } from "@saflib/dev-site-spec/operations/getCommits";

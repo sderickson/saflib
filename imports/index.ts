@@ -66,19 +66,6 @@ export {
   type WorkdirPackageAnalyzeResult,
 } from "./src/issues/workdir-analyze.ts";
 export {
-  computeExportsMap,
-  checkExports,
-  checkExportPatternCoverage,
-  generateExports,
-  listExportableFiles,
-  collectPublicExportRepoPaths,
-  packageHasWorkflowMarkers,
-  resolvePackageDir,
-  leafExportRemapDiffs,
-  type ExportsMap,
-  type CheckExportsResult,
-} from "./src/exports/generate-exports.ts";
-export {
   buildPackageIndex,
   findMonorepoRoot,
   matchExportPattern,

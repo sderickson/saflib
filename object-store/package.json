@@ -16,7 +16,8 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/node": "*"
+    "@saflib/node": "*",
+    "@saflib/utils": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",

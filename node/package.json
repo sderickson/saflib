@@ -19,6 +19,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/commander": "*",
     "@saflib/env": "*",
     "@saflib/node-log-http": "*",
     "@saflib/secret-store": "*",

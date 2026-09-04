@@ -5,8 +5,8 @@ import {
   existsResolve,
   findMonorepoRoot,
   resolvePackageExportPath,
-} from "../resolve/index.ts";
-import type { PackageInfo } from "../types.ts";
+  type PackageInfo,
+} from "./package-index.ts";
 
 const SKIP_DIRS = new Set([
   "node_modules",

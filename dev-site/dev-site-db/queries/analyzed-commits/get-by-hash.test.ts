@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 import { AnalyzedCommitNotFoundError } from "../../errors.ts";
 import { devSiteDbManager } from "../../instances.ts";
 import { insert } from "./insert.ts";

@@ -1,4 +1,4 @@
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { GitCommandError } from "./errors.ts";
 import { execGit, execGitBuffer } from "./exec-git.ts";
 

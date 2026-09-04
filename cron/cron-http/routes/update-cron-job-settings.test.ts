@@ -6,7 +6,7 @@ import type { CronRequestBody, CronResponseBody } from "@saflib/cron-spec";
 import { mapJobSettingToResponse } from "./_helpers.ts"; // Need helper for response check
 import { cronDb, getByName } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 import { mockEnqueueJob, mockJobs } from "../mock-jobs.ts";
 import { makeAdminHeaders } from "@saflib/express";
 

@@ -1,5 +1,5 @@
 import { jobsDbManager } from "../../instances.ts";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
 import { jobTable } from "../../schemas/job.ts";

@@ -9,7 +9,7 @@ import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import { scanCommitsInWorker } from "./scan-dispatch.ts";
 
