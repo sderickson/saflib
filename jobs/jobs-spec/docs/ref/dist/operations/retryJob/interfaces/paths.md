@@ -135,13 +135,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### post.responses.200.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 

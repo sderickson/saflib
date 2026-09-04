@@ -365,13 +365,13 @@ Explicit authority override for enqueueOnBehalfOf. When present, both user_id an
 
 ##### post.requestBody.content.application/json.on\_behalf\_of.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -517,13 +517,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### post.responses.200.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -858,13 +858,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### post.responses.201.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -1543,13 +1543,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### get.responses.200.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -2158,13 +2158,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### post.responses.200.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -2783,13 +2783,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### post.responses.200.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 

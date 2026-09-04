@@ -12,7 +12,7 @@
 
 ### authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 #### Type declaration
 
@@ -57,7 +57,7 @@ User who made the originating request.
 Us7k_pQ2;
 ```
 
-\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `resource_kind`: `string`; `user_id`: `string`; \}
 
 #### kind
 
@@ -81,7 +81,21 @@ Short id of the resource row that authorized the chain.
 ##### Example
 
 ```ts
-Rs7k_mN2;
+Ch7k_mN2;
+```
+
+#### resource\_kind
+
+> **resource\_kind**: `string`
+
+##### Description
+
+Product-specific resource type for `resource_id` (e.g. `channel_subscription`, `importer`). Tells consumers which table or domain object to resolve.
+
+##### Example
+
+```ts
+channel_subscription;
 ```
 
 #### user\_id

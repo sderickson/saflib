@@ -78,11 +78,12 @@ properties:
             example: "r-abc123"
       - type: object
         description: >
-          An inbound event was attributed to a product resource (e.g. via webhook endpoint attribution). Evidence is the resource row that authorized the work to react to those events.
+          An inbound event (e.g. a webhook delivery) was attributed to a stored product resource. Evidence is that resource row — the entity you would return from your API or look up in your database, not the event itself.
         additionalProperties: false
         required:
           - kind
           - user_id
+          - resource_kind
           - resource_id
         properties:
           kind:
@@ -94,10 +95,15 @@ properties:
             type: string
             description: Owner of the resource whose authority is used.
             example: "Us7k_pQ2"
+          resource_kind:
+            type: string
+            description: >
+              Product-specific resource type for `resource_id` (e.g. `channel_subscription`, `importer`). Tells consumers which table or domain object to resolve.
+            example: "channel_subscription"
           resource_id:
             type: string
             description: Short id of the resource row that authorized the chain.
-            example: "Rs7k_mN2"
+            example: "Ch7k_mN2"
       - type: object
         description: >
           A cron tick fired for an enabled job; the admin who last enabled it is the recorded authority. Evidence is the cron job name.

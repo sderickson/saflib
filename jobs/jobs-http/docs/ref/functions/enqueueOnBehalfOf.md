@@ -6,7 +6,8 @@
 
 > **enqueueOnBehalfOf**(`params`, `options?`): `Promise`\<[`EnqueueResult`](../interfaces/EnqueueResult.md)>\>
 
-Enqueue under an explicit user + authority evidence (webhooks, etc.).
+Enqueue under an explicit user + authority evidence — typically after attributing
+an inbound event (webhook, etc.) to a stored product resource.
 
 ## Parameters
 

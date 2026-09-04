@@ -57,6 +57,7 @@ export type JobAuthority =
   | {
       kind: "resource";
       user_id: string;
+      resource_kind: string;
       resource_id: string;
       assertion: JobAuthorityAssertion;
     }

@@ -115,8 +115,13 @@ export interface components {
                  */
                 user_id: string;
                 /**
+                 * @description Product-specific resource type for `resource_id` (e.g. `channel_subscription`, `importer`). Tells consumers which table or domain object to resolve.
+                 * @example channel_subscription
+                 */
+                resource_kind: string;
+                /**
                  * @description Short id of the resource row that authorized the chain.
-                 * @example Rs7k_mN2
+                 * @example Ch7k_mN2
                  */
                 resource_id: string;
             } | {

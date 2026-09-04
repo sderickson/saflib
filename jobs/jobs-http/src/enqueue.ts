@@ -135,7 +135,8 @@ export async function enqueue(
 }
 
 /**
- * Enqueue under an explicit user + authority evidence (webhooks, etc.).
+ * Enqueue under an explicit user + authority evidence — typically after attributing
+ * an inbound event (webhook, etc.) to a stored product resource.
  */
 export async function enqueueOnBehalfOf(
   params: EnqueueOnBehalfOfParams,

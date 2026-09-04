@@ -50,7 +50,8 @@ describe("mapJobToWire", () => {
       authority: {
         kind: "resource" as const,
         user_id: "admin-1",
-        resource_id: "webhook-1",
+        resource_kind: "channel_subscription",
+        resource_id: "sub-1",
         assertion: { payload: "p", signature: "s", key_id: "k1" },
       },
     } satisfies JobEntity;
@@ -58,7 +59,8 @@ describe("mapJobToWire", () => {
     expect(mapJobToWire(job).authority).toEqual({
       kind: "resource",
       user_id: "admin-1",
-      resource_id: "webhook-1",
+      resource_kind: "channel_subscription",
+      resource_id: "sub-1",
     });
   });
 

@@ -63,16 +63,16 @@ List/admin wire responses expose the grant **without** the embedded assertion (t
 
 ### Grant kinds
 
-| Kind       | Typical source                                      | What it means                                                                         |
-| ---------- | --------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `request`  | `enqueue()` from a foreground or background handler | Work continues under the same user and request chain that enqueued it.                |
-| `resource` | `enqueueOnBehalfOf()` with resource evidence | Work runs as the owner of a product resource (e.g. a webhook endpoint that received an event). |
-| `cron`     | `makeCronEnqueuer()` on a cron tick                 | Work runs as the admin who **enabled** the cron job (`job_settings.enabled_by`).      |
+| Kind       | Typical source                                                                | What it means                                                                                                                                                                       |
+| ---------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `request`  | `enqueue()` from a foreground or background handler                           | Work continues under the same user and request chain that enqueued it.                                                                                                              |
+| `resource` | `enqueueOnBehalfOf()` after attributing an inbound event to a stored resource | Work runs as the resource owner. `resource_kind` + `resource_id` name the persisted row (e.g. `channel_subscription` + id) — not the webhook or other event that triggered enqueue. |
+| `cron`     | `makeCronEnqueuer()` on a cron tick                                           | Work runs as the admin who **enabled** the cron job (`job_settings.enabled_by`).                                                                                                    |
 
 ### At enqueue
 
 - **`enqueue()`** — uses the current request's authenticated user and builds a `request` grant from `getSafContextWithAuth()`. The internal enqueue call carries a signed identity assertion (`x-saf-identity-assertion`) with `callingOperationId` and `originalRequestId` claims; those claims are checked against the trigger map.
-- **`enqueueOnBehalfOf()`** — same path, but you supply an explicit `user_id` and `authority` evidence when the acting user is not the caller (webhooks, resource-owned pipelines, etc.).
+- **`enqueueOnBehalfOf()`** — same path, but you supply an explicit `user_id` and `authority` evidence when the acting user is not the caller. Typical for inbound events (webhooks, etc.) after you attribute the payload to a stored resource that represents the setting which substantiates user intent.
 - **Cron** — `makeCronEnqueuer` signs with `callingOperationId = cron:{jobName}` and enqueues with `on_behalf_of` cron authority for `enabledBy`. See [cron authority](../../cron/docs/overview.md#authority).
 
 ### At delivery

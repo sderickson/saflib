@@ -104,6 +104,7 @@ export const enqueueJobHandler = createHandler(async (req, res) => {
       authority = {
         kind: "resource",
         user_id: data.on_behalf_of.user_id,
+        resource_kind: evidence.resource_kind,
         resource_id: evidence.resource_id,
         assertion: assertionEvidence,
       };
