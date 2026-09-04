@@ -1,6 +1,6 @@
 [**@saflib/jobs-spec**](../../../../index.md)
 
-***
+---
 
 # Type Alias: original\_request\_id
 

@@ -100,11 +100,11 @@ export const enqueueJobHandler = createHandler(async (req, res) => {
         request_id: evidence.request_id,
         assertion: assertionEvidence,
       };
-    } else if (evidence.kind === "importer") {
+    } else if (evidence.kind === "resource") {
       authority = {
-        kind: "importer",
+        kind: "resource",
         user_id: data.on_behalf_of.user_id,
-        importer_id: evidence.importer_id,
+        resource_id: evidence.resource_id,
         assertion: assertionEvidence,
       };
     } else if (evidence.kind === "cron") {

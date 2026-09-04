@@ -12,7 +12,7 @@
 
 ### authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 #### Type declaration
 
@@ -57,31 +57,31 @@ User who made the originating request.
 Us7k_pQ2;
 ```
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
-
-#### importer\_id
-
-> **importer\_id**: `string`
-
-##### Description
-
-Short id of the importer row that authorized the chain.
-
-##### Example
-
-```ts
-Im7k_mN2;
-```
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 #### kind
 
-> **kind**: `"importer"`
+> **kind**: `"resource"`
 
 ##### Example
 
 ```ts
-importer
+resource
 @enum {string}
+```
+
+#### resource\_id
+
+> **resource\_id**: `string`
+
+##### Description
+
+Short id of the resource row that authorized the chain.
+
+##### Example
+
+```ts
+Rs7k_mN2;
 ```
 
 #### user\_id
@@ -90,7 +90,7 @@ importer
 
 ##### Description
 
-Importer creator whose authority is used.
+Owner of the resource whose authority is used.
 
 ##### Example
 

@@ -63,7 +63,7 @@ enqueueJob:
                   description: Acting user for the enqueued job.
                   example: "Us7k_pQ2"
                 authority:
-                  description: Evidence grant for the override (request, importer, or cron kind).
+                  description: Evidence grant for the override (request, resource, or cron kind).
                   $ref: "../../schemas/job.yaml#/properties/authority"
 
   responses:

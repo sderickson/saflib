@@ -47,17 +47,17 @@ Admin list of queued jobs with optional filters and offset pagination. Mounted o
 
 > `optional` **query**: `object`
 
-##### get.parameters.query.created_after?
+##### get.parameters.query.created\_after?
 
-> `optional` **created_after**: `string`
+> `optional` **created\_after**: `string`
 
 ###### Description
 
 Only include jobs with created_at greater than or equal to this instant.
 
-##### get.parameters.query.created_before?
+##### get.parameters.query.created\_before?
 
-> `optional` **created_before**: `string`
+> `optional` **created\_before**: `string`
 
 ###### Description
 
@@ -79,17 +79,17 @@ Page size (default implementation-defined).
 
 Number of matching jobs to skip before returning results.
 
-##### get.parameters.query.operation_id?
+##### get.parameters.query.operation\_id?
 
-> `optional` **operation_id**: `string`
+> `optional` **operation\_id**: `string`
 
 ###### Description
 
 Filter by target operationId.
 
-##### get.parameters.query.original_request_id?
+##### get.parameters.query.original\_request\_id?
 
-> `optional` **original_request_id**: `string`
+> `optional` **original\_request\_id**: `string`
 
 ###### Description
 
@@ -103,9 +103,9 @@ Filter by chain-root request id.
 
 Filter by job status.
 
-##### get.parameters.query.user_id?
+##### get.parameters.query.user\_id?
 
-> `optional` **user_id**: `string`
+> `optional` **user\_id**: `string`
 
 ###### Description
 
@@ -313,9 +313,9 @@ Internal-surface enqueue. Auth is the M1 signed assertion path (not site-admin-o
 
 > **application/json**: `object`
 
-##### post.requestBody.content.application/json.concurrency_key?
+##### post.requestBody.content.application/json.concurrency\_key?
 
-> `optional` **concurrency_key**: `null` \| `string`
+> `optional` **concurrency\_key**: `null` \| `string`
 
 ###### Description
 
@@ -327,9 +327,9 @@ Optional key limiting concurrency (at most one running job per key).
 matter: Mt4k_wZ7;
 ```
 
-##### post.requestBody.content.application/json.dedupe_key?
+##### post.requestBody.content.application/json.dedupe\_key?
 
-> `optional` **dedupe_key**: `null` \| `string`
+> `optional` **dedupe\_key**: `null` \| `string`
 
 ###### Description
 
@@ -341,9 +341,9 @@ Optional key unique among non-terminal jobs. Re-enqueue with the same live key u
 matter: Mt4k_wZ7: claim;
 ```
 
-##### post.requestBody.content.application/json.delay_ms?
+##### post.requestBody.content.application/json.delay\_ms?
 
-> `optional` **delay_ms**: `number`
+> `optional` **delay\_ms**: `number`
 
 ###### Description
 
@@ -355,33 +355,33 @@ Relative delay in milliseconds from enqueue time before the job becomes claimabl
 5000;
 ```
 
-##### post.requestBody.content.application/json.on_behalf_of?
+##### post.requestBody.content.application/json.on\_behalf\_of?
 
-> `optional` **on_behalf_of**: `object`
+> `optional` **on\_behalf\_of**: `object`
 
 ###### Description
 
 Explicit authority override for enqueueOnBehalfOf. When present, both user_id and authority evidence are required; the job runs as that user under the given grant instead of deriving authority from the caller's request context.
 
-##### post.requestBody.content.application/json.on_behalf_of.authority
+##### post.requestBody.content.application/json.on\_behalf\_of.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Description
 
-Evidence grant for the override (request, importer, or cron kind).
+Evidence grant for the override (request, resource, or cron kind).
 
-##### post.requestBody.content.application/json.on_behalf_of.user_id
+##### post.requestBody.content.application/json.on\_behalf\_of.user\_id
 
-> **user_id**: `string`
+> **user\_id**: `string`
 
 ###### Description
 
@@ -393,9 +393,9 @@ Acting user for the enqueued job.
 Us7k_pQ2;
 ```
 
-##### post.requestBody.content.application/json.operation_id
+##### post.requestBody.content.application/json.operation\_id
 
-> **operation_id**: `string`
+> **operation\_id**: `string`
 
 ###### Description
 
@@ -437,9 +437,9 @@ Capped request payload for the target operation (serialized size ≤ 16 KB inclu
 
 JSON request body for the target operation, when any.
 
-##### post.requestBody.content.application/json.request.path_params?
+##### post.requestBody.content.application/json.request.path\_params?
 
-> `optional` **path_params**: `object`
+> `optional` **path\_params**: `object`
 
 ###### Index Signature
 
@@ -461,9 +461,9 @@ Path template substitutions keyed by parameter name.
 
 Query string parameters keyed by name.
 
-##### post.requestBody.content.application/json.run_at?
+##### post.requestBody.content.application/json.run\_at?
 
-> `optional` **run_at**: `string`
+> `optional` **run\_at**: `string`
 
 Format: date-time
 
@@ -517,13 +517,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### post.responses.200.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -531,9 +531,9 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token.
 
-##### post.responses.200.content.application/json.job.concurrency_key
+##### post.responses.200.content.application/json.job.concurrency\_key
 
-> **concurrency_key**: `null` \| `string`
+> **concurrency\_key**: `null` \| `string`
 
 ###### Description
 
@@ -545,9 +545,9 @@ Optional key limiting concurrency: at most one running job per key (e.g. `matter
 matter: demo - 1;
 ```
 
-##### post.responses.200.content.application/json.job.created_at
+##### post.responses.200.content.application/json.job.created\_at
 
-> **created_at**: `string`
+> **created\_at**: `string`
 
 Format: date-time
 
@@ -561,9 +561,9 @@ When the job row was created.
 2026-08-06T20:59:55.000Z
 ```
 
-##### post.responses.200.content.application/json.job.dedupe_key
+##### post.responses.200.content.application/json.job.dedupe\_key
 
-> **dedupe_key**: `null` \| `string`
+> **dedupe\_key**: `null` \| `string`
 
 ###### Description
 
@@ -575,9 +575,9 @@ Optional key unique among non-terminal jobs. Re-enqueue with the same live key u
 matter:demo-1:claim
 ```
 
-##### post.responses.200.content.application/json.job.enqueued_by_operation_id
+##### post.responses.200.content.application/json.job.enqueued\_by\_operation\_id
 
-> **enqueued_by_operation_id**: `string`
+> **enqueued\_by\_operation\_id**: `string`
 
 ###### Description
 
@@ -589,9 +589,9 @@ Calling operationId that enqueued this job (trigger-map edge).
 startJobsDemo;
 ```
 
-##### post.responses.200.content.application/json.job.finished_at
+##### post.responses.200.content.application/json.job.finished\_at
 
-> **finished_at**: `null` \| `string`
+> **finished\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -619,9 +619,9 @@ Short identifier for the job (from generateShortId).
 Jb3k_mN7;
 ```
 
-##### post.responses.200.content.application/json.job.max_attempts
+##### post.responses.200.content.application/json.job.max\_attempts
 
-> **max_attempts**: `number`
+> **max\_attempts**: `number`
 
 ###### Description
 
@@ -633,9 +633,9 @@ Maximum delivery attempts before the job becomes dead (exhausted).
 5;
 ```
 
-##### post.responses.200.content.application/json.job.operation_id
+##### post.responses.200.content.application/json.job.operation\_id
 
-> **operation_id**: `string`
+> **operation\_id**: `string`
 
 ###### Description
 
@@ -647,9 +647,9 @@ Target OpenAPI operationId resolved at delivery time.
 jobsDemoStepB;
 ```
 
-##### post.responses.200.content.application/json.job.original_request_id
+##### post.responses.200.content.application/json.job.original\_request\_id
 
-> **original_request_id**: `string`
+> **original\_request\_id**: `string`
 
 ###### Description
 
@@ -661,9 +661,9 @@ Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Co
 r - abc123;
 ```
 
-##### post.responses.200.content.application/json.job.parent_job_id
+##### post.responses.200.content.application/json.job.parent\_job\_id
 
-> **parent_job_id**: `null` \| `string`
+> **parent\_job\_id**: `null` \| `string`
 
 ###### Description
 
@@ -715,9 +715,9 @@ Capped request payload delivered to the target operation (serialized size ≤ 16
 
 JSON request body for the target operation, when any.
 
-##### post.responses.200.content.application/json.job.request.path_params?
+##### post.responses.200.content.application/json.job.request.path\_params?
 
-> `optional` **path_params**: `object`
+> `optional` **path\_params**: `object`
 
 ###### Index Signature
 
@@ -753,9 +753,9 @@ Query string parameters keyed by name.
 
 Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `error_body` is set only on failure and capped at 8 KB.
 
-##### post.responses.200.content.application/json.job.run_at
+##### post.responses.200.content.application/json.job.run\_at
 
-> **run_at**: `string`
+> **run\_at**: `string`
 
 Format: date-time
 
@@ -769,9 +769,9 @@ Earliest time the job may be claimed for delivery.
 2026-08-06T21:00:00.000Z
 ```
 
-##### post.responses.200.content.application/json.job.started_at
+##### post.responses.200.content.application/json.job.started\_at
 
-> **started_at**: `null` \| `string`
+> **started\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -800,9 +800,9 @@ pending
 @enum {string}
 ```
 
-##### post.responses.200.content.application/json.job.user_id
+##### post.responses.200.content.application/json.job.user\_id
 
-> **user_id**: `string`
+> **user\_id**: `string`
 
 ###### Description
 
@@ -858,13 +858,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### post.responses.201.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -872,9 +872,9 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token.
 
-##### post.responses.201.content.application/json.job.concurrency_key
+##### post.responses.201.content.application/json.job.concurrency\_key
 
-> **concurrency_key**: `null` \| `string`
+> **concurrency\_key**: `null` \| `string`
 
 ###### Description
 
@@ -886,9 +886,9 @@ Optional key limiting concurrency: at most one running job per key (e.g. `matter
 matter: demo - 1;
 ```
 
-##### post.responses.201.content.application/json.job.created_at
+##### post.responses.201.content.application/json.job.created\_at
 
-> **created_at**: `string`
+> **created\_at**: `string`
 
 Format: date-time
 
@@ -902,9 +902,9 @@ When the job row was created.
 2026-08-06T20:59:55.000Z
 ```
 
-##### post.responses.201.content.application/json.job.dedupe_key
+##### post.responses.201.content.application/json.job.dedupe\_key
 
-> **dedupe_key**: `null` \| `string`
+> **dedupe\_key**: `null` \| `string`
 
 ###### Description
 
@@ -916,9 +916,9 @@ Optional key unique among non-terminal jobs. Re-enqueue with the same live key u
 matter:demo-1:claim
 ```
 
-##### post.responses.201.content.application/json.job.enqueued_by_operation_id
+##### post.responses.201.content.application/json.job.enqueued\_by\_operation\_id
 
-> **enqueued_by_operation_id**: `string`
+> **enqueued\_by\_operation\_id**: `string`
 
 ###### Description
 
@@ -930,9 +930,9 @@ Calling operationId that enqueued this job (trigger-map edge).
 startJobsDemo;
 ```
 
-##### post.responses.201.content.application/json.job.finished_at
+##### post.responses.201.content.application/json.job.finished\_at
 
-> **finished_at**: `null` \| `string`
+> **finished\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -960,9 +960,9 @@ Short identifier for the job (from generateShortId).
 Jb3k_mN7;
 ```
 
-##### post.responses.201.content.application/json.job.max_attempts
+##### post.responses.201.content.application/json.job.max\_attempts
 
-> **max_attempts**: `number`
+> **max\_attempts**: `number`
 
 ###### Description
 
@@ -974,9 +974,9 @@ Maximum delivery attempts before the job becomes dead (exhausted).
 5;
 ```
 
-##### post.responses.201.content.application/json.job.operation_id
+##### post.responses.201.content.application/json.job.operation\_id
 
-> **operation_id**: `string`
+> **operation\_id**: `string`
 
 ###### Description
 
@@ -988,9 +988,9 @@ Target OpenAPI operationId resolved at delivery time.
 jobsDemoStepB;
 ```
 
-##### post.responses.201.content.application/json.job.original_request_id
+##### post.responses.201.content.application/json.job.original\_request\_id
 
-> **original_request_id**: `string`
+> **original\_request\_id**: `string`
 
 ###### Description
 
@@ -1002,9 +1002,9 @@ Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Co
 r - abc123;
 ```
 
-##### post.responses.201.content.application/json.job.parent_job_id
+##### post.responses.201.content.application/json.job.parent\_job\_id
 
-> **parent_job_id**: `null` \| `string`
+> **parent\_job\_id**: `null` \| `string`
 
 ###### Description
 
@@ -1056,9 +1056,9 @@ Capped request payload delivered to the target operation (serialized size ≤ 16
 
 JSON request body for the target operation, when any.
 
-##### post.responses.201.content.application/json.job.request.path_params?
+##### post.responses.201.content.application/json.job.request.path\_params?
 
-> `optional` **path_params**: `object`
+> `optional` **path\_params**: `object`
 
 ###### Index Signature
 
@@ -1094,9 +1094,9 @@ Query string parameters keyed by name.
 
 Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `error_body` is set only on failure and capped at 8 KB.
 
-##### post.responses.201.content.application/json.job.run_at
+##### post.responses.201.content.application/json.job.run\_at
 
-> **run_at**: `string`
+> **run\_at**: `string`
 
 Format: date-time
 
@@ -1110,9 +1110,9 @@ Earliest time the job may be claimed for delivery.
 2026-08-06T21:00:00.000Z
 ```
 
-##### post.responses.201.content.application/json.job.started_at
+##### post.responses.201.content.application/json.job.started\_at
 
-> **started_at**: `null` \| `string`
+> **started\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -1141,9 +1141,9 @@ pending
 @enum {string}
 ```
 
-##### post.responses.201.content.application/json.job.user_id
+##### post.responses.201.content.application/json.job.user\_id
 
-> **user_id**: `string`
+> **user\_id**: `string`
 
 ###### Description
 
@@ -1473,17 +1473,17 @@ Job detail including the enqueue assertion evidence.
 
 > **application/json**: `object`
 
-##### get.responses.200.content.application/json.authority_assertion
+##### get.responses.200.content.application/json.authority\_assertion
 
-> **authority_assertion**: `object`
+> **authority\_assertion**: `object`
 
 ###### Description
 
 Enqueue-hop identity assertion as stored with the job (payload, signature, key_id). Detail-only; omitted from list.
 
-##### get.responses.200.content.application/json.authority_assertion.key_id
+##### get.responses.200.content.application/json.authority\_assertion.key\_id
 
-> **key_id**: `string`
+> **key\_id**: `string`
 
 ###### Description
 
@@ -1495,7 +1495,7 @@ Id of the key used to sign the assertion.
 k1;
 ```
 
-##### get.responses.200.content.application/json.authority_assertion.payload
+##### get.responses.200.content.application/json.authority\_assertion.payload
 
 > **payload**: `string`
 
@@ -1509,7 +1509,7 @@ Base64url-encoded assertion JSON payload.
 eyJ1c2VySWQiOiJVczdrX3BRMiJ9;
 ```
 
-##### get.responses.200.content.application/json.authority_assertion.signature
+##### get.responses.200.content.application/json.authority\_assertion.signature
 
 > **signature**: `string`
 
@@ -1543,13 +1543,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### get.responses.200.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -1557,9 +1557,9 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token.
 
-##### get.responses.200.content.application/json.job.concurrency_key
+##### get.responses.200.content.application/json.job.concurrency\_key
 
-> **concurrency_key**: `null` \| `string`
+> **concurrency\_key**: `null` \| `string`
 
 ###### Description
 
@@ -1571,9 +1571,9 @@ Optional key limiting concurrency: at most one running job per key (e.g. `matter
 matter: demo - 1;
 ```
 
-##### get.responses.200.content.application/json.job.created_at
+##### get.responses.200.content.application/json.job.created\_at
 
-> **created_at**: `string`
+> **created\_at**: `string`
 
 Format: date-time
 
@@ -1587,9 +1587,9 @@ When the job row was created.
 2026-08-06T20:59:55.000Z
 ```
 
-##### get.responses.200.content.application/json.job.dedupe_key
+##### get.responses.200.content.application/json.job.dedupe\_key
 
-> **dedupe_key**: `null` \| `string`
+> **dedupe\_key**: `null` \| `string`
 
 ###### Description
 
@@ -1601,9 +1601,9 @@ Optional key unique among non-terminal jobs. Re-enqueue with the same live key u
 matter:demo-1:claim
 ```
 
-##### get.responses.200.content.application/json.job.enqueued_by_operation_id
+##### get.responses.200.content.application/json.job.enqueued\_by\_operation\_id
 
-> **enqueued_by_operation_id**: `string`
+> **enqueued\_by\_operation\_id**: `string`
 
 ###### Description
 
@@ -1615,9 +1615,9 @@ Calling operationId that enqueued this job (trigger-map edge).
 startJobsDemo;
 ```
 
-##### get.responses.200.content.application/json.job.finished_at
+##### get.responses.200.content.application/json.job.finished\_at
 
-> **finished_at**: `null` \| `string`
+> **finished\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -1645,9 +1645,9 @@ Short identifier for the job (from generateShortId).
 Jb3k_mN7;
 ```
 
-##### get.responses.200.content.application/json.job.max_attempts
+##### get.responses.200.content.application/json.job.max\_attempts
 
-> **max_attempts**: `number`
+> **max\_attempts**: `number`
 
 ###### Description
 
@@ -1659,9 +1659,9 @@ Maximum delivery attempts before the job becomes dead (exhausted).
 5;
 ```
 
-##### get.responses.200.content.application/json.job.operation_id
+##### get.responses.200.content.application/json.job.operation\_id
 
-> **operation_id**: `string`
+> **operation\_id**: `string`
 
 ###### Description
 
@@ -1673,9 +1673,9 @@ Target OpenAPI operationId resolved at delivery time.
 jobsDemoStepB;
 ```
 
-##### get.responses.200.content.application/json.job.original_request_id
+##### get.responses.200.content.application/json.job.original\_request\_id
 
-> **original_request_id**: `string`
+> **original\_request\_id**: `string`
 
 ###### Description
 
@@ -1687,9 +1687,9 @@ Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Co
 r - abc123;
 ```
 
-##### get.responses.200.content.application/json.job.parent_job_id
+##### get.responses.200.content.application/json.job.parent\_job\_id
 
-> **parent_job_id**: `null` \| `string`
+> **parent\_job\_id**: `null` \| `string`
 
 ###### Description
 
@@ -1741,9 +1741,9 @@ Capped request payload delivered to the target operation (serialized size ≤ 16
 
 JSON request body for the target operation, when any.
 
-##### get.responses.200.content.application/json.job.request.path_params?
+##### get.responses.200.content.application/json.job.request.path\_params?
 
-> `optional` **path_params**: `object`
+> `optional` **path\_params**: `object`
 
 ###### Index Signature
 
@@ -1779,9 +1779,9 @@ Query string parameters keyed by name.
 
 Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `error_body` is set only on failure and capped at 8 KB.
 
-##### get.responses.200.content.application/json.job.run_at
+##### get.responses.200.content.application/json.job.run\_at
 
-> **run_at**: `string`
+> **run\_at**: `string`
 
 Format: date-time
 
@@ -1795,9 +1795,9 @@ Earliest time the job may be claimed for delivery.
 2026-08-06T21:00:00.000Z
 ```
 
-##### get.responses.200.content.application/json.job.started_at
+##### get.responses.200.content.application/json.job.started\_at
 
-> **started_at**: `null` \| `string`
+> **started\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -1826,9 +1826,9 @@ pending
 @enum {string}
 ```
 
-##### get.responses.200.content.application/json.job.user_id
+##### get.responses.200.content.application/json.job.user\_id
 
-> **user_id**: `string`
+> **user\_id**: `string`
 
 ###### Description
 
@@ -2158,13 +2158,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### post.responses.200.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -2172,9 +2172,9 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token.
 
-##### post.responses.200.content.application/json.job.concurrency_key
+##### post.responses.200.content.application/json.job.concurrency\_key
 
-> **concurrency_key**: `null` \| `string`
+> **concurrency\_key**: `null` \| `string`
 
 ###### Description
 
@@ -2186,9 +2186,9 @@ Optional key limiting concurrency: at most one running job per key (e.g. `matter
 matter: demo - 1;
 ```
 
-##### post.responses.200.content.application/json.job.created_at
+##### post.responses.200.content.application/json.job.created\_at
 
-> **created_at**: `string`
+> **created\_at**: `string`
 
 Format: date-time
 
@@ -2202,9 +2202,9 @@ When the job row was created.
 2026-08-06T20:59:55.000Z
 ```
 
-##### post.responses.200.content.application/json.job.dedupe_key
+##### post.responses.200.content.application/json.job.dedupe\_key
 
-> **dedupe_key**: `null` \| `string`
+> **dedupe\_key**: `null` \| `string`
 
 ###### Description
 
@@ -2216,9 +2216,9 @@ Optional key unique among non-terminal jobs. Re-enqueue with the same live key u
 matter:demo-1:claim
 ```
 
-##### post.responses.200.content.application/json.job.enqueued_by_operation_id
+##### post.responses.200.content.application/json.job.enqueued\_by\_operation\_id
 
-> **enqueued_by_operation_id**: `string`
+> **enqueued\_by\_operation\_id**: `string`
 
 ###### Description
 
@@ -2230,9 +2230,9 @@ Calling operationId that enqueued this job (trigger-map edge).
 startJobsDemo;
 ```
 
-##### post.responses.200.content.application/json.job.finished_at
+##### post.responses.200.content.application/json.job.finished\_at
 
-> **finished_at**: `null` \| `string`
+> **finished\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -2260,9 +2260,9 @@ Short identifier for the job (from generateShortId).
 Jb3k_mN7;
 ```
 
-##### post.responses.200.content.application/json.job.max_attempts
+##### post.responses.200.content.application/json.job.max\_attempts
 
-> **max_attempts**: `number`
+> **max\_attempts**: `number`
 
 ###### Description
 
@@ -2274,9 +2274,9 @@ Maximum delivery attempts before the job becomes dead (exhausted).
 5;
 ```
 
-##### post.responses.200.content.application/json.job.operation_id
+##### post.responses.200.content.application/json.job.operation\_id
 
-> **operation_id**: `string`
+> **operation\_id**: `string`
 
 ###### Description
 
@@ -2288,9 +2288,9 @@ Target OpenAPI operationId resolved at delivery time.
 jobsDemoStepB;
 ```
 
-##### post.responses.200.content.application/json.job.original_request_id
+##### post.responses.200.content.application/json.job.original\_request\_id
 
-> **original_request_id**: `string`
+> **original\_request\_id**: `string`
 
 ###### Description
 
@@ -2302,9 +2302,9 @@ Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Co
 r - abc123;
 ```
 
-##### post.responses.200.content.application/json.job.parent_job_id
+##### post.responses.200.content.application/json.job.parent\_job\_id
 
-> **parent_job_id**: `null` \| `string`
+> **parent\_job\_id**: `null` \| `string`
 
 ###### Description
 
@@ -2356,9 +2356,9 @@ Capped request payload delivered to the target operation (serialized size ≤ 16
 
 JSON request body for the target operation, when any.
 
-##### post.responses.200.content.application/json.job.request.path_params?
+##### post.responses.200.content.application/json.job.request.path\_params?
 
-> `optional` **path_params**: `object`
+> `optional` **path\_params**: `object`
 
 ###### Index Signature
 
@@ -2394,9 +2394,9 @@ Query string parameters keyed by name.
 
 Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `error_body` is set only on failure and capped at 8 KB.
 
-##### post.responses.200.content.application/json.job.run_at
+##### post.responses.200.content.application/json.job.run\_at
 
-> **run_at**: `string`
+> **run\_at**: `string`
 
 Format: date-time
 
@@ -2410,9 +2410,9 @@ Earliest time the job may be claimed for delivery.
 2026-08-06T21:00:00.000Z
 ```
 
-##### post.responses.200.content.application/json.job.started_at
+##### post.responses.200.content.application/json.job.started\_at
 
-> **started_at**: `null` \| `string`
+> **started\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -2441,9 +2441,9 @@ pending
 @enum {string}
 ```
 
-##### post.responses.200.content.application/json.job.user_id
+##### post.responses.200.content.application/json.job.user\_id
 
-> **user_id**: `string`
+> **user\_id**: `string`
 
 ###### Description
 
@@ -2783,13 +2783,13 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 ##### post.responses.200.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -2797,9 +2797,9 @@ Number of delivery attempts consumed so far (0 before first claim).
 
 Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token.
 
-##### post.responses.200.content.application/json.job.concurrency_key
+##### post.responses.200.content.application/json.job.concurrency\_key
 
-> **concurrency_key**: `null` \| `string`
+> **concurrency\_key**: `null` \| `string`
 
 ###### Description
 
@@ -2811,9 +2811,9 @@ Optional key limiting concurrency: at most one running job per key (e.g. `matter
 matter: demo - 1;
 ```
 
-##### post.responses.200.content.application/json.job.created_at
+##### post.responses.200.content.application/json.job.created\_at
 
-> **created_at**: `string`
+> **created\_at**: `string`
 
 Format: date-time
 
@@ -2827,9 +2827,9 @@ When the job row was created.
 2026-08-06T20:59:55.000Z
 ```
 
-##### post.responses.200.content.application/json.job.dedupe_key
+##### post.responses.200.content.application/json.job.dedupe\_key
 
-> **dedupe_key**: `null` \| `string`
+> **dedupe\_key**: `null` \| `string`
 
 ###### Description
 
@@ -2841,9 +2841,9 @@ Optional key unique among non-terminal jobs. Re-enqueue with the same live key u
 matter:demo-1:claim
 ```
 
-##### post.responses.200.content.application/json.job.enqueued_by_operation_id
+##### post.responses.200.content.application/json.job.enqueued\_by\_operation\_id
 
-> **enqueued_by_operation_id**: `string`
+> **enqueued\_by\_operation\_id**: `string`
 
 ###### Description
 
@@ -2855,9 +2855,9 @@ Calling operationId that enqueued this job (trigger-map edge).
 startJobsDemo;
 ```
 
-##### post.responses.200.content.application/json.job.finished_at
+##### post.responses.200.content.application/json.job.finished\_at
 
-> **finished_at**: `null` \| `string`
+> **finished\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -2885,9 +2885,9 @@ Short identifier for the job (from generateShortId).
 Jb3k_mN7;
 ```
 
-##### post.responses.200.content.application/json.job.max_attempts
+##### post.responses.200.content.application/json.job.max\_attempts
 
-> **max_attempts**: `number`
+> **max\_attempts**: `number`
 
 ###### Description
 
@@ -2899,9 +2899,9 @@ Maximum delivery attempts before the job becomes dead (exhausted).
 5;
 ```
 
-##### post.responses.200.content.application/json.job.operation_id
+##### post.responses.200.content.application/json.job.operation\_id
 
-> **operation_id**: `string`
+> **operation\_id**: `string`
 
 ###### Description
 
@@ -2913,9 +2913,9 @@ Target OpenAPI operationId resolved at delivery time.
 jobsDemoStepB;
 ```
 
-##### post.responses.200.content.application/json.job.original_request_id
+##### post.responses.200.content.application/json.job.original\_request\_id
 
-> **original_request_id**: `string`
+> **original\_request\_id**: `string`
 
 ###### Description
 
@@ -2927,9 +2927,9 @@ Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Co
 r - abc123;
 ```
 
-##### post.responses.200.content.application/json.job.parent_job_id
+##### post.responses.200.content.application/json.job.parent\_job\_id
 
-> **parent_job_id**: `null` \| `string`
+> **parent\_job\_id**: `null` \| `string`
 
 ###### Description
 
@@ -2981,9 +2981,9 @@ Capped request payload delivered to the target operation (serialized size ≤ 16
 
 JSON request body for the target operation, when any.
 
-##### post.responses.200.content.application/json.job.request.path_params?
+##### post.responses.200.content.application/json.job.request.path\_params?
 
-> `optional` **path_params**: `object`
+> `optional` **path\_params**: `object`
 
 ###### Index Signature
 
@@ -3019,9 +3019,9 @@ Query string parameters keyed by name.
 
 Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `error_body` is set only on failure and capped at 8 KB.
 
-##### post.responses.200.content.application/json.job.run_at
+##### post.responses.200.content.application/json.job.run\_at
 
-> **run_at**: `string`
+> **run\_at**: `string`
 
 Format: date-time
 
@@ -3035,9 +3035,9 @@ Earliest time the job may be claimed for delivery.
 2026-08-06T21:00:00.000Z
 ```
 
-##### post.responses.200.content.application/json.job.started_at
+##### post.responses.200.content.application/json.job.started\_at
 
-> **started_at**: `null` \| `string`
+> **started\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -3066,9 +3066,9 @@ pending
 @enum {string}
 ```
 
-##### post.responses.200.content.application/json.job.user_id
+##### post.responses.200.content.application/json.job.user\_id
 
-> **user_id**: `string`
+> **user\_id**: `string`
 
 ###### Description
 
@@ -3368,9 +3368,9 @@ Cancels every non-terminal, non-running job that shares the given `original_requ
 
 > **application/json**: `object`
 
-##### post.requestBody.content.application/json.original_request_id
+##### post.requestBody.content.application/json.original\_request\_id
 
-> **original_request_id**: `string`
+> **original\_request\_id**: `string`
 
 ###### Description
 

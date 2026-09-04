@@ -1,6 +1,6 @@
 [**@saflib/jobs-spec**](../../../../index.md)
 
-***
+---
 
 # Interface: paths
 
@@ -106,7 +106,7 @@ Chain-root request id whose non-running jobs should be cancelled.
 ###### Example
 
 ```ts
-r-abc123
+r - abc123;
 ```
 
 ##### post.responses

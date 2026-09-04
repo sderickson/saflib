@@ -244,20 +244,20 @@ export interface components {
                 request_id: string;
             } | {
                 /**
-                 * @example importer
+                 * @example resource
                  * @enum {string}
                  */
-                kind: "importer";
+                kind: "resource";
                 /**
-                 * @description Importer creator whose authority is used.
+                 * @description Owner of the resource whose authority is used.
                  * @example Us7k_pQ2
                  */
                 user_id: string;
                 /**
-                 * @description Short id of the importer row that authorized the chain.
-                 * @example Im7k_mN2
+                 * @description Short id of the resource row that authorized the chain.
+                 * @example Rs7k_mN2
                  */
-                importer_id: string;
+                resource_id: string;
             } | {
                 /**
                  * @example cron

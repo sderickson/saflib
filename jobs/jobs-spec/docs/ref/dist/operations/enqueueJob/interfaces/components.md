@@ -1,6 +1,6 @@
 [**@saflib/jobs-spec**](../../../../index.md)
 
-***
+---
 
 # Interface: components
 
@@ -10,31 +10,31 @@
 
 > **headers**: `never`
 
-***
+---
 
 ### parameters
 
 > **parameters**: `never`
 
-***
+---
 
 ### pathItems
 
 > **pathItems**: `never`
 
-***
+---
 
 ### requestBodies
 
 > **requestBodies**: `never`
 
-***
+---
 
 ### responses
 
 > **responses**: `never`
 
-***
+---
 
 ### schemas
 
@@ -42,13 +42,13 @@
 
 #### authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ##### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -101,18 +101,18 @@ Number of delivery attempts consumed so far (0 before first claim).
 ###### Example
 
 ```ts
-0
+0;
 ```
 
 ##### job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -131,7 +131,7 @@ Optional key limiting concurrency: at most one running job per key (e.g. `matter
 ###### Example
 
 ```ts
-matter:demo-1
+matter: demo - 1;
 ```
 
 ##### job.created\_at
@@ -175,7 +175,7 @@ Calling operationId that enqueued this job (trigger-map edge).
 ###### Example
 
 ```ts
-startJobsDemo
+startJobsDemo;
 ```
 
 ##### job.finished\_at
@@ -191,7 +191,7 @@ When the job reached a terminal status; null while still active.
 ###### Example
 
 ```ts
-null
+null;
 ```
 
 ##### job.id
@@ -205,7 +205,7 @@ Short identifier for the job (from generateShortId).
 ###### Example
 
 ```ts
-Jb3k_mN7
+Jb3k_mN7;
 ```
 
 ##### job.max\_attempts
@@ -219,7 +219,7 @@ Maximum delivery attempts before the job becomes dead (exhausted).
 ###### Example
 
 ```ts
-5
+5;
 ```
 
 ##### job.operation\_id
@@ -233,7 +233,7 @@ Target OpenAPI operationId resolved at delivery time.
 ###### Example
 
 ```ts
-jobsDemoStepB
+jobsDemoStepB;
 ```
 
 ##### job.original\_request\_id
@@ -247,7 +247,7 @@ Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Co
 ###### Example
 
 ```ts
-r-abc123
+r - abc123;
 ```
 
 ##### job.parent\_job\_id
@@ -261,7 +261,7 @@ Short id of the job that enqueued this one, or null at the chain root.
 ###### Example
 
 ```ts
-null
+null;
 ```
 
 ##### job.priority
@@ -275,7 +275,7 @@ Claim priority; higher values are claimed first. Default 0.
 ###### Example
 
 ```ts
-0
+0;
 ```
 
 ##### job.request
@@ -371,7 +371,7 @@ When the current (or last) delivery attempt started; null if never claimed.
 ###### Example
 
 ```ts
-null
+null;
 ```
 
 ##### job.status
@@ -400,7 +400,7 @@ Acting user whose authority the job runs under.
 ###### Example
 
 ```ts
-Us7k_pQ2
+Us7k_pQ2;
 ```
 
 #### request

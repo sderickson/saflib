@@ -17,9 +17,9 @@
 | [dist/schemas/authority](dist/schemas/authority/index.md)                                           | -           |
 | [dist/schemas/Error](dist/schemas/Error/index.md)                                                   | -           |
 | [dist/schemas/Job](dist/schemas/Job/index.md)                                                       | -           |
-| [dist/schemas/operation_id](dist/schemas/operation_id/index.md)                                     | -           |
-| [dist/schemas/original_request_id](dist/schemas/original_request_id/index.md)                       | -           |
+| [dist/schemas/operation\_id](dist/schemas/operation_id/index.md)                                    | -           |
+| [dist/schemas/original\_request\_id](dist/schemas/original_request_id/index.md)                     | -           |
 | [dist/schemas/request](dist/schemas/request/index.md)                                               | -           |
 | [dist/schemas/status](dist/schemas/status/index.md)                                                 | -           |
-| [dist/schemas/user_id](dist/schemas/user_id/index.md)                                               | -           |
+| [dist/schemas/user\_id](dist/schemas/user_id/index.md)                                              | -           |
 | [index](index/index.md)                                                                             | -           |

@@ -55,9 +55,9 @@ export type JobAuthority =
       assertion: JobAuthorityAssertion;
     }
   | {
-      kind: "importer";
+      kind: "resource";
       user_id: string;
-      importer_id: string;
+      resource_id: string;
       assertion: JobAuthorityAssertion;
     }
   | {

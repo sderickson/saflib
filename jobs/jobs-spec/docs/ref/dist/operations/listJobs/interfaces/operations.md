@@ -1,6 +1,6 @@
 [**@saflib/jobs-spec**](../../../../index.md)
 
-***
+---
 
 # Interface: operations
 

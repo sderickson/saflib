@@ -44,6 +44,24 @@ describe("mapJobToWire", () => {
     });
   });
 
+  it("maps resource authority without the embedded assertion", () => {
+    const job = {
+      ...baseJob,
+      authority: {
+        kind: "resource" as const,
+        user_id: "admin-1",
+        resource_id: "webhook-1",
+        assertion: { payload: "p", signature: "s", key_id: "k1" },
+      },
+    } satisfies JobEntity;
+
+    expect(mapJobToWire(job).authority).toEqual({
+      kind: "resource",
+      user_id: "admin-1",
+      resource_id: "webhook-1",
+    });
+  });
+
   it("serializes date fields to ISO strings", () => {
     const job = {
       ...baseJob,

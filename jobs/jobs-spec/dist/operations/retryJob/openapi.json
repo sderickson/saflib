@@ -185,30 +185,30 @@
               },
               {
                 "type": "object",
-                "description": "A webhook arrived for a channel subscription; the importer's creator authorized scanning this channel. Evidence is the importer row.\n",
+                "description": "An inbound event was attributed to a product resource (e.g. a webhook endpoint or channel subscription). Evidence is the resource row that authorized the work.\n",
                 "additionalProperties": false,
                 "required": [
                   "kind",
                   "user_id",
-                  "importer_id"
+                  "resource_id"
                 ],
                 "properties": {
                   "kind": {
                     "type": "string",
                     "enum": [
-                      "importer"
+                      "resource"
                     ],
-                    "example": "importer"
+                    "example": "resource"
                   },
                   "user_id": {
                     "type": "string",
-                    "description": "Importer creator whose authority is used.",
+                    "description": "Owner of the resource whose authority is used.",
                     "example": "Us7k_pQ2"
                   },
-                  "importer_id": {
+                  "resource_id": {
                     "type": "string",
-                    "description": "Short id of the importer row that authorized the chain.",
-                    "example": "Im7k_mN2"
+                    "description": "Short id of the resource row that authorized the chain.",
+                    "example": "Rs7k_mN2"
                   }
                 }
               },

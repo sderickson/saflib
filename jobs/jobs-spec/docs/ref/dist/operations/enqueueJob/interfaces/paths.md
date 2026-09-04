@@ -1,6 +1,6 @@
 [**@saflib/jobs-spec**](../../../../index.md)
 
-***
+---
 
 # Interface: paths
 
@@ -106,7 +106,7 @@ Optional key limiting concurrency (at most one running job per key).
 ###### Example
 
 ```ts
-matter:Mt4k_wZ7
+matter: Mt4k_wZ7;
 ```
 
 ##### post.requestBody.content.application/json.dedupe\_key?
@@ -120,7 +120,7 @@ Optional key unique among non-terminal jobs. Re-enqueue with the same live key u
 ###### Example
 
 ```ts
-matter:Mt4k_wZ7:claim
+matter: Mt4k_wZ7: claim;
 ```
 
 ##### post.requestBody.content.application/json.delay\_ms?
@@ -134,7 +134,7 @@ Relative delay in milliseconds from enqueue time before the job becomes claimabl
 ###### Example
 
 ```ts
-5000
+5000;
 ```
 
 ##### post.requestBody.content.application/json.on\_behalf\_of?
@@ -147,19 +147,19 @@ Explicit authority override for enqueueOnBehalfOf. When present, both user_id an
 
 ##### post.requestBody.content.application/json.on\_behalf\_of.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Description
 
-Evidence grant for the override (request, importer, or cron kind).
+Evidence grant for the override (request, resource, or cron kind).
 
 ##### post.requestBody.content.application/json.on\_behalf\_of.user\_id
 
@@ -172,7 +172,7 @@ Acting user for the enqueued job.
 ###### Example
 
 ```ts
-Us7k_pQ2
+Us7k_pQ2;
 ```
 
 ##### post.requestBody.content.application/json.operation\_id
@@ -186,7 +186,7 @@ Target OpenAPI operationId (must exist and carry the background tag).
 ###### Example
 
 ```ts
-jobsDemoStepB
+jobsDemoStepB;
 ```
 
 ##### post.requestBody.content.application/json.priority?
@@ -200,7 +200,7 @@ Claim priority; higher values are claimed first. Defaults to 0.
 ###### Example
 
 ```ts
-0
+0;
 ```
 
 ##### post.requestBody.content.application/json.request
@@ -294,18 +294,18 @@ Number of delivery attempts consumed so far (0 before first claim).
 ###### Example
 
 ```ts
-0
+0;
 ```
 
 ##### post.responses.200.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -324,7 +324,7 @@ Optional key limiting concurrency: at most one running job per key (e.g. `matter
 ###### Example
 
 ```ts
-matter:demo-1
+matter: demo - 1;
 ```
 
 ##### post.responses.200.content.application/json.job.created\_at
@@ -368,7 +368,7 @@ Calling operationId that enqueued this job (trigger-map edge).
 ###### Example
 
 ```ts
-startJobsDemo
+startJobsDemo;
 ```
 
 ##### post.responses.200.content.application/json.job.finished\_at
@@ -384,7 +384,7 @@ When the job reached a terminal status; null while still active.
 ###### Example
 
 ```ts
-null
+null;
 ```
 
 ##### post.responses.200.content.application/json.job.id
@@ -398,7 +398,7 @@ Short identifier for the job (from generateShortId).
 ###### Example
 
 ```ts
-Jb3k_mN7
+Jb3k_mN7;
 ```
 
 ##### post.responses.200.content.application/json.job.max\_attempts
@@ -412,7 +412,7 @@ Maximum delivery attempts before the job becomes dead (exhausted).
 ###### Example
 
 ```ts
-5
+5;
 ```
 
 ##### post.responses.200.content.application/json.job.operation\_id
@@ -426,7 +426,7 @@ Target OpenAPI operationId resolved at delivery time.
 ###### Example
 
 ```ts
-jobsDemoStepB
+jobsDemoStepB;
 ```
 
 ##### post.responses.200.content.application/json.job.original\_request\_id
@@ -440,7 +440,7 @@ Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Co
 ###### Example
 
 ```ts
-r-abc123
+r - abc123;
 ```
 
 ##### post.responses.200.content.application/json.job.parent\_job\_id
@@ -454,7 +454,7 @@ Short id of the job that enqueued this one, or null at the chain root.
 ###### Example
 
 ```ts
-null
+null;
 ```
 
 ##### post.responses.200.content.application/json.job.priority
@@ -468,7 +468,7 @@ Claim priority; higher values are claimed first. Default 0.
 ###### Example
 
 ```ts
-0
+0;
 ```
 
 ##### post.responses.200.content.application/json.job.request
@@ -564,7 +564,7 @@ When the current (or last) delivery attempt started; null if never claimed.
 ###### Example
 
 ```ts
-null
+null;
 ```
 
 ##### post.responses.200.content.application/json.job.status
@@ -593,7 +593,7 @@ Acting user whose authority the job runs under.
 ###### Example
 
 ```ts
-Us7k_pQ2
+Us7k_pQ2;
 ```
 
 ##### post.responses.200.headers
@@ -635,18 +635,18 @@ Number of delivery attempts consumed so far (0 before first claim).
 ###### Example
 
 ```ts
-0
+0;
 ```
 
 ##### post.responses.201.content.application/json.job.authority
 
-> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
+> **authority**: \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \} \| \{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \} \| \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
 ###### Type declaration
 
 \{ `kind`: `"request"`; `request_id`: `string`; `user_id`: `string`; \}
 
-\{ `importer_id`: `string`; `kind`: `"importer"`; `user_id`: `string`; \}
+\{ `kind`: `"resource"`; `resource_id`: `string`; `user_id`: `string`; \}
 
 \{ `cron_job_name`: `string`; `kind`: `"cron"`; `user_id`: `string`; \}
 
@@ -665,7 +665,7 @@ Optional key limiting concurrency: at most one running job per key (e.g. `matter
 ###### Example
 
 ```ts
-matter:demo-1
+matter: demo - 1;
 ```
 
 ##### post.responses.201.content.application/json.job.created\_at
@@ -709,7 +709,7 @@ Calling operationId that enqueued this job (trigger-map edge).
 ###### Example
 
 ```ts
-startJobsDemo
+startJobsDemo;
 ```
 
 ##### post.responses.201.content.application/json.job.finished\_at
@@ -725,7 +725,7 @@ When the job reached a terminal status; null while still active.
 ###### Example
 
 ```ts
-null
+null;
 ```
 
 ##### post.responses.201.content.application/json.job.id
@@ -739,7 +739,7 @@ Short identifier for the job (from generateShortId).
 ###### Example
 
 ```ts
-Jb3k_mN7
+Jb3k_mN7;
 ```
 
 ##### post.responses.201.content.application/json.job.max\_attempts
@@ -753,7 +753,7 @@ Maximum delivery attempts before the job becomes dead (exhausted).
 ###### Example
 
 ```ts
-5
+5;
 ```
 
 ##### post.responses.201.content.application/json.job.operation\_id
@@ -767,7 +767,7 @@ Target OpenAPI operationId resolved at delivery time.
 ###### Example
 
 ```ts
-jobsDemoStepB
+jobsDemoStepB;
 ```
 
 ##### post.responses.201.content.application/json.job.original\_request\_id
@@ -781,7 +781,7 @@ Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Co
 ###### Example
 
 ```ts
-r-abc123
+r - abc123;
 ```
 
 ##### post.responses.201.content.application/json.job.parent\_job\_id
@@ -795,7 +795,7 @@ Short id of the job that enqueued this one, or null at the chain root.
 ###### Example
 
 ```ts
-null
+null;
 ```
 
 ##### post.responses.201.content.application/json.job.priority
@@ -809,7 +809,7 @@ Claim priority; higher values are claimed first. Default 0.
 ###### Example
 
 ```ts
-0
+0;
 ```
 
 ##### post.responses.201.content.application/json.job.request
@@ -905,7 +905,7 @@ When the current (or last) delivery attempt started; null if never claimed.
 ###### Example
 
 ```ts
-null
+null;
 ```
 
 ##### post.responses.201.content.application/json.job.status
@@ -934,7 +934,7 @@ Acting user whose authority the job runs under.
 ###### Example
 
 ```ts
-Us7k_pQ2
+Us7k_pQ2;
 ```
 
 ##### post.responses.201.headers

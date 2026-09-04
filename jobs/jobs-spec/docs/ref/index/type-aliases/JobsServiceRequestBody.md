@@ -4,4 +4,4 @@
 
 # Type Alias: JobsServiceRequestBody
 
-> **JobsServiceRequestBody** = `ExtractRequestBody`\<`operations`\>
+> **JobsServiceRequestBody** = `ExtractRequestBody`\<`operations`>\>
