@@ -35,7 +35,7 @@ npm exec saf-imports spa measure --spa <name>
 npm exec saf-imports tsconfig sync|check|cycles|cleanup-declarations [--root <dir>]
 ```
 
-For side-effects scanning, see [saf-monorepo](../monorepo/docs/cli/saf-monorepo.md). For export coverage validation, use [saf-analyze-package](../dev-tools/docs/package-issues.md).
+For export coverage validation, use [saf-analyze-package](../dev-tools/docs/package-issues.md).
 
 `measure --verbose` lists every first-party file (repo-root-relative, sorted) and external package the entry statically imports.
 

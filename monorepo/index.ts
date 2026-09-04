@@ -57,12 +57,6 @@ export {
 } from "./src/exports/generate-exports.ts";
 
 export {
-  scanPackageSideEffects,
-  type SideEffectFlag,
-  type SideEffectScanResult,
-} from "./src/side-effects/scan-package.ts";
-
-export {
   buildPackageIndex,
   existsResolve,
   findMonorepoRoot,

@@ -6,11 +6,9 @@
 
 ## Interfaces
 
-| Interface                                                  | Description                                         |
-| ---------------------------------------------------------- | --------------------------------------------------- |
-| [PackageInfo](interfaces/PackageInfo.md)                   | Package metadata indexed by workspace package name. |
-| [SideEffectFlag](interfaces/SideEffectFlag.md)             | -                                                   |
-| [SideEffectScanResult](interfaces/SideEffectScanResult.md) | -                                                   |
+| Interface                                | Description                                         |
+| ---------------------------------------- | --------------------------------------------------- |
+| [PackageInfo](interfaces/PackageInfo.md) | Package metadata indexed by workspace package name. |
 
 ## Type Aliases
 
@@ -37,7 +35,6 @@
 | [matchExportPattern](functions/matchExportPattern.md)                           | Match a Node.js package.json `exports` subpath pattern.                            |
 | [resolvePackageExportPath](functions/resolvePackageExportPath.md)               | Resolve a package export subpath to an absolute file path (no extension probing).  |
 | [resolveSpecifier](functions/resolveSpecifier.md)                               | Resolve an import specifier relative to `fromFile` against the package index.      |
-| [scanPackageSideEffects](functions/scanPackageSideEffects.md)                   | -                                                                                  |
 | [sortExportPatternKeys](functions/sortExportPatternKeys.md)                     | Prefer longer (more specific) pattern keys, matching Node's best-match preference. |
 | [stripTemplateImportPlaceholders](functions/stripTemplateImportPlaceholders.md) | Remove template placeholder import keys/values (e.g. `#__group-name__/*`).         |
 | [upsertImportGlob](functions/upsertImportGlob.md)                               | -                                                                                  |
