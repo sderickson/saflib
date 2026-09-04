@@ -20,7 +20,7 @@ Composable for downloading files with CSRF protection
 
 ### download()
 
-> **download**: () => `Promise`\<`void`\>
+> **download**: () => `Promise`\<`void`>\>
 
 #### Returns
 
@@ -28,8 +28,8 @@ Composable for downloading files with CSRF protection
 
 ### error
 
-> **error**: `Ref`\<`null` \| `string`, `null` \| `string`\>
+> **error**: `Ref`\<`null` \| `string`, `null` \| `string`>\>
 
 ### isDownloading
 
-> **isDownloading**: `Ref`\<`boolean`, `boolean`\>
+> **isDownloading**: `Ref`\<`boolean`, `boolean`>\>

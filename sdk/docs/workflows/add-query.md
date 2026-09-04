@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-query.ts](https://github.com/sderickson/saflib/blob/main/sdk/workflows/add-query.ts)
+[add-query.ts](../../workflows/add-query.ts)
 
 ## Usage
 
@@ -19,8 +19,6 @@ To run this workflow automatically, tell the agent to:
 ## Checklist
 
 When run, the workflow will:
-
-Kicking off workflow sdk/add-query
 
 - Upsert 5 templates.
 - Update **list.ts** to implement the API query.
@@ -42,5 +40,4 @@ Arguments:
               Example: "/example"
   method      The HTTP method in lowercase (e.g., 'get', 'post', 'put', 'delete')
               Example: "get"
-
 ```

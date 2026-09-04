@@ -52,7 +52,7 @@ Error returned by `handleClientMethod` so that Tanstack errors are always instan
 
 ### fields
 
-> **fields**: `undefined` \| `Record`\<`string`, `unknown`\>
+> **fields**: `undefined` \| `Record`\<`string`, `unknown`>\>
 
 ---
 

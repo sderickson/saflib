@@ -4,7 +4,7 @@
 
 # Function: createSafClient()
 
-> **createSafClient**\<`Q`\>(`serviceSubdomain`): `Client`\<`Q`\>
+> **createSafClient**\<`Q`>\>(`serviceSubdomain`): `Client`\<`Q`>\>
 
 ## Type Parameters
 

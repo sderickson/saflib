@@ -1,101 +1,35 @@
-# TanStack
+# Requests
 
-This guide focuses on how to implement query and mutation functions for TanStack Query.
+SDK packages usually mostly consist of TanStack wrappers around API requests. [Base](https://github.com/sderickson/saflib/tree/main/base/service/sdk/requests/__group-name__) defines the normal structure of both queries and mutations, refer to that for details.
 
-## Creating a Typed Client
+## Typed client
 
-All queries and mutations use an [`openapi-fetch`](https://openapi-ts.dev/openapi-fetch/) typed client created with [`createSafClient`](./ref/@saflib/sdk/functions/createSafClient.md). Each SDK should have one created at the root of the package that every query and mutation can access.
+Each product SDK has one client at `client.ts`, built with [`createSafClient`](./ref/@saflib/sdk/functions/createSafClient.md). This provides a typed fetch interface from the OpenAPI spec.
+
+### Query key conventions
+
+Keys mirror URL path segments, substituting path params with runtime values. That makes invalidation predictable — invalidating a prefix clears related queries.
+
+```
+GET /recipes              → ["recipes", "list"]
+GET /recipes/:id          → ["recipes", recipeId]
+GET /recipes/:id/notes    → ["recipes", recipeId, "notes"]
+```
+
+Do **not** insert verb segments or raw operationIds when the URL already identifies the resource (`["recipes", id]`, not `["recipes", "get", id]`).
+
+For named action paths, use the action as the final segment:
+
+```
+GET /recipe-note-files/by-note-ids?noteIds=…
+                          → ["recipe-note-files", "by-note-ids", noteIds]
+```
+
+Export a `*QueryKey()` helper or stable `*_QUERY_KEY` constant from each read. Mutations invalidate broadly or narrowly:
 
 ```ts
-// <your-package>/client.ts
-import type { paths } from "@your-org/your-service-spec";
-import { createSafClient, TanstackError } from "@saflib/sdk";
-
-export const client = createSafClient<paths>("your-service");
-```
-
-See [`@saflib/openapi`](../../openapi/docs/01-overview.md) for more information on generating types from an OpenAPI spec.
-
-## Writing a Query
-
-A query should be a function which returns a [QueryOptions](https://tanstack.com/query/v5/docs/framework/vue/guides/query-options) object. The function can take whatever parameters, such as `Ref` objects for query parameters, or options to include in the object.
-
-The function should use [`handleClientMethod`](./ref/@saflib/sdk/functions/handleClientMethod.md) to make the request, wrapped around a call to the typed client.
-
-```ts
-import { client } from "../client.ts";
-
-export const getResource = (resourceId: Ref<number>) => {
-  return queryOptions({
-    queryKey: ["your-resource", resourceId],
-    queryFn: async () => {
-      return handleClientMethod(
-        client.GET("/your-resource/{id}", {
-          params: { path: { id: resourceId.value } },
-        }),
-      );
-    },
-  });
-};
-```
-
-Altogether this handles types so that the result of using the query is typed based on the OpenAPI spec passed to `createSafClient`.
-
-### Query Key Conventions
-
-Query keys should mirror the URL path segments, replacing path parameters with their runtime values. This makes cache invalidation predictable — invalidating a prefix wipes all related queries below it.
-
-```
-URL: GET /recipes              → queryKey: ["recipes", "list"]
-URL: GET /recipes/:id          → queryKey: ["recipes", recipeId]
-URL: GET /recipes/:id/notes    → queryKey: ["recipes", recipeId, "notes"]
-URL: GET /recipes/:id/notes/:noteId/files
-                               → queryKey: ["recipes", recipeId, "notes", noteId, "files"]
-```
-
-Do **not** insert verb segments like `"get"` or operationIds into keys (`["recipes", "get", id]` is wrong; use `["recipes", id]`).
-
-For non-CRUD action endpoints, use the action name as the final segment:
-
-```
-URL: GET /recipe-note-files/by-note-ids?noteIds=...
-                               → queryKey: ["recipe-note-files", "by-note-ids", noteIds]
-```
-
-Every read should export a `*QueryKey()` helper (or stable `*_QUERY_KEY` constant). Product SDKs should re-export them from a central `requests/query-keys.ts` registry for invalidation maps and mutations.
-
-This convention means mutations can invalidate broadly or narrowly:
-
-```ts
-// Invalidate all note queries for a recipe
 queryClient.invalidateQueries({ queryKey: ["recipes", recipeId, "notes"] });
-
-// Invalidate everything related to a recipe
 queryClient.invalidateQueries({ queryKey: ["recipes", recipeId] });
 ```
 
-## Writing a Mutation
-
-A mutation needs to be a composable, so writing one is a bit different.
-
-```ts
-import type { ApiRequest } from "@your-org/your-service-spec";
-import { handleClientMethod } from "@saflib/sdk";
-
-export function useCreateResource() {
-  const queryClient = useQueryClient();
-
-  const mutationFn = (body: ApiRequest["createResource"]) => {
-    return handleClientMethod(client.POST("/your-resource", { body }));
-  };
-
-  return useMutation({
-    mutationFn,
-    onSuccess: (_data, _variables, _context) => {
-      queryClient.invalidateQueries({ queryKey: ["your-resource"] });
-    },
-  });
-}
-```
-
-This also handles types, though it does require you to provide the request body type to the mutation function. You should also `useQueryClient` to invalidate queries when the mutation is successful.
+Response shapes follow [OpenAPI API design](../openapi/docs/02-api-design.md) — flat objects keyed by resource name.

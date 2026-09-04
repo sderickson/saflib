@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-component.ts](https://github.com/sderickson/saflib/blob/main/sdk/workflows/add-component.ts)
+[add-component.ts](../../workflows/add-component.ts)
 
 ## Usage
 
@@ -19,8 +19,6 @@ To run this workflow automatically, tell the agent to:
 ## Checklist
 
 When run, the workflow will:
-
-Kicking off workflow sdk/add-component
 
 - Upsert 4 templates.
 - Update **ExampleTable.vue** to implement the component.
@@ -40,5 +38,4 @@ Create a new component in the SDK package
 Arguments:
   path        Path of the new component (e.g., './displays/example-table' or './forms/user-form')
               Example: "./displays/example-table"
-
 ```

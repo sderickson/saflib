@@ -1,82 +1,22 @@
 # Overview
 
-SDK packages are basically shared frontend code for a service. They include:
+`@saflib/sdk` is the **platform library** for TanStack Query clients, MSW fakes, and shared Vue components tied to an OpenAPI contract. SPAs import the SDK for making calls to the service backend.
 
-- Tanstack Queries and Mutation functions
-- Fakes
-- Event logging
-- Common components and logic, particularly for shared API [schemas](../../openapi/docs/01-overview.md#schemas)
+Layout and naming for service packages are in [monorepo — `service/`](../monorepo/docs/01-overview.md#service). The golden product SDK is [`base/service/sdk`](../../base/service/sdk/).
 
-Because SPA packages and SDK packages often use the same tools, they both depend on `@saflib/vue`.
+Use [sdk/add-query](./workflows/add-query.md) and [sdk/add-mutation](./workflows//add-mutation.md) to create TanStack functions, and [sdk/add-component](./workflows/add-component.md) for standalone components.
 
-## Package Structure
+## What this package provides
 
-Each SDK package should have the following structure:
+| Export                                                                                                                                          | Role                                                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`createSafClient`](./ref/@saflib/sdk/functions/createSafClient.md) / [`handleClientMethod`](./ref/@saflib/sdk/functions/handleClientMethod.md) | Typed [`openapi-fetch`](https://openapi-ts.dev/openapi-fetch/) client with CSRF, subdomain routing, and TanStack error typing                            |
+| [`createTanstackQueryClient`](./ref/@saflib/sdk/functions/createTanstackQueryClient.md)                                                         | Default QueryClient (stale time, selective retries) for SPAs                                                                                             |
+| [`useDownload`](./ref/@saflib/sdk/functions/useDownload.md)                                                                                     | Cookie-authenticated file downloads                                                                                                                      |
+| [`createCredentialsEventSource`](./ref/@saflib/sdk/functions/createCredentialsEventSource.md)                                                   | Cookie-authenticated SSE (cross-subdomain)                                                                                                               |
+| [`./testing`](./ref/@saflib/sdk/testing/index.md)                                                                                               | [`withVueQuery`](./ref/@saflib/sdk/testing/functions/withVueQuery.md), [`typedCreateHandler`](./ref/@saflib/sdk/testing/functions/typedCreateHandler.md) |
+| [`./testing/mock`](./ref/@saflib/sdk/testing/functions/setupMockServer.md)                                                                      | Vitest + MSW `setupMockServer` helper                                                                                                                    |
+| [`./components`](../components/)                                                                                                                | Cross-product shared components (e.g. [`AddressForm`](../components/address-form/AddressForm.vue))                                                       |
+| [`./workflows`](./workflows/index.md)                                                                                                           | Scaffold and extend product SDK packages                                                                                                                 |
 
-```
-{service-name}-sdk/
-├── components/
-│   ├── component-1/
-│   │   ├── {ComponentOne}.test.ts
-│   │   └── {ComponentOne}.vue
-│   └── component-2/
-│   │   ├── {ComponentTwo}.test.ts
-│   │   └── {ComponentTwo}.vue
-│   └── ...
-├── requests/
-│   └── {resource-1}/
-│   │   ├── index.fakes.ts
-│   │   ├── {operation-id-1}.test.ts
-│   │   ├── {operation-id-1}.ts
-│   │   ├── {operation-id-1}.fake.ts
-│   │   ├── {operation-id-2}.ts
-│   │   ├── {operation-id-2}.fake.ts
-│   │   └── ...
-│   ├── {resource-2}/
-│   ├── ...
-│   └── fake-store.ts
-├── index.ts
-├── package.json
-├── typed-fake.json
-└── tsconfig.json
-```
-
-There may be more folders, such as for:
-
-- `assets/`
-- `clients/`
-- `loaders/`
-- `composables/`
-- `constants/`
-
-At minimum, the packages should provide the means to make API requests to a service, and and to test on a fake version of the service.
-
-SDK packages are libraries consumed by SPAs — they are **not** standalone Vite apps. Do not add `dev` / `dev-docker` scripts, `vite.config.ts`, `index.html`, or Docker harnesses here; develop SDK UI through the product SPA packages and Vitest (`test-app`).
-
-Because this package is essentially a package of frontend tools for a service, the package should be named `{service-name}-sdk`, and live and be owned with the other packages for the service.
-
-## Files and Directories Explained
-
-### `components/`
-
-Components are shared components for the service. These should be organized similar to the `pages/` directory as described in [`@saflib/vue`](../../vue/docs/01-overview.md#pages), though usually without an "async" component or a "loader".
-
-### `requests/`
-
-Requests are the core of the SDK, and are implemented with [Tanstack Query](https://tanstack.com/query/latest/docs/framework/vue/overview). There should be one file per operation, the files should be named after the operation ID, and be organized by resource. Import leaf modules directly (e.g. `@…/requests/orgs/list`) — do **not** add per-resource `index.ts` barrels, so usage stays attributable to a single request stem. See [Requests](./02-requests.md) and [Testing](./03-testing.md) for more information.
-
-These are called "requests" to distinguish them from database queries, to include both Tanstack queries and mutations, and as shorthand for "HTTP [Requests](https://developer.mozilla.org/en-US/docs/Web/API/Request)".
-
-Alongside all these files are fakes. Per [best-practices](../../best-practices.md#build-and-maintain-fakes-stubs-and-adapters-for-service-boundaries), fakes should be defined and shared in a common package, rather than written and maintained for each test. See [Fakes](./04-fakes.md) for more information.
-
-### `index.ts`
-
-The index file for the SDK. This should export all Tanstack functions, Vue components, and other shared code used in production. Since these packages can be large and shared, it's important to export everything independently, rather than grouping them in an object and exporting that object, so they can be properly tree-shaken.
-
-### `requests/` fakes
-
-Per-resource MSW handlers live in `requests/{resource}/index.fakes.ts`. Shared mock data and `resetMocks()` live in `requests/{resource}/mocks.ts`. Tests import only the groups they need — do **not** add a root `fakes.ts` barrel (it pulls the entire fake graph into every importer).
-
-### `typed-fake.json`
-
-This file simply stores the result of a call to [`typedCreateHandler`](./ref/@saflib/sdk/testing/functions/typedCreateHandler.md) with the fake store. It is used by each fake file to type the fake handlers.
+See also [Requests](./02-requests.md), [Testing](./03-testing.md), and [Fakes](./04-fakes.md).

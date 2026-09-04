@@ -4,7 +4,7 @@
 
 # Function: withVueQuery()
 
-> **withVueQuery**\<`T`\>(`composable`, `queryClient?`): \[`T`, `App`\<`Element`\>, `any`\]
+> **withVueQuery**\<`T`>\>(`composable`, `queryClient?`): \[`T`, `App`\<`Element`>\>, `any`\]
 
 Helper function to test Vue Query composables in isolation.
 

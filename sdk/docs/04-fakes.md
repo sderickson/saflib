@@ -1,19 +1,22 @@
-# Fake Implementations
+# Fakes
 
-For SAF components, testing is [fairly focused on testing rendering](../../vue/docs/04-testing.md#testing-interactions). In order to test how a component renders, it often needs to be provided data, and also it's a good idea to make sure the component loads itself correctly. Given these requirements, it's important to have a way to run the components on a fake version of the backends it depends on, and the SDK package is the [appropriate place to do that](../../best-practices.md#ownership-of-mocks-fakes-shims).
+SDK packages own **typed MSW handlers** for their OpenAPI surface so SPAs and SDK tests share one fake backend. See [best practices — ownership of mocks](../../best-practices.md#ownership-of-mocks-fakes-shims).
 
-Fakes are built with [Mock Service Worker](https://mswjs.io/) because this intercepts network requests and so doesn't need to depend on how SAF frontend components do networking. SAF provides a helper function for creating fake handlers which enforce typechecking based on the OpenAPI spec for the service: [`typedCreateHandler`](./ref/@saflib/sdk/testing/functions/typedCreateHandler.md).
+[`typedCreateHandler`](./ref/@saflib/sdk/testing/functions/typedCreateHandler.md) enforces request/response types from the spec. Bind it once in `test/typed-fake.ts`:
 
-**Important:** Query parameters and path parameters in fake handlers are always `string` or `string[]` — never boolean or number. Compare with string literals (e.g. `query.publicOnly === "true"`, not `=== true`).
+```ts
+import { typedCreateHandler } from "@saflib/sdk/testing";
+import type { paths } from "@scope/product-spec";
 
-SDK packages should export:
+export const { createHandler: baseHandler } = typedCreateHandler<paths>();
+```
 
-- Per-resource handler arrays from `requests/{resource}/index.fakes.ts` (import only the groups a test needs).
-- Shared mock data and `resetMocks()` from `requests/{resource}/mocks.ts`.
-- Scenario handler lists that can be prepended to the baseline handlers when needed.
+Each operation's `{operation}.fake.ts` uses `baseHandler({ path, verb, status, handler })`.
 
-Prefer seeding mock rows with factories from product `*-test` packages (`@scope/<product>-test/factories/*`, offshoot `*-<offshoot>-test`) when those models already have factories — keep `mocks.ts` as the mutable in-memory store, not a second place that hand-builds every field.
+**Query and path params in handlers are always `string` or `string[]`** — compare with string literals (`query.publicOnly === "true"`, not `=== true`).
 
-Do **not** add a root `fakes.ts` that re-exports every group — that forces every importer to parse the entire fake graph.
+Prefer seeding `mocks.ts` from product `*-test` factories (`@scope/product-test/factories/*`) when models already have factories — keep `mocks.ts` as the mutable store, not a second hand-built schema.
 
-This way tests which depend on the SDK can quickly test on some fake data, but also test scenarios such as a user whose email is verified or not verified.
+Optional scenario handler lists can prepend baseline handlers for one-off cases (verified vs unverified user, empty list, etc.).
+
+For page-level tests that mount Vue components, see [@saflib/vue — Network mocking](../vue/docs/04-testing.md#network-mocking).
