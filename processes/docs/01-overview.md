@@ -4,7 +4,7 @@
 
 ## Starting a project: `processes/spec-project`
 
-From the package directory where you want the `notes/` folder (often the repo or product root):
+From the `plans/` directory, run:
 
 ```bash
 npm exec saf-workflow kickoff processes/spec-project <kebab-name>
