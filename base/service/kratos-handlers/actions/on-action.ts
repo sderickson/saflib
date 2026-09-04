@@ -1,5 +1,5 @@
 import { getSafReporters } from "@saflib/node";
-import type { KratosActionHandler } from "@saflib/ory-kratos";
+import type { KratosActionHandler } from "@saflib/ory-kratos-http";
 
 /**
  * Default action handler for base. Logs the body at info level.

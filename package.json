@@ -35,9 +35,9 @@
     "./../backup/backup-sdk/client.ts",
     "./../imports/scripts/apply-side-effects.mjs",
     "./../imports/src/side-effects/scan-package.ts",
-    "./../ory-kratos-sdk/index.ts",
-    "./../ory-kratos-sdk/vitest.config.js",
-    "./../ory-kratos-sdk/vue-query-register.ts",
+    "./../ory-kratos/ory-kratos-sdk/index.ts",
+    "./../ory-kratos/ory-kratos-sdk/vitest.config.js",
+    "./../ory-kratos/ory-kratos-sdk/vue-query-register.ts",
     "./base/service/sdk/client.ts"
   ]
 }

@@ -1,5 +1,8 @@
 {
   "name": "@saflib/ory-kratos-spa",
+  "saf": {
+    "kind": "spa"
+  },
   "type": "module",
   "exports": {
     ".": "./index.ts",

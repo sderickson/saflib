@@ -1,19 +1,13 @@
 {
   "extends": [
-    "../vue/tsconfig.app.base.json"
+    "../../vue/tsconfig.app.base.json"
   ],
   "references": [
     {
-      "path": "../links"
+      "path": "../../links"
     },
     {
-      "path": "../ory-kratos-sdk"
-    },
-    {
-      "path": "../sdk"
-    },
-    {
-      "path": "../vue"
+      "path": "../../sdk"
     }
   ],
   "compilerOptions": {

@@ -4,7 +4,7 @@ import { addLokiTransport } from "@saflib/vendors-loki";
 import { validateEnv, isDevelopmentDeployment } from "@saflib/env";
 import { configureMockErrors } from "@saflib/errors-service";
 import envSchema from "./env.schema.combined.json" with { type: "json" };
-import { startOryKratosService } from "@saflib/ory-kratos";
+import { startOryKratosService } from "@saflib/ory-kratos-http";
 import {
   callbacks,
   makeKratosActionHandler,

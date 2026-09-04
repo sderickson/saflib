@@ -53,10 +53,10 @@
       "path": "../../../node-metrics/node-metrics-vue"
     },
     {
-      "path": "../../../ory-kratos-sdk"
+      "path": "../../../ory-kratos/ory-kratos-sdk"
     },
     {
-      "path": "../../../ory-kratos-spa"
+      "path": "../../../ory-kratos/ory-kratos-spa"
     },
     {
       "path": "../../../vue"

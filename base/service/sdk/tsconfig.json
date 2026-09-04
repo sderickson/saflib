@@ -7,7 +7,7 @@
       "path": "../../../monorepo"
     },
     {
-      "path": "../../../ory-kratos-sdk"
+      "path": "../../../ory-kratos/ory-kratos-sdk"
     },
     {
       "path": "../../../sdk"

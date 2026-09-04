@@ -2,7 +2,7 @@
 
 TanStack Query bindings for the [Ory Kratos](https://www.ory.sh/docs/kratos/) browser **Frontend API**: session, self-service flows (create, get by id, submit), and related helpers.
 
-The package wraps `@ory/client` with Vue Query `queryOptions` and mutations. Where Kratos uses **4xx for normal UX** (validation, expired flow, CSRF, “session already available”), those responses are **returned as typed classes** so callers can branch with `instanceof`. Real failures use [`TanstackError`](../../sdk/docs/ref/@saflib/sdk/classes/TanstackError.md) from `@saflib/sdk`.
+The package wraps `@ory/client` with Vue Query `queryOptions` and mutations. Where Kratos uses **4xx for normal UX** (validation, expired flow, CSRF, “session already available”), those responses are **returned as typed classes** so callers can branch with `instanceof`. Real failures use [`TanstackError`](../../../sdk/docs/ref/@saflib/sdk/classes/TanstackError.md) from `@saflib/sdk`.
 
 Importing the package root runs `vue-query-register.ts` so Vue Query’s default error type is `TanstackError` project-wide.
 

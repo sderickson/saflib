@@ -1,5 +1,8 @@
 {
   "name": "@saflib/ory-kratos-sdk",
+  "saf": {
+    "kind": "sdk"
+  },
   "description": "Ory Kratos browser flows, session queries, and MSW fakes (TanStack Query + Frontend API).",
   "private": true,
   "type": "module",

@@ -29,7 +29,7 @@
       "path": "../../../links"
     },
     {
-      "path": "../../../ory-kratos-sdk"
+      "path": "../../../ory-kratos/ory-kratos-sdk"
     },
     {
       "path": "../../../vue"

@@ -1,14 +1,19 @@
 {
-  "extends": "@saflib/monorepo/tsconfig.json",
+  "extends": [
+    "../../vue/tsconfig.app.base.json"
+  ],
   "references": [
     {
-      "path": "../env"
+      "path": "../../links"
     },
     {
-      "path": "../express"
+      "path": "../ory-kratos-sdk"
     },
     {
-      "path": "../node"
+      "path": "../../sdk"
+    },
+    {
+      "path": "../../vue"
     }
   ],
   "compilerOptions": {
@@ -16,6 +21,9 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "noEmit": false,
     "emitDeclarationOnly": true,
+    "types": [
+      "vite/client"
+    ],
     "rootDir": "."
   },
   "exclude": [
@@ -31,6 +39,8 @@
   ],
   "include": [
     "**/*.ts",
+    "**/*.tsx",
+    "**/*.vue",
     "**/*.json"
   ]
 }

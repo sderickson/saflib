@@ -24,6 +24,7 @@
     "@saflib/jobs-http": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
+    "@saflib/ory-kratos-http": "*",
     "@saflib/vendors-loki": "*"
   },
   "sideEffects": false,

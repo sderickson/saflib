@@ -1,5 +1,8 @@
 {
-  "name": "@saflib/ory-kratos",
+  "name": "@saflib/ory-kratos-http",
+  "saf": {
+    "kind": "http"
+  },
   "description": "Dedicated HTTP courier endpoint service for Ory Kratos.",
   "private": true,
   "type": "module",
