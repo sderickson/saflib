@@ -41,7 +41,7 @@ Pin a branch for both the script sources and the saflib submodule:
   chmod +x /tmp/saf-create.sh
   /tmp/saf-create.sh my-app example.com --saflib-ref "\${REF}"
 
-  (--saflib-ref selects the download ref too; use --create-ref when they differ.)
+  (--saflib-ref selects the download ref too; set SAFLIB_CREATE_REF when they differ.)
 
 Source: ${CREATE_SOURCE_URL}
 `);

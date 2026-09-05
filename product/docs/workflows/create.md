@@ -27,7 +27,7 @@ chmod +x /tmp/saf-create.sh
 /tmp/saf-create.sh my-app example.com --saflib-ref "${REF}"
 ```
 
-`--saflib-ref` also selects which GitHub ref to download the TypeScript sources from (override with `--create-ref` when they differ).
+`--saflib-ref` also selects which GitHub ref to download the TypeScript sources from. Set `SAFLIB_CREATE_REF` when the download ref and submodule ref differ.
 
 Local saflib checkout (`run.ts` has a shebang with `--experimental-strip-types`):
 
@@ -56,7 +56,7 @@ Local saflib checkout (`run.ts` has a shebang with `--experimental-strip-types`)
 | `--force` | Continue when bootstrap paths already exist |
 | `--product-only` | Forward `--productOnly` to `product/init` |
 
-The install script also accepts `--create-ref <ref>` (or `SAFLIB_CREATE_REF`) to override which GitHub ref downloads TypeScript sources. By default it uses `--saflib-ref`, then `main`.
+The install script uses `SAFLIB_CREATE_REF` (if set), else `--saflib-ref`, else `main` to choose which GitHub ref downloads TypeScript sources.
 
 ## Help
 
