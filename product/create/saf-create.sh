@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CREATE_FILES=(run.ts cli.ts bootstrap.ts constants.ts version.ts)
+CREATE_FILES=(run.ts cli.ts bootstrap.ts constants.ts version.ts scaffold.ts)
 
 node_major="$(node -p 'Number(process.versions.node.split(".")[0])')"
 if [ "$node_major" -lt 26 ]; then

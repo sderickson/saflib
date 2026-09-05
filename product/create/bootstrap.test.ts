@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { execSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 import {
   buildRootPackageJson,
   collisionPaths,
@@ -14,9 +15,10 @@ import {
   runBootstrap,
   validateProductName,
 } from "./bootstrap.ts";
+import { materializeMonorepoScaffold } from "./scaffold.ts";
 import { assertNodeVersion } from "./version.ts";
 
-import { assertNodeVersion } from "./version.ts";
+const saflibRoot = fileURLToPath(new URL("../..", import.meta.url));
 
 describe("assertNodeVersion", () => {
   it("accepts Node 26+", () => {
@@ -135,6 +137,22 @@ describe("existingSaflibMessage", () => {
   });
 });
 
+describe("materializeMonorepoScaffold", () => {
+  it("writes root scaffold files including .gitignore", () => {
+    const cwd = mkdtempSync(join(tmpdir(), "saf-create-scaffold-"));
+    materializeMonorepoScaffold({
+      cwd,
+      saflibPath: saflibRoot,
+      log: () => {},
+    });
+
+    expect(existsSync(join(cwd, ".gitignore"))).toBe(true);
+    expect(readFileSync(join(cwd, ".gitignore"), "utf8")).toContain("node_modules");
+    expect(existsSync(join(cwd, "eslint.config.js"))).toBe(true);
+    expect(existsSync(join(cwd, "vitest.config.ts"))).toBe(true);
+  });
+});
+
 describe("runBootstrap", () => {
   it("runs submodule add, install, and product/init in order", () => {
     const cwd = mkdtempSync(join(tmpdir(), "saf-create-run-"));
@@ -146,6 +164,8 @@ describe("runBootstrap", () => {
       productName: "demo",
       domain: "example.com",
       organizationName: "demo",
+      saflibPath: saflibRoot,
+      log: () => {},
       runCommand: (command) => {
         commands.push(command);
       },
@@ -157,5 +177,6 @@ describe("runBootstrap", () => {
       "npm install",
       'npm exec saf-workflow kickoff product/init "demo" "example.com"',
     ]);
+    expect(existsSync(join(cwd, ".gitignore"))).toBe(true);
   });
 });

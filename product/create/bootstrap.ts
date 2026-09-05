@@ -7,6 +7,15 @@ import {
   DEFAULT_SAFLIB_REPO,
   PRODUCT_NAME_PATTERN,
 } from "./constants.ts";
+import { materializeMonorepoScaffold } from "./scaffold.ts";
+
+export interface PackageJsonShape {
+  name?: string;
+  workspaces?: string[];
+  devDependencies?: Record<string, string>;
+  scripts?: Record<string, string>;
+  [key: string]: unknown;
+}
 
 export interface BootstrapOptions {
   cwd: string;
@@ -14,14 +23,14 @@ export interface BootstrapOptions {
   domain: string;
   organizationName: string;
   saflibRef?: string;
+  saflibPath?: string;
   force?: boolean;
+  log?: (message: string) => void;
   runCommand?: (command: string, options: { cwd: string }) => void;
 }
 
-export interface PackageJsonShape {
-  name?: string;
-  workspaces?: string[];
-  [key: string]: unknown;
+function defaultLog(message: string): void {
+  console.log(message);
 }
 
 export function shellQuote(value: string): string {
@@ -227,11 +236,22 @@ function defaultRunCommand(command: string, options: { cwd: string }): void {
 
 export function runBootstrap(options: BootstrapOptions): void {
   const cwd = options.cwd;
+  const log = options.log ?? defaultLog;
   const saflibRef = options.saflibRef ?? DEFAULT_SAFLIB_REF;
+  const saflibPath = options.saflibPath ?? join(cwd, "saflib");
   const runCommand = options.runCommand ?? defaultRunCommand;
 
+  log(
+    `Bootstrapping SAF monorepo "${options.productName}" (${options.domain}) in ${cwd}`,
+  );
+
+  log("Validating product name…");
   validateProductName(options.productName);
+
+  log("Checking git repository…");
   assertInsideGitRepository(cwd);
+
+  log("Ensuring initial commit…");
   ensureInitialCommit(cwd);
 
   if (hasSaflibSubmodule(cwd)) {
@@ -240,16 +260,24 @@ export function runBootstrap(options: BootstrapOptions): void {
     );
   }
 
+  log("Checking for paths that would collide with product/init…");
   const collisions = collisionPaths(cwd, options.productName);
   if (collisions.length > 0 && !options.force) {
     throw new Error(formatCollisionWarning(collisions, cwd));
   }
 
+  log("Creating root package.json…");
   ensureRootPackageJson(cwd, options.organizationName);
+
+  log(`Adding saflib submodule (${DEFAULT_SAFLIB_REPO} @ ${saflibRef})…`);
   addSaflibSubmodule(cwd, DEFAULT_SAFLIB_REPO, saflibRef, runCommand);
 
+  materializeMonorepoScaffold({ cwd, saflibPath, log });
+
+  log("Installing npm dependencies…");
   runCommand("npm install", { cwd });
 
+  log(`Running product/init for "${options.productName}"…`);
   runCommand(
     [
       "npm exec saf-workflow kickoff product/init",
@@ -258,4 +286,6 @@ export function runBootstrap(options: BootstrapOptions): void {
     ].join(" "),
     { cwd },
   );
+
+  log("Bootstrap complete.");
 }

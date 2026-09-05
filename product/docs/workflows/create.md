@@ -40,10 +40,11 @@ Local saflib checkout (`run.ts` has a shebang with `--experimental-strip-types`)
 1. Verifies the directory is a git repository (creates an empty initial commit if needed).
 2. Exits if a `saflib` submodule is already configured (use [`product/init`](./init.md) instead).
 3. Warns when `<name>/`, `deploy/`, or `.github/` already exist (pass `--force` to continue).
-4. Creates or updates root `package.json` with `"workspaces": ["saflib/**", …]`.
-5. Runs `git submodule add` for saflib and checks out `--saflib-ref`.
-6. Runs `npm install`.
-7. Runs `npm exec saf-workflow kickoff product/init <name> <domain>`.
+4. Creates root `package.json` with `"workspaces": ["saflib/**", …]`.
+5. Writes root monorepo scaffold files (`.gitignore`, eslint, prettier, vitest, etc.) from `saflib/templates/scaffold`.
+6. Runs `git submodule add` for saflib and checks out `--saflib-ref`.
+7. Runs `npm install`.
+8. Runs `npm exec saf-workflow kickoff product/init <name> <domain>`.
 
 ## Options
 
