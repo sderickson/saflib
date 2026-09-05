@@ -236,7 +236,7 @@ function defaultRunCommand(command: string, options: { cwd: string }): void {
     execSync(command, {
       cwd: options.cwd,
       stdio: "inherit",
-      shell: true,
+      shell: "/bin/sh",
     });
   } catch (error) {
     const status =

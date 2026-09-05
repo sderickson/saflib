@@ -5,8 +5,8 @@ import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse, type PathParams } from "msw";
 import type { CronResponseBody, CronRequestBody } from "@saflib/cron-spec"; // Assuming types are available
 import CronJobsAsync from "./CronJobsAsync.vue";
-import { router } from "./test_router";
-import { mountTestApp } from "../test-app";
+import { router } from "./test_router.ts";
+import { mountTestApp } from "../test-app.ts";
 type ListCronJobsResponse = CronResponseBody["listCronJobs"][200];
 type UpdateSettingsResponse = CronResponseBody["updateCronJobSettings"][200];
 type UpdateSettingsRequest = CronRequestBody["updateCronJobSettings"];

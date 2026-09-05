@@ -5,7 +5,7 @@ import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse } from "msw";
 import type { DevLogResponseBody } from "@saflib/node-log-spec";
 import DevLogsPage from "./DevLogsPage.vue";
-import { mountTestApp } from "../test-app";
+import { mountTestApp } from "../test-app.ts";
 
 type ListDevLogsResponse = DevLogResponseBody["listDevLogs"][200];
 
