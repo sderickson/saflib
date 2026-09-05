@@ -2,7 +2,7 @@
 
 `@saflib/ory-kratos-sdk` wraps the [Ory Kratos Frontend API](https://www.ory.sh/docs/kratos/reference/api-frontend) with TanStack Query — session queries, self-service flow create/get/submit, typed 4xx results, and MSW fakes for tests.
 
-Custom auth UI lives in [`@saflib/ory-kratos-spa`](../../ory-kratos-spa/docs/01-overview.md). See the [suite overview](../docs/01-overview.md).
+Custom auth UI lives in [`@saflib/ory-kratos-spa`](../../../../ory-kratos-spa/docs/01-overview.md). See the [suite overview](../../../../docs/01-overview.md).
 
 ## What this package provides
 
@@ -16,7 +16,7 @@ Importing the package root registers Vue Query's default error type as `Tanstack
 
 ## Why Kratos needs special handling
 
-Kratos uses **4xx for normal UX** — validation errors return an updated flow (400), expired flows return 410, CSRF mismatches 403, browser redirects 422. The SDK maps these to **result classes** instead of throwing; only unexpected failures become [`TanstackError`](../../../sdk/docs/ref/@saflib/sdk/classes/TanstackError.md).
+Kratos uses **4xx for normal UX** — validation errors return an updated flow (400), expired flows return 410, CSRF mismatches 403, browser redirects 422. The SDK maps these to **result classes** instead of throwing; only unexpected failures become [`TanstackError`](../../../../../sdk/docs/ref/@saflib/sdk/classes/TanstackError.md).
 
 ## Integration
 

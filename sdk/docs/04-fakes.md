@@ -2,7 +2,7 @@
 
 SDK packages own **typed MSW handlers** for their OpenAPI surface so SPAs and SDK tests share one fake backend. See [best practices — ownership of mocks](../../best-practices.md#ownership-of-mocks-fakes-shims).
 
-[`typedCreateHandler`](./ref/@saflib/sdk/testing/functions/typedCreateHandler.md) enforces request/response types from the spec. Bind it once in `test/typed-fake.ts`:
+[`typedCreateHandler`](./ref/@saflib/sdk/testing/variables/typedCreateHandler.md) enforces request/response types from the spec. Bind it once in `test/typed-fake.ts`:
 
 ```ts
 import { typedCreateHandler } from "@saflib/sdk/testing";

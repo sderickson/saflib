@@ -33,7 +33,15 @@ export interface DefinedModel {
 }
 
 function escapeTableCell(value: string): string {
-  return value.replace(/\|/g, "\\|").replace(/\n/g, " ").trim();
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/{/g, "&#123;")
+    .replace(/}/g, "&#125;")
+    .replace(/\|/g, "\\|")
+    .replace(/\n/g, " ")
+    .trim();
 }
 
 function formatDefault(value: string | undefined): string {

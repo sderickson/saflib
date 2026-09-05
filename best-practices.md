@@ -131,7 +131,7 @@ Third party integrations often provide more features than the product needs; the
 
 **Example application:**
 
-- `@saflib/sdk` provides a [helper method](./sdk/docs/ref/@saflib/sdk/testing/functions/typedCreateHandler.md) for typing fake server handlers.
+- `@saflib/sdk` provides a [helper method](./sdk/docs/ref/@saflib/sdk/testing/variables/typedCreateHandler.md) for typing fake server handlers.
 
 ### On Ownership of Fakes
 

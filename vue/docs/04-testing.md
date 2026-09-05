@@ -26,7 +26,7 @@ In order to test the integration of everything involved in rendering a page, you
 
 Rather than including mock data in the same file, which will often be redundant with other files, tests should import mock data from the package that provides the Tanstack queries, per [best practices](../../best-practices.md#ownership-of-mocks-fakes-shims).
 
-Use [`setupMockServer`](../../sdk/docs/ref/testing/mock/functions/setupMockServer.md) within the `describe` block next to `stubGlobals`. Import only the resource-group fake handler modules the page/composable actually calls (via the SDK package glob, e.g. `@scope/sdk/requests/matters/index.fakes`) — not a full-service mega bag from `./fakes`.
+Use [`setupMockServer`](../../sdk/docs/03-testing.md#msw-and-fakes) within the `describe` block next to `stubGlobals`. Import only the resource-group fake handler modules the page/composable actually calls (via the SDK package glob, e.g. `@scope/sdk/requests/matters/index.fakes`) — not a full-service mega bag from `./fakes`.
 
 ```typescript
 import { adminFakeHandlers } from "@saflib/base-sdk/requests/admin/index.fakes";

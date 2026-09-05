@@ -183,6 +183,54 @@ describe("renderComponentMarkdown", () => {
     expect(markdown).toContain("## Exposed");
     expect(markdown).toContain("Focus the input");
   });
+
+  it("escapes characters that break VitePress vue markdown rendering", () => {
+    const meta: ComponentMeta = {
+      ...baseMeta(),
+      props: [
+        {
+          name: "beforeSubmit",
+          description: "Uses `@submit.prevent` in the SPA",
+          type: "((value: string) => Promise<string | null>) | undefined",
+          required: false,
+          global: false,
+          tags: [],
+          schema: "string",
+          declarations: [],
+          getDeclarations: () => [],
+          getTypeObject: () => {
+            throw new Error("not implemented");
+          },
+        },
+      ],
+      slots: [
+        {
+          name: "fieldset",
+          description: "Layout override",
+          type: "{ displayNodes: readonly UiNode[]; allNodeIndices: readonly number[]; }",
+          tags: [],
+          schema: "{}",
+          declarations: [],
+          getDeclarations: () => [],
+          getTypeObject: () => {
+            throw new Error("not implemented");
+          },
+        },
+      ],
+    };
+
+    const markdown = renderComponentMarkdown(
+      meta,
+      "ExampleForm",
+      "components/ExampleForm.vue",
+    );
+
+    expect(markdown).toContain("Promise&lt;string | null&gt;");
+    expect(markdown).toContain(
+      "&#123; displayNodes: readonly UiNode[]; allNodeIndices: readonly number[]; &#125;",
+    );
+    expect(markdown).toContain("`@submit.prevent`");
+  });
 });
 
 describe("renderComponentsIndex", () => {

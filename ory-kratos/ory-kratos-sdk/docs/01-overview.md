@@ -2,7 +2,7 @@
 
 `@saflib/ory-kratos-sdk` wraps the [Ory Kratos Frontend API](https://www.ory.sh/docs/kratos/reference/api-frontend) with TanStack Query — session queries, self-service flow create/get/submit, typed 4xx results, and MSW fakes for tests.
 
-Custom auth UI lives in [`@saflib/ory-kratos-spa`](../../ory-kratos-spa/docs/01-overview.md). See the [suite overview](../docs/01-overview.md).
+Custom auth UI lives in [`@saflib/ory-kratos-spa`](../../ory-kratos-spa/docs/01-overview.md). See the [suite overview](../../docs/01-overview.md).
 
 ## What this package provides
 

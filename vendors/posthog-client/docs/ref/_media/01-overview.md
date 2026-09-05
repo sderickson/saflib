@@ -1,6 +1,6 @@
 # Overview
 
-`@saflib/vendors-posthog-client` loads PostHog in SAF web clients for feature flags, identify, and browser-side product event capture. Implements the browser side of [`@saflib/analytics`](../../../analytics/docs/01-overview.md).
+`@saflib/vendors-posthog-client` loads PostHog in SAF web clients for feature flags, identify, and browser-side product event capture. Implements the browser side of [`@saflib/analytics`](../../../../../analytics/docs/01-overview.md).
 
 ## What this package provides
 
@@ -24,4 +24,4 @@ Environment (see `env.schema.json`):
 - **`VITE_POSTHOG_PROJECT_API_KEY`** — project API key at build time
 - **`VITE_POSTHOG_PROJECT_HOST`** — ingest host (defaults to `https://us.i.posthog.com`)
 
-Server-side analytics lives in [`@saflib/vendors-posthog`](../../posthog/docs/01-overview.md).
+Server-side analytics lives in [`@saflib/vendors-posthog`](../../../../posthog/docs/01-overview.md).

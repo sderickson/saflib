@@ -4,7 +4,7 @@ SDK packages usually mostly consist of TanStack wrappers around API requests. [B
 
 ## Typed client
 
-Each product SDK has one client at `client.ts`, built with [`createSafClient`](./ref/@saflib/sdk/functions/createSafClient.md). This provides a typed fetch interface from the OpenAPI spec.
+Each product SDK has one client at `client.ts`, built with [`createSafClient`](./ref/@saflib/sdk/variables/createSafClient.md). This provides a typed fetch interface from the OpenAPI spec.
 
 ### Query key conventions
 

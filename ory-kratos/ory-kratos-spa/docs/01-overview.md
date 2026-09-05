@@ -2,7 +2,7 @@
 
 `@saflib/ory-kratos-spa` provides **custom Vue UI** for Ory Kratos self-service browser flows — login, registration, recovery, verification, settings, and logout — built on [`@saflib/ory-kratos-sdk`](../../ory-kratos-sdk/docs/01-overview.md).
 
-See the [suite overview](../docs/01-overview.md) and [`base/clients/auth`](https://github.com/sderickson/saflib/blob/main/base/clients/auth/) for product wiring.
+See the [suite overview](../../docs/01-overview.md) and [`base/clients/auth`](https://github.com/sderickson/saflib/blob/main/base/clients/auth/) for product wiring.
 
 ## What this package provides
 
