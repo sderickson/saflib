@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CREATE_REF="${SAFLIB_CREATE_REF:-main}"
 CREATE_FILES=(run.ts cli.ts bootstrap.ts constants.ts version.ts)
 
 node_major="$(node -p 'Number(process.versions.node.split(".")[0])')"
@@ -10,20 +9,49 @@ if [ "$node_major" -lt 26 ]; then
   exit 1
 fi
 
-while [ $# -gt 0 ]; do
-  case "$1" in
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "${SCRIPT_DIR}/run.ts" ]; then
+  exec node --experimental-strip-types --disable-warning=ExperimentalWarning \
+    "${SCRIPT_DIR}/run.ts" "$@"
+fi
+
+CREATE_REF="${SAFLIB_CREATE_REF:-}"
+SAFLIB_REF=""
+
+args=("$@")
+i=0
+while [ "$i" -lt "${#args[@]}" ]; do
+  arg="${args[$i]}"
+  case "$arg" in
     --create-ref=*)
-      CREATE_REF="${1#*=}"
-      shift
+      CREATE_REF="${arg#*=}"
+      unset "args[$i]"
       ;;
     --create-ref)
-      CREATE_REF="${2:?--create-ref requires a value}"
-      shift 2
+      next=$((i + 1))
+      CREATE_REF="${args[$next]:?--create-ref requires a value}"
+      unset "args[$i]" "args[$next]"
+      i=$next
       ;;
-    *)
-      break
+    --saflib-ref=*)
+      SAFLIB_REF="${arg#*=}"
+      ;;
+    --saflib-ref)
+      next=$((i + 1))
+      SAFLIB_REF="${args[$next]:?--saflib-ref requires a value}"
+      i=$next
       ;;
   esac
+  i=$((i + 1))
+done
+
+if [ -z "$CREATE_REF" ]; then
+  CREATE_REF="${SAFLIB_REF:-main}"
+fi
+
+remaining=()
+for arg in "${args[@]}"; do
+  [ -n "$arg" ] && remaining+=("$arg")
 done
 
 BASE="https://raw.githubusercontent.com/sderickson/saflib/${CREATE_REF}/product/create"
@@ -31,8 +59,12 @@ DIR="$(mktemp -d)"
 trap 'rm -rf "$DIR"' EXIT
 
 for file in "${CREATE_FILES[@]}"; do
-  curl -fsSL "${BASE}/${file}" -o "${DIR}/${file}"
+  if ! curl -fsSL "${BASE}/${file}" -o "${DIR}/${file}"; then
+    echo "Failed to download ${BASE}/${file}" >&2
+    echo "Tip: pass --create-ref <branch> (defaults to --saflib-ref or main)." >&2
+    exit 1
+  fi
 done
 
 exec node --experimental-strip-types --disable-warning=ExperimentalWarning \
-  "${DIR}/run.ts" "$@"
+  "${DIR}/run.ts" "${remaining[@]}"

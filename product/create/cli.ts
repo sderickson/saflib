@@ -39,7 +39,9 @@ Pin a branch for both the script sources and the saflib submodule:
   REF=2026-09-02-doc-updates
   curl -fsSL "https://raw.githubusercontent.com/sderickson/saflib/\${REF}/product/create/saf-create.sh" -o /tmp/saf-create.sh
   chmod +x /tmp/saf-create.sh
-  /tmp/saf-create.sh --create-ref "\${REF}" my-app example.com --saflib-ref "\${REF}"
+  /tmp/saf-create.sh my-app example.com --saflib-ref "\${REF}"
+
+  (--saflib-ref selects the download ref too; use --create-ref when they differ.)
 
 Source: ${CREATE_SOURCE_URL}
 `);

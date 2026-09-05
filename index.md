@@ -45,7 +45,7 @@ git init my-app && cd my-app
 REF=2026-09-02-doc-updates
 curl -fsSL "https://raw.githubusercontent.com/sderickson/saflib/${REF}/product/create/saf-create.sh" -o /tmp/saf-create.sh
 chmod +x /tmp/saf-create.sh
-/tmp/saf-create.sh --create-ref "${REF}" fiddlysticks fiddlysticks.com --saflib-ref "${REF}"
+/tmp/saf-create.sh fiddlysticks fiddlysticks.com --saflib-ref "${REF}"
 ```
 
 While developing saflib locally:

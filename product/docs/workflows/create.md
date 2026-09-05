@@ -24,8 +24,10 @@ Pin a branch or tag for both the script sources and the submodule:
 REF=2026-09-02-doc-updates
 curl -fsSL "https://raw.githubusercontent.com/sderickson/saflib/${REF}/product/create/saf-create.sh" -o /tmp/saf-create.sh
 chmod +x /tmp/saf-create.sh
-/tmp/saf-create.sh --create-ref "${REF}" my-app example.com --saflib-ref "${REF}"
+/tmp/saf-create.sh my-app example.com --saflib-ref "${REF}"
 ```
+
+`--saflib-ref` also selects which GitHub ref to download the TypeScript sources from (override with `--create-ref` when they differ).
 
 Local saflib checkout (`run.ts` has a shebang with `--experimental-strip-types`):
 
@@ -54,7 +56,7 @@ Local saflib checkout (`run.ts` has a shebang with `--experimental-strip-types`)
 | `--force` | Continue when bootstrap paths already exist |
 | `--product-only` | Forward `--productOnly` to `product/init` |
 
-The install script also accepts `--create-ref <ref>` (or `SAFLIB_CREATE_REF`) to choose which GitHub ref to download TypeScript sources from (defaults to `main`).
+The install script also accepts `--create-ref <ref>` (or `SAFLIB_CREATE_REF`) to override which GitHub ref downloads TypeScript sources. By default it uses `--saflib-ref`, then `main`.
 
 ## Help
 
