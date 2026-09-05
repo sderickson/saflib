@@ -1,0 +1,16 @@
+{
+  "name": "saf-create",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Bootstrap a new SAF monorepo from an empty git repository",
+  "type": "module",
+  "bin": {
+    "saf-create": "./run.ts"
+  },
+  "dependencies": {
+    "commander": "^15.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

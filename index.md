@@ -28,12 +28,38 @@ These docs are also accessible when coding with SAF by searching for their markd
 
 ## Setup
 
-To use these packages in a new project, you can create a project from [the SAF template repo](https://github.com/sderickson/saf-template).
+### New project
 
-To use these packages in an existing project:
+From an **empty git repository** (run `git init` first if needed):
+
+```bash
+npx --yes github:sderickson/saflib/saflib/product/create#main -- <name> <domain>
+```
+
+Example:
+
+```bash
+git init my-app && cd my-app
+npx --yes github:sderickson/saflib/saflib/product/create#main -- my-app example.com
+```
+
+This adds [`saflib`](https://github.com/sderickson/saflib) as a submodule, creates the root workspace `package.json`, and runs [`product/init`](./product/docs/workflows/init.md) to copy the golden product tree.
+
+Options include `--org <scope>`, `--saflib-ref <branch-or-tag>`, and `--force` (continue when `product/`, `deploy/`, or `.github/` already exist). See [`saf-create`](./product/docs/workflows/create.md).
+
+If the repository **already has a saflib submodule**, use `product/init` instead:
+
+```bash
+npm exec saf-workflow kickoff product/init <name> <domain>
+```
+
+### Existing project
+
+To add SAF to a repository that does not use `saf-create`:
 
 1. Clone [`sderickson/saflib`](https://github.com/sderickson/saflib) into your repository somewhere as a git submodule.
 2. Add the directory as a workspace for your root-level `package.json`. For example if you added the submodule at the root directory, you'd add `"saflib/**"` to your [`workspaces` field](https://docs.npmjs.com/cli/v11/configuring-npm/package-json#workspaces).
 3. Run `npm install` or equivalent.
+4. Run `npm exec saf-workflow kickoff product/init <name> <domain>` from the monorepo root.
 
 To use a given package, install it as a dependency in your own package. The value of the dependency should be `"*"` so that it gets the workspace version.

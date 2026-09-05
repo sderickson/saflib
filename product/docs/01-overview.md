@@ -2,6 +2,16 @@
 
 `@saflib/product` provides workflows for **creating a new SAF product** from the golden template in [`@saflib/base`](../../base/docs/01-overview.md). It is not product runtime code — only scaffolding and setup automation registered with [`saf-workflow`](../../workflows-cli/docs/cli/saf-workflow.md).
 
+## New monorepo: `saf-create`
+
+For a **new git repository** with no saflib submodule yet, bootstrap from GitHub:
+
+```bash
+npx --yes github:sderickson/saflib/saflib/product/create#main -- <name> <domain>
+```
+
+See [create workflow docs](./workflows/create.md).
+
 ## Creating a product: `product/init`
 
 From the monorepo root (alongside `saflib/`):
