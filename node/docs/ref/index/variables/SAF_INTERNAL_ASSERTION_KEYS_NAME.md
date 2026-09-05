@@ -1,0 +1,7 @@
+[**@saflib/node**](../../index.md)
+
+---
+
+# Variable: SAF\_INTERNAL\_ASSERTION\_KEYS\_NAME
+
+> `const` **SAF\_INTERNAL\_ASSERTION\_KEYS\_NAME**: `"SAF_INTERNAL_ASSERTION_KEYS"` = `"SAF_INTERNAL_ASSERTION_KEYS"`

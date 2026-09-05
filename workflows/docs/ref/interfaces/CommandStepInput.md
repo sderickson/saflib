@@ -34,6 +34,16 @@ The message to show to the agent if the command fails.
 
 ---
 
+### forceInScript?
+
+> `optional` **forceInScript**: `boolean`
+
+When true, run this command even in script mode if it would otherwise be
+treated as a skipped validation command (typecheck/test). Use from CI
+harnesses that intentionally typecheck after scaffolding.
+
+---
+
 ### ignoreError?
 
 > `optional` **ignoreError**: `boolean`

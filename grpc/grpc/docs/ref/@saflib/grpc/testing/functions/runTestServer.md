@@ -4,7 +4,7 @@
 
 # Function: runTestServer()
 
-> **runTestServer**\<`S`\>(`service`): `Promise`\<`string`\>
+> **runTestServer**\<`S`>\>(`service`): `Promise`\<`string`>\>
 
 Runs a gRPC server for testing. Handles if fake timers are in use (which tends to break the server).
 

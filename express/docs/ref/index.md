@@ -4,51 +4,11 @@
 
 # @saflib/express
 
-Packages which implement express servers should import and use this package.
+## Modules
 
-## Interfaces
-
-| Interface                                                                | Description                                                                                 |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| [AuthMiddlewareOptions](interfaces/AuthMiddlewareOptions.md)             | -                                                                                           |
-| [CreateInternalCallerOptions](interfaces/CreateInternalCallerOptions.md) | -                                                                                           |
-| [GlobalMiddlewareOptions](interfaces/GlobalMiddlewareOptions.md)         | Options for creating global middleware.                                                     |
-| [InternalCallerRequest](interfaces/InternalCallerRequest.md)             | -                                                                                           |
-| [ScopedMiddlewareOptions](interfaces/ScopedMiddlewareOptions.md)         | Options for creating scoped middleware.                                                     |
-| [StartedExpressServer](interfaces/StartedExpressServer.md)               | -                                                                                           |
-| [StartServerOptions](interfaces/StartServerOptions.md)                   | Options when starting an Express server. At least one of `port` / `socketPath` is required. |
-
-## Type Aliases
-
-| Type Alias                                       | Description |
-| ------------------------------------------------ | ----------- |
-| [InternalCaller](type-aliases/InternalCaller.md) | -           |
-
-## Variables
-
-| Variable                                                | Description |
-| ------------------------------------------------------- | ----------- |
-| [uploadToDiskOptions](variables/uploadToDiskOptions.md) | -           |
-
-## Functions
-
-| Function                                                          | Description                                                                                                                                                                                                                                                                |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [createErrorMiddleware](functions/createErrorMiddleware.md)       | Middleware which should be placed after all routes.                                                                                                                                                                                                                        |
-| [createGlobalMiddleware](functions/createGlobalMiddleware.md)     | Middleware which should be put at the top of the middleware stack, and run for every request.                                                                                                                                                                              |
-| [createHandler](functions/createHandler.md)                       | Wrapper for Express handlers. Promisifies the handler, ensuring any uncaught exceptions get passed to `next`.                                                                                                                                                              |
-| [createInternalCaller](functions/createInternalCaller.md)         | Creates a low-level fetch-compatible client that signs a per-request identity assertion and dispatches over a unix domain socket.                                                                                                                                          |
-| [createInternalMiddleware](functions/createInternalMiddleware.md) | Middleware for internal-only service endpoints.                                                                                                                                                                                                                            |
-| [createScopedMiddleware](functions/createScopedMiddleware.md)     | Middleware which should only be applied to a subset of routes in an express server. This middleware all depends on the OpenAPI spec for those routes.                                                                                                                      |
-| [drainRequest](functions/drainRequest.md)                         | Drain the request body so the client can finish sending (e.g. multipart upload). Call before sending 401/403 to avoid EPIPE when the client closes after receiving the response while the body was still streaming.                                                        |
-| [isInternalRequest](functions/isInternalRequest.md)               | Returns whether `req` was tagged by [markInternal](functions/markInternal.md). Safe to call on any IncomingMessage; returns false when the tag is absent.                                                                                                                  |
-| [makeAdminHeaders](functions/makeAdminHeaders.md)                 | -                                                                                                                                                                                                                                                                          |
-| [makeAssertionHeaders](functions/makeAssertionHeaders.md)         | Signs an identity assertion for use in tests via `X-Saf-Identity-Assertion`.                                                                                                                                                                                               |
-| [makeAuthMiddleware](functions/makeAuthMiddleware.md)             | -                                                                                                                                                                                                                                                                          |
-| [makeContextMiddleware](functions/makeContextMiddleware.md)       | -                                                                                                                                                                                                                                                                          |
-| [makeCsrfMiddleware](functions/makeCsrfMiddleware.md)             | Enforce CSRF double-submit token validation on state-changing requests. Skips routes tagged `no-auth` (same convention as auth middleware). Skips `csrf-exempt` for browser-initiated posts that cannot attach our token (e.g. Content-Security-Policy violation reports). |
-| [makeCsrfTokenMiddleware](functions/makeCsrfTokenMiddleware.md)   | -                                                                                                                                                                                                                                                                          |
-| [makeUserHeaders](functions/makeUserHeaders.md)                   | -                                                                                                                                                                                                                                                                          |
-| [markInternal](functions/markInternal.md)                         | Wraps an HTTP request listener (e.g. an Express app) so each request is tagged as internal via a non-enumerable, process-local Symbol property before the underlying app handles it.                                                                                       |
-| [noStoreCacheControl](functions/noStoreCacheControl.md)           | Disallow storing responses in shared or private caches. Use for APIs that return session-, tenant-, or user-specific data (RFC 7234).                                                                                                                                      |
-| [startExpressServer](functions/startExpressServer.md)             | Given an Express app and options, starts the server and sets it up for graceful shutdown.                                                                                                                                                                                  |
+| Module                                                                  | Description                                                                  |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| [@saflib/express](@saflib/express/index.md)                             | Packages which implement express servers should import and use this package. |
+| [env](env/index.md)                                                     | -                                                                            |
+| [src/kratos-admin](src/kratos-admin/index.md)                           | -                                                                            |
+| [src/resolveAuthFromIdentityId](src/resolveAuthFromIdentityId/index.md) | -                                                                            |

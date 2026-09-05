@@ -2,7 +2,7 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../../analytics-service"
+      "path": "../../analytics/analytics-service"
     },
     {
       "path": "../../env"
@@ -15,7 +15,8 @@
     "outDir": "./dist/types",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "noEmit": false,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",
@@ -28,5 +29,8 @@
     "**/workflows/template/**",
     "**/workflows/templates/**"
   ],
-  "include": ["**/*.ts", "**/*.json"]
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ]
 }

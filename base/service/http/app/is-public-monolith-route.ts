@@ -4,9 +4,9 @@ import type { Request } from "express";
  * Paths that skip the early global auth gate (and should match Caddy
  * `@public_monolith`). Keep OpenAPI `no-auth` tags in sync.
  *
- * Note: `/health`, `/csp-violations`, `/errors/record`, and
- * `/product-events/record` are also mounted inside `createGlobalMiddleware`
- * before this gate; listing them here keeps the public-surface inventory one place.
+ * Note: `/health`, `/csp-violations`, and `/errors/record` skip the early
+ * auth gate. `/errors/record` and `/admin/errors` are development-only routes;
+ * listing them here keeps the public-surface inventory in one place.
  */
 const PUBLIC_POST_PATHS = new Set([
   "/csp-violations",

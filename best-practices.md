@@ -11,8 +11,8 @@ Many of the following rules depend on the stack having a type system. Unless _ev
 - [`@saflib/drizzle`](./drizzle/docs/01-overview.md) relies heavily on Drizzle's [Type API](https://orm.drizzle.team/docs/goodies#type-api)
 - [`@saflib/express`](./express/docs/03-routes.md#typing-the-interface) and [`@saflib/sdk`](./sdk/docs/02-requests.md#creating-a-typed-client) provide documentation and utilities to enforce types generated with [`@saflib/openapi`](./openapi/docs/cli/saf-specs.md)
 - [`@saflib/vue`](./vue/docs/03-i18n.md) flips how vue-i18n typically works, so that translated strings become typechecked
-- [`@saflib/playwright`](./playwright/docs/overview.md#string-locators) provides a custom locator that takes typed objects provided by frontend packages, to ensure tests and the components they test render and check for the same strings
-- [`@saflib/env`](./env/docs/overview.md) allows typing and validating environment variables
+- [`@saflib/playwright`](./playwright/docs/01-overview.md#string-locators) provides a custom locator that takes typed objects provided by frontend packages, to ensure tests and the components they test render and check for the same strings
+- [`@saflib/env`](./env/docs/01-overview.md) allows typing and validating environment variables
 
 ## Return Errors
 
@@ -49,7 +49,7 @@ Packages should only return instances of Errors they define. Propagating downstr
 
 **Example applications:**
 
-- `@saflib/monorepo` provides a [`ReturnsError`](./monorepo/docs/ref/index/type-aliases/ReturnsError.md) type for such functions, and a [`throwError`](./monorepo/docs/ref/index/functions/throwError.md) helper function.
+- `@saflib/utils` provides a `ReturnsError` type for such functions, and a `throwError` helper function (`@saflib/utils/returns-error`).
 - `@saflib/drizzle`'s [query template](https://github.com/sderickson/saflib/blob/c5f310d2faa42bc84dd5530966d26f63c8086431/drizzle/workflows/query-template/template-file.ts) uses `ReturnsError`, and `@saflib/express`'s [route template](https://github.com/sderickson/saflib/blob/c5f310d2faa42bc84dd5530966d26f63c8086431/express/workflows/route-template/route-template.ts#L18-L26) demonstrates how to use it.
 
 ## Keep Files Small
@@ -102,7 +102,7 @@ For serialized data, prefer flattened data stuctures with identifiers for relate
 **Example applications:**
 
 - `@saflib/links` provides [a simple structure](./links/docs/ref/type-aliases/Link.md) and some [methods](./links/docs/ref/index.md#functions) for sharing and using links to specific pages between packages.
-- `@saflib/utils` provides an [interface](./utils/docs/ref/interfaces/ElementStringObject.md) for objects with textual HTML element properties which can be easily `v-bind`ed in a Vue template, and located by [Playwright](./playwright/docs/ref/@saflib/playwright/functions/getByString.md).
+- `@saflib/utils` provides an [interface](./utils/docs/ref/index/interfaces/ElementStringObject.md) for objects with textual HTML element properties which can be easily `v-bind`ed in a Vue template, and located by [Playwright](./playwright/docs/ref/functions/getByString.md).
 
 ## Build and Maintain Fakes and Adapters for Service Boundaries
 
@@ -131,7 +131,7 @@ Third party integrations often provide more features than the product needs; the
 
 **Example application:**
 
-- `@saflib/sdk` provides a [helper method](./sdk/docs/ref/@saflib/sdk/testing/functions/typedCreateHandler.md) for typing fake server handlers.
+- `@saflib/sdk` provides a [helper method](./sdk/docs/ref/@saflib/sdk/testing/variables/typedCreateHandler.md) for typing fake server handlers.
 
 ### On Ownership of Fakes
 
@@ -162,7 +162,7 @@ Tests should stick to testing the package, API, or user interface they are targe
 
 - A great deal of peace of mind that the product continues to work as expected even when a great deal has changed.
 - Generated code that is tested is far less likely to need to be reworked when used later in the process.
-- For [automated, agentic workflows](./workflows.md), sufficient automated test coverage is required for workflow evals to work.
+- For [automated, agentic workflows](./workflows/docs/01-overview.md), sufficient automated test coverage is required for workflow evals to work.
 
 **Example application:**
 
@@ -174,7 +174,7 @@ There needs to be a source of truth for how to do things the right way specific 
 
 - **Reference** documentation should be generated from source, such as through [Typedoc](https://github.com/TypeStrong/typedoc) or [Redoc](https://github.com/Redocly/redoc).
 - **Explanation** docs should live in the package they address, such as in markdown files in a separate `docs/` directory.
-- **How-To Guides** are naturally expressed with [agentic workflows](./workflows.md), and human-readable versions should be generated from those.
+- **How-To Guides** are naturally expressed with [agentic workflows](./workflows/docs/01-overview.md), and human-readable versions should be generated from those.
 
 **Benefits:**
 
@@ -184,4 +184,4 @@ There needs to be a source of truth for how to do things the right way specific 
 **Example applications:**
 
 - Each package in [the docs](https://docs.saf-demo.online/) has a mix of explanation docs and generated reference docs. Instead of maintaining them separately, how-to guides are effectively generated from workflows such as [this one](./drizzle/docs/workflows/add-query.md).
-- `@saflib/dev-tools` provides a [CLI tool](./dev-tools/docs/cli/saf-docs.md) for generating documentation from code, workflows, and CLI commands. For example, [this workflow](./drizzle/docs/workflows/add-query.md) was generated from [this code](./drizzle/workflows/add-query.ts).
+- `@saflib/docs` provides a [CLI tool](./docs/docs/cli/saf-docs.md) for generating documentation from code, workflows, and CLI commands. For example, [this workflow](./drizzle/docs/workflows/add-query.md) was generated from [this code](./drizzle/workflows/add-query.ts).

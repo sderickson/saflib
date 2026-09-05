@@ -1,6 +1,6 @@
 {
   "extends": [
-    "@saflib/vue/tsconfig.app.json"
+    "../../../vue/tsconfig.app.base.json"
   ],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
@@ -9,7 +9,8 @@
     "emitDeclarationOnly": true,
     "types": [
       "vite/client"
-    ]
+    ],
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",
@@ -34,7 +35,7 @@
       "path": "../../../links"
     },
     {
-      "path": "../../../ory-kratos-sdk"
+      "path": "../../../ory-kratos/ory-kratos-sdk"
     },
     {
       "path": "../../../sdk"

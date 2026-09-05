@@ -16,7 +16,8 @@
     "emitDeclarationOnly": true,
     "types": [
       "node"
-    ]
+    ],
+    "rootDir": "."
   },
   "include": [
     "playwright.config.ts"

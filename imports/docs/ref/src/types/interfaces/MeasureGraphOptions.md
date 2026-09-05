@@ -19,3 +19,11 @@ When true, follow `import type` / `export type` edges. Default false.
 > `optional` **root**: `string`
 
 Monorepo root; auto-detected from the entry file when omitted.
+
+---
+
+### verbose?
+
+> `optional` **verbose**: `boolean`
+
+When true, include sorted first-party paths and external package roots.

@@ -1,13 +1,13 @@
 {
   "extends": [
-    "@saflib/vue/tsconfig.app.json"
+    "../../../vue/tsconfig.app.base.json"
   ],
   "references": [
     {
       "path": "../../../monorepo"
     },
     {
-      "path": "../../../ory-kratos-sdk"
+      "path": "../../../ory-kratos/ory-kratos-sdk"
     },
     {
       "path": "../../../sdk"
@@ -26,7 +26,8 @@
     "emitDeclarationOnly": true,
     "types": [
       "vite/client"
-    ]
+    ],
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",

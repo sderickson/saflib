@@ -1,4 +1,4 @@
-import type { JobConfig } from "@saflib/cron";
+import type { JobConfig } from "@saflib/cron-http";
 
 /**
  * Declarative cron job config. Work runs in the background operation named by

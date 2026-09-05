@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "@saflib/monorepo/tsconfig.json",
-    "@vue/tsconfig/tsconfig.dom.json"
-  ],
+  "extends": "../monorepo/tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
     "noEmit": false,

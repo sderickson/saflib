@@ -1,9 +1,7 @@
 import type { DbKey } from "@saflib/drizzle";
-import {
-  checkPackageLayout,
-  type ReturnsError,
-} from "@saflib/monorepo";
-import { collectPublicExportRepoPaths } from "@saflib/imports";
+import { checkPackageLayout } from "@saflib/monorepo";
+import { collectPublicExportRepoPaths } from "@saflib/monorepo/exports";
+import type { ReturnsError } from "@saflib/utils";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
 import path from "node:path";
 
@@ -71,7 +69,7 @@ function collectLiveLayoutIssues(
 
 /**
  * Repo-relative public export targets from live `package.json` (patterns, Vue).
- * Same logic as `saf-dev-site issues --workdir` / `analyze-package`.
+ * Same logic as `saf-dev-site issues --workdir` / `saf-analyze-package`.
  */
 function collectPublicExportFilePaths(
   repo_root: string,

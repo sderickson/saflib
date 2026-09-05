@@ -30,7 +30,7 @@
       "path": "../../env"
     },
     {
-      "path": "../../ory-kratos-sdk"
+      "path": "../../ory-kratos/ory-kratos-sdk"
     }
   ]
 }

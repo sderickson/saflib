@@ -114,7 +114,7 @@
 
 ### getExtension()
 
-> **getExtension**\<`T`\>(`fieldInfo`): `T`
+> **getExtension**\<`T`>\>(`fieldInfo`): `T`
 
 #### Type Parameters
 
@@ -240,7 +240,7 @@
 
 ### setExtension()
 
-> **setExtension**\<`T`\>(`fieldInfo`, `value`): `void`
+> **setExtension**\<`T`>\>(`fieldInfo`, `value`): `void`
 
 #### Type Parameters
 
@@ -336,7 +336,7 @@
 
 ### addToRepeatedWrapperField()
 
-> `static` **addToRepeatedWrapperField**\<`T`\>(`msg`, `fieldNumber`, `value`, `ctor`, `index?`): `T`
+> `static` **addToRepeatedWrapperField**\<`T`>\>(`msg`, `fieldNumber`, `value`, `ctor`, `index?`): `T`
 
 #### Type Parameters
 
@@ -426,7 +426,7 @@
 
 ### bytesListAsU8()
 
-> `static` **bytesListAsU8**(`strList`): `Uint8Array`\<`ArrayBufferLike`\>[]
+> `static` **bytesListAsU8**(`strList`): `Uint8Array`\<`ArrayBufferLike`>\>[]
 
 #### Parameters
 
@@ -446,7 +446,7 @@
 
 ### clone()
 
-> `static` **clone**\<`T`\>(`msg`): `T`
+> `static` **clone**\<`T`>\>(`msg`): `T`
 
 #### Type Parameters
 
@@ -472,7 +472,7 @@
 
 ### cloneMessage()
 
-> `static` **cloneMessage**\<`T`\>(`msg`): `T`
+> `static` **cloneMessage**\<`T`>\>(`msg`): `T`
 
 #### Type Parameters
 
@@ -639,7 +639,7 @@
 
 ### difference()
 
-> `static` **difference**\<`T`\>(`m1`, `m2`): `T`
+> `static` **difference**\<`T`>\>(`m1`, `m2`): `T`
 
 #### Type Parameters
 
@@ -725,7 +725,7 @@
 
 ### getFieldWithDefault()
 
-> `static` **getFieldWithDefault**\<`T`\>(`msg`, `fieldNumber`, `defaultValue`): `T`
+> `static` **getFieldWithDefault**\<`T`>\>(`msg`, `fieldNumber`, `defaultValue`): `T`
 
 #### Type Parameters
 
@@ -753,7 +753,7 @@
 
 ### getMapField()
 
-> `static` **getMapField**(`msg`, `fieldNumber`, `noLazyCreate`, `valueCtor?`): `Map`\<`any`, `any`\>
+> `static` **getMapField**(`msg`, `fieldNumber`, `noLazyCreate`, `valueCtor?`): `Map`\<`any`, `any`>\>
 
 #### Parameters
 
@@ -818,7 +818,7 @@
 
 ### getRepeatedWrapperField()
 
-> `static` **getRepeatedWrapperField**\<`T`\>(`msg`, `ctor`, `fieldNumber`): `T`[]
+> `static` **getRepeatedWrapperField**\<`T`>\>(`msg`, `ctor`, `fieldNumber`): `T`[]
 
 #### Type Parameters
 
@@ -846,7 +846,7 @@
 
 ### getWrapperField()
 
-> `static` **getWrapperField**\<`T`\>(`msg`, `ctor`, `fieldNumber`, `required?`): `T`
+> `static` **getWrapperField**\<`T`>\>(`msg`, `ctor`, `fieldNumber`, `required?`): `T`
 
 #### Type Parameters
 
@@ -1010,7 +1010,7 @@
 
 ### setRepeatedWrapperField()
 
-> `static` **setRepeatedWrapperField**\<`T`\>(`msg`, `fieldNumber`, `value?`): `void`
+> `static` **setRepeatedWrapperField**\<`T`>\>(`msg`, `fieldNumber`, `value?`): `void`
 
 #### Type Parameters
 
@@ -1038,7 +1038,7 @@
 
 ### setWrapperField()
 
-> `static` **setWrapperField**\<`T`\>(`msg`, `fieldNumber`, `value?`): `void`
+> `static` **setWrapperField**\<`T`>\>(`msg`, `fieldNumber`, `value?`): `void`
 
 #### Type Parameters
 
@@ -1134,7 +1134,7 @@
 
 ### toObjectList()
 
-> `static` **toObjectList**\<`T`\>(`field`, `toObjectFn`, `includeInstance?`): `object`[]
+> `static` **toObjectList**\<`T`>\>(`field`, `toObjectFn`, `includeInstance?`): `object`[]
 
 #### Type Parameters
 

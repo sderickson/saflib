@@ -16,10 +16,10 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/monorepo": "*"
+    "@saflib/monorepo": "*",
+    "@saflib/utils": "*"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
     "@saflib/vitest": "*"
   },
   "sideEffects": false

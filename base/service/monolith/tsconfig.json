@@ -27,13 +27,13 @@
       "path": "../../../env"
     },
     {
-      "path": "../../../errors/errors-http"
+      "path": "../../../errors/errors-service"
     },
     {
       "path": "../../../express"
     },
     {
-      "path": "../../../jobs/jobs"
+      "path": "../../../jobs/jobs-http"
     },
     {
       "path": "../../../monorepo"
@@ -43,9 +43,6 @@
     },
     {
       "path": "../../../vendors/loki"
-    },
-    {
-      "path": "../../../vendors/sentry-node"
     },
     {
       "path": "../audit"

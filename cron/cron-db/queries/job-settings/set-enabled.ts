@@ -2,7 +2,7 @@ import { queryWrapper } from "@saflib/drizzle";
 import { jobSettings, type JobSetting } from "../../schema.ts";
 import type { DbKey } from "@saflib/drizzle";
 import { cronDbManager } from "../../instances.ts";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 
 export type SetEnabledResult = ReturnsError<JobSetting, never>;
 

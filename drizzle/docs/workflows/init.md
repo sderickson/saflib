@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff drizzle/init <name> <path>
+npm exec saf-workflow kickoff drizzle/init <name>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -20,36 +20,23 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/package.json)
-  - Upsert **drizzle.config.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/drizzle.config.ts)
-  - Upsert **schema.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/schema.ts)
-  - Upsert **instances.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/instances.ts)
-  - Upsert **errors.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/errors.ts)
-  - Upsert **types.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/types.ts)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/index.ts)
-  - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/tsconfig.json)
-  - Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/vitest.config.js)
-  - Upsert **.gitignore** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/.gitignore)
-  - Upsert **index.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/index.test.ts)
-- Change working directory to services/example-service/example-db
+- Upsert 9 templates.
+- Upsert 10 templates.
+- Add @saflib/analytics-http-dossier-db dependency to parent db
+- Change working directory to dossier/db
 - Run `npm install`
-- Run `npm run generate`
-- Run `mkdir -p data`
-- Run `touch data/.gitkeep`
-- Run `npm test`
+- Run `npm run typecheck`
 
 ## Help Docs
 
 ```bash
-Usage: npm exec saf-workflow kickoff drizzle/init <name> <path>
+Usage: npm exec saf-workflow kickoff drizzle/init <name>
 
-Create a Drizzle/SQLite database package
+Scaffold an offshoot db package and weave its schemas into the parent db (no
+   second monolith)
 
 Arguments:
-  name        The name of the database package to create (e.g., 'user-db' or 'analytics-db')
-              Example: "@example-org/example-db"
-  path        The path to the target directory for the database package (e.g., './services/example-db')
-              Example: "./services/example-service/example-db"
+  name        Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/db and weaves into the parent db package.
+              Example: "dossier"
 
 ```

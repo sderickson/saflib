@@ -69,7 +69,7 @@ export const OPENAPI_ENFORCED_TAG_CATALOG: readonly OpenApiEnforcedTagMeta[] = [
   {
     tag: OPENAPI_TAG_BACKGROUND,
     effect: "Allow the jobs runtime to invoke this operationId",
-    enforcedBy: "@saflib/jobs (trigger map / enqueue)",
+    enforcedBy: "@saflib/jobs-http (trigger map / enqueue)",
   },
 ];
 

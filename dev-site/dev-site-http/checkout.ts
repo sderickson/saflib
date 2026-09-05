@@ -8,7 +8,7 @@ import {
   listRenames,
   GitCommandError,
 } from "@saflib/git";
-import type { PackageKind, ReturnsError } from "@saflib/monorepo";
+import type { PackageKind, ReturnsError } from "@saflib/utils";
 import {
   debtCountFromIssueCounts,
   emptyIssueCountsByKind,

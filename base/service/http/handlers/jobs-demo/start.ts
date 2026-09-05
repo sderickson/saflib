@@ -1,5 +1,5 @@
 import { createHandler } from "@saflib/express";
-import { enqueue } from "@saflib/jobs";
+import { enqueue } from "@saflib/jobs-http";
 import type { ResponseBody as StartJobsDemoJobsDemoResponseBody } from "@saflib/base-spec/operations/startJobsDemo";
 import type { components } from "@saflib/base-spec";
 

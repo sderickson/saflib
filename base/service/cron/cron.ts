@@ -1,5 +1,5 @@
 import { cronDb } from "@saflib/cron-db";
-import { runCron, type CronEnqueuer, type JobsMap } from "@saflib/cron";
+import { runCron, type CronEnqueuer, type JobsMap } from "@saflib/cron-http";
 import { createOnDiskDbKeyAccessor } from "@saflib/drizzle";
 import {
   baseServiceStorage,

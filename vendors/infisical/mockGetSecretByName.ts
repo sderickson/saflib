@@ -1,4 +1,4 @@
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import type { InfisicalClientError } from "./errors.ts";
 
 const MOCK_SECRET_VALUE = "mock";

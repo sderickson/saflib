@@ -1,0 +1,31 @@
+{
+  "name": "@saflib/ory-kratos-http",
+  "saf": {
+    "kind": "http"
+  },
+  "description": "Dedicated HTTP courier endpoint service for Ory Kratos.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./env": "./env.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/env": "*",
+    "@saflib/express": "*",
+    "@saflib/node": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*",
+    "@types/supertest": "^7.0.0",
+    "supertest": "^7.0.0"
+  },
+  "sideEffects": false
+}

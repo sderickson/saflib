@@ -2,7 +2,7 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../../cron/cron"
+      "path": "../../cron/cron-http"
     },
     {
       "path": "../../env"
@@ -21,7 +21,8 @@
     "outDir": "./dist/types",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "noEmit": false,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",

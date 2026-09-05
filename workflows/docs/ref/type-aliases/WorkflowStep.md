@@ -4,7 +4,7 @@
 
 # Type Alias: WorkflowStep\<C, M\>
 
-> **WorkflowStep**\<`C`, `M`\> = `object`
+> **WorkflowStep**\<`C`, `M`> \> = `object`
 
 A step in a workflow with an actor and its corresponding input.
 
@@ -17,9 +17,21 @@ A step in a workflow with an actor and its corresponding input.
 
 ## Properties
 
+### commitAfter?
+
+> `optional` **commitAfter**: `object`
+
+Whether to commit the changes after the step has been executed, and with what message.
+
+#### message
+
+> **message**: `string` \| (`arg`) => `string`
+
+---
+
 ### input()
 
-> **input**: (`arg`) => `InputFrom`\<`M`\>
+> **input**: (`arg`) => `InputFrom`\<`M`>\>
 
 The input for the step, based on the context for the invoking workflow.
 
@@ -65,7 +77,7 @@ A function that determines if the step should be skipped.
 
 ### validate()
 
-> **validate**: (`arg`) => `Promise`\<`string` \| `undefined`\>
+> **validate**: (`arg`) => `Promise`\<`string` \| `undefined`>\>
 
 A function that validates the step after it has been executed. If it returns a string, that string is prompted to the agent and the workflow is kept from moving forward until the validate function returns undefined.
 

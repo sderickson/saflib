@@ -20,13 +20,12 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **example-workflow.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/__target-name__.ts)
-  - Upsert **example-workflow.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/__target-name__.test.ts)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/index.ts)
+- Upsert 3 templates.
 - Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.
-- Export **example-workflow** from **blog-client**.
-- Add `blog-client`'s exported workflows to the CLI tool.
+- Upsert 4 templates.
+- Change working directory to ../../workflows-cli
+- Run `npm install @saflib/analytics-http`
+- Run `npm exec saf-workflow checklist example-package/example-workflow`
 
 ## Help Docs
 

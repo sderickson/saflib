@@ -12,7 +12,7 @@ import {
   getBaseJobsDbKey,
   runBaseJobs,
 } from "@saflib/base-jobs";
-import { createJobsApp, makeCronEnqueuer } from "@saflib/jobs";
+import { createJobsApp, makeCronEnqueuer } from "@saflib/jobs-http";
 import { jsonSpec } from "@saflib/base-spec";
 
 export async function startBaseService() {

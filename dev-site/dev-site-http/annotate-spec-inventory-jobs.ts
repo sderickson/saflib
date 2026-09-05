@@ -1,6 +1,6 @@
 import type { PackageSpecInventory } from "./spec-inventory-build.ts";
 
-/** Caller → targets (same shape as `@saflib/jobs` TriggerMap / productTriggerMap). */
+/** Caller → targets (same shape as `@saflib/jobs-http` TriggerMap / productTriggerMap). */
 export type JobTriggerMap = Readonly<Record<string, readonly string[]>>;
 
 /**

@@ -1,0 +1,32 @@
+{
+  "name": "@saflib/cron-http",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Cron service",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./workflows": "./workflows/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@saflib/cron-db": "*",
+    "@saflib/cron-spec": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "@saflib/utils": "*",
+    "cron": "^4.3.0"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@types/supertest": "^7.0.0"
+  },
+  "sideEffects": false
+}

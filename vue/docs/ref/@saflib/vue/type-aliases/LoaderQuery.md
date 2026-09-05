@@ -4,7 +4,7 @@
 
 # Type Alias: LoaderQuery\<TData\>
 
-> **LoaderQuery**\<`TData`\> = `Pick`\<`UseQueryReturnType`\<`any`, `TanstackError`\>, `"isLoading"` \| `"error"`\> & `object`
+> **LoaderQuery**\<`TData`> \> = `Pick`\<`UseQueryReturnType`\<`any`, `TanstackError`>\>, `"isLoading"` \| `"error"`> \> & `object`
 
 A subset of what `useQuery` returns. This is so that loaders can create pseudo-queries by simply creating objects with isLoading, error, and isError properties.
 
@@ -16,7 +16,7 @@ A subset of what `useQuery` returns. This is so that loaders can create pseudo-q
 
 ### isError
 
-> **isError**: `Ref`\<`boolean`\>
+> **isError**: `Ref`\<`boolean`>\>
 
 ## Type Parameters
 

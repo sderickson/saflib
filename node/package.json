@@ -1,8 +1,7 @@
 {
   "name": "@saflib/node",
   "saf": {
-    "kind": "lib",
-    "envExtends": ["@saflib/env"]
+    "kind": "lib"
   },
   "description": "Reusable Node.js utilities",
   "private": true,
@@ -20,6 +19,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/commander": "*",
     "@saflib/env": "*",
     "@saflib/node-log-http": "*",
     "@saflib/secret-store": "*",

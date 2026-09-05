@@ -2,7 +2,7 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../monorepo"
+      "path": "../commander"
     },
     {
       "path": "../imports"
@@ -11,8 +11,12 @@
   "compilerOptions": {
     "outDir": "./dist/types",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "types": [
+      "node"
+    ],
     "noEmit": false,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",
@@ -26,7 +30,6 @@
     "**/workflows/templates/**"
   ],
   "include": [
-    "**/*.ts",
-    "**/*.json"
+    "**/*.ts"
   ]
 }

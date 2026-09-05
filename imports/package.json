@@ -15,7 +15,6 @@
     "./issues": "./src/issues/index.ts",
     "./reporter": "./reporter.ts",
     "./src/snapshot/snapshot": "./src/snapshot/snapshot.ts",
-    "./src/exports/generate-exports": "./src/exports/generate-exports.ts",
     "./src/graph/detect-cycles": "./src/graph/detect-cycles.ts",
     "./src/graph/extract-imports": "./src/graph/extract-imports.ts",
     "./src/graph/find-path": "./src/graph/find-path.ts",
@@ -48,8 +47,5 @@
     "@saflib/vitest": "*",
     "vitest": "^3.0.0"
   },
-  "sideEffects": [
-    "./../../scripts/apply-side-effects.mjs",
-    "./../../src/side-effects/scan-package.ts"
-  ]
+  "sideEffects": false
 }

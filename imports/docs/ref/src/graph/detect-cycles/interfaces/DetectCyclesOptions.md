@@ -41,3 +41,15 @@ Monorepo root; auto-detected from the entry file when omitted.
 #### Inherited from
 
 `GraphWalkOptions.root`
+
+---
+
+### verbose?
+
+> `optional` **verbose**: `boolean`
+
+When true, include sorted first-party paths and external package roots.
+
+#### Inherited from
+
+`GraphWalkOptions.verbose`

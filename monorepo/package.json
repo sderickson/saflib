@@ -14,7 +14,8 @@
     "./workspace": "./src/workspace.ts",
     "./package-layout": "./src/package-layout.ts",
     "./package-exports": "./src/package-exports.ts",
-    "./package-kind": "./src/package-kind.ts"
+    "./package-kind": "./src/package-kind.ts",
+    "./exports": "./src/exports/generate-exports.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -23,7 +24,8 @@
     "typecheck": "tsc -b tsconfig.src.json"
   },
   "bin": {
-    "saf-format": "./bin/format.ts"
+    "saf-monorepo": "./bin/saf-monorepo/index.ts",
+    "saf-ts-run": "./bin/saf-ts-run/index.ts"
   },
   "devDependencies": {
     "globals": "^17.0.0",
@@ -31,10 +33,13 @@
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-vue": "^10.0.0",
     "typescript-eslint": "^8.0.0",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "@saflib/vitest": "*",
+    "memfs": "^4.17.0"
   },
   "sideEffects": false,
   "dependencies": {
+    "@saflib/commander": "*",
     "@saflib/templates": "*"
   }
 }

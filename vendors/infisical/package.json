@@ -1,8 +1,7 @@
 {
   "name": "@saflib/vendors-infisical",
   "saf": {
-    "kind": "lib",
-    "envExtends": ["@saflib/env"]
+    "kind": "lib"
   },
   "description": "Infisical-backed SecretStore adapter and process-level configure helpers",
   "private": true,
@@ -20,10 +19,10 @@
   "dependencies": {
     "@infisical/sdk": "^5.0.0",
     "@saflib/env": "*",
-    "@saflib/secret-store": "*"
+    "@saflib/secret-store": "*",
+    "@saflib/utils": "*"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },

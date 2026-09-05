@@ -30,7 +30,7 @@
       "path": "../commander"
     },
     {
-      "path": "../cron/cron"
+      "path": "../cron/cron-http"
     },
     {
       "path": "../drizzle"
@@ -49,6 +49,9 @@
     },
     {
       "path": "../integrations"
+    },
+    {
+      "path": "../jobs/jobs-http"
     },
     {
       "path": "../monorepo"

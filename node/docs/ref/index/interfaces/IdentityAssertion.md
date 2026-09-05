@@ -8,7 +8,7 @@
 
 ### claims?
 
-> `optional` **claims**: `Record`\<`string`, `string`\>
+> `optional` **claims**: `Record`\<`string`, `string`>\>
 
 Extension point; M2 binds jobId + attempt here.
 

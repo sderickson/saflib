@@ -19,7 +19,9 @@ describe("metricsMiddleware", () => {
   function makeApp() {
     const app = express();
     app.use(...metricsMiddleware);
-    app.get("/health", (_req, res) => res.status(200).end("ok"));
+    app.get("/health", (_req, res) => {
+      res.status(200).end("ok");
+    });
     return app;
   }
 

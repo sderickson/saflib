@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff express/init <name> <path>
+npm exec saf-workflow kickoff express/init <name>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -20,24 +20,23 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow express/init
-
 - Upsert 6 templates.
-- Change working directory to services/example
+- Upsert 7 templates.
+- Add @saflib/analytics-http-dossier-http dependency to parent http
+- Change working directory to dossier/http
 - Run `npm install`
-- Run `npm test`
+- Run `npm run typecheck`
 
 ## Help Docs
 
 ```bash
-Usage: npm exec saf-workflow kickoff express/init <name> <path>
+Usage: npm exec saf-workflow kickoff express/init <name>
 
-Create an Express HTTP service package
+Scaffold an offshoot Express http package and weave its barrel router into the
+   parent http app
 
 Arguments:
-  name        The name of the HTTP service package to create (e.g., 'user-http' or 'analytics-http')
-              Example: "example-http"
-  path        The path to the target directory for the HTTP service package (e.g., './services/example')
-              Example: "./services/example"
+  name        Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/http and mounts its router on the parent http package.
+              Example: "dossier"
 
 ```

@@ -12,7 +12,7 @@
     "./workflows": "./workflows/index.ts"
   },
   "bin": {
-    "saf-env": "./src/saf-env-cli.ts"
+    "saf-env": "./bin/saf-env/index.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -21,6 +21,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/commander": "*",
     "@saflib/monorepo": "*",
     "@saflib/templates": "*",
     "ajv": "^8.17.1"

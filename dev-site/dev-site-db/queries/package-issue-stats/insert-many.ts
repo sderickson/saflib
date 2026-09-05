@@ -1,6 +1,6 @@
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { devSiteDbManager } from "../../instances.ts";
 import {
   packageIssueStatsTable,

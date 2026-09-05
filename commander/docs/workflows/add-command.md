@@ -20,11 +20,10 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **example-command.ts** from [template](https://github.com/sderickson/saflib/blob/main/commander/workflows/templates/bin/__group-name__/__target-name__.ts)
+- Upsert 2 templates.
 - Update **example-command.ts**
-- Add the new command to the adjacent index.ts file.
-- Run `npm install @saflib/dev-tools --save-dev`
+- Test the command was added correctly by running:
+- Run `npm install @saflib/docs --save-dev`
 - Run `npm exec saf-docs generate`
 
 ## Help Docs

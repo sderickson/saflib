@@ -11,7 +11,7 @@ import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 import { createCommitsRouter } from "./index.ts";
 import { createDevSiteHttpApp } from "../../http.ts";
 import { releaseSlimRouteTest } from "../../testing/slim-route-test.ts";

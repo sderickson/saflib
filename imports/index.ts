@@ -50,6 +50,7 @@ export {
   type PackageDetailForIssues,
   type PackageIssue,
   type PackageIssueKind,
+  type UsedBy,
 } from "./src/issues/index.ts";
 export {
   analyzePackageFromWorkdirContext,
@@ -64,19 +65,6 @@ export {
   type WorkdirGraphContext,
   type WorkdirPackageAnalyzeResult,
 } from "./src/issues/workdir-analyze.ts";
-export {
-  computeExportsMap,
-  checkExports,
-  checkExportPatternCoverage,
-  generateExports,
-  listExportableFiles,
-  collectPublicExportRepoPaths,
-  packageHasWorkflowMarkers,
-  resolvePackageDir,
-  leafExportRemapDiffs,
-  type ExportsMap,
-  type CheckExportsResult,
-} from "./src/exports/generate-exports.ts";
 export {
   buildPackageIndex,
   findMonorepoRoot,

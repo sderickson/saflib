@@ -7,9 +7,16 @@
     "emitDeclarationOnly": true,
     "types": [
       "vite/client"
-    ]
+    ],
+    "rootDir": "."
   },
   "references": [
+    {
+      "path": "../analytics/analytics-sdk"
+    },
+    {
+      "path": "../analytics/analytics-spec"
+    },
     {
       "path": "../links"
     },

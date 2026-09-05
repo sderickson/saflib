@@ -1,199 +1,140 @@
 # Overview
 
-This package contains documentation and resources for a SAF monorepo.
+`@saflib/monorepo` provides npm workspace conventions, shared package scaffolding, and tooling for SAF monorepos. It focuses on **npm packages** — how workspaces are organized, how `package.json` surfaces are defined, and how new packages are added.
 
-Includes:
+For **TypeScript** — composite project references, cross-package typing conventions, and static import-graph analysis — see [@saflib/imports](../../imports/docs/01-overview.md).
 
-- `@saflib/monorepo` - constants and type utilities
-- `@saflib/monorepo/tsconfig.json` - each package should import and extend it
+Use this package's `saf-monorepo` command to formatting and lockfile management, and the [add-package](./workflows/add-package.md), [add-export](./workflows/add-export.md) workflows to add standalone packages.
 
-For composite project references (`composite: true`, incremental `tsc -b` /
-`vue-tsc -b`), see [@saflib/imports composite type guidance](../../imports/docs/04-composite-type-guidance.md)
-and [project references](../../imports/docs/03-project-references.md).
+## What this package provides
 
-See [Code Reference](./ref/index.md) for more information on package exports.
+- Shared presets each workspace package extends: [`tsconfig.json`](./ref/index.md), [`eslint.config.js`](./ref/index.md)
+- Workflows: [add-package](./workflows/add-package.md), [add-export](./workflows/add-export.md)
+- CLIs: [saf-monorepo](./cli/saf-monorepo.md) (`format`, `lock-prune`), [saf-ts-run](./cli/saf-ts-run.md)
+- Layout and inventory APIs: package kind classification, `exports`/`imports` helpers, root-file allowlists, workspace context ([code reference](./ref/index.md))
 
-## Monorepo Structure
+Init workflows (`express/init`, `sdk/init`, `drizzle/init`, etc.) and [monorepo/add-package](./workflows/add-package.md) scaffold packages with these defaults. Golden stubs live under [`saflib/base`](../../base/docs/01-overview.md) and workflow template trees.
 
-This is a recommended structure for a SAF monorepo, which works for one or more products. It does not need to be strictly adhered to; workflows are set up to be agnostic to the structure of the monorepo, and are more particular about how the packages are structured themselves rather than where they exist.
+## Product layout
+
+See [base](../../base/docs/01-overview.md). A SAF **product** is a tree of npm workspace packages. In a multi-product repo each product lives under `{product}/`; a single-product repo may place `clients/`, `service/`, and `dev/` at the repo root instead.
+
+Typical top-level layout:
 
 ```
-{repo-name}/
-├── {product-name}/
-│   ├── clients/
-|   |   ├── account/
-|   |   ├── admin/
-|   |   ├── app/
-|   |   ├── auth/
-|   |   ├── build/
-|   |   ├── common/
-|   |   ├── links/
-|   |   ├── root/
-|   |   └── ...
-│   ├── dev/
-|   ├── notes/
-│   ├── service/
-|   |   ├── common/
-│   │   ├── cron/
-|   |   ├── db/
-|   |   ├── http/
-│   │   ├── identity/
-│   │   ├── monolith/
-|   |   ├── sdk/
-|   |   ├── spec/
-|   |   ├── ...
-├── deploy/
-├── notes/
-├── saflib/
-├── package-lock.json
-└── package.json
+{repo}/
+├── {product}/
+│   ├── clients/          # Vue SPAs, shared client code, links
+│   ├── dev/              # docker compose for local development
+│   ├── notes/            # specs and planning docs
+│   ├── service/          # backend packages (see below)
+│   └── {offshoot}/       # optional bounded feature slice (db, http, spec, sdk, test)
+├── deploy/               # production images and deploy scripts
+├── saflib/               # SAF platform submodule
+├── package.json
+└── package-lock.json
 ```
 
-## Directories Explained
+Use [product/init](../../product/docs/workflows/init.md) to copy `saflib/base` into a new product. Workflows extend `saflib/base` in place so platform and product stay aligned.
 
-### `{product-name}/clients/`
+### `clients/`
 
-Clients as in web clients, desktop clients, and mobile clients. SAF only supports web clients currently.
+Web clients only (Vue SPAs today). Each SPA is its own workspace package named after its subdomain (`app/`, `auth/`, …), built together from a `build/` package. Shared client logic lives in `common/`; cross-SPA link objects live in `links/` so server code does not depend on Vue. See [@saflib/vue](../../vue/docs/01-overview.md).
 
-Most web clients are expected to be Vue 3 single page apps with their own dedicated subdomain. Each SPA should have its own package within `clients/`, be named `{subdomain}/`, and depend on `@saflib/vue`. It exports a function which will run `createVueApp` for the SPA.
+### `service/`
 
-All web clients are built with a single Vite config in a `build` package in `clients/`. This package's main purpose is to provide a single entry point for developing and building all SPAs together. This includes a Dockerfile which copies all necessary files and npm installs them, such that the image could either run vite in development or build the static files for production.
+Backend packages for one product. Terminology:
 
-There should also be a `common/` package which contains shared logic across SPAs, and a `links/` package which contains link objects for pages referenced by the server and other SPAs. The `links/` package is separate to isolate it from Vue and related dependencies so server-side code doesn't depend on those dependencies.
+- **Library** — shared logic, no long-running process
+- **Server** — listens on a port (HTTP, gRPC, …)
+- **Worker** — long-running work without a public port (cron, jobs runtime)
+- **Service** — a coordinated set of servers and workers (e.g. identity)
+- **Monolith** — runs the product's servers and workers together
 
-See docs for `@saflib/vue` for more information.
+| Package         | Role                                            | Kind        |
+| --------------- | ----------------------------------------------- | ----------- |
+| `common`        | shared service wiring (loggers, context, deps)  | library     |
+| `spec`          | OpenAPI contract                                | library     |
+| `db`            | drizzle schema and queries                      | library     |
+| `http`          | Express server and route handlers               | server      |
+| `sdk`           | TanStack Query clients tied to the API contract | library     |
+| `cron`          | scheduled job enqueuer                          | worker      |
+| `jobs`          | async job runtime and trigger map               | worker      |
+| `integrations/` | third-party API wrappers (see below)            | integration |
+| `monolith`      | boots http, cron, jobs, and related runtimes    | monolith    |
+| `test`          | shared test factories for spec models           | test        |
 
-### `{product-name}/dev/`
+**Dependency flow:** `spec` and `db` are independent layers. `http` depends on both and translates between wire and storage models. `sdk` depends on `spec` so clients stay decoupled from storage. `monolith` composes the runnable backends. All `clients/*` packages depend on `sdk` for API access.
 
-Runs the application in development, using docker compose to run the clients (vite in dev mode), server, a caddy reverse proxy, and anything else necessary. The generated services includes `azurite`, a standin for Azure Blob Storage.
+**Offshoots** — `{product}/{offshoot}/` holds a vertical slice (`db`, `http`, `spec`, `sdk`, `test`) when a feature is large enough to warrant its own OpenAPI surface and packages but still mounts into the parent product's HTTP app. See [@saflib/openapi](../../openapi/docs/01-overview.md#package-structure).
 
-### `{product-name}/notes/`
+**Integrations** — `{product}/service/integrations/{vendor}/` wraps a third-party SDK behind mockable **calls** (e.g. `stripe`, `sendgrid`). See [@saflib/integrations](../../integrations/docs/01-overview.md).
 
-Used for planning documents, including specs and roadmaps. Mostly used by the `@saflib/processes` package. It is one package with one folder for each project.
+### `dev/` and `deploy/`
 
-### `{product-name}/service/`
+`dev/` runs the product locally (Caddy, Vite clients, monolith, Azurite, Kratos, …). `deploy/` holds production Docker and deploy scripts when products share one infrastructure.
 
-First, some terminology:
+## Package naming
 
-- **Library**: A package which contains shared logic.
-- **Work**: Any long-running activity. A cron-job runner, an async job runner, or a server. May be executed by one or more workers.
-- **Server**: Work which includes listening on a port. GRPC, HTTP, WS, FTP, etc.
-- **Service**: A collection of work and servers which achieve a goal.
-- **Monolith**: Two or more services running together.
+Packages under `{product}/service/{name}/` import as `@{org}/{product}-{name}`:
 
-Each `service/` directory is one of these.
+- `acme/service/db/` → `@acme/acme-db`
+- `acme/service/http/` → `@acme/acme-http`
 
-| Package     | Description                                                               | Type     |
-| ----------- | ------------------------------------------------------------------------- | -------- |
-| common      | shared logic such as loggers and async local storage                      | library  |
-| cron        | async job runner                                                          | worker   |
-| db          | drizzle/pglite database                                                   | library  |
-| grpc-client | gRPC client implementation                                                | library  |
-| grpc-proto  | gRPC protocol definitions                                                 | library  |
-| grpc-server | gRPC server implementation                                                | server   |
-| http        | HTTP server                                                               | server   |
-| identity    | runs SAF identity service, including its db, http server, and grpc server | service  |
-| jobs        | async job runner                                                          | worker   |
-| monolith    | runs all other servers and services in this directory                     | monolith |
-| sdk         | shared frontend code that is tightly coupled to this service              | library  |
-| spec        | OpenAPI specification                                                     | library  |
+Offshoot packages add the offshoot name: `acme/dossier/spec/` → `@acme/acme-dossier-spec`.
 
-**Package dependency flow:** These packages form a layered dependency chain:
+Client packages follow the same pattern: `acme/clients/app/` → `@acme/acme-app`.
 
-Service:
+## npm package surface
 
-- `spec` and `db` have no dependencies - they define the API and database types respectively, and are distinct from one another (e.g., frontend has no direct dependency on how data is stored).`
-- `http` depends on both `spec` and `db` and translates between the two data models.
-- `sdk` depends on `spec`. This way frontend and backend are decoupled except for the API contract.
-- Both `clients` and `service` packages have a `common` package.
-- `service` wraps `http`, `grpc-server`, `cron`, and any other "runtimes" into a single runnable package, and `monolith` wraps that with `identity`.
+Each workspace package exposes an **explicit** public surface in `package.json`:
 
-Clients:
+- **`exports`** — subpath map consumers import (`@scope/pkg/handlers/foo`, not package root). Use single-star folder globs (`./handlers/*` → `./handlers/*.ts`) plus explicit entries for allowlisted root files. No package-root catch-all.
+- **`imports`** — package-local `#` specifiers mirroring the same folders (`#handlers/*`, `#errors.ts`). Same-package code uses `#…` with file extensions, not `../` climbs into sibling folders.
+- **`saf.kind`** — declares package role (`db`, `http`, `spec`, `spa`, `sdk`, `lib`, `integration`, `test`, …). Layout tooling infers kind from identifier deps when omitted.
+- **`sideEffects`** — `false` unless the package has explicit browser/CSS entry exceptions.
 
-- All `clients` packages depend on `sdk` for API calls and shared components which are tightly coupled to the API contract.
-- `links` and `common` are shared. `links` is separate so server-side code doesn't depend on Vue and related dependencies.
-- The other packages are separate SPAs each serving their own subdomain, and the only thing that depends on them is the `build` package which builds them all together with Vite.
+[monorepo/add-export](./workflows/add-export.md) adds a module and updates `exports`/`imports` via glob patterns. To validate export coverage and layout rules, use [`saf-analyze-package`](../../dev-tools/docs/package-issues.md).
 
-**Package naming convention:** Packages under `{product}/service/{name}/` are imported as `@{org}/{product}-{name}`. For example, if the product is `foobar` and the org is `acme`:
+**Layout rules:** production `.ts`/`.tsx` files belong in thematic folders, not loose at the package root, except for allowlisted entrypoints (`index.ts`, `main.ts`, `run.ts`, config files, …). `@saflib/dev-tools` [`saf-analyze-package`](../../dev-tools/docs/package-issues.md) reports layout, dead-code, and oversized-file issues.
 
-- `foobar/service/db/` → `@acme/foobar-db`
-- `foobar/service/http/` → `@acme/foobar-http`
-- `foobar/service/spec/` → `@acme/foobar-spec`
-- `foobar/service/sdk/` → `@acme/foobar-sdk`
-- `foobar/service/common/` → `@acme/foobar-service-common`
+## TypeScript in SAF monorepos
 
-Third-party integrations can also be added along-side these packages. However, for consistency they should describe the service rather than be the name of the brand.
+TypeScript project references, composite builds, and import-graph tooling live in `@saflib/imports`:
 
-- `payments/`, not `stripe/`
-- `email/`, not `sendgrid/`
-- `notifications/`, not `twilio/`
+- [Project references](../../imports/docs/02-project-references.md) — `composite: true`, `dist/types/`, `saf-imports tsconfig sync|check`
+- [Composite type guidance](../../imports/docs/03-composite-type-guidance.md) — cross-package imports, Vue app/node split, query typing
+- [saf-imports CLI](../../imports/docs/cli/saf-imports.md) — `measure`, `why`, `cycles`, bundle snapshots, Vitest import-graph reporter
 
-These packages are considered "libraries"; they are like `grpc-client` or `sdk` packages in that they don't _run_ anything, they are simply code which is imported and run as part of some work.
+Each package still **extends** `@saflib/monorepo/tsconfig.json` (or `@saflib/vue` presets for SPAs) as part of npm scaffolding; `@saflib/imports` owns the reference graph and enforcement.
 
-### `deploy/`
+## Deployment models
 
-Assuming you deploy all products to the same infrastructure, the `deploy/` directory is similar to the `dev/` directory, but for production. It includes scripts to build images, run them locally to test, and deploy to the remote infrastructure. The prod build is also used in CI with playwright.
+Products can run standalone or as a shared **hub** (one domain, one identity, one monolith). Both are supported.
 
-## Deployment models: Standalone product vs product hub
+| Aspect           | Standalone product          | Product hub                          |
+| ---------------- | --------------------------- | ------------------------------------ |
+| Domain           | One per product             | One for all (subdomains per product) |
+| Identity         | Per-product                 | Single (hub)                         |
+| Auth UI          | Per-product auth subdomain  | Single `auth.{domain}`               |
+| Deploy monoliths | One container per product   | One container (hub monolith)         |
+| Link subdomains  | Product-specific (`app`, …) | Product-prefixed (`app.recipes`, …)  |
 
-You can run and deploy products in two ways. Both are supported; choose the one that fits how you operate.
+Use hub dev/deploy for a single login and deployment unit; keep per-product `dev/` for focused standalone development.
 
-### Standalone product model
+## The `saflib/` submodule
 
-Each product is independent:
+[The SAF source](https://github.com/sderickson/saflib) lives in a git submodule so products can reference, edit, and typecheck it directly. Changes under `saflib/` are tracked in the submodule; the parent repo records only the checked-out commit.
 
-- **Own domain** (e.g. `recipes.net`, `notebook.ai`, in prod).
-- **Own identity service** — each product runs its own identity (db, sessions, auth UI).
-- **Own dev environment** — each `{product}/dev/` has its own docker-compose (caddy, vite clients, monolith, azurite).
-- **Own monolith in production** — deploy runs separate containers (e.g. `recipes-monolith`, `notebook-monolith`), each serving one product and their own identity service.
+## Testing and typecheck
 
-Good when products are run or deployed separately, or when you want minimal coupling between them.
-
-### Product hub model
-
-Products share one domain and one identity:
-
-- **Single domain** (e.g. `myhome.online`). All products use subdomains of that domain (e.g. `recipes.myhome.online`, `notebook.myhome.online`).
-- **Shared identity** — one identity service (hub-owned). Users log in once; sessions and auth apply across all products. Auth UI lives at a single `auth.{domain}`; products redirect there for login/register.
-- **Hub dev** — `hub/dev/` runs the hub monolith (identity + hub + recipes + notebook services). Hub clients run on Vite; recipes and notebook clients are static builds served by Caddy. Each product can also still have its own `{product}/dev/` for that product’s dev in standalone style, to still develop one product without building/running the other products.
-- **Single monolith in production** — one `monolith` container runs all services. Caddy serves static client builds for all products and proxies API subdomains (`api.recipes.{domain}`, `api.notebook.{domain}`, `hub.{domain}`) to that monolith.
-
-Good when you want one login across products, one deployment unit, and a single domain.
-
-### How they differ
-
-| Aspect           | Standalone product             | Product hub                          |
-| ---------------- | ------------------------------ | ------------------------------------ |
-| Domain           | One per product                | One for all (subdomains per product) |
-| Identity         | Per-product                    | Single (hub)                         |
-| Auth UI          | Per-product auth subdomain     | Single `auth.{domain}`               |
-| Deploy monoliths | One container per product      | One container (hub monolith)         |
-| Link subdomains  | Product-specific (`app`, etc.) | Product-prefixed (`app.recipes`, …)  |
-
-The repo can support both: e.g. use hub dev and hub deploy for the “one domain, one identity” setup, and keep per-product dev and optional standalone deploy for the other model.
-
-### `saflib/`
-
-A git submodule which contains [the SAF source](https://github.com/sderickson/saflib), so they can be referenced, edited, and used directly. One day these may be more traditionally published and installed through npm, but for projects which will also invest heavily in this shared codebase, a submodule is the way to go.
-
-Note that `saflib/` has its own git history. Changes to files under `saflib/` are tracked in the submodule, not in the parent repo. The parent repo only tracks which submodule commit is checked out.
-
-## Testing
-
-Each package has its own `vitest.config.js` and tests are run from within the package directory:
+Run tests from the package directory:
 
 ```bash
 cd {product}/service/http && npm run test
-```
-
-To run a specific test file, pass a filter after `--`:
-
-```bash
 cd {product}/service/http && npx vitest run -- routes/scans/execute
 ```
 
-The workspace-root `vitest.config.ts` configures workspace-level projects, but individual test files should be run from their package directory.
+Run `npm run typecheck` from the repo root for incremental solution builds. After adding packages or changing workspace deps, run `npm run tsconfig:sync` and `npm exec saf-imports tsconfig check`.
 
-Each package also has its own `tsconfig.json` which can be checked with the command `npm run typecheck`.
-
-For testing specific types of packages, see documentation inside the appropriate `saflib/` package, such as in [`saflib/drizzle/docs/`](../../drizzle/docs/04-testing.md) for database packages.
+Package-specific testing guidance lives in the relevant `saflib/` package docs (e.g. [@saflib/drizzle queries](../../drizzle/docs/03-queries.md)).

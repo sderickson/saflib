@@ -1,6 +1,6 @@
 # API Design
 
-This document covers conventions for designing REST APIs in SAF projects. These conventions keep APIs predictable, keep implementations focused, and avoid frontend hacks (like unbounded parallel queries) when the real fix belongs in the API shape.
+This document covers conventions for designing REST APIs in SAF projects. These conventions keep interfaces predictable, implementations focused, and behaviors consistent.
 
 ## One URL Per Action
 
@@ -293,10 +293,10 @@ email:
 
 ### Quick reference
 
-| Goal            | OpenAPI 3.1 (use this)                                      | Do not use                                      |
-| --------------- | ----------------------------------------------------------- | ----------------------------------------------- |
-| Optional string | `type: [string, "null"]`                                    | `nullable: true`                                |
-| Optional object | `oneOf: [{ type: "null" }, { $ref: … }]`                    | `type: object` + `nullable: true` + `allOf`     |
-| Optional array  | `type: [array, "null"]`                                     | `nullable: true` on `type: array`               |
-| Unset on create | Document “omitted → null”; client may omit key              | —                                               |
-| Clear on update | Explicit `null` is fine with the patterns above             | Empty `{}` as a stand-in for null               |
+| Goal            | OpenAPI 3.1 (use this)                          | Do not use                                  |
+| --------------- | ----------------------------------------------- | ------------------------------------------- |
+| Optional string | `type: [string, "null"]`                        | `nullable: true`                            |
+| Optional object | `oneOf: [{ type: "null" }, { $ref: … }]`        | `type: object` + `nullable: true` + `allOf` |
+| Optional array  | `type: [array, "null"]`                         | `nullable: true` on `type: array`           |
+| Unset on create | Document “omitted → null”; client may omit key  | —                                           |
+| Clear on update | Explicit `null` is fine with the patterns above | Empty `{}` as a stand-in for null           |

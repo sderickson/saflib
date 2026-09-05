@@ -6,14 +6,11 @@ export {
   type ReportedErrorKind,
   type ReportedErrorInput,
   type ReportedErrorRecord,
-} from "./lib/reportedErrorBuffer.ts";
+} from "@saflib/errors-service";
+
+export { configureMockErrors } from "@saflib/errors-service";
 
 export {
-  installReportedErrorCollector,
-  CSP_INGEST_MESSAGE,
-} from "./lib/initErrorsServer.ts";
-
-export {
-  createErrorsRouter,
   createDevErrorsRouter,
+  createErrorsRouter,
 } from "./express/createErrorsRouter.ts";

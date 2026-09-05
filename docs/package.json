@@ -1,0 +1,28 @@
+{
+  "name": "@saflib/docs",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Documentation generation for SAF packages",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "bin": {
+    "saf-docs": "./bin/saf-docs/index.ts"
+  },
+  "dependencies": {
+    "@saflib/commander": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/utils": "*",
+    "vue-component-meta": "^3.3.11"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typedoc": "^0.28.10",
+    "typedoc-plugin-markdown": "^4.8.1",
+    "typedoc-plugin-vue": "^1.5.1"
+  },
+  "sideEffects": false
+}

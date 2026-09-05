@@ -1,6 +1,6 @@
 /**
  * Package-level architecture issues from export usedBy / layout / LoC.
- * Pure — safe for CLI, Spec UI, and analyze-package.
+ * Pure — safe for CLI, Spec UI, and saf-analyze-package.
  */
 
 const CARD_EXPORT_KINDS = new Set(["function", "class", "const"]);
@@ -81,7 +81,7 @@ export interface PackageIssue {
   repoPath: string;
 }
 
-type UsedBy = { packageName: string; filePath: string; repoPath: string };
+export type UsedBy = { packageName: string; filePath: string; repoPath: string };
 
 export interface PackageDetailForIssues {
   packageName: string;

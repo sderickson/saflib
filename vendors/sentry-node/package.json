@@ -1,8 +1,7 @@
 {
   "name": "@saflib/vendors-sentry-node",
   "saf": {
-    "kind": "lib",
-    "envExtends": ["@saflib/env"]
+    "kind": "lib"
   },
   "description": "Sentry Node adapters: service init, Vite source-map upload plugin, and env schema",
   "private": true,
@@ -20,7 +19,7 @@
   },
   "dependencies": {
     "@saflib/env": "*",
-    "@saflib/errors-http": "*",
+    "@saflib/errors-service": "*",
     "@saflib/node": "*",
     "@saflib/utils": "*",
     "@sentry/node": "^10.0.0",

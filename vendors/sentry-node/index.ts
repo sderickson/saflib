@@ -9,5 +9,7 @@ export {
   configureSentry,
   initSentry,
   initErrorsServer,
+  resetErrorsForTests,
   type ConfigureSentryOptions,
 } from "./configureSentry.ts";
+export { SentryErrorService, type SentryErrorServiceOptions } from "./SentryErrorService.ts";

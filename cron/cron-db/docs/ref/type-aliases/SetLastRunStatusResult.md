@@ -4,4 +4,4 @@
 
 # Type Alias: SetLastRunStatusResult
 
-> **SetLastRunStatusResult** = `ReturnsError`\<[`JobSetting`](../interfaces/JobSetting.md), [`JobSettingNotFoundError`](../classes/JobSettingNotFoundError.md)\>
+> **SetLastRunStatusResult** = `ReturnsError`\<[`JobSetting`](../interfaces/JobSetting.md), [`JobSettingNotFoundError`](../classes/JobSettingNotFoundError.md)>\>

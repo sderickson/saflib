@@ -1,0 +1,46 @@
+{
+  "extends": [
+    "../../vue/tsconfig.app.base.json"
+  ],
+  "references": [
+    {
+      "path": "../../links"
+    },
+    {
+      "path": "../ory-kratos-sdk"
+    },
+    {
+      "path": "../../sdk"
+    },
+    {
+      "path": "../../vue"
+    }
+  ],
+  "compilerOptions": {
+    "outDir": "./dist/types",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "types": [
+      "vite/client"
+    ],
+    "rootDir": "."
+  },
+  "exclude": [
+    "node_modules",
+    "dist/types",
+    "e2e",
+    "playwright-report",
+    "test-results",
+    "workflows/template/**",
+    "workflows/templates/**",
+    "**/workflows/template/**",
+    "**/workflows/templates/**"
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.vue",
+    "**/*.json"
+  ]
+}

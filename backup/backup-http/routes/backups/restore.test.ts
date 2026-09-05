@@ -9,7 +9,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { unlinkSync, readFileSync, createWriteStream } from "fs";
 import Database from "better-sqlite3";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import type { StorageError } from "@saflib/object-store";
 
 class TestObjectStoreWithContent extends TestObjectStore {

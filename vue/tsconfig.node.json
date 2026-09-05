@@ -13,7 +13,8 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "isolatedModules": true,
-    "moduleDetection": "force"
+    "moduleDetection": "force",
+    "rootDir": "."
   },
   "include": [
     "vite.config.ts"

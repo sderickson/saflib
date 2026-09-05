@@ -5,7 +5,7 @@ import type {
 } from "@azure/storage-blob";
 import { typedEnv } from "./env.ts";
 import { getBlobServiceClient } from "./client.ts";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { getSafReporters } from "@saflib/node";
 
 export interface UpsertContainerParams {

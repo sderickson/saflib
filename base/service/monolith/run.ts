@@ -1,10 +1,10 @@
 import { startBaseService } from "./index.ts";
 import { collectSystemMetrics, setServiceName } from "@saflib/node";
 import { addLokiTransport } from "@saflib/vendors-loki";
-import { validateEnv } from "@saflib/env";
+import { validateEnv, isDevelopmentDeployment } from "@saflib/env";
+import { configureMockErrors } from "@saflib/errors-service";
 import envSchema from "./env.schema.combined.json" with { type: "json" };
-import { initSentry } from "@saflib/vendors-sentry-node";
-import { startOryKratosService } from "@saflib/ory-kratos";
+import { startOryKratosService } from "@saflib/ory-kratos-http";
 import {
   callbacks,
   makeKratosActionHandler,
@@ -15,7 +15,9 @@ validateEnv(process.env, envSchema);
 setServiceName("base");
 
 addLokiTransport();
-initSentry();
+if (isDevelopmentDeployment()) {
+  configureMockErrors();
+}
 collectSystemMetrics();
 
 await initializeDependencies();

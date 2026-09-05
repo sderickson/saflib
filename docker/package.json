@@ -1,0 +1,33 @@
+{
+  "name": "@saflib/docker",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Dockerfile generation and build metadata for SAF deployments",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/docker.ts",
+    "./git-hashes": "./src/git-hashes.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "bin": {
+    "saf-docker": "./bin/saf-docker/index.ts",
+    "saf-git-hashes": "./bin/saf-git-hashes/index.ts"
+  },
+  "dependencies": {
+    "@saflib/commander": "*",
+    "@saflib/monorepo": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "memfs": "^4.17.0",
+    "@types/node": "^24.0.0"
+  },
+  "sideEffects": false
+}

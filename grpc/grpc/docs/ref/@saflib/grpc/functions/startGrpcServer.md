@@ -4,7 +4,7 @@
 
 # Function: startGrpcServer()
 
-> **startGrpcServer**(`server`, `options`): `Promise`\<`void`\>
+> **startGrpcServer**(`server`, `options`): `Promise`\<`void`>\>
 
 Start a gRPC server with options, shutting it down on SIGTERM and SIGINT.
 

@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff openapi/init <name> <path>
+npm exec saf-workflow kickoff openapi/init <name>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -20,30 +20,24 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **openapi.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/openapi.yaml)
-  - Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/package.json)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/index.ts)
-  - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/tsconfig.json)
-  - Upsert **index.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/index.yaml)
-  - Upsert **login.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/login.yaml)
-  - Upsert **signup.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/signup.yaml)
-  - Upsert **signup_view.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/signup_view.yaml)
-  - Upsert **verify_email.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/verify_email.yaml)
-- Change working directory to specs/example
-- Run `npm exec saf-specs generate`
+- Upsert 9 templates.
+- Upsert 14 templates.
+- Upsert 15 templates.
+- Add @saflib/analytics-http-dossier-spec dependency to parent spec
+- Change working directory to dossier/spec
+- Run `npm install`
+- Run `npm run generate`
 
 ## Help Docs
 
 ```bash
-Usage: npm exec saf-workflow kickoff openapi/init <name> <path>
+Usage: npm exec saf-workflow kickoff openapi/init <name>
 
-Create an OpenAPI package
+Scaffold an offshoot OpenAPI package (and sibling test factories package) and
+   weave path $refs into the parent spec
 
 Arguments:
-  name        The name of the API spec package to create (e.g., 'user-spec' or 'analytics-spec')
-              Example: "example-spec"
-  path        The path to the target directory for the API spec package (e.g., './specs/example')
-              Example: "./specs/example"
+  name        Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/spec and weaves path $refs into the parent openapi.yaml.
+              Example: "dossier"
 
 ```

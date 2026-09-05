@@ -10,6 +10,9 @@
     ".": "./index.ts",
     "./workflows": "./workflows/index.ts"
   },
+  "bin": {
+    "saf-create": "./bin/saf-create/index.ts"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -17,6 +20,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/commander": "*",
     "@saflib/monorepo": "*",
     "@saflib/templates": "*",
     "@saflib/utils": "*",

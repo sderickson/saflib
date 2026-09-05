@@ -1,4 +1,4 @@
-import type { JobsMap } from "@saflib/cron";
+import type { JobsMap } from "@saflib/cron-http";
 
 /**
  * Declarative cron → enqueue map. Target operations are implemented by the

@@ -4,4 +4,4 @@
 
 # Variable: errors
 
-> `const` **errors**: `Ref`\<`string`[], `string`[]\>
+> `const` **errors**: `Ref`

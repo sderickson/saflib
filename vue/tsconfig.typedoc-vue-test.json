@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.app.base.json",
+  "include": ["dist/types/**/*.d.ts"],
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true
+  }
+}

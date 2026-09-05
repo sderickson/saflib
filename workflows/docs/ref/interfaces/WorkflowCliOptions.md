@@ -11,3 +11,9 @@ Options for configuring the workflow CLI
 ### getSourceUrl?
 
 > `optional` **getSourceUrl**: [`GetSourceUrlFunction`](../type-aliases/GetSourceUrlFunction.md)
+
+---
+
+### systemPrompt?
+
+> `optional` **systemPrompt**: `string`

@@ -1,10 +1,7 @@
 {
   "name": "@saflib/base-__integration-name__-integration",
   "saf": {
-    "kind": "integration",
-    "envExtends": [
-      "@saflib/env"
-    ]
+    "kind": "integration"
   },
   "description": "Golden integration stub for Base (expansion via integrations/add-call)",
   "private": true,
@@ -26,7 +23,6 @@
     "@saflib/secret-store": "*"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },

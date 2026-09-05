@@ -20,12 +20,9 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **get-secret.ts** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/server-templates/handlers/__group-name__/__target-name__.ts)
-  - Upsert **get-secret.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/server-templates/handlers/__group-name__/__target-name__.test.ts)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/server-templates/handlers/__group-name__/index.ts)
+- Upsert 3 templates.
 - Implement the get-secret gRPC handler. Make sure to:
-- Update the main grpc.ts file to register the saflib service if it's not already there.
+- Update the main grpc.ts file to register the analytics-http service if it's not already there.
 
 ## Help Docs
 

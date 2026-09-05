@@ -1,0 +1,26 @@
+{
+  "name": "@saflib/errors-service",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Server-side error reporting abstraction with in-memory implementation for development and tests",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/node": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

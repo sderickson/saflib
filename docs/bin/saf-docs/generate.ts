@@ -1,0 +1,64 @@
+import type { Command } from "commander";
+import {
+  type MonorepoContext,
+  getCurrentPackageName,
+} from "@saflib/monorepo/workspace";
+import { generateTypeDoc } from "./generate-typedoc.ts";
+import {
+  cleanupEmittedDeclarationArtifacts,
+  isVuePackage,
+} from "./generate-typedoc-vue.ts";
+import {
+  generateVueComponentDocs,
+  patchVueRefIndex,
+} from "./generate-vue-components.ts";
+import { generateCliDocs } from "./generate-cli.ts";
+import { generateEnvDocs } from "./generate-env.ts";
+import { generateWorkflowDocs } from "./generate-workflows.ts";
+import { formatPath } from "@saflib/monorepo/dev";
+import path from "node:path";
+
+export interface GenerateOptions {
+  monorepoContext: MonorepoContext;
+  packageName?: string;
+}
+
+export const generateCommand = (options: GenerateOptions) => {
+  const { monorepoContext, packageName } = options;
+  const targetPackage = packageName || getCurrentPackageName();
+  const packageDir = monorepoContext.monorepoPackageDirectories[targetPackage];
+  const packageJson = monorepoContext.monorepoPackageJsons[targetPackage];
+  const vuePackage = isVuePackage(packageDir, packageJson);
+
+  try {
+    generateTypeDoc({ monorepoContext, packageName: targetPackage });
+
+    if (vuePackage) {
+      generateVueComponentDocs({ packageDir, packageJson });
+      patchVueRefIndex(packageDir);
+    }
+    generateCliDocs({ monorepoContext, packageName: targetPackage });
+    generateEnvDocs({ monorepoContext, packageName: targetPackage });
+    generateWorkflowDocs({ monorepoContext, packageName: targetPackage });
+
+    console.log(`Formatting docs for ${targetPackage}`);
+    formatPath(path.join(packageDir, "docs"));
+  } finally {
+    if (vuePackage) {
+      console.log("\nCleaning up emitted declaration artifacts...");
+      cleanupEmittedDeclarationArtifacts(packageDir);
+    }
+  }
+};
+
+export const addGenerateCommand = (
+  program: Command,
+  monorepoContext: MonorepoContext,
+) => {
+  program
+    .command("generate")
+    .description("Generate typedoc and CLI docs for the current package.")
+    .action(() => {
+      generateCommand({ monorepoContext });
+    });
+};

@@ -7,17 +7,18 @@
   "private": true,
   "type": "module",
   "bin": {
-    "saf-workflow": "./workflow-cli.ts"
+    "saf-workflow": "./bin/saf-workflow/index.ts"
   },
   "dependencies": {
     "@saflib/commander": "*",
-    "@saflib/cron": "*",
+    "@saflib/cron-http": "*",
     "@saflib/drizzle": "*",
     "@saflib/email-service": "*",
     "@saflib/env": "*",
     "@saflib/express": "*",
     "@saflib/grpc": "*",
     "@saflib/integrations": "*",
+    "@saflib/jobs-http": "*",
     "@saflib/monorepo": "*",
     "@saflib/openapi": "*",
     "@saflib/processes": "*",

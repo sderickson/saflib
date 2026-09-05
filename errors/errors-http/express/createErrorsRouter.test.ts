@@ -3,12 +3,12 @@ import express from "express";
 import request from "supertest";
 import { createErrorMiddleware } from "@saflib/express";
 import {
+  configureMockErrors,
   listReportedErrors,
   recordReportedError,
   resetReportedErrorBufferForTests,
-} from "../lib/reportedErrorBuffer.ts";
-import { installReportedErrorCollector } from "../lib/initErrorsServer.ts";
-import { createErrorsRouter } from "./createErrorsRouter.ts";
+} from "@saflib/errors-service";
+import { createDevErrorsRouter, createErrorsRouter } from "./createErrorsRouter.ts";
 
 const siteAdminHeaders = {
   "x-requested-with": "XMLHttpRequest",
@@ -19,9 +19,9 @@ const siteAdminHeaders = {
   "x-user-mfa-completed": "true",
 } as const;
 
-describe("createErrorsRouter", () => {
+describe("errors routers", () => {
   beforeAll(() => {
-    installReportedErrorCollector();
+    configureMockErrors();
   });
 
   beforeEach(() => {
@@ -32,6 +32,7 @@ describe("createErrorsRouter", () => {
     const app = express();
     app.use(express.json());
     app.use(createErrorsRouter());
+    app.use(createDevErrorsRouter());
     app.use(createErrorMiddleware());
     return app;
   }

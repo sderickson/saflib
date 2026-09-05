@@ -53,6 +53,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     command: path.join(sourceDir, "bin/__group-name__/__target-name__.ts"),
+    index: path.join(sourceDir, "bin/__group-name__/index.ts"),
   },
 
   docFiles: {},
@@ -78,18 +79,13 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add the new command to the adjacent index.ts file.
-      
-      * Import the command function from ${context.copiedFiles!.command}
-      * Add it to the program before \`program.parse\` is called.
-      
-      Test the command was added correctly by running:
+      promptText: `Test the command was added correctly by running:
       npm exec ${context.groupName} ${context.targetName}`,
     })),
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["install", "@saflib/dev-tools", "--save-dev"],
+      args: ["install", "@saflib/docs", "--save-dev"],
     })),
 
     step(CommandStepMachine, () => ({

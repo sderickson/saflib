@@ -10,7 +10,7 @@ import {
 import type { DbKey } from "@saflib/drizzle";
 import { JobSettingNotFoundError } from "../../errors.ts";
 import { cronDb } from "@saflib/cron-db";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 
 import { setEnabled } from "./set-enabled.ts";
 import { getByName } from "./get-by-name.ts";

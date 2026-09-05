@@ -27,7 +27,7 @@
     "typecheck": "vue-tsc"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
+    "@saflib/docs": "*",
     "@saflib/templates": "*",
     "@saflib/vitest": "*",
     "@saflib/workflows": "*",

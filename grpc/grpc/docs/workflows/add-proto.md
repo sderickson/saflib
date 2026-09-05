@@ -20,9 +20,7 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **index.proto** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/protos/__group_name__/index.proto)
-  - Upsert **list.proto** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/protos/__group_name__/__target-name__.proto)
+- Upsert 2 templates.
 - Update **list.proto** to implement the RPC request and response messages. Define the appropriate fields for your RPC.
 - Update **index.proto** to add the new RPC method to the service. The RPC should follow the pattern: rpc MethodName(RequestMessage) returns (ResponseMessage);
 - Run `npm run generate`

@@ -27,7 +27,7 @@
   },
   "references": [
     {
-      "path": "../dev-tools"
+      "path": "../docker"
     }
   ]
 }

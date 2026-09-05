@@ -2,12 +2,12 @@
 
 Vue components are broken down into these classifications:
 
-* Views
-  * Pages
-  * Dialogs
-* Sub-Components
-  * Forms
-  * Displays
+- Views
+  - Pages
+  - Dialogs
+- Sub-Components
+  - Forms
+  - Displays
 
 ## Views
 
@@ -45,7 +45,7 @@ There are very good reasons to break down every view into several files! Each fi
 
 ### Async Component: Code Splitting, Loading/Error States
 
-_[Template file](../workflows/template/__subdomain-name__/__group-name__/__TargetName__Async.vue)_
+_[Template file](https://github.com/sderickson/saflib/blob/main/vue/workflows/template/__subdomain-name__/__group-name__/__TargetName__Async.vue)_
 
 By default, SAF SPAs will split out every page. This is controlled by the `Async` vue component, which will normally look like this:
 
@@ -106,7 +106,7 @@ If you find yourself needing a data-dependent number of queries, that's a signal
 
 ### Component: Rendering
 
-_[Template file](../workflows/template/__subdomain-name__/__group-name__/__TargetName__.vue)_
+_[Template file](https://github.com/sderickson/saflib/blob/main/vue/workflows/template/__subdomain-name__/__group-name__/__TargetName__.vue)_
 
 Because the async component ensures the page component doesn't render until the data is fetched, the page component can assume the data is available and render it. It doesn't need to worry about checking for errors or handling loading states, and can instead focus on the happy path.
 
@@ -119,7 +119,7 @@ Strings are important to keep separate from the Vue component because they:
 - need to be localized, and
 - are invaluable for testing
 
-By keeping them in separate files, they can be exported and used by processes which don't need to know about, parse, or compile Vue components, in particular: [Playwright](../../playwright/docs/overview.md).
+By keeping them in separate files, they can be exported and used by processes which don't need to know about, parse, or compile Vue components, in particular: [Playwright](../../playwright/docs/01-overview.md).
 
 **Each sub-component should have its own strings file** (e.g. `MyDialog.strings.ts`). Don't pile all strings into the view's strings file — it becomes hard to manage and makes it unclear which strings belong to which component.
 
@@ -140,7 +140,12 @@ These functions take plain values and return plain values — no Vue reactivity,
 
 ```typescript
 // EvalCreateDialog.logic.ts
-export function canCreate(name: string, prompt: string, formId: string | null, selectedGroupHeaders: string[]): boolean {
+export function canCreate(
+  name: string,
+  prompt: string,
+  formId: string | null,
+  selectedGroupHeaders: string[],
+): boolean {
   if (!name.trim() || !prompt.trim()) return false;
   if (!formId) return false;
   return selectedGroupHeaders.length > 0;
@@ -196,7 +201,9 @@ import { formsFakeHandlers } from "@acme/product-sdk/requests/forms/index.fakes"
 setupMockServer([...evalsFakeHandlers, ...formsFakeHandlers]);
 
 it("create without file: creates eval, calls onClose", async () => {
-  const [flow, app] = withVueQuery(() => useEvalCreateFlow({ onClose, onCreated }));
+  const [flow, app] = withVueQuery(() =>
+    useEvalCreateFlow({ onClose, onCreated }),
+  );
   flow.createName.value = "Test Eval";
   // ... set up state ...
   flow.handleCreate();
@@ -211,7 +218,6 @@ it("create without file: creates eval, calls onClose", async () => {
 Component tests are optional. Prefer `.logic.test.ts`, `use*.test.ts`, and Playwright. When a page needs a component test, mount the async component (or `<RouterView />` for nested routes) only to exercise **behavior** — not render-only smokes.
 
 See [testing](./04-testing.md) for more info.
-
 
 ### Fixture: the Playwright Kind
 
@@ -269,11 +275,11 @@ All components should avoid custom CSS if they can. Instead, take advantage of V
 
 When a look should apply product-wide, put it in the clients design-system files rather than a component `<style>` block:
 
-| File | Use for |
-| --- | --- |
-| `clients/build/vuetify-settings.scss` | Vuetify Sass variables (`@use "vuetify/settings" with (…)`) |
-| `clients/build/vuetify-overrides.scss` | CSS that restyles `.v-*` components |
-| `clients/build/globals.scss` | App utility / layout classes that are not Vuetify restyles |
+| File                                   | Use for                                                     |
+| -------------------------------------- | ----------------------------------------------------------- |
+| `clients/build/vuetify-settings.scss`  | Vuetify Sass variables (`@use "vuetify/settings" with (…)`) |
+| `clients/build/vuetify-overrides.scss` | CSS that restyles `.v-*` components                         |
+| `clients/build/globals.scss`           | App utility / layout classes that are not Vuetify restyles  |
 
 To see what Vuetify ships, open `node_modules/vuetify/lib/components/<VComponent>/` (e.g. `VBtn.sass`, `_variables.scss`) and `node_modules/vuetify/lib/styles/settings/`.
 

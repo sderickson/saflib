@@ -1,12 +1,20 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
-    { "path": "../../__offshoot-name__/http" },
     {
-      "path": "../../../cron/cron"
+      "path": "../../__offshoot-name__/http"
+    },
+    {
+      "path": "../../../cron/cron-http"
+    },
+    {
+      "path": "../../../analytics/analytics-http"
     },
     {
       "path": "../../../email/email-service"
+    },
+    {
+      "path": "../../../errors/errors-http"
     },
     {
       "path": "../../../express"
@@ -15,10 +23,13 @@
       "path": "../../../vendors/brevo"
     },
     {
-      "path": "../../../jobs/jobs"
+      "path": "../../../jobs/jobs-http"
     },
     {
       "path": "../../../monorepo"
+    },
+    {
+      "path": "../../../node-log/node-log-http"
     },
     {
       "path": "../../../node-metrics/node-metrics-http"
@@ -49,7 +60,8 @@
     "outDir": "./dist/types",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "noEmit": false,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",

@@ -7,12 +7,9 @@ import {
   recordProductEvent,
   resetProductEventBufferForTests,
 } from "../lib/productEventBuffer.ts";
-import {
-  createAnalyticsRouter,
-  createDevAnalyticsRouter,
-} from "./createAnalyticsRouter.ts";
+import { createDevAnalyticsRouter } from "./createAnalyticsRouter.ts";
 
-describe("createAnalyticsRouter", () => {
+describe("createDevAnalyticsRouter", () => {
   beforeEach(() => {
     resetProductEventBufferForTests();
   });
@@ -20,7 +17,6 @@ describe("createAnalyticsRouter", () => {
   function makeApp() {
     const app = express();
     app.use(express.json());
-    app.use(createAnalyticsRouter());
     app.use(createDevAnalyticsRouter());
     app.use(createErrorMiddleware());
     return app;

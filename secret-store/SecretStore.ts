@@ -1,4 +1,4 @@
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import type { SecretStoreError } from "./errors.ts";
 import { SecretNotDeclaredError } from "./errors.ts";
 import {

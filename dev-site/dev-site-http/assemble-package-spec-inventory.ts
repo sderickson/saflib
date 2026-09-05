@@ -3,7 +3,7 @@
  * joined to HTTP handlers and SDK requests that depend on it.
  */
 import type { DbKey } from "@saflib/drizzle";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { classifySafPackage, parseSafPackageJson } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
 import { listTree, readBlobs } from "@saflib/git";

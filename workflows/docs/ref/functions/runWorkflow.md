@@ -4,7 +4,7 @@
 
 # Function: runWorkflow()
 
-> **runWorkflow**(`options`): `Promise`\<[`RunWorkflowResult`](../interfaces/RunWorkflowResult.md)\>
+> **runWorkflow**(`options`): `Promise`\<[`RunWorkflowResult`](../interfaces/RunWorkflowResult.md)>\>
 
 Convenience function to take a WorkflowDefinition, run it in the specified mode, and return the output.
 Can be used to run a given workflow in checklist mode for a unit test. This is also used internally

@@ -5,7 +5,7 @@
   },
   "references": [
     {
-      "path": "./analytics-service"
+      "path": "./analytics/analytics-service"
     },
     {
       "path": "./analytics/analytics-http"
@@ -143,7 +143,7 @@
       "path": "./commander"
     },
     {
-      "path": "./cron/cron"
+      "path": "./cron/cron-http"
     },
     {
       "path": "./cron/cron-db"
@@ -179,6 +179,12 @@
       "path": "./dev-tools"
     },
     {
+      "path": "./docker"
+    },
+    {
+      "path": "./docs"
+    },
+    {
       "path": "./drizzle"
     },
     {
@@ -192,6 +198,9 @@
     },
     {
       "path": "./env"
+    },
+    {
+      "path": "./errors/errors-service"
     },
     {
       "path": "./errors/errors-http"
@@ -221,7 +230,7 @@
       "path": "./integrations"
     },
     {
-      "path": "./jobs/jobs"
+      "path": "./jobs/jobs-http"
     },
     {
       "path": "./jobs/jobs-db"
@@ -266,7 +275,7 @@
       "path": "./node-metrics/node-metrics-vue"
     },
     {
-      "path": "./notify/notify"
+      "path": "./notify"
     },
     {
       "path": "./object-store"
@@ -275,13 +284,13 @@
       "path": "./openapi"
     },
     {
-      "path": "./ory-kratos"
+      "path": "./ory-kratos/ory-kratos-http"
     },
     {
-      "path": "./ory-kratos-sdk"
+      "path": "./ory-kratos/ory-kratos-sdk"
     },
     {
-      "path": "./ory-kratos-spa"
+      "path": "./ory-kratos/ory-kratos-spa"
     },
     {
       "path": "./parser"
