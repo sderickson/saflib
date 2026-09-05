@@ -17,5 +17,4 @@ Options:
                         with saf-dev-site)
   --no-exports-check    Skip package.json exports heuristic diffs
   -h, --help            display help for command
-
 ```

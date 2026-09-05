@@ -21,7 +21,7 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Upsert 5 templates.
-- Add @saflib/docs-dossier-sdk dependency to parent sdk
+- Add @saflib/analytics-http-dossier-sdk dependency to parent sdk
 - Change working directory to dossier/sdk
 - Run `npm install`
 - Run `npm run typecheck`

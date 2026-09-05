@@ -23,8 +23,8 @@ When run, the workflow will:
 - Upsert 3 templates.
 - Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.
 - Upsert 4 templates.
-- Change working directory to ../workflows-cli
-- Run `npm install @saflib/docs`
+- Change working directory to ../../workflows-cli
+- Run `npm install @saflib/analytics-http`
 - Run `npm exec saf-workflow checklist example-package/example-workflow`
 
 ## Help Docs

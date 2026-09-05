@@ -13,5 +13,9 @@ Commands:
                   ENOSPC during npm ci).
   generate        Generate all Dockerfiles from templates across the monorepo.
   help [command]  display help for command
-
 ```
+
+## Subcommands
+
+- [prune](./saf-docker/prune.md)
+- [generate](./saf-docker/generate.md)

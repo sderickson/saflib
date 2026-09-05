@@ -51,55 +51,58 @@ export function generateCliDocs(options: GenerateCliDocsOptions) {
   const { monorepoContext, packageName } = options;
   const currentPackageJson = monorepoContext.monorepoPackageJsons[packageName];
   const packageDir = monorepoContext.monorepoPackageDirectories[packageName];
+  const cliDocsDir = path.join(packageDir, "docs/cli");
 
   const bin = currentPackageJson.bin;
-  if (bin && Object.keys(bin).length > 0) {
-    console.log("\nGenerating CLI docs...");
-    const cliDocsDir = "docs/cli";
+  if (!bin || Object.keys(bin).length === 0) {
     rmSync(cliDocsDir, { recursive: true, force: true });
-    mkdirSync(cliDocsDir, { recursive: true });
-
-    const sortedCommands = Object.keys(bin).sort();
-
-    for (const command of sortedCommands) {
-      const binScriptPath = path.join(packageDir, bin[command]!);
-      const result = runBinHelp(binScriptPath);
-      const subcommands = parseTopLevelCommands(result);
-
-      if (subcommands.length > 0) {
-        const subcommandDir = path.join(cliDocsDir, command);
-        mkdirSync(subcommandDir, { recursive: true });
-
-        let mainDoc = wrapCliDoc(command, result);
-        mainDoc += `\n## Subcommands\n\n${subcommands
-          .map(
-            (subcommand) => `- [${subcommand}](./${command}/${subcommand}.md)`,
-          )
-          .join("\n")}\n`;
-        writeFileSync(path.join(cliDocsDir, `${command}.md`), mainDoc);
-
-        for (const subcommand of subcommands) {
-          const subHelp = runBinHelp(binScriptPath, ["help", subcommand]);
-          writeFileSync(
-            path.join(subcommandDir, `${subcommand}.md`),
-            wrapCliDoc(`${command} ${subcommand}`, subHelp),
-          );
-        }
-
-        console.log(`- ${command} (${subcommands.length} subcommands)`);
-      } else {
-        writeFileSync(
-          path.join(cliDocsDir, `${command}.md`),
-          wrapCliDoc(command, result),
-        );
-        console.log(`- ${command}`);
-      }
-    }
-
-    const indexMd = `# CLI Reference\n\nThis package provides commands in its package.json bin field. These are listed below:\n\n${sortedCommands
-      .map((command) => `- [${command}](./${command}.md)`)
-      .join("\n")}`;
-    writeFileSync(path.join(cliDocsDir, "index.md"), indexMd);
-    console.log("Finished generating CLI docs at ./docs/cli");
+    return;
   }
+
+  console.log("\nGenerating CLI docs...");
+  rmSync(cliDocsDir, { recursive: true, force: true });
+  mkdirSync(cliDocsDir, { recursive: true });
+
+  const sortedCommands = Object.keys(bin).sort();
+
+  for (const command of sortedCommands) {
+    const binScriptPath = path.join(packageDir, bin[command]!);
+    const result = runBinHelp(binScriptPath);
+    const subcommands = parseTopLevelCommands(result);
+
+    if (subcommands.length > 0) {
+      const subcommandDir = path.join(cliDocsDir, command);
+      mkdirSync(subcommandDir, { recursive: true });
+
+      let mainDoc = wrapCliDoc(command, result);
+      mainDoc += `\n## Subcommands\n\n${subcommands
+        .map((subcommand) => `- [${subcommand}](./${command}/${subcommand}.md)`)
+        .join("\n")}\n`;
+      writeFileSync(path.join(cliDocsDir, `${command}.md`), mainDoc);
+
+      for (const subcommand of subcommands) {
+        const subHelp = runBinHelp(binScriptPath, ["help", subcommand]);
+        writeFileSync(
+          path.join(subcommandDir, `${subcommand}.md`),
+          wrapCliDoc(`${command} ${subcommand}`, subHelp),
+        );
+      }
+
+      console.log(`- ${command} (${subcommands.length} subcommands)`);
+    } else {
+      writeFileSync(
+        path.join(cliDocsDir, `${command}.md`),
+        wrapCliDoc(command, result),
+      );
+      console.log(`- ${command}`);
+    }
+  }
+
+  const indexMd = `# CLI Reference\n\nThis package provides commands in its package.json bin field. These are listed below:\n\n${sortedCommands
+    .map((command) => `- [${command}](./${command}.md)`)
+    .join("\n")}`;
+  writeFileSync(path.join(cliDocsDir, "index.md"), indexMd);
+  console.log(
+    `Finished generating CLI docs at ${path.relative(packageDir, cliDocsDir)}`,
+  );
 }
