@@ -9,14 +9,12 @@ SAF stands for Scott's Application Framework. I've built it to:
 Guiding principles:
 
 - **Self-Contained**. A new app should run with little setup or dependencies on outside services.
-- **Feature Complete**. Includes expected modern web app features such as CI/CD, message queues, and i18n.
-- **Batteries Included**. Optional features and services are included, such as an identity service or secret storage.
+- **Feature Complete**. Includes expected modern web app features such as CI/CD, background jobs, and i18n.
+- **Batteries Included**. Optional but common features and services are included, such as secret and blob storage.
 - **Easy to Update**. When the framework introduces breaking changes, updates can happen mostly automatically.
-- **Built for AI**. Technical decisions and interfaces are always made with AI coding agents in mind.
+- **Built for AI**. Technical feature development decisions are always made with AI coding agents in mind.
 
-One thing this framework is _not_ is something meant to be adopted directly for anything mission-critical. It's a proof of concept; given how broad it is I simply don't have the time nor the resources to bring everything up to a sufficient quality bar and maintain that bar for general use. This is why none of the packages are published. At most I recommend using this framework with a prototype or hobby project, where it's okay if updating to the latest version requires some manual fixing.
-
-The one exception to this is [`@saflib/workflows`](./workflows/docs/01-overview.md). If there's a package that I do want to refine and make available for general use, it's that one. Once the interface and feature set are stable enough, it will be published.
+This framework's quality bar meets and exceeds the needs for production-grade apps which house sensitive information and risky capabilities. That being said, if anyone adopts this they should assess the framework themselves and either fork it and make desired adustments and ideally submit PRs for them.
 
 ## Documentation
 
