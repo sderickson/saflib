@@ -68,13 +68,3 @@ Set `versionControl.allowPaths` so git commits stay scoped. Nested work uses `ma
 | Agent planning      | [processes/spec-project](../processes/docs/workflows/spec-project.md)                                                                                                 |
 
 Workflow definitions are normal TypeScript — test with `runWorkflow(def, { mode: "checklist", … })` in package tests.
-
-## Regenerating docs
-
-From this package:
-
-```bash
-npm exec saf-docs generate
-```
-
-Refreshes [`docs/ref/`](./ref/index.md) and [`docs/workflows/`](./workflows/index.md).

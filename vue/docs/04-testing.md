@@ -6,7 +6,7 @@ Component testing in SAF applications should use:
 - [Vitest](https://vitest.dev/) with [JSDOM](https://github.com/jsdom/jsdom) for running tests
 - [MSW](https://mswjs.io/) for network mocking
 
-`@saflib/vue` has these as dependencies, and provides helper methods for gluing everything together.
+`@saflib/vue` has these as dependencies, and provides helper methods for gluing everything together. Node-oriented packages use [`@saflib/vitest`](../vitest/docs/01-overview.md) instead.
 
 ## Shared Test App
 

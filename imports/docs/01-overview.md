@@ -45,7 +45,7 @@ For export coverage validation, use [saf-analyze-package](../dev-tools/docs/pack
 
 Tests are an indicator of import graph issues; unit tests that pull in a great deal of the application point to hotspots.
 
-To help with this, you can run a Vitest reporter that reports the number of imports each test has. Opt-in via `IMPORT_GRAPH_REPORT=1` (wired in `@saflib/vitest` `defaultConfig`). Prints one line per test file, then a run summary and those tests with the most imports:
+To help with this, you can run a Vitest reporter that reports the number of imports each test has. Opt-in via `IMPORT_GRAPH_REPORT=1` (wired in [`@saflib/vitest`](../vitest/docs/01-overview.md#import-graph-reporter) `defaultConfig`). Prints one line per test file, then a run summary and those tests with the most imports:
 
 ```
 import-graph  routes/matters/list-importers.test.ts  modules=1071  ext=56  collect=4.98s
