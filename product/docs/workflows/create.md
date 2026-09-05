@@ -2,25 +2,41 @@
 
 ## Source
 
-[`product/bin/saf-create/index.ts`](https://github.com/sderickson/saflib/blob/main/product/bin/saf-create/index.ts)
+[`product/create/`](https://github.com/sderickson/saflib/tree/main/product/create)
+
+## Requirements
+
+- **Node.js 26+** — the CLI runs TypeScript directly via [`--experimental-strip-types`](https://nodejs.org/docs/latest-v26.x/api/cli.html#--experimental-strip-types) (no esbuild bundle).
 
 ## Usage
 
-From an empty git repository:
+saflib is a workspace monorepo — **npm/npx cannot install `product/create` as a subpath** (it pulls the whole tree and fails). Download and run the install script instead:
 
 ```bash
-npx --yes github:sderickson/saflib/saflib/product/create#main -- <name> <domain>
+curl -fsSL https://raw.githubusercontent.com/sderickson/saflib/main/product/create/saf-create.sh -o /tmp/saf-create.sh
+chmod +x /tmp/saf-create.sh
+/tmp/saf-create.sh <name> <domain> --saflib-ref main
 ```
 
-Pin a saflib release:
+Pin a branch or tag for both the script sources and the submodule:
 
 ```bash
-npx --yes github:sderickson/saflib/saflib/product/create#v2026.09.02 -- my-app example.com --saflib-ref v2026.09.02
+REF=2026-09-02-doc-updates
+curl -fsSL "https://raw.githubusercontent.com/sderickson/saflib/${REF}/product/create/saf-create.sh" -o /tmp/saf-create.sh
+chmod +x /tmp/saf-create.sh
+/tmp/saf-create.sh --create-ref "${REF}" my-app example.com --saflib-ref "${REF}"
+```
+
+Local saflib checkout (`run.ts` has a shebang with `--experimental-strip-types`):
+
+```bash
+./saflib/product/create/run.ts my-app example.com \
+  --saflib-repo ./saflib --saflib-ref HEAD
 ```
 
 ## What it does
 
-1. Verifies the directory is a git repository.
+1. Verifies the directory is a git repository (creates an empty initial commit if needed).
 2. Exits if a `saflib` submodule is already configured (use [`product/init`](./init.md) instead).
 3. Warns when `<name>/`, `deploy/`, or `.github/` already exist (pass `--force` to continue).
 4. Creates or updates root `package.json` with `"workspaces": ["saflib/**", …]`.
@@ -38,8 +54,10 @@ npx --yes github:sderickson/saflib/saflib/product/create#v2026.09.02 -- my-app e
 | `--force` | Continue when bootstrap paths already exist |
 | `--product-only` | Forward `--productOnly` to `product/init` |
 
+The install script also accepts `--create-ref <ref>` (or `SAFLIB_CREATE_REF`) to choose which GitHub ref to download TypeScript sources from (defaults to `main`).
+
 ## Help
 
 ```bash
-npx --yes github:sderickson/saflib/saflib/product/create#main -- --help
+/tmp/saf-create.sh --help
 ```

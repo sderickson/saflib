@@ -14,6 +14,20 @@ import {
   runBootstrap,
   validateProductName,
 } from "./bootstrap.ts";
+import { assertNodeVersion } from "./version.ts";
+
+import { assertNodeVersion } from "./version.ts";
+
+describe("assertNodeVersion", () => {
+  it("accepts Node 26+", () => {
+    expect(() => assertNodeVersion("26.0.0")).not.toThrow();
+    expect(() => assertNodeVersion("27.1.0")).not.toThrow();
+  });
+
+  it("rejects older Node versions", () => {
+    expect(() => assertNodeVersion("25.9.0")).toThrow(/Node\.js 26\+/);
+  });
+});
 
 describe("validateProductName", () => {
   it("accepts kebab-case names", () => {
@@ -49,7 +63,11 @@ describe("hasSaflibSubmodule", () => {
   it("detects saflib/.git", () => {
     const cwd = mkdtempSync(join(tmpdir(), "saf-create-"));
     mkdirSync(join(cwd, "saflib"), { recursive: true });
-    writeFileSync(join(cwd, "saflib", ".git"), "gitdir: ../.git/modules/saflib", "utf8");
+    writeFileSync(
+      join(cwd, "saflib", ".git"),
+      "gitdir: ../.git/modules/saflib",
+      "utf8",
+    );
     expect(hasSaflibSubmodule(cwd)).toBe(true);
   });
 });

@@ -1,9 +1,5 @@
 import { execSync } from "node:child_process";
-import {
-  existsSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   DEFAULT_DEPLOY_DIR,
@@ -47,6 +43,18 @@ export function assertInsideGitRepository(cwd: string): void {
   }
 }
 
+export function ensureInitialCommit(cwd: string): void {
+  try {
+    execSync("git rev-parse HEAD", { cwd, stdio: "pipe" });
+    return;
+  } catch {
+    execSync('git commit --allow-empty -m "chore: initialize repository"', {
+      cwd,
+      stdio: "inherit",
+    });
+  }
+}
+
 export function hasSaflibSubmodule(cwd: string): boolean {
   const gitmodulesPath = join(cwd, ".gitmodules");
   if (existsSync(gitmodulesPath)) {
@@ -60,7 +68,10 @@ export function hasSaflibSubmodule(cwd: string): boolean {
   return existsSync(saflibGitPath);
 }
 
-export function existingSaflibMessage(productName: string, domain: string): string {
+export function existingSaflibMessage(
+  productName: string,
+  domain: string,
+): string {
   return [
     "This repository already includes a saflib submodule.",
     "",
@@ -68,7 +79,7 @@ export function existingSaflibMessage(productName: string, domain: string): stri
     "",
     `  npm exec saf-workflow kickoff product/init ${productName} ${domain}`,
     "",
-    "See saflib/product/docs/workflows/init.md for details.",
+    "See saflib/product/docs/workflows/create.md for details.",
   ].join("\n");
 }
 
@@ -98,11 +109,9 @@ export function collisionPaths(
   productName: string,
   deployDir = DEFAULT_DEPLOY_DIR,
 ): string[] {
-  return [
-    join(cwd, productName),
-    join(cwd, deployDir),
-    join(cwd, ".github"),
-  ].filter((path) => existsSync(path));
+  return [join(cwd, productName), join(cwd, deployDir), join(cwd, ".github")].filter(
+    (path) => existsSync(path),
+  );
 }
 
 export function formatCollisionWarning(paths: string[], cwd: string): string {
@@ -117,7 +126,9 @@ export function formatCollisionWarning(paths: string[], cwd: string): string {
   ].join("\n");
 }
 
-export function buildRootPackageJson(organizationName: string): PackageJsonShape {
+export function buildRootPackageJson(
+  organizationName: string,
+): PackageJsonShape {
   return {
     name: `@${organizationName}/${organizationName}`,
     private: true,
@@ -185,7 +196,9 @@ export function addSaflibSubmodule(
 ): void {
   const saflibPath = join(cwd, "saflib");
   if (existsSync(saflibPath)) {
-    throw new Error("Path saflib/ already exists but is not configured as a submodule.");
+    throw new Error(
+      "Path saflib/ already exists but is not configured as a submodule.",
+    );
   }
 
   runCommand(`git submodule add ${shellQuote(repo)} saflib`, { cwd });
@@ -193,11 +206,25 @@ export function addSaflibSubmodule(
 }
 
 function defaultRunCommand(command: string, options: { cwd: string }): void {
-  execSync(command, {
-    cwd: options.cwd,
-    stdio: "inherit",
-    shell: true,
-  });
+  try {
+    execSync(command, {
+      cwd: options.cwd,
+      stdio: "inherit",
+      shell: true,
+    });
+  } catch (error) {
+    const status =
+      typeof error === "object" &&
+      error !== null &&
+      "status" in error &&
+      typeof error.status === "number"
+        ? error.status
+        : 1;
+    throw new Error(
+      `Command failed (exit ${status}): ${command}\n` +
+        "See git/npm output above for details.",
+    );
+  }
 }
 
 export function runBootstrap(options: BootstrapOptions): void {
@@ -208,6 +235,7 @@ export function runBootstrap(options: BootstrapOptions): void {
 
   validateProductName(options.productName);
   assertInsideGitRepository(cwd);
+  ensureInitialCommit(cwd);
 
   if (hasSaflibSubmodule(cwd)) {
     throw new Error(

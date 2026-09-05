@@ -7,10 +7,7 @@
   "bin": {
     "saf-create": "./run.ts"
   },
-  "dependencies": {
-    "commander": "^15.0.0"
-  },
   "engines": {
-    "node": ">=22"
+    "node": ">=26"
   }
 }

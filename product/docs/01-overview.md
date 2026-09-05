@@ -4,10 +4,12 @@
 
 ## New monorepo: `saf-create`
 
-For a **new git repository** with no saflib submodule yet, bootstrap from GitHub:
+For a **new git repository** with no saflib submodule yet (Node.js 26+):
 
 ```bash
-npx --yes github:sderickson/saflib/saflib/product/create#main -- <name> <domain>
+curl -fsSL https://raw.githubusercontent.com/sderickson/saflib/main/product/create/saf-create.sh -o /tmp/saf-create.sh
+chmod +x /tmp/saf-create.sh
+/tmp/saf-create.sh <name> <domain> --saflib-ref main
 ```
 
 See [create workflow docs](./workflows/create.md).

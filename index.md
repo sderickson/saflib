@@ -30,22 +30,34 @@ These docs are also accessible when coding with SAF by searching for their markd
 
 ### New project
 
-From an **empty git repository** (run `git init` first if needed):
+From a **git repository** (run `git init` first if needed). Requires **Node.js 26+**. saflib is an npm workspace monorepo, so install the bootstrap script with `curl` (not `npx` subpaths):
 
 ```bash
-npx --yes github:sderickson/saflib/saflib/product/create#main -- <name> <domain>
+curl -fsSL https://raw.githubusercontent.com/sderickson/saflib/main/product/create/saf-create.sh -o /tmp/saf-create.sh
+chmod +x /tmp/saf-create.sh
+/tmp/saf-create.sh <name> <domain> --saflib-ref main
 ```
 
-Example:
+Example on a feature branch:
 
 ```bash
 git init my-app && cd my-app
-npx --yes github:sderickson/saflib/saflib/product/create#main -- my-app example.com
+REF=2026-09-02-doc-updates
+curl -fsSL "https://raw.githubusercontent.com/sderickson/saflib/${REF}/product/create/saf-create.sh" -o /tmp/saf-create.sh
+chmod +x /tmp/saf-create.sh
+/tmp/saf-create.sh --create-ref "${REF}" fiddlysticks fiddlysticks.com --saflib-ref "${REF}"
 ```
 
-This adds [`saflib`](https://github.com/sderickson/saflib) as a submodule, creates the root workspace `package.json`, and runs [`product/init`](./product/docs/workflows/init.md) to copy the golden product tree.
+While developing saflib locally:
 
-Options include `--org <scope>`, `--saflib-ref <branch-or-tag>`, and `--force` (continue when `product/`, `deploy/`, or `.github/` already exist). See [`saf-create`](./product/docs/workflows/create.md).
+```bash
+./saflib/product/create/run.ts my-app example.com \
+  --saflib-repo /path/to/saflib --saflib-ref HEAD
+```
+
+This adds [`saflib`](https://github.com/sderickson/saflib) as a submodule, creates the root workspace `package.json`, and runs [`product/init`](./product/docs/workflows/init.md).
+
+Options include `--org <scope>`, `--saflib-ref <branch-or-tag>`, and `--force`. See [`saf-create`](./product/docs/workflows/create.md).
 
 If the repository **already has a saflib submodule**, use `product/init` instead:
 
