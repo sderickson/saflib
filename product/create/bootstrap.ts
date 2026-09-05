@@ -13,10 +13,8 @@ export interface BootstrapOptions {
   productName: string;
   domain: string;
   organizationName: string;
-  saflibRepo?: string;
   saflibRef?: string;
   force?: boolean;
-  productOnly?: boolean;
   runCommand?: (command: string, options: { cwd: string }) => void;
 }
 
@@ -229,7 +227,6 @@ function defaultRunCommand(command: string, options: { cwd: string }): void {
 
 export function runBootstrap(options: BootstrapOptions): void {
   const cwd = options.cwd;
-  const saflibRepo = options.saflibRepo ?? DEFAULT_SAFLIB_REPO;
   const saflibRef = options.saflibRef ?? DEFAULT_SAFLIB_REF;
   const runCommand = options.runCommand ?? defaultRunCommand;
 
@@ -249,17 +246,16 @@ export function runBootstrap(options: BootstrapOptions): void {
   }
 
   ensureRootPackageJson(cwd, options.organizationName);
-  addSaflibSubmodule(cwd, saflibRepo, saflibRef, runCommand);
+  addSaflibSubmodule(cwd, DEFAULT_SAFLIB_REPO, saflibRef, runCommand);
 
   runCommand("npm install", { cwd });
 
-  const productInitArgs = [
-    "npm exec saf-workflow kickoff product/init",
-    shellQuote(options.productName),
-    shellQuote(options.domain),
-  ];
-  if (options.productOnly) {
-    productInitArgs.push("--productOnly");
-  }
-  runCommand(productInitArgs.join(" "), { cwd });
+  runCommand(
+    [
+      "npm exec saf-workflow kickoff product/init",
+      shellQuote(options.productName),
+      shellQuote(options.domain),
+    ].join(" "),
+    { cwd },
+  );
 }

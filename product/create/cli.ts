@@ -3,7 +3,6 @@ import { runBootstrap, resolveOrganizationName } from "./bootstrap.ts";
 import {
   CREATE_SOURCE_URL,
   DEFAULT_SAFLIB_REF,
-  DEFAULT_SAFLIB_REPO,
 } from "./constants.ts";
 import { MIN_NODE_MAJOR, assertNodeVersion } from "./version.ts";
 
@@ -22,10 +21,8 @@ Arguments:
 
 Options:
   --org <name>         npm scope for @org/product packages (default: product name)
-  --saflib-repo <url>  Git URL for the saflib submodule (default: ${DEFAULT_SAFLIB_REPO})
   --saflib-ref <ref>   Branch, tag, or commit to check out in saflib (default: ${DEFAULT_SAFLIB_REF})
   --force              Continue when product/, deploy/, or .github/ already exist
-  --product-only       Pass --productOnly through to product/init
   -h, --help           Show help
 
 Install from GitHub (saflib is a monorepo — use curl, not npx subpaths):
@@ -54,10 +51,8 @@ export function main(argv: string[]): void {
     args: argv.slice(2),
     options: {
       org: { type: "string" },
-      "saflib-repo": { type: "string", default: DEFAULT_SAFLIB_REPO },
       "saflib-ref": { type: "string", default: DEFAULT_SAFLIB_REF },
       force: { type: "boolean", default: false },
-      "product-only": { type: "boolean", default: false },
       help: { type: "boolean", short: "h", default: false },
     },
     allowPositionals: true,
@@ -80,10 +75,8 @@ export function main(argv: string[]): void {
       productName: name,
       domain,
       organizationName: resolveOrganizationName(name, values.org),
-      saflibRepo: values["saflib-repo"],
       saflibRef: values["saflib-ref"],
       force: values.force,
-      productOnly: values["product-only"],
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

@@ -51,8 +51,7 @@ chmod +x /tmp/saf-create.sh
 While developing saflib locally:
 
 ```bash
-./saflib/product/create/run.ts my-app example.com \
-  --saflib-repo /path/to/saflib --saflib-ref HEAD
+./saflib/product/create/run.ts my-app example.com --saflib-ref HEAD
 ```
 
 This adds [`saflib`](https://github.com/sderickson/saflib) as a submodule, creates the root workspace `package.json`, and runs [`product/init`](./product/docs/workflows/init.md).

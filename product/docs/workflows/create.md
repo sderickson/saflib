@@ -32,8 +32,7 @@ chmod +x /tmp/saf-create.sh
 Local saflib checkout (`run.ts` has a shebang with `--experimental-strip-types`):
 
 ```bash
-./saflib/product/create/run.ts my-app example.com \
-  --saflib-repo ./saflib --saflib-ref HEAD
+./saflib/product/create/run.ts my-app example.com --saflib-ref HEAD
 ```
 
 ## What it does
@@ -51,10 +50,8 @@ Local saflib checkout (`run.ts` has a shebang with `--experimental-strip-types`)
 | Flag | Purpose |
 | --- | --- |
 | `--org <name>` | npm scope for `@org/<product>` packages (default: product name) |
-| `--saflib-repo <url>` | Git URL for the submodule (default: `https://github.com/sderickson/saflib.git`) |
 | `--saflib-ref <ref>` | Branch, tag, or commit in saflib after submodule add (default: `main`) |
 | `--force` | Continue when bootstrap paths already exist |
-| `--product-only` | Forward `--productOnly` to `product/init` |
 
 The install script uses `SAFLIB_CREATE_REF` (if set), else `--saflib-ref`, else `main` to choose which GitHub ref downloads TypeScript sources.
 
