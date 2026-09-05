@@ -35,6 +35,9 @@
       "path": "../../node"
     },
     {
+      "path": "../../utils"
+    },
+    {
       "path": "../audit-db"
     },
     {

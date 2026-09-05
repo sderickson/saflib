@@ -42,6 +42,9 @@
       "path": "../../../node"
     },
     {
+      "path": "../../../ory-kratos/ory-kratos-http"
+    },
+    {
       "path": "../../../vendors/loki"
     },
     {

@@ -25,6 +25,9 @@
   },
   "references": [
     {
+      "path": "../commander"
+    },
+    {
       "path": "../monorepo"
     },
     {

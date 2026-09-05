@@ -5,10 +5,10 @@
       "path": "../../__offshoot-name__/http"
     },
     {
-      "path": "../../../cron/cron-http"
+      "path": "../../../analytics/analytics-http"
     },
     {
-      "path": "../../../analytics/analytics-http"
+      "path": "../../../cron/cron-http"
     },
     {
       "path": "../../../email/email-service"
@@ -20,13 +20,13 @@
       "path": "../../../express"
     },
     {
-      "path": "../../../vendors/brevo"
-    },
-    {
       "path": "../../../jobs/jobs-http"
     },
     {
       "path": "../../../monorepo"
+    },
+    {
+      "path": "../../../node"
     },
     {
       "path": "../../../node-log/node-log-http"
@@ -35,7 +35,10 @@
       "path": "../../../node-metrics/node-metrics-http"
     },
     {
-      "path": "../../../node"
+      "path": "../../../utils"
+    },
+    {
+      "path": "../../../vendors/brevo"
     },
     {
       "path": "../audit"

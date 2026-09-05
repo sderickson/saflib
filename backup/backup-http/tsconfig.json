@@ -8,6 +8,9 @@
       "path": "../../monorepo"
     },
     {
+      "path": "../../utils"
+    },
+    {
       "path": "../backup-service-common"
     },
     {

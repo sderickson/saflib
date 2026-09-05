@@ -26,6 +26,9 @@
       "path": "../../parser"
     },
     {
+      "path": "../../utils"
+    },
+    {
       "path": "../dev-site-db"
     },
     {

@@ -9,6 +9,9 @@
     },
     {
       "path": "../../parser"
+    },
+    {
+      "path": "../../utils"
     }
   ],
   "compilerOptions": {

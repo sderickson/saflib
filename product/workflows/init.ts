@@ -525,6 +525,12 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(CdStepMachine, ({ context }) => ({
       path: context.originalWorkingDirectory,
     })),
+    // Product packages were copied after the first install; refresh so new
+    // workspace devDependencies (e.g. openapi-typescript on spec) are linked.
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
+    })),
     // CopyStep skips dist/; generate OpenAPI types/JSON for each saf.kind=spec package.
     step(CommandStepMachine, ({ context }) => ({
       command: "node",

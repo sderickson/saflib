@@ -157,6 +157,7 @@ export function buildRootPackageJson(
     devDependencies: {
       "@saflib/monorepo": "*",
       prettier: "*",
+      typescript: "*",
       vitest: "*",
       "vue-tsc": "*",
     },

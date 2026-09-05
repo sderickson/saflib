@@ -22,5 +22,9 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "references": []
+  "references": [
+    {
+      "path": "../commander"
+    }
+  ]
 }
