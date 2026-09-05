@@ -156,8 +156,8 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
     })),
 
     step(CommandStepMachine, () => ({
-      command: "npx",
-      args: ["tsc", "--noEmit"],
+      command: "npm",
+      args: ["exec", "tsc", "--", "--noEmit"],
     })),
 
     step(PromptStepMachine, ({ context }) => ({

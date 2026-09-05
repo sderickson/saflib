@@ -325,8 +325,8 @@ function measureSuites(
     onProgress?.(`Timing ${target.key}…`);
     const result = target.vitestPattern
       ? runTimedCommand(
-          "npx",
-          ["vitest", "run", "--", target.vitestPattern],
+          "npm",
+          ["exec", "vitest", "run", "--", target.vitestPattern],
           packageDir,
         )
       : runTimedCommand("npm", ["run", "test"], packageDir);

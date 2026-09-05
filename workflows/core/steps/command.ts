@@ -85,6 +85,13 @@ export function isScriptModeValidationCommand(
       return true;
     }
   }
+  if (
+    command === "npm" &&
+    args[0] === "exec" &&
+    args[1] === "tsc"
+  ) {
+    return true;
+  }
   if (command === "npx" && args[0] === "tsc") {
     return true;
   }

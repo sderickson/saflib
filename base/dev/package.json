@@ -12,6 +12,7 @@
     "dev-site:down": "./scripts/dev-site-compose.sh down"
   },
   "dependencies": {
+    "@saflib/dev-site-docker": "*",
     "@saflib/docker": "*"
   },
   "sideEffects": false

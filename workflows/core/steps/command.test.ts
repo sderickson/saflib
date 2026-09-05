@@ -21,6 +21,12 @@ describe("isScriptModeValidationCommand", () => {
     ).toBe(false);
   });
 
+  it("treats npm exec tsc as validation", () => {
+    expect(
+      isScriptModeValidationCommand("npm", ["exec", "tsc", "--", "--noEmit"]),
+    ).toBe(true);
+  });
+
   it("treats npx tsc as validation", () => {
     expect(isScriptModeValidationCommand("npx", ["tsc", "--noEmit"])).toBe(
       true,

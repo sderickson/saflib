@@ -96,8 +96,8 @@ export const OpenApiSchemaWorkflowDefinition = defineWorkflow<
     })),
 
     step(CommandStepMachine, () => ({
-      command: "npx",
-      args: ["tsc", "--noEmit"],
+      command: "npm",
+      args: ["exec", "tsc", "--", "--noEmit"],
     })),
   ],
 });

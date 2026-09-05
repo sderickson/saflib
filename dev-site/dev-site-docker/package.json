@@ -3,13 +3,21 @@
   "description": "Runnable Docker image for dev-site (API + SPA on one port)",
   "private": true,
   "type": "module",
+  "bin": {
+    "saf-dev-site-dockerfile": "./bin/saf-dev-site-dockerfile/index.ts"
+  },
   "scripts": {
-    "generate": "saf-docker generate"
+    "generate": "saf-docker generate",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@saflib/dev-site-docker-app": "*",
     "@saflib/dev-site-docker-http": "*",
     "@saflib/docker": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
   },
   "sideEffects": false
 }

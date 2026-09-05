@@ -15,7 +15,7 @@ export interface SafImportsSuiteTarget {
   key: string;
   /** Repo-relative package directory (cwd for the command). */
   packageDir: string;
-  /** When set, run `npx vitest run -- <pattern>` instead of `npm run test`. */
+  /** When set, run `npm exec vitest run -- <pattern>` instead of `npm run test`. */
   vitestPattern?: string;
 }
 

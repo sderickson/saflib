@@ -4,19 +4,12 @@ set -euo pipefail
 # Pre-build images in parallel before `docker compose up --build`.
 # static-root must exist before the caddy image build; monolith/clients can
 # share that wall-clock with root (same idea as deploy/local-scripts/build.sh).
-# Context is the saflib monorepo root (parent of base/).
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+# Context is the monorepo root (parent of base/ or <product>/).
+DEV_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$DEV_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
-DEV_SITE_DOCKERFILE="./dev-site/dev-site-docker/Dockerfile"
-if [ ! -f "$DEV_SITE_DOCKERFILE" ] && [ -f "./saflib/dev-site/dev-site-docker/Dockerfile" ]; then
-  DEV_SITE_DOCKERFILE="./saflib/dev-site/dev-site-docker/Dockerfile"
-fi
-
-if [ ! -f "$DEV_SITE_DOCKERFILE" ]; then
-  echo "Missing dev-site/dev-site-docker/Dockerfile. Run saf-docker generate first." >&2
-  exit 1
-fi
+DEV_SITE_DOCKERFILE="$(npm exec --prefix "$DEV_DIR" saf-dev-site-dockerfile)"
 
 export DOCKER_BUILDKIT=1
 
