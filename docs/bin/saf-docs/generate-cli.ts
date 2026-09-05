@@ -25,7 +25,9 @@ export function parseTopLevelCommands(helpText: string): string[] {
   const commands: string[] = [];
 
   for (const line of lines) {
-    const match = line.match(/^  ([a-z][\w-]*)/);
+    // Commander help lines look like `  kickoff [options] <...>` or `  status    Show...`.
+    // Wrapped examples (e.g. `  npm exec saf-workflow kickoff ...`) must not match.
+    const match = line.match(/^  ([a-z][\w-]*)(?:\s+\[|\s+<|\s{2,})/);
     if (!match) {
       if (line.includes("help [command]")) break;
       continue;

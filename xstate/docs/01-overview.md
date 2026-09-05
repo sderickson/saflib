@@ -1,21 +1,27 @@
 # Overview
 
-I'm using [XState](https://stately.ai/docs) in SAF for:
+Thin helpers around [XState](https://stately.ai/docs). The library is a **dependency of [`@saflib/workflows`](../workflows/docs/01-overview.md)** today — step machines compile to XState actors internally. Workflow authors use `defineWorkflow` / step machines, not XState APIs directly.
 
-- Developer Workflows ([`@saflib/workflows`](../workflows/docs/01-overview.md))
-- Backend Product Processes (no example in saflib yet)
+Code reference: [`docs/ref/`](./ref/index.md) (`allChildrenSettled` only, for now).
 
-I'm still figuring out the best way to use it, though. There's a lot going on in that library by itself, and getting types to do what I want with them is a bit of a challenge.
+## Current use
 
-For `@saflib/workflows`, having each workflow use the entire XState interface is fairly complex, because there's a great deal of shared boilerplate. I'll probably end up completely hiding the XState interface for developer workflows just to provide a simpler interface.
+| Area | Status |
+| ---- | ------ |
+| Developer workflows | XState runs under the hood in `@saflib/workflows`; likely to be **replaced or hidden** in a future workflow-tool iteration |
+| Backend product processes | Intended pattern (persisted snapshots, resumed by http/grpc/cron) — **no saflib example yet** |
 
-For backend processes, when one begins I set up the machine to store snapshots in a row in the database, then have a subsystem (such as http, grpc, cron, or eventually async tasks) load that machine and continue it. In this way it provides a solid way to run complex product workflows.
+This package may shrink or go away if workflows drop XState. Do not build new features on it unless you are experimenting with raw XState machines.
 
-## Future Work
+## `allChildrenSettled`
 
-I'm going to keep messing around with XState. It _does_ provide a bunch of features I like, and as I go I'll add more shared, opinionated code in this package. Some areas that could use filling in:
+[`allChildrenSettled`](./ref/functions/allChildrenSettled.md) — use with `waitFor(actor, allChildrenSettled)` when a parent machine should keep running until spawned children finish, even if the parent never reaches a terminal state.
 
-- Helpers that provide SAF context and capture metrics
-- Various variables and functions for integrating with a drizzle table which has some set of expected columns
-- Guidance and workflows for organizing a machine into multiple files
-- Guidance and workflows for testing a machine
+```typescript
+import { createActor, waitFor } from "xstate";
+import { allChildrenSettled } from "@saflib/xstate";
+
+const actor = createActor(machine);
+actor.start();
+await waitFor(actor, allChildrenSettled);
+```

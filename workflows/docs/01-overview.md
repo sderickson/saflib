@@ -1,8 +1,8 @@
 # Overview
 
-`@saflib/workflows` is the **workflow engine** for SAF — TypeScript-defined, agent-supervised routines that copy templates, run commands, prompt for edits, and validate results. Platform and product packages export workflow definitions; [`saf-workflow`](../../workflows-cli/docs/cli/saf-workflow.md) (`@saflib/workflows-cli`) registers and runs them.
+`@saflib/workflows` is the **workflow engine** for SAF — TypeScript-defined, agent-supervised routines that copy templates, run commands, prompt for edits, and validate results. Platform and product packages export workflow definitions; [`@saflib/workflows-cli`](../workflows-cli/docs/01-overview.md) registers and runs them via [`saf-workflow`](../workflows-cli/docs/cli/saf-workflow.md).
 
-Workflows use [XState](https://stately.ai/docs) internally; authors use the higher-level `defineWorkflow` / step-machine API rather than raw machines. See [@saflib/xstate](../xstate/docs/01-overview.md) for notes on backend product processes vs developer workflows.
+Workflows run on [XState](https://stately.ai/docs) internally via step machines; you do not use XState directly. See [@saflib/xstate](../xstate/docs/01-overview.md) for the thin helper package and current/planned role.
 
 Extended narrative and examples also live on [workflows.saf-demo.online](https://workflows.saf-demo.online/).
 
