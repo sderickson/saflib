@@ -101,7 +101,7 @@ describe("ensureRootPackageJson", () => {
     const cwd = mkdtempSync(join(tmpdir(), "saf-create-"));
     const pkg = ensureRootPackageJson(cwd, "acme");
     expect(pkg.name).toBe("@acme/acme");
-    expect(pkg.workspaces).toEqual(["saflib/**"]);
+    expect(pkg.workspaces).toEqual(["deploy/**", "saflib/**"]);
   });
 
   it("adds saflib/** to an existing workspace list", () => {
@@ -119,7 +119,7 @@ describe("ensureRootPackageJson", () => {
       "utf8",
     );
     const pkg = ensureRootPackageJson(cwd, "acme");
-    expect(pkg.workspaces).toEqual(["clients/*", "saflib/**"]);
+    expect(pkg.workspaces).toEqual(["clients/*", "deploy/**", "saflib/**"]);
   });
 });
 

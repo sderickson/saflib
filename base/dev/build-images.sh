@@ -8,7 +8,12 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO_ROOT"
 
-if [ ! -f ./dev-site/dev-site-docker/Dockerfile ]; then
+DEV_SITE_DOCKERFILE="./dev-site/dev-site-docker/Dockerfile"
+if [ ! -f "$DEV_SITE_DOCKERFILE" ] && [ -f "./saflib/dev-site/dev-site-docker/Dockerfile" ]; then
+  DEV_SITE_DOCKERFILE="./saflib/dev-site/dev-site-docker/Dockerfile"
+fi
+
+if [ ! -f "$DEV_SITE_DOCKERFILE" ]; then
   echo "Missing dev-site/dev-site-docker/Dockerfile. Run saf-docker generate first." >&2
   exit 1
 fi
@@ -57,7 +62,7 @@ docker_build ./base/clients/build/Dockerfile \
   -t saflib-base-clients:latest &
 pids+=($!)
 
-docker_build ./dev-site/dev-site-docker/Dockerfile \
+docker_build "$DEV_SITE_DOCKERFILE" \
   -t saflib-dev-site:latest &
 pids+=($!)
 

@@ -318,11 +318,15 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   steps: [
     step(TransformFileStepMachine, ({ context }) => ({
       filePath: path.join(context.cwd, "package.json"),
-      description: `Add ${context.productName}/** to workspaces in package.json`,
+      description: `Add ${context.productName}/** and deploy workspaces in package.json`,
       transform: (content: string) => {
         const pkg = JSON.parse(content);
         const workspaces = Array.from(
-          new Set([...pkg.workspaces, `${context.productName}/**`]),
+          new Set([
+            ...pkg.workspaces,
+            `${context.productName}/**`,
+            `${getDeployDirName()}/**`,
+          ]),
         );
         workspaces.sort();
         pkg.workspaces = workspaces;
@@ -389,6 +393,17 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       }),
       { skipIf: ({ context }) => context.productOnly },
     ),
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(context.cwd, "vitest.config.ts"),
+      description: `Add ${context.productName} vitest projects to root vitest.config.ts`,
+      transform: (content: string) => {
+        const projectLine = `      "${context.productName}/**/vitest.config.{ts,js,mts,mjs}",`;
+        return content.replace(
+          /\/\/ BEGIN WORKFLOW AREA test-product-dependencies FOR product\/init\n([\s\S]*?)\/\/ END WORKFLOW AREA/,
+          `// BEGIN WORKFLOW AREA test-product-dependencies FOR product/init\n${projectLine}\n      // END WORKFLOW AREA`,
+        );
+      },
+    }), { skipIf: ({ context }) => !existsSync(path.join(context.cwd, "vitest.config.ts")) }),
     // Golden product compose mounts the whole saflib root; rewrite for product-beside-saflib.
     step(TransformFileStepMachine, ({ context }) => ({
       filePath: path.join(

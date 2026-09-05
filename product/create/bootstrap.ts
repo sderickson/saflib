@@ -141,9 +141,27 @@ export function buildRootPackageJson(
     private: true,
     description: "SAF monorepo",
     type: "module",
-    workspaces: ["saflib/**"],
+    scripts: {
+      test: "vitest run",
+      "test:watch": "vitest",
+      "test:coverage": "npm run test:coverage --workspaces --if-present",
+      lint: "eslint .",
+      "lint:fix": "eslint --fix .",
+      format: "prettier --write .",
+      typecheck: "NODE_OPTIONS='--max-old-space-size=8192' vue-tsc -b",
+    },
+    workspaces: ["deploy/**", "saflib/**"],
     engines: {
       node: ">=22",
+    },
+    devDependencies: {
+      "@saflib/monorepo": "*",
+      prettier: "*",
+      vitest: "*",
+      "vue-tsc": "*",
+    },
+    overrides: {
+      "better-sqlite3": "12.11.1",
     },
   };
 }
@@ -180,7 +198,7 @@ export function ensureRootPackageJson(
   }
 
   const workspaces = Array.from(
-    new Set([...(existing.workspaces ?? []), "saflib/**"]),
+    new Set([...(existing.workspaces ?? []), "deploy/**", "saflib/**"]),
   ).sort();
 
   const updated = {
