@@ -311,9 +311,9 @@ The job name and settings to update.
 
 Set whether the job is enabled.
 
-##### put.requestBody.content.application/json.job_name
+##### put.requestBody.content.application/json.job\_name
 
-> **job_name**: `string`
+> **job\_name**: `string`
 
 ###### Description
 
@@ -339,9 +339,9 @@ Job settings updated successfully.
 
 > **application/json**: `object`
 
-##### put.responses.200.content.application/json.created_at?
+##### put.responses.200.content.application/json.created\_at?
 
-> `readonly` `optional` **created_at**: `string`
+> `readonly` `optional` **created\_at**: `string`
 
 Format: date-time
 
@@ -357,9 +357,9 @@ Timestamp when the job setting was created.
 
 Whether the job is enabled to run.
 
-##### put.responses.200.content.application/json.enabled_by?
+##### put.responses.200.content.application/json.enabled\_by?
 
-> `optional` **enabled_by**: `null` \| `string`
+> `optional` **enabled\_by**: `null` \| `string`
 
 ###### Description
 
@@ -373,17 +373,17 @@ Kratos identity id of the admin who last enabled the job. Null for pre-migration
 
 Unique identifier for the job setting.
 
-##### put.responses.200.content.application/json.job_name
+##### put.responses.200.content.application/json.job\_name
 
-> **job_name**: `string`
+> **job\_name**: `string`
 
 ###### Description
 
 The unique name of the cron job.
 
-##### put.responses.200.content.application/json.last_run_at?
+##### put.responses.200.content.application/json.last\_run\_at?
 
-> `optional` **last_run_at**: `null` \| `string`
+> `optional` **last\_run\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -391,17 +391,17 @@ Format: date-time
 
 Timestamp of the last time the job ran.
 
-##### put.responses.200.content.application/json.last_run_status?
+##### put.responses.200.content.application/json.last\_run\_status?
 
-> `optional` **last_run_status**: `null` \| `"success"` \| `"fail"` \| `"running"` \| `"timed out"`
+> `optional` **last\_run\_status**: `null` \| `"success"` \| `"fail"` \| `"running"` \| `"timed out"`
 
 ###### Description
 
 Status of the last job run.
 
-##### put.responses.200.content.application/json.runs_next_at?
+##### put.responses.200.content.application/json.runs\_next\_at?
 
-> `readonly` `optional` **runs_next_at**: `null` \| `string`
+> `readonly` `optional` **runs\_next\_at**: `null` \| `string`
 
 Format: date-time
 
@@ -417,9 +417,9 @@ Next scheduled tick when the job is enabled; null when disabled or schedule is u
 
 Cron schedule string from the registered JobsMap (e.g. `*/15 * * * *`).
 
-##### put.responses.200.content.application/json.updated_at?
+##### put.responses.200.content.application/json.updated\_at?
 
-> `readonly` `optional` **updated_at**: `string`
+> `readonly` `optional` **updated\_at**: `string`
 
 Format: date-time
 

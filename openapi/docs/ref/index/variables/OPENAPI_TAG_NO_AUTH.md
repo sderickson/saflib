@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: OPENAPI_TAG_NO_AUTH
+# Variable: OPENAPI\_TAG\_NO\_AUTH
 
-> `const` **OPENAPI_TAG_NO_AUTH**: `"no-auth"`
+> `const` **OPENAPI\_TAG\_NO\_AUTH**: `"no-auth"`

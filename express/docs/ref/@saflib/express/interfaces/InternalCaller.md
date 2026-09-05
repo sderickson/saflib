@@ -4,7 +4,7 @@
 
 # Interface: InternalCaller()
 
-> **InternalCaller**(`input`): `Promise`\<`Response`\>
+> **InternalCaller**(`input`): `Promise`\<`Response`>\>
 
 ## Parameters
 
@@ -20,7 +20,7 @@
 
 ### close()
 
-> **close**: () => `Promise`\<`void`\>
+> **close**: () => `Promise`\<`void`>\>
 
 Closes the underlying undici Agent (drains keep-alive sockets). Call in test teardown or when retiring the caller.
 

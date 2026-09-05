@@ -20,7 +20,7 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Upsert 16 templates.
+- Upsert 8 templates.
 - Change working directory to service/cron
 - Run `npm install`
 

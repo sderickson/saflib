@@ -10,13 +10,13 @@
 
 ### contexts?
 
-> `optional` **contexts**: `Record`\<`string`, `unknown`\>
+> `optional` **contexts**: `Record`\<`string`, `unknown`>\>
 
 ---
 
 ### extra?
 
-> `optional` **extra**: `Record`\<`string`, `unknown`\>
+> `optional` **extra**: `Record`\<`string`, `unknown`>\>
 
 ---
 

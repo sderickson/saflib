@@ -4,8 +4,8 @@
 
 # index
 
-## Variables
+## Classes
 
-| Variable                                              | Description |
-| ----------------------------------------------------- | ----------- |
-| [ProductEventsAsync](variables/ProductEventsAsync.md) | -           |
+| Class                                               | Description |
+| --------------------------------------------------- | ----------- |
+| [ProductEventsAsync](classes/ProductEventsAsync.md) | -           |

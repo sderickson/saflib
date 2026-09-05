@@ -6,9 +6,10 @@
 
 ## Interfaces
 
-| Interface                                              | Description |
-| ------------------------------------------------------ | ----------- |
-| [UsedByImporterUnit](interfaces/UsedByImporterUnit.md) | -           |
+| Interface                                                    | Description                                                                                                                   |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| [AssembleUsedByOptions](interfaces/AssembleUsedByOptions.md) | Reverse-index of non-test importers for each export in a package. Pure — no FS / git / DB. Key: `${filePath}\0${exportName}`. |
+| [UsedByImporterUnit](interfaces/UsedByImporterUnit.md)       | -                                                                                                                             |
 
 ## Type Aliases
 
@@ -19,6 +20,6 @@
 
 ## Functions
 
-| Function                                      | Description                                                                                                                   |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [assembleUsedBy](functions/assembleUsedBy.md) | Reverse-index of non-test importers for each export in a package. Pure — no FS / git / DB. Key: `${filePath}\0${exportName}`. |
+| Function                                      | Description |
+| --------------------------------------------- | ----------- |
+| [assembleUsedBy](functions/assembleUsedBy.md) | -           |

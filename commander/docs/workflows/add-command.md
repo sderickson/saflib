@@ -22,7 +22,7 @@ When run, the workflow will:
 
 - Upsert 2 templates.
 - Update **example-command.ts**
-- Register the command in **index.ts** (workflow areas from the base template).
+- Test the command was added correctly by running:
 - Run `npm install @saflib/docs --save-dev`
 - Run `npm exec saf-docs generate`
 

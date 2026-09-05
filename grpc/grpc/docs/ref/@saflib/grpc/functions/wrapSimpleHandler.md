@@ -4,7 +4,7 @@
 
 # Function: wrapSimpleHandler()
 
-> **wrapSimpleHandler**\<`Request`, `Response`\>(`handler`): (`call`, `callback`) => `Promise`\<`void`\>
+> **wrapSimpleHandler**\<`Request`, `Response`>\>(`handler`): (`call`, `callback`) => `Promise`\<`void`>\>
 
 ## Type Parameters
 
@@ -21,7 +21,7 @@
 
 ## Returns
 
-> (`call`, `callback`): `Promise`\<`void`\>
+> (`call`, `callback`): `Promise`\<`void`>\>
 
 ### Parameters
 

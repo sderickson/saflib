@@ -4,6 +4,6 @@
 
 # Type Alias: EmailResponseBody
 
-> **EmailResponseBody** = `ExtractResponseBody`\<`operations`\>
+> **EmailResponseBody** = `ExtractResponseBody`\<`operations`>\>
 
 For typing Express responses for email API routes.

@@ -4,7 +4,7 @@
 
 # Function: makeAdminHeaders()
 
-> **makeAdminHeaders**(`userId`, `email`): `Record`\<`string`, `string`\>
+> **makeAdminHeaders**(`userId`, `email`): `Record`\<`string`, `string`>\>
 
 ## Parameters
 

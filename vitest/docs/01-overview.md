@@ -2,7 +2,7 @@
 
 `@saflib/vitest` provides a **shared Vitest preset** for Node-oriented SAF libraries and HTTP services — default config, global test setup, and optional import-graph reporting.
 
-**Vue SPAs** use [`@saflib/vue`](../vue/docs/04-testing.md) instead (`@saflib/vue/vitest-config` — jsdom, Vuetify, MSW-friendly timeouts, SPA coverage rules). This package targets packages that run tests in the **Node** environment.
+**Vue SPAs** use [`@saflib/vue`](../../vue/docs/04-testing.md) instead (`@saflib/vue/vitest-config` — jsdom, Vuetify, MSW-friendly timeouts, SPA coverage rules). This package targets packages that run tests in the **Node** environment.
 
 Code reference: [`docs/ref/`](./ref/index.md) · CLI: [`test-coverage`](./cli/test-coverage.md).
 
@@ -21,11 +21,11 @@ Golden examples: [`utils/vitest.config.js`](../../utils/vitest.config.js), [`ope
 
 ## Exports
 
-| Export                                    | Role                                                                                                                                                  |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@saflib/vitest/vitest.config.js`         | [`defaultConfig`](../../vitest/base-vitest.config.js) — shared Vitest + V8 coverage defaults                                                          |
-| `@saflib/vitest/import-graph-reporter.js` | [`importGraphReporters()`](../../vitest/import-graph-reporter.js) — opt-in [@saflib/imports](../imports/docs/01-overview.md#vitest-reporter) reporter |
-| `@saflib/vitest/local-storage-stub`       | [`installLocalStorageStub()`](./ref/functions/installLocalStorageStub.md) — in-memory `localStorage` for suites that touch browser storage APIs       |
+| Export                                    | Role                                                                                                                                                     |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@saflib/vitest/vitest.config.js`         | [`defaultConfig`](../../vitest/base-vitest.config.js) — shared Vitest + V8 coverage defaults                                                             |
+| `@saflib/vitest/import-graph-reporter.js` | [`importGraphReporters()`](../../vitest/import-graph-reporter.js) — opt-in [@saflib/imports](../../imports/docs/01-overview.md#vitest-reporter) reporter |
+| `@saflib/vitest/local-storage-stub`       | [`installLocalStorageStub()`](./ref/functions/installLocalStorageStub.md) — in-memory `localStorage` for suites that touch browser storage APIs          |
 
 ## `defaultConfig` defaults
 
@@ -49,11 +49,11 @@ Applied via [`base-vitest.config.js`](../../vitest/base-vitest.config.js):
 Every package using `defaultConfig` gets:
 
 1. **`installLocalStorageStub()`** — silences Node 22+ experimental webstorage warnings when code reads `localStorage`.
-2. **`addErrorCollector(() => {})`** from [`@saflib/node`](../node/docs/01-overview.md) — suppresses expected error stacks from `defaultErrorReporter` / `queryWrapper` during tests. Suites that assert on logging can register their own collector afterward.
+2. **`addErrorCollector(() => {})`** from [`@saflib/node`](../../node/docs/01-overview.md) — suppresses expected error stacks from `defaultErrorReporter` / `queryWrapper` during tests. Suites that assert on logging can register their own collector afterward.
 
 ## Import graph reporter
 
-When `IMPORT_GRAPH_REPORT=1`, `defaultConfig` adds the [@saflib/imports](../imports/docs/01-overview.md#vitest-reporter) Vitest reporter. Use it to find tests with large static import graphs (slow **collect** times, accidental app pulls).
+When `IMPORT_GRAPH_REPORT=1`, `defaultConfig` adds the [@saflib/imports](../../imports/docs/01-overview.md#vitest-reporter) Vitest reporter. Use it to find tests with large static import graphs (slow **collect** times, accidental app pulls).
 
 ```bash
 IMPORT_GRAPH_REPORT=1 npm run test

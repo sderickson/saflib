@@ -6,7 +6,7 @@
 
 ## Call Signature
 
-> **useResolvedHref**(`link`, `options?`): `Ref`\<`string`>>\>
+> **useResolvedHref**(`link`, `options?`): `Ref`\<`string`>\>
 
 Resolves a multi-subdomain href for use in prerendered (SSG) Vue pages.
 
@@ -32,7 +32,7 @@ hydration would otherwise leave stale `href` attributes.
 
 ## Call Signature
 
-> **useResolvedHref**(`resolve`): `Ref`\<`string`>>\>
+> **useResolvedHref**(`resolve`): `Ref`\<`string`>\>
 
 Resolves a multi-subdomain href for use in prerendered (SSG) Vue pages.
 

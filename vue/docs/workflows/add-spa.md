@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-spa.ts](../../workflows/add-spa.ts)
+[add-spa.ts](https://github.com/sderickson/saflib/blob/main/vue/workflows/add-spa.ts)
 
 ## Usage
 
@@ -20,8 +20,8 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Upsert 40 templates.
-- Upsert 41 templates.
+- Upsert 20 templates.
+- Upsert 21 templates.
 - Add admin to CLIENT_SUBDOMAINS in product-name/dev/env.dev
 - Add admin to CLIENT_SUBDOMAINS in deploy/env.product-name.prod-local
 - Change working directory to product-name/clients/admin

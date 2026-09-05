@@ -16,7 +16,7 @@ Committed metrics snapshot shape.
 
 ### entries
 
-> **entries**: `Record`\<`string`, [`SnapshotGraphStats`](SnapshotGraphStats.md)\>
+> **entries**: `Record`\<`string`, [`SnapshotGraphStats`](SnapshotGraphStats.md)>\>
 
 ---
 
@@ -34,7 +34,7 @@ Committed metrics snapshot shape.
 
 ### suites
 
-> **suites**: `Record`\<`string`, [`SnapshotSuiteTiming`](SnapshotSuiteTiming.md)\>
+> **suites**: `Record`\<`string`, [`SnapshotSuiteTiming`](SnapshotSuiteTiming.md)>\>
 
 ---
 
@@ -46,7 +46,7 @@ Committed metrics snapshot shape.
 
 ### tests
 
-> **tests**: `Record`\<`string`, [`SnapshotGraphStats`](SnapshotGraphStats.md)\>
+> **tests**: `Record`\<`string`, [`SnapshotGraphStats`](SnapshotGraphStats.md)>\>
 
 ---
 

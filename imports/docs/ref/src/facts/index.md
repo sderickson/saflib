@@ -6,7 +6,7 @@
 
 ## References
 
-### ANALYZER_VERSION
+### ANALYZER\_VERSION
 
 Re-exports [ANALYZER_VERSION](../../index/variables/ANALYZER_VERSION.md)
 

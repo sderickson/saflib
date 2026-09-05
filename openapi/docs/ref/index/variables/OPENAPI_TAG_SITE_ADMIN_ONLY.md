@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: OPENAPI_TAG_SITE_ADMIN_ONLY
+# Variable: OPENAPI\_TAG\_SITE\_ADMIN\_ONLY
 
-> `const` **OPENAPI_TAG_SITE_ADMIN_ONLY**: `"site-admin-only"`
+> `const` **OPENAPI\_TAG\_SITE\_ADMIN\_ONLY**: `"site-admin-only"`

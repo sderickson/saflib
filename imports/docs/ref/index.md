@@ -10,7 +10,6 @@
 | --------------------------------------------------------------------- | ----------- |
 | [index](index/index.md)                                               | -           |
 | [reporter](reporter/index.md)                                         | -           |
-| [src/exports/generate-exports](src/exports/generate-exports/index.md) | -           |
 | [src/facts](src/facts/index.md)                                       | -           |
 | [src/graph/assemble-used-by](src/graph/assemble-used-by/index.md)     | -           |
 | [src/graph/detect-cycles](src/graph/detect-cycles/index.md)           | -           |

@@ -49,7 +49,7 @@ Packages should only return instances of Errors they define. Propagating downstr
 
 **Example applications:**
 
-- `@saflib/utils` provides a [`ReturnsError`](./utils/docs/ref/index/type-aliases/ReturnsError.md) type for such functions, and a [`throwError`](./utils/docs/ref/index/functions/throwError.md) helper function.
+- `@saflib/utils` provides a `ReturnsError` type for such functions, and a `throwError` helper function (`@saflib/utils/returns-error`).
 - `@saflib/drizzle`'s [query template](https://github.com/sderickson/saflib/blob/c5f310d2faa42bc84dd5530966d26f63c8086431/drizzle/workflows/query-template/template-file.ts) uses `ReturnsError`, and `@saflib/express`'s [route template](https://github.com/sderickson/saflib/blob/c5f310d2faa42bc84dd5530966d26f63c8086431/express/workflows/route-template/route-template.ts#L18-L26) demonstrates how to use it.
 
 ## Keep Files Small
@@ -102,7 +102,7 @@ For serialized data, prefer flattened data stuctures with identifiers for relate
 **Example applications:**
 
 - `@saflib/links` provides [a simple structure](./links/docs/ref/type-aliases/Link.md) and some [methods](./links/docs/ref/index.md#functions) for sharing and using links to specific pages between packages.
-- `@saflib/utils` provides an [interface](./utils/docs/ref/interfaces/ElementStringObject.md) for objects with textual HTML element properties which can be easily `v-bind`ed in a Vue template, and located by [Playwright](./playwright/docs/ref/@saflib/playwright/functions/getByString.md).
+- `@saflib/utils` provides an [interface](./utils/docs/ref/index/interfaces/ElementStringObject.md) for objects with textual HTML element properties which can be easily `v-bind`ed in a Vue template, and located by [Playwright](./playwright/docs/ref/functions/getByString.md).
 
 ## Build and Maintain Fakes and Adapters for Service Boundaries
 

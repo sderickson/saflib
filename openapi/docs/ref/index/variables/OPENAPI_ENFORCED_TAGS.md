@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: OPENAPI_ENFORCED_TAGS
+# Variable: OPENAPI\_ENFORCED\_TAGS
 
-> `const` **OPENAPI_ENFORCED_TAGS**: readonly \[`"no-auth"`, `"csrf-exempt"`, `"email-verified"`, `"mfa-required"`, `"site-admin-only"`, `"background"`\]
+> `const` **OPENAPI\_ENFORCED\_TAGS**: readonly \[`"no-auth"`, `"csrf-exempt"`, `"email-verified"`, `"mfa-required"`, `"site-admin-only"`, `"background"`\]

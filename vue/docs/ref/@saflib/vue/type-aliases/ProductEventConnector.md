@@ -4,7 +4,7 @@
 
 # Type Alias: ProductEventConnector()\<T\>
 
-> **ProductEventConnector**\<`T`> > \> = (`event`) => `void` \| `Promise`\<`void`>>\>
+> **ProductEventConnector**\<`T`> \> = (`event`) => `void` \| `Promise`\<`void`>\>
 
 ## Type Parameters
 

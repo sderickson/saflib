@@ -2,8 +2,8 @@
 
 ---
 
-# Variable: TELEMETRY_SENSITIVE_COOKIE_NAMES
+# Variable: TELEMETRY\_SENSITIVE\_COOKIE\_NAMES
 
-> `const` **TELEMETRY_SENSITIVE_COOKIE_NAMES**: `Set`\<`string`\>
+> `const` **TELEMETRY\_SENSITIVE\_COOKIE\_NAMES**: `Set`\<`string`>\>
 
 Cookie names that must never be sent to external telemetry vendors.

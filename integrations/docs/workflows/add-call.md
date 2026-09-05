@@ -20,10 +20,8 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow integrations/add-call
-
 - Upsert 4 templates.
-- Implement the **example-call** call in **/Users/scotterickson/src/saf-2025/saflib/calls/example-call.ts**.
+- Implement the **example-call** call in **/Users/scott/src/saf-2025/saflib/analytics/analytics-http/calls/example-call.ts**.
 - Update the bin script to call the implementation with appropriate test arguments. The script should demonstrate a realistic invocation so you can verify the call works end-to-end with `npm run <script-name>`.
 - Add "example-call" script to package.json
 - Run `npm run typecheck`

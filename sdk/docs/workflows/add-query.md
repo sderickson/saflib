@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-query.ts](../../workflows/add-query.ts)
+[add-query.ts](https://github.com/sderickson/saflib/blob/main/sdk/workflows/add-query.ts)
 
 ## Usage
 
@@ -40,4 +40,5 @@ Arguments:
               Example: "/example"
   method      The HTTP method in lowercase (e.g., 'get', 'post', 'put', 'delete')
               Example: "get"
+
 ```

@@ -14,9 +14,7 @@
   "compilerOptions": {
     "outDir": "./dist/types",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "noEmit": false,
     "emitDeclarationOnly": true,
     "rootDir": "."
@@ -32,7 +30,5 @@
     "**/workflows/template/**",
     "**/workflows/templates/**"
   ],
-  "include": [
-    "**/*.ts"
-  ]
+  "include": ["**/*.ts"]
 }

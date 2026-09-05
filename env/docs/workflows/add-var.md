@@ -20,9 +20,7 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow env/add-var
-
-- Upsert 1 templates.
+- Upsert 1 template.
 - Add the environment variable 'EXAMPLE_ENV_VAR' to the env.schema.json file.
 - Run `npm install @saflib/env`
 - Run `npm exec saf-env generate`

@@ -14,10 +14,15 @@
 | [findMonorepoRoot](functions/findMonorepoRoot.md)                 | Walk up from `fromDir` until a package.json with a `workspaces` field is found.                                                                          |
 | [resolvePackageExportPath](functions/resolvePackageExportPath.md) | Resolve a package export subpath to an absolute file path (no extension probing).                                                                        |
 | [resolveSpecifier](functions/resolveSpecifier.md)                 | Resolve an import specifier relative to `fromFile` against the package index. Returns a workspace file, an external root, or null (unresolved relative). |
-| [sortExportPatternKeys](functions/sortExportPatternKeys.md)       | Prefer longer (more specific) pattern keys, matching Node's best-match preference.                                                                       |
 
 ## References
 
 ### matchExportPattern
 
 Re-exports [matchExportPattern](../../index/functions/matchExportPattern.md)
+
+---
+
+### sortExportPatternKeys
+
+Re-exports [sortExportPatternKeys](../../index/functions/sortExportPatternKeys.md)

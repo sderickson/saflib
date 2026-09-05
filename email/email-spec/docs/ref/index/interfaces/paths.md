@@ -95,17 +95,17 @@ Receive email dispatch from Ory Kratos HTTP courier
 
 > **recipient**: `string`
 
-##### post.requestBody.content.application/json.template_data?
+##### post.requestBody.content.application/json.template\_data?
 
-> `optional` **template_data**: `object`
+> `optional` **template\_data**: `object`
 
 ###### Index Signature
 
 \[`key`: `string`\]: `unknown`
 
-##### post.requestBody.content.application/json.template_type
+##### post.requestBody.content.application/json.template\_type
 
-> **template_type**: `string`
+> **template\_type**: `string`
 
 ##### post.responses
 
@@ -221,9 +221,9 @@ List all sent emails
 
 > `optional` **query**: `object`
 
-##### get.parameters.query.user_email?
+##### get.parameters.query.user\_email?
 
-> `optional` **user_email**: `string`
+> `optional` **user\_email**: `string`
 
 ###### Description
 

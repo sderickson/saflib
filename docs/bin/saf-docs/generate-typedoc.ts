@@ -1,6 +1,14 @@
 import { execSync } from "node:child_process";
 import { type MonorepoContext } from "@saflib/monorepo/workspace";
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+} from "node:fs";
 import { join } from "node:path";
 import {
   buildVueTypedocEntryPoints,
@@ -13,6 +21,33 @@ import {
 export interface GenerateTypeDocOptions {
   monorepoContext: MonorepoContext;
   packageName: string;
+}
+
+// VitePress skips markdown under docs/ref/dist; relocate spec ref output to modules/.
+function relocateDistRefDocs(packageDir: string) {
+  const refDist = join(packageDir, "docs/ref/dist");
+  const refModules = join(packageDir, "docs/ref/modules");
+  if (!existsSync(refDist)) return;
+
+  rmSync(refModules, { recursive: true, force: true });
+  renameSync(refDist, refModules);
+
+  const rewriteLinks = (filePath: string) => {
+    let content = readFileSync(filePath, "utf-8");
+    const updated = content.replaceAll("dist/", "modules/");
+    if (updated !== content) writeFileSync(filePath, updated);
+  };
+
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith(".md")) rewriteLinks(full);
+    }
+  };
+
+  rewriteLinks(join(packageDir, "docs/ref/index.md"));
+  walk(refModules);
 }
 
 export function generateTypeDoc(options: GenerateTypeDocOptions) {
@@ -34,8 +69,20 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
   }
 
   const vuePackage = isVuePackage(currentPackageDir, currentPackageJson);
+  const declarationOutDir = getDeclarationOutDir(currentPackageDir);
+  let vueDeclarationEntryPoints: string[] = [];
+
   if (vuePackage) {
     emitVueDeclarations(currentPackageDir, currentPackageJson);
+    vueDeclarationEntryPoints = buildVueTypedocEntryPoints(
+      currentPackageDir,
+      declarationOutDir,
+    );
+    if (!vueDeclarationEntryPoints.length) {
+      throw new Error(
+        `No Vue declaration entry points found in ${packageName}. Run vue-tsc first.`,
+      );
+    }
   }
 
   let entrypointCommands = entrypointValues
@@ -52,16 +99,7 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
   const typedoc = `${currentPackageDir}/typedoc.json`;
   const hasPackageTypedoc = existsSync(typedoc);
   if (vuePackage) {
-    const declarationEntryPoints = buildVueTypedocEntryPoints(
-      currentPackageDir,
-      getDeclarationOutDir(currentPackageDir),
-    );
-    if (!declarationEntryPoints.length) {
-      throw new Error(
-        `No Vue declaration entry points found in ${packageName}. Run vue-tsc first.`,
-      );
-    }
-    entrypointCommands = declarationEntryPoints.map(
+    entrypointCommands = vueDeclarationEntryPoints.map(
       (entrypoint) => `--entryPoints ${entrypoint}`,
     );
   } else if (hasPackageTypedoc) {
@@ -84,7 +122,14 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     : existsSync(join(packageDir, "tsconfig.json"))
       ? "./tsconfig.json"
       : null;
-  if (tsconfigBase && !hasPackageTypedoc && !vuePackage) {
+  if (vuePackage) {
+    writeVueTypedocTsconfig(
+      packageDir,
+      declarationOutDir,
+      vueDeclarationEntryPoints,
+    );
+    wroteTypedocTsconfig = true;
+  } else if (tsconfigBase && !hasPackageTypedoc) {
     writeFileSync(
       typedocTsconfigPath,
       JSON.stringify(
@@ -109,9 +154,6 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
         2,
       ),
     );
-    wroteTypedocTsconfig = true;
-  } else if (vuePackage && !hasPackageTypedoc) {
-    writeVueTypedocTsconfig(packageDir, getDeclarationOutDir(packageDir));
     wroteTypedocTsconfig = true;
   }
 
@@ -170,6 +212,7 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
       stdio: "inherit",
       cwd: packageDir,
     });
+    relocateDistRefDocs(packageDir);
   } catch (e) {
     console.error("Failed to generate docs. Fix warnings above.");
     process.exit(1);

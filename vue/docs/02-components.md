@@ -45,7 +45,7 @@ There are very good reasons to break down every view into several files! Each fi
 
 ### Async Component: Code Splitting, Loading/Error States
 
-_[Template file](../workflows/template/__subdomain-name__/__group-name__/__TargetName__Async.vue)_
+_[Template file](https://github.com/sderickson/saflib/blob/main/vue/workflows/template/__subdomain-name__/__group-name__/__TargetName__Async.vue)_
 
 By default, SAF SPAs will split out every page. This is controlled by the `Async` vue component, which will normally look like this:
 
@@ -106,7 +106,7 @@ If you find yourself needing a data-dependent number of queries, that's a signal
 
 ### Component: Rendering
 
-_[Template file](../workflows/template/__subdomain-name__/__group-name__/__TargetName__.vue)_
+_[Template file](https://github.com/sderickson/saflib/blob/main/vue/workflows/template/__subdomain-name__/__group-name__/__TargetName__.vue)_
 
 Because the async component ensures the page component doesn't render until the data is fetched, the page component can assume the data is available and render it. It doesn't need to worry about checking for errors or handling loading states, and can instead focus on the happy path.
 

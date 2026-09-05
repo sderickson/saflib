@@ -12,17 +12,21 @@
 
 ## Interfaces
 
-| Interface                                                      | Description                                                                                                         |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| [FactStore](interfaces/FactStore.md)                           | -                                                                                                                   |
-| [FileExportFact](interfaces/FileExportFact.md)                 | -                                                                                                                   |
-| [FileFact](interfaces/FileFact.md)                             | Content-addressed parse result for one file. `contentKey` is a git blob hash (Spec) or content hash (workdir / CI). |
-| [FileImportFact](interfaces/FileImportFact.md)                 | -                                                                                                                   |
-| [FileTableColumnFact](interfaces/FileTableColumnFact.md)       | -                                                                                                                   |
-| [FileTableFact](interfaces/FileTableFact.md)                   | -                                                                                                                   |
-| [FileTestCaseFact](interfaces/FileTestCaseFact.md)             | -                                                                                                                   |
-| [PackageDetailForIssues](interfaces/PackageDetailForIssues.md) | -                                                                                                                   |
-| [PackageIssue](interfaces/PackageIssue.md)                     | -                                                                                                                   |
+| Interface                                                                | Description                                                                                                         |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| [FactStore](interfaces/FactStore.md)                                     | -                                                                                                                   |
+| [FileExportFact](interfaces/FileExportFact.md)                           | -                                                                                                                   |
+| [FileFact](interfaces/FileFact.md)                                       | Content-addressed parse result for one file. `contentKey` is a git blob hash (Spec) or content hash (workdir / CI). |
+| [FileImportFact](interfaces/FileImportFact.md)                           | -                                                                                                                   |
+| [FileTableColumnFact](interfaces/FileTableColumnFact.md)                 | -                                                                                                                   |
+| [FileTableFact](interfaces/FileTableFact.md)                             | -                                                                                                                   |
+| [FileTestCaseFact](interfaces/FileTestCaseFact.md)                       | -                                                                                                                   |
+| [PackageDetailForIssues](interfaces/PackageDetailForIssues.md)           | -                                                                                                                   |
+| [PackageIssue](interfaces/PackageIssue.md)                               | -                                                                                                                   |
+| [WorkdirAnalyzeOptions](interfaces/WorkdirAnalyzeOptions.md)             | -                                                                                                                   |
+| [WorkdirAnalyzeResult](interfaces/WorkdirAnalyzeResult.md)               | -                                                                                                                   |
+| [WorkdirGraphContext](interfaces/WorkdirGraphContext.md)                 | -                                                                                                                   |
+| [WorkdirPackageAnalyzeResult](interfaces/WorkdirPackageAnalyzeResult.md) | -                                                                                                                   |
 
 ## Type Aliases
 
@@ -34,24 +38,35 @@
 
 ## Variables
 
-| Variable                                          | Description                                                  |
-| ------------------------------------------------- | ------------------------------------------------------------ |
-| [ANALYZER_VERSION](variables/ANALYZER_VERSION.md) | Bump when specialty shape or extractors change incompatibly. |
+| Variable                                           | Description                                                  |
+| -------------------------------------------------- | ------------------------------------------------------------ |
+| [ANALYZER\_VERSION](variables/ANALYZER_VERSION.md) | Bump when specialty shape or extractors change incompatibly. |
 
 ## Functions
 
-| Function                                                              | Description                                                                                                                                             |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [buildFileSpecialty](functions/buildFileSpecialty.md)                 | Build FileSpecialty from source text via @saflib/parser extractors.                                                                                     |
-| [collectPackageIssues](functions/collectPackageIssues.md)             | Graph-derived issues: dead exports/queries (plus merged layoutIssues). Same-file-only exports are not reported — self-use is enough to clear dead-code. |
-| [countSourceLines](functions/countSourceLines.md)                     | -                                                                                                                                                       |
-| [fileFactFromSource](functions/fileFactFromSource.md)                 | -                                                                                                                                                       |
-| [matchExportPattern](functions/matchExportPattern.md)                 | Match a Node.js package.json `exports` subpath pattern.                                                                                                 |
-| [specialtyExports](functions/specialtyExports.md)                     | -                                                                                                                                                       |
-| [specialtyImports](functions/specialtyImports.md)                     | -                                                                                                                                                       |
-| [specialtyLocalExportUsages](functions/specialtyLocalExportUsages.md) | -                                                                                                                                                       |
-| [specialtyTables](functions/specialtyTables.md)                       | -                                                                                                                                                       |
-| [specialtyTestCases](functions/specialtyTestCases.md)                 | -                                                                                                                                                       |
+| Function                                                                          | Description                                                                                                                                             |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [analyzePackageFromWorkdirContext](functions/analyzePackageFromWorkdirContext.md) | Analyze one package from a pre-built [WorkdirGraphContext](interfaces/WorkdirGraphContext.md).                                                          |
+| [analyzeWorkdirPackage](functions/analyzeWorkdirPackage.md)                       | Analyze a single package from the working tree.                                                                                                         |
+| [analyzeWorkdirPackages](functions/analyzeWorkdirPackages.md)                     | Analyze one or more packages from the working tree.                                                                                                     |
+| [buildFileSpecialty](functions/buildFileSpecialty.md)                             | Build FileSpecialty from source text via @saflib/parser extractors.                                                                                     |
+| [buildWorkdirGraphContext](functions/buildWorkdirGraphContext.md)                 | Walk the tree once and build import/export specialties for graph analysis.                                                                              |
+| [collectPackageIssues](functions/collectPackageIssues.md)                         | Graph-derived issues: dead exports/queries (plus merged layoutIssues). Same-file-only exports are not reported — self-use is enough to clear dead-code. |
+| [collectPublicExportPathsFromTree](functions/collectPublicExportPathsFromTree.md) | Repo-relative paths that are public `package.json` export targets, derived from a commit tree (no filesystem).                                          |
+| [countSourceLines](functions/countSourceLines.md)                                 | -                                                                                                                                                       |
+| [createTreeResolveImportTarget](functions/createTreeResolveImportTarget.md)       | Resolve import specifiers to repo-relative paths using a commit tree (no FS). Handles `#` import maps, relative imports, and workspace package exports. |
+| [fileFactFromSource](functions/fileFactFromSource.md)                             | -                                                                                                                                                       |
+| [isGraphSourcePath](functions/isGraphSourcePath.md)                               | `.ts` / `.tsx` / `.vue` sources parsed for exports and import graph edges.                                                                              |
+| [isScaffoldTemplatePath](functions/isScaffoldTemplatePath.md)                     | Workflow scaffold placeholders (`__target-name__.ts`, `handlers/__group-name__/`, …).                                                                   |
+| [isTestSourcePath](functions/isTestSourcePath.md)                                 | Test / fixture / test-helper paths excluded from export inventory.                                                                                      |
+| [matchExportPattern](functions/matchExportPattern.md)                             | Match a Node.js package.json `exports` subpath pattern.                                                                                                 |
+| [resolveImportsMapSpecifier](functions/resolveImportsMapSpecifier.md)             | Resolve `#` entries from a package `imports` map (exact + pattern).                                                                                     |
+| [sortExportPatternKeys](functions/sortExportPatternKeys.md)                       | Prefer longer (more specific) pattern keys, matching Node's best-match preference.                                                                      |
+| [specialtyExports](functions/specialtyExports.md)                                 | -                                                                                                                                                       |
+| [specialtyImports](functions/specialtyImports.md)                                 | -                                                                                                                                                       |
+| [specialtyLocalExportUsages](functions/specialtyLocalExportUsages.md)             | -                                                                                                                                                       |
+| [specialtyTables](functions/specialtyTables.md)                                   | -                                                                                                                                                       |
+| [specialtyTestCases](functions/specialtyTestCases.md)                             | -                                                                                                                                                       |
 
 ## References
 
@@ -85,24 +100,6 @@ Re-exports [BuildReferenceGraphResult](../src/tsconfig/build-graph/interfaces/Bu
 
 ---
 
-### checkExportPatternCoverage
-
-Re-exports [checkExportPatternCoverage](../src/exports/generate-exports/functions/checkExportPatternCoverage.md)
-
----
-
-### checkExports
-
-Re-exports [checkExports](../src/exports/generate-exports/functions/checkExports.md)
-
----
-
-### CheckExportsResult
-
-Re-exports [CheckExportsResult](../src/exports/generate-exports/interfaces/CheckExportsResult.md)
-
----
-
 ### checkReferences
 
 Re-exports [checkReferences](../src/tsconfig/generate/functions/checkReferences.md)
@@ -133,12 +130,6 @@ Re-exports [CheckSnapshotResult](../src/snapshot/snapshot/interfaces/CheckSnapsh
 
 ---
 
-### computeExportsMap
-
-Re-exports [computeExportsMap](../src/exports/generate-exports/functions/computeExportsMap.md)
-
----
-
 ### Cycle
 
 Re-exports [Cycle](../src/graph/detect-cycles/type-aliases/Cycle.md)
@@ -163,9 +154,9 @@ Re-exports [detectReferenceCycles](../src/tsconfig/detect-cycles/functions/detec
 
 ---
 
-### ExportsMap
+### existsResolve
 
-Re-exports [ExportsMap](../src/exports/generate-exports/type-aliases/ExportsMap.md)
+Re-exports [existsResolve](../src/resolve/functions/existsResolve.md)
 
 ---
 
@@ -211,12 +202,6 @@ Re-exports [formatRegression](../src/snapshot/snapshot/functions/formatRegressio
 
 ---
 
-### generateExports
-
-Re-exports [generateExports](../src/exports/generate-exports/functions/generateExports.md)
-
----
-
 ### generateReferences
 
 Re-exports [generateReferences](../src/tsconfig/generate/functions/generateReferences.md)
@@ -259,18 +244,6 @@ Re-exports [isInternalReference](../src/tsconfig/tsconfig-io/functions/isInterna
 
 ---
 
-### leafExportRemapDiffs
-
-Re-exports [leafExportRemapDiffs](../src/exports/generate-exports/functions/leafExportRemapDiffs.md)
-
----
-
-### listExportableFiles
-
-Re-exports [listExportableFiles](../src/exports/generate-exports/functions/listExportableFiles.md)
-
----
-
 ### measureGraph
 
 Re-exports [measureGraph](../src/graph/walk-graph/functions/measureGraph.md)
@@ -307,9 +280,15 @@ Re-exports [moduleTargetFromImport](../src/graph/import-resolution/functions/mod
 
 ---
 
-### packageHasWorkflowMarkers
+### PackageIndex
 
-Re-exports [packageHasWorkflowMarkers](../src/exports/generate-exports/functions/packageHasWorkflowMarkers.md)
+Re-exports [PackageIndex](../src/types/type-aliases/PackageIndex.md)
+
+---
+
+### PackageInfo
+
+Re-exports [PackageInfo](../src/types/interfaces/PackageInfo.md)
 
 ---
 
@@ -331,6 +310,12 @@ Re-exports [previewReferencesGenerate](../src/tsconfig/generate/functions/previe
 
 ---
 
+### readSource
+
+Re-exports [readSource](../src/graph/read-source/functions/readSource.md)
+
+---
+
 ### ReferenceCycle
 
 Re-exports [ReferenceCycle](../src/tsconfig/detect-cycles/type-aliases/ReferenceCycle.md)
@@ -346,12 +331,6 @@ Re-exports [ReferenceGraph](../src/tsconfig/build-graph/type-aliases/ReferenceGr
 ### ReferenceGraphNode
 
 Re-exports [ReferenceGraphNode](../src/tsconfig/build-graph/interfaces/ReferenceGraphNode.md)
-
----
-
-### resolvePackageDir
-
-Re-exports [resolvePackageDir](../src/exports/generate-exports/functions/resolvePackageDir.md)
 
 ---
 

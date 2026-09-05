@@ -26,7 +26,7 @@ When run, the workflow will:
 - Update **example-project.plan.md**.
 - Have the user review the plan and make sure it's good to go.
 - Update **example-project.workflow.ts**.
-- Run `npm exec saf-workflow dry-run /Users/scott/src/saf-2025/saflib/processes/notes/2026-09-04-example-project/example-project.workflow.ts`
+- Run `npm exec saf-workflow dry-run /Users/scott/src/saf-2025/saflib/docs/notes/2026-09-05-example-project/example-project.workflow.ts`
 
 ## Help Docs
 

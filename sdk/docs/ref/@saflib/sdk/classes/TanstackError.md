@@ -46,13 +46,13 @@ Error returned by `handleClientMethod` so that Tanstack errors are always instan
 
 ### code
 
-> **code**: `undefined` \| `string`
+> **code**: `string`
 
 ---
 
 ### fields
 
-> **fields**: `undefined` \| `Record`\<`string`, `unknown`>\>
+> **fields**: `Record`\<`string`, `unknown`>\>
 
 ---
 
@@ -89,63 +89,3 @@ Error returned by `handleClientMethod` so that Tanstack errors are always instan
 ### status
 
 > **status**: `number`
-
----
-
-### prepareStackTrace()?
-
-> `static` `optional` **prepareStackTrace**: (`err`, `stackTraces`) => `any`
-
-Optional override for formatting stack traces
-
-#### Parameters
-
-| Parameter     | Type         |
-| ------------- | ------------ |
-| `err`         | `Error`      |
-| `stackTraces` | `CallSite`[] |
-
-#### Returns
-
-`any`
-
-#### See
-
-https://v8.dev/docs/stack-trace-api#customizing-stack-traces
-
-#### Inherited from
-
-`Error.prepareStackTrace`
-
----
-
-### stackTraceLimit
-
-> `static` **stackTraceLimit**: `number`
-
-#### Inherited from
-
-`Error.stackTraceLimit`
-
-## Methods
-
-### captureStackTrace()
-
-> `static` **captureStackTrace**(`targetObject`, `constructorOpt?`): `void`
-
-Create .stack property on a target object
-
-#### Parameters
-
-| Parameter         | Type       |
-| ----------------- | ---------- |
-| `targetObject`    | `object`   |
-| `constructorOpt?` | `Function` |
-
-#### Returns
-
-`void`
-
-#### Inherited from
-
-`Error.captureStackTrace`

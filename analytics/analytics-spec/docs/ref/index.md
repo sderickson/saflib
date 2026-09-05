@@ -6,11 +6,11 @@
 
 ## Modules
 
-| Module                                                                            | Description |
-| --------------------------------------------------------------------------------- | ----------- |
-| [dist/operations/listProductEvents](dist/operations/listProductEvents/index.md)   | -           |
-| [dist/operations/recordProductEvent](dist/operations/recordProductEvent/index.md) | -           |
-| [dist/schemas/Error](dist/schemas/Error/index.md)                                 | -           |
-| [dist/schemas/product-event-record](dist/schemas/product-event-record/index.md)   | -           |
-| [dist/schemas/ProductEventRecord](dist/schemas/ProductEventRecord/index.md)       | -           |
-| [index](index/index.md)                                                           | -           |
+| Module                                                                                  | Description |
+| --------------------------------------------------------------------------------------- | ----------- |
+| [modules/operations/listProductEvents](modules/operations/listProductEvents/index.md)   | -           |
+| [modules/operations/recordProductEvent](modules/operations/recordProductEvent/index.md) | -           |
+| [modules/schemas/Error](modules/schemas/Error/index.md)                                 | -           |
+| [modules/schemas/product-event-record](modules/schemas/product-event-record/index.md)   | -           |
+| [modules/schemas/ProductEventRecord](modules/schemas/ProductEventRecord/index.md)       | -           |
+| [index](index/index.md)                                                                 | -           |

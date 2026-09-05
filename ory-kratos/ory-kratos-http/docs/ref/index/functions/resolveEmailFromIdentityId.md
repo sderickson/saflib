@@ -1,10 +1,10 @@
-[**@saflib/ory-kratos**](../../index.md)
+[**@saflib/ory-kratos-http**](../../index.md)
 
 ---
 
 # Function: resolveEmailFromIdentityId()
 
-> **resolveEmailFromIdentityId**(`userId`): `Promise`\<`null` \| `string`\>
+> **resolveEmailFromIdentityId**(`userId`): `Promise`\<`null` \| `string`>\>
 
 Resolves a member's email from the Kratos admin API.
 Returns `null` when the lookup fails.

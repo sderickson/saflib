@@ -17,36 +17,40 @@ export function createBrowserLogoutFlowQueryKey(returnTo?: string) {
 interface CreateBrowserLogoutFlowQueryOptions {
   returnTo?: string;
   enabled?: Ref<boolean>;
+  staleTime?: number;
+}
+
+export async function createBrowserLogoutFlow(returnTo?: string) {
+  try {
+    const res = await getKratosFrontendApi().createBrowserLogoutFlow({
+      returnTo,
+    });
+    return new BrowserLogoutFlowCreated(res.data);
+  } catch (e) {
+    if (isAxiosError(e) && e.response) {
+      const status = e.response.status;
+      const raw = e.response.data;
+      if (status >= 400 && status < 500) {
+        return new UnhandledResponse(status, raw);
+      }
+    }
+    if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);
+    throw e;
+  }
 }
 
 export function createBrowserLogoutFlowQueryOptions({
   returnTo,
   enabled,
+  staleTime = 30_000,
 }: CreateBrowserLogoutFlowQueryOptions) {
   return queryOptions<
     BrowserLogoutFlowCreated | UnhandledResponse,
     TanstackError
   >({
     queryKey: createBrowserLogoutFlowQueryKey(returnTo),
-    queryFn: async () => {
-      try {
-        const res = await getKratosFrontendApi().createBrowserLogoutFlow({
-          returnTo,
-        });
-        return new BrowserLogoutFlowCreated(res.data);
-      } catch (e) {
-        if (isAxiosError(e) && e.response) {
-          const status = e.response.status;
-          const raw = e.response.data;
-          if (status >= 400 && status < 500) {
-            return new UnhandledResponse(status, raw);
-          }
-        }
-        if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);
-        throw e;
-      }
-    },
-    staleTime: 30_000,
+    queryFn: () => createBrowserLogoutFlow(returnTo),
+    staleTime,
     enabled,
   });
 }

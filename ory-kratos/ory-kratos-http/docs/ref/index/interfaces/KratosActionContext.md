@@ -1,4 +1,4 @@
-[**@saflib/ory-kratos**](../../index.md)
+[**@saflib/ory-kratos-http**](../../index.md)
 
 ---
 
@@ -31,21 +31,21 @@ forcing saflib version bumps. Consumers narrow as they need.
 
 > `optional` **active**: `string`
 
-#### expires_at?
+#### expires\_at?
 
-> `optional` **expires_at**: `string`
+> `optional` **expires\_at**: `string`
 
 #### id?
 
 > `optional` **id**: `string`
 
-#### issued_at?
+#### issued\_at?
 
-> `optional` **issued_at**: `string`
+> `optional` **issued\_at**: `string`
 
-#### request_url?
+#### request\_url?
 
-> `optional` **request_url**: `string`
+> `optional` **request\_url**: `string`
 
 #### state?
 
@@ -69,37 +69,37 @@ forcing saflib version bumps. Consumers narrow as they need.
 
 > `optional` **id**: `string`
 
-#### schema_id?
+#### schema\_id?
 
-> `optional` **schema_id**: `string`
+> `optional` **schema\_id**: `string`
 
 #### traits?
 
-> `optional` **traits**: `Record`\<`string`, `unknown`\>
+> `optional` **traits**: `Record`\<`string`, `unknown`>\>
 
 ---
 
-### request_cookies?
+### request\_cookies?
 
-> `optional` **request_cookies**: `Record`\<`string`, `string`\>
-
----
-
-### request_headers?
-
-> `optional` **request_headers**: `Record`\<`string`, `string`[]\>
+> `optional` **request\_cookies**: `Record`\<`string`, `string`>\>
 
 ---
 
-### request_method?
+### request\_headers?
 
-> `optional` **request_method**: `string`
+> `optional` **request\_headers**: `Record`\<`string`, `string`[]\>
 
 ---
 
-### request_url?
+### request\_method?
 
-> `optional` **request_url**: `string`
+> `optional` **request\_method**: `string`
+
+---
+
+### request\_url?
+
+> `optional` **request\_url**: `string`
 
 ---
 
@@ -115,6 +115,6 @@ forcing saflib version bumps. Consumers narrow as they need.
 
 > `optional` **id**: `string`
 
-#### identity_id?
+#### identity\_id?
 
-> `optional` **identity_id**: `string`
+> `optional` **identity\_id**: `string`

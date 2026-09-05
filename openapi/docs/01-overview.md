@@ -11,8 +11,7 @@ Packages using `@saflib/openapi` can generate:
 - TypeScript types (`dist/openapi.d.ts` and per-operation/schema fragments)
 - JSON schemas (`dist/openapi.json`) for runtime validation
 
-
-Use [product/init](../../product/docs/workflows/init.md) to copy `base` into a new product. Use [openapi/init](./workflows/init.md) to scaffold an offshoot spec (+ sibling `*-test` package). Use [openapi/add-route](./workflows/add-route.md), [add-schema](./workflows/add-schema.md), and [add-event](./workflows/add-event.md) to extend an existing spec.
+Use [product/init](../../product/docs/workflows/init.md) to copy `base` into a new product. Use [openapi/init](./workflows/init.md) to scaffold an offshoot spec (+ sibling `*-test` package). Use [openapi/add-route](./workflows/route.md), [add-schema](./workflows/schema.md), and [add-event](./workflows/add-event.md) to extend an existing spec.
 
 ## The `pkg:` Extension
 
@@ -36,8 +35,8 @@ schema:
 
 Where a spec package lives in the product tree — `{product}/service/spec`, offshoot slices, and how `http` / `sdk` depend on it — is described in [monorepo service layout](../../monorepo/docs/01-overview.md#service). The golden reference implementation is [`saflib/base`](../../base/docs/01-overview.md):
 
-| Location | Package | Role |
-| -------- | ------- | ---- |
-| [`base/service/spec`](../../base/service/spec/) | `@saflib/base-spec` | Product API contract |
-| [`base/service/test`](../../base/service/test/) | `@saflib/base-test` | Shared schema factories for tests |
-| [`base/__offshoot-name__/spec`](../../base/__offshoot-name__/spec/) | (offshoot spec) | Bounded feature slice; paths woven into the parent `openapi.yaml` |
+| Location                                                                                                     | Package             | Role                                                              |
+| ------------------------------------------------------------------------------------------------------------ | ------------------- | ----------------------------------------------------------------- |
+| [`base/service/spec`](https://github.com/sderickson/saflib/blob/main/base/service/spec/)                     | `@saflib/base-spec` | Product API contract                                              |
+| [`base/service/test`](https://github.com/sderickson/saflib/blob/main/base/service/test/)                     | `@saflib/base-test` | Shared schema factories for tests                                 |
+| [`base/__offshoot-name__/spec`](https://github.com/sderickson/saflib/blob/main/base/__offshoot-name__/spec/) | (offshoot spec)     | Bounded feature slice; paths woven into the parent `openapi.yaml` |

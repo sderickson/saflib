@@ -11,7 +11,7 @@ Cookie-authenticated SSE over `fetch` (`credentials: "include"`).
 Native `EventSource` does not send cookies on cross-origin requests (e.g.
 `app.*` → `api.*` on the same site). Product SPAs use subdomain-separated API
 hosts with session cookies scoped to the registrable domain, so SSE must use
-fetch like [createSafClient](../functions/createSafClient.md).
+fetch like [createSafClient](../variables/createSafClient.md).
 
 ## Properties
 

@@ -8,7 +8,7 @@
 
 ### get()
 
-> **get**(`contentKeys`): `Promise`\<`Map`\<`string`, [`FileFact`](FileFact.md)\>\>
+> **get**(`contentKeys`): `Promise`\<`Map`\<`string`, [`FileFact`](FileFact.md)>>\>\>
 
 #### Parameters
 
@@ -24,7 +24,7 @@
 
 ### put()
 
-> **put**(`facts`): `Promise`\<`void`\>
+> **put**(`facts`): `Promise`\<`void`>\>
 
 #### Parameters
 

@@ -6,12 +6,10 @@
 
 > **createErrorsRouter**(): `Router`
 
-Unified error reporting (always mounted, including production / prod-local):
+Production error routes (always mounted):
 
-- `POST /errors/record` — browser client error capture
-- `POST /csp-violations` — browser CSP reports → same ring buffer
+- `POST /csp-violations` — browser CSP reports
 - `POST /admin/test-error` — intentional server error (site-admin-only)
-- `GET /admin/errors` — ring buffer listing (site-admin-only)
 
 ## Returns
 

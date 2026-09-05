@@ -1,10 +1,10 @@
-[**@saflib/ory-kratos**](../../index.md)
+[**@saflib/ory-kratos-http**](../../index.md)
 
 ---
 
 # Function: resolveAuthFromIdentityId()
 
-> **resolveAuthFromIdentityId**(`userId`): `Promise`\<`null` \| `Auth`\>
+> **resolveAuthFromIdentityId**(`userId`): `Promise`\<`null` \| `Auth`>\>
 
 Resolve a fresh `Auth` (from `@saflib/node`) for `userId` via the Kratos admin API.
 

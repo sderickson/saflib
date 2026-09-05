@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { useQueryClient } from "@tanstack/vue-query";
 import {
   BrowserLogoutFlowCreated,
-  createBrowserLogoutFlowQueryOptions,
+  createBrowserLogoutFlow,
 } from "@saflib/ory-kratos-sdk";
 import { useAuthLoggedOutRootFallbackHref } from "../../authFallbackInject.ts";
 import { useAuthOnBeforeLogout } from "../../configureAuthApp.ts";
 
 const route = useRoute();
-const queryClient = useQueryClient();
 const onBeforeLogout = useAuthOnBeforeLogout();
 
 const rootHomeFallbackHref = useAuthLoggedOutRootFallbackHref();
@@ -19,10 +17,7 @@ onMounted(async () => {
   const q = route.query.return_to;
   const fromQuery = typeof q === "string" && q.trim() ? q.trim() : undefined;
   const returnTo = fromQuery ?? rootHomeFallbackHref.value;
-  const result = await queryClient.fetchQuery({
-    ...createBrowserLogoutFlowQueryOptions({ returnTo }),
-    staleTime: 0,
-  });
+  const result = await createBrowserLogoutFlow(returnTo);
   if (!(result instanceof BrowserLogoutFlowCreated)) {
     throw new Error("Browser logout failed");
   }

@@ -4,7 +4,7 @@
 
 # Variable: commonEventLogger()
 
-> `const` **commonEventLogger**: \<`T`>>\>(`event`) => `void`
+> `const` **commonEventLogger**: \<`T`>\>(`event`) => `void`
 
 ## Type Parameters
 

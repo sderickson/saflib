@@ -54,7 +54,7 @@ Frontend bundle snapshot — measured or blocked.
 
 #### spas?
 
-> `optional` **spas**: `Record`\<`string`, [`SpaBundleSnapshot`](SpaBundleSnapshot.md)\>
+> `optional` **spas**: `Record`\<`string`, [`SpaBundleSnapshot`](SpaBundleSnapshot.md)>\>
 
 ---
 
@@ -66,7 +66,7 @@ Frontend bundle snapshot — measured or blocked.
 
 ### spas?
 
-> `optional` **spas**: `Record`\<`string`, [`SpaBundleSnapshot`](SpaBundleSnapshot.md)\>
+> `optional` **spas**: `Record`\<`string`, [`SpaBundleSnapshot`](SpaBundleSnapshot.md)>\>
 
 ---
 

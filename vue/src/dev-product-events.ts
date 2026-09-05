@@ -1,10 +1,7 @@
 import type { AnalyticsRequestBody } from "@saflib/analytics-spec";
 import { recordProductEvent } from "@saflib/analytics-sdk/requests/record-product-event";
-import {
-  isDevEnv,
-  registerProductEventConnector,
-  type ProductEventCommon,
-} from "./events.ts";
+import { registerProductEventConnector, type ProductEventCommon } from "./events.ts";
+import { isDevEnv } from "./wip-env.ts";
 
 /**
  * In development, POST product events to the backend ring buffer so they appear

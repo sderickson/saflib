@@ -2,7 +2,7 @@
 
 `@saflib/ory-kratos-http` is the **server-side** Kratos integration: a small internal Express app for courier webhooks and optional identity-action callbacks, plus helpers to resolve auth context from Kratos identity IDs.
 
-Browser flows and session state live in [`@saflib/ory-kratos-sdk`](../ory-kratos-sdk/docs/01-overview.md). See the [suite overview](../docs/01-overview.md) for how products wire this package.
+Browser flows and session state live in [`@saflib/ory-kratos-sdk`](../../ory-kratos-sdk/docs/01-overview.md). See the [suite overview](../docs/01-overview.md) for how products wire this package.
 
 ## What this package provides
 
@@ -14,11 +14,14 @@ Browser flows and session state live in [`@saflib/ory-kratos-sdk`](../ory-kratos
 
 ## Integration
 
-Product code supplies `KratosCourierCallbacks` and `KratosActionHandler` implementations — see [`base/service/kratos-handlers`](../../../base/service/kratos-handlers/) for the reference wiring with `@saflib/base-email`.
+Product code supplies `KratosCourierCallbacks` and `KratosActionHandler` implementations — see [`base/service/kratos-handlers`](https://github.com/sderickson/saflib/blob/main/base/service/kratos-handlers/) for the reference wiring with `@saflib/base-email`.
 
 ```ts
 import { startOryKratosService } from "@saflib/ory-kratos-http";
-import { callbacks, makeKratosActionHandler } from "@your-product/kratos-handlers";
+import {
+  callbacks,
+  makeKratosActionHandler,
+} from "@your-product/kratos-handlers";
 
 startOryKratosService({
   courierCallbacks: callbacks,

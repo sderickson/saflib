@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: OPENAPI_ENFORCED_TAG_SET
+# Variable: OPENAPI\_ENFORCED\_TAG\_SET
 
-> `const` **OPENAPI_ENFORCED_TAG_SET**: `ReadonlySet`\<`string`\>
+> `const` **OPENAPI\_ENFORCED\_TAG\_SET**: `ReadonlySet`\<`string`>\>

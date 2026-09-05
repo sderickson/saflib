@@ -29,7 +29,7 @@ state when testing code that uses an ObjectStore.
 
 ### deleteFile()
 
-> **deleteFile**(`path`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}, [`StorageError`](StorageError.md)\>\>
+> **deleteFile**(`path`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}, [`StorageError`](StorageError.md)>>\>\>
 
 #### Parameters
 
@@ -81,7 +81,7 @@ Exposed for tests that assert path behavior (ObjectStore.test.ts).
 
 ### listFiles()
 
-> **listFiles**(`prefix?`): `Promise`\<`ReturnsError`\<`object`[], [`StorageError`](StorageError.md)\>\>
+> **listFiles**(`prefix?`): `Promise`\<`ReturnsError`\<`object`[], [`StorageError`](StorageError.md)>>\>\>
 
 #### Parameters
 
@@ -123,7 +123,7 @@ Exposed for tests that assert path behavior (ObjectStore.test.ts).
 
 ### readFile()
 
-> **readFile**(`path`): `Promise`\<`ReturnsError`\<`Readable`, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md) \| [`FileNotFoundError`](FileNotFoundError.md)\>\>
+> **readFile**(`path`): `Promise`\<`ReturnsError`\<`Readable`, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md) \| [`FileNotFoundError`](FileNotFoundError.md)>>\>\>
 
 #### Parameters
 
@@ -159,7 +159,7 @@ Exposed for tests that assert path behavior (ObjectStore.test.ts).
 
 ### uploadFile()
 
-> **uploadFile**(`path`, `stream`, `metadata?`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}, [`StorageError`](StorageError.md)\>\>
+> **uploadFile**(`path`, `stream`, `metadata?`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}, [`StorageError`](StorageError.md)>>\>\>
 
 #### Parameters
 
@@ -181,7 +181,7 @@ Exposed for tests that assert path behavior (ObjectStore.test.ts).
 
 ### upsertContainer()
 
-> **upsertContainer**(): `Promise`\<`ReturnsError`\<\{ `created?`: `boolean`; `skipped?`: `boolean`; `success`: `boolean`; `updated?`: `boolean`; `url?`: `string`; \}, [`StorageError`](StorageError.md)\>\>
+> **upsertContainer**(): `Promise`\<`ReturnsError`\<\{ `created?`: `boolean`; `skipped?`: `boolean`; `success`: `boolean`; `updated?`: `boolean`; `url?`: `string`; \}, [`StorageError`](StorageError.md)>>\>\>
 
 #### Returns
 

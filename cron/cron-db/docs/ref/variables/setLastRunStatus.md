@@ -4,7 +4,7 @@
 
 # Variable: setLastRunStatus()
 
-> `const` **setLastRunStatus**: (`dbKey`, `jobName`, `status`) => `Promise`\<[`SetLastRunStatusResult`](../type-aliases/SetLastRunStatusResult.md)\>
+> `const` **setLastRunStatus**: (`dbKey`, `jobName`, `status`) => `Promise`\<[`SetLastRunStatusResult`](../type-aliases/SetLastRunStatusResult.md)>\>
 
 ## Parameters
 

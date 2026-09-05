@@ -4,7 +4,7 @@
 
 # Variable: useClientCommon()
 
-> `const` **useClientCommon**: (`componentName`) => `Omit`\<[`ProductEventCommon`](../type-aliases/ProductEventCommon.md), `"event"` \| `"context"`>>\>
+> `const` **useClientCommon**: (`componentName`) => `Omit`\<[`ProductEventCommon`](../type-aliases/ProductEventCommon.md), `"event"` \| `"context"`>\>
 
 Get the common context for a product event.
 

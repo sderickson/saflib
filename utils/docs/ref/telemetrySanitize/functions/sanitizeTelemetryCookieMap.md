@@ -4,7 +4,7 @@
 
 # Function: sanitizeTelemetryCookieMap()
 
-> **sanitizeTelemetryCookieMap**(`cookies`): `undefined` \| `Record`\<`string`, `unknown`\>
+> **sanitizeTelemetryCookieMap**(`cookies`): `undefined` \| `Record`\<`string`, `unknown`>\>
 
 ## Parameters
 

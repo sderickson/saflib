@@ -25,11 +25,11 @@
     "saf-specs": "./bin/saf-specs/index.ts"
   },
   "dependencies": {
-    "@redocly/openapi-core": "^2.0.0",
+    "@redocly/openapi-core": "^2.51.2",
     "@saflib/templates": "*",
+    "@saflib/utils": "*",
     "openapi-typescript": "^7.13.0",
-    "yaml": "^2.8.1",
-    "@saflib/utils": "*"
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

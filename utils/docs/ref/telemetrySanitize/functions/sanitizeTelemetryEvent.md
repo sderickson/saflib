@@ -4,7 +4,7 @@
 
 # Function: sanitizeTelemetryEvent()
 
-> **sanitizeTelemetryEvent**\<`T`\>(`event`): `T`
+> **sanitizeTelemetryEvent**\<`T`>\>(`event`): `T`
 
 Scrub sensitive HTTP and Vue context fields before forwarding to telemetry vendors.
 

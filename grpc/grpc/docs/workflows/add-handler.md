@@ -20,11 +20,9 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow grpc/add-handler
-
 - Upsert 3 templates.
 - Implement the get-secret gRPC handler. Make sure to:
-- Update the main grpc.ts file to register the saflib service if it's not already there.
+- Update the main grpc.ts file to register the analytics-http service if it's not already there.
 
 ## Help Docs
 

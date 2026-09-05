@@ -20,12 +20,10 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow openapi/init
-
 - Upsert 9 templates.
 - Upsert 14 templates.
 - Upsert 15 templates.
-- Add @saflib/saflib-dossier-spec dependency to parent spec
+- Add @saflib/analytics-http-dossier-spec dependency to parent spec
 - Change working directory to dossier/spec
 - Run `npm install`
 - Run `npm run generate`

@@ -19,4 +19,4 @@ Credentials:
 
 Local development typically uses [`DiskObjectStore`](../../../object-store/docs/01-overview.md) via `createObjectStore({ type: "disk", rootPath })`.
 
-Azure Blob Storage alternative: [`@saflib/vendors-azure`](../azure/docs/01-overview.md).
+Azure Blob Storage alternative: [`@saflib/vendors-azure`](../../azure/docs/01-overview.md).

@@ -10,7 +10,7 @@
 
 ### cookies?
 
-> `optional` **cookies**: `Record`\<`string`, `unknown`\>
+> `optional` **cookies**: `Record`\<`string`, `unknown`>\>
 
 ---
 
@@ -22,4 +22,4 @@
 
 ### headers?
 
-> `optional` **headers**: `Record`\<`string`, `unknown`\>
+> `optional` **headers**: `Record`\<`string`, `unknown`>\>

@@ -10,9 +10,9 @@ Whether the deployment is local development (`DEPLOYMENT_NAME=development`).
 
 ## Parameters
 
-| Parameter        | Type                    | Default value                 |
-| ---------------- | ----------------------- | ----------------------------- |
-| `deploymentName` | `undefined` \| `string` | `process.env.DEPLOYMENT_NAME` |
+| Parameter        | Type                    | Default value              |
+| ---------------- | ----------------------- | -------------------------- |
+| `deploymentName` | `undefined` \| `string` | `typedEnv.DEPLOYMENT_NAME` |
 
 ## Returns
 

@@ -28,7 +28,7 @@ Composable for downloading files with CSRF protection
 
 ### error
 
-> **error**: `Ref`\<`null` \| `string`, `null` \| `string`>\>
+> **error**: `Ref`\<`string`, `string`>\>
 
 ### isDownloading
 

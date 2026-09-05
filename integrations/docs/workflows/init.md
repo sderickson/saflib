@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow integrations/init
-
 - Upsert 11 templates.
 - Upsert 12 templates.
 - Change working directory to service/integrations/stripe

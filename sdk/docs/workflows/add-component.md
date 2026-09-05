@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-component.ts](../../workflows/add-component.ts)
+[add-component.ts](https://github.com/sderickson/saflib/blob/main/sdk/workflows/add-component.ts)
 
 ## Usage
 
@@ -38,4 +38,5 @@ Create a new component in the SDK package
 Arguments:
   path        Path of the new component (e.g., './displays/example-table' or './forms/user-form')
               Example: "./displays/example-table"
+
 ```

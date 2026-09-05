@@ -1,4 +1,4 @@
-[**@saflib/ory-kratos**](../index.md)
+[**@saflib/ory-kratos-http**](../index.md)
 
 ---
 

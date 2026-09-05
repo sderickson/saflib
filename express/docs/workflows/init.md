@@ -20,11 +20,9 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow express/init
-
+- Upsert 6 templates.
 - Upsert 7 templates.
-- Upsert 8 templates.
-- Add @saflib/saflib-dossier-http dependency to parent http
+- Add @saflib/analytics-http-dossier-http dependency to parent http
 - Change working directory to dossier/http
 - Run `npm install`
 - Run `npm run typecheck`

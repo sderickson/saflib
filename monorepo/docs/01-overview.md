@@ -2,7 +2,7 @@
 
 `@saflib/monorepo` provides npm workspace conventions, shared package scaffolding, and tooling for SAF monorepos. It focuses on **npm packages** — how workspaces are organized, how `package.json` surfaces are defined, and how new packages are added.
 
-For **TypeScript** — composite project references, cross-package typing conventions, and static import-graph analysis — see [@saflib/imports](../imports/docs/01-overview.md).
+For **TypeScript** — composite project references, cross-package typing conventions, and static import-graph analysis — see [@saflib/imports](../../imports/docs/01-overview.md).
 
 Use this package's `saf-monorepo` command to formatting and lockfile management, and the [add-package](./workflows/add-package.md), [add-export](./workflows/add-export.md) workflows to add standalone packages.
 
@@ -13,11 +13,11 @@ Use this package's `saf-monorepo` command to formatting and lockfile management,
 - CLIs: [saf-monorepo](./cli/saf-monorepo.md) (`format`, `lock-prune`), [saf-ts-run](./cli/saf-ts-run.md)
 - Layout and inventory APIs: package kind classification, `exports`/`imports` helpers, root-file allowlists, workspace context ([code reference](./ref/index.md))
 
-Init workflows (`express/init`, `sdk/init`, `drizzle/init`, etc.) and [monorepo/add-package](./workflows/add-package.md) scaffold packages with these defaults. Golden stubs live under [`saflib/base`](../base/docs/01-overview.md) and workflow template trees.
+Init workflows (`express/init`, `sdk/init`, `drizzle/init`, etc.) and [monorepo/add-package](./workflows/add-package.md) scaffold packages with these defaults. Golden stubs live under [`saflib/base`](../../base/docs/01-overview.md) and workflow template trees.
 
 ## Product layout
 
-See [base](../base/docs/01-overview.md). A SAF **product** is a tree of npm workspace packages. In a multi-product repo each product lives under `{product}/`; a single-product repo may place `clients/`, `service/`, and `dev/` at the repo root instead.
+See [base](../../base/docs/01-overview.md). A SAF **product** is a tree of npm workspace packages. In a multi-product repo each product lives under `{product}/`; a single-product repo may place `clients/`, `service/`, and `dev/` at the repo root instead.
 
 Typical top-level layout:
 
@@ -35,11 +35,11 @@ Typical top-level layout:
 └── package-lock.json
 ```
 
-Use [product/init](../product/docs/workflows/init.md) to copy `saflib/base` into a new product. Workflows extend `saflib/base` in place so platform and product stay aligned.
+Use [product/init](../../product/docs/workflows/init.md) to copy `saflib/base` into a new product. Workflows extend `saflib/base` in place so platform and product stay aligned.
 
 ### `clients/`
 
-Web clients only (Vue SPAs today). Each SPA is its own workspace package named after its subdomain (`app/`, `auth/`, …), built together from a `build/` package. Shared client logic lives in `common/`; cross-SPA link objects live in `links/` so server code does not depend on Vue. See [@saflib/vue](../vue/docs/01-overview.md).
+Web clients only (Vue SPAs today). Each SPA is its own workspace package named after its subdomain (`app/`, `auth/`, …), built together from a `build/` package. Shared client logic lives in `common/`; cross-SPA link objects live in `links/` so server code does not depend on Vue. See [@saflib/vue](../../vue/docs/01-overview.md).
 
 ### `service/`
 
@@ -66,9 +66,9 @@ Backend packages for one product. Terminology:
 
 **Dependency flow:** `spec` and `db` are independent layers. `http` depends on both and translates between wire and storage models. `sdk` depends on `spec` so clients stay decoupled from storage. `monolith` composes the runnable backends. All `clients/*` packages depend on `sdk` for API access.
 
-**Offshoots** — `{product}/{offshoot}/` holds a vertical slice (`db`, `http`, `spec`, `sdk`, `test`) when a feature is large enough to warrant its own OpenAPI surface and packages but still mounts into the parent product's HTTP app. See [@saflib/openapi](../openapi/docs/01-overview.md#package-structure).
+**Offshoots** — `{product}/{offshoot}/` holds a vertical slice (`db`, `http`, `spec`, `sdk`, `test`) when a feature is large enough to warrant its own OpenAPI surface and packages but still mounts into the parent product's HTTP app. See [@saflib/openapi](../../openapi/docs/01-overview.md#package-structure).
 
-**Integrations** — `{product}/service/integrations/{vendor}/` wraps a third-party SDK behind mockable **calls** (e.g. `stripe`, `sendgrid`). See [@saflib/integrations](../integrations/docs/01-overview.md).
+**Integrations** — `{product}/service/integrations/{vendor}/` wraps a third-party SDK behind mockable **calls** (e.g. `stripe`, `sendgrid`). See [@saflib/integrations](../../integrations/docs/01-overview.md).
 
 ### `dev/` and `deploy/`
 
@@ -94,17 +94,17 @@ Each workspace package exposes an **explicit** public surface in `package.json`:
 - **`saf.kind`** — declares package role (`db`, `http`, `spec`, `spa`, `sdk`, `lib`, `integration`, `test`, …). Layout tooling infers kind from identifier deps when omitted.
 - **`sideEffects`** — `false` unless the package has explicit browser/CSS entry exceptions.
 
-[monorepo/add-export](./workflows/add-export.md) adds a module and updates `exports`/`imports` via glob patterns. To validate export coverage and layout rules, use [`saf-analyze-package`](../dev-tools/docs/package-issues.md).
+[monorepo/add-export](./workflows/add-export.md) adds a module and updates `exports`/`imports` via glob patterns. To validate export coverage and layout rules, use [`saf-analyze-package`](../../dev-tools/docs/package-issues.md).
 
-**Layout rules:** production `.ts`/`.tsx` files belong in thematic folders, not loose at the package root, except for allowlisted entrypoints (`index.ts`, `main.ts`, `run.ts`, config files, …). `@saflib/dev-tools` [`saf-analyze-package`](../dev-tools/docs/package-issues.md) reports layout, dead-code, and oversized-file issues.
+**Layout rules:** production `.ts`/`.tsx` files belong in thematic folders, not loose at the package root, except for allowlisted entrypoints (`index.ts`, `main.ts`, `run.ts`, config files, …). `@saflib/dev-tools` [`saf-analyze-package`](../../dev-tools/docs/package-issues.md) reports layout, dead-code, and oversized-file issues.
 
 ## TypeScript in SAF monorepos
 
 TypeScript project references, composite builds, and import-graph tooling live in `@saflib/imports`:
 
-- [Project references](../imports/docs/02-project-references.md) — `composite: true`, `dist/types/`, `saf-imports tsconfig sync|check`
-- [Composite type guidance](../imports/docs/03-composite-type-guidance.md) — cross-package imports, Vue app/node split, query typing
-- [saf-imports CLI](../imports/docs/cli/saf-imports.md) — `measure`, `why`, `cycles`, bundle snapshots, Vitest import-graph reporter
+- [Project references](../../imports/docs/02-project-references.md) — `composite: true`, `dist/types/`, `saf-imports tsconfig sync|check`
+- [Composite type guidance](../../imports/docs/03-composite-type-guidance.md) — cross-package imports, Vue app/node split, query typing
+- [saf-imports CLI](../../imports/docs/cli/saf-imports.md) — `measure`, `why`, `cycles`, bundle snapshots, Vitest import-graph reporter
 
 Each package still **extends** `@saflib/monorepo/tsconfig.json` (or `@saflib/vue` presets for SPAs) as part of npm scaffolding; `@saflib/imports` owns the reference graph and enforcement.
 
@@ -137,4 +137,4 @@ cd {product}/service/http && npx vitest run -- routes/scans/execute
 
 Run `npm run typecheck` from the repo root for incremental solution builds. After adding packages or changing workspace deps, run `npm run tsconfig:sync` and `npm exec saf-imports tsconfig check`.
 
-Package-specific testing guidance lives in the relevant `saflib/` package docs (e.g. [@saflib/drizzle testing](../drizzle/docs/04-testing.md)).
+Package-specific testing guidance lives in the relevant `saflib/` package docs (e.g. [@saflib/drizzle queries](../../drizzle/docs/03-queries.md)).

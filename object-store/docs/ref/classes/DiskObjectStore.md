@@ -32,7 +32,7 @@
 
 ### deleteFile()
 
-> **deleteFile**(`relativePath`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
+> **deleteFile**(`relativePath`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)>>\>\>
 
 #### Parameters
 
@@ -72,7 +72,7 @@
 
 ### listFiles()
 
-> **listFiles**(`prefix?`): `Promise`\<`ReturnsError`\<`object`[], [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
+> **listFiles**(`prefix?`): `Promise`\<`ReturnsError`\<`object`[], [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)>>\>\>
 
 #### Parameters
 
@@ -112,7 +112,7 @@
 
 ### readFile()
 
-> **readFile**(`relativePath`): `Promise`\<`ReturnsError`\<`Readable`, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md) \| [`FileNotFoundError`](FileNotFoundError.md)\>\>
+> **readFile**(`relativePath`): `Promise`\<`ReturnsError`\<`Readable`, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md) \| [`FileNotFoundError`](FileNotFoundError.md)>>\>\>
 
 #### Parameters
 
@@ -132,7 +132,7 @@
 
 ### uploadFile()
 
-> **uploadFile**(`relativePath`, `stream`, `_metadata?`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
+> **uploadFile**(`relativePath`, `stream`, `_metadata?`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)>>\>\>
 
 #### Parameters
 
@@ -154,7 +154,7 @@
 
 ### upsertContainer()
 
-> **upsertContainer**(): `Promise`\<`ReturnsError`\<\{ `created?`: `boolean`; `skipped?`: `boolean`; `success`: `boolean`; `updated?`: `boolean`; `url?`: `string`; \}, [`StorageError`](StorageError.md)\>\>
+> **upsertContainer**(): `Promise`\<`ReturnsError`\<\{ `created?`: `boolean`; `skipped?`: `boolean`; `success`: `boolean`; `updated?`: `boolean`; `url?`: `string`; \}, [`StorageError`](StorageError.md)>>\>\>
 
 #### Returns
 

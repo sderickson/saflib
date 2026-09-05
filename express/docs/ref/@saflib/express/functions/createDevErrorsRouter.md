@@ -2,15 +2,15 @@
 
 ---
 
-# ~~Function: createDevErrorsRouter()~~
+# Function: createDevErrorsRouter()
 
 > **createDevErrorsRouter**(): `Router`
+
+Development-only mock error routes (ring buffer):
+
+- `POST /errors/record` — browser client error capture
+- `GET /admin/errors` — ring buffer listing (site-admin-only)
 
 ## Returns
 
 `Router`
-
-## Deprecated
-
-Admin error routes live on [createErrorsRouter](createErrorsRouter.md) (always mounted).
-Kept as a no-op so older composition call sites do not double-register.

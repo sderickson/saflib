@@ -2,7 +2,7 @@
 
 SAF-specific import-graph measurement and enforcement tooling. Used across dev-tools (for CLI usage) and dev-site (for UI usage).
 
-Syntactic file facts (exports, tests, Drizzle tables, Vue SFC surfaces) come from [@saflib/parser](../parser/docs/01-overview.md) via `buildFileSpecialty()` in this package.
+Syntactic file facts (exports, tests, Drizzle tables, Vue SFC surfaces) come from [@saflib/parser](../../parser/docs/01-overview.md) via `buildFileSpecialty()` in this package.
 
 Use the saf-imports tool (described below) to find and debug import graph clusters.
 
@@ -17,7 +17,7 @@ Init workflows (`express/init`, `sdk/init`, `drizzle/init`, etc.) scaffold these
 
 ## Package surface
 
-npm `exports` / `imports` conventions and validation live in [@saflib/monorepo](../monorepo/docs/01-overview.md#npm-package-surface). This package focuses on measuring whether static imports respect those boundaries.
+npm `exports` / `imports` conventions and validation live in [@saflib/monorepo](../../monorepo/docs/01-overview.md#npm-package-surface). This package focuses on measuring whether static imports respect those boundaries.
 
 See [project references](./02-project-references.md) for composite TypeScript setup and [composite type guidance](./03-composite-type-guidance.md) for cross-package typing conventions.
 
@@ -37,7 +37,7 @@ npm exec saf-imports spa measure --spa <name>
 npm exec saf-imports tsconfig sync|check|cycles|cleanup-declarations [--root <dir>]
 ```
 
-For export coverage validation, use [saf-analyze-package](../dev-tools/docs/package-issues.md).
+For export coverage validation, use [saf-analyze-package](../../dev-tools/docs/package-issues.md).
 
 `measure --verbose` lists every first-party file (repo-root-relative, sorted) and external package the entry statically imports.
 
@@ -45,7 +45,7 @@ For export coverage validation, use [saf-analyze-package](../dev-tools/docs/pack
 
 Tests are an indicator of import graph issues; unit tests that pull in a great deal of the application point to hotspots.
 
-To help with this, you can run a Vitest reporter that reports the number of imports each test has. Opt-in via `IMPORT_GRAPH_REPORT=1` (wired in [`@saflib/vitest`](../vitest/docs/01-overview.md#import-graph-reporter) `defaultConfig`). Prints one line per test file, then a run summary and those tests with the most imports:
+To help with this, you can run a Vitest reporter that reports the number of imports each test has. Opt-in via `IMPORT_GRAPH_REPORT=1` (wired in [`@saflib/vitest`](../../vitest/docs/01-overview.md#import-graph-reporter) `defaultConfig`). Prints one line per test file, then a run summary and those tests with the most imports:
 
 ```
 import-graph  routes/matters/list-importers.test.ts  modules=1071  ext=56  collect=4.98s

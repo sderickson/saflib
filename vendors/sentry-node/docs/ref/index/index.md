@@ -4,11 +4,18 @@
 
 # index
 
+## Classes
+
+| Class                                               | Description |
+| --------------------------------------------------- | ----------- |
+| [SentryErrorService](classes/SentryErrorService.md) | -           |
+
 ## Type Aliases
 
-| Type Alias                                                       | Description                                                                                                                                        |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [ConfigureSentryOptions](type-aliases/ConfigureSentryOptions.md) | `@saflib/vendors-sentry-node` — Sentry Node adapters, Vite source-map upload (`./vite-build`), and env schema (`SENTRY_DSN`, `SENTRY_AUTH_TOKEN`). |
+| Type Alias                                                             | Description                                                                                                                                        |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [ConfigureSentryOptions](type-aliases/ConfigureSentryOptions.md)       | `@saflib/vendors-sentry-node` — Sentry Node adapters, Vite source-map upload (`./vite-build`), and env schema (`SENTRY_DSN`, `SENTRY_AUTH_TOKEN`). |
+| [SentryErrorServiceOptions](type-aliases/SentryErrorServiceOptions.md) | -                                                                                                                                                  |
 
 ## Variables
 
@@ -19,6 +26,7 @@
 
 ## Functions
 
-| Function                                        | Description                                                                                                                                        |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [configureSentry](functions/configureSentry.md) | `@saflib/vendors-sentry-node` — Sentry Node adapters, Vite source-map upload (`./vite-build`), and env schema (`SENTRY_DSN`, `SENTRY_AUTH_TOKEN`). |
+| Function                                                | Description                                                                                                                                        |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [configureSentry](functions/configureSentry.md)         | `@saflib/vendors-sentry-node` — Sentry Node adapters, Vite source-map upload (`./vite-build`), and env schema (`SENTRY_DSN`, `SENTRY_AUTH_TOKEN`). |
+| [resetErrorsForTests](functions/resetErrorsForTests.md) | `@saflib/vendors-sentry-node` — Sentry Node adapters, Vite source-map upload (`./vite-build`), and env schema (`SENTRY_DSN`, `SENTRY_AUTH_TOKEN`). |

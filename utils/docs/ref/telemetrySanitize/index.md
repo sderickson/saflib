@@ -13,11 +13,11 @@
 
 ## Variables
 
-| Variable                                                                          | Description                                                                  |
-| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| [TELEMETRY_FILTERED_VALUE](variables/TELEMETRY_FILTERED_VALUE.md)                 | Value substituted for sensitive telemetry fields (cookies, Vue props, etc.). |
-| [TELEMETRY_OMITTED_CONTEXT_KEYS](variables/TELEMETRY_OMITTED_CONTEXT_KEYS.md)     | Context keys omitted from client error telemetry (may contain PII).          |
-| [TELEMETRY_SENSITIVE_COOKIE_NAMES](variables/TELEMETRY_SENSITIVE_COOKIE_NAMES.md) | Cookie names that must never be sent to external telemetry vendors.          |
+| Variable                                                                             | Description                                                                  |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| [TELEMETRY\_FILTERED\_VALUE](variables/TELEMETRY_FILTERED_VALUE.md)                  | Value substituted for sensitive telemetry fields (cookies, Vue props, etc.). |
+| [TELEMETRY\_OMITTED\_CONTEXT\_KEYS](variables/TELEMETRY_OMITTED_CONTEXT_KEYS.md)     | Context keys omitted from client error telemetry (may contain PII).          |
+| [TELEMETRY\_SENSITIVE\_COOKIE\_NAMES](variables/TELEMETRY_SENSITIVE_COOKIE_NAMES.md) | Cookie names that must never be sent to external telemetry vendors.          |
 
 ## Functions
 

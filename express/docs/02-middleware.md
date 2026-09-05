@@ -1,6 +1,6 @@
 # Middleware
 
-`@saflib/express` ships standard middleware used by SAF HTTP services. Bundles are composed via [`createGlobalMiddleware`](./ref/functions/createGlobalMiddleware.md), [`createOperationScopedMiddleware`](./ref/functions/createScopedMiddleware.md) / [`createScopedMiddleware`](./ref/functions/createScopedMiddleware.md), and [`createErrorMiddleware`](./ref/functions/createErrorMiddleware.md). [`createInternalMiddleware`](./ref/@saflib/express/functions/createInternalMiddleware.md) is a slimmer stack for internal-only listeners.
+`@saflib/express` ships standard middleware used by SAF HTTP services. Bundles are composed via [`createGlobalMiddleware`](./ref/@saflib/express/functions/createGlobalMiddleware.md), [`createOperationScopedMiddleware`](./ref/@saflib/express/functions/createScopedMiddleware.md) / [`createScopedMiddleware`](./ref/@saflib/express/functions/createScopedMiddleware.md), and [`createErrorMiddleware`](./ref/@saflib/express/functions/createErrorMiddleware.md). [`createInternalMiddleware`](./ref/@saflib/express/functions/createInternalMiddleware.md) is a slimmer stack for internal-only listeners.
 
 Middleware falls into three layers:
 

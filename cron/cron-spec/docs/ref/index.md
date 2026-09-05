@@ -6,11 +6,11 @@
 
 ## Modules
 
-| Module                                                                                  | Description |
-| --------------------------------------------------------------------------------------- | ----------- |
-| [dist/operations/listCronJobs](dist/operations/listCronJobs/index.md)                   | -           |
-| [dist/operations/updateCronJobSettings](dist/operations/updateCronJobSettings/index.md) | -           |
-| [dist/schemas/error](dist/schemas/error/index.md)                                       | -           |
-| [dist/schemas/job_settings](dist/schemas/job_settings/index.md)                         | -           |
-| [dist/schemas/JobSettings](dist/schemas/JobSettings/index.md)                           | -           |
-| [index](index/index.md)                                                                 | -           |
+| Module                                                                                        | Description |
+| --------------------------------------------------------------------------------------------- | ----------- |
+| [modules/operations/listCronJobs](modules/operations/listCronJobs/index.md)                   | -           |
+| [modules/operations/updateCronJobSettings](modules/operations/updateCronJobSettings/index.md) | -           |
+| [modules/schemas/error](modules/schemas/error/index.md)                                       | -           |
+| [modules/schemas/job\_settings](modules/schemas/job_settings/index.md)                        | -           |
+| [modules/schemas/JobSettings](modules/schemas/JobSettings/index.md)                           | -           |
+| [index](index/index.md)                                                                       | -           |

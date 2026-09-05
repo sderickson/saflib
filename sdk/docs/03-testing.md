@@ -37,4 +37,4 @@ describe("getRecipeQuery", () => {
 
 ## SDK component tests
 
-Product SDK packages expose [`test-app.ts`](../../base/service/sdk/test-app.ts) — a thin wrapper around [`mountWithPlugins`](../vue/docs/ref/@saflib/vue/testing/functions/mountWithPlugins.md) with SDK i18n and router. SPA page tests follow [@saflib/vue — Testing](../vue/docs/04-testing.md); SDK component tests use the same MSW pattern with `mountTestApp` from `./test-app.ts`.
+Product SDK packages expose [`test-app.ts`](https://github.com/sderickson/saflib/blob/main/base/service/sdk/test-app.ts) — a thin wrapper around [`mountWithPlugins`](../../vue/docs/ref/@saflib/vue/testing/functions/mountWithPlugins.md) with SDK i18n and router. SPA page tests follow [@saflib/vue — Testing](../../vue/docs/04-testing.md); SDK component tests use the same MSW pattern with `mountTestApp` from `./test-app.ts`.

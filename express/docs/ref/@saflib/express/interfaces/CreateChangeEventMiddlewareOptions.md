@@ -35,6 +35,6 @@ Return undefined/null/empty to skip publishing.
 
 ### skipOperationIds?
 
-> `optional` **skipOperationIds**: `ReadonlySet`\<`string`\> \| readonly `string`[]
+> `optional` **skipOperationIds**: `ReadonlySet`\<`string`> \> \| readonly `string`[]
 
 operationIds that should never publish (e.g. noisy CSP reports).

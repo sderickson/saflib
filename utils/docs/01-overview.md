@@ -4,5 +4,5 @@ This is a package to place shared logic which doesn't depend on anything else, l
 
 It also holds:
 
-- [`ReturnsError`](./ref/index/type-aliases/ReturnsError.md) / [`throwError`](./ref/index/functions/throwError.md) — typed async error returns for queries, integrations, and similar package functions
+- `ReturnsError` / `throwError` — typed async error returns (`@saflib/utils/returns-error`); run `saf-docs generate` in utils for ref pages
 - Code shared between `@saflib/vue` and `@saflib/playwright` for working with translation strings

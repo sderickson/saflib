@@ -4,7 +4,7 @@
 
 # Function: sanitizeTelemetryExtra()
 
-> **sanitizeTelemetryExtra**(`extra`): `undefined` \| `Record`\<`string`, `unknown`\>
+> **sanitizeTelemetryExtra**(`extra`): `undefined` \| `Record`\<`string`, `unknown`>\>
 
 ## Parameters
 

@@ -15,9 +15,9 @@ Content-addressed parse result for one file.
 
 ---
 
-### computed_at
+### computed\_at
 
-> **computed_at**: `Date`
+> **computed\_at**: `Date`
 
 ---
 

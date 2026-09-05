@@ -18,4 +18,4 @@ Environment:
 
 - **`VITE_CLIENT_SENTRY_DSN`** — browser project DSN at build time
 
-Server-side Sentry for Node services lives in [`@saflib/vendors-sentry-node`](../sentry-node/docs/01-overview.md).
+Server-side Sentry for Node services lives in [`@saflib/vendors-sentry-node`](../../sentry-node/docs/01-overview.md).

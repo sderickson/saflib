@@ -1,10 +1,10 @@
-[**@saflib/ory-kratos**](../../index.md)
+[**@saflib/ory-kratos-http**](../../index.md)
 
 ---
 
 # Function: createPostKratosCourierHandler()
 
-> **createPostKratosCourierHandler**(`courierCallbacks`): `RequestHandler`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`\>\>
+> **createPostKratosCourierHandler**(`courierCallbacks`): `RequestHandler`\<`ParamsDictionary`, `any`, `any`, `ParsedQs`, `Record`\<`string`, `any`>>\>\>
 
 ## Parameters
 

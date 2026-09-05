@@ -24,7 +24,7 @@ When run, the workflow will:
 - Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.
 - Upsert 4 templates.
 - Change working directory to ../workflows-cli
-- Run `npm install @saflib/workflows`
+- Run `npm install @saflib/docs`
 - Run `npm exec saf-workflow checklist example-package/example-workflow`
 
 ## Help Docs

@@ -2,7 +2,7 @@
 
 ## Source
 
-[init.ts](../../workflows/init.ts)
+[init.ts](https://github.com/sderickson/saflib/blob/main/sdk/workflows/init.ts)
 
 ## Usage
 
@@ -21,7 +21,7 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Upsert 5 templates.
-- Add @saflib/sdk-dossier-sdk dependency to parent sdk
+- Add @saflib/docs-dossier-sdk dependency to parent sdk
 - Change working directory to dossier/sdk
 - Run `npm install`
 - Run `npm run typecheck`
@@ -36,4 +36,5 @@ Scaffold an offshoot SDK package and register it on the parent sdk
 Arguments:
   name        Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/sdk and registers it on the parent sdk package.
               Example: "dossier"
+
 ```

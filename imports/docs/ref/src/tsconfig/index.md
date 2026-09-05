@@ -4,6 +4,19 @@
 
 # src/tsconfig
 
+## Interfaces
+
+| Interface                                                                              | Description |
+| -------------------------------------------------------------------------------------- | ----------- |
+| [CleanupDeclarationArtifactsOptions](interfaces/CleanupDeclarationArtifactsOptions.md) | -           |
+| [CleanupDeclarationArtifactsResult](interfaces/CleanupDeclarationArtifactsResult.md)   | -           |
+
+## Functions
+
+| Function                                                                | Description                                              |
+| ----------------------------------------------------------------------- | -------------------------------------------------------- |
+| [cleanupDeclarationArtifacts](functions/cleanupDeclarationArtifacts.md) | Remove co-located TypeScript declaration emit artifacts. |
+
 ## References
 
 ### applyCompositionRootReferences

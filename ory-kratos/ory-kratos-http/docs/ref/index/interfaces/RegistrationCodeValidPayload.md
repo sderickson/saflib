@@ -1,4 +1,4 @@
-[**@saflib/ory-kratos**](../../index.md)
+[**@saflib/ory-kratos-http**](../../index.md)
 
 ---
 
@@ -40,7 +40,7 @@
 
 ### templateData
 
-> **templateData**: `Record`\<`string`, `unknown`\>
+> **templateData**: `Record`\<`string`, `unknown`>\>
 
 Original `template_data` from the HTTP courier body.
 

@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-mutation.ts](../../workflows/add-mutation.ts)
+[add-mutation.ts](https://github.com/sderickson/saflib/blob/main/sdk/workflows/add-mutation.ts)
 
 ## Usage
 
@@ -42,4 +42,5 @@ Arguments:
               Example: "post"
   upload      Mutation sends a file via FormData (e.g. multipart upload) (optional flag)
   download    Mutation returns binary (e.g. blob/arrayBuffer from fetch) (optional flag)
+
 ```

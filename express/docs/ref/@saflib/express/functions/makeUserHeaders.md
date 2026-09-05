@@ -4,7 +4,7 @@
 
 # Function: makeUserHeaders()
 
-> **makeUserHeaders**(`userId`, `email`, `phone?`): `Record`\<`string`, `string`\>
+> **makeUserHeaders**(`userId`, `email`, `phone?`): `Record`\<`string`, `string`>\>
 
 ## Parameters
 

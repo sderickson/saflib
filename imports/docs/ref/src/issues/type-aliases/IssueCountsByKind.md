@@ -4,4 +4,4 @@
 
 # Type Alias: IssueCountsByKind
 
-> **IssueCountsByKind** = `Record`\<[`PackageIssueKind`](../../../index/type-aliases/PackageIssueKind.md), `number`\>
+> **IssueCountsByKind** = `Record`\<[`PackageIssueKind`](../../../index/type-aliases/PackageIssueKind.md), `number`>\>

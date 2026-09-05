@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow grpc/add-proto
-
 - Upsert 2 templates.
 - Update **list.proto** to implement the RPC request and response messages. Define the appropriate fields for your RPC.
 - Update **index.proto** to add the new RPC method to the service. The RPC should follow the pattern: rpc MethodName(RequestMessage) returns (ResponseMessage);

@@ -9,8 +9,13 @@ export interface GenerateCliDocsOptions {
   packageName: string;
 }
 
-function runBinHelp(binScriptPath: string, helpArgs: string[] = ["--help"]): string {
-  const argStr = helpArgs.map((arg) => `"${arg.replace(/"/g, '\\"')}"`).join(" ");
+function runBinHelp(
+  binScriptPath: string,
+  helpArgs: string[] = ["--help"],
+): string {
+  const argStr = helpArgs
+    .map((arg) => `"${arg.replace(/"/g, '\\"')}"`)
+    .join(" ");
   return execSync(
     `node --experimental-strip-types --disable-warning=ExperimentalWarning "${binScriptPath}" ${argStr}`,
     { encoding: "utf8" },
@@ -67,7 +72,9 @@ export function generateCliDocs(options: GenerateCliDocsOptions) {
 
         let mainDoc = wrapCliDoc(command, result);
         mainDoc += `\n## Subcommands\n\n${subcommands
-          .map((subcommand) => `- [${subcommand}](./${command}/${subcommand}.md)`)
+          .map(
+            (subcommand) => `- [${subcommand}](./${command}/${subcommand}.md)`,
+          )
           .join("\n")}\n`;
         writeFileSync(path.join(cliDocsDir, `${command}.md`), mainDoc);
 

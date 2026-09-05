@@ -1,4 +1,4 @@
-[**@saflib/ory-kratos**](../../index.md)
+[**@saflib/ory-kratos-http**](../../index.md)
 
 ---
 
@@ -10,7 +10,7 @@ Hooks for each supported **valid** template type. Unsupported / invalid template
 
 ### onLoginCodeValid()?
 
-> `optional` **onLoginCodeValid**: (`payload`) => `Promise`\<`void`\>
+> `optional` **onLoginCodeValid**: (`payload`) => `Promise`\<`void`>\>
 
 #### Parameters
 
@@ -26,7 +26,7 @@ Hooks for each supported **valid** template type. Unsupported / invalid template
 
 ### onRecoveryCodeValid()?
 
-> `optional` **onRecoveryCodeValid**: (`payload`) => `Promise`\<`void`\>
+> `optional` **onRecoveryCodeValid**: (`payload`) => `Promise`\<`void`>\>
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Hooks for each supported **valid** template type. Unsupported / invalid template
 
 ### onRecoveryValid()?
 
-> `optional` **onRecoveryValid**: (`payload`) => `Promise`\<`void`\>
+> `optional` **onRecoveryValid**: (`payload`) => `Promise`\<`void`>\>
 
 #### Parameters
 
@@ -58,7 +58,7 @@ Hooks for each supported **valid** template type. Unsupported / invalid template
 
 ### onRegistrationCodeValid()?
 
-> `optional` **onRegistrationCodeValid**: (`payload`) => `Promise`\<`void`\>
+> `optional` **onRegistrationCodeValid**: (`payload`) => `Promise`\<`void`>\>
 
 #### Parameters
 
@@ -74,7 +74,7 @@ Hooks for each supported **valid** template type. Unsupported / invalid template
 
 ### onVerificationCodeValid()?
 
-> `optional` **onVerificationCodeValid**: (`payload`) => `Promise`\<`void`\>
+> `optional` **onVerificationCodeValid**: (`payload`) => `Promise`\<`void`>\>
 
 #### Parameters
 
@@ -90,7 +90,7 @@ Hooks for each supported **valid** template type. Unsupported / invalid template
 
 ### onVerificationValid()?
 
-> `optional` **onVerificationValid**: (`payload`) => `Promise`\<`void`\>
+> `optional` **onVerificationValid**: (`payload`) => `Promise`\<`void`>\>
 
 #### Parameters
 

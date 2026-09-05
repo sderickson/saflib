@@ -103,9 +103,9 @@ City or town name
 Anytown;
 ```
 
-##### address.postal_code?
+##### address.postal\_code?
 
-> `optional` **postal_code**: `null` \| `string`
+> `optional` **postal\_code**: `null` \| `string`
 
 ###### Description
 
@@ -131,9 +131,9 @@ State, province, or region
 ST;
 ```
 
-##### address.street_address?
+##### address.street\_address?
 
-> `optional` **street_address**: `null` \| `string`
+> `optional` **street\_address**: `null` \| `string`
 
 ###### Description
 
@@ -191,9 +191,9 @@ City or town name
 Anytown;
 ```
 
-##### Address.postal_code?
+##### Address.postal\_code?
 
-> `optional` **postal_code**: `null` \| `string`
+> `optional` **postal\_code**: `null` \| `string`
 
 ###### Description
 
@@ -219,9 +219,9 @@ State, province, or region
 ST;
 ```
 
-##### Address.street_address?
+##### Address.street\_address?
 
-> `optional` **street_address**: `null` \| `string`
+> `optional` **street\_address**: `null` \| `string`
 
 ###### Description
 

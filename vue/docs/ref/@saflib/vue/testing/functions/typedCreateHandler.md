@@ -4,7 +4,7 @@
 
 # Function: typedCreateHandler()
 
-> **typedCreateHandler**\<`Paths`>>\>(): `object`
+> **typedCreateHandler**\<`Paths`>\>(): `object`
 
 Use to create a typed helper function for creating typesafe mock API handlers.
 
@@ -20,7 +20,7 @@ Use to create a typed helper function for creating typesafe mock API handlers.
 
 ### createHandler()
 
-> **createHandler**: \<`P`, `V`, `S`>>\>(`__namedParameters`) => `HttpHandler`
+> **createHandler**: \<`P`, `V`, `S`>\>(`__namedParameters`) => `HttpHandler`
 
 #### Type Parameters
 

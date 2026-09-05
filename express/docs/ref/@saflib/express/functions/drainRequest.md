@@ -4,7 +4,7 @@
 
 # Function: drainRequest()
 
-> **drainRequest**(`req`): `Promise`\<`void`\>
+> **drainRequest**(`req`): `Promise`\<`void`>\>
 
 Drain the request body so the client can finish sending (e.g. multipart
 upload). Call before sending 401/403 to avoid EPIPE when the client closes

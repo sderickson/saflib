@@ -4,7 +4,7 @@
 
 # Function: attachScreenshot()
 
-> **attachScreenshot**(`page`, `options`): `Promise`\<`void`\>
+> **attachScreenshot**(`page`, `options`): `Promise`\<`void`>\>
 
 Attach a screenshot to the test report. Use throughout tests to create a visual record of the user journey for easier review.
 

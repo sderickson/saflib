@@ -6,12 +6,6 @@
 
 ## References
 
-### createAnalyticsRouter
-
-Re-exports [createAnalyticsRouter](../express/createAnalyticsRouter/functions/createAnalyticsRouter.md)
-
----
-
 ### createDevAnalyticsRouter
 
 Re-exports [createDevAnalyticsRouter](../express/createAnalyticsRouter/functions/createDevAnalyticsRouter.md)

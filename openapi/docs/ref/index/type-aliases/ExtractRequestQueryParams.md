@@ -4,7 +4,7 @@
 
 # Type Alias: ExtractRequestQueryParams\<Ops\>
 
-> **ExtractRequestQueryParams**\<`Ops`\> = `{ [OpKey in keyof Ops]: Ops[OpKey]["parameters"]["query"] }`
+> **ExtractRequestQueryParams**\<`Ops`> \> = `{ [OpKey in keyof Ops]: Ops[OpKey]["parameters"]["query"] }`
 
 Convenience type to lookup the query params by operationId.
 

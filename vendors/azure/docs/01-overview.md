@@ -20,4 +20,4 @@ Environment (see `env.schema.json`):
 
 The shared blob client uses Azure credential chain (managed identity, env vars, etc.) via `@azure/identity`.
 
-Local development typically uses [`DiskObjectStore`](../../../object-store/docs/01-overview.md). GCS alternative: [`@saflib/vendors-gcs`](../gcs/docs/01-overview.md).
+Local development typically uses [`DiskObjectStore`](../../../object-store/docs/01-overview.md). GCS alternative: [`@saflib/vendors-gcs`](../../gcs/docs/01-overview.md).

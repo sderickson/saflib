@@ -32,4 +32,4 @@ queryClient.invalidateQueries({ queryKey: ["recipes", recipeId, "notes"] });
 queryClient.invalidateQueries({ queryKey: ["recipes", recipeId] });
 ```
 
-Response shapes follow [OpenAPI API design](../openapi/docs/02-api-design.md) — flat objects keyed by resource name.
+Response shapes follow [OpenAPI API design](../../openapi/docs/02-api-design.md) — flat objects keyed by resource name.

@@ -16,7 +16,7 @@ Path to committed snapshot JSON.
 
 ### mode?
 
-> `optional` **mode**: `"error"` \| `"warn"`
+> `optional` **mode**: `"warn"` \| `"error"`
 
 `error` exits non-zero on regressions (shell/route timing warn-only for routes).
 

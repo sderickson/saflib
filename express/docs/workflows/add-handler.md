@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow express/add-handler
-
 - Change working directory to ../common
 - Change working directory to
 - Upsert 5 templates.

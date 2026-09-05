@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: PACKAGE_ISSUE_KINDS
+# Variable: PACKAGE\_ISSUE\_KINDS
 
-> `const` **PACKAGE_ISSUE_KINDS**: readonly [`PackageIssueKind`](../../../index/type-aliases/PackageIssueKind.md)[]
+> `const` **PACKAGE\_ISSUE\_KINDS**: readonly [`PackageIssueKind`](../../../index/type-aliases/PackageIssueKind.md)[]

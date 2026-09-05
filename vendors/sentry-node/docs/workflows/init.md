@@ -20,10 +20,8 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow sentry/init
-
-- Implement Sentry integration for this monorepo (adapt paths/package names to the repo). Operators should later follow **/Users/scotterickson/src/saf-2025/saflib/vendors/sentry-node/docs/manual-setup.md** for browser-only steps.
-- Run `echo Human operator: open and follow /Users/scotterickson/src/saf-2025/saflib/vendors/sentry-node/docs/manual-setup.md — Sentry projects, DSNs, auth token, GitHub secrets. No further agent steps unless something failed above.`
+- Implement Sentry integration for this monorepo (adapt paths/package names to the repo). Operators should later follow **/Users/scott/src/saf-2025/saflib/vendors/sentry-node/docs/manual-setup.md** for browser-only steps.
+- Run `echo Human operator: open and follow /Users/scott/src/saf-2025/saflib/vendors/sentry-node/docs/manual-setup.md — Sentry projects, DSNs, auth token, GitHub secrets. No further agent steps unless something failed above.`
 
 ## Help Docs
 

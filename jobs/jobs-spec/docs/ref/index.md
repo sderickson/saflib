@@ -6,20 +6,20 @@
 
 ## Modules
 
-| Module                                                                                              | Description |
-| --------------------------------------------------------------------------------------------------- | ----------- |
-| [dist/operations/cancelJob](dist/operations/cancelJob/index.md)                                     | -           |
-| [dist/operations/cancelJobsByOriginalRequest](dist/operations/cancelJobsByOriginalRequest/index.md) | -           |
-| [dist/operations/enqueueJob](dist/operations/enqueueJob/index.md)                                   | -           |
-| [dist/operations/getJob](dist/operations/getJob/index.md)                                           | -           |
-| [dist/operations/listJobs](dist/operations/listJobs/index.md)                                       | -           |
-| [dist/operations/retryJob](dist/operations/retryJob/index.md)                                       | -           |
-| [dist/schemas/authority](dist/schemas/authority/index.md)                                           | -           |
-| [dist/schemas/Error](dist/schemas/Error/index.md)                                                   | -           |
-| [dist/schemas/Job](dist/schemas/Job/index.md)                                                       | -           |
-| [dist/schemas/operation\_id](dist/schemas/operation_id/index.md)                                    | -           |
-| [dist/schemas/original\_request\_id](dist/schemas/original_request_id/index.md)                     | -           |
-| [dist/schemas/request](dist/schemas/request/index.md)                                               | -           |
-| [dist/schemas/status](dist/schemas/status/index.md)                                                 | -           |
-| [dist/schemas/user\_id](dist/schemas/user_id/index.md)                                              | -           |
-| [index](index/index.md)                                                                             | -           |
+| Module                                                                                                    | Description |
+| --------------------------------------------------------------------------------------------------------- | ----------- |
+| [modules/operations/cancelJob](modules/operations/cancelJob/index.md)                                     | -           |
+| [modules/operations/cancelJobsByOriginalRequest](modules/operations/cancelJobsByOriginalRequest/index.md) | -           |
+| [modules/operations/enqueueJob](modules/operations/enqueueJob/index.md)                                   | -           |
+| [modules/operations/getJob](modules/operations/getJob/index.md)                                           | -           |
+| [modules/operations/listJobs](modules/operations/listJobs/index.md)                                       | -           |
+| [modules/operations/retryJob](modules/operations/retryJob/index.md)                                       | -           |
+| [modules/schemas/authority](modules/schemas/authority/index.md)                                           | -           |
+| [modules/schemas/Error](modules/schemas/Error/index.md)                                                   | -           |
+| [modules/schemas/Job](modules/schemas/Job/index.md)                                                       | -           |
+| [modules/schemas/operation\_id](modules/schemas/operation_id/index.md)                                    | -           |
+| [modules/schemas/original\_request\_id](modules/schemas/original_request_id/index.md)                     | -           |
+| [modules/schemas/request](modules/schemas/request/index.md)                                               | -           |
+| [modules/schemas/status](modules/schemas/status/index.md)                                                 | -           |
+| [modules/schemas/user\_id](modules/schemas/user_id/index.md)                                              | -           |
+| [index](index/index.md)                                                                                   | -           |

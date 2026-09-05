@@ -4,6 +4,6 @@
 
 # Type Alias: EmailRequestBody
 
-> **EmailRequestBody** = `ExtractRequestBody`\<`operations`\>
+> **EmailRequestBody** = `ExtractRequestBody`\<`operations`>\>
 
 For typing Express requests for email API routes.

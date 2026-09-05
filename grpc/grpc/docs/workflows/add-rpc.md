@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow grpc/add-rpc
-
 - Upsert 2 templates.
 - Update **get-user-profile.fake.ts** to implement the fake RPC handler for testing. Make sure to:
 - Update **index.ts** to export the new RPC client and types.

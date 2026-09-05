@@ -23,4 +23,4 @@ Commands:
 
 ```
 
-For export coverage validation, use [saf-analyze-package](../../dev-tools/docs/package-issues.md).
+For export coverage validation, use [saf-analyze-package](../../../dev-tools/docs/package-issues.md).

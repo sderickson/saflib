@@ -12,9 +12,14 @@ Testing utilities for SDK packages and packages that use them.
 | ---------------------------------------------------------- | ----------- |
 | [ExtractRequestQuery](type-aliases/ExtractRequestQuery.md) | -           |
 
+## Variables
+
+| Variable                                              | Description                                                                    |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [typedCreateHandler](variables/typedCreateHandler.md) | Use to create a typed helper function for creating typesafe mock API handlers. |
+
 ## Functions
 
-| Function                                              | Description                                                                    |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
-| [typedCreateHandler](functions/typedCreateHandler.md) | Use to create a typed helper function for creating typesafe mock API handlers. |
-| [withVueQuery](functions/withVueQuery.md)             | Helper function to test Vue Query composables in isolation.                    |
+| Function                                  | Description                                                 |
+| ----------------------------------------- | ----------------------------------------------------------- |
+| [withVueQuery](functions/withVueQuery.md) | Helper function to test Vue Query composables in isolation. |

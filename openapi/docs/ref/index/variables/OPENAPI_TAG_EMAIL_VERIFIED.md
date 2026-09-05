@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: OPENAPI_TAG_EMAIL_VERIFIED
+# Variable: OPENAPI\_TAG\_EMAIL\_VERIFIED
 
-> `const` **OPENAPI_TAG_EMAIL_VERIFIED**: `"email-verified"`
+> `const` **OPENAPI\_TAG\_EMAIL\_VERIFIED**: `"email-verified"`

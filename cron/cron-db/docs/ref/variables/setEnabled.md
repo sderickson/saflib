@@ -4,7 +4,7 @@
 
 # Variable: setEnabled()
 
-> `const` **setEnabled**: (`dbKey`, `jobName`, `enabled`, `enabledBy?`) => `Promise`\<[`SetEnabledResult`](../type-aliases/SetEnabledResult.md)\>
+> `const` **setEnabled**: (`dbKey`, `jobName`, `enabled`, `enabledBy?`) => `Promise`\<[`SetEnabledResult`](../type-aliases/SetEnabledResult.md)>\>
 
 Upsert enabled flag for a cron job.
 When enabling, pass `enabledBy` (Kratos identity id) to record authority.

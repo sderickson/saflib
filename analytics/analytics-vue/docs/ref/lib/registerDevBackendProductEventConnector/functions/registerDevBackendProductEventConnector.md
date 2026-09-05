@@ -7,9 +7,8 @@
 > **registerDevBackendProductEventConnector**(): `void`
 
 In development, POST product events to the backend ring buffer so they appear
-in @saflib/analytics-vue/pages/AnalyticsEventsPage.vue. Registers a
-connector on @saflib/vue's commonEventLogger — call once
-before wiring `makeProductEventLogger` → `commonEventLogger`.
+in the admin Product Events page. Registers a connector on
+commonEventLogger — called from createSpaMain in dev only.
 
 ## Returns
 

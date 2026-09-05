@@ -4,7 +4,7 @@
 
 # Type Alias: ExtractResponseBody\<Ops\>
 
-> **ExtractResponseBody**\<`Ops`\> = `{ [OpKey in keyof Ops]: { [StatusCode in keyof Ops[OpKey]["responses"]]: Ops[OpKey]["responses"][StatusCode] extends { content: { application/json: any } } ? Ops[OpKey]["responses"][StatusCode]["content"]["application/json"] : never } }`
+> **ExtractResponseBody**\<`Ops`> \> = `{ [OpKey in keyof Ops]: { [StatusCode in keyof Ops[OpKey]["responses"]]: Ops[OpKey]["responses"][StatusCode] extends { content: { application/json: any } } ? Ops[OpKey]["responses"][StatusCode]["content"]["application/json"] : never } }`
 
 Convenience type to lookup the response body by operationId.
 

@@ -4,7 +4,7 @@
 
 # Function: omitTelemetryContextKeys()
 
-> **omitTelemetryContextKeys**(`contexts`): `undefined` \| `Record`\<`string`, `unknown`\>
+> **omitTelemetryContextKeys**(`contexts`): `undefined` \| `Record`\<`string`, `unknown`>\>
 
 ## Parameters
 

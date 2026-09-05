@@ -4,7 +4,7 @@
 
 # Function: makeAssertionHeaders()
 
-> **makeAssertionHeaders**(`user`, `options`): `Record`\<`string`, `string`\>
+> **makeAssertionHeaders**(`user`, `options`): `Record`\<`string`, `string`>\>
 
 Signs an identity assertion for use in tests via `X-Saf-Identity-Assertion`.
 

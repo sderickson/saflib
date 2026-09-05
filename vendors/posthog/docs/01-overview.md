@@ -17,4 +17,4 @@ Environment (see `env.schema.json`):
 - **`POSTHOG_PROJECT_API_KEY`** — project API key; omit, leave empty, or set to `mock` for in-memory
 - **`POSTHOG_PROJECT_HOST`** — ingest host (defaults to `https://us.i.posthog.com`)
 
-Browser PostHog loading and feature flags live in [`@saflib/vendors-posthog-client`](../posthog-client/docs/01-overview.md).
+Browser PostHog loading and feature flags live in [`@saflib/vendors-posthog-client`](../../posthog-client/docs/01-overview.md).

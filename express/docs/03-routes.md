@@ -10,9 +10,9 @@ Use the [express/add-handler](./workflows/add-handler.md) workflow to add new ha
 
 See [base](https://github.com/sderickson/saflib/tree/main/base/service/http) for file layout, router factories, and how handlers are mounted. Use the `express/add-handler` workflow to add new handlers.
 
-Each handler is registered on an Express router with [`createOperationScopedMiddleware`](./ref/functions/createScopedMiddleware.md) and the operation's `operationJsonSpec` from `@…-spec/operations/<operationId>`.
+Each handler is registered on an Express router with [`createOperationScopedMiddleware`](./ref/@saflib/express/functions/createScopedMiddleware.md) and the operation's `operationJsonSpec` from `@…-spec/operations/<operationId>`.
 
-Wrap every handler with [`createHandler`](./ref/functions/createHandler.md) so async errors reach Express error middleware.
+Wrap every handler with [`createHandler`](./ref/@saflib/express/functions/createHandler.md) so async errors reach Express error middleware.
 
 ## Typing
 

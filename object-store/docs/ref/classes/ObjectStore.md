@@ -23,7 +23,7 @@
 
 ### deleteFile()
 
-> `abstract` **deleteFile**(`path`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
+> `abstract` **deleteFile**(`path`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)>>\>\>
 
 #### Parameters
 
@@ -55,7 +55,7 @@
 
 ### listFiles()
 
-> `abstract` **listFiles**(`prefix?`): `Promise`\<`ReturnsError`\<`object`[], [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
+> `abstract` **listFiles**(`prefix?`): `Promise`\<`ReturnsError`\<`object`[], [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)>>\>\>
 
 #### Parameters
 
@@ -87,7 +87,7 @@
 
 ### readFile()
 
-> `abstract` **readFile**(`path`): `Promise`\<`ReturnsError`\<`Readable`, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md) \| [`FileNotFoundError`](FileNotFoundError.md)\>\>
+> `abstract` **readFile**(`path`): `Promise`\<`ReturnsError`\<`Readable`, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md) \| [`FileNotFoundError`](FileNotFoundError.md)>>\>\>
 
 #### Parameters
 
@@ -103,7 +103,7 @@
 
 ### uploadFile()
 
-> `abstract` **uploadFile**(`path`, `stream`, `metadata?`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)\>\>
+> `abstract` **uploadFile**(`path`, `stream`, `metadata?`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}, [`PathTraversalError`](PathTraversalError.md) \| [`StorageError`](StorageError.md)>>\>\>
 
 #### Parameters
 
@@ -121,7 +121,7 @@
 
 ### upsertContainer()
 
-> `abstract` **upsertContainer**(): `Promise`\<`ReturnsError`\<\{ `created?`: `boolean`; `skipped?`: `boolean`; `success`: `boolean`; `updated?`: `boolean`; `url?`: `string`; \}, [`StorageError`](StorageError.md)\>\>
+> `abstract` **upsertContainer**(): `Promise`\<`ReturnsError`\<\{ `created?`: `boolean`; `skipped?`: `boolean`; `success`: `boolean`; `updated?`: `boolean`; `url?`: `string`; \}, [`StorageError`](StorageError.md)>>\>\>
 
 #### Returns
 

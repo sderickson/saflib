@@ -8,7 +8,7 @@
 
 ### metadata?
 
-> `optional` **metadata**: `Record`\<`string`, `string`\>
+> `optional` **metadata**: `Record`\<`string`, `string`>\>
 
 ---
 

@@ -4,4 +4,4 @@
 
 # Type Alias: GetByNameResult
 
-> **GetByNameResult** = `ReturnsError`\<[`JobSetting`](../interfaces/JobSetting.md), [`JobSettingNotFoundError`](../classes/JobSettingNotFoundError.md)\>
+> **GetByNameResult** = `ReturnsError`\<[`JobSetting`](../interfaces/JobSetting.md), [`JobSettingNotFoundError`](../classes/JobSettingNotFoundError.md)>\>

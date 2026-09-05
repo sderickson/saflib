@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-view.ts](../../workflows/add-view.ts)
+[add-view.ts](https://github.com/sderickson/saflib/blob/main/vue/workflows/add-view.ts)
 
 ## Usage
 

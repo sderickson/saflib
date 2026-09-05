@@ -29,17 +29,17 @@
 
 ## Variables
 
-| Variable                                                                  | Description                                       |
-| ------------------------------------------------------------------------- | ------------------------------------------------- |
-| [OPENAPI_ENFORCED_TAG_CATALOG](variables/OPENAPI_ENFORCED_TAG_CATALOG.md) | -                                                 |
-| [OPENAPI_ENFORCED_TAG_SET](variables/OPENAPI_ENFORCED_TAG_SET.md)         | -                                                 |
-| [OPENAPI_ENFORCED_TAGS](variables/OPENAPI_ENFORCED_TAGS.md)               | -                                                 |
-| [OPENAPI_TAG_BACKGROUND](variables/OPENAPI_TAG_BACKGROUND.md)             | Marks an operation as invocable by the job queue. |
-| [OPENAPI_TAG_CSRF_EXEMPT](variables/OPENAPI_TAG_CSRF_EXEMPT.md)           | -                                                 |
-| [OPENAPI_TAG_EMAIL_VERIFIED](variables/OPENAPI_TAG_EMAIL_VERIFIED.md)     | -                                                 |
-| [OPENAPI_TAG_MFA_REQUIRED](variables/OPENAPI_TAG_MFA_REQUIRED.md)         | -                                                 |
-| [OPENAPI_TAG_NO_AUTH](variables/OPENAPI_TAG_NO_AUTH.md)                   | -                                                 |
-| [OPENAPI_TAG_SITE_ADMIN_ONLY](variables/OPENAPI_TAG_SITE_ADMIN_ONLY.md)   | -                                                 |
+| Variable                                                                     | Description                                       |
+| ---------------------------------------------------------------------------- | ------------------------------------------------- |
+| [OPENAPI\_ENFORCED\_TAG\_CATALOG](variables/OPENAPI_ENFORCED_TAG_CATALOG.md) | -                                                 |
+| [OPENAPI\_ENFORCED\_TAG\_SET](variables/OPENAPI_ENFORCED_TAG_SET.md)         | -                                                 |
+| [OPENAPI\_ENFORCED\_TAGS](variables/OPENAPI_ENFORCED_TAGS.md)                | -                                                 |
+| [OPENAPI\_TAG\_BACKGROUND](variables/OPENAPI_TAG_BACKGROUND.md)              | Marks an operation as invocable by the job queue. |
+| [OPENAPI\_TAG\_CSRF\_EXEMPT](variables/OPENAPI_TAG_CSRF_EXEMPT.md)           | -                                                 |
+| [OPENAPI\_TAG\_EMAIL\_VERIFIED](variables/OPENAPI_TAG_EMAIL_VERIFIED.md)     | -                                                 |
+| [OPENAPI\_TAG\_MFA\_REQUIRED](variables/OPENAPI_TAG_MFA_REQUIRED.md)         | -                                                 |
+| [OPENAPI\_TAG\_NO\_AUTH](variables/OPENAPI_TAG_NO_AUTH.md)                   | -                                                 |
+| [OPENAPI\_TAG\_SITE\_ADMIN\_ONLY](variables/OPENAPI_TAG_SITE_ADMIN_ONLY.md)  | -                                                 |
 
 ## Functions
 
@@ -47,7 +47,7 @@
 | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [asOpenApiDocument](functions/asOpenApiDocument.md)                             | Cast an inline OpenAPI object (e.g. in tests) to [OpenApiDocument](type-aliases/OpenApiDocument.md).                                                                                                                         |
 | [assertNoRootResponseBodies](functions/assertNoRootResponseBodies.md)           | Throw if any success JSON response puts a resource at the document root. Pass current offenders in `allow` and remove entries as routes are migrated.                                                                        |
-| [assertOpenApiOperationTags](functions/assertOpenApiOperationTags.md)           | Throw if any operation uses a tag outside [OPENAPI_ENFORCED_TAGS](variables/OPENAPI_ENFORCED_TAGS.md). Call at startup when loading a product OpenAPI document (and from package tests).                                     |
+| [assertOpenApiOperationTags](functions/assertOpenApiOperationTags.md)           | Throw if any operation uses a tag outside [OPENAPI\_ENFORCED\_TAGS](variables/OPENAPI_ENFORCED_TAGS.md). Call at startup when loading a product OpenAPI document (and from package tests).                                   |
 | [assertOpenApiRouteFileTags](functions/assertOpenApiRouteFileTags.md)           | -                                                                                                                                                                                                                            |
 | [castJson](functions/castJson.md)                                               | Takes an imported JSON object and casts it to [OpenApiDocument](type-aliases/OpenApiDocument.md) so that express-openapi-validator can validate the JSON against the OpenAPI spec without complaining about a type mismatch. |
 | [findRootResponseBodyViolations](functions/findRootResponseBodyViolations.md)   | Find 2xx `application/json` response schemas that put a business object, array, or bare `$ref` at the document root instead of a flat keyed envelope (`{ recipe: Recipe }`, `{ recipes: Recipe[] }`).                        |

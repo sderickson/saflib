@@ -1,6 +1,6 @@
 # Overview
 
-`@saflib/product` provides workflows for **creating a new SAF product** from the golden template in [`@saflib/base`](../base/docs/01-overview.md). It is not product runtime code — only scaffolding and setup automation registered with [`saf-workflow`](../workflows-cli/docs/cli/saf-workflow.md).
+`@saflib/product` provides workflows for **creating a new SAF product** from the golden template in [`@saflib/base`](../../base/docs/01-overview.md). It is not product runtime code — only scaffolding and setup automation registered with [`saf-workflow`](../../workflows-cli/docs/cli/saf-workflow.md).
 
 ## Creating a product: `product/init`
 
@@ -12,4 +12,4 @@ npm exec saf-workflow kickoff product/init <name> <domain> [--productOnly]
 
 This copies `base` into `{name}/`, rewrites package names and paths, adds the product to root workspaces, runs install, and bootstraps env, tsconfig, and database migrations. See [init workflow docs](./workflows/init.md) for the full checklist.
 
-After init, extend the product with platform workflows (OpenAPI, Drizzle, Express, SDK, Vue) — most of those target files under `base` as the reference shape. Use [`processes/spec-project`](../processes/docs/01-overview.md) when you want a spec → plan → phased implementation flow for a larger feature.
+After init, extend the product with platform workflows (OpenAPI, Drizzle, Express, SDK, Vue) — most of those target files under `base` as the reference shape. Use [`processes/spec-project`](../../processes/docs/01-overview.md) when you want a spec → plan → phased implementation flow for a larger feature.

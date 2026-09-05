@@ -28,7 +28,7 @@
 
 ### claims?
 
-> `optional` **claims**: `Record`\<`string`, `string`\>
+> `optional` **claims**: `Record`\<`string`, `string`>\>
 
 Extension claims (e.g. jobId, originalRequestId for jobs delivery).
 
@@ -58,7 +58,7 @@ Request path, e.g. `/matters/123`.
 
 ### query?
 
-> `optional` **query**: `Record`\<`string`, `string`\>
+> `optional` **query**: `Record`\<`string`, `string`>\>
 
 ---
 

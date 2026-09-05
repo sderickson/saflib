@@ -6,14 +6,14 @@
 
 ## Interfaces
 
-| Interface                                              | Description                                                                                                                            |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Interface                                              | Description                                                                                                                                      |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [CronEnqueueParams](interfaces/CronEnqueueParams.md)   | Params for one cron-tick enqueue. Mirrored by `@saflib/jobs-http` `makeCronEnqueuer` so `@saflib/cron-http` does not import `@saflib/jobs-http`. |
-| [CronEnqueueResult](interfaces/CronEnqueueResult.md)   | -                                                                                                                                      |
-| [CronJobRequest](interfaces/CronJobRequest.md)         | Static request payload for the operation a cron tick enqueues. Dynamic fan-out belongs in the target handler.                          |
-| [CronServiceOptions](interfaces/CronServiceOptions.md) | Options to be passed when starting a cron service.                                                                                     |
-| [CustomLogErrorMeta](interfaces/CustomLogErrorMeta.md) | Data passed to the error callback.                                                                                                     |
-| [JobConfig](interfaces/JobConfig.md)                   | Configuration for a single cron job. Cron ticks only enqueue; work runs through the target background operation.                       |
+| [CronEnqueueResult](interfaces/CronEnqueueResult.md)   | -                                                                                                                                                |
+| [CronJobRequest](interfaces/CronJobRequest.md)         | Static request payload for the operation a cron tick enqueues. Dynamic fan-out belongs in the target handler.                                    |
+| [CronServiceOptions](interfaces/CronServiceOptions.md) | Options to be passed when starting a cron service.                                                                                               |
+| [CustomLogErrorMeta](interfaces/CustomLogErrorMeta.md) | Data passed to the error callback.                                                                                                               |
+| [JobConfig](interfaces/JobConfig.md)                   | Configuration for a single cron job. Cron ticks only enqueue; work runs through the target background operation.                                 |
 
 ## Type Aliases
 

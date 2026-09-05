@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow grpc/init-client
-
 - Upsert 6 templates.
 - Change working directory to identity/identity-grpc-client
 - Run `npm exec saf-env generate`

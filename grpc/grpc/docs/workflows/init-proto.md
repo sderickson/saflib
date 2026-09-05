@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow grpc/init-proto
-
 - Upsert 11 templates.
 - Change working directory to grpc/example-grpc-proto
 - Run `npm run generate`

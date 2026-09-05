@@ -19,4 +19,4 @@ Prefer seeding `mocks.ts` from product `*-test` factories (`@scope/product-test/
 
 Optional scenario handler lists can prepend baseline handlers for one-off cases (verified vs unverified user, empty list, etc.).
 
-For page-level tests that mount Vue components, see [@saflib/vue — Network mocking](../vue/docs/04-testing.md#network-mocking).
+For page-level tests that mount Vue components, see [@saflib/vue — Network mocking](../../vue/docs/04-testing.md#network-mocking).

@@ -20,7 +20,7 @@ Integration packages live under `{product}/service/integrations/{name}/` alongsi
 
 ## Runtime: Credentials, Mocks, and CLI Testing
 
-Store credentials in [a secret store](../../secrets/docs/01-overview.md), and declare any secrets the integration needs in the integration package. By default when the secret store is mocked, any missing secrets will be "mock" and so when this happens, the integration package should return a mock client. This way tests and local development can run without breaking or needing real credentials, which is important for both security and ease of development.
+Store credentials in [a secret store](../../secret-store/docs/01-overview.md), and declare any secrets the integration needs in the integration package. By default when the secret store is mocked, any missing secrets will be "mock" and so when this happens, the integration package should return a mock client. This way tests and local development can run without breaking or needing real credentials, which is important for both security and ease of development.
 
 Workflows will automatically create these mock behaviors for you.
 

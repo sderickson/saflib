@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow openapi/route
-
 - Upsert 2 templates.
 - Update **example.yaml**.
 - Merge duplicate path keys for GET /example

@@ -1,4 +1,4 @@
-[**@saflib/ory-kratos**](../../index.md)
+[**@saflib/ory-kratos-http**](../../index.md)
 
 ---
 
@@ -10,7 +10,7 @@ Application-level handler. Called once per accepted webhook delivery.
 
 ### onAction()
 
-> **onAction**: (`action`) => `Promise`\<`void`\>
+> **onAction**: (`action`) => `Promise`\<`void`>\>
 
 #### Parameters
 

@@ -98,20 +98,30 @@ export function getMonorepoTsconfigBaseExtends(packageDir: string): string {
 export function writeVueTypedocTsconfig(
   packageDir: string,
   outDir: string,
+  entryPoints: string[] = [],
 ): string {
   const typedocTsconfigPath = join(packageDir, "typedoc.tsconfig.json");
+  const files =
+    entryPoints.length > 0
+      ? entryPoints.map((entryPoint) => entryPoint.replace(/^\.\//, ""))
+      : [`${relative(packageDir, outDir)}/**/*.d.ts`];
+
   writeFileSync(
     typedocTsconfigPath,
     JSON.stringify(
       {
-        extends: getMonorepoTsconfigBaseExtends(packageDir),
-        include: [`${relative(packageDir, outDir)}/**/*.d.ts`],
         compilerOptions: {
-          composite: false,
-          noEmit: true,
+          target: "ES2022",
+          module: "ESNext",
+          moduleResolution: "Bundler",
+          strict: false,
           skipLibCheck: true,
+          noEmit: true,
           types: [],
         },
+        ...(entryPoints.length > 0
+          ? { files }
+          : { include: files, exclude: ["node_modules"] }),
       },
       null,
       2,
@@ -188,24 +198,40 @@ function removeEmittedDeclarationsInTree(dir: string): number {
   return removed;
 }
 
+export function clearVueDeclarationCache(packageDir: string): void {
+  rmSync(getDeclarationOutDir(packageDir), { recursive: true, force: true });
+  for (const tsconfigName of ["tsconfig.app.json", "tsconfig.json"]) {
+    const tsconfigPath = join(packageDir, tsconfigName);
+    if (!existsSync(tsconfigPath)) {
+      continue;
+    }
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, "utf-8"));
+    const tsBuildInfoFile = tsconfig.compilerOptions?.tsBuildInfoFile;
+    if (typeof tsBuildInfoFile === "string") {
+      rmSync(join(packageDir, tsBuildInfoFile), { force: true });
+    }
+  }
+}
+
 export function emitVueDeclarations(
   packageDir: string,
   packageJson: PackageJson,
 ): void {
-  const command = getVueTypecheckCommand(packageJson, packageDir);
+  clearVueDeclarationCache(packageDir);
+
+  let command = getVueTypecheckCommand(packageJson, packageDir);
+  // Doc generation deletes dist/types in cleanup; stale tsbuildinfo otherwise skips emit.
+  if (/\s-b(\s|$)/.test(command) && !command.includes("--force")) {
+    command = `${command} --force`;
+  }
   const outDir = getDeclarationOutDir(packageDir);
   console.log(`\nEmitting Vue declarations (${command})...`);
 
-  try {
-    execSync(command, { stdio: "inherit", cwd: packageDir });
-  } catch {
-    if (!existsSync(outDir)) {
-      throw new Error(
-        `vue-tsc failed and ${relative(packageDir, outDir)} was not created`,
-      );
-    }
-    console.warn(
-      "vue-tsc reported errors; continuing with existing declaration files",
+  execSync(command, { stdio: "inherit", cwd: packageDir });
+
+  if (!buildVueTypedocEntryPoints(packageDir, outDir).length) {
+    throw new Error(
+      `vue-tsc did not emit declaration files in ${relative(packageDir, outDir)}`,
     );
   }
 }

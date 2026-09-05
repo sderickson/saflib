@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: OPENAPI_TAG_CSRF_EXEMPT
+# Variable: OPENAPI\_TAG\_CSRF\_EXEMPT
 
-> `const` **OPENAPI_TAG_CSRF_EXEMPT**: `"csrf-exempt"`
+> `const` **OPENAPI\_TAG\_CSRF\_EXEMPT**: `"csrf-exempt"`

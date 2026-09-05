@@ -4,6 +4,6 @@
 
 # Type Alias: EmailRequestQuery
 
-> **EmailRequestQuery** = `ExtractRequestQueryParams`\<`operations`\>
+> **EmailRequestQuery** = `ExtractRequestQueryParams`\<`operations`>\>
 
 For typing Express query params for email API routes.

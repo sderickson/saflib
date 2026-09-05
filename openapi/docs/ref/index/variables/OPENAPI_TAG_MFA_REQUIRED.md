@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: OPENAPI_TAG_MFA_REQUIRED
+# Variable: OPENAPI\_TAG\_MFA\_REQUIRED
 
-> `const` **OPENAPI_TAG_MFA_REQUIRED**: `"mfa-required"`
+> `const` **OPENAPI\_TAG\_MFA\_REQUIRED**: `"mfa-required"`

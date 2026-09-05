@@ -2,6 +2,6 @@
 
 ---
 
-# Variable: OPENAPI_ENFORCED_TAG_CATALOG
+# Variable: OPENAPI\_ENFORCED\_TAG\_CATALOG
 
-> `const` **OPENAPI_ENFORCED_TAG_CATALOG**: readonly [`OpenApiEnforcedTagMeta`](../type-aliases/OpenApiEnforcedTagMeta.md)[]
+> `const` **OPENAPI\_ENFORCED\_TAG\_CATALOG**: readonly [`OpenApiEnforcedTagMeta`](../type-aliases/OpenApiEnforcedTagMeta.md)[]

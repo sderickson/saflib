@@ -10,19 +10,18 @@ Use the workflow [vue/add-spa](./workflows/add-spa.md) to create a new SPA or [v
 | ----------------------------------------------------- | -------------------------------------- |
 | [vue/add-spa](./workflows/add-spa.md)                 | New subdomain SPA + build shim + Caddy |
 | [vue/add-view](./workflows/add-view.md)               | New page under an existing SPA         |
-| [vue/add-e2e-test](./workflows/add-e[./2e-test.md)       | Playwright spec stub                   |
+| [vue/add-e2e-test](./workflows/add-e2e-test.md)       | Playwright spec stub                   |
 | [vue/add-static-site](./workflows/add-static-site.md) | Non-Vue static client                  |
-
 
 ## What this package provides
 
 | Export                                                                                                                                                      | Role                                                                                        |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | [`createSpaMain`](./ref/@saflib/vue/functions/createSpaMain.md)                                                                                             | Standard SPA `main()` — client name, document title, router, i18n, optional Sentry callback |
-| [`createVueApp`](./ref/@saflib/vue/functions/createVueApp.md)                                                                                               | Lower-level app bootstrap (Vuetify, Vue Router, TanStack Query, vue-i18n)                   |
-| [`useReverseT` / `makeReverseTComposable`](./ref/@saflib/vue/functions/makeReverseTComposable.md)                                                           | Value-based i18n lookups — see [i18n](./03-i18n.md)                                         |
+| [`createVueApp`](./ref/@saflib/vue/variables/createVueApp.md)                                                                                               | Lower-level app bootstrap (Vuetify, Vue Router, TanStack Query, vue-i18n)                   |
+| [`useReverseT` / `makeReverseTComposable`](./ref/@saflib/vue/variables/makeReverseTComposable.md)                                                           | Value-based i18n lookups — see [i18n](./03-i18n.md)                                         |
 | [`AsyncPage`](./ref/components/AsyncPage.md), [`useAsyncPageDocumentTitle`](./ref/@saflib/vue/functions/useAsyncPageDocumentTitle.md)                       | Code-split pages with loader gating — see [Components](./02-components.md)                  |
-| [`commonEventLogger`](./ref/@saflib/vue/functions/commonEventLogger.md) / [`makeProductEventLogger`](./ref/@saflib/vue/functions/makeProductEventLogger.md) | Browser product events → PostHog / dev buffer                                               |
+| [`commonEventLogger`](./ref/@saflib/vue/variables/commonEventLogger.md) / [`makeProductEventLogger`](./ref/@saflib/vue/variables/makeProductEventLogger.md) | Browser product events → PostHog / dev buffer                                               |
 | [`./components`](./ref/components/index.md)                                                                                                                 | Shared UI (`AsyncPage`, `SpaLink`, `SnackbarQueue`, …)                                      |
 | [`./testing`](./ref/@saflib/vue/testing/index.md)                                                                                                           | `mountWithPlugins`, `stubGlobals`, `getElementByString`                                     |
 | `./vitest-config`                                                                                                                                           | Shared Vitest presets — [Coverage enforcement](./04-testing.md#coverage-enforcement)        |
@@ -30,4 +29,4 @@ Use the workflow [vue/add-spa](./workflows/add-spa.md) to create a new SPA or [v
 
 ## SPA package structure
 
-Golden reference: [`base/clients/app/`](../../base/clients/app/).
+Golden reference: [`base/clients/app/`](https://github.com/sderickson/saflib/blob/main/base/clients/app/).

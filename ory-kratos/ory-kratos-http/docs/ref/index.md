@@ -1,8 +1,8 @@
-**@saflib/ory-kratos**
+**@saflib/ory-kratos-http**
 
 ---
 
-# @saflib/ory-kratos
+# @saflib/ory-kratos-http
 
 ## Modules
 

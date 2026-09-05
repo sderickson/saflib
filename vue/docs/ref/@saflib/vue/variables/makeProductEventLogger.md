@@ -4,7 +4,7 @@
 
 # Variable: makeProductEventLogger()
 
-> `const` **makeProductEventLogger**: \<`T`>>\>() => `object`
+> `const` **makeProductEventLogger**: \<`T`>\>() => `object`
 
 Create centralized object to emit and listen to product events. Provide a product event type to ensure type safety, produced as part of the API spec.
 
@@ -20,7 +20,7 @@ Create centralized object to emit and listen to product events. Provide a produc
 
 ### emitProductEvent()
 
-> **emitProductEvent**: (`event`) => `Promise`\<`unknown`>>\>
+> **emitProductEvent**: (`event`) => `Promise`\<`unknown`>\>
 
 #### Parameters
 

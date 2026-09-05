@@ -1,8 +1,8 @@
 # Overview
 
-`@saflib/workflows` is the **workflow engine** for SAF — TypeScript-defined, agent-supervised routines that copy templates, run commands, prompt for edits, and validate results. Platform and product packages export workflow definitions; [`@saflib/workflows-cli`](../workflows-cli/docs/01-overview.md) registers and runs them via [`saf-workflow`](../workflows-cli/docs/cli/saf-workflow.md).
+`@saflib/workflows` is the **workflow engine** for SAF — TypeScript-defined, agent-supervised routines that copy templates, run commands, prompt for edits, and validate results. Platform and product packages export workflow definitions; [`@saflib/workflows-cli`](../../workflows-cli/docs/01-overview.md) registers and runs them via [`saf-workflow`](../../workflows-cli/docs/cli/saf-workflow.md).
 
-Workflows run on [XState](https://stately.ai/docs) internally via step machines; you do not use XState directly. See [@saflib/xstate](../xstate/docs/01-overview.md) for the thin helper package and current/planned role.
+Workflows run on [XState](https://stately.ai/docs) internally via step machines; you do not use XState directly. See [@saflib/xstate](../../xstate/docs/01-overview.md) for the thin helper package and current/planned role.
 
 Extended narrative and examples also live on [workflows.saf-demo.online](https://workflows.saf-demo.online/).
 
@@ -29,7 +29,7 @@ npm exec saf-workflow checklist <id>    # preview steps
 npm exec saf-workflow dry-run …         # alias for dry/script validation
 ```
 
-Common ids look like `vue/add-view`, `openapi/add-route`, `product/init`, `processes/spec-project`. See per-package [`docs/workflows/`](../vue/docs/workflows/index.md) indexes (e.g. [vue](../vue/docs/workflows/index.md), [openapi](../openapi/docs/workflows/index.md), [sdk](../sdk/docs/workflows/index.md)).
+Common ids look like `vue/add-view`, `openapi/add-route`, `product/init`, `processes/spec-project`. See per-package [`docs/workflows/`](../../vue/docs/workflows/index.md) indexes (e.g. [vue](../../vue/docs/workflows/index.md), [openapi](../../openapi/docs/workflows/index.md), [sdk](../../sdk/docs/workflows/index.md)).
 
 ### Execution modes
 
@@ -61,10 +61,10 @@ Set `versionControl.allowPaths` so git commits stay scoped. Nested work uses `ma
 
 ## Where workflows live
 
-| Area                | Examples                                                                                                                                                              |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Platform            | [vue/add-view](../vue/docs/workflows/add-view.md), [openapi/add-route](../openapi/docs/workflows/add-route.md), [workflows/add-workflow](./workflows/add-workflow.md) |
-| Product scaffolding | [product/init](../product/docs/workflows/init.md)                                                                                                                     |
-| Agent planning      | [processes/spec-project](../processes/docs/workflows/spec-project.md)                                                                                                 |
+| Area                | Examples                                                                                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Platform            | [vue/add-view](../../vue/docs/workflows/add-view.md), [openapi/add-route](../../openapi/docs/workflows/route.md), [workflows/add-workflow](./workflows/add-workflow.md) |
+| Product scaffolding | [product/init](../../product/docs/workflows/init.md)                                                                                                                    |
+| Agent planning      | [processes/spec-project](../../processes/docs/workflows/spec-project.md)                                                                                                |
 
 Workflow definitions are normal TypeScript — test with `runWorkflow(def, { mode: "checklist", … })` in package tests.

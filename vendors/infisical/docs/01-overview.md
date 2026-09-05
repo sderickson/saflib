@@ -18,4 +18,4 @@ Environment (see `env.schema.json`):
 - **`INFISICAL_PROJECT_ID`** — project id (optional when token is `mock`)
 - **`INFISICAL_ENVIRONMENT`** — environment slug (e.g. `dev`, `staging`, `prod`)
 
-Vendor packages such as [`@saflib/vendors-brevo`](../brevo/docs/01-overview.md) fetch API keys through the configured store.
+Vendor packages such as [`@saflib/vendors-brevo`](../../brevo/docs/01-overview.md) fetch API keys through the configured store.

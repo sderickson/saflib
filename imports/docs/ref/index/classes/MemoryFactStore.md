@@ -24,7 +24,7 @@ In-memory FactStore for workdir / CI (no SQLite).
 
 ### ensureFromSource()
 
-> **ensureFromSource**(`contentKey`, `source`): `Promise`\<[`FileFact`](../interfaces/FileFact.md)\>
+> **ensureFromSource**(`contentKey`, `source`): `Promise`\<[`FileFact`](../interfaces/FileFact.md)>\>
 
 Parse source and store under contentKey; returns the fact.
 
@@ -43,7 +43,7 @@ Parse source and store under contentKey; returns the fact.
 
 ### get()
 
-> **get**(`contentKeys`): `Promise`\<`Map`\<`string`, [`FileFact`](../interfaces/FileFact.md)\>\>
+> **get**(`contentKeys`): `Promise`\<`Map`\<`string`, [`FileFact`](../interfaces/FileFact.md)>>\>\>
 
 #### Parameters
 
@@ -63,7 +63,7 @@ Parse source and store under contentKey; returns the fact.
 
 ### put()
 
-> **put**(`facts`): `Promise`\<`void`\>
+> **put**(`facts`): `Promise`\<`void`>\>
 
 #### Parameters
 

@@ -22,7 +22,7 @@ When run, the workflow will:
 
 - Upsert 9 templates.
 - Upsert 10 templates.
-- Add @saflib/drizzle-dossier-db dependency to parent db
+- Add @saflib/analytics-http-dossier-db dependency to parent db
 - Change working directory to dossier/db
 - Run `npm install`
 - Run `npm run typecheck`

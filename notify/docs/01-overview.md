@@ -9,6 +9,6 @@
 
 ## Integration
 
-[`@saflib/node-log-http`](../node-log/docs/01-overview.md) uses the SSE helpers in `stream-dev-logs.ts` to stream development Winston logs to the admin SPA and Vue DevTools.
+[`@saflib/node-log-http`](../../node-log/docs/01-overview.md) uses the SSE helpers in `stream-dev-logs.ts` to stream development Winston logs to the admin SPA and Vue DevTools.
 
 Product code can publish `ChangeEvent` objects when writes complete and expose org-scoped SSE routes that replay from `InProcessChangeEmitter.getEventsAfter`. Wire format and origin checks should use the shared SSE helpers for consistency.

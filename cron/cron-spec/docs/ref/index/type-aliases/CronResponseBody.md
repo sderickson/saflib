@@ -4,6 +4,6 @@
 
 # Type Alias: CronResponseBody
 
-> **CronResponseBody** = `ExtractResponseBody`\<`operations`\>
+> **CronResponseBody** = `ExtractResponseBody`\<`operations`>\>
 
 For typing Express responses for cron API routes.

@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-static-site.ts](../../workflows/add-static-site.ts)
+[add-static-site.ts](https://github.com/sderickson/saflib/blob/main/vue/workflows/add-static-site.ts)
 
 ## Usage
 

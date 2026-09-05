@@ -69,6 +69,7 @@ export {
 } from "./queries/create-verification-flow.ts";
 export {
   BrowserLogoutFlowCreated,
+  createBrowserLogoutFlow,
   createBrowserLogoutFlowQueryOptions,
   useCreateBrowserLogoutFlowQuery,
 } from "./queries/create-browser-logout-flow.ts";

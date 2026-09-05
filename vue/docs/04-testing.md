@@ -6,7 +6,7 @@ Component testing in SAF applications should use:
 - [Vitest](https://vitest.dev/) with [JSDOM](https://github.com/jsdom/jsdom) for running tests
 - [MSW](https://mswjs.io/) for network mocking
 
-`@saflib/vue` has these as dependencies, and provides helper methods for gluing everything together. Node-oriented packages use [`@saflib/vitest`](../vitest/docs/01-overview.md) instead.
+`@saflib/vue` has these as dependencies, and provides helper methods for gluing everything together. Node-oriented packages use [`@saflib/vitest`](../../vitest/docs/01-overview.md) instead.
 
 ## Shared Test App
 
@@ -14,7 +14,7 @@ Each SPA should have a `test-app.ts` at the root of the package. See [`test-app.
 
 ## Globals
 
-Within your test's `describe` block, you should call [`stubGlobals()`](./ref/@saflib/vue/testing/functions/stubGlobals.md) to set up the globals that Vue components expect, such as ResizeObserver which is a common requirement for Vuetify components.
+Within your test's `describe` block, you should call [`stubGlobals()`](./ref/@saflib/vue/testing/variables/stubGlobals.md) to set up the globals that Vue components expect, such as ResizeObserver which is a common requirement for Vuetify components.
 
 ## Network Mocking
 
@@ -26,7 +26,7 @@ In order to test the integration of everything involved in rendering a page, you
 
 Rather than including mock data in the same file, which will often be redundant with other files, tests should import mock data from the package that provides the Tanstack queries, per [best practices](../../best-practices.md#ownership-of-mocks-fakes-shims).
 
-Use [`setupMockServer`](../../sdk/docs/ref/@saflib/sdk/testing/functions/setupMockServer.md) within the `describe` block next to `stubGlobals`. Import only the resource-group fake handler modules the page/composable actually calls (via the SDK package glob, e.g. `@scope/sdk/requests/matters/index.fakes`) — not a full-service mega bag from `./fakes`.
+Use [`setupMockServer`](../../sdk/docs/ref/testing/mock/functions/setupMockServer.md) within the `describe` block next to `stubGlobals`. Import only the resource-group fake handler modules the page/composable actually calls (via the SDK package glob, e.g. `@scope/sdk/requests/matters/index.fakes`) — not a full-service mega bag from `./fakes`.
 
 ```typescript
 import { adminFakeHandlers } from "@saflib/base-sdk/requests/admin/index.fakes";
@@ -44,7 +44,7 @@ If a view uses only static fixtures and makes no network calls, omit `setupMockS
 
 ## Element Selection
 
-This is where having strings stored separately really pays off. Instead of hard-coding strings in tests that also exist in the Vue component they test, tests should import the adjacent string objects and use [`getElementByString`](./ref/@saflib/vue/testing/functions/getElementByString.md) to find the elements by text or attributes. This function takes either a string or an object of string values and uses the best selection method, and also converts i18n strings into regular regexes.
+This is where having strings stored separately really pays off. Instead of hard-coding strings in tests that also exist in the Vue component they test, tests should import the adjacent string objects and use [`getElementByString`](./ref/@saflib/vue/testing/variables/getElementByString.md) to find the elements by text or attributes. This function takes either a string or an object of string values and uses the best selection method, and also converts i18n strings into regular regexes.
 
 ## Testing Strategy
 

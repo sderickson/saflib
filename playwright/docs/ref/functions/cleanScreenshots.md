@@ -4,7 +4,7 @@
 
 # Function: cleanScreenshots()
 
-> **cleanScreenshots**(): `Promise`\<`void`\>
+> **cleanScreenshots**(): `Promise`\<`void`>\>
 
 Clean up screenshots from the previous test run. Call this at the beginning of your test.
 

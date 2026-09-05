@@ -2,7 +2,7 @@
 
 `@saflib/workflows-cli` is the **monorepo workflow registry and CLI** for SAF. It depends on every package that exports workflows, aggregates them in [`list.ts`](../../workflows-cli/list.ts), and exposes the [`saf-workflow`](./cli/saf-workflow.md) command.
 
-The workflow **engine** lives in [`@saflib/workflows`](../workflows/docs/01-overview.md) (`defineWorkflow`, step machines, `runWorkflowCli`). That package cannot own the CLI directly — other packages depend on it to _author_ workflows, so a separate package collects concrete definitions and wires the bin entry.
+The workflow **engine** lives in [`@saflib/workflows`](../../workflows/docs/01-overview.md) (`defineWorkflow`, step machines, `runWorkflowCli`). That package cannot own the CLI directly — other packages depend on it to _author_ workflows, so a separate package collects concrete definitions and wires the bin entry.
 
 ## Running workflows
 
@@ -18,7 +18,7 @@ npm exec saf-workflow dry-run sdk/add-query matters list
 
 `saf-workflow list` (without `--all`) shows workflows whose `sourceUrl` package matches the cwd — typically workflows **defined in that package**. Use `--all` to see every registered workflow in the monorepo.
 
-Per-workflow usage and checklists: each package's [`docs/workflows/`](../vue/docs/workflows/index.md) (e.g. [vue](../vue/docs/workflows/index.md), [openapi](../openapi/docs/workflows/index.md), [sdk](../sdk/docs/workflows/index.md)).
+Per-workflow usage and checklists: each package's [`docs/workflows/`](../../vue/docs/workflows/index.md) (e.g. [vue](../../vue/docs/workflows/index.md), [openapi](../../openapi/docs/workflows/index.md), [sdk](../../sdk/docs/workflows/index.md)).
 
 ## Commands
 
@@ -33,13 +33,13 @@ Per-workflow usage and checklists: each package's [`docs/workflows/`](../vue/doc
 | `status` / `next` / `goto`         | Step through an in-progress workflow session                           |
 | `run-scripts`                      | Run script-mode steps for a workflow                                   |
 
-`kickoff` options include `--run cursor` (agent-driven), `--version-control git`, `--skip-todos`, and `--message` for extra agent context. See [execution modes](../workflows/docs/01-overview.md#execution-modes) in the engine docs.
+`kickoff` options include `--run cursor` (agent-driven), `--version-control git`, `--skip-todos`, and `--message` for extra agent context. See [execution modes](../../workflows/docs/01-overview.md#execution-modes) in the engine docs.
 
 ## Registry (`list.ts`)
 
 [`list.ts`](../../workflows-cli/list.ts) imports each package's `workflows/index.ts` default export and spreads them into one array passed to `runWorkflowCli`.
 
-Registered packages (maintained via [workflows/add-workflow](../workflows/docs/workflows/add-workflow.md) `workflow-cli-imports` / `workflow-cli-spreads` areas):
+Registered packages (maintained via [workflows/add-workflow](../../workflows/docs/workflows/add-workflow.md) `workflow-cli-imports` / `workflow-cli-spreads` areas):
 
 | Package             | Examples                                                                         |
 | ------------------- | -------------------------------------------------------------------------------- |
@@ -60,6 +60,6 @@ To add a new workflow package: export definitions from `workflows/index.ts`, the
 [`bin/saf-workflow/index.ts`](../../workflows-cli/bin/saf-workflow/index.ts) calls `runWorkflowCli(workflows, { getSourceUrl, systemPrompt })`:
 
 - **`getSourceUrl`** — maps workflow source files to GitHub URLs under `saflib/`
-- **`systemPrompt`** — prepended when `--run cursor`; points agents at [monorepo overview](../monorepo/docs/01-overview.md)
+- **`systemPrompt`** — prepended when `--run cursor`; points agents at [monorepo overview](../../monorepo/docs/01-overview.md)
 
 Products outside this monorepo can depend on `@saflib/workflows` and ship their own registry package the same way.

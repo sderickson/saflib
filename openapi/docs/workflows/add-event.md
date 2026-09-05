@@ -20,8 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-Kicking off workflow openapi/add-event
-
 - Upsert 5 templates.
 - Update **example_event.yaml**. Resolve all TODOs.
 - Run `npm run generate`

@@ -4,7 +4,7 @@
 
 # Variable: getAll()
 
-> `const` **getAll**: (`dbKey`) => `Promise`\<[`GetAllResult`](../type-aliases/GetAllResult.md)\>
+> `const` **getAll**: (`dbKey`) => `Promise`\<[`GetAllResult`](../type-aliases/GetAllResult.md)>\>
 
 ## Parameters
 

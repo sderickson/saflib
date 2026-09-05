@@ -27,3 +27,15 @@
 | [kebabCaseToPascalCase](functions/kebabCaseToPascalCase.md)                     | Convert a kebab-case string to PascalCase.                                                                                                                                                               |
 | [kebabCaseToSnakeCase](functions/kebabCaseToSnakeCase.md)                       | Convert a kebab-case string to snake_case.                                                                                                                                                               |
 | [sanitizeFilename](functions/sanitizeFilename.md)                               | -                                                                                                                                                                                                        |
+
+## References
+
+### ReturnsError
+
+Re-exports [ReturnsError](../returns-error/type-aliases/ReturnsError.md)
+
+---
+
+### throwError
+
+Re-exports [throwError](../returns-error/functions/throwError.md)

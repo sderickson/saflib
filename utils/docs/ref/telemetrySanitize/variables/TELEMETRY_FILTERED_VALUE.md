@@ -2,8 +2,8 @@
 
 ---
 
-# Variable: TELEMETRY_FILTERED_VALUE
+# Variable: TELEMETRY\_FILTERED\_VALUE
 
-> `const` **TELEMETRY_FILTERED_VALUE**: `"[Filtered]"` = `"[Filtered]"`
+> `const` **TELEMETRY\_FILTERED\_VALUE**: `"[Filtered]"` = `"[Filtered]"`
 
 Value substituted for sensitive telemetry fields (cookies, Vue props, etc.).

@@ -6,10 +6,9 @@
 
 ## Modules
 
-| Module                                                | Description                                                    |
-| ----------------------------------------------------- | -------------------------------------------------------------- |
-| [@saflib/sdk](@saflib/sdk/index.md)                   | Tanstack Query utilities for Vue.                              |
-| [@saflib/sdk/testing](@saflib/sdk/testing/index.md)   | Testing utilities for SDK packages and packages that use them. |
-| [src/auth-error-codes](src/auth-error-codes/index.md) | -                                                              |
-| [strings](strings/index.md)                           | -                                                              |
-| [testing/mock](testing/mock/index.md)                 | -                                                              |
+| Module                                              | Description                                                    |
+| --------------------------------------------------- | -------------------------------------------------------------- |
+| [@saflib/sdk](@saflib/sdk/index.md)                 | Tanstack Query utilities for Vue.                              |
+| [@saflib/sdk/testing](@saflib/sdk/testing/index.md) | Testing utilities for SDK packages and packages that use them. |
+| [src](src/index.md)                                 | -                                                              |
+| [Components](components/index.md)                   | Vue single-file components.                                    |
