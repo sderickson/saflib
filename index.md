@@ -14,7 +14,11 @@ Guiding principles:
 - **Easy to Update**. When the framework introduces breaking changes, updates can happen mostly automatically.
 - **Built for AI**. Technical feature development decisions are always made with AI coding agents in mind.
 
-This framework's quality bar meets and exceeds the needs for production-grade apps which house sensitive information and risky capabilities. That being said, if anyone adopts this they should assess the framework themselves and either fork it and make desired adustments and ideally submit PRs for them.
+## Adoption Concerns
+
+In my professional opinion, this framework's quality bar meets and exceeds the needs for production-grade apps which house sensitive information and risky capabilities. That being said, if anyone adopts this they should assess the framework themselves and either fork it and make desired adustments and ideally submit PRs for them.
+
+The framework is also fairly flexible and the concepts portable to your needs and preferences. If out of the box you'd rather use PostgreSQL instead of SQLite, Drizzle supports both and more. If you'd rather use React instead of Vue, the frontend organizational structure can mostly be kept. Also, common services such as for observability accept adapters for whichever in-house or third-party services you prefer.
 
 ## Documentation
 
