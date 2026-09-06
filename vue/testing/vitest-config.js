@@ -3,17 +3,40 @@ Note: this file is in JS because for some reason, vitest-config.ts can't import 
 */
 
 import { defineConfig } from "vitest/config";
+import { searchForWorkspaceRoot } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vuetify from "vite-plugin-vuetify";
 import path from "node:path";
+import { existsSync, realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
-const setupFile = path.join(import.meta.dirname, "vitest-setup.js");
+const setupFile = fileURLToPath(new URL("./vitest-setup.js", import.meta.url));
+const vuePackageRoot = path.resolve(path.dirname(setupFile), "..");
+const workspaceRoot = searchForWorkspaceRoot(process.cwd());
+
+/** Paths Vite may read when resolving @saflib/* and platform test setup. */
+function buildFsAllow() {
+  const allow = [workspaceRoot];
+  const saflibSubmodule = path.join(workspaceRoot, "saflib");
+  if (existsSync(saflibSubmodule)) {
+    allow.push(realpathSync(saflibSubmodule));
+  }
+  if (
+    vuePackageRoot !== workspaceRoot &&
+    !allow.includes(vuePackageRoot)
+  ) {
+    allow.push(vuePackageRoot);
+  }
+  return allow;
+}
+
+const fsAllow = buildFsAllow();
 
 const baseTest = {
   environment: "jsdom",
   globals: true,
   exclude: ["**/e2e/**"],
-  setupFiles: [setupFile],
+  setupFiles: ["@saflib/vue/testing/vitest-setup"],
   env: {
     NODE_OPTIONS:
       "--disable-warning=DEP0040 --disable-warning=ExperimentalWarning",
@@ -23,6 +46,9 @@ const baseTest = {
   // Default Vitest is 5s; AsyncPage + MSW + dynamic imports use asyncUiWaitForOptions (10s).
   testTimeout: 15_000,
   server: {
+    fs: {
+      allow: fsAllow,
+    },
     deps: {
       inline: ["vuetify"],
     },
@@ -83,6 +109,11 @@ export const defaultConfig = defineConfig({
       "@vue/shared",
     ],
   },
+  server: {
+    fs: {
+      allow: fsAllow,
+    },
+  },
   test: {
     ...baseTest,
     coverage: baseCoverage,
@@ -97,6 +128,7 @@ export const defaultConfig = defineConfig({
 export const defaultConfigWithCoverageEnforcement = defineConfig({
   plugins: [vue(), vuetify()],
   resolve: defaultConfig.resolve,
+  server: defaultConfig.server,
   test: {
     ...baseTest,
     coverage: {

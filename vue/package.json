@@ -14,6 +14,7 @@
     "./types": "./types.ts",
     "./fixtures": "./fixtures/index.ts",
     "./testing": "./testing/index.ts",
+    "./testing/vitest-setup": "./testing/vitest-setup.js",
     "./tsconfig.app.json": "./tsconfig.app.base.json",
     "./tsconfig.node.json": "./tsconfig.node.json",
     "./workflows": "./workflows/index.ts",
