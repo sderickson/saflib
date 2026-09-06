@@ -70,7 +70,7 @@ export const addMeasureCommand = (program: Command) => {
     .description(
       "Walk the static import graph from one or more entry files and report module counts",
     )
-    .arguments("<entry...>")
+    .argument("<entry...>", "Entry file path(s) to measure (typically *.test.ts)")
     .option("--json", "Machine-readable JSON output")
     .option("--include-types", "Include type-only imports in the graph")
     .option(

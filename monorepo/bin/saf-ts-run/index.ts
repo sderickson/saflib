@@ -20,7 +20,7 @@ const program = new Command()
   .description(
     "Run a TypeScript file with monorepo-standard Node flags and optional .env",
   )
-  .arguments("<script>")
+  .argument("<script>", "TypeScript entry file")
   .allowExcessArguments()
   .action((script: string) => {
     const scriptIndex = process.argv.indexOf(script);

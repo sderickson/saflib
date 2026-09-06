@@ -14,7 +14,8 @@ export const addDiffCommand = (program: Command) => {
   program
     .command("diff")
     .description("Diff two analyzed commits (before after).")
-    .arguments("<from_hash>", "<to_hash>")
+    .argument("<from_hash>", "Baseline commit hash (before)")
+    .argument("<to_hash>", "Comparison commit hash (after)")
     .option("--repo-root <path>", "Git repository root")
     .option("--product-root <path>", "Path prefix within the repo")
     .option("--main-ref <ref>", "Main branch ref")

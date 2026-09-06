@@ -15,7 +15,8 @@ export const addDryRunCommand = (commandOptions: WorkflowCommandOptions) => {
         "Dry run a workflow. Runs the workflow with the given input, but does not make any file changes at all.",
       ),
     )
-    .arguments("<path-or-id>", "[args...]")
+    .argument("<path-or-id>", "Workflow ID or path to workflow file")
+    .argument("[args...]", "Arguments for the workflow")
     .action(async (workflowIdOrPath: string, args: string[]) => {
       const log = createWorkflowLogger();
       setupWorkflowContext({

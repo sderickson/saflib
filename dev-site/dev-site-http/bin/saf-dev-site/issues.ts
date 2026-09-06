@@ -57,7 +57,7 @@ export const addIssuesCommand = (program: Command) => {
       "-p, --package <name>",
       "Package name (e.g. @acme/form-artifacts)",
     )
-    .arguments("[hash]")
+    .argument("[hash]", "Commit hash (default: HEAD; ignored with --workdir)")
     .option("--workdir", "Analyze the working tree (no sqlite / no scan)", false)
     .option("--repo-root <path>", "Git repository root (default: cwd / DEV_SITE_REPO_ROOT)")
     .option(

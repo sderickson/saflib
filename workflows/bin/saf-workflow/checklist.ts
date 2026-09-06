@@ -16,7 +16,7 @@ export const addChecklistCommand = (commandOptions: WorkflowCommandOptions) => {
         "Show the checklist for a workflow. Can be called with a workflow ID or a file path to a workflow definition.",
       ),
     )
-    .arguments("<path-or-id>")
+    .argument("<path-or-id>", "Workflow ID or path to workflow file")
     .action(async (workflowIdOrPath: string) => {
       const log = createWorkflowLogger({
         printToConsole: false,

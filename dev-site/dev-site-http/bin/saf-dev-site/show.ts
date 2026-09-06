@@ -14,7 +14,7 @@ export const addShowCommand = (program: Command) => {
   program
     .command("show")
     .description("Print the full analysis snapshot for a commit hash.")
-    .arguments("<hash>")
+    .argument("<hash>", "Commit hash")
     .option("--repo-root <path>", "Git repository root")
     .option("--product-root <path>", "Path prefix within the repo")
     .option("--main-ref <ref>", "Main branch ref")
