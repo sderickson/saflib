@@ -19,7 +19,8 @@
     "noUncheckedSideEffectImports": true,
     "verbatimModuleSyntax": true,
     "skipDefaultLibCheck": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "types": ["node"]
   },
   "exclude": ["**/node_modules/**", "**/dist/**"]
 }

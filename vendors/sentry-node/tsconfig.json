@@ -22,7 +22,8 @@
     "noEmit": false,
     "emitDeclarationOnly": true,
     "types": [
-      "vite/client"
+      "vite/client",
+      "node"
     ]
   },
   "references": [
