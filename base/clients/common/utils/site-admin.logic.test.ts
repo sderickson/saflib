@@ -6,8 +6,8 @@ import {
 
 describe("parseAdminEmails", () => {
   it("splits and normalizes", () => {
-    expect(parseAdminEmails(" Admin@Example.com , other@x.com ")).toEqual([
-      "admin@example.com",
+    expect(parseAdminEmails(" Admin@Sample.dev , other@x.com ")).toEqual([
+      "admin@sample.dev",
       "other@x.com",
     ]);
   });
@@ -24,7 +24,7 @@ describe("isSiteAdminEmail", () => {
 
   it("matches configured emails case-insensitively", () => {
     expect(isSiteAdminEmail("Admin@Saflib.com", admins)).toBe(true);
-    expect(isSiteAdminEmail("user@example.com", admins)).toBe(false);
+    expect(isSiteAdminEmail("user@sample.dev", admins)).toBe(false);
   });
 
   it("is false for missing email", () => {
