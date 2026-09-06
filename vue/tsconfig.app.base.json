@@ -6,7 +6,7 @@
     "emitDeclarationOnly": true,
     "target": "esnext",
     "lib": ["esnext", "dom"],
-    "types": ["vite/client"]
+    "types": ["vite/client", "node"]
   },
   "exclude": [
     "**/node_modules/**",
