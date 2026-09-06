@@ -205,6 +205,36 @@ export function makeProductInitLineReplace(context: InitProductWorkflowContext) 
   };
 }
 
+const TSCONFIG_PRESET_FILENAMES = [
+  "tsconfig.app.base.json",
+  "tsconfig.base.json",
+] as const;
+
+/** Keep shared tsconfig preset names literal when renaming the golden product. */
+function protectTsconfigPresetFilenames(line: string): string {
+  let result = line;
+  for (const filename of TSCONFIG_PRESET_FILENAMES) {
+    result = result.replaceAll(filename, `__SAF_${filename.replaceAll(".", "_")}__`);
+  }
+  return result;
+}
+
+function restoreTsconfigPresetFilenames(line: string): string {
+  let result = line;
+  for (const filename of TSCONFIG_PRESET_FILENAMES) {
+    result = result.replaceAll(`__SAF_${filename.replaceAll(".", "_")}__`, filename);
+  }
+  return result;
+}
+
+/** Product monorepos embed saflib as a submodule beside the product tree. */
+function rewriteSaflibRelativeTsconfigPaths(line: string): string {
+  return line.replace(
+    /"\.\.\/\.\.\/\.\.\/(?!saflib\/)(vue\/)/g,
+    '"../../../saflib/$1',
+  );
+}
+
 function finishProductInitLineReplace(
   out: string,
   context: InitProductWorkflowContext,
@@ -226,15 +256,18 @@ function finishProductInitLineReplace(
     sourceSnakeUpper,
   } = names;
 
+  const prepared = protectTsconfigPresetFilenames(out);
+
   // Preserve the thin @saflib/templates package name / path (do not treat
   // "templates" lines as exempt from /base/ → /product/ path renames —
   // monolith Dockerfiles mention both).
   const preserveTemplates =
-    out.includes("@saflib/templates") || out.includes("saflib/templates/");
+    prepared.includes("@saflib/templates") ||
+    prepared.includes("saflib/templates/");
 
   let result = preserveTemplates
-    ? out
-    : out.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
+    ? prepared
+    : prepared.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
   result = result
     .split("@saflib/deploy")
     .join(`@${context.organizationName}/deploy`);
@@ -269,6 +302,9 @@ function finishProductInitLineReplace(
     new RegExp(`\\b${sourceSnakeUpper}\\b`, "g"),
     snakeUpper,
   );
+
+  result = restoreTsconfigPresetFilenames(result);
+  result = rewriteSaflibRelativeTsconfigPaths(result);
 
   return result;
 }

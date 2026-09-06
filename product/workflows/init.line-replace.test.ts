@@ -125,4 +125,16 @@ describe("makeProductInitLineReplace", () => {
       "const databaseUrl = 'x';",
     );
   });
+
+  it("preserves shared tsconfig preset filenames when renaming the product", () => {
+    expect(
+      replace('    "../../../vue/tsconfig.app.base.json"'),
+    ).toBe('    "../../../saflib/vue/tsconfig.app.base.json"');
+  });
+
+  it("does not rewrite tsconfig.base.json preset paths", () => {
+    expect(replace('  "extends": "../monorepo/tsconfig.base.json"')).toBe(
+      '  "extends": "../monorepo/tsconfig.base.json"',
+    );
+  });
 });
