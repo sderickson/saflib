@@ -134,7 +134,7 @@ export function formatCollisionWarning(paths: string[], cwd: string): string {
 }
 
 const LOCK_PRUNE_CMD =
-  "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/saf-monorepo/index.ts lock-prune --yes";
+  "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes";
 
 export function buildRootPackageJson(
   organizationName: string,

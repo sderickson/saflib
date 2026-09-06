@@ -368,7 +368,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         pkg.workspaces = workspaces;
         pkg.scripts ??= {};
         pkg.scripts.preinstall ??=
-          "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/saf-monorepo/index.ts lock-prune --yes";
+          "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes";
         return JSON.stringify(pkg, null, 2) + "\n";
       },
     })),

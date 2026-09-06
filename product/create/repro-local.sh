@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-# Local bootstrap repro — creates ../tmp-bootstrap-test (under saf-2025 root)
+# Local bootstrap repro — creates a throwaway product repo under $TMPDIR
 # using a symlink to this saflib checkout (live code, no GitHub clone).
+#
+# Uses /tmp (or $TMPDIR) so the product is not nested inside saf-2025;
+# that avoids npm picking up the parent repo's node_modules during installs
+# and tests.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SAFLIB_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-SAF_2025_ROOT="$(cd "${SAFLIB_ROOT}/.." && pwd)"
-TEST_DIR="${SAF_2025_ROOT}/tmp-bootstrap-test"
+TMP_ROOT="${TMPDIR:-/tmp}"
+TEST_DIR="${TMP_ROOT}/saf-bootstrap-test-${1:-testprod}"
 PRODUCT_NAME="${1:-testprod}"
 DOMAIN="${2:-testprod.com}"
 

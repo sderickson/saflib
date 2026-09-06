@@ -240,6 +240,26 @@ describe("findUnhoistedRegistryDependencies", () => {
       },
     ]);
   });
+
+  it("flags deeply nested saflib workspace lock paths", () => {
+    const lockfile = {
+      packages: {
+        "saflib/dev-site/dev-site-docker/node_modules/vuetify": {
+          version: "4.2.0",
+        },
+      },
+    };
+
+    expect(findUnhoistedRegistryDependencies(lockfile)).toEqual([
+      {
+        kind: "unhoisted-registry-dependency",
+        dependency: "vuetify",
+        nestedLockfileKey: "saflib/dev-site/dev-site-docker/node_modules/vuetify",
+        rootLockfileKey: "node_modules/vuetify",
+        version: "4.2.0",
+      },
+    ]);
+  });
 });
 
 describe("hoistUnhoistedRegistryDependencies", () => {

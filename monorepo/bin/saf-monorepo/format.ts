@@ -5,7 +5,7 @@ export const addFormatCommand = (program: Command) => {
   const formatCmd = program
     .command("format")
     .description("Format a file with Prettier")
-    .argument("<filename>", "File to format with Prettier")
+    .arguments("<filename>")
     .action((fileName: string) => {
       if (fileName === "help") {
         formatCmd.outputHelp();

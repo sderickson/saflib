@@ -173,11 +173,24 @@ function packageNameFromRootLockfileKey(key: string): string | undefined {
 function parseNestedSaflibRegistryLockKey(
   key: string,
 ): { dependency: string; rootLockfileKey: string } | undefined {
-  const match = key.match(
-    /^saflib\/[^/]+\/node_modules\/((?:@[^/]+\/[^/]+)|[^/]+)$/,
-  );
-  if (!match) return undefined;
-  const dependency = match[1];
+  const marker = "/node_modules/";
+  if (!key.startsWith("saflib/") || !key.includes(marker)) return undefined;
+
+  const nodeModulesIdx = key.lastIndexOf(marker);
+  const afterNodeModules = key.slice(nodeModulesIdx + marker.length);
+  let dependency: string | undefined;
+  if (afterNodeModules.startsWith("@")) {
+    const [scope, name] = afterNodeModules.split("/");
+    if (!scope || !name || afterNodeModules.includes("/", scope.length + 1)) {
+      return undefined;
+    }
+    dependency = `${scope}/${name}`;
+  } else if (afterNodeModules && !afterNodeModules.includes("/")) {
+    dependency = afterNodeModules;
+  } else {
+    return undefined;
+  }
+
   return {
     dependency,
     rootLockfileKey: lockfileKeyForPackage("node_modules", dependency),
@@ -535,6 +548,7 @@ export function pruneStaleLockfileEntries(
 ): StaleLockfileIssue | null {
   const packages = lockfile.packages ?? {};
   const stalePaths = Object.keys(packages).filter((key) => {
+    if (key.startsWith("../")) return true;
     if (!isWorkspaceLockEntry(key)) return false;
     return !existsSync(path.join(rootDir, key, "package.json"));
   });

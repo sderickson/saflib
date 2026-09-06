@@ -56,6 +56,7 @@ Hard pins npm must enforce across the whole tree — versions npm cannot reliabl
   "vite": "8.0.13",
   "msw": "2.12.7",
   "vue-router": "^5.0.0",
+  "vuetify": "^4.1.6",
   "better-sqlite3": "12.11.1",
   "@types/node": "^24.3.0"
 }
