@@ -22,8 +22,7 @@
     "@saflib/openapi": "*"
   },
   "devDependencies": {
-    "@saflib/vitest": "*",
-    "openapi-typescript": "^7.13.0"
+    "@saflib/vitest": "*"
   },
   "sideEffects": false
 }

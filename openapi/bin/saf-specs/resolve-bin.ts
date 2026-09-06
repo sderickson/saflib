@@ -37,8 +37,8 @@ function resolveBinFrom(
  * Avoids relying on PATH (e.g. when saf-specs runs from workflow temp dirs in CI).
  *
  * Search order:
- * 1. Caller's workspace (`process.cwd()`)
- * 2. `@saflib/openapi` package root (where saf-specs lives)
+ * 1. `@saflib/openapi` package root (where saf-specs lives and toolchain deps are pinned)
+ * 2. Caller's workspace (`process.cwd()`)
  */
 export function resolvePackageBin(
   packageName: string,
@@ -49,8 +49,8 @@ export function resolvePackageBin(
     "../../package.json",
   );
   const searchRoots = [
-    path.join(process.cwd(), "package.json"),
     openapiPackageJson,
+    path.join(process.cwd(), "package.json"),
   ];
 
   for (const requireFrom of searchRoots) {

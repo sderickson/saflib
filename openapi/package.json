@@ -25,7 +25,6 @@
     "saf-specs": "./bin/saf-specs/index.ts"
   },
   "dependencies": {
-    "@redocly/openapi-core": "^2.51.2",
     "@saflib/templates": "*",
     "@saflib/utils": "*",
     "openapi-typescript": "^7.13.0",
