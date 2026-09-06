@@ -12,11 +12,9 @@ import {
   previewReferencesGenerate,
   resolveTsconfigEntry,
 } from "./index.ts";
+import { miniMonorepoFixtureRoot } from "../../test-fixtures.ts";
 
-const fixtureRoot = path.join(
-  import.meta.dirname,
-  "../../fixtures/mini-monorepo",
-);
+const fixtureRoot = miniMonorepoFixtureRoot;
 const pkgA = path.join(fixtureRoot, "packages/pkg-a");
 const pkgC = path.join(fixtureRoot, "packages/pkg-c");
 const vueApp = path.join(fixtureRoot, "packages/vue-app");

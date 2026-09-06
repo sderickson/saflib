@@ -256,11 +256,11 @@ describe("export patterns", () => {
   });
 
   it("resolves pattern exports in resolveSpecifier", () => {
-    const root = findMonorepoRoot(path.join(import.meta.dirname, "../../../.."));
+    const root = findMonorepoRoot(path.join(import.meta.dirname, "../../.."));
     const index = buildPackageIndex(root);
     const from = path.join(
       root,
-      "saflib/base/service/http/handlers/foo/handler.ts",
+      "base/service/http/handlers/foo/handler.ts",
     );
     const result = resolveSpecifier(
       "@saflib/base-http/handlers/__group-name__/index",

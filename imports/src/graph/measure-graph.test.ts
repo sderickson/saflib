@@ -8,8 +8,9 @@ import {
   findMonorepoRoot,
   resolveSpecifier,
 } from "../resolve/index.ts";
+import { miniMonorepoFixtureRoot } from "../../test-fixtures.ts";
 
-const fixtureRoot = path.join(import.meta.dirname, "../../fixtures/mini-monorepo");
+const fixtureRoot = miniMonorepoFixtureRoot;
 const pkgA = path.join(fixtureRoot, "packages/pkg-a");
 const pkgB = path.join(fixtureRoot, "packages/pkg-b");
 const vueApp = path.join(fixtureRoot, "packages/vue-app");

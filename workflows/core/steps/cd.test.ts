@@ -42,11 +42,11 @@ describe("cd-validation", () => {
 });
 
 describe("CdStepMachine", () => {
-  const repoRoot = path.resolve(import.meta.dirname, "../../../..");
-  const jobsSpec = path.join(repoRoot, "saflib/jobs/jobs-spec");
+  const saflibRoot = path.resolve(import.meta.dirname, "../../..");
+  const jobsSpec = path.join(saflibRoot, "jobs/jobs-spec");
 
   it("fails in dry mode when cd target does not exist", () => {
-    const missing = path.join(repoRoot, "saflib/nonexistent-package");
+    const missing = path.join(saflibRoot, "nonexistent-package");
     expect(() => validateCdTarget(missing, "dry", undefined)).toThrow(
       /does not exist/,
     );
@@ -55,8 +55,8 @@ describe("CdStepMachine", () => {
   it("succeeds in dry mode when cd target is an existing package", async () => {
     const actor = createActor(CdStepMachine, {
       input: {
-        path: "saflib/jobs/jobs-spec",
-        originalWorkingDirectory: repoRoot,
+        path: "jobs/jobs-spec",
+        originalWorkingDirectory: saflibRoot,
         runMode: "dry",
       },
     });
