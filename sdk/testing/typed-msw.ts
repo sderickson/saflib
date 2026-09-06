@@ -80,7 +80,11 @@ export const typedCreateHandler = <Paths extends Record<string, any>>() => {
     if (!http[v]) {
       throw new Error(`Invalid HTTP verb: ${v}`);
     }
-    return http[v](`*${pathString}`, async (request) => {
+    // Match by pathname so handlers work with any host/subdomain (MSW + path-to-regexp v8
+    // reject legacy `*${path}` wildcards).
+    return http[v](
+      ({ request }) => new URL(request.url).pathname === pathString,
+      async (request) => {
       let body: any;
       if (verb === "post" || verb === "put" || verb === "patch") {
         try {
