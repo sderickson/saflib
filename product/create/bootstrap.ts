@@ -162,7 +162,7 @@ export function buildRootPackageJson(
       "@saflib/monorepo": "*",
       prettier: "*",
       typescript: "*",
-      vitest: "*",
+      vitest: "^5.0.0",
       "vue-tsc": "*",
     },
     overrides: {

@@ -345,7 +345,7 @@ describe("analyzeProductLockPrune", () => {
           workspaces: ["saflib/**"],
           devDependencies: {
             "better-sqlite3": "11.8.0",
-            vitest: "^3.2.4",
+            vitest: "^5.0.0",
           },
         }),
         "/product/package-lock.json": JSON.stringify({
@@ -356,7 +356,7 @@ describe("analyzeProductLockPrune", () => {
         }),
         "/product/saflib/package.json": JSON.stringify({
           name: "@saflib/saflib",
-          devDependencies: { vitest: "^3.2.4" },
+          devDependencies: { vitest: "^5.0.0" },
         }),
         "/product/saflib/drizzle/package.json": JSON.stringify({
           name: "@saflib/drizzle",
@@ -390,7 +390,7 @@ describe("applyLockPruneFixes", () => {
           name: "@product/root",
           devDependencies: {
             "better-sqlite3": "12.11.1",
-            vitest: "^3.2.4",
+            vitest: "^5.0.0",
           },
         }),
         "/product/package-lock.json": JSON.stringify({
@@ -403,7 +403,7 @@ describe("applyLockPruneFixes", () => {
         "/product/saflib/package.json": JSON.stringify({
           name: "@saflib/saflib",
           devDependencies: {
-            vitest: "^3.2.4",
+            vitest: "^5.0.0",
             "better-sqlite3": "12.11.1",
           },
         }),

@@ -389,9 +389,11 @@ export function findCompetingDependencies(
         field,
         dependency: name,
         productSpec: spec,
-        saflibSpecs: canonicalSpec
-          ? [canonicalSpec, ...[...ownedSpecs].sort()]
-          : [...ownedSpecs].sort(),
+        saflibSpecs: [
+          ...new Set(
+            canonicalSpec ? [canonicalSpec, ...ownedSpecs] : [...ownedSpecs],
+          ),
+        ].sort(),
       });
     }
   }
