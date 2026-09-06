@@ -217,6 +217,18 @@ const seedOutsideWorkflowAreas: { rel: string; mustInclude: string[] }[] = [
     rel: "clients/admin/strings.ts",
     mustInclude: ["home,", "users,"],
   },
+  {
+    rel: "service/sdk/requests/user-configs/index.fakes.ts",
+    mustInclude: [
+      "getMineUserConfigsHandler",
+      "putMineUserConfigsHandler",
+      "unsubscribeMarketingEmailsUserConfigsHandler",
+    ],
+  },
+  {
+    rel: "service/sdk/requests/admin/index.fakes.ts",
+    mustInclude: ["getUsersByIdAdminHandler"],
+  },
 ];
 
 /** Strip WORKFLOW AREA bodies (comment styles used in TS/YAML). */
