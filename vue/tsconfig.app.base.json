@@ -5,7 +5,9 @@
     "noEmit": false,
     "emitDeclarationOnly": true,
     "target": "esnext",
+    "module": "esnext",
     "lib": ["esnext", "dom"],
+    "moduleResolution": "bundler",
     "types": ["vite/client", "node"]
   },
   "exclude": [
