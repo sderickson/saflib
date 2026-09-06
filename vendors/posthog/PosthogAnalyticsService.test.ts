@@ -5,11 +5,13 @@ const { mockCapture, mockIdentify, mockShutdown, PostHogMock } = vi.hoisted(
     const mockCapture = vi.fn();
     const mockIdentify = vi.fn();
     const mockShutdown = vi.fn();
-    const PostHogMock = vi.fn().mockImplementation(() => ({
-      capture: mockCapture,
-      identify: mockIdentify,
-      shutdown: mockShutdown,
-    }));
+    const PostHogMock = vi.fn(function PostHog() {
+      return {
+        capture: mockCapture,
+        identify: mockIdentify,
+        shutdown: mockShutdown,
+      };
+    });
     return { mockCapture, mockIdentify, mockShutdown, PostHogMock };
   },
 );
