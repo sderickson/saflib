@@ -15,12 +15,7 @@
     "@saflib/sdk": "*",
     "@saflib/vite": "*",
     "@saflib/vue": "*",
-    "@vue/tsconfig": "^0.9.1",
-    "sass": "^1.93.2",
-    "vite-plugin-vuetify": "^2.1.3",
-    "vitepress": "^1.6.3",
-    "vue": "^3.5.13",
-    "vuetify": "^4.1.6"
+    "vitepress": "^1.6.3"
   },
   "sideEffects": false
 }

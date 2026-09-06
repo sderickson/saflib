@@ -9,10 +9,12 @@ export const addLockPruneCommand = (program: Command) => {
     )
     .option("--root <dir>", "product monorepo root (default: auto-detect)")
     .option("-y, --yes", "apply fixes without prompting")
-    .action(async (options: { root?: string; yes?: boolean }) => {
+    .option("--check", "report issues and exit without applying fixes")
+    .action(async (options: { root?: string; yes?: boolean; check?: boolean }) => {
       const exitCode = await runLockPrune({
         rootDir: options.root,
         yes: options.yes,
+        check: options.check,
       });
       process.exit(exitCode);
     });

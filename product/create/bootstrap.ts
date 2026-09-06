@@ -133,6 +133,9 @@ export function formatCollisionWarning(paths: string[], cwd: string): string {
   ].join("\n");
 }
 
+const LOCK_PRUNE_CMD =
+  "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/saf-monorepo/index.ts lock-prune --yes";
+
 export function buildRootPackageJson(
   organizationName: string,
 ): PackageJsonShape {
@@ -149,6 +152,7 @@ export function buildRootPackageJson(
       "lint:fix": "eslint --fix .",
       format: "prettier --write .",
       typecheck: "NODE_OPTIONS='--max-old-space-size=8192' vue-tsc -b",
+      preinstall: LOCK_PRUNE_CMD,
     },
     workspaces: ["deploy/**", "saflib/**"],
     engines: {
@@ -291,7 +295,11 @@ export function runBootstrap(options: BootstrapOptions): void {
   log(`Adding saflib submodule (${DEFAULT_SAFLIB_REPO} @ ${saflibRef})…`);
   addSaflibSubmodule(cwd, DEFAULT_SAFLIB_REPO, saflibRef, runCommand);
 
+  log("Applying monorepo root scaffold…");
   materializeMonorepoScaffold({ cwd, saflibPath, log });
+
+  log("Aligning dependency graph with saflib platform pins…");
+  runCommand(LOCK_PRUNE_CMD, { cwd });
 
   log("Installing npm dependencies…");
   runCommand("npm install", { cwd });

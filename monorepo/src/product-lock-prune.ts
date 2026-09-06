@@ -70,11 +70,41 @@ export interface StaleLockfileIssue {
   removedCount: number;
 }
 
+export interface UnhoistedRegistryDependencyIssue {
+  kind: "unhoisted-registry-dependency";
+  dependency: string;
+  nestedLockfileKey: string;
+  rootLockfileKey: string;
+  version?: string;
+}
+
+export interface LockfileVersionSkewIssue {
+  kind: "lockfile-version-skew";
+  dependency: string;
+  productLockfileKey: string;
+  productVersion: string;
+  platformVersion: string;
+}
+
+export interface PlatformOverrideSyncIssue {
+  kind: "platform-override-sync";
+  missing: Record<string, string>;
+  changed: Record<string, { from: string; to: string }>;
+}
+
 export type LockPruneIssue =
   | HoistingHazardIssue
   | CompetingDependencyIssue
   | RedundantDependencyIssue
-  | StaleLockfileIssue;
+  | StaleLockfileIssue
+  | UnhoistedRegistryDependencyIssue
+  | LockfileVersionSkewIssue
+  | PlatformOverrideSyncIssue;
+
+export interface PlatformContract {
+  overrides: Record<string, string>;
+  resolvedVersions: Map<string, string>;
+}
 
 export interface LockPruneAnalysis {
   rootDir: string;
@@ -87,6 +117,7 @@ export interface LockPruneAnalysis {
 export interface LockPruneOptions {
   rootDir?: string;
   yes?: boolean;
+  check?: boolean;
   confirm?: (message: string) => Promise<boolean>;
 }
 
@@ -132,6 +163,81 @@ function lockfileKeyForPackage(nodeModulesPrefix: string, packageName: string): 
     return path.posix.join(nodeModulesPrefix, scope, name);
   }
   return path.posix.join(nodeModulesPrefix, packageName);
+}
+
+function packageNameFromRootLockfileKey(key: string): string | undefined {
+  if (!key.startsWith("node_modules/")) return undefined;
+  return key.slice("node_modules/".length);
+}
+
+function parseNestedSaflibRegistryLockKey(
+  key: string,
+): { dependency: string; rootLockfileKey: string } | undefined {
+  const match = key.match(
+    /^saflib\/[^/]+\/node_modules\/((?:@[^/]+\/[^/]+)|[^/]+)$/,
+  );
+  if (!match) return undefined;
+  const dependency = match[1];
+  return {
+    dependency,
+    rootLockfileKey: lockfileKeyForPackage("node_modules", dependency),
+  };
+}
+
+/** Registry versions the platform lockfile resolved (source of truth for alignment). */
+export function readPlatformContract(rootDir: string): PlatformContract {
+  const saflibDir = path.join(rootDir, "saflib");
+  const overrides: Record<string, string> = {};
+  const saflibPkgPath = path.join(saflibDir, "package.json");
+  if (existsSync(saflibPkgPath)) {
+    const pkg = JSON.parse(readFileSync(saflibPkgPath, "utf8")) as {
+      overrides?: Record<string, string>;
+    };
+    Object.assign(overrides, pkg.overrides ?? {});
+  }
+
+  const resolvedVersions = new Map<string, string>();
+  const saflibLockPath = path.join(saflibDir, "package-lock.json");
+  if (existsSync(saflibLockPath)) {
+    const lock = JSON.parse(readFileSync(saflibLockPath, "utf8")) as PackageLock;
+    for (const [key, entry] of Object.entries(lock.packages ?? {})) {
+      const name = packageNameFromRootLockfileKey(key);
+      if (!name || !entry?.version || entry.link) continue;
+      resolvedVersions.set(name, entry.version);
+    }
+  }
+
+  return { overrides, resolvedVersions };
+}
+
+function buildCanonicalRegistrySpecs(
+  rootDir: string,
+  packageIndex: ReturnType<typeof buildPackageIndex>,
+  platform: PlatformContract,
+): Map<string, string> {
+  const saflibSpecs = buildSaflibSpecs(rootDir, packageIndex);
+  const canonical = new Map<string, string>();
+
+  for (const [name] of saflibSpecs) {
+    if (platform.overrides[name]) {
+      canonical.set(name, platform.overrides[name]);
+    } else if (platform.resolvedVersions.has(name)) {
+      canonical.set(name, platform.resolvedVersions.get(name)!);
+    }
+  }
+
+  for (const [name, specs] of saflibSpecs) {
+    if (canonical.has(name)) continue;
+    canonical.set(name, [...specs].sort()[0]!);
+  }
+
+  return canonical;
+}
+
+function specsMatchForPlatform(productSpec: string, canonicalSpec: string): boolean {
+  if (productSpec === canonicalSpec) return true;
+  if (productSpec === "*" || productSpec.startsWith("workspace:")) return true;
+  return false;
 }
 
 function listInstalledPackageNames(nodeModulesDir: string): Set<string> {
@@ -258,8 +364,10 @@ function buildSaflibSpecs(
 export function findCompetingDependencies(
   rootDir: string,
   packageIndex: ReturnType<typeof buildPackageIndex>,
+  platform: PlatformContract = readPlatformContract(rootDir),
 ): CompetingDependencyIssue[] {
   const saflibSpecs = buildSaflibSpecs(rootDir, packageIndex);
+  const canonicalSpecs = buildCanonicalRegistrySpecs(rootDir, packageIndex, platform);
   const issues: CompetingDependencyIssue[] = [];
 
   for (const [, info] of packageIndex) {
@@ -270,7 +378,10 @@ export function findCompetingDependencies(
       if (isProductOwnedDependencyName(name, spec)) continue;
       const ownedSpecs = saflibSpecs.get(name);
       if (!ownedSpecs) continue;
-      if (ownedSpecs.has(spec)) continue;
+      const canonicalSpec = canonicalSpecs.get(name);
+      const matchesCanonical =
+        !canonicalSpec || specsMatchForPlatform(spec, canonicalSpec);
+      if (ownedSpecs.has(spec) && matchesCanonical) continue;
       issues.push({
         kind: "competing-dependency",
         packageJsonPath,
@@ -278,7 +389,9 @@ export function findCompetingDependencies(
         field,
         dependency: name,
         productSpec: spec,
-        saflibSpecs: [...ownedSpecs].sort(),
+        saflibSpecs: canonicalSpec
+          ? [canonicalSpec, ...[...ownedSpecs].sort()]
+          : [...ownedSpecs].sort(),
       });
     }
   }
@@ -290,12 +403,12 @@ export function findCompetingDependencies(
   );
 }
 
-function isProductAppPackage(packageJsonPath: string, rootDir: string): boolean {
+function isDeployPackage(packageJsonPath: string, rootDir: string): boolean {
   const rel = path
     .relative(rootDir, packageJsonPath)
     .split(path.sep)
     .join("/");
-  return !rel.startsWith("clients/") && !rel.startsWith("deploy/");
+  return rel === "deploy/package.json" || rel.startsWith("deploy/");
 }
 
 export function findRedundantDependencies(
@@ -309,7 +422,7 @@ export function findRedundantDependencies(
   for (const [, info] of packageIndex) {
     if (isSaflibPackageDir(rootDir, info.dir)) continue;
     const packageJsonPath = path.join(info.dir, "package.json");
-    if (options.fixableOnly && !isProductAppPackage(packageJsonPath, rootDir)) {
+    if (options.fixableOnly && isDeployPackage(packageJsonPath, rootDir)) {
       continue;
     }
     const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps;
@@ -333,6 +446,85 @@ export function findRedundantDependencies(
       a.dependency.localeCompare(b.dependency) ||
       a.packageJsonPath.localeCompare(b.packageJsonPath),
   );
+}
+
+export function findUnhoistedRegistryDependencies(
+  lockfile: PackageLock,
+): UnhoistedRegistryDependencyIssue[] {
+  const packages = lockfile.packages ?? {};
+  const issues: UnhoistedRegistryDependencyIssue[] = [];
+  const seen = new Set<string>();
+
+  for (const [key, entry] of Object.entries(packages)) {
+    const parsed = parseNestedSaflibRegistryLockKey(key);
+    if (!parsed || entry?.link) continue;
+    if (packages[parsed.rootLockfileKey]) continue;
+    if (seen.has(parsed.dependency)) continue;
+    seen.add(parsed.dependency);
+    issues.push({
+      kind: "unhoisted-registry-dependency",
+      dependency: parsed.dependency,
+      nestedLockfileKey: key,
+      rootLockfileKey: parsed.rootLockfileKey,
+      version: entry?.version,
+    });
+  }
+
+  return issues.sort((a, b) => a.dependency.localeCompare(b.dependency));
+}
+
+export function findLockfileVersionSkew(
+  lockfile: PackageLock,
+  platform: PlatformContract,
+): LockfileVersionSkewIssue[] {
+  const packages = lockfile.packages ?? {};
+  const issues: LockfileVersionSkewIssue[] = [];
+  const seen = new Set<string>();
+
+  for (const [key, entry] of Object.entries(packages)) {
+    const parsed = parseNestedSaflibRegistryLockKey(key);
+    if (!parsed || !entry?.version || entry.link) continue;
+    const platformVersion = platform.resolvedVersions.get(parsed.dependency);
+    if (!platformVersion || platformVersion === entry.version) continue;
+    if (seen.has(parsed.dependency)) continue;
+    seen.add(parsed.dependency);
+    issues.push({
+      kind: "lockfile-version-skew",
+      dependency: parsed.dependency,
+      productLockfileKey: key,
+      productVersion: entry.version,
+      platformVersion,
+    });
+  }
+
+  return issues.sort((a, b) => a.dependency.localeCompare(b.dependency));
+}
+
+export function findPlatformOverrideDrift(
+  rootDir: string,
+  platform: PlatformContract,
+): PlatformOverrideSyncIssue | null {
+  const productPkgPath = path.join(rootDir, "package.json");
+  const productPkg = JSON.parse(readFileSync(productPkgPath, "utf8")) as {
+    overrides?: Record<string, string>;
+  };
+  const productOverrides = productPkg.overrides ?? {};
+  const missing: Record<string, string> = {};
+  const changed: Record<string, { from: string; to: string }> = {};
+
+  for (const [name, version] of Object.entries(platform.overrides)) {
+    if (productOverrides[name] === undefined) {
+      missing[name] = version;
+    } else if (productOverrides[name] !== version) {
+      changed[name] = { from: productOverrides[name], to: version };
+    }
+  }
+
+  if (Object.keys(missing).length === 0 && Object.keys(changed).length === 0) {
+    return null;
+  }
+
+  return { kind: "platform-override-sync", missing, changed };
 }
 
 export function pruneStaleLockfileEntries(
@@ -379,27 +571,106 @@ export function hoistMisplacedLockfilePeers(
   lockfile: PackageLock,
   hazards: HoistingHazardIssue[],
 ): string[] {
+  return hoistLockfileEntries(
+    lockfile,
+    hazards.map((hazard) => ({
+      dependency: hazard.peer,
+      nestedLockfileKey: hazard.saflibLockfileKey,
+      rootLockfileKey: hazard.rootLockfileKey,
+    })),
+  );
+}
+
+export function hoistUnhoistedRegistryDependencies(
+  lockfile: PackageLock,
+  issues: UnhoistedRegistryDependencyIssue[],
+): string[] {
+  return hoistLockfileEntries(
+    lockfile,
+    issues.map((issue) => ({
+      dependency: issue.dependency,
+      nestedLockfileKey: issue.nestedLockfileKey,
+      rootLockfileKey: issue.rootLockfileKey,
+    })),
+  );
+}
+
+function hoistLockfileEntries(
+  lockfile: PackageLock,
+  entries: Array<{
+    dependency: string;
+    nestedLockfileKey: string;
+    rootLockfileKey: string;
+  }>,
+): string[] {
   const packages = lockfile.packages ?? {};
   const hoisted: string[] = [];
 
-  for (const hazard of hazards) {
-    if (packages[hazard.rootLockfileKey]) continue;
-    const nestedEntry = packages[hazard.saflibLockfileKey];
+  for (const entry of entries) {
+    if (packages[entry.rootLockfileKey]) continue;
+    const nestedEntry = packages[entry.nestedLockfileKey];
     if (!nestedEntry) continue;
 
-    packages[hazard.rootLockfileKey] = { ...nestedEntry };
+    packages[entry.rootLockfileKey] = { ...nestedEntry };
     const keysToDelete = Object.keys(packages).filter(
       (key) =>
-        key === hazard.saflibLockfileKey ||
-        key.startsWith(`${hazard.saflibLockfileKey}/`),
+        key === entry.nestedLockfileKey ||
+        key.startsWith(`${entry.nestedLockfileKey}/`),
     );
     for (const key of keysToDelete) {
       delete packages[key];
     }
-    hoisted.push(hazard.peer);
+    hoisted.push(entry.dependency);
   }
 
   return hoisted;
+}
+
+export function removeNestedLockfileEntries(
+  lockfile: PackageLock,
+  issues: LockfileVersionSkewIssue[],
+): string[] {
+  const packages = lockfile.packages ?? {};
+  const removed: string[] = [];
+
+  for (const issue of issues) {
+    const keysToDelete = Object.keys(packages).filter(
+      (key) =>
+        key === issue.productLockfileKey ||
+        key.startsWith(`${issue.productLockfileKey}/`),
+    );
+    if (keysToDelete.length === 0) continue;
+    for (const key of keysToDelete) {
+      delete packages[key];
+    }
+    removed.push(issue.dependency);
+  }
+
+  return removed;
+}
+
+export function syncPlatformOverrides(
+  rootDir: string,
+  platform: PlatformContract,
+): string[] {
+  const productPkgPath = path.join(rootDir, "package.json");
+  const productPkg = JSON.parse(readFileSync(productPkgPath, "utf8")) as {
+    overrides?: Record<string, string>;
+  };
+  const nextOverrides = { ...(productPkg.overrides ?? {}) };
+  const applied: string[] = [];
+
+  for (const [name, version] of Object.entries(platform.overrides)) {
+    if (nextOverrides[name] === version) continue;
+    nextOverrides[name] = version;
+    applied.push(`${name}@${version}`);
+  }
+
+  if (applied.length === 0) return applied;
+
+  productPkg.overrides = nextOverrides;
+  writeFileSync(productPkgPath, `${JSON.stringify(productPkg, null, 2)}\n`);
+  return applied;
 }
 
 export function analyzeProductLockPrune(rootDir: string): LockPruneAnalysis {
@@ -412,9 +683,16 @@ export function analyzeProductLockPrune(rootDir: string): LockPruneAnalysis {
 
   const lockfilePath = path.join(rootDir, "package-lock.json");
   if (!existsSync(lockfilePath)) {
-    throw new Error(`package-lock.json not found at ${lockfilePath}`);
+    return {
+      rootDir,
+      saflibDir,
+      lockfilePath,
+      issues: [],
+      warnings: [],
+    };
   }
 
+  const platform = readPlatformContract(rootDir);
   const packageIndex = buildPackageIndex(rootDir);
   const lockfile = JSON.parse(readFileSync(lockfilePath, "utf8")) as PackageLock;
   const redundant = findRedundantDependencies(rootDir, packageIndex);
@@ -432,9 +710,14 @@ export function analyzeProductLockPrune(rootDir: string): LockPruneAnalysis {
   );
   const issues: LockPruneIssue[] = [
     ...fixableRedundant,
-    ...findCompetingDependencies(rootDir, packageIndex),
+    ...findCompetingDependencies(rootDir, packageIndex, platform),
     ...findHoistingHazards(rootDir),
+    ...findUnhoistedRegistryDependencies(lockfile),
+    ...findLockfileVersionSkew(lockfile, platform),
   ];
+
+  const overrideDrift = findPlatformOverrideDrift(rootDir, platform);
+  if (overrideDrift) issues.push(overrideDrift);
 
   const staleLockfile = pruneStaleLockfileEntries(lockfile, rootDir);
   if (staleLockfile) issues.push(staleLockfile);
@@ -470,6 +753,27 @@ function formatIssue(issue: LockPruneIssue): string[] {
         ...(issue.stalePaths.length > 5
           ? [`  - ... ${issue.stalePaths.length - 5} more`]
           : []),
+      ];
+    case "unhoisted-registry-dependency":
+      return [
+        `${issue.dependency}${issue.version ? `@${issue.version}` : ""} is locked under a saflib workspace path but missing from the product root.`,
+        `  move lockfile entry: ${issue.nestedLockfileKey} -> ${issue.rootLockfileKey}`,
+      ];
+    case "lockfile-version-skew":
+      return [
+        `${issue.dependency} resolves to ${issue.productVersion} in the product lockfile but ${issue.platformVersion} in saflib/package-lock.json.`,
+        `  remove nested lock entry: ${issue.productLockfileKey}`,
+      ];
+    case "platform-override-sync":
+      return [
+        "product root overrides drift from saflib platform pins.",
+        ...Object.entries(issue.missing).map(
+          ([name, version]) => `  add override: ${name}@${version}`,
+        ),
+        ...Object.entries(issue.changed).map(
+          ([name, change]) =>
+            `  update override: ${name}@${change.from} -> ${change.to}`,
+        ),
       ];
   }
 }
@@ -508,7 +812,10 @@ function writePrunedLockfile(
 export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
   const applied: string[] = [];
   const hoistingHazards: HoistingHazardIssue[] = [];
+  const unhoistedRegistry: UnhoistedRegistryDependencyIssue[] = [];
+  const versionSkew: LockfileVersionSkewIssue[] = [];
   let wroteLockfile = false;
+  const platform = readPlatformContract(analysis.rootDir);
 
   for (const issue of analysis.issues) {
     switch (issue.kind) {
@@ -535,6 +842,17 @@ export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
       case "hoisting-hazard":
         hoistingHazards.push(issue);
         break;
+      case "unhoisted-registry-dependency":
+        unhoistedRegistry.push(issue);
+        break;
+      case "lockfile-version-skew":
+        versionSkew.push(issue);
+        break;
+      case "platform-override-sync":
+        for (const pin of syncPlatformOverrides(analysis.rootDir, platform)) {
+          applied.push(`synced platform override ${pin}`);
+        }
+        break;
       case "stale-lockfile":
         writePrunedLockfile(issue.lockfilePath, (lockfile) => {
           pruneStaleLockfileEntries(lockfile, analysis.rootDir);
@@ -547,11 +865,33 @@ export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
     }
   }
 
-  if (hoistingHazards.length > 0) {
+  if (
+    hoistingHazards.length > 0 ||
+    unhoistedRegistry.length > 0 ||
+    versionSkew.length > 0
+  ) {
     writePrunedLockfile(analysis.lockfilePath, (lockfile) => {
-      const hoisted = hoistMisplacedLockfilePeers(lockfile, hoistingHazards);
-      for (const peer of hoisted) {
-        applied.push(`hoisted ${peer} to the product root in package-lock.json`);
+      if (hoistingHazards.length > 0) {
+        for (const peer of hoistMisplacedLockfilePeers(lockfile, hoistingHazards)) {
+          applied.push(`hoisted ${peer} to the product root in package-lock.json`);
+        }
+      }
+      if (unhoistedRegistry.length > 0) {
+        for (const dep of hoistUnhoistedRegistryDependencies(
+          lockfile,
+          unhoistedRegistry,
+        )) {
+          applied.push(
+            `hoisted registry dependency ${dep} to the product root in package-lock.json`,
+          );
+        }
+      }
+      if (versionSkew.length > 0) {
+        for (const dep of removeNestedLockfileEntries(lockfile, versionSkew)) {
+          applied.push(
+            `removed skewed lock entry for ${dep}; rerun npm install to align with saflib`,
+          );
+        }
       }
     });
     wroteLockfile = true;
@@ -581,7 +921,7 @@ export async function runLockPrune(
   console.log("");
 
   if (analysis.warnings.length > 0) {
-    console.log("Warnings (not auto-fixed for clients/deploy packages):");
+    console.log("Warnings (not auto-fixed for deploy packages):");
     for (const warning of analysis.warnings) {
       console.log(
         `  ${warning.dependency}@${warning.spec} in ${warning.packageJsonPath} is redundant (saflib already owns it).`,
@@ -591,7 +931,7 @@ export async function runLockPrune(
   }
 
   if (analysis.issues.length === 0) {
-    return 0;
+    return analysis.warnings.length > 0 ? 0 : 0;
   }
 
   for (const issue of analysis.issues) {
@@ -599,6 +939,11 @@ export async function runLockPrune(
       console.log(line);
     }
     console.log("");
+  }
+
+  if (options.check) {
+    console.log("Check mode: no changes made.");
+    return 1;
   }
 
   const confirm = options.confirm ?? defaultConfirm;

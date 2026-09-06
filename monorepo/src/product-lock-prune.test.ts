@@ -5,9 +5,14 @@ import {
   applyLockPruneFixes,
   findCompetingDependencies,
   findHoistingHazards,
+  findLockfileVersionSkew,
   findRedundantDependencies,
+  findUnhoistedRegistryDependencies,
   hoistMisplacedLockfilePeers,
+  hoistUnhoistedRegistryDependencies,
   pruneStaleLockfileEntries,
+  readPlatformContract,
+  syncPlatformOverrides,
 } from "./product-lock-prune.ts";
 import { buildPackageIndex } from "@saflib/imports";
 
@@ -210,6 +215,124 @@ describe("hoistMisplacedLockfilePeers", () => {
       version: "12.11.1",
     });
     expect(packages["saflib/node_modules/better-sqlite3"]).toBeUndefined();
+  });
+});
+
+describe("findUnhoistedRegistryDependencies", () => {
+  it("flags registry deps locked under saflib workspace paths", () => {
+    const lockfile = {
+      packages: {
+        "saflib/sdk/node_modules/@tanstack/vue-query": {
+          version: "5.85.9",
+          resolved:
+            "https://registry.npmjs.org/@tanstack/vue-query/-/vue-query-5.85.9.tgz",
+        },
+      },
+    };
+
+    expect(findUnhoistedRegistryDependencies(lockfile)).toEqual([
+      {
+        kind: "unhoisted-registry-dependency",
+        dependency: "@tanstack/vue-query",
+        nestedLockfileKey: "saflib/sdk/node_modules/@tanstack/vue-query",
+        rootLockfileKey: "node_modules/@tanstack/vue-query",
+        version: "5.85.9",
+      },
+    ]);
+  });
+});
+
+describe("hoistUnhoistedRegistryDependencies", () => {
+  it("moves nested workspace lock entries to the product root", () => {
+    const lockfile = {
+      packages: {
+        "saflib/sdk/node_modules/@tanstack/vue-query": {
+          version: "5.85.9",
+        },
+      },
+    };
+
+    const hoisted = hoistUnhoistedRegistryDependencies(lockfile, [
+      {
+        kind: "unhoisted-registry-dependency",
+        dependency: "@tanstack/vue-query",
+        nestedLockfileKey: "saflib/sdk/node_modules/@tanstack/vue-query",
+        rootLockfileKey: "node_modules/@tanstack/vue-query",
+        version: "5.85.9",
+      },
+    ]);
+
+    expect(hoisted).toEqual(["@tanstack/vue-query"]);
+    const packages = lockfile.packages as Record<string, { version?: string }>;
+    expect(packages["node_modules/@tanstack/vue-query"]).toMatchObject({
+      version: "5.85.9",
+    });
+    expect(
+      packages["saflib/sdk/node_modules/@tanstack/vue-query"],
+    ).toBeUndefined();
+  });
+});
+
+describe("findLockfileVersionSkew", () => {
+  it("flags product lock versions that differ from saflib", () => {
+    const lockfile = {
+      packages: {
+        "saflib/sdk/node_modules/@tanstack/vue-query": {
+          version: "5.102.8",
+        },
+      },
+    };
+    const platform = {
+      overrides: {},
+      resolvedVersions: new Map([["@tanstack/vue-query", "5.85.9"]]),
+    };
+
+    expect(findLockfileVersionSkew(lockfile, platform)).toEqual([
+      {
+        kind: "lockfile-version-skew",
+        dependency: "@tanstack/vue-query",
+        productLockfileKey: "saflib/sdk/node_modules/@tanstack/vue-query",
+        productVersion: "5.102.8",
+        platformVersion: "5.85.9",
+      },
+    ]);
+  });
+});
+
+describe("syncPlatformOverrides", () => {
+  it("merges saflib overrides into the product root package.json", () => {
+    vol.fromJSON(
+      {
+        "/product/package.json": JSON.stringify({
+          name: "@product/root",
+          overrides: { "better-sqlite3": "12.11.1" },
+        }),
+        "/product/saflib/package.json": JSON.stringify({
+          name: "@saflib/saflib",
+          overrides: {
+            vue: "3.5.20",
+            vite: "8.0.13",
+            "better-sqlite3": "12.11.1",
+          },
+        }),
+      },
+      "/",
+    );
+
+    const platform = readPlatformContract("/product");
+    expect(syncPlatformOverrides("/product", platform)).toEqual([
+      "vue@3.5.20",
+      "vite@8.0.13",
+    ]);
+
+    const rootPkg = JSON.parse(
+      vol.readFileSync("/product/package.json", "utf8") as string,
+    ) as { overrides: Record<string, string> };
+    expect(rootPkg.overrides).toEqual({
+      "better-sqlite3": "12.11.1",
+      vue: "3.5.20",
+      vite: "8.0.13",
+    });
   });
 });
 

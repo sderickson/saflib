@@ -21,18 +21,16 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "vue-tsc -b"
   },
-  "devDependencies": {
-    "@saflib/base-test": "*",
-    "@saflib/vitest": "*",
-    "@testing-library/vue": "^8.1.0"
-  },
   "dependencies": {
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
     "@saflib/base-spec": "*",
     "@saflib/vue": "*",
-    "@saflib/ory-kratos-sdk": "*",
-    "msw": "^2.11.3"
+    "@saflib/ory-kratos-sdk": "*"
+  },
+  "devDependencies": {
+    "@saflib/base-test": "*",
+    "@saflib/vitest": "*"
   },
   "msw": {
     "workerDirectory": [

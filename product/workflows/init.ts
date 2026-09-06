@@ -330,6 +330,9 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         );
         workspaces.sort();
         pkg.workspaces = workspaces;
+        pkg.scripts ??= {};
+        pkg.scripts.preinstall ??=
+          "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/saf-monorepo/index.ts lock-prune --yes";
         return JSON.stringify(pkg, null, 2) + "\n";
       },
     })),
@@ -462,6 +465,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
     step(CommandStepMachine, () => ({
       command: "npm",
+      args: ["exec", "saf-monorepo", "lock-prune", "--yes"],
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
       args: ["install"],
     })),
     // Refresh env.ts under the new product only (stub packages like
@@ -527,6 +534,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
     // Product packages were copied after the first install; refresh so new
     // workspace devDependencies (e.g. openapi-typescript on spec) are linked.
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-monorepo", "lock-prune", "--yes"],
+    })),
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],

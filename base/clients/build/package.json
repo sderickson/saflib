@@ -14,8 +14,7 @@
     "@saflib/base-auth-spa": "*",
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
-    "@saflib/vite": "*",
-    "@vue/tsconfig": "^0.9.0"
+    "@saflib/vite": "*"
   },
   "workspaces": [
     "clients/*"

@@ -28,8 +28,7 @@
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/ory-kratos-spa": "*",
     "@saflib/vue": "*",
-    "@saflib/links": "*",
-    "vue-router": "^5.0.0"
+    "@saflib/links": "*"
   },
   "sideEffects": false,
   "imports": {
