@@ -299,6 +299,8 @@ export function runBootstrap(options: BootstrapOptions): void {
   materializeMonorepoScaffold({ cwd, saflibPath, log });
 
   log("Aligning dependency graph with saflib platform pins…");
+  log("Installing npm dependencies (workspace link pass)…");
+  runCommand("npm install --ignore-scripts", { cwd });
   runCommand(LOCK_PRUNE_CMD, { cwd });
 
   log("Installing npm dependencies…");

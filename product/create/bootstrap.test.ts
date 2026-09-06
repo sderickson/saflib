@@ -175,6 +175,7 @@ describe("runBootstrap", () => {
       `git submodule add "https://github.com/sderickson/saflib.git" saflib`,
       'git -C saflib checkout "main"',
       "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes",
+      "npm install --ignore-scripts",
       "npm install",
       'npm exec saf-workflow kickoff product/init "demo" "example.com"',
     ]);
