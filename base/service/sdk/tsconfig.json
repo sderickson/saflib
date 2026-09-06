@@ -24,9 +24,6 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "noEmit": false,
     "emitDeclarationOnly": true,
-    "types": [
-      "vite/client"
-    ],
     "rootDir": "."
   },
   "exclude": [
