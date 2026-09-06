@@ -4,11 +4,12 @@
 
 For **TypeScript** — composite project references, cross-package typing conventions, and static import-graph analysis — see [@saflib/imports](../../imports/docs/01-overview.md).
 
-Use this package's `saf-monorepo` command to formatting and lockfile management, and the [add-package](./workflows/add-package.md), [add-export](./workflows/add-export.md) workflows to add standalone packages.
+Use this package's `saf-monorepo` command for formatting and [lockfile management](./02-version-management.md), and the [add-package](./workflows/add-package.md), [add-export](./workflows/add-export.md) workflows to add standalone packages.
 
 ## What this package provides
 
 - Shared presets each workspace package extends: [`tsconfig.json`](./ref/index.md), [`eslint.config.js`](./ref/index.md)
+- [Version management](./02-version-management.md) — platform vs product dependency ownership, lock-prune, and install hygiene
 - Workflows: [add-package](./workflows/add-package.md), [add-export](./workflows/add-export.md)
 - CLIs: [saf-monorepo](./cli/saf-monorepo.md) (`format`, `lock-prune`), [saf-ts-run](./cli/saf-ts-run.md)
 - Layout and inventory APIs: package kind classification, `exports`/`imports` helpers, root-file allowlists, workspace context ([code reference](./ref/index.md))
