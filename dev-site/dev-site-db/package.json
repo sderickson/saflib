@@ -25,7 +25,8 @@
     "@saflib/utils": "*"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "drizzle-kit": "*"
   },
   "sideEffects": false
 }
