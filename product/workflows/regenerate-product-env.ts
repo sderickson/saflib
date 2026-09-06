@@ -81,7 +81,7 @@ for (const pkgDir of packageDirs) {
   const envSchema = path.join(pkgDir, "env.schema.json");
   const hasEnvTs = existsSync(envTs) && statSync(envTs).isFile();
   const hasSchema = existsSync(envSchema) && statSync(envSchema).isFile();
-  if (!hasEnvTs && !hasSchema) continue;
+  if (!hasEnvTs && !hasSchema && !packageWantsCombined(pkgDir)) continue;
 
   const args = ["exec", "saf-env", "generate"];
   if (packageWantsCombined(pkgDir)) {
