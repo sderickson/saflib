@@ -50,7 +50,7 @@ const baseTest = {
       allow: fsAllow,
     },
     deps: {
-      inline: ["vuetify"],
+      inline: ["vuetify", "vue-router"],
     },
   },
   mockReset: true,
@@ -88,6 +88,19 @@ const baseCoverage = {
   ],
 };
 
+const baseResolve = {
+  dedupe: [
+    "vue",
+    "vue-router",
+    "vuetify",
+    "vue-i18n",
+    "@vue/runtime-core",
+    "@vue/runtime-dom",
+    "@vue/reactivity",
+    "@vue/shared",
+  ],
+};
+
 /**
  * Default vitest config for Vue SPAs. Coverage is collected only when
  * you pass --coverage on the CLI.
@@ -98,17 +111,7 @@ const baseCoverage = {
  */
 export const defaultConfig = defineConfig({
   plugins: [vue(), vuetify()],
-  resolve: {
-    dedupe: [
-      "vue",
-      "vue-router",
-      "vue-i18n",
-      "@vue/runtime-core",
-      "@vue/runtime-dom",
-      "@vue/reactivity",
-      "@vue/shared",
-    ],
-  },
+  resolve: baseResolve,
   server: {
     fs: {
       allow: fsAllow,
@@ -127,7 +130,7 @@ export const defaultConfig = defineConfig({
  */
 export const defaultConfigWithCoverageEnforcement = defineConfig({
   plugins: [vue(), vuetify()],
-  resolve: defaultConfig.resolve,
+  resolve: baseResolve,
   server: defaultConfig.server,
   test: {
     ...baseTest,
