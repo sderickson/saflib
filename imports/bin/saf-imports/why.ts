@@ -13,11 +13,7 @@ export const addWhyCommand = (program: Command) => {
     .description(
       "Print the shortest import path from an entry file to a target module or package",
     )
-    .argument("<entry>", "Entry file path (typically a *.test.ts)")
-    .argument(
-      "<target>",
-      "Workspace file, workspace package name, or external root (e.g. stripe)",
-    )
+    .arguments("<entry>", "<target>")
     .option("--include-types", "Include type-only imports in the graph")
     .option("--root <dir>", "Monorepo root (default: auto-detect)")
     .action((entry: string, target: string, options: WhyOptions) => {
