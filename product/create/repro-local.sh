@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Local bootstrap repro — creates a throwaway product repo under $TMPDIR
-# using a symlink to this saflib checkout (live code, no GitHub clone).
+# by copying this saflib checkout (no GitHub clone).
 #
 # Uses /tmp (or $TMPDIR) so the product is not nested inside saf-2025;
 # that avoids npm picking up the parent repo's node_modules during installs
-# and tests.
+# and tests. saflib is copied (not symlinked) so Node module resolution for
+# CLI scripts stays under the product tree.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -38,7 +39,10 @@ runBootstrap({
   saflibPath,
   runCommand: (command, { cwd }) => {
     if (command.startsWith('git submodule add')) {
-      execSync('ln -sfn ${SAFLIB_ROOT} saflib', { cwd, stdio: 'inherit' });
+      execSync(
+        'rsync -a --exclude node_modules --exclude .git ${SAFLIB_ROOT}/ saflib/',
+        { cwd, stdio: 'inherit', shell: true },
+      );
       return;
     }
     if (command.startsWith('git -C saflib checkout')) {
