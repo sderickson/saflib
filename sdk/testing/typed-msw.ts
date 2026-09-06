@@ -1,4 +1,5 @@
 import { http, HttpResponse } from "msw";
+import { match } from "path-to-regexp";
 
 type ExtractRequestParams<Op extends Record<string, any>> =
   Op["parameters"] extends {
@@ -82,8 +83,9 @@ export const typedCreateHandler = <Paths extends Record<string, any>>() => {
     }
     // Match by pathname so handlers work with any host/subdomain (MSW + path-to-regexp v8
     // reject legacy `*${path}` wildcards).
+    const pathMatcher = match(pathString, { decode: decodeURIComponent });
     return http[v](
-      ({ request }) => new URL(request.url).pathname === pathString,
+      ({ request }) => pathMatcher(new URL(request.url).pathname) !== false,
       async (request) => {
       let body: any;
       if (verb === "post" || verb === "put" || verb === "patch") {
@@ -106,7 +108,11 @@ export const typedCreateHandler = <Paths extends Record<string, any>>() => {
           new URLSearchParams(query).entries(),
         ) as query;
       }
-      const params = { ...request.params };
+      const pathname = new URL(request.request.url).pathname;
+      const matched = pathMatcher(pathname);
+      const pathParams =
+        matched !== false ? (matched.params as Record<string, string>) : {};
+      const params = { ...pathParams, ...request.params };
       const headers: Record<string, string> = {};
       request.request.headers.forEach((value, key) => {
         headers[key] = value;
