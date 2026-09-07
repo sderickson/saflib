@@ -478,7 +478,7 @@
     },
     "__url-path__": {
       "__method__": {
-        "$ref": "/var/folders/l7/m1khjd753hb2kdv562b5qv7w0000gn/T/saf-specs-gOhQEG/routes/__group-name__/__target-name__.yaml#/__operationId__"
+        "$ref": "./routes/__group-name__/__target-name__.yaml#/__operationId__"
       }
     },
     "/__offshoot-name__/health": {

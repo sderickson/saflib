@@ -5,7 +5,7 @@ import { getSafReporters } from "@saflib/node";
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import { resolvePackageBin } from "./resolve-bin.ts";
-import { rewritePkgRefs } from "./resolve-pkg-refs.ts";
+import { rewritePkgRefs, rewriteBundledExternalRefs } from "./resolve-pkg-refs.ts";
 import { bundleOpenApiToJson } from "./bundle-openapi.ts";
 import { rewriteExternalSchemaTypes } from "./rewrite-external-types.ts";
 
@@ -77,7 +77,15 @@ export const addGenerateCommand = (program: Command) => {
         }
 
         log.info("Generating JSON bundle...");
-        await bundleOpenApiToJson(resolved.rewrittenEntryPath, jsonPath);
+        let bundled = await bundleOpenApiToJson(
+          resolved.rewrittenEntryPath,
+          jsonPath,
+        );
+        bundled = rewriteBundledExternalRefs(bundled, {
+          tempDir: resolved.tempDir,
+          packageRoot: cwd,
+        }) as typeof bundled;
+        writeFileSync(jsonPath, `${JSON.stringify(bundled, null, 2)}\n`);
 
         log.info("Generating per-operation and schema fragments...");
         const {

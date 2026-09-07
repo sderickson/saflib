@@ -62,11 +62,14 @@ export const CdStepMachine = setup({
     },
   },
   output: ({ context }) => {
-    const actualCwd = process.cwd();
-    const relativeCwd = path.relative(actualCwd, context.newCwd);
+    const relativeCwd = path.relative(
+      context.originalWorkingDirectory,
+      context.newCwd,
+    );
+    const display = relativeCwd === "" ? "." : relativeCwd;
     return {
       checklist: {
-        description: `Change working directory to ${relativeCwd}`,
+        description: `Change working directory to ${display}`,
       },
       newCwd: context.newCwd,
     };

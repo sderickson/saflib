@@ -1,7 +1,31 @@
+import path from "node:path";
 import { addNewLinesToString } from "../strings.ts";
 import { type AnyMachineSnapshot, type AnyActor } from "xstate";
 import type { ChecklistItem, WorkflowContext, WorkflowInput } from "./types.ts";
 import { getWorkflowLogger } from "./store.ts";
+
+/** Format an absolute path for logs/checklists relative to a workflow cwd. */
+export function formatPathForDisplay(
+  filePath: string,
+  baseCwd: string,
+): string {
+  if (!path.isAbsolute(filePath)) return filePath;
+  const rel = path.relative(baseCwd, filePath);
+  if (rel === "") return ".";
+  return rel;
+}
+
+/** Format a shell command for logs/checklists (relativize absolute path args). */
+export function formatCommandForDisplay(
+  command: string,
+  args: string[],
+  baseCwd: string,
+): string {
+  const displayArgs = args.map((arg) =>
+    path.isAbsolute(arg) ? formatPathForDisplay(arg, baseCwd) : arg,
+  );
+  return `${command} ${displayArgs.join(" ")}`.trim();
+}
 
 /**
  * Convenience function. Use with xstate's `waitFor` to wait for the workflow to halt, because it has prompted the agent to do something.

@@ -20,7 +20,12 @@ export * from "./steps/npm-script-validation.ts";
 export * from "./steps/cd.ts";
 export * from "./steps/transform-file.ts";
 export * from "./offshoot.ts";
-export { checklistToString, pollingWaitFor } from "./utils.ts";
+export {
+  checklistToString,
+  formatCommandForDisplay,
+  formatPathForDisplay,
+  pollingWaitFor,
+} from "./utils.ts";
 export {
   type GetSourceUrlFunction,
   type WorkflowLoggerOptions,

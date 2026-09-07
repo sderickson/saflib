@@ -1,10 +1,20 @@
 import { handlePrompt } from "../prompt.ts";
 import { runCommandAsync } from "../xstate-actions/utils.ts";
+import {
+  formatCommandForDisplay,
+  formatPathForDisplay,
+} from "../utils.ts";
 import type { CommandStepContext } from "./command.ts";
 import { isScriptModeValidationCommand } from "./command.ts";
 
 const messageForContext = (ctx: CommandStepContext) => {
-  return `The command \`${ctx.command} ${ctx.args.join(" ")}\` failed.\nCWD: ${ctx.cwd}.\n${ctx.errorPrompt ? `\n${ctx.errorPrompt}` : ""}`;
+  const display = formatCommandForDisplay(
+    ctx.command,
+    ctx.args,
+    ctx.originalWorkingDirectory,
+  );
+  const cwd = formatPathForDisplay(ctx.cwd, ctx.originalWorkingDirectory);
+  return `The command \`${display}\` failed.\nCWD: ${cwd}.\n${ctx.errorPrompt ? `\n${ctx.errorPrompt}` : ""}`;
 };
 
 /**

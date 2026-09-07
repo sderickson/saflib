@@ -11,7 +11,7 @@ import {
   logError,
 } from "../xstate.ts";
 import { raise } from "xstate";
-import { contextFromInput } from "../utils.ts";
+import { contextFromInput, formatCommandForDisplay } from "../utils.ts";
 import { executeCommandStep } from "./command-runner.ts";
 
 /**
@@ -139,10 +139,14 @@ export const CommandStepMachine = setup({
       on: {
         printBefore: {
           target: "runCommand",
-          actions: logInfo(
-            ({ context }) =>
-              `Running command: ${context.command} ${context.args.join(" ")}`,
-          ),
+          actions: logInfo(({ context }) => {
+            const display = formatCommandForDisplay(
+              context.command,
+              context.args,
+              context.originalWorkingDirectory,
+            );
+            return `Running command: ${display}`;
+          }),
         },
       },
     },
@@ -153,16 +157,25 @@ export const CommandStepMachine = setup({
         onDone: {
           target: "done",
           actions: [
-            logInfo(
-              ({ context }) =>
-                `Successfully ran \`${context.command} ${context.args.join(" ")}\``,
-            ),
+            logInfo(({ context }) => {
+              const display = formatCommandForDisplay(
+                context.command,
+                context.args,
+                context.originalWorkingDirectory,
+              );
+              return `Successfully ran \`${display}\``;
+            }),
             assign({
               checklist: ({ context }) => {
+                const display = formatCommandForDisplay(
+                  context.command,
+                  context.args,
+                  context.originalWorkingDirectory,
+                );
                 return [
                   ...context.checklist,
                   {
-                    description: `Run \`${context.command} ${context.args.join(" ")}\``,
+                    description: `Run \`${display}\``,
                   },
                 ];
               },
@@ -215,9 +228,14 @@ export const CommandStepMachine = setup({
     },
   },
   output: ({ context }) => {
+    const display = formatCommandForDisplay(
+      context.command,
+      context.args,
+      context.originalWorkingDirectory,
+    );
     return {
       checklist: {
-        description: `Run \`${context.command} ${context.args.join(" ")}\``,
+        description: `Run \`${display}\``,
       },
     };
   },
