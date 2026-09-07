@@ -689,9 +689,14 @@ export function syncPlatformOverrides(
   return applied;
 }
 
+/** True when `rootDir` is a product monorepo with a nested `saflib/` workspace. */
+export function isEmbeddedProductMonorepo(rootDir: string): boolean {
+  return existsSync(path.join(path.resolve(rootDir), "saflib", "package.json"));
+}
+
 export function analyzeProductLockPrune(rootDir: string): LockPruneAnalysis {
   const saflibDir = path.join(rootDir, "saflib");
-  if (!existsSync(path.join(saflibDir, "package.json"))) {
+  if (!isEmbeddedProductMonorepo(rootDir)) {
     throw new Error(
       "saf-monorepo lock-prune requires a product repo with an embedded saflib/ workspace. Run from the product root.",
     );

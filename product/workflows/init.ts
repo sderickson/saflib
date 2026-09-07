@@ -10,6 +10,7 @@ import {
   makeLineReplace,
   type ParsePackageNameOutput,
 } from "@saflib/workflows";
+import { isEmbeddedProductMonorepo } from "@saflib/monorepo";
 import { kebabCaseToPascalCase, kebabCaseToSnakeCase } from "@saflib/utils";
 import {
   templatesProductRoot,
@@ -367,8 +368,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         workspaces.sort();
         pkg.workspaces = workspaces;
         pkg.scripts ??= {};
-        pkg.scripts.preinstall ??=
-          "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes";
+        if (isEmbeddedProductMonorepo(context.cwd)) {
+          pkg.scripts.preinstall ??=
+            "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes";
+        }
         return JSON.stringify(pkg, null, 2) + "\n";
       },
     })),
@@ -499,10 +502,27 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       // workspace root so new product packages are linked for typecheck.
       path: findOutermostWorkspaceRoot(context.originalWorkingDirectory),
     })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["exec", "saf-monorepo", "lock-prune", "--yes"],
-    })),
+    step(
+      CommandStepMachine,
+      ({ context }) => ({
+        command: "npm",
+        args: [
+          "exec",
+          "saf-monorepo",
+          "--",
+          "lock-prune",
+          "--yes",
+          "--root",
+          findOutermostWorkspaceRoot(context.originalWorkingDirectory),
+        ],
+      }),
+      {
+        skipIf: ({ context }) =>
+          !isEmbeddedProductMonorepo(
+            findOutermostWorkspaceRoot(context.originalWorkingDirectory),
+          ),
+      },
+    ),
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
@@ -566,14 +586,31 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: ["run", "generate"],
     })),
     step(CdStepMachine, ({ context }) => ({
-      path: context.originalWorkingDirectory,
+      path: findOutermostWorkspaceRoot(context.originalWorkingDirectory),
     })),
     // Product packages were copied after the first install; refresh so new
     // workspace devDependencies (e.g. openapi-typescript on spec) are linked.
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["exec", "saf-monorepo", "lock-prune", "--yes"],
-    })),
+    step(
+      CommandStepMachine,
+      ({ context }) => ({
+        command: "npm",
+        args: [
+          "exec",
+          "saf-monorepo",
+          "--",
+          "lock-prune",
+          "--yes",
+          "--root",
+          findOutermostWorkspaceRoot(context.originalWorkingDirectory),
+        ],
+      }),
+      {
+        skipIf: ({ context }) =>
+          !isEmbeddedProductMonorepo(
+            findOutermostWorkspaceRoot(context.originalWorkingDirectory),
+          ),
+      },
+    ),
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],

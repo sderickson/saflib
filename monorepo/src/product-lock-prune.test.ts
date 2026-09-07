@@ -11,6 +11,7 @@ import {
   findUnhoistedRegistryDependencies,
   hoistMisplacedLockfilePeers,
   hoistUnhoistedRegistryDependencies,
+  isEmbeddedProductMonorepo,
   pruneStaleLockfileEntries,
   readPlatformContract,
   syncPlatformOverrides,
@@ -46,6 +47,28 @@ afterEach(() => {
     removeFixtureRoot(fixtureRoot);
     fixtureRoot = "";
   }
+});
+
+describe("isEmbeddedProductMonorepo", () => {
+  it("is true when saflib/package.json exists under the root", () => {
+    const root = loadProductFixture({
+      "/product/saflib/package.json": JSON.stringify({ name: "@saflib/saflib" }),
+    });
+    expect(isEmbeddedProductMonorepo(root)).toBe(true);
+  });
+
+  it("is false for standalone saflib repos without a nested saflib/ workspace", () => {
+    const root = createFixtureRoot("lock-prune-standalone");
+    writeFixtureTree(
+      root,
+      {
+        "/standalone/package.json": JSON.stringify({ name: "@saflib/saflib" }),
+      },
+      "/standalone",
+    );
+    expect(isEmbeddedProductMonorepo(root)).toBe(false);
+    removeFixtureRoot(root);
+  });
 });
 
 describe("findHoistingHazards", () => {

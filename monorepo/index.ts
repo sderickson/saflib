@@ -69,6 +69,8 @@ export {
   type ResolveResult,
 } from "./src/exports/package-index.ts";
 
+export { isEmbeddedProductMonorepo } from "./src/product-lock-prune.ts";
+
 // Hack so TS doesn't complain about dirname and filename
 declare global {
   interface ImportMeta {
