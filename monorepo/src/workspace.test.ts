@@ -1,27 +1,32 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { vol } from "memfs";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
-  getAllPackageWorkspaceDependencies,
   buildMonorepoContext,
   getMonorepoPackages,
   buildWorkspaceDependencyGraph,
   findPackagesWithDockerfileTemplates,
+  getAllPackageWorkspaceDependencies,
 } from "@saflib/monorepo/workspace";
 import { monorepoPackageMock } from "./monorepo.mock.ts";
-vi.mock("node:fs");
-vi.mock("node:fs/promises");
+import {
+  createFixtureRoot,
+  removeFixtureRoot,
+  writeFixtureTree,
+} from "./test-fixtures/fs-fixture.ts";
+
+let fixtureRoot = "";
 
 beforeEach(() => {
-  vol.fromJSON(monorepoPackageMock);
+  fixtureRoot = createFixtureRoot("workspace");
+  writeFixtureTree(fixtureRoot, monorepoPackageMock, "/app");
 });
 
 afterEach(() => {
-  vol.reset();
+  removeFixtureRoot(fixtureRoot);
 });
 
 describe("getMonorepoPackageJsons", () => {
   it("should return all workspace packages", () => {
-    const { monorepoPackageJsons } = getMonorepoPackages("/app");
+    const { monorepoPackageJsons } = getMonorepoPackages(fixtureRoot);
     expect(monorepoPackageJsons).toBeDefined();
     expect(monorepoPackageJsons["@foo/foo"]).toBeDefined();
     expect(monorepoPackageJsons["@foo/foo"].workspaces).toBeDefined();
@@ -38,7 +43,7 @@ describe("getMonorepoPackageJsons", () => {
   });
 
   it("should recursively find packages with /** workspaces", () => {
-    const { monorepoPackageJsons } = getMonorepoPackages("/app");
+    const { monorepoPackageJsons } = getMonorepoPackages(fixtureRoot);
 
     // should find packages at different nesting levels under libs/**
     expect(monorepoPackageJsons["@foo/utils"]).toBeDefined();
@@ -66,7 +71,7 @@ describe("getMonorepoPackageJsons", () => {
 
 describe("buildWorkspaceDependencyGraph", () => {
   it("should return the correct dependency graph", () => {
-    const { monorepoPackageJsons } = getMonorepoPackages("/app");
+    const { monorepoPackageJsons } = getMonorepoPackages(fixtureRoot);
     const dependencyGraph = buildWorkspaceDependencyGraph(monorepoPackageJsons);
     expect(dependencyGraph).toBeDefined();
     expect(dependencyGraph["@foo/auth-web-client"]).toStrictEqual([
@@ -76,7 +81,7 @@ describe("buildWorkspaceDependencyGraph", () => {
   });
 
   it("should include nested package dependencies in dependency graph", () => {
-    const { monorepoPackageJsons } = getMonorepoPackages("/app");
+    const { monorepoPackageJsons } = getMonorepoPackages(fixtureRoot);
     const dependencyGraph = buildWorkspaceDependencyGraph(monorepoPackageJsons);
 
     expect(dependencyGraph["@foo/common"]).toStrictEqual(["@foo/utils"]);
@@ -86,7 +91,7 @@ describe("buildWorkspaceDependencyGraph", () => {
 
 describe("findPackagesWithDockerfileTemplates", () => {
   it("should return the correct packages", () => {
-    const { monorepoPackageDirectories } = getMonorepoPackages("/app");
+    const { monorepoPackageDirectories } = getMonorepoPackages(fixtureRoot);
     const packages = findPackagesWithDockerfileTemplates(
       monorepoPackageDirectories,
     );
@@ -101,7 +106,7 @@ describe("findPackagesWithDockerfileTemplates", () => {
 
 describe("getAllPackageWorkspaceDependencies", () => {
   it("should return the correct dependencies", () => {
-    const context = buildMonorepoContext("/app");
+    const context = buildMonorepoContext(fixtureRoot);
     const dependencies = getAllPackageWorkspaceDependencies(
       "@foo/auth-web-client",
       context,
@@ -117,7 +122,7 @@ describe("getAllPackageWorkspaceDependencies", () => {
   });
 
   it("should return transitive dependencies for nested packages", () => {
-    const context = buildMonorepoContext("/app");
+    const context = buildMonorepoContext(fixtureRoot);
     const dependencies = getAllPackageWorkspaceDependencies(
       "@foo/validators",
       context,

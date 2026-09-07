@@ -9,17 +9,9 @@ export const defaultConfig = defineConfig({
     fsModuleCache: true,
     setupFiles: [testSetupFile],
     reporters: importGraphReporters(),
-    /*
-     * By default, isolate tests. There's no apparent change in performance, but sometimes tests
-     * will break in CI or when you run them locally with --no-file-parallelism, particularly when
-     * a set of tests require different vi.mock setups. For example, one test might mock an
-     * external dependency, but another runs first and imports the file that would receive the mock.
-     * It will not because that file will have already been loaded.
-     *
-     * So, removing test isolation is opt-in. Seems best when testing purely functional code. No
-     * mocks, no globals, no side effects.
-     */
-    isolate: true,
+    // Reuse workers across test files (~350ms startup per file). Tests use MSW, spies, and temp
+    // dirs instead of vi.mock so module state stays safe without per-file isolation.
+    isolate: false,
 
     environment: "node",
     env: {

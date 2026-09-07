@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { vol } from "memfs";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   analyzeProductLockPrune,
   applyLockPruneFixes,
@@ -15,33 +16,50 @@ import {
   syncPlatformOverrides,
 } from "./product-lock-prune.ts";
 import { buildPackageIndex } from "@saflib/imports";
+import {
+  createFixtureRoot,
+  removeFixtureRoot,
+  writeFixtureTree,
+} from "./test-fixtures/fs-fixture.ts";
 
-vi.mock("node:fs");
-vi.mock("node:fs/promises");
+let fixtureRoot = "";
+
+function loadProductFixture(files: Record<string, string>): string {
+  if (fixtureRoot) {
+    removeFixtureRoot(fixtureRoot);
+  }
+  fixtureRoot = createFixtureRoot("lock-prune");
+  writeFixtureTree(fixtureRoot, files, "/product");
+  return fixtureRoot;
+}
+
+function readProductFile(relativePath: string): string {
+  return readFileSync(join(fixtureRoot, relativePath), "utf8");
+}
 
 beforeEach(() => {
-  vol.reset();
+  fixtureRoot = createFixtureRoot("lock-prune-empty");
 });
 
 afterEach(() => {
-  vol.reset();
+  if (fixtureRoot) {
+    removeFixtureRoot(fixtureRoot);
+    fixtureRoot = "";
+  }
 });
 
 describe("findHoistingHazards", () => {
   it("flags peers that are nested under saflib/node_modules but missing at root", () => {
-    vol.fromJSON(
-      {
-        "/product/node_modules/drizzle-orm/package.json": JSON.stringify({
-          name: "drizzle-orm",
-          peerDependencies: { "better-sqlite3": ">=7" },
-        }),
-        "/product/saflib/node_modules/better-sqlite3/package.json":
-          JSON.stringify({ name: "better-sqlite3" }),
-      },
-      "/",
-    );
+    const root = loadProductFixture({
+      "/product/node_modules/drizzle-orm/package.json": JSON.stringify({
+        name: "drizzle-orm",
+        peerDependencies: { "better-sqlite3": ">=7" },
+      }),
+      "/product/saflib/node_modules/better-sqlite3/package.json":
+        JSON.stringify({ name: "better-sqlite3" }),
+    });
 
-    expect(findHoistingHazards("/product")).toEqual([
+    expect(findHoistingHazards(root)).toEqual([
       {
         kind: "hoisting-hazard",
         peer: "better-sqlite3",
@@ -53,45 +71,37 @@ describe("findHoistingHazards", () => {
   });
 
   it("ignores version splits where the same package exists at root", () => {
-    vol.fromJSON(
-      {
-        "/product/node_modules/vite/package.json": JSON.stringify({
-          name: "vite",
-          version: "6.2.3",
-        }),
-        "/product/saflib/node_modules/vite/package.json": JSON.stringify({
-          name: "vite",
-          version: "8.0.13",
-        }),
-      },
-      "/",
-    );
+    const root = loadProductFixture({
+      "/product/node_modules/vite/package.json": JSON.stringify({
+        name: "vite",
+        version: "6.2.3",
+      }),
+      "/product/saflib/node_modules/vite/package.json": JSON.stringify({
+        name: "vite",
+        version: "8.0.13",
+      }),
+    });
 
-    expect(findHoistingHazards("/product")).toEqual([]);
+    expect(findHoistingHazards(root)).toEqual([]);
   });
 });
 
 describe("findRedundantDependencies", () => {
   it("flags redundant product deps that match saflib-owned versions", () => {
-    vol.fromJSON(
-      {
-        "/product/saflib/sdk/package.json": JSON.stringify({
-          name: "@saflib/sdk",
-          dependencies: { "openapi-fetch": "^0.17.0" },
-        }),
-        "/product/package.json": JSON.stringify({
-          name: "@product/root",
-          devDependencies: {
-            "openapi-fetch": "^0.17.0",
-          },
-        }),
-      },
-      "/",
-    );
+    const root = loadProductFixture({
+      "/product/saflib/sdk/package.json": JSON.stringify({
+        name: "@saflib/sdk",
+        dependencies: { "openapi-fetch": "^0.17.0" },
+      }),
+      "/product/package.json": JSON.stringify({
+        name: "@product/root",
+        devDependencies: {
+          "openapi-fetch": "^0.17.0",
+        },
+      }),
+    });
 
-    expect(
-      findRedundantDependencies("/product", buildPackageIndex("/product")),
-    ).toEqual([
+    expect(findRedundantDependencies(root, buildPackageIndex(root))).toEqual([
       expect.objectContaining({
         kind: "redundant-dependency",
         dependency: "openapi-fetch",
@@ -103,27 +113,21 @@ describe("findRedundantDependencies", () => {
 
 describe("findCompetingDependencies", () => {
   it("flags product deps that compete with saflib-owned versions", () => {
-    vol.fromJSON(
-      {
-        "/product/saflib/sdk/package.json": JSON.stringify({
-          name: "@saflib/sdk",
-          dependencies: { "openapi-fetch": "^0.17.0" },
-        }),
-        "/product/package.json": JSON.stringify({
-          name: "@product/root",
-          devDependencies: {
-            "openapi-fetch": "^0.14.0",
-            "@saflib/vue": "*",
-          },
-        }),
-      },
-      "/",
-    );
+    const root = loadProductFixture({
+      "/product/saflib/sdk/package.json": JSON.stringify({
+        name: "@saflib/sdk",
+        dependencies: { "openapi-fetch": "^0.17.0" },
+      }),
+      "/product/package.json": JSON.stringify({
+        name: "@product/root",
+        devDependencies: {
+          "openapi-fetch": "^0.14.0",
+          "@saflib/vue": "*",
+        },
+      }),
+    });
 
-    const issues = findCompetingDependencies(
-      "/product",
-      buildPackageIndex("/product"),
-    );
+    const issues = findCompetingDependencies(root, buildPackageIndex(root));
     expect(issues).toHaveLength(1);
     expect(issues[0]).toMatchObject({
       dependency: "openapi-fetch",
@@ -133,25 +137,20 @@ describe("findCompetingDependencies", () => {
   });
 
   it("allows product declarations that defer with *", () => {
-    vol.fromJSON(
-      {
-        "/product/saflib/sdk/package.json": JSON.stringify({
-          name: "@saflib/sdk",
-          dependencies: { "openapi-fetch": "^0.17.0" },
-        }),
-        "/product/package.json": JSON.stringify({
-          name: "@product/root",
-          devDependencies: {
-            "openapi-fetch": "*",
-          },
-        }),
-      },
-      "/",
-    );
+    const root = loadProductFixture({
+      "/product/saflib/sdk/package.json": JSON.stringify({
+        name: "@saflib/sdk",
+        dependencies: { "openapi-fetch": "^0.17.0" },
+      }),
+      "/product/package.json": JSON.stringify({
+        name: "@product/root",
+        devDependencies: {
+          "openapi-fetch": "*",
+        },
+      }),
+    });
 
-    expect(
-      findCompetingDependencies("/product", buildPackageIndex("/product")),
-    ).toEqual([]);
+    expect(findCompetingDependencies(root, buildPackageIndex(root))).toEqual([]);
   });
 });
 
@@ -169,16 +168,13 @@ describe("pruneStaleLockfileEntries", () => {
       },
     };
 
-    vol.fromJSON(
-      {
-        "/product/saflib/sdk/package.json": JSON.stringify({
-          name: "@saflib/sdk",
-        }),
-      },
-      "/",
-    );
+    const root = loadProductFixture({
+      "/product/saflib/sdk/package.json": JSON.stringify({
+        name: "@saflib/sdk",
+      }),
+    });
 
-    const issue = pruneStaleLockfileEntries(lockfile, "/product");
+    const issue = pruneStaleLockfileEntries(lockfile, root);
     expect(issue?.stalePaths).toEqual(["saflib/deleted-pkg"]);
     expect(issue?.removedCount).toBe(3);
     expect(lockfile.packages).toEqual({
@@ -321,33 +317,30 @@ describe("findLockfileVersionSkew", () => {
 
 describe("syncPlatformOverrides", () => {
   it("merges saflib overrides into the product root package.json", () => {
-    vol.fromJSON(
-      {
-        "/product/package.json": JSON.stringify({
-          name: "@product/root",
-          overrides: { "better-sqlite3": "12.11.1" },
-        }),
-        "/product/saflib/package.json": JSON.stringify({
-          name: "@saflib/saflib",
-          overrides: {
-            vue: "3.5.20",
-            vite: "8.0.13",
-            "better-sqlite3": "12.11.1",
-          },
-        }),
-      },
-      "/",
-    );
+    const root = loadProductFixture({
+      "/product/package.json": JSON.stringify({
+        name: "@product/root",
+        overrides: { "better-sqlite3": "12.11.1" },
+      }),
+      "/product/saflib/package.json": JSON.stringify({
+        name: "@saflib/saflib",
+        overrides: {
+          vue: "3.5.20",
+          vite: "8.0.13",
+          "better-sqlite3": "12.11.1",
+        },
+      }),
+    });
 
-    const platform = readPlatformContract("/product");
-    expect(syncPlatformOverrides("/product", platform)).toEqual([
+    const platform = readPlatformContract(root);
+    expect(syncPlatformOverrides(root, platform)).toEqual([
       "vue@3.5.20",
       "vite@8.0.13",
     ]);
 
-    const rootPkg = JSON.parse(
-      vol.readFileSync("/product/package.json", "utf8") as string,
-    ) as { overrides: Record<string, string> };
+    const rootPkg = JSON.parse(readProductFile("package.json")) as {
+      overrides: Record<string, string>;
+    };
     expect(rootPkg.overrides).toEqual({
       "better-sqlite3": "12.11.1",
       vue: "3.5.20",
@@ -358,41 +351,38 @@ describe("syncPlatformOverrides", () => {
 
 describe("analyzeProductLockPrune", () => {
   it("collects redundant, competing, hoisting, and stale lockfile issues", () => {
-    vol.fromJSON(
-      {
-        "/product/package.json": JSON.stringify({
-          name: "@product/root",
-          workspaces: ["saflib/**"],
-          devDependencies: {
-            "better-sqlite3": "11.8.0",
-            vitest: "^5.0.0",
-          },
-        }),
-        "/product/package-lock.json": JSON.stringify({
-          lockfileVersion: 3,
-          packages: {
-            "saflib/deleted-pkg": { version: "1.0.0" },
-          },
-        }),
-        "/product/saflib/package.json": JSON.stringify({
-          name: "@saflib/saflib",
-          devDependencies: { vitest: "^5.0.0" },
-        }),
-        "/product/saflib/drizzle/package.json": JSON.stringify({
-          name: "@saflib/drizzle",
-          dependencies: { "better-sqlite3": "12.11.1" },
-        }),
-        "/product/node_modules/drizzle-orm/package.json": JSON.stringify({
-          name: "drizzle-orm",
-          peerDependencies: { "better-sqlite3": ">=7" },
-        }),
-        "/product/saflib/node_modules/better-sqlite3/package.json":
-          JSON.stringify({ name: "better-sqlite3" }),
-      },
-      "/",
-    );
+    const root = loadProductFixture({
+      "/product/package.json": JSON.stringify({
+        name: "@product/root",
+        workspaces: ["saflib/**"],
+        devDependencies: {
+          "better-sqlite3": "11.8.0",
+          vitest: "^5.0.0",
+        },
+      }),
+      "/product/package-lock.json": JSON.stringify({
+        lockfileVersion: 3,
+        packages: {
+          "saflib/deleted-pkg": { version: "1.0.0" },
+        },
+      }),
+      "/product/saflib/package.json": JSON.stringify({
+        name: "@saflib/saflib",
+        devDependencies: { vitest: "^5.0.0" },
+      }),
+      "/product/saflib/drizzle/package.json": JSON.stringify({
+        name: "@saflib/drizzle",
+        dependencies: { "better-sqlite3": "12.11.1" },
+      }),
+      "/product/node_modules/drizzle-orm/package.json": JSON.stringify({
+        name: "drizzle-orm",
+        peerDependencies: { "better-sqlite3": ">=7" },
+      }),
+      "/product/saflib/node_modules/better-sqlite3/package.json":
+        JSON.stringify({ name: "better-sqlite3" }),
+    });
 
-    const analysis = analyzeProductLockPrune("/product");
+    const analysis = analyzeProductLockPrune(root);
     expect(analysis.issues.map((issue) => issue.kind)).toEqual([
       "redundant-dependency",
       "competing-dependency",
@@ -404,51 +394,48 @@ describe("analyzeProductLockPrune", () => {
 
 describe("applyLockPruneFixes", () => {
   it("removes redundant and competing deps and updates the lockfile", () => {
-    vol.fromJSON(
-      {
-        "/product/package.json": JSON.stringify({
-          name: "@product/root",
-          devDependencies: {
-            "better-sqlite3": "12.11.1",
-            vitest: "^5.0.0",
-          },
-        }),
-        "/product/package-lock.json": JSON.stringify({
-          lockfileVersion: 3,
-          packages: {
-            "saflib/deleted-pkg": { version: "1.0.0" },
-            "saflib/node_modules/better-sqlite3": { version: "12.11.1" },
-          },
-        }),
-        "/product/saflib/package.json": JSON.stringify({
-          name: "@saflib/saflib",
-          devDependencies: {
-            vitest: "^5.0.0",
-            "better-sqlite3": "12.11.1",
-          },
-        }),
-        "/product/node_modules/drizzle-orm/package.json": JSON.stringify({
-          name: "drizzle-orm",
-          peerDependencies: { "better-sqlite3": ">=7" },
-        }),
-        "/product/saflib/node_modules/better-sqlite3/package.json":
-          JSON.stringify({ name: "better-sqlite3" }),
-      },
-      "/",
-    );
+    loadProductFixture({
+      "/product/package.json": JSON.stringify({
+        name: "@product/root",
+        devDependencies: {
+          "better-sqlite3": "12.11.1",
+          vitest: "^5.0.0",
+        },
+      }),
+      "/product/package-lock.json": JSON.stringify({
+        lockfileVersion: 3,
+        packages: {
+          "saflib/deleted-pkg": { version: "1.0.0" },
+          "saflib/node_modules/better-sqlite3": { version: "12.11.1" },
+        },
+      }),
+      "/product/saflib/package.json": JSON.stringify({
+        name: "@saflib/saflib",
+        devDependencies: {
+          vitest: "^5.0.0",
+          "better-sqlite3": "12.11.1",
+        },
+      }),
+      "/product/node_modules/drizzle-orm/package.json": JSON.stringify({
+        name: "drizzle-orm",
+        peerDependencies: { "better-sqlite3": ">=7" },
+      }),
+      "/product/saflib/node_modules/better-sqlite3/package.json":
+        JSON.stringify({ name: "better-sqlite3" }),
+    });
 
-    const analysis = analyzeProductLockPrune("/product");
+    const analysis = analyzeProductLockPrune(fixtureRoot);
     applyLockPruneFixes(analysis);
 
-    const rootPkg = JSON.parse(
-      vol.readFileSync("/product/package.json", "utf8") as string,
-    ) as { devDependencies?: Record<string, string> };
+    const rootPkg = JSON.parse(readProductFile("package.json")) as {
+      devDependencies?: Record<string, string>;
+    };
     expect(rootPkg.devDependencies?.["better-sqlite3"]).toBeUndefined();
     expect(rootPkg.devDependencies?.vitest).toBeUndefined();
 
-    const lockfile = JSON.parse(
-      vol.readFileSync("/product/package-lock.json", "utf8") as string,
-    ) as { packages: Record<string, unknown> };
+    const lockfile = JSON.parse(readProductFile("package-lock.json")) as {
+      packages: Record<string, unknown>;
+    };
     expect(lockfile.packages["saflib/deleted-pkg"]).toBeUndefined();
     expect(lockfile.packages["node_modules/better-sqlite3"]).toBeDefined();
     expect(lockfile.packages["saflib/node_modules/better-sqlite3"]).toBeUndefined();

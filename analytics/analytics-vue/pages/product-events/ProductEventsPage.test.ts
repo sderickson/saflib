@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ref } from "vue";
+import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
+import { http, HttpResponse } from "msw";
 import type { AnalyticsResponseBody } from "@saflib/analytics-spec";
 import ProductEventsPage from "./ProductEventsPage.vue";
 import { mountTestApp } from "../../test-app.ts";
@@ -31,24 +32,15 @@ const mockEvents: ListProductEventsResponse = {
   ],
 };
 
-vi.mock("@saflib/analytics-sdk", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@saflib/analytics-sdk")>();
-  return {
-    ...actual,
-    useListProductEvents: () => ({
-      data: ref(mockEvents),
-      error: ref(null),
-      isLoading: ref(false),
-      isFetching: ref(false),
-      refetch: vi.fn(),
-    }),
-  };
-});
+const handlers = [
+  http.get("http://api.localhost:3000/admin/product-events", () => {
+    return HttpResponse.json(mockEvents);
+  }),
+];
 
 describe("ProductEventsPage", () => {
-  beforeEach(() => {
-    stubGlobals();
-  });
+  stubGlobals();
+  setupMockServer(handlers);
 
   it("renders client and server events from the list endpoint", async () => {
     const wrapper = mountTestApp(ProductEventsPage, {

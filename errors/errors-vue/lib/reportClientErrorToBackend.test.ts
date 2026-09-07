@@ -1,14 +1,16 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
+import { http, HttpResponse } from "msw";
 import {
   isLocalhostHostname,
   reportClientErrorToBackend,
 } from "./reportClientErrorToBackend.ts";
 
-vi.mock("@saflib/errors-sdk", () => ({
-  recordReportedError: vi.fn(() => Promise.resolve()),
-}));
-
-import { recordReportedError } from "@saflib/errors-sdk";
+const server = setupMockServer([
+  http.post("http://api.localhost:3000/errors/record", async () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+]);
 
 describe("isLocalhostHostname", () => {
   it("matches localhost and *.localhost", () => {
@@ -23,7 +25,6 @@ describe("reportClientErrorToBackend", () => {
   const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
   beforeEach(() => {
-    vi.mocked(recordReportedError).mockClear();
     consoleError.mockClear();
   });
 
@@ -33,17 +34,33 @@ describe("reportClientErrorToBackend", () => {
 
   it("always console.errors and posts on *.localhost", async () => {
     vi.stubGlobal("location", { hostname: "app.myapp.docker.localhost" });
+    let posted = false;
+    server.use(
+      http.post("http://api.localhost:3000/errors/record", async () => {
+        posted = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
     const err = new Error("boom");
     await reportClientErrorToBackend(err, { source: "app", info: "render" });
     expect(consoleError).toHaveBeenCalledWith("[vue] render", err);
-    expect(recordReportedError).toHaveBeenCalledOnce();
+    expect(posted).toBe(true);
   });
 
   it("console.errors but does not post on production hosts", async () => {
     vi.stubGlobal("location", { hostname: "app.example.com" });
+    let posted = false;
+    server.use(
+      http.post("http://api.localhost:3000/errors/record", async () => {
+        posted = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
     const err = new Error("boom");
     await reportClientErrorToBackend(err, { source: "app" });
     expect(consoleError).toHaveBeenCalledWith(err);
-    expect(recordReportedError).not.toHaveBeenCalled();
+    expect(posted).toBe(false);
   });
 });
