@@ -34,6 +34,7 @@ const fsAllow = buildFsAllow();
 
 const baseTest = {
   fsModuleCache: true,
+  isolate: false,
   environment: "jsdom",
   globals: true,
   exclude: ["**/e2e/**"],

@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     fsModuleCache: true,
+    isolate: false,
     env: {
       TZ: "UTC",
       NODE_OPTIONS: "--disable-warning=DEP0040",

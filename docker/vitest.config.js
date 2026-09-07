@@ -2,6 +2,8 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    fsModuleCache: true,
+    isolate: false,
     environment: "node",
     include: ["**/*.test.ts"],
     coverage: {
