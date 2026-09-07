@@ -1,4 +1,3 @@
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { formatCommandForDisplay, formatPathForDisplay } from "./utils.ts";
 
