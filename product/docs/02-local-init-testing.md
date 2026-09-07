@@ -17,9 +17,9 @@ Use this when you change `product/create` (bootstrap) or `product/init` and want
 ./product/create/repro-local.sh <name> [<domain>]
 ```
 
-| Argument | Default | Purpose |
-| --- | --- | --- |
-| `<name>` | `testprod` | Product name (kebab-case) |
+| Argument   | Default      | Purpose                                 |
+| ---------- | ------------ | --------------------------------------- |
+| `<name>`   | `testprod`   | Product name (kebab-case)               |
 | `<domain>` | `<name>.com` | Product domain passed to `product/init` |
 
 The product directory is:

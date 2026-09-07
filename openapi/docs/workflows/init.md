@@ -23,7 +23,7 @@ When run, the workflow will:
 - Upsert 9 templates.
 - Upsert 14 templates.
 - Upsert 15 templates.
-- Add @saflib/analytics-http-dossier-spec dependency to parent spec
+- Add @saflib/saflib-dossier-spec dependency to parent spec
 - Change working directory to dossier/spec
 - Run `npm install`
 - Run `npm run generate`

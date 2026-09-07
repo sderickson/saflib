@@ -22,6 +22,7 @@ When run, the workflow will:
 
 - Upsert 20 templates.
 - Upsert 21 templates.
+- Upsert 22 templates.
 - Add admin to CLIENT_SUBDOMAINS in product-name/dev/env.dev
 - Add admin to CLIENT_SUBDOMAINS in deploy/env.product-name.prod-local
 - Change working directory to product-name/clients/admin

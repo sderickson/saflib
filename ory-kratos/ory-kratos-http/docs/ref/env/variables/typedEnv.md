@@ -4,6 +4,6 @@
 
 # Variable: typedEnv
 
-> `const` **typedEnv**: [`OryKratosEnvSchema`](../interfaces/OryKratosEnvSchema.md)
+> `const` **typedEnv**: [`OryKratosHttpEnvSchema`](../interfaces/OryKratosHttpEnvSchema.md)
 
-`process.env` casted to the `OryKratosEnvSchema` type.
+`process.env` casted to the `OryKratosHttpEnvSchema` type.

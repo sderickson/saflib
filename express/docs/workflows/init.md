@@ -22,7 +22,7 @@ When run, the workflow will:
 
 - Upsert 6 templates.
 - Upsert 7 templates.
-- Add @saflib/analytics-http-dossier-http dependency to parent http
+- Add @saflib/saflib-dossier-http dependency to parent http
 - Change working directory to dossier/http
 - Run `npm install`
 - Run `npm run typecheck`

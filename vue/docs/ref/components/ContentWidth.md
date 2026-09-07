@@ -14,6 +14,6 @@ Source: `components/ContentWidth.vue`
 
 ## Slots
 
-| Name    | Bindings | Description |
-| ------- | -------- | ----------- |
-| default | {}       | —           |
+| Name    | Bindings     | Description |
+| ------- | ------------ | ----------- |
+| default | &#123;&#125; | —           |

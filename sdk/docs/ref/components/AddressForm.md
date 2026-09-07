@@ -8,9 +8,9 @@ Source: `components/address-form/AddressForm.vue`
 
 ## Models
 
-| Name       | Type                                                                                                                                                                                                                                                                            | Default | Required | Description |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- | ----------- |
-| modelValue | { formatted?: string \| null \| undefined; street_address?: string \| null \| undefined; locality?: string \| null \| undefined; region?: string \| null \| undefined; country?: string \| null \| undefined; postal_code?: string \| null \| undefined; } \| null \| undefined | —       | no       | —           |
+| Name       | Type                                                                                                                                                                                                                                                                                      | Default | Required | Description |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- | ----------- |
+| modelValue | &#123; formatted?: string \| null \| undefined; street_address?: string \| null \| undefined; locality?: string \| null \| undefined; region?: string \| null \| undefined; country?: string \| null \| undefined; postal_code?: string \| null \| undefined; &#125; \| null \| undefined | —       | no       | —           |
 
 ## Props
 

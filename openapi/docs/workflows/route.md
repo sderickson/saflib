@@ -25,7 +25,7 @@ When run, the workflow will:
 - Merge duplicate path keys for GET /example
 - Run `npm run generate`
 - Run `npm test -- no-root-response-bodies`
-- Run `npx tsc --noEmit`
+- Run `npm exec tsc -- --noEmit`
 - ## Audit map (when this route matters)
 
 ## Help Docs

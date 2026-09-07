@@ -6,16 +6,13 @@
 
 > **castJson**(`json`): [`OpenApiDocument`](../type-aliases/OpenApiDocument.md)
 
-Takes an imported JSON object and casts it to [OpenApiDocument](../type-aliases/OpenApiDocument.md) so that
-express-openapi-validator can validate the JSON against the OpenAPI spec without
-complaining about a type mismatch.
+OpenAPI JSON from `import * as json from "./openapi.json" with { type: "json" }`.
 
 ## Parameters
 
-| Parameter      | Type                        |
-| -------------- | --------------------------- |
-| `json`         | \{ `default`: `unknown`; \} |
-| `json.default` | `unknown`                   |
+| Parameter | Type      |
+| --------- | --------- |
+| `json`    | `unknown` |
 
 ## Returns
 

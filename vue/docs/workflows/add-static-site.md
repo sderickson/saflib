@@ -20,9 +20,12 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Upsert 13 templates.
 - Upsert 14 templates.
-- Upsert 16 templates.
+- Upsert 15 templates.
+- Upsert 17 templates.
+- Upsert 18 templates.
+- Upsert 19 templates.
+- Upsert 20 templates.
 - Change working directory to product-name/clients/docs
 - Run `npm install`
 - Change working directory to product-name/clients/docs

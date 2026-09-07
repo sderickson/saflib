@@ -16,16 +16,16 @@ Source: `components/UsPhoneNumberInput.vue`
 
 ## Props
 
-| Name          | Type                                                  | Default            | Required | Description                                                                  |
-| ------------- | ----------------------------------------------------- | ------------------ | -------- | ---------------------------------------------------------------------------- |
-| rules         | ((value: string) => string \| boolean)[] \| undefined | `[]`               | no       | Additional Vuetify validation rules appended after the built-in phone rules. |
-| required      | boolean \| undefined                                  | `false`            | no       | When true, the built-in phone validation treats the field as required.       |
-| label         | string \| undefined                                   | `"Phone Number"`   | no       | Label shown on the underlying `v-text-field`.                                |
-| placeholder   | string \| undefined                                   | `"(555) 123-4567"` | no       | Placeholder shown when the field is empty.                                   |
-| errorMessages | string[] \| undefined                                 | `[]`               | no       | External error messages passed through to `v-text-field`.                    |
+| Name          | Type                                                     | Default            | Required | Description                                                                  |
+| ------------- | -------------------------------------------------------- | ------------------ | -------- | ---------------------------------------------------------------------------- |
+| rules         | ((value: string) =&gt; string \| boolean)[] \| undefined | `[]`               | no       | Additional Vuetify validation rules appended after the built-in phone rules. |
+| required      | boolean \| undefined                                     | `false`            | no       | When true, the built-in phone validation treats the field as required.       |
+| label         | string \| undefined                                      | `"Phone Number"`   | no       | Label shown on the underlying `v-text-field`.                                |
+| placeholder   | string \| undefined                                      | `"(555) 123-4567"` | no       | Placeholder shown when the field is empty.                                   |
+| errorMessages | string[] \| undefined                                    | `[]`               | no       | External error messages passed through to `v-text-field`.                    |
 
 ## Exposed
 
-| Name  | Type       | Description                              |
-| ----- | ---------- | ---------------------------------------- |
-| focus | () => void | Focus the underlying Vuetify text field. |
+| Name  | Type          | Description                              |
+| ----- | ------------- | ---------------------------------------- |
+| focus | () =&gt; void | Focus the underlying Vuetify text field. |

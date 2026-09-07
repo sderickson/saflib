@@ -32,6 +32,7 @@
 | [findMonorepoRoot](functions/findMonorepoRoot.md)                               | Walk up from `fromDir` until a package.json with a `workspaces` field is found.    |
 | [importGlobForTopLevelSegment](functions/importGlobForTopLevelSegment.md)       | Derive package-local `#` import maps from `exports`.                               |
 | [importsFromExports](functions/importsFromExports.md)                           | Build a default `imports` map from an `exports` map.                               |
+| [isEmbeddedProductMonorepo](functions/isEmbeddedProductMonorepo.md)             | True when `rootDir` is a product monorepo with a nested `saflib/` workspace.       |
 | [matchExportPattern](functions/matchExportPattern.md)                           | Match a Node.js package.json `exports` subpath pattern.                            |
 | [resolvePackageExportPath](functions/resolvePackageExportPath.md)               | Resolve a package export subpath to an absolute file path (no extension probing).  |
 | [resolveSpecifier](functions/resolveSpecifier.md)                               | Resolve an import specifier relative to `fromFile` against the package index.      |

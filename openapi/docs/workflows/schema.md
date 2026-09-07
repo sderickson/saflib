@@ -23,7 +23,7 @@ When run, the workflow will:
 - Upsert 2 templates.
 - Update **example**
 - Run `npm run generate`
-- Run `npx tsc --noEmit`
+- Run `npm exec tsc -- --noEmit`
 
 ## Help Docs
 

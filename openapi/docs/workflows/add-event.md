@@ -23,7 +23,7 @@ When run, the workflow will:
 - Upsert 5 templates.
 - Update **example_event.yaml**. Resolve all TODOs.
 - Run `npm run generate`
-- Run `npx tsc --noEmit`
+- Run `npm exec tsc -- --noEmit`
 
 ## Help Docs
 

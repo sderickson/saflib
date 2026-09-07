@@ -8,14 +8,14 @@ Source: `components/AsyncPage.vue`
 
 ## Props
 
-| Name          | Type                               | Default | Required | Description |
-| ------------- | ---------------------------------- | ------- | -------- | ----------- |
-| loader        | (() => LoaderQueries) \| undefined | —       | no       | —           |
-| pageComponent | Component                          | —       | yes      | —           |
-| pageProps     | Record<string, any> \| undefined   | —       | no       | —           |
+| Name          | Type                                   | Default | Required | Description |
+| ------------- | -------------------------------------- | ------- | -------- | ----------- |
+| loader        | (() =&gt; LoaderQueries) \| undefined  | —       | no       | —           |
+| pageComponent | Component                              | —       | yes      | —           |
+| pageProps     | Record&lt;string, any&gt; \| undefined | —       | no       | —           |
 
 ## Slots
 
-| Name  | Bindings                          | Description |
-| ----- | --------------------------------- | ----------- |
-| error | { error: TanstackError \| null; } | —           |
+| Name  | Bindings                                    | Description |
+| ----- | ------------------------------------------- | ----------- |
+| error | &#123; error: TanstackError \| null; &#125; | —           |

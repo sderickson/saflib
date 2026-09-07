@@ -142,6 +142,7 @@ Commands:
   @saflib/workflows-cli                          Project-specific workflows using @saflib/workflows
   @saflib/xstate                                 Shared logic and workflows for XState
   mini-monorepo                                  <Missing description>
+  saf-create                                     Bootstrap a new SAF monorepo from an empty git repository
   saflib-workflows                               Workflow engine and utilities for SAF
   template-package                               TODO: Add package description
   template-package-grpc-client                   gRPC client for __service-name__ service

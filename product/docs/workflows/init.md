@@ -20,26 +20,31 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Add foo/** to workspaces in package.json
+- Add foo/** and deploy workspaces in package.json
 - Run `npm exec prettier -- package.json --write`
-- Upsert 378 templates.
-- Run `node --experimental-strip-types --disable-warning=ExperimentalWarning /Users/scott/src/saf-2025/saflib/product/workflows/strip-stub-tsconfig-refs.ts /Users/scott/src/saf-2025/saflib/analytics/analytics-http/foo`
-- Upsert 418 templates.
-- Upsert 424 templates.
+- Upsert 382 templates.
+- Run `node --experimental-strip-types --disable-warning=ExperimentalWarning /Users/scott/src/saf-2025/saflib/product/workflows/strip-stub-tsconfig-refs.ts /Users/scott/src/saf-2025/saflib/foo`
+- Upsert 422 templates.
+- Upsert 435 templates.
+- Add foo vitest projects to root vitest.config.ts
 - Rewrite base/dev compose volumes for product monorepo layout
-- Run `mv /Users/scott/src/saf-2025/saflib/analytics/analytics-http/deploy/remote-assets/env.foo.secrets /Users/scott/src/saf-2025/saflib/analytics/analytics-http/deploy/remote-assets/.env.foo.secrets`
-- Change working directory to ../../..
+- Run `rm -rf .github/workflows/playwright.yml .github/workflows/typecheck.yml .github/workflows/push.yml .github/workflows/security.yml .github/actions/setup-node-deps`
+- Run `mv /Users/scott/src/saf-2025/saflib/deploy/remote-assets/env.foo.secrets /Users/scott/src/saf-2025/saflib/deploy/remote-assets/.env.foo.secrets`
+- Change working directory to ..
+- Run `npm exec saf-monorepo -- lock-prune --yes --root /Users/scott/src/saf-2025`
 - Run `npm install`
-- Run `node --experimental-strip-types --disable-warning=ExperimentalWarning /Users/scott/src/saf-2025/saflib/product/workflows/regenerate-product-env.ts /Users/scott/src/saf-2025/saflib/analytics/analytics-http/foo`
+- Run `node --experimental-strip-types --disable-warning=ExperimentalWarning /Users/scott/src/saf-2025/saflib/product/workflows/regenerate-product-env.ts /Users/scott/src/saf-2025/saflib/foo`
 - Change working directory to foo/dev
 - Run `touch ./.env`
 - Change working directory to
 - Run `npm exec saf-imports tsconfig generate -- --write`
-- Run `node --experimental-strip-types --disable-warning=ExperimentalWarning /Users/scott/src/saf-2025/saflib/product/workflows/reset-product-db-migrations.ts /Users/scott/src/saf-2025/saflib/analytics/analytics-http/foo/service/db`
+- Run `node --experimental-strip-types --disable-warning=ExperimentalWarning /Users/scott/src/saf-2025/saflib/product/workflows/reset-product-db-migrations.ts /Users/scott/src/saf-2025/saflib/foo/service/db`
 - Change working directory to foo/service/db
 - Run `npm run generate`
-- Change working directory to
-- Run `node --experimental-strip-types --disable-warning=ExperimentalWarning /Users/scott/src/saf-2025/saflib/product/workflows/generate-product-specs.ts /Users/scott/src/saf-2025/saflib/analytics/analytics-http/foo`
+- Change working directory to ..
+- Run `npm exec saf-monorepo -- lock-prune --yes --root /Users/scott/src/saf-2025`
+- Run `npm install`
+- Run `node --experimental-strip-types --disable-warning=ExperimentalWarning /Users/scott/src/saf-2025/saflib/product/workflows/generate-product-specs.ts /Users/scott/src/saf-2025/saflib/foo`
 - Change working directory to deploy
 - Run `npm run regen-kratos-secrets`
 - Run `npm run generate`
