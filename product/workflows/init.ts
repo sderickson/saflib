@@ -70,10 +70,12 @@ const input = [
   },
 ] as const;
 
-interface InitProductWorkflowContext extends ParsePackageNameOutput {
+export interface InitProductWorkflowContext extends ParsePackageNameOutput {
   productName: string;
   domainName: string;
   productOnly: boolean;
+  /** True when init cwd is a product root with a nested `saflib/` workspace. */
+  embeddedProductMonorepo: boolean;
 }
 
 /** Frozen golden-product name under saflib (`saflib/base`). */
@@ -305,7 +307,9 @@ function finishProductInitLineReplace(
   );
 
   result = restoreTsconfigPresetFilenames(result);
-  result = rewriteSaflibRelativeTsconfigPaths(result);
+  if (context.embeddedProductMonorepo) {
+    result = rewriteSaflibRelativeTsconfigPaths(result);
+  }
 
   return result;
 }
@@ -334,6 +338,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       serviceName: input.name,
       domainName: input.domain,
       productOnly: input.productOnly ?? false,
+      embeddedProductMonorepo: isEmbeddedProductMonorepo(input.cwd),
     };
   },
 

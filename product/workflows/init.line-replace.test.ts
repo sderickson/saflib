@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   isSkippedStubRefLine,
   makeProductInitLineReplace,
+  type InitProductWorkflowContext,
 } from "./init.ts";
 
 /** Minimal context for product/init line-replace unit tests. */
-function testContext() {
+function testContext(
+  overrides: Partial<InitProductWorkflowContext> = {},
+): InitProductWorkflowContext {
   return {
     productName: "tmp",
     domainName: "temporary.com",
@@ -14,6 +17,8 @@ function testContext() {
     sharedPackagePrefix: "@saflib/tmp",
     packageName: "PACKAGE_NAME_UNUSED",
     serviceName: "tmp",
+    embeddedProductMonorepo: true,
+    ...overrides,
   };
 }
 
@@ -130,6 +135,15 @@ describe("makeProductInitLineReplace", () => {
     expect(
       replace('    "../../../vue/tsconfig.app.base.json"'),
     ).toBe('    "../../../saflib/vue/tsconfig.app.base.json"');
+  });
+
+  it("keeps saflib/vue paths literal when init runs inside @saflib/saflib", () => {
+    const standalone = makeProductInitLineReplace(
+      testContext({ embeddedProductMonorepo: false }),
+    );
+    expect(
+      standalone('    "../../../vue/tsconfig.app.base.json"'),
+    ).toBe('    "../../../vue/tsconfig.app.base.json"');
   });
 
   it("does not rewrite tsconfig.base.json preset paths", () => {
