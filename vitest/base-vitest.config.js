@@ -6,6 +6,7 @@ const testSetupFile = path.join(import.meta.dirname, "test-setup.ts");
 
 export const defaultConfig = defineConfig({
   test: {
+    fsModuleCache: true,
     setupFiles: [testSetupFile],
     reporters: importGraphReporters(),
     /*

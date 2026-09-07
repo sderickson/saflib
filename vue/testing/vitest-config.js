@@ -33,6 +33,7 @@ function buildFsAllow() {
 const fsAllow = buildFsAllow();
 
 const baseTest = {
+  fsModuleCache: true,
   environment: "jsdom",
   globals: true,
   exclude: ["**/e2e/**"],
