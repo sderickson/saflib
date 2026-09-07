@@ -24,4 +24,6 @@ npm exec saf-workflow kickoff product/init <name> <domain> [--productOnly]
 
 This copies `base` into `{name}/`, rewrites package names and paths, adds the product to root workspaces, runs install, and bootstraps env, tsconfig, and database migrations. See [init workflow docs](./workflows/init.md) for the full checklist.
 
+To test bootstrap and init locally against your saflib checkout, see [local init testing](./02-local-init-testing.md).
+
 After init, extend the product with platform workflows (OpenAPI, Drizzle, Express, SDK, Vue) — most of those target files under `base` as the reference shape. Use [`processes/spec-project`](../../processes/docs/01-overview.md) when you want a spec → plan → phased implementation flow for a larger feature.
