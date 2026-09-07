@@ -58,6 +58,13 @@ export function ensureInitialCommit(cwd: string): void {
     execSync('git commit --allow-empty -m "chore: initialize repository"', {
       cwd,
       stdio: "inherit",
+      env: {
+        ...process.env,
+        GIT_AUTHOR_NAME: "saf-create",
+        GIT_AUTHOR_EMAIL: "saf-create@localhost",
+        GIT_COMMITTER_NAME: "saf-create",
+        GIT_COMMITTER_EMAIL: "saf-create@localhost",
+      },
     });
   }
 }
