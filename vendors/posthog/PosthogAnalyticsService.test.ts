@@ -15,20 +15,12 @@ import {
 
 describe("PosthogAnalyticsService", () => {
   let captureSpy: ReturnType<typeof vi.spyOn>;
-  let identifySpy: ReturnType<typeof vi.spyOn>;
-  let shutdownSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     clearCapturedAnalyticsCalls();
     captureSpy = vi
       .spyOn(PostHog.prototype, "capture")
       .mockImplementation(() => undefined);
-    identifySpy = vi
-      .spyOn(PostHog.prototype, "identify")
-      .mockImplementation(() => undefined);
-    shutdownSpy = vi
-      .spyOn(PostHog.prototype, "shutdown")
-      .mockImplementation(async () => undefined);
   });
 
   afterEach(() => {
@@ -103,7 +95,9 @@ describe("configureAnalytics", () => {
       .spyOn(PostHog.prototype, "capture")
       .mockImplementation(() => undefined);
     vi.spyOn(PostHog.prototype, "identify").mockImplementation(() => undefined);
-    vi.spyOn(PostHog.prototype, "shutdown").mockImplementation(async () => undefined);
+    vi.spyOn(PostHog.prototype, "shutdown").mockImplementation(
+      async () => undefined,
+    );
   });
 
   afterEach(() => {
