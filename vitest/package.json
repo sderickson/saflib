@@ -11,7 +11,7 @@
     "./local-storage-stub": "./local-storage-stub.ts"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^3.0.0",
+    "@vitest/coverage-v8": "^5.0.0",
     "vitest": "^3.0.0"
   },
   "bin": {
