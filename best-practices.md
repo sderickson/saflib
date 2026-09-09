@@ -185,3 +185,45 @@ There needs to be a source of truth for how to do things the right way specific 
 
 - Each package in [the docs](https://docs.saf-demo.online/) has a mix of explanation docs and generated reference docs. Instead of maintaining them separately, how-to guides are effectively generated from workflows such as [this one](./drizzle/docs/workflows/add-query.md).
 - `@saflib/docs` provides a [CLI tool](./docs/docs/cli/saf-docs.md) for generating documentation from code, workflows, and CLI commands. For example, [this workflow](./drizzle/docs/workflows/add-query.md) was generated from [this code](./drizzle/workflows/add-query.ts).
+
+## Be Scalable
+
+Assuming what you intend to build is not a prototype or toy, expect your application to quickly grow to difficult-to-manage size and complexity; make sure the framework can handle it. Applications expand quickly these days so ideally the framework should have scalability deeply baked into it from the beginning. If that's not feasible or practical, there should be fairly regular pauses to invest in whatever major developer pain point have cropped up in the previous few months, or the debt will quickly become crushing in both developer speed and token cost.
+
+Some scalable features to look out for or invest in:
+
+- No barrel imports
+- Selective unit testing
+- Incremental type checks
+- Build caching
+- Static analysis tools
+- Test utilities
+
+**Benefit:**
+
+As the application quickly grows, you don't need to slow down or rebuild or restructure as much as soon in order to maintain a high developer velocity.
+
+**Example application:**
+
+- [@saflib/base](./base/docs/01-overview.md) and related workflow tools minimize barrel imports.
+- tsconfigs include `composite: true` to allow for more efficient builds and type checking.
+- [saf-analyze-package](./dev-tools/docs/cli/saf-analyze-package.md) provides static analysis which surface issues and dead code.
+
+## Make the Right Way the Easy Way
+
+With so many best practices and things to remember to do, it can be easy to fall short of them, if the framework doesn't help. Using the framework correctly and doing the right thing shouldn't rely on all individuals remembering and setting aside time to check everything each time, or manage their own prompt snippets, or remember what files or changes are particularly important to review each time among a large sea of changes.
+
+So, an agentic framework should include:
+
+- Guidance, or better yet an agent harness, for common tasks.
+- A tool or system for quickly identifying changes that require attention.
+
+**Benefits:**
+
+- Agents and humans both are more likely to do things right if the right way is also the fastest and simplest.
+- Developer time is rapidly filling with code reviews, and any tool that helps isolate and highlight important changes helps a great deal.
+
+**Example application:**
+
+- [@saflib/workflows](./workflows/docs/01-overview.md) is the SAF harness for doing common work quickly and consistently.
+- [@saflib/dev-site](./dev-site/docs/01-overview.md) shows changes between main and a feature branch, focusing on what changed in data models, API specifications, dependencies, test specifications, and interfaces.
