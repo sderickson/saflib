@@ -39,7 +39,6 @@
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/ory-kratos-spa": "*",
     "@saflib/sdk": "*",
-    "@saflib/vendors-sentry-client": "*",
     "@saflib/vue": "*"
   },
   "sideEffects": [

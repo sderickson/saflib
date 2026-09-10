@@ -38,9 +38,6 @@
       "path": "../../../sdk"
     },
     {
-      "path": "../../../vendors/sentry-client"
-    },
-    {
       "path": "../../../vue"
     },
     {

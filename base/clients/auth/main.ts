@@ -4,7 +4,7 @@ import "@saflib/base-clients-common/style-imports";
 import { vuetifyConfig } from "@saflib/base-clients-common/vuetify-config";
 import { createAuthRouter } from "./router.ts";
 import { auth_strings } from "./strings.ts";
-import { createSentryCallback } from "@saflib/base-clients-common/clients/sentry";
+import { createClientErrorCallback } from "@saflib/errors-vue/lib/createClientErrorCallback.ts";
 import "@saflib/base-clients-common/clients/events";
 
 export const main = createSpaMain({
@@ -13,6 +13,6 @@ export const main = createSpaMain({
   spa: Spa,
   createRouter: createAuthRouter,
   strings: auth_strings,
-  callback: createSentryCallback({ source: "auth" }),
+  callback: createClientErrorCallback({ source: "auth" }),
   vuetifyConfig,
 });

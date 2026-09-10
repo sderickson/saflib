@@ -53,7 +53,7 @@ http://caddy:2020 {
 		Cross-Origin-Opener-Policy "same-origin"
 		Cross-Origin-Embedder-Policy "unsafe-none"
 		Cross-Origin-Resource-Policy "same-site"
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://us.i.posthog.com https://us-assets.i.posthog.com https://static.cloudflareinsights.com {$CSP_SCRIPT_SRC_EXTRA}; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' ws: wss: http: https:; frame-ancestors 'self' http://*.docker.localhost; object-src 'none'; frame-src 'self' blob: http://*.docker.localhost; worker-src 'self' blob:; report-uri {$CSP_REPORT_URI}"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://us.i.posthog.com https://us-assets.i.posthog.com https://static.cloudflareinsights.com {$CSP_SCRIPT_SRC_EXTRA}; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: blob: https://raw.githubusercontent.com/TanStack/query/ https://vue-i18n.intlify.dev; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' ws: wss: http: https:; frame-ancestors 'self' http://*.docker.localhost; object-src 'none'; frame-src 'self' blob: http://*.docker.localhost; worker-src 'self' blob:; report-uri {$CSP_REPORT_URI}"
 		-Server
 	}
 }

@@ -10,7 +10,7 @@
       <v-toolbar-items class="d-none d-md-block">
         <v-btn
           v-for="link in navLinks"
-          :key="link.path"
+          :key="`${link.subdomain}:${link.path}`"
           variant="text"
           class="text-uppercase font-weight-regular"
           :href="toHref(link)"
@@ -50,7 +50,7 @@
       <v-list nav>
         <v-list-item
           v-for="link in sidebarLinks"
-          :key="link.path"
+          :key="`${link.subdomain}:${link.path}`"
           :href="toHref(link)"
           :title="link.name"
           variant="text"
@@ -62,7 +62,7 @@
           }}</v-list-subheader>
           <v-list-item
             v-for="link in devSidebarLinks"
-            :key="link.path"
+            :key="`${link.subdomain}:${link.path}`"
             :href="toHref(link)"
             :title="link.name"
             variant="text"
