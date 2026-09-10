@@ -7,7 +7,10 @@
     "outDir": "./dist/types",
     "noEmit": false,
     "emitDeclarationOnly": true,
-    "rootDir": "."
+    "rootDir": ".",
+    "types": [
+      "vite/client"
+    ]
   },
   "exclude": [
     "node_modules",
