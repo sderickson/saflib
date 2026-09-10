@@ -571,6 +571,8 @@ export function findRootLockfileVersionSkew(
 /**
  * Replace skewed (or missing) product-root lock trees with the platform lock trees
  * for override-pinned packages, and drop nested saflib workspace copies of that package.
+ * Also aligns direct dependency packages of those pins when they exist at the platform root
+ * (e.g. vite → rolldown), so peer/hoist drift cannot leave an incompatible companion.
  */
 export function alignRootLockfileWithPlatform(
   productLockfile: PackageLock,
@@ -581,9 +583,37 @@ export function alignRootLockfileWithPlatform(
     productLockfile.packages ?? (productLockfile.packages = {});
   const platformPkgs = platform.lockPackages;
   const fixed: string[] = [];
+  const toAlign = new Map<string, string>();
 
   for (const issue of issues) {
+    toAlign.set(issue.dependency, issue.productLockfileKey);
+  }
+
+  // Expand to direct deps of each skewed override pin (vite needs matching rolldown).
+  for (const issue of issues) {
     const rootKey = issue.productLockfileKey;
+    const platformEntry = platformPkgs[rootKey];
+    if (!platformEntry) continue;
+    const depMaps = [
+      platformEntry.dependencies,
+      platformEntry.optionalDependencies,
+    ];
+    for (const deps of depMaps) {
+      if (!deps || typeof deps !== "object") continue;
+      for (const depName of Object.keys(deps as Record<string, string>)) {
+        if (toAlign.has(depName)) continue;
+        const depRootKey = lockfileKeyForPackage("node_modules", depName);
+        if (!platformPkgs[depRootKey]?.version) continue;
+        const productVer = productPkgs[depRootKey]?.version;
+        if (productVer === platformPkgs[depRootKey]?.version) continue;
+        toAlign.set(depName, depRootKey);
+      }
+    }
+  }
+
+  for (const [dependency, rootKey] of [...toAlign.entries()].sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     const platformEntry = platformPkgs[rootKey];
     if (!platformEntry?.version) continue;
 
@@ -602,7 +632,7 @@ export function alignRootLockfileWithPlatform(
 
     const nestedRoots = Object.keys(productPkgs).filter((key) => {
       const parsed = parseNestedSaflibRegistryLockKey(key);
-      return parsed?.dependency === issue.dependency;
+      return parsed?.dependency === dependency;
     });
     for (const nestedRoot of nestedRoots) {
       for (const key of Object.keys(productPkgs)) {
@@ -612,7 +642,7 @@ export function alignRootLockfileWithPlatform(
       }
     }
 
-    fixed.push(issue.dependency);
+    fixed.push(dependency);
   }
 
   return fixed;

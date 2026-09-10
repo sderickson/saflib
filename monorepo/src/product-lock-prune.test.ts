@@ -398,21 +398,28 @@ describe("alignRootLockfileWithPlatform", () => {
   it("replaces the root tree from the platform lock and drops nested saflib copies", () => {
     const productLockfile = {
       packages: {
-        "node_modules/vite": { version: "8.3.0" },
-        "node_modules/vite/node_modules/rolldown": { version: "1.2.6" },
+        "node_modules/vite": { version: "8.3.0", dependencies: { rolldown: "1.2.6" } },
+        "node_modules/rolldown": { version: "1.2.6" },
         "saflib/node_modules/vite": { version: "8.0.13" },
         "saflib/vite/node_modules/vite": { version: "8.0.13" },
       },
     };
     const platform = {
       overrides: { vite: "8.0.13" },
-      resolvedVersions: new Map([["vite", "8.0.13"]]),
+      resolvedVersions: new Map([
+        ["vite", "8.0.13"],
+        ["rolldown", "1.0.1"],
+      ]),
       lockPackages: {
         "node_modules/vite": {
           version: "8.0.13",
           resolved: "https://registry.npmjs.org/vite/-/vite-8.0.13.tgz",
+          dependencies: { rolldown: "1.0.1" },
         },
-        "node_modules/vite/node_modules/rolldown": { version: "1.0.1" },
+        "node_modules/rolldown": {
+          version: "1.0.1",
+          resolved: "https://registry.npmjs.org/rolldown/-/rolldown-1.0.1.tgz",
+        },
       },
     };
 
@@ -426,7 +433,7 @@ describe("alignRootLockfileWithPlatform", () => {
       },
     ]);
 
-    expect(fixed).toEqual(["vite"]);
+    expect(fixed).toEqual(["rolldown", "vite"]);
     const packages = productLockfile.packages as Record<
       string,
       { version?: string; resolved?: string }
@@ -435,7 +442,7 @@ describe("alignRootLockfileWithPlatform", () => {
       version: "8.0.13",
       resolved: "https://registry.npmjs.org/vite/-/vite-8.0.13.tgz",
     });
-    expect(packages["node_modules/vite/node_modules/rolldown"]).toMatchObject({
+    expect(packages["node_modules/rolldown"]).toMatchObject({
       version: "1.0.1",
     });
     expect(packages["saflib/node_modules/vite"]).toBeUndefined();
