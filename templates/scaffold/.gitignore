@@ -2,6 +2,8 @@
 **/coverage
 **/data
 **/saf-workflow-status.json
+**/dist/types
+**/.saf-docker
 
 # Editor directories and files
 .vscode/*
