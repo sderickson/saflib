@@ -84,7 +84,7 @@ When the platform lock resolves `@tanstack/vue-query` to `5.85.9` but the produc
 
 Golden product templates under `saflib/base/` follow this rule. If `product/init` copies a redundant declaration, lock-prune removes it.
 
-Use `@saflib/vue`, `@saflib/sdk`, `@saflib/vite`, and similar workspace entry points — not the underlying registry packages those packages wrap.
+Use `@saflib/vue`, `@saflib/sdk`, `@saflib/vite`, `@saflib/vitepress`, and similar workspace entry points — not the underlying registry packages those packages wrap.
 
 ## lock-prune
 

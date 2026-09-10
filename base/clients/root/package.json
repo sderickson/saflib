@@ -14,8 +14,8 @@
     "@saflib/links": "*",
     "@saflib/sdk": "*",
     "@saflib/vite": "*",
-    "@saflib/vue": "*",
-    "vitepress": "^1.6.3"
+    "@saflib/vitepress": "*",
+    "@saflib/vue": "*"
   },
   "sideEffects": false
 }

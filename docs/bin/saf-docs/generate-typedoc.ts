@@ -50,6 +50,20 @@ function relocateDistRefDocs(packageDir: string) {
   walk(refModules);
 }
 
+/**
+ * typedoc-plugin-markdown copies package docs into docs/ref/_media with the
+ * same relative links as docs/. Point ref/index.md at the originals instead so
+ * VitePress (which excludes _media) does not hit dead links.
+ */
+function rewriteMediaLinksToOriginalDocs(packageDir: string) {
+  const refIndex = join(packageDir, "docs/ref/index.md");
+  if (!existsSync(refIndex)) return;
+
+  const content = readFileSync(refIndex, "utf-8");
+  const updated = content.replaceAll("](_media/", "](../");
+  if (updated !== content) writeFileSync(refIndex, updated);
+}
+
 export function generateTypeDoc(options: GenerateTypeDocOptions) {
   const { monorepoContext, packageName } = options;
   const currentPackageJson = monorepoContext.monorepoPackageJsons[packageName];
@@ -213,6 +227,7 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
       cwd: packageDir,
     });
     relocateDistRefDocs(packageDir);
+    rewriteMediaLinksToOriginalDocs(packageDir);
   } catch (e) {
     console.error("Failed to generate docs. Fix warnings above.");
     process.exit(1);

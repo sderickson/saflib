@@ -10,7 +10,7 @@ Use this when you change `product/create` (bootstrap) or `product/init` and want
 
 ## Full bootstrap + init (recommended)
 
-[`product/create/repro-local.sh`](../create/repro-local.sh) creates a throwaway product monorepo under `$TMPDIR` (or `/tmp`), copies your current saflib checkout into `saflib/`, and runs the same bootstrap + `product/init` sequence as [`saf-create`](./workflows/create.md).
+[`product/create/repro-local.sh`](./workflows/create.md#local-testing) creates a throwaway product monorepo under `$TMPDIR` (or `/tmp`), copies your current saflib checkout into `saflib/`, and runs the same bootstrap + `product/init` sequence as [`saf-create`](./workflows/create.md).
 
 ```bash
 # From the saflib repo root

@@ -4,4 +4,4 @@
 
 # @saflib/vendors-posthog-client
 
-See [docs/01-overview.md](_media/01-overview.md) for integration guidance.
+See [docs/01-overview.md](../01-overview.md) for integration guidance.
