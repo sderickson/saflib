@@ -51,9 +51,10 @@ To make sure everything works:
 1. Run `npm run typecheck`. Run it a second time and it should go much faster.
 2. Run `npm run test` (unit tests).
 3. Go to the `<project-name>/dev` directory and run `npm run dev`. Once Docker finishes building the containers are running, you should be able to access the app at `http://<project-name>.docker.localhost/` and explore the app.
-4. Go to `deploy/` and run `npm run build && npm run prod-local`. This is a production build of the app run locally. The main difference is you're serving static assets vite built rather than running the vite dev server.
-5. With `prod-local` running, run `npm run test:e2e` from `<project-name>/clients/admin` and `<project-name>/security`. These should pass.
-6. Try adding something new with a workflow, such as `vue/add-view` from one of the SPA packages (e.g. `<project-name>/clients/app`) or `drizzle/update-schema` from the `<project-name>/service/db` package. See the [workflows documentation](https://workflows.saf-demo.online/) for more information.
+4. With `dev` running, open [the dev site](http://localhost:3099) and try looking at the current checkout (history won't be very interesting, and build is not built yet).
+5. Go to `deploy/` and run `npm run build && npm run prod-local`. This is a production build of the app run locally. The main difference is you're serving static assets vite built rather than running the vite dev server.
+6. With `prod-local` running, run `npm run test:e2e` from `<project-name>/clients/admin` and `<project-name>/security`. These should pass.
+7. Try adding something new with a workflow, such as `vue/add-view` from one of the SPA packages (e.g. `<project-name>/clients/app`) or `drizzle/update-schema` from the `<project-name>/service/db` package. See the [workflows documentation](https://workflows.saf-demo.online/) for more information.
 
 If you want to deploy:
 
