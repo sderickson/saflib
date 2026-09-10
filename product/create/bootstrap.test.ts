@@ -177,6 +177,8 @@ describe("runBootstrap", () => {
       "npm install --ignore-scripts",
       "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes",
       "npm install",
+      "npm approve-scripts better-sqlite3",
+      "npm rebuild better-sqlite3",
       'npm exec saf-workflow kickoff product/init "demo" "example.com"',
     ]);
     expect(existsSync(join(cwd, ".gitignore"))).toBe(true);

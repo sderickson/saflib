@@ -313,6 +313,12 @@ export function runBootstrap(options: BootstrapOptions): void {
   log("Installing npm dependencies…");
   runCommand("npm install", { cwd });
 
+  // First install uses --ignore-scripts so lock-prune can run; native addons
+  // still need an approved install script + rebuild after the real install.
+  log("Approving better-sqlite3 install scripts…");
+  runCommand("npm approve-scripts better-sqlite3", { cwd });
+  runCommand("npm rebuild better-sqlite3", { cwd });
+
   log(`Running product/init for "${options.productName}"…`);
   runCommand(
     [
