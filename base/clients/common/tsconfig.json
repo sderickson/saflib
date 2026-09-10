@@ -35,6 +35,9 @@
       "path": "../../../ory-kratos/ory-kratos-sdk"
     },
     {
+      "path": "../../../ory-kratos/ory-kratos-spa"
+    },
+    {
       "path": "../../../sdk"
     },
     {
