@@ -161,6 +161,22 @@ export function makeConfig(config: MakeConfigProps = {}) {
       rollupOptions: {
         input,
         plugins: [ignore(["**/*.test.ts"])],
+        output: {
+          // Keep Vue/Vuetify out of app/OpenAPI shared chunks. Default splitting
+          // can park Rollup `__export` helpers in a large CJS-ish chunk (e.g.
+          // `@ory/client`) and create a cycle: vue-vendor → kratos → vuetify → vue,
+          // which fails at runtime with `TypeError: e is not a function`.
+          manualChunks(id) {
+            if (
+              id.includes("node_modules/vue/") ||
+              id.includes("node_modules/@vue/") ||
+              id.includes("node_modules/vuetify/") ||
+              id.includes("node_modules/@vuetify/")
+            ) {
+              return "vue-vendor";
+            }
+          },
+        },
       },
       sourcemap: sourcemap ?? true,
     },

@@ -81,6 +81,16 @@ describe("isSkippedStubRefLine", () => {
     expect(
       isSkippedStubRefLine("import __product-name__.Caddyfile"),
     ).toBe(false);
+    expect(
+      isSkippedStubRefLine(
+        "\timport spa /__product-name__-clients {args[0]}",
+      ),
+    ).toBe(false);
+    expect(
+      isSkippedStubRefLine(
+        "\timport kratos-api-proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST}",
+      ),
+    ).toBe(false);
   });
 });
 
@@ -156,6 +166,39 @@ describe("makeProductInitLineReplace", () => {
   it("does not rewrite bare 'base' inside ordinary words", () => {
     expect(replace("const databaseUrl = 'x';")).toBe(
       "const databaseUrl = 'x';",
+    );
+  });
+
+  it("does not rewrite CSP base-uri when renaming the product", () => {
+    expect(replace("base-uri 'self';")).toBe("base-uri 'self';");
+    expect(
+      replace(
+        "connect-src 'self' {$CSP_CONNECT_SRC}; base-uri 'self'; form-action 'self'",
+      ),
+    ).toBe(
+      "connect-src 'self' {$CSP_CONNECT_SRC}; base-uri 'self'; form-action 'self'",
+    );
+  });
+
+  it("renames Caddy spa / kratos-api-proxy import lines", () => {
+    expect(replace("\timport spa /__product-name__-clients {args[0]}")).toBe(
+      "\timport spa /tmp-clients {args[0]}",
+    );
+    expect(
+      replace("\timport kratos-api-proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST}"),
+    ).toBe("\timport kratos-api-proxy {$TMP_SERVICE_HTTP_HOST}");
+  });
+
+  it("renames kratos courier/action monolith host placeholders", () => {
+    expect(
+      replace("url: http://__product-name__-monolith:3000/email/kratos-courier"),
+    ).toBe("url: http://tmp-monolith:3000/email/kratos-courier");
+    expect(
+      replace(
+        "COURIER_HTTP_REQUEST_CONFIG_URL=http://__product-name__-monolith:3000/email/kratos-courier",
+      ),
+    ).toBe(
+      "COURIER_HTTP_REQUEST_CONFIG_URL=http://tmp-monolith:3000/email/kratos-courier",
     );
   });
 

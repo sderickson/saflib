@@ -33,7 +33,7 @@ selfservice:
             - &kratos_action_webhook
               hook: web_hook
               config:
-                url: http://monolith:3000/kratos/action
+                url: http://__product-name__-monolith:3000/kratos/action
                 method: POST
                 body: file:///etc/config/kratos/kratos-action-body.jsonnet
                 headers:
@@ -104,7 +104,7 @@ courier:
   delivery_strategy: http
   http:
     request_config:
-      url: http://monolith:3000/email/kratos-courier
+      url: http://__product-name__-monolith:3000/email/kratos-courier
       method: POST
       body: file:///etc/config/kratos/courier-body.jsonnet
       headers:

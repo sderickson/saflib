@@ -239,19 +239,25 @@ const TSCONFIG_PRESET_FILENAMES = [
   "tsconfig.base.json",
 ] as const;
 
-/** Keep shared tsconfig preset names literal when renaming the golden product. */
-function protectTsconfigPresetFilenames(line: string): string {
+/** Literals that contain `base-` / bare `base` but are not the golden product name. */
+const NON_PRODUCT_BASE_LITERALS = ["base-uri", ...TSCONFIG_PRESET_FILENAMES] as const;
+
+/** Keep shared tsconfig preset names and CSP `base-uri` literal when renaming. */
+function protectNonProductBaseLiterals(line: string): string {
   let result = line;
-  for (const filename of TSCONFIG_PRESET_FILENAMES) {
-    result = result.replaceAll(filename, `__SAF_${filename.replaceAll(".", "_")}__`);
+  for (const literal of NON_PRODUCT_BASE_LITERALS) {
+    result = result.replaceAll(literal, `__SAF_${literal.replaceAll(".", "_").replaceAll("-", "_")}__`);
   }
   return result;
 }
 
-function restoreTsconfigPresetFilenames(line: string): string {
+function restoreNonProductBaseLiterals(line: string): string {
   let result = line;
-  for (const filename of TSCONFIG_PRESET_FILENAMES) {
-    result = result.replaceAll(`__SAF_${filename.replaceAll(".", "_")}__`, filename);
+  for (const literal of NON_PRODUCT_BASE_LITERALS) {
+    result = result.replaceAll(
+      `__SAF_${literal.replaceAll(".", "_").replaceAll("-", "_")}__`,
+      literal,
+    );
   }
   return result;
 }
@@ -285,7 +291,7 @@ function finishProductInitLineReplace(
     sourceSnakeUpper,
   } = names;
 
-  const prepared = protectTsconfigPresetFilenames(out);
+  const prepared = protectNonProductBaseLiterals(out);
 
   // Preserve the thin @saflib/templates package name / path (do not treat
   // "templates" lines as exempt from /base/ → /product/ path renames —
@@ -332,7 +338,7 @@ function finishProductInitLineReplace(
     snakeUpper,
   );
 
-  result = restoreTsconfigPresetFilenames(result);
+  result = restoreNonProductBaseLiterals(result);
   if (context.embeddedProductMonorepo) {
     result = rewriteSaflibRelativeTsconfigPaths(result);
   }

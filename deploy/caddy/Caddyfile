@@ -2,3 +2,9 @@ import common.Caddyfile
 # BEGIN WORKFLOW AREA import-product-caddy FOR product/init
 import __product-name__.Caddyfile
 # END WORKFLOW AREA
+
+# Playwright security suite: probe host outside the product cookie/eTLD+1 surface.
+http://evil.localhost {
+	root * /etc/caddy/evil
+	file_server
+}
