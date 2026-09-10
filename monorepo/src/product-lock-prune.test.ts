@@ -177,6 +177,35 @@ describe("findCompetingDependencies", () => {
 
     expect(findCompetingDependencies(root, buildPackageIndex(root))).toEqual([]);
   });
+
+  it("flags competing deps on the product root even when another package shares its name", () => {
+    const root = loadProductFixture({
+      "/product/saflib/vite/package.json": JSON.stringify({
+        name: "@saflib/vite",
+        dependencies: { vite: "8.0.13" },
+      }),
+      "/product/saflib/package.json": JSON.stringify({
+        name: "@saflib/saflib",
+        overrides: { vite: "8.0.13" },
+      }),
+      "/product/package.json": JSON.stringify({
+        name: "@product/root",
+        devDependencies: { vite: "8.1.5" },
+      }),
+      "/product/.saf-docker/stage/copy/package.json": JSON.stringify({
+        name: "@product/root",
+        devDependencies: {},
+      }),
+    });
+
+    const issues = findCompetingDependencies(root, buildPackageIndex(root));
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatchObject({
+      dependency: "vite",
+      productSpec: "8.1.5",
+      packageJsonPath: join(root, "package.json"),
+    });
+  });
 });
 
 describe("pruneStaleLockfileEntries", () => {
