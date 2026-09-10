@@ -14,7 +14,8 @@
     "./settings": "./settings.ts",
     "./registration": "./registration.ts",
     "./verification": "./verification.ts",
-    "./fixtures": "./fixtures.ts"
+    "./fixtures": "./fixtures.ts",
+    "./mdi-icons": "./mdi-icons.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.2"
@@ -29,6 +30,7 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@saflib/sdk": "*",
     "@saflib/links": "*",
     "@saflib/vue": "*",
