@@ -40,7 +40,7 @@ To create a new SAF project:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sderickson/saflib/main/product/create/saf-create.sh -o saf-create.sh
 chmod +x saf-create.sh
-./saf-create.sh <name> <domain> --saflib-ref main
+./saf-create.sh <product-name> <domain-name> --saflib-ref main
 rm saf-create.sh
 ```
 
@@ -50,6 +50,18 @@ To make sure everything works:
 
 1. Run `npm run typecheck`. Run it a second time and it should go much faster.
 2. Run `npm run test` (unit tests).
+3. Go to the `<project-name>/dev` directory and run `npm run dev`. Once Docker finishes building the containers are running, you should be able to access the app at `http://<project-name>.docker.localhost/` and explore the app.
+4. Go to `deploy/` and run `npm run build && npm run prod-local`. This is a production build of the app run locally. The main difference is you're serving static assets vite built rather than running the vite dev server.
+
+If you want to deploy:
+
+1. Set up a domain name and point it to a host you have SSH access to.
+2. Make sure `deploy/env.remote` is configured appropriately.
+3. Run `npm run remote-setup` from `deploy/`. This will set up the necessary dependencies on the remote host.
+4. Log into the remote host and make sure it has read access to your container registry.
+5. Run `npm run full-deploy` from `deploy/`. This builds the app, pushes it to the configured container registry, syncs some necessary remote assets, then spins up the docker containers pulling the images you built from the registry.
+
+If you navigate to the domain name you set up, you should see the app running.
 
 ### Existing project
 
