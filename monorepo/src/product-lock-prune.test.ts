@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
-  alignRootLockfileWithPlatform,
   analyzeProductLockPrune,
   applyLockPruneFixes,
   findCompetingDependencies,
@@ -391,62 +390,6 @@ describe("findRootLockfileVersionSkew", () => {
         platformVersion: "8.0.13",
       },
     ]);
-  });
-});
-
-describe("alignRootLockfileWithPlatform", () => {
-  it("replaces the root tree from the platform lock and drops nested saflib copies", () => {
-    const productLockfile = {
-      packages: {
-        "node_modules/vite": { version: "8.3.0", dependencies: { rolldown: "1.2.6" } },
-        "node_modules/rolldown": { version: "1.2.6" },
-        "saflib/node_modules/vite": { version: "8.0.13" },
-        "saflib/vite/node_modules/vite": { version: "8.0.13" },
-      },
-    };
-    const platform = {
-      overrides: { vite: "8.0.13" },
-      resolvedVersions: new Map([
-        ["vite", "8.0.13"],
-        ["rolldown", "1.0.1"],
-      ]),
-      lockPackages: {
-        "node_modules/vite": {
-          version: "8.0.13",
-          resolved: "https://registry.npmjs.org/vite/-/vite-8.0.13.tgz",
-          dependencies: { rolldown: "1.0.1" },
-        },
-        "node_modules/rolldown": {
-          version: "1.0.1",
-          resolved: "https://registry.npmjs.org/rolldown/-/rolldown-1.0.1.tgz",
-        },
-      },
-    };
-
-    const fixed = alignRootLockfileWithPlatform(productLockfile, platform, [
-      {
-        kind: "root-lockfile-version-skew",
-        dependency: "vite",
-        productLockfileKey: "node_modules/vite",
-        productVersion: "8.3.0",
-        platformVersion: "8.0.13",
-      },
-    ]);
-
-    expect(fixed).toEqual(["rolldown", "vite"]);
-    const packages = productLockfile.packages as Record<
-      string,
-      { version?: string; resolved?: string }
-    >;
-    expect(packages["node_modules/vite"]).toMatchObject({
-      version: "8.0.13",
-      resolved: "https://registry.npmjs.org/vite/-/vite-8.0.13.tgz",
-    });
-    expect(packages["node_modules/rolldown"]).toMatchObject({
-      version: "1.0.1",
-    });
-    expect(packages["saflib/node_modules/vite"]).toBeUndefined();
-    expect(packages["saflib/vite/node_modules/vite"]).toBeUndefined();
   });
 });
 
