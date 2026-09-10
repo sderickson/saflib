@@ -542,6 +542,9 @@ export function findLockfileVersionSkew(
  * Platform override pins must resolve at the product root to the same version as
  * `saflib/package-lock.json`. Catches peer-hoisted drift (e.g. vite 8.3 at root
  * while the platform lock and nested saflib copy are 8.0.13).
+ *
+ * Only exact override pins are checked. Caret/tilde ranges (e.g. `vue-router@^5`)
+ * are allowed to float within the range and are not reported.
  */
 export function findRootLockfileVersionSkew(
   lockfile: PackageLock,
@@ -551,6 +554,9 @@ export function findRootLockfileVersionSkew(
   const issues: RootLockfileVersionSkewIssue[] = [];
 
   for (const name of Object.keys(platform.overrides).sort()) {
+    const overrideSpec = platform.overrides[name];
+    if (!overrideSpec || !isExactOverrideVersion(overrideSpec)) continue;
+
     const platformVersion = platform.resolvedVersions.get(name);
     if (!platformVersion) continue;
     const platformRootKey = lockfileKeyForPackage("node_modules", name);
@@ -571,6 +577,11 @@ export function findRootLockfileVersionSkew(
   }
 
   return issues;
+}
+
+/** True for exact versions like `8.0.13`; false for `^5.0.0`, `~6.0.0`, `*`. */
+export function isExactOverrideVersion(spec: string): boolean {
+  return /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(spec.trim());
 }
 
 export function findPlatformOverrideDrift(

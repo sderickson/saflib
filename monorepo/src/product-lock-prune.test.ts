@@ -9,6 +9,7 @@ import {
   findLockfileVersionSkew,
   findRedundantDependencies,
   findRootLockfileVersionSkew,
+  isExactOverrideVersion,
   findUnhoistedRegistryDependencies,
   hoistMisplacedLockfilePeers,
   hoistUnhoistedRegistryDependencies,
@@ -390,6 +391,41 @@ describe("findRootLockfileVersionSkew", () => {
         platformVersion: "8.0.13",
       },
     ]);
+  });
+
+  it("ignores caret/tilde range overrides even when resolved versions differ", () => {
+    const lockfile = {
+      packages: {
+        "node_modules/vue-router": { version: "5.3.1" },
+        "node_modules/typescript": { version: "6.0.3" },
+      },
+    };
+    const platform = {
+      overrides: {
+        "vue-router": "^5.0.0",
+        typescript: "~6.0.0",
+      },
+      resolvedVersions: new Map([
+        ["vue-router", "5.0.4"],
+        ["typescript", "6.0.2"],
+      ]),
+      lockPackages: {
+        "node_modules/vue-router": { version: "5.0.4" },
+        "node_modules/typescript": { version: "6.0.2" },
+      },
+    };
+
+    expect(findRootLockfileVersionSkew(lockfile, platform)).toEqual([]);
+  });
+});
+
+describe("isExactOverrideVersion", () => {
+  it("accepts exact semver and rejects ranges", () => {
+    expect(isExactOverrideVersion("8.0.13")).toBe(true);
+    expect(isExactOverrideVersion("1.0.1-beta.1")).toBe(true);
+    expect(isExactOverrideVersion("^5.0.0")).toBe(false);
+    expect(isExactOverrideVersion("~6.0.0")).toBe(false);
+    expect(isExactOverrideVersion("*")).toBe(false);
   });
 });
 

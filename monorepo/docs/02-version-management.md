@@ -98,7 +98,7 @@ Use `@saflib/vue`, `@saflib/sdk`, `@saflib/vite`, `@saflib/vitepress`, and simil
 | Hoisting hazard (peer only under `saflib/node_modules`)        | Move lockfile entry to root `node_modules/`             |
 | Unhoisted registry dep (locked under `saflib/*/node_modules/`) | Hoist lockfile entry to root `node_modules/`            |
 | Nested lockfile version skew vs `saflib/package-lock.json`     | Remove nested lock entry; rerun `npm install`           |
-| Root lockfile version skew (override pins, advisory)           | Warn only — do not rewrite the product lock; rely on overrides + `npm install` |
+| Root lockfile version skew (exact override pins only, advisory) | Warn only — do not rewrite the product lock; rely on overrides + `npm install`. Caret/tilde ranges are ignored. |
 | Platform override drift                                        | Merge `saflib/package.json` overrides into product root |
 | Stale lockfile workspace paths                                 | Remove dead entries from `package-lock.json`            |
 
