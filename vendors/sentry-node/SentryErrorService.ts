@@ -15,8 +15,11 @@ export type SentryErrorServiceOptions = {
 
 export class SentryErrorService implements ErrorService {
   readonly isMocked = false;
+  private readonly options: SentryErrorServiceOptions;
 
-  constructor(private readonly options: SentryErrorServiceOptions = {}) {}
+  constructor(options: SentryErrorServiceOptions = {}) {
+    this.options = options;
+  }
 
   recordReportedError(input: ReportedErrorInput): ReportedErrorRecord {
     Sentry.captureMessage(input.message, {
