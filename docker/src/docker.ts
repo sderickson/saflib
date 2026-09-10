@@ -77,6 +77,14 @@ function relativePathToFs(relativePath: string): string {
   return relativePath.replace(/^\.\//, "");
 }
 
+export function stageRootPackageName(
+  rootName: string | undefined,
+  imageName: string,
+): string {
+  const base = rootName?.trim() || "workspace";
+  return `${base}--docker-${imageName}`;
+}
+
 function stagePackageJsonsForInstall(
   ctx: MonorepoContext,
   imageName: string,
@@ -89,9 +97,17 @@ function stagePackageJsonsForInstall(
   const rootPackageJson = JSON.parse(
     readFileSync(path.join(ctx.rootDir, "package.json"), "utf-8"),
   ) as Record<string, unknown>;
+  const stagedRootPackageJson = stripPackageJsonForInstall(rootPackageJson);
+  stagedRootPackageJson.name = stageRootPackageName(
+    typeof stagedRootPackageJson.name === "string"
+      ? stagedRootPackageJson.name
+      : undefined,
+    imageName,
+  );
+  stagedRootPackageJson.private = true;
   writeFileSync(
     path.join(stageDir, "package.json"),
-    JSON.stringify(stripPackageJsonForInstall(rootPackageJson), null, 2) + "\n",
+    JSON.stringify(stagedRootPackageJson, null, 2) + "\n",
   );
 
   writeFileSync(
