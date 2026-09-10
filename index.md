@@ -38,9 +38,9 @@ To create a new SAF project:
 4. From inside the empty repo, run the following commands, inserting your project name and domain name:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sderickson/saflib/main/product/create/saf-create.sh -o saf-create.sh
+curl -fsSL https://raw.githubusercontent.com/sderickson/saflib/v0.4/product/create/saf-create.sh -o saf-create.sh
 chmod +x saf-create.sh
-./saf-create.sh <product-name> <domain-name> --saflib-ref main
+./saf-create.sh <product-name> <domain-name> --saflib-ref v0.4
 rm saf-create.sh
 ```
 
