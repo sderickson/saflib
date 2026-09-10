@@ -110,6 +110,22 @@ export const monorepoPackageMock = {
   "/app/saflib/vue-spa/package.json": JSON.stringify({
     name: "@saflib/vue",
   }),
+  "/app/saflib/commander/package.json": JSON.stringify({
+    name: "@saflib/commander",
+  }),
+  "/app/saflib/monorepo/package.json": JSON.stringify({
+    name: "@saflib/monorepo",
+  }),
+  "/app/saflib/docker/package.json": JSON.stringify({
+    name: "@saflib/docker",
+    bin: {
+      "saf-git-hashes": "./bin/saf-git-hashes/index.ts",
+    },
+    dependencies: {
+      "@saflib/commander": "*",
+      "@saflib/monorepo": "*",
+    },
+  }),
 
   // Services
   "/app/services/caller/Dockerfile.template": DockerfileTemplate,

@@ -131,13 +131,47 @@ function stagePackageJsonsForInstall(
   }
 }
 
+/**
+ * `saf-git-hashes` is a bin of `@saflib/docker`. Always stage/copy that package
+ * (and its workspace deps) so the CLI source is present inside the image.
+ */
+function withDockerForGitHashes(
+  packages: Set<string>,
+  ctx: MonorepoContext,
+): Set<string> {
+  if (!ctx.monorepoPackageDirectories["@saflib/docker"]) {
+    return packages;
+  }
+  return packages
+    .union(getAllPackageWorkspaceDependencies("@saflib/docker", ctx))
+    .union(new Set(["@saflib/docker"]));
+}
+
+/**
+ * Invoke the CLI by path. `npm install` runs against package.json stubs only, so
+ * npm does not create `node_modules/.bin` links when the bin target files are
+ * missing — `npm exec saf-git-hashes` would then hit the public registry (404).
+ */
+function gitHashesCommand(ctx: MonorepoContext): string {
+  const dockerDir = ctx.monorepoPackageDirectories["@saflib/docker"];
+  if (!dockerDir) {
+    return "npm exec saf-git-hashes";
+  }
+  const rel =
+    "./" + path.relative(ctx.rootDir, dockerDir).split(path.sep).join("/");
+  return `${rel}/bin/saf-git-hashes/index.ts`;
+}
+
 export function generateDockerfiles(
   ctx: MonorepoContext,
   verbose: boolean = false,
 ): void {
   for (const packageName of ctx.packagesWithDockerfileTemplates) {
-    const packages = getAllPackageWorkspaceDependencies(packageName, ctx).union(
-      new Set([packageName]),
+    const packages = withDockerForGitHashes(
+      getAllPackageWorkspaceDependencies(packageName, ctx).union(
+        new Set([packageName]),
+      ),
+      ctx,
     );
     const dockerTemplate = readDockerfileTemplate(packageName, ctx);
     const packageRelativePaths = getPackageRelativePaths(packages, ctx);
@@ -170,8 +204,15 @@ export function generateDockerfiles(
       "RUN apt-get update \\",
       "  && apt-get install -y --no-install-recommends git \\",
       "  && rm -rf /var/lib/apt/lists/* \\",
-      "  && npm exec saf-git-hashes",
+      `  && ${gitHashesCommand(ctx)}`,
     ].join("\n");
+
+    // Templates that need hashes after extra COPY layers (e.g. full saflib)
+    // can place `#{ git_hashes }#` explicitly; otherwise append after copy_src.
+    const hasExplicitGitHashes = dockerTemplate.includes("#{ git_hashes }#");
+    const copySrcReplacement = hasExplicitGitHashes
+      ? copySrcCommand
+      : `${copySrcCommand}\n${gitHashesStep}`;
 
     const packageRel = path
       .relative(ctx.rootDir, ctx.monorepoPackageDirectories[packageName])
@@ -181,10 +222,7 @@ export function generateDockerfiles(
 
     const dockerfileContents = dockerTemplate
       .replace("#{ copy_packages }#", copyPackageJsonCommand)
-      .replace(
-        "#{ copy_src }#",
-        `${copySrcCommand}\n${gitHashesStep}`,
-      )
+      .replace("#{ copy_src }#", copySrcReplacement)
       .replace("#{ git_hashes }#", gitHashesStep)
       .replace(/#\{ package_root \}#/g, packageRoot);
 

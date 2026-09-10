@@ -57,10 +57,15 @@ describe("generateDockerfiles", () => {
     expect(dockerfile).toContain(
       "COPY .saf-docker/stage/foo-auth-web-client/ ./",
     );
+    // Always includes @saflib/docker (+ deps) so the git-hashes CLI source is present.
+    // Paths follow package-name sort order from getPackageRelativePaths.
     expect(dockerfile).toContain(
-      "COPY --parents ./clients/web-auth ./saflib/auth-vue ./saflib/auth-spec ./saflib/openapi-specs ./saflib/vue-spa ./",
+      "COPY --parents ./clients/web-auth ./saflib/auth-vue ./saflib/commander ./saflib/docker ./saflib/auth-spec ./saflib/monorepo ./saflib/openapi-specs ./saflib/vue-spa ./",
     );
-    expect(dockerfile).toContain("npm exec saf-git-hashes");
+    // Invoke by path — npm does not link bins when install runs against stubs only.
+    expect(dockerfile).toContain(
+      "./saflib/docker/bin/saf-git-hashes/index.ts",
+    );
 
     const stagedPackageJson = JSON.parse(
       vol.readFileSync(
@@ -72,5 +77,46 @@ describe("generateDockerfiles", () => {
     expect(stagedPackageJson).not.toHaveProperty("scripts");
     expect(stagedPackageJson).not.toHaveProperty("safImports");
     expect(stagedPackageJson.name).toBe("@foo/auth-web-client");
+
+    expect(
+      vol.existsSync(
+        "/app/.saf-docker/stage/foo-auth-web-client/saflib/docker/package.json",
+      ),
+    ).toBe(true);
+  });
+
+  it("places git hashes only at #{ git_hashes }# when the template sets it", () => {
+    vol.writeFileSync(
+      "/app/clients/web-auth/Dockerfile.template",
+      `FROM node:20-alpine
+WORKDIR /app
+#{ copy_packages }#
+npm install --omit=dev
+#{ copy_src }#
+COPY ./saflib ./saflib
+#{ git_hashes }#
+`,
+    );
+    const context = buildMonorepoContext("/app");
+    generateDockerfiles(context);
+    const dockerfile = vol.readFileSync(
+      "/app/clients/web-auth/Dockerfile",
+      "utf-8",
+    ) as string;
+    expect(dockerfile).toMatch(
+      /COPY \.\/saflib \.\/saflib\nRUN apt-get update \\/,
+    );
+    const copySrcIndex = dockerfile.indexOf("COPY --parents");
+    const fullSaflibIndex = dockerfile.indexOf("COPY ./saflib ./saflib");
+    const hashesIndex = dockerfile.indexOf(
+      "./saflib/docker/bin/saf-git-hashes/index.ts",
+    );
+    expect(copySrcIndex).toBeGreaterThan(-1);
+    expect(fullSaflibIndex).toBeGreaterThan(copySrcIndex);
+    expect(hashesIndex).toBeGreaterThan(fullSaflibIndex);
+    // Hashes step should appear once (not also appended to copy_src).
+    expect(
+      dockerfile.split("./saflib/docker/bin/saf-git-hashes/index.ts").length - 1,
+    ).toBe(1);
   });
 });
