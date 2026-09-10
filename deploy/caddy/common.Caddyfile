@@ -62,16 +62,19 @@ http://caddy:2020 {
 }
 
 # SPAs: style-src needs 'unsafe-inline' for Vue/Vuetify runtime-injected styles.
+# Google Fonts: html-header-plugin / VitePress head load Roboto from fonts.googleapis.com.
 # CSP_CONNECT_SRC / CSP_SCRIPT_SRC_EXTRA / CSP_REPORT_URI from env (see env.caddy.prod-local).
 (security-headers-spa) {
 	import html-edge-headers
-	header >Content-Security-Policy "default-src 'self'; script-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://static.cloudflareinsights.com {$CSP_SCRIPT_SRC_EXTRA}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' {$CSP_CONNECT_SRC}; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; frame-src 'self' blob:; worker-src 'self' blob:; report-uri {$CSP_REPORT_URI}"
+	header >Content-Security-Policy "default-src 'self'; script-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://static.cloudflareinsights.com {$CSP_SCRIPT_SRC_EXTRA}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' {$CSP_CONNECT_SRC}; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; frame-src 'self' blob:; worker-src 'self' blob:; report-uri {$CSP_REPORT_URI}"
 }
 
-# Marketing root static HTML.
+# Marketing root (VitePress): needs script-src 'unsafe-inline' for the inline
+# __VP_SITE_DATA__ / __VP_HASH_MAP__ bootstraps VitePress emits into index.html.
+# Without that, client hydration fails (site data undefined → locales TypeError).
 (security-headers-marketing) {
 	import html-edge-headers
-	header >Content-Security-Policy "default-src 'self'; script-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' {$CSP_CONNECT_SRC}; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; frame-src 'self' blob:; worker-src 'self' blob:"
+	header >Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://us.i.posthog.com https://us-assets.i.posthog.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; connect-src 'self' {$CSP_CONNECT_SRC}; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; frame-src 'self' blob:; worker-src 'self' blob:"
 }
 
 # Backward-compatible alias.
