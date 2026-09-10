@@ -76,6 +76,12 @@ describe("isSkippedStubRefLine", () => {
       ),
     ).toBe(true);
   });
+
+  it("keeps Caddy import directives that use product placeholders", () => {
+    expect(
+      isSkippedStubRefLine("import __product-name__.Caddyfile"),
+    ).toBe(false);
+  });
 });
 
 describe("makeProductInitLineReplace", () => {
@@ -106,6 +112,12 @@ describe("makeProductInitLineReplace", () => {
     expect(
       replace("      __VUE_PROD_DEVTOOLS__: JSON.stringify(false),"),
     ).toBe("      __VUE_PROD_DEVTOOLS__: JSON.stringify(false),");
+  });
+
+  it("interpolates Caddy product import directives", () => {
+    expect(replace("import __product-name__.Caddyfile")).toBe(
+      "import tmp.Caddyfile",
+    );
   });
 
   it("strips unresolved stub path segments from Dockerfile COPY lines", () => {

@@ -131,8 +131,14 @@ export function isSkippedStubRefLine(line: string): boolean {
   if (/^\s*\{\s*"path"\s*:\s*"[^"]*__[^"]*"\s*\}\s*,?\s*$/.test(line)) {
     return true;
   }
-  // import/export of skipped stub modules (e.g. schemas/__group-name__.ts)
-  if (/^\s*(export|import)\b/.test(line)) return true;
+  // JS/TS import/export of skipped stub modules (e.g. schemas/__group-name__.ts).
+  // Require `from` so Caddy `import __product-name__.Caddyfile` is not dropped.
+  if (
+    /^\s*(export|import)\b/.test(line) &&
+    /\bfrom\s+['"][^'"]*__[^'"]*['"]/.test(line)
+  ) {
+    return true;
+  }
   return false;
 }
 
