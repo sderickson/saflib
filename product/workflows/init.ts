@@ -86,7 +86,9 @@ const SOURCE_DOMAIN = "example.com";
 /**
  * Rewrite saflib-root volume mounts (`../..:/app` + anonymous node_modules)
  * to the product-beside-saflib shape (product clients/sdk + `saflib/`).
- * Context stays `../..`.
+ * Context stays `../..` (product monorepo root). Also point the site Dockerfile
+ * at `saflib/dev-site/...` and drop a hardcoded DEV_SITE_STATIC_DIR so the
+ * image ENV from `saf-docker generate` wins.
  */
 function toProductMonorepoDevCompose(
   content: string,
@@ -112,6 +114,14 @@ function toProductMonorepoDevCompose(
       `(  ${productName}-monolith:[\\s\\S]*?volumes:\\n)(?:[ \\t]*#[^\\n]*\\n)*[ \\t]*- \\.\\.\\/\\.\\.:\\/app\\n[ \\t]*- \\/app\\/node_modules\\n`,
     ),
     `$1${monolithMounts}\n`,
+  );
+  out = out.replace(
+    /(dockerfile:\s*)dev-site\/dev-site-docker\/Dockerfile/g,
+    "$1saflib/dev-site/dev-site-docker/Dockerfile",
+  );
+  out = out.replace(
+    /^[ \t]*DEV_SITE_STATIC_DIR:[^\n]*\n/gm,
+    "",
   );
   return out;
 }
