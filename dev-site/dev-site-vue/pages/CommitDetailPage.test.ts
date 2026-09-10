@@ -4,8 +4,8 @@ import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse, type PathParams } from "msw";
 import type { DevSiteResponseBody } from "@saflib/dev-site-spec";
 import CommitDetailPage from "./CommitDetailPage.vue";
-import { router } from "./test_router";
-import { mountTestApp } from "../test-app";
+import { router } from "./test_router.ts";
+import { mountTestApp } from "../test-app.ts";
 import { packageMetricsFixture } from "../test-fixtures.ts";
 
 type GetResponse = DevSiteResponseBody["getCommits"][200];

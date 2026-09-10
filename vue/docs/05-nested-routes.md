@@ -148,10 +148,7 @@ Each child route is a normal page: `OverviewAsync.vue` wraps `OverviewPage.vue` 
 
 ```vue
 <template>
-  <AsyncPage
-    :loader="useOverviewPageLoader"
-    :page-component="OverviewPage"
-  />
+  <AsyncPage :loader="useOverviewPageLoader" :page-component="OverviewPage" />
 </template>
 
 <script setup lang="ts">
@@ -163,9 +160,7 @@ import { useAsyncPageDocumentTitle } from "@saflib/vue";
 
 useAsyncPageDocumentTitle(strings.documentTitle);
 
-const OverviewPage = defineAsyncComponent(
-  () => import("./OverviewPage.vue"),
-);
+const OverviewPage = defineAsyncComponent(() => import("./OverviewPage.vue"));
 </script>
 ```
 
@@ -175,10 +170,10 @@ The child page component calls the same loader and renders the happy path. It co
 
 ### Split data by responsibility
 
-| Loader | Owns |
-|---|---|
-| Parent (`useResourceDetailLoader`) | Shared chrome: entity record, display title, breadcrumb context |
-| Child (`useOverviewPageLoader`) | Section-specific queries: related records, section metadata, etc. |
+| Loader                             | Owns                                                              |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| Parent (`useResourceDetailLoader`) | Shared chrome: entity record, display title, breadcrumb context   |
+| Child (`useOverviewPageLoader`)    | Section-specific queries: related records, section metadata, etc. |
 
 Both loaders may call the same TanStack query (for example `getResourceQuery(resourceId)`). That is fine — TanStack deduplicates by query key, so only one network request runs and both components read the same cached result.
 

@@ -313,8 +313,15 @@ export function rewritePkgRefs(options: {
     const absolute = path.isAbsolute(resource)
       ? path.resolve(resource)
       : path.resolve(path.dirname(fromFile), resource);
+    if (!existsSync(absolute)) {
+      // Stub templates (e.g. openapi/route placeholders) may not exist yet.
+      return ref;
+    }
     // Local files must point at rewritten temp copies (they may contain pkg:).
-    const target = originalToTemp.get(absolute) ?? absolute;
+    const target = originalToTemp.get(absolute);
+    if (!target) {
+      return ref;
+    }
     return joinRef(target, fragment);
   };
 
@@ -362,4 +369,57 @@ export function rewritePkgRefs(options: {
     externalSchemas,
     cleanup,
   };
+}
+
+/**
+ * Replace temp-dir or package-absolute `$ref` targets in bundled JSON with paths
+ * relative to the spec package root (stable for commit).
+ */
+export function rewriteBundledExternalRefs(
+  doc: unknown,
+  options: { tempDir: string; packageRoot: string },
+): unknown {
+  const tempResolved = path.resolve(options.tempDir);
+  const rootResolved = path.resolve(options.packageRoot);
+
+  const rewrite = (ref: string): string => {
+    const { resource, fragment } = splitRef(ref);
+    if (
+      !resource ||
+      resource.startsWith("#") ||
+      resource.startsWith("pkg:") ||
+      /^[a-z]+:\/\//i.test(resource)
+    ) {
+      return ref;
+    }
+
+    const resolved = path.isAbsolute(resource)
+      ? path.resolve(resource)
+      : path.resolve(rootResolved, resource);
+
+    const underTemp =
+      resolved === tempResolved ||
+      resolved.startsWith(`${tempResolved}${path.sep}`);
+    const underRoot =
+      resolved.startsWith(`${rootResolved}${path.sep}`) ||
+      resolved === rootResolved;
+
+    if (underTemp) {
+      const relFromTemp = path.relative(tempResolved, resolved);
+      const posix = relFromTemp.split(path.sep).join("/");
+      const normalized = posix.startsWith(".") ? posix : `./${posix}`;
+      return joinRef(normalized, fragment);
+    }
+
+    if (path.isAbsolute(resource) && underRoot) {
+      const rel = path.relative(rootResolved, resolved);
+      const posix = rel.split(path.sep).join("/");
+      const normalized = posix.startsWith(".") ? posix : `./${posix}`;
+      return joinRef(normalized, fragment);
+    }
+
+    return ref;
+  };
+
+  return walkRefs(doc, rewrite);
 }

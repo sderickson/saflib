@@ -124,10 +124,9 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => {
       let templateFiles = context.templateFiles;
       // Only pages get a router entry; dialogs stay out of the SPA route table.
-      if (
-        !context.groupName.startsWith("pages/") &&
-        context.groupName !== "pages"
-      ) {
+      // groupName keeps the leading `./` from parsePath (e.g. `./pages/foo`).
+      const viewKind = context.groupName.replace(/^\.\//, "");
+      if (!viewKind.startsWith("pages/") && viewKind !== "pages") {
         templateFiles = { ...templateFiles };
         delete templateFiles.router;
       }

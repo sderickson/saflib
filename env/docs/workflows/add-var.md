@@ -20,8 +20,7 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **env.schema.json** from [template](https://github.com/sderickson/saflib/blob/main/env/workflows/templates/env.schema.json)
+- Upsert 1 template.
 - Add the environment variable 'EXAMPLE_ENV_VAR' to the env.schema.json file.
 - Run `npm install @saflib/env`
 - Run `npm exec saf-env generate`

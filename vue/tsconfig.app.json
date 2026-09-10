@@ -5,11 +5,18 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "noEmit": false,
     "emitDeclarationOnly": true,
+    "rootDir": ".",
     "types": [
       "vite/client"
     ]
   },
   "references": [
+    {
+      "path": "../analytics/analytics-sdk"
+    },
+    {
+      "path": "../analytics/analytics-spec"
+    },
     {
       "path": "../links"
     },

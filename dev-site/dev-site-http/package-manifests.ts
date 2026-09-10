@@ -5,9 +5,9 @@ import {
   classifySafPackage,
   parseSafPackageJson,
   type PackageKind,
-  type ReturnsError,
   type SafPackageJson,
 } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { listTree, readBlobs, type GitCommandError } from "@saflib/git";
 import { EXCLUDE_DIRS, packageRootsFromPackageJsonPaths } from "./classify.ts";
 

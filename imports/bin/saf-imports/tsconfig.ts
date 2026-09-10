@@ -3,6 +3,7 @@ import type { Command } from "commander";
 import {
   buildReferenceGraph,
   checkReferences,
+  cleanupDeclarationArtifacts,
   detectReferenceCycles,
   previewReferencesGenerate,
 } from "../../src/tsconfig/index.ts";
@@ -124,6 +125,26 @@ export const addTsconfigCommand = (program: Command) => {
         write: true,
       });
       printGenerateWriteResult(preview);
+    });
+
+  tsconfigCmd
+    .command("cleanup-declarations")
+    .description(
+      "Delete co-located .d.ts / .d.ts.map emit artifacts outside dist/types",
+    )
+    .option("--root <dir>", "Workspace root to scan (default: cwd)")
+    .option("--dry-run", "List files that would be removed without deleting")
+    .action((options: { root?: string; dryRun?: boolean }) => {
+      const result = cleanupDeclarationArtifacts({
+        root: options.root ? path.resolve(options.root) : undefined,
+        dryRun: options.dryRun ?? false,
+      });
+
+      const label = options.dryRun ? "Would remove" : "Removed";
+      console.log(`${label} ${result.removed.length} file(s) under ${result.rootDir}`);
+      for (const file of result.removed) {
+        console.log(`  ${relFromCwd(file)}`);
+      }
     });
 
   tsconfigCmd

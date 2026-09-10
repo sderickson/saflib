@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ref } from "vue";
+import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
+import { http, HttpResponse } from "msw";
 import type { ErrorsResponseBody } from "@saflib/errors-spec";
 import ErrorsPage from "./ErrorsPage.vue";
 import { mountTestApp } from "../../test-app.ts";
@@ -38,24 +39,15 @@ const mockErrors: ListReportedErrorsResponse = {
   ],
 };
 
-vi.mock("@saflib/errors-sdk", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@saflib/errors-sdk")>();
-  return {
-    ...actual,
-    useListReportedErrors: () => ({
-      data: ref(mockErrors),
-      error: ref(null),
-      isLoading: ref(false),
-      isFetching: ref(false),
-      refetch: vi.fn(),
-    }),
-  };
-});
+const handlers = [
+  http.get("http://api.localhost:3000/admin/errors", () => {
+    return HttpResponse.json(mockErrors);
+  }),
+];
 
 describe("ErrorsPage", () => {
-  beforeEach(() => {
-    stubGlobals();
-  });
+  stubGlobals();
+  setupMockServer(handlers);
 
   it("renders unified client, CSP, and test errors", async () => {
     const wrapper = mountTestApp(ErrorsPage, {

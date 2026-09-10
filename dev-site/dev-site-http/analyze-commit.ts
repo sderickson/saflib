@@ -19,7 +19,7 @@ import {
   countSourceLines,
   type FileSpecialty,
 } from "@saflib/imports";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import type { GitCommandError } from "@saflib/git";
 import { makeSubsystemReporters } from "@saflib/node";
 import {

@@ -20,15 +20,10 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **example_event.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/__target_name__.yaml)
-  - Upsert **index.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/index.yaml)
-  - Upsert **openapi.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/openapi.yaml)
-  - Upsert **openapi.d.ts** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/dist/openapi.d.ts)
-  - Upsert **openapi.json** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/dist/openapi.json)
+- Upsert 5 templates.
 - Update **example_event.yaml**. Resolve all TODOs.
-- Run `npm exec saf-specs generate`
-- Run `npx tsc --noEmit`
+- Run `npm run generate`
+- Run `npm exec tsc -- --noEmit`
 
 ## Help Docs
 

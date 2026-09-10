@@ -1,14 +1,14 @@
 #!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { Command } from "commander";
 import { setupContext } from "@saflib/commander";
+// BEGIN WORKFLOW AREA cli-imports FOR commander/add-command
 import { addMeasureCommand } from "./measure.ts";
 import { addWhyCommand } from "./why.ts";
 import { addCyclesCommand } from "./cycles.ts";
-import { addExportsCommand } from "./exports.ts";
 import { addSnapshotCommand } from "./snapshot.ts";
 import { addTsconfigCommand } from "./tsconfig.ts";
 import { addSpaCommand } from "./spa.ts";
-import { addSideEffectsCommand } from "./side-effects.ts";
+// END WORKFLOW AREA
 
 const program = new Command()
   .name("saf-imports")
@@ -16,14 +16,14 @@ const program = new Command()
     "Measure and enforce import graphs for SAF monorepo packages",
   );
 
+// BEGIN WORKFLOW AREA cli-commands FOR commander/add-command
 addMeasureCommand(program);
 addWhyCommand(program);
 addCyclesCommand(program);
-addExportsCommand(program);
 addSnapshotCommand(program);
 addTsconfigCommand(program);
 addSpaCommand(program);
-addSideEffectsCommand(program);
+// END WORKFLOW AREA
 
 setupContext(
   {

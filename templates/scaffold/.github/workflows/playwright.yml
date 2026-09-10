@@ -16,7 +16,7 @@ jobs:
       - uses: ./.github/actions/setup-node-deps
       # For some reason, github actions hang when I do `npm exec saf-docker generate`. So we run the script directly.
       - name: Generate Docker
-        run: node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/dev-tools/src/saf-docker-cli.ts generate
+        run: node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/docker/bin/saf-docker/index.ts generate
       - name: Pre-build images
         run: npm run build:ci
         working-directory: ./deploy

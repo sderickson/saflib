@@ -246,17 +246,20 @@ function emitDefaultsFor(tsconfigPath: string): Record<string, string> {
   const base = path.basename(tsconfigPath);
   if (base === "tsconfig.app.json") {
     return {
+      rootDir: ".",
       outDir: "./dist/types",
       tsBuildInfoFile: "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     };
   }
   if (base === "tsconfig.node.json") {
     return {
+      rootDir: ".",
       outDir: "./dist/types",
       tsBuildInfoFile: "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     };
   }
   return {
+    rootDir: ".",
     outDir: "./dist/types",
     tsBuildInfoFile: "./node_modules/.tmp/tsconfig.tsbuildinfo",
   };

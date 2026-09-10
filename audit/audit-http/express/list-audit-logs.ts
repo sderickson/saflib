@@ -5,7 +5,7 @@ import type { AuditEventEntity } from "@saflib/audit-db/schemas/audit-event";
 import { getAuditEventTimestampBounds } from "@saflib/audit-db/queries/audit-event/timestamp-bounds";
 import { listAuditEventsByTimestamp } from "@saflib/audit-db/queries/audit-event/list-by-timestamp";
 import { InvalidAuditEventCursorError } from "@saflib/audit-db/errors";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 import type { DbKey } from "@saflib/drizzle";
 
 function toAuditLog(

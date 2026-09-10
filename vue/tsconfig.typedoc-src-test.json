@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.app.base.json",
+  "include": ["src/**/*.ts", "components/**/*.ts", "components/**/*.vue", "testing/**/*.ts", "composables/**/*.ts", "types.ts", "async-page-error.ts"],
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "skipLibCheck": true
+  }
+}

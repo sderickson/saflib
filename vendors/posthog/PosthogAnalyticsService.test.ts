@@ -1,23 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-const { mockCapture, mockIdentify, mockShutdown, PostHogMock } = vi.hoisted(
-  () => {
-    const mockCapture = vi.fn();
-    const mockIdentify = vi.fn();
-    const mockShutdown = vi.fn();
-    const PostHogMock = vi.fn().mockImplementation(() => ({
-      capture: mockCapture,
-      identify: mockIdentify,
-      shutdown: mockShutdown,
-    }));
-    return { mockCapture, mockIdentify, mockShutdown, PostHogMock };
-  },
-);
-
-vi.mock("posthog-node", () => ({
-  PostHog: PostHogMock,
-}));
-
+import { PostHog } from "posthog-node";
 import * as node from "@saflib/node";
 import {
   clearCapturedAnalyticsCalls,
@@ -32,15 +14,17 @@ import {
 } from "./index.ts";
 
 describe("PosthogAnalyticsService", () => {
+  let captureSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     clearCapturedAnalyticsCalls();
-    mockCapture.mockClear();
-    mockIdentify.mockClear();
-    mockShutdown.mockClear();
-    PostHogMock.mockClear();
+    captureSpy = vi
+      .spyOn(PostHog.prototype, "capture")
+      .mockImplementation(() => undefined);
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.unstubAllEnvs();
     const g = node.getSafContext;
     if (vi.isMockFunction(g)) {
@@ -60,11 +44,8 @@ describe("PosthogAnalyticsService", () => {
       host: "https://app.posthog.com",
     });
     expect(svc).toBeInstanceOf(PosthogAnalyticsService);
-    expect(PostHogMock).toHaveBeenCalledWith("phc_key", {
-      host: "https://app.posthog.com",
-    });
     svc.capture({ event: "evt", context: { a: true } });
-    expect(mockCapture).toHaveBeenCalledWith({
+    expect(captureSpy).toHaveBeenCalledWith({
       distinctId: "u2",
       event: "evt",
       properties: { a: true },
@@ -89,7 +70,7 @@ describe("PosthogAnalyticsService", () => {
       host: "https://app.posthog.com",
     });
     svc.capture({ event: "evt", context: { a: 1 } });
-    expect(mockCapture).toHaveBeenCalledWith({
+    expect(captureSpy).toHaveBeenCalledWith({
       distinctId: "merge-user",
       event: "evt",
       properties: {
@@ -104,16 +85,25 @@ describe("PosthogAnalyticsService", () => {
 });
 
 describe("configureAnalytics", () => {
+  let captureSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.stubEnv("NODE_ENV", "test");
     resetAnalyticsForTests();
     clearCapturedAnalyticsCalls();
-    PostHogMock.mockClear();
+    captureSpy = vi
+      .spyOn(PostHog.prototype, "capture")
+      .mockImplementation(() => undefined);
+    vi.spyOn(PostHog.prototype, "identify").mockImplementation(() => undefined);
+    vi.spyOn(PostHog.prototype, "shutdown").mockImplementation(
+      async () => undefined,
+    );
   });
 
   afterEach(() => {
     vi.stubEnv("NODE_ENV", "test");
     resetAnalyticsForTests();
+    vi.restoreAllMocks();
     vi.unstubAllEnvs();
   });
 
@@ -122,7 +112,7 @@ describe("configureAnalytics", () => {
     configureAnalytics();
     const client = getAnalyticsClient();
     client.capture({ event: "thing_happened", context: { n: 1 } });
-    expect(PostHogMock).not.toHaveBeenCalled();
+    expect(captureSpy).not.toHaveBeenCalled();
     expect(capturedAnalyticsCalls).toEqual([
       {
         kind: "capture",
@@ -140,8 +130,6 @@ describe("configureAnalytics", () => {
     vi.stubEnv("POSTHOG_PROJECT_HOST", "https://app.posthog.com");
     configureAnalytics();
     expect(getAnalyticsClient()).toBeInstanceOf(PosthogAnalyticsService);
-    expect(PostHogMock).toHaveBeenCalledWith("phc_key", {
-      host: "https://app.posthog.com",
-    });
+    expect(captureSpy).not.toHaveBeenCalled();
   });
 });

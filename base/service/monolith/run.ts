@@ -2,9 +2,9 @@ import { startBaseService } from "./index.ts";
 import { collectSystemMetrics, setServiceName } from "@saflib/node";
 import { addLokiTransport } from "@saflib/vendors-loki";
 import { validateEnv } from "@saflib/env";
+import { configureMockErrors } from "@saflib/errors-service";
 import envSchema from "./env.schema.combined.json" with { type: "json" };
-import { initSentry } from "@saflib/vendors-sentry-node";
-import { startOryKratosService } from "@saflib/ory-kratos";
+import { startOryKratosService } from "@saflib/ory-kratos-http";
 import {
   callbacks,
   makeKratosActionHandler,
@@ -15,7 +15,9 @@ validateEnv(process.env, envSchema);
 setServiceName("base");
 
 addLokiTransport();
-initSentry();
+// Golden product has no vendor error backend; always wire the in-memory service
+// so CSP ingest and client error reporting work in prod-local / production too.
+configureMockErrors();
 collectSystemMetrics();
 
 await initializeDependencies();

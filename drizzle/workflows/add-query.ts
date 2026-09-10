@@ -30,7 +30,8 @@ const input = [
 ] as const;
 
 interface AddDrizzleQueryWorkflowContext
-  extends ParsePathOutput, ParsePackageNameOutput {}
+  extends ParsePathOutput,
+    ParsePackageNameOutput {}
 
 export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -76,7 +77,6 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
 
   docFiles: {
     refDoc: path.join(import.meta.dirname, "../docs/03-queries.md"),
-    testingGuide: path.join(import.meta.dirname, "../docs/04-testing.md"),
   },
 
   steps: [
@@ -118,7 +118,7 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
 
       Prefer factories from product \`*-test\` packages when asserting against OpenAPI/service model shapes (\`@scope/<product>-test/factories/*\`, offshoot \`@scope/<product>-<offshoot>-test/factories/*\`). Do not hand-build large empty objects when a factory exists; add one to the appropriate \`*-test\` package if the same shape is reused.
       
-      Please reference the documentation here for more information: ${context.docFiles?.testingGuide}`,
+      Please reference the documentation here for more information: ${context.docFiles?.refDoc}`,
     })),
 
     step(CommandStepMachine, () => ({

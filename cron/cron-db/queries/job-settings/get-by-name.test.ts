@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { JobSettingNotFoundError } from "../../errors.ts";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 import { cronDb } from "@saflib/cron-db";
 
 import { setEnabled } from "./set-enabled.ts";

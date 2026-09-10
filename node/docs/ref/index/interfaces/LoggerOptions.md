@@ -68,6 +68,19 @@ Used for analytics and routing diagnostics.
 
 ---
 
+### jobId?
+
+> `optional` **jobId**: `string`
+
+When this request is a job delivery, the delivering job's id (from assertion
+claims). Chained `enqueue()` calls use it as `parentJobId`.
+
+#### Inherited from
+
+[`SafContext`](SafContext.md).[`jobId`](SafContext.md#jobid)
+
+---
+
 ### operationName
 
 > **operationName**: `string`
@@ -90,6 +103,19 @@ HTTP `Origin` header when the client sends it (e.g. browsers, CORS).
 #### Inherited from
 
 [`SafContext`](SafContext.md).[`origin`](SafContext.md#origin)
+
+---
+
+### originalRequestId?
+
+> `optional` **originalRequestId**: `string`
+
+Lineage root of a background chain. Set from assertion claims when present;
+consumers fall back to `requestId` when absent.
+
+#### Inherited from
+
+[`SafContext`](SafContext.md).[`originalRequestId`](SafContext.md#originalrequestid)
 
 ---
 

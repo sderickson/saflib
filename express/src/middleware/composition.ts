@@ -1,19 +1,12 @@
 import type { ErrorRequestHandler, Handler, RequestHandler } from "express";
 import { json, urlencoded } from "express";
 import type { OpenApiDocument } from "@saflib/openapi";
-import { isDevelopmentDeployment } from "@saflib/env";
 import { corsRouter } from "./cors.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { healthRouter } from "./health.ts";
-import { createDevLogsRouter } from "@saflib/node-log-http";
-import {
-  createAnalyticsRouter,
-  createDevAnalyticsRouter,
-} from "@saflib/analytics-http";
-import { createErrorsRouter } from "@saflib/errors-http";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
@@ -69,24 +62,15 @@ export const createGlobalMiddleware = (
   }
 
   let sanitizeMiddleware: Handler[] = [blockHtml];
-  // Logs / in-memory analytics listing stay development-only. Admin error
-  // smoke + ring buffer (`/admin/test-error`, `/admin/errors`) are on
-  // createErrorsRouter so prod-local / production authz and monitoring checks work.
-  const devObservabilityMiddleware: Handler[] = isDevelopmentDeployment()
-    ? [createDevLogsRouter(), createDevAnalyticsRouter()]
-    : [];
   return [
     ...metricsMiddleware,
     noStoreCacheControl,
     helmet(),
     makeCsrfTokenMiddleware(),
     healthRouter,
-    ...devObservabilityMiddleware,
     everyRequestLogger,
     json(jsonLimit ? { limit: jsonLimit } : undefined),
     urlencoded({ extended: false }),
-    createAnalyticsRouter(),
-    createErrorsRouter(),
     ...sanitizeMiddleware,
     ...corsMiddleware,
   ];

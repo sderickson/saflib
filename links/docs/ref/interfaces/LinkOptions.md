@@ -16,4 +16,4 @@ Options for creating a fully-qualified url.
 
 ### params?
 
-> `optional` **params**: `Record`\<`string`, `string`\>
+> `optional` **params**: `Record`\<`string`, `string`>\>

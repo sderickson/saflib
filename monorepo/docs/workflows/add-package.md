@@ -20,18 +20,16 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/package.json)
-  - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/tsconfig.json)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/index.ts)
-  - Upsert **index.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/index.test.ts)
-  - Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/vitest.config.js)
+- Upsert 3 templates.
+- Clear template export placeholders in my-product/lib/my-lib/package.json
 - The file 'my-product/lib/my-lib/package.json' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.
 - Ensure the new package path 'my-product/lib/my-lib' is included in the "workspaces" array in the root `package.json`.
 - Change working directory to my-product/lib/my-lib
 - Run `npm install`
-- Run `npm run tsconfig:sync` (also runs on root `npm install` via `postinstall`)
-- Run `npm run test`
+- Change working directory to
+- Run `npm exec saf-imports tsconfig generate -- --write`
+- Change working directory to my-product/lib/my-lib
+- Run `npm run typecheck`
 
 ## Help Docs
 

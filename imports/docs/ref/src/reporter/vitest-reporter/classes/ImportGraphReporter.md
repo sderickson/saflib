@@ -4,17 +4,11 @@
 
 # Class: ImportGraphReporter
 
-Vitest reporter that prints static import-graph stats after each test file.
+Vitest reporter that prints static import-graph stats after each test file,
+plus a run summary (collect timing stats and slowest files).
 
-Opt-in via package vitest config — not enabled in `@saflib/vitest` defaults
-until suite overhead is confirmed ≤ 10%.
-
-Prefer registering by package name so Vitest loads the module via Vite
-(plain `vitest.config.js` cannot import `.ts` package exports under Node):
-
-```js
-reporters: ["default", "@saflib/imports/reporter"];
-```
+Opt-in via `IMPORT_GRAPH_REPORT=1` (wired from `@saflib/vitest` base config).
+Root shortcut: `npm run import-graph:report -- <workspace>`.
 
 ## Implements
 
@@ -51,3 +45,19 @@ Called when all tests of the test file have finished running.
 #### Implementation of
 
 `Reporter.onTestModuleEnd`
+
+---
+
+### onTestRunEnd()
+
+> **onTestRunEnd**(): `void`
+
+Called when the test run is finished.
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+`Reporter.onTestRunEnd`

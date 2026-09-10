@@ -1,47 +1,30 @@
-import * as Sentry from "@sentry/node";
-import { addErrorCollector, getSafReporters } from "@saflib/node";
-import { sanitizeTelemetryEvent } from "@saflib/utils/telemetry-sanitize";
-import { installReportedErrorCollector } from "@saflib/errors-http/lib/initErrorsServer";
+import {
+  hasErrorService,
+  setErrorService,
+  resetErrorServiceForTests,
+} from "@saflib/errors-service";
+import { SentryErrorService, type SentryErrorServiceOptions } from "./SentryErrorService.ts";
 import { typedEnv } from "./env.ts";
 
-export type ConfigureSentryOptions = {
-  sendDefaultPii?: boolean;
-};
+export type ConfigureSentryOptions = SentryErrorServiceOptions;
 
 /**
- * Wire the error ring buffer and optional Sentry forwarding for Node services.
- * Idempotent for the buffer collector; Sentry init skips when DSN is missing or `"mock"`.
+ * Wire Sentry as the process-level error service when `SENTRY_DSN` is set.
+ * Skips when the DSN is missing or `"mock"`. Idempotent — subsequent calls are no-ops.
+ *
+ * For local development, use `@saflib/errors-service` `configureMockErrors()` instead.
  */
 export function configureSentry(options: ConfigureSentryOptions = {}): void {
-  const { log } = getSafReporters();
-
-  installReportedErrorCollector();
+  if (hasErrorService()) {
+    return;
+  }
 
   const dsn = typedEnv.SENTRY_DSN;
   if (dsn === "mock" || !dsn) {
     return;
   }
 
-  const sendDefaultPii = options.sendDefaultPii ?? false;
-
-  Sentry.init({
-    dsn,
-    sendDefaultPii,
-    beforeSend(event) {
-      return sanitizeTelemetryEvent(event);
-    },
-  });
-
-  addErrorCollector(({ error, level, extra, tags, user }) => {
-    Sentry.captureException(error, {
-      level,
-      extra,
-      tags,
-      user,
-    });
-  });
-
-  log.info(`Sentry initialized with DSN: ${dsn.slice(0, 16) + "..."}`);
+  setErrorService(new SentryErrorService(options));
 }
 
 /** @deprecated Use {@link configureSentry}. */
@@ -49,3 +32,5 @@ export const initSentry = configureSentry;
 
 /** @deprecated Use {@link configureSentry}. */
 export const initErrorsServer = configureSentry;
+
+export { resetErrorServiceForTests as resetErrorsForTests };

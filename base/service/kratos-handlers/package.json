@@ -9,7 +9,7 @@
     "@saflib/base-email": "*",
     "@saflib/base-service-common": "*",
     "@saflib/node": "*",
-    "@saflib/ory-kratos": "*"
+    "@saflib/ory-kratos-http": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",

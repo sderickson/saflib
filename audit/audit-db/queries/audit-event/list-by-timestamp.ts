@@ -6,7 +6,7 @@ import {
 import { InvalidAuditEventCursorError } from "../../errors.ts";
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { and, asc, desc, eq, gt, gte, lt, lte, or } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 

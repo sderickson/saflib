@@ -4,13 +4,13 @@
 
 # Type Alias: WorkflowExecutionMode
 
-> **WorkflowExecutionMode** = `"dry"` \| `"checklist"` \| `"script"` \| `"print"` \| `"run"`
+> **WorkflowExecutionMode** = `"dry"` \| `"script"` \| `"print"` \| `"run"` \| `"checklist"`
 
 The mode to run the workflow in.
 
 ## Dry
 
-Runs the workflow as much as possible without making any file changes, running any commands, or prompting. Useful for checking that it basically works, and to generate a checklist.
+Runs the workflow as much as possible without making any file changes, running any commands, or prompting. Also tests the workflow inputs and starting cwd.
 
 ## Script
 
@@ -23,3 +23,7 @@ Print out logs and prompts, halt the machine at prompts. The original execution 
 ## Run
 
 Invert control from "print": the tool invokes the agent. If the workflow tool exits successfully, the workflow has been completed successfully.
+
+## Checklist
+
+Similar to "dry", but uses the example values for inputs and does not do anything that depends on cwd, basically just runs the workflow to generate a generic checklist.

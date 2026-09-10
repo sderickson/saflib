@@ -109,7 +109,7 @@ services:
       DEV_SITE_PRODUCT_ROOT: ${DEV_SITE_PRODUCT_ROOT:-base}
       DEV_SITE_MAIN_REF: main
       DEV_SITE_DB_PATH: /data/dev-site.sqlite
-      DEV_SITE_STATIC_DIR: /app/dev-site/dev-site-docker/clients/app/dist
+      # DEV_SITE_STATIC_DIR comes from the image ENV (saf-docker generate).
       DEV_SITE_GITHUB_REPO: sderickson/saflib
     volumes:
       - ${DEV_SITE_REPO_MOUNT:-../..}:/repo:ro

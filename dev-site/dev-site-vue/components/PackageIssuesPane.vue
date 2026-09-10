@@ -34,7 +34,7 @@
           Triage guide:
           <code>saflib/dev-tools/docs/package-issues.md</code>
           (un-export, split tested helpers, scripts/bin CLI, delete, or fix the
-          tool). Also: <code>analyze-package</code>.
+          tool). Also: <code>saf-analyze-package</code>.
         </p>
         <ul class="issues__list">
           <li

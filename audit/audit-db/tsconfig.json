@@ -12,13 +12,20 @@
     },
     {
       "path": "../../node"
+    },
+    {
+      "path": "../../utils"
     }
   ],
   "compilerOptions": {
     "outDir": "./dist/types",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "types": [
+      "node"
+    ],
     "noEmit": false,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",

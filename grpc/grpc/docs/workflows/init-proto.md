@@ -20,18 +20,7 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **.gitkeep** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/dist/.gitkeep)
-  - Upsert **envelope.proto** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/protos/envelope.proto)
-  - Upsert **index.proto** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/protos/health/index.proto)
-  - Upsert **get-health.proto** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/protos/health/get-health.proto)
-  - Upsert **env.schema.json** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/env.schema.json)
-  - Upsert **generate.sh** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/generate.sh)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/index.ts)
-  - Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/package.json)
-  - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/tsconfig.json)
-  - Upsert **typedoc.json** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/typedoc.json)
-  - Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/grpc/grpc/workflows/proto-templates/vitest.config.js)
+- Upsert 11 templates.
 - Change working directory to grpc/example-grpc-proto
 - Run `npm run generate`
 - Run `npm exec saf-env generate`

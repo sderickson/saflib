@@ -27,7 +27,7 @@
       "path": "../../../node"
     },
     {
-      "path": "../../../ory-kratos"
+      "path": "../../../ory-kratos/ory-kratos-http"
     },
     {
       "path": "../common"

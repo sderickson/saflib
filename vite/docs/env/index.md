@@ -1,12 +1,17 @@
 # Environment Variables
 
-This package uses environment variables inherited from `@saflib/env`. The schema for these variables is as follows:
+`@saflib/vite` does not declare its own `env.schema.json`. [`typedEnv`](../ref/env/variables/typedEnv.md) casts `process.env` to [`ViteEnvSchema`](../ref/env/interfaces/ViteEnvSchema.md), which extends the core schema from [`@saflib/env`](../../../env/docs/env/index.md).
 
-| Variable          | Description                                                                                                                                                                                       | Type   | Required |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | -------- |
-| CLIENT_SUBDOMAINS | Comma-separated list of client subdomains, e.g. 'www,app,auth,'. Include an empty string (such as in the example) to indicate there's a client for the root domain.                               | string | Yes      |
-| DEPLOYMENT_NAME   | The name of the deployment, e.g. 'production', 'staging', 'development'. This may be used in strings such as database file names and logging metadata; each deployment should have a unique name. | string | Yes      |
-| DOMAIN            | The root domain of the deployment, e.g. 'saf.com'.                                                                                                                                                | string | Yes      |
-| NODE_ENV          | The environment of the deployment. Generally should avoid using this, consider its use deprecated, prefer instead more specific environment variables.                                            | string | Yes      |
-| PROTOCOL          | The protocol of the deployment, e.g. 'https'                                                                                                                                                      | string | Yes      |
-| TZ                | The timezone of the deployment, e.g. 'America/New_York'. Must be UTC.                                                                                                                             | string | Yes      |
+Client **build** packages validate env at config load time (see [`base/clients/build/vite.config.ts`](https://github.com/sderickson/saflib/blob/main/base/clients/build/vite.config.ts)) using a combined schema from dependencies.
+
+## Variables used by `makeConfig`
+
+| Variable            | Role                                                                                                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CLIENT_SUBDOMAINS` | Comma-separated SPA subdomains (e.g. `app,auth,admin,account,`). Empty segment = apex client at root `index.html`. Drives Rollup inputs and dev subdomain routing. |
+| `DOMAIN`            | Product domain (e.g. `example.docker.localhost`)                                                                                                                   |
+| `PROTOCOL`          | `http` or `https` — used for dev URL banner and origin helpers                                                                                                     |
+
+Other core vars (`DEPLOYMENT_NAME`, `NODE_ENV`, `TZ`, …) are inherited for typing and for merged `define` blocks in product build configs. Full definitions: [@saflib/env — Environment Variables](../../../env/docs/env/index.md).
+
+Add new Vite-specific variables on `@saflib/vite` with [env/add-var](../../../env/docs/workflows/add-var.md), or on the product build package if they are product-only.

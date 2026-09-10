@@ -4,7 +4,7 @@ import {
   validateCronTriggerKeys,
   type JobOperationConfigMap,
   type TriggerMap,
-} from "@saflib/jobs";
+} from "@saflib/jobs-http";
 import { createOnDiskDbKeyAccessor } from "@saflib/drizzle";
 import { typedEnv } from "@saflib/env";
 import { jsonSpec } from "@saflib/base-spec";

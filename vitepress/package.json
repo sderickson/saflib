@@ -1,0 +1,13 @@
+{
+  "name": "@saflib/vitepress",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Shared VitePress dependency for SAF documentation and static sites",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vitepress": "^1.6.3"
+  },
+  "sideEffects": false
+}

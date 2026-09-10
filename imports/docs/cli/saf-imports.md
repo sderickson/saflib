@@ -15,10 +15,19 @@ Commands:
                                   file to a target module or package
   cycles [options]                Detect circular dependencies in the
                                   first-party import graph
-  exports                         Generate or verify package.json exports maps
-                                  from directory structure
-  baseline                        Generate or diff a committed import-graph
-                                  baseline snapshot
+  snapshot                        Generate or check an import-graph metrics
+                                  snapshot
+  tsconfig                        TypeScript project-reference helpers for
+                                  package tsconfig.json files
+  spa                             Analyze and measure SPA client route bundles
   help [command]                  display help for command
-
 ```
+
+## Subcommands
+
+- [measure](./saf-imports/measure.md)
+- [why](./saf-imports/why.md)
+- [cycles](./saf-imports/cycles.md)
+- [snapshot](./saf-imports/snapshot.md)
+- [tsconfig](./saf-imports/tsconfig.md)
+- [spa](./saf-imports/spa.md)

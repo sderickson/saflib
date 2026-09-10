@@ -28,7 +28,10 @@
 
 ## Variables
 
-| Variable                                    | Description                                               |
-| ------------------------------------------- | --------------------------------------------------------- |
-| [cronDb](variables/cronDb.md)               | For managing connections to the cron database.            |
-| [jobSettingsDb](variables/jobSettingsDb.md) | Queries for getting info on cron jobs, and updating them. |
+| Variable                                          | Description                                                                                                                                                                                          |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [cronDb](variables/cronDb.md)                     | For managing connections to the cron database.                                                                                                                                                       |
+| [getAll](variables/getAll.md)                     | -                                                                                                                                                                                                    |
+| [getByName](variables/getByName.md)               | -                                                                                                                                                                                                    |
+| [setEnabled](variables/setEnabled.md)             | Upsert enabled flag for a cron job. When enabling, pass `enabledBy` (Kratos identity id) to record authority. When disabling, `enabled_by` is retained as an audit trail of who last held authority. |
+| [setLastRunStatus](variables/setLastRunStatus.md) | -                                                                                                                                                                                                    |

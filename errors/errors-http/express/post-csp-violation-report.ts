@@ -1,7 +1,5 @@
-import { getSafReporters } from "@saflib/node";
+import { getErrorService } from "@saflib/errors-service";
 import { createHandler } from "./handler.ts";
-import { CSP_INGEST_MESSAGE } from "../lib/initErrorsServer.ts";
-import { recordReportedError } from "../lib/reportedErrorBuffer.ts";
 
 function scrubForTelemetry(value: unknown, depth = 0): unknown {
   if (depth > 8) {
@@ -35,18 +33,11 @@ export function createPostCspViolationReportHandler() {
     const raw = extractCspReport(req.body);
     const scrubbed = scrubForTelemetry(raw);
 
-    recordReportedError({
+    getErrorService().recordReportedError({
       kind: "csp-violation",
       message: "Content-Security-Policy violation",
       metadata: { cspReport: scrubbed },
       source: "browser",
-    });
-
-    getSafReporters().logError(new Error(CSP_INGEST_MESSAGE), {
-      level: "info",
-      extra: {
-        cspReport: scrubbed,
-      },
     });
 
     res.status(204).end();

@@ -1,11 +1,15 @@
 /**
- * Working-tree package issue analysis — shared by `analyze-package` and
+ * Working-tree package issue analysis — shared by `saf-analyze-package` and
  * `saf-dev-site issues --workdir`.
  */
 import { readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { checkPackageLayout } from "@saflib/monorepo";
+import {
+  checkExports,
+  collectPublicExportRepoPaths,
+} from "@saflib/monorepo/exports";
 import { assembleUsedBy } from "../graph/assemble-used-by.ts";
 import { exportUsedByKey } from "../graph/import-resolution.ts";
 import {
@@ -18,7 +22,6 @@ import {
   resolveSpecifier,
 } from "../resolve/index.ts";
 import type { PackageIndex } from "../types.ts";
-import { checkExports, collectPublicExportRepoPaths } from "../exports/generate-exports.ts";
 import { resolveImportsMapSpecifier } from "../graph/tree-import-resolution.ts";
 import {
   collectPackageIssues,

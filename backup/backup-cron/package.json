@@ -15,7 +15,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/cron": "*",
+    "@saflib/cron-http": "*",
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",

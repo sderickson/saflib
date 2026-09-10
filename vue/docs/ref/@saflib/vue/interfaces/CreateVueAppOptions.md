@@ -8,6 +8,14 @@ Options for createVueApp.
 
 ## Properties
 
+### asyncPageError?
+
+> `optional` **asyncPageError**: `AsyncPageErrorComponent`
+
+Replaces the default AsyncPageError in AsyncPage.
+
+---
+
 ### callback()?
 
 > `optional` **callback**: (`app`) => `void`
@@ -32,7 +40,7 @@ Options for createVueApp.
 
 ### router?
 
-> `optional` **router**: `Router`
+> `optional` **router**: `RouterClassic`
 
 ---
 

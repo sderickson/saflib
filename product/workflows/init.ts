@@ -10,6 +10,7 @@ import {
   makeLineReplace,
   type ParsePackageNameOutput,
 } from "@saflib/workflows";
+import { isEmbeddedProductMonorepo } from "@saflib/monorepo";
 import { kebabCaseToPascalCase, kebabCaseToSnakeCase } from "@saflib/utils";
 import {
   templatesProductRoot,
@@ -69,10 +70,12 @@ const input = [
   },
 ] as const;
 
-interface InitProductWorkflowContext extends ParsePackageNameOutput {
+export interface InitProductWorkflowContext extends ParsePackageNameOutput {
   productName: string;
   domainName: string;
   productOnly: boolean;
+  /** True when init cwd is a product root with a nested `saflib/` workspace. */
+  embeddedProductMonorepo: boolean;
 }
 
 /** Frozen golden-product name under saflib (`saflib/base`). */
@@ -83,7 +86,9 @@ const SOURCE_DOMAIN = "example.com";
 /**
  * Rewrite saflib-root volume mounts (`../..:/app` + anonymous node_modules)
  * to the product-beside-saflib shape (product clients/sdk + `saflib/`).
- * Context stays `../..`.
+ * Context stays `../..` (product monorepo root). Also point the site Dockerfile
+ * at `saflib/dev-site/...` and drop a hardcoded DEV_SITE_STATIC_DIR so the
+ * image ENV from `saf-docker generate` wins.
  */
 function toProductMonorepoDevCompose(
   content: string,
@@ -110,6 +115,14 @@ function toProductMonorepoDevCompose(
     ),
     `$1${monolithMounts}\n`,
   );
+  out = out.replace(
+    /(dockerfile:\s*)dev-site\/dev-site-docker\/Dockerfile/g,
+    "$1saflib/dev-site/dev-site-docker/Dockerfile",
+  );
+  out = out.replace(
+    /^[ \t]*DEV_SITE_STATIC_DIR:[^\n]*\n/gm,
+    "",
+  );
   return out;
 }
 
@@ -128,8 +141,14 @@ export function isSkippedStubRefLine(line: string): boolean {
   if (/^\s*\{\s*"path"\s*:\s*"[^"]*__[^"]*"\s*\}\s*,?\s*$/.test(line)) {
     return true;
   }
-  // import/export of skipped stub modules (e.g. schemas/__group-name__.ts)
-  if (/^\s*(export|import)\b/.test(line)) return true;
+  // JS/TS import/export of skipped stub modules (e.g. schemas/__group-name__.ts).
+  // Require `from` so Caddy `import __product-name__.Caddyfile` is not dropped.
+  if (
+    /^\s*(export|import)\b/.test(line) &&
+    /\bfrom\s+['"][^'"]*__[^'"]*['"]/.test(line)
+  ) {
+    return true;
+  }
   return false;
 }
 
@@ -168,13 +187,33 @@ export function makeProductInitLineReplace(context: InitProductWorkflowContext) 
     }
 
     // Generated Dockerfiles list stub package paths for base's own builds;
-    // drop those segments before placeholder replace so unknown __tokens__
-    // in COPY lines do not warn.
+    // drop segments whose placeholders are unknown to this context so
+    // makeLineReplace does not warn — but keep paths that only use known
+    // tokens (e.g. __product-name__) so they can be interpolated.
     if (/^\s*COPY\b/.test(prepared)) {
       prepared = prepared
         .split(/\s+/)
-        .filter((tok) => !/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(tok))
+        .filter((tok) => {
+          if (!/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(tok)) return true;
+          try {
+            placeholderReplace(tok);
+            return true;
+          } catch (error) {
+            if (
+              error instanceof Error &&
+              error.message.startsWith("Missing replacement")
+            ) {
+              return false;
+            }
+            throw error;
+          }
+        })
         .join(" ");
+      // Stub-only COPY lines can collapse to `COPY` / `COPY --from=…` with no
+      // sources left — drop them rather than emitting invalid Dockerfiles.
+      if (/^\s*COPY(?:\s+--\S+)*\s*$/.test(prepared)) {
+        return "";
+      }
     }
 
     // Unknown __tokens__ in comments / SQL stay literal when not dropped above —
@@ -205,6 +244,42 @@ export function makeProductInitLineReplace(context: InitProductWorkflowContext) 
   };
 }
 
+const TSCONFIG_PRESET_FILENAMES = [
+  "tsconfig.app.base.json",
+  "tsconfig.base.json",
+] as const;
+
+/** Literals that contain `base-` / bare `base` but are not the golden product name. */
+const NON_PRODUCT_BASE_LITERALS = ["base-uri", ...TSCONFIG_PRESET_FILENAMES] as const;
+
+/** Keep shared tsconfig preset names and CSP `base-uri` literal when renaming. */
+function protectNonProductBaseLiterals(line: string): string {
+  let result = line;
+  for (const literal of NON_PRODUCT_BASE_LITERALS) {
+    result = result.replaceAll(literal, `__SAF_${literal.replaceAll(".", "_").replaceAll("-", "_")}__`);
+  }
+  return result;
+}
+
+function restoreNonProductBaseLiterals(line: string): string {
+  let result = line;
+  for (const literal of NON_PRODUCT_BASE_LITERALS) {
+    result = result.replaceAll(
+      `__SAF_${literal.replaceAll(".", "_").replaceAll("-", "_")}__`,
+      literal,
+    );
+  }
+  return result;
+}
+
+/** Product monorepos embed saflib as a submodule beside the product tree. */
+function rewriteSaflibRelativeTsconfigPaths(line: string): string {
+  return line.replace(
+    /"\.\.\/\.\.\/\.\.\/(?!saflib\/)(vue\/)/g,
+    '"../../../saflib/$1',
+  );
+}
+
 function finishProductInitLineReplace(
   out: string,
   context: InitProductWorkflowContext,
@@ -226,15 +301,18 @@ function finishProductInitLineReplace(
     sourceSnakeUpper,
   } = names;
 
+  const prepared = protectNonProductBaseLiterals(out);
+
   // Preserve the thin @saflib/templates package name / path (do not treat
   // "templates" lines as exempt from /base/ → /product/ path renames —
   // monolith Dockerfiles mention both).
   const preserveTemplates =
-    out.includes("@saflib/templates") || out.includes("saflib/templates/");
+    prepared.includes("@saflib/templates") ||
+    prepared.includes("saflib/templates/");
 
   let result = preserveTemplates
-    ? out
-    : out.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
+    ? prepared
+    : prepared.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
   result = result
     .split("@saflib/deploy")
     .join(`@${context.organizationName}/deploy`);
@@ -270,6 +348,11 @@ function finishProductInitLineReplace(
     snakeUpper,
   );
 
+  result = restoreNonProductBaseLiterals(result);
+  if (context.embeddedProductMonorepo) {
+    result = rewriteSaflibRelativeTsconfigPaths(result);
+  }
+
   return result;
 }
 
@@ -297,6 +380,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       serviceName: input.name,
       domainName: input.domain,
       productOnly: input.productOnly ?? false,
+      embeddedProductMonorepo: isEmbeddedProductMonorepo(input.cwd),
     };
   },
 
@@ -318,14 +402,23 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   steps: [
     step(TransformFileStepMachine, ({ context }) => ({
       filePath: path.join(context.cwd, "package.json"),
-      description: `Add ${context.productName}/** to workspaces in package.json`,
+      description: `Add ${context.productName}/** and deploy workspaces in package.json`,
       transform: (content: string) => {
         const pkg = JSON.parse(content);
         const workspaces = Array.from(
-          new Set([...pkg.workspaces, `${context.productName}/**`]),
+          new Set([
+            ...pkg.workspaces,
+            `${context.productName}/**`,
+            `${getDeployDirName()}/**`,
+          ]),
         );
         workspaces.sort();
         pkg.workspaces = workspaces;
+        pkg.scripts ??= {};
+        if (isEmbeddedProductMonorepo(context.cwd)) {
+          pkg.scripts.preinstall ??=
+            "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes";
+        }
         return JSON.stringify(pkg, null, 2) + "\n";
       },
     })),
@@ -340,7 +433,9 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       lineReplace: makeProductInitLineReplace(context),
       // Keep expansion stubs (__subdomain-name__, __group-name__, …) in base only.
       // Both globs: dir trees (`__/…`) and stub filenames (`__…__-links.ts`).
-      skipSourceGlobs: ["**/__*__/**", "**/__*__*"],
+      // Suite docs under base/docs are for the golden template itself — products
+      // should not inherit them.
+      skipSourceGlobs: ["**/__*__/**", "**/__*__*", "**/base/docs/**"],
     })),
     // lineReplace drops stub `"path"` lines but can leave empty `{ }` objects in
     // multi-line tsconfig references; strip those before npm install / saf-imports.
@@ -389,6 +484,17 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       }),
       { skipIf: ({ context }) => context.productOnly },
     ),
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(context.cwd, "vitest.config.ts"),
+      description: `Add ${context.productName} vitest projects to root vitest.config.ts`,
+      transform: (content: string) => {
+        const projectLine = `      "${context.productName}/**/vitest.config.{ts,js,mts,mjs}",`;
+        return content.replace(
+          /\/\/ BEGIN WORKFLOW AREA test-product-dependencies FOR product\/init\n([\s\S]*?)\/\/ END WORKFLOW AREA/,
+          `// BEGIN WORKFLOW AREA test-product-dependencies FOR product/init\n${projectLine}\n      // END WORKFLOW AREA`,
+        );
+      },
+    }), { skipIf: ({ context }) => !existsSync(path.join(context.cwd, "vitest.config.ts")) }),
     // Golden product compose mounts the whole saflib root; rewrite for product-beside-saflib.
     step(TransformFileStepMachine, ({ context }) => ({
       filePath: path.join(
@@ -445,6 +551,27 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       // workspace root so new product packages are linked for typecheck.
       path: findOutermostWorkspaceRoot(context.originalWorkingDirectory),
     })),
+    step(
+      CommandStepMachine,
+      ({ context }) => ({
+        command: "npm",
+        args: [
+          "exec",
+          "saf-monorepo",
+          "--",
+          "lock-prune",
+          "--yes",
+          "--root",
+          findOutermostWorkspaceRoot(context.originalWorkingDirectory),
+        ],
+      }),
+      {
+        skipIf: ({ context }) =>
+          !isEmbeddedProductMonorepo(
+            findOutermostWorkspaceRoot(context.originalWorkingDirectory),
+          ),
+      },
+    ),
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
@@ -508,7 +635,34 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: ["run", "generate"],
     })),
     step(CdStepMachine, ({ context }) => ({
-      path: context.originalWorkingDirectory,
+      path: findOutermostWorkspaceRoot(context.originalWorkingDirectory),
+    })),
+    // Product packages were copied after the first install; refresh so new
+    // workspace devDependencies (e.g. openapi-typescript on spec) are linked.
+    step(
+      CommandStepMachine,
+      ({ context }) => ({
+        command: "npm",
+        args: [
+          "exec",
+          "saf-monorepo",
+          "--",
+          "lock-prune",
+          "--yes",
+          "--root",
+          findOutermostWorkspaceRoot(context.originalWorkingDirectory),
+        ],
+      }),
+      {
+        skipIf: ({ context }) =>
+          !isEmbeddedProductMonorepo(
+            findOutermostWorkspaceRoot(context.originalWorkingDirectory),
+          ),
+      },
+    ),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
     })),
     // CopyStep skips dist/; generate OpenAPI types/JSON for each saf.kind=spec package.
     step(CommandStepMachine, ({ context }) => ({

@@ -15,4 +15,5 @@
 | Variable                                                                    | Description |
 | --------------------------------------------------------------------------- | ----------- |
 | [default](variables/default.md)                                             | -           |
+| [GetFeedbackStep](variables/GetFeedbackStep.md)                             | -           |
 | [SpecProjectWorkflowDefinition](variables/SpecProjectWorkflowDefinition.md) | -           |

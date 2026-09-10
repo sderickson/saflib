@@ -31,3 +31,8 @@ export {
   sortReferences,
   type TsconfigReference,
 } from "./tsconfig-io.ts";
+export {
+  cleanupDeclarationArtifacts,
+  type CleanupDeclarationArtifactsOptions,
+  type CleanupDeclarationArtifactsResult,
+} from "./cleanup-declarations.ts";

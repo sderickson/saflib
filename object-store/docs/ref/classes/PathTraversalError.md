@@ -12,14 +12,13 @@
 
 ### Constructor
 
-> **new PathTraversalError**(`path`, `folderPath`): `PathTraversalError`
+> **new PathTraversalError**(`path`): `PathTraversalError`
 
 #### Parameters
 
-| Parameter    | Type     |
-| ------------ | -------- |
-| `path`       | `string` |
-| `folderPath` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `path`    | `string` |
 
 #### Returns
 

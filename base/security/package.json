@@ -17,7 +17,6 @@
     "@saflib/security": "*"
   },
   "devDependencies": {
-    "@playwright/test": "^1.53.2",
     "@saflib/monorepo": "*"
   },
   "sideEffects": false

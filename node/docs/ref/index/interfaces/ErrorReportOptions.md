@@ -18,7 +18,7 @@ Mainly missing fields that are or should be handled automatically (such as in de
 
 ### extra?
 
-> `optional` **extra**: `Record`\<`string`, `unknown`\>
+> `optional` **extra**: `Record`\<`string`, `unknown`>\>
 
 ---
 

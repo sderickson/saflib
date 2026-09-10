@@ -203,30 +203,36 @@
               },
               {
                 "type": "object",
-                "description": "A webhook arrived for a channel subscription; the importer's creator authorized scanning this channel. Evidence is the importer row.\n",
+                "description": "An inbound event (e.g. a webhook delivery) was attributed to a stored product resource. Evidence is that resource row — the entity you would return from your API or look up in your database, not the event itself.\n",
                 "additionalProperties": false,
                 "required": [
                   "kind",
                   "user_id",
-                  "importer_id"
+                  "resource_kind",
+                  "resource_id"
                 ],
                 "properties": {
                   "kind": {
                     "type": "string",
                     "enum": [
-                      "importer"
+                      "resource"
                     ],
-                    "example": "importer"
+                    "example": "resource"
                   },
                   "user_id": {
                     "type": "string",
-                    "description": "Importer creator whose authority is used.",
+                    "description": "Owner of the resource whose authority is used.",
                     "example": "Us7k_pQ2"
                   },
-                  "importer_id": {
+                  "resource_kind": {
                     "type": "string",
-                    "description": "Short id of the importer row that authorized the chain.",
-                    "example": "Im7k_mN2"
+                    "description": "Product-specific resource type for `resource_id` (e.g. `channel_subscription`, `importer`). Tells consumers which table or domain object to resolve.\n",
+                    "example": "channel_subscription"
+                  },
+                  "resource_id": {
+                    "type": "string",
+                    "description": "Short id of the resource row that authorized the chain.",
+                    "example": "Ch7k_mN2"
                   }
                 }
               },

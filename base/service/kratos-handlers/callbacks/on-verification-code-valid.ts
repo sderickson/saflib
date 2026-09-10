@@ -1,7 +1,7 @@
 import { getSafReporters } from "@saflib/node";
 import { verifyEmail } from "@saflib/base-email/emails/verify-email";
 import { getEmailClient } from "@saflib/base-service-common/dependencies";
-import type { VerificationCodeValidPayload } from "@saflib/ory-kratos";
+import type { VerificationCodeValidPayload } from "@saflib/ory-kratos-http";
 
 const emailFrom = "Base <noreply@saflib.com>";
 

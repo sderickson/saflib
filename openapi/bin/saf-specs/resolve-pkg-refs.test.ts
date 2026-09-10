@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   findSchemaNameForFile,
+  rewriteBundledExternalRefs,
   rewritePkgRefs,
   resolvePkgResource,
 } from "./resolve-pkg-refs.ts";
@@ -63,6 +64,29 @@ describe("rewritePkgRefs", () => {
     } finally {
       result.cleanup();
     }
+  });
+});
+
+describe("rewriteBundledExternalRefs", () => {
+  it("rewrites temp-dir file refs to package-relative paths", () => {
+    const tempDir = path.join("/tmp", "saf-specs-test");
+    const refPath = path.join(tempDir, "routes/__group-name__/__target-name__.yaml");
+    const doc = {
+      paths: {
+        "__url-path__": {
+          __method__: {
+            $ref: `${refPath}#/stubOperation`,
+          },
+        },
+      },
+    };
+    const out = rewriteBundledExternalRefs(doc, {
+      tempDir,
+      packageRoot: tempDir,
+    }) as typeof doc;
+    expect(out.paths["__url-path__"]["__method__"].$ref).toBe(
+      "./routes/__group-name__/__target-name__.yaml#/stubOperation",
+    );
   });
 });
 

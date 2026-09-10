@@ -30,7 +30,6 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@mdi/js": "^7.4.47",
     "@saflib/analytics-vue": "*",
     "@saflib/base-links": "*",
     "@saflib/base-sdk": "*",
@@ -38,8 +37,8 @@
     "@saflib/errors-vue": "*",
     "@saflib/links": "*",
     "@saflib/ory-kratos-sdk": "*",
+    "@saflib/ory-kratos-spa": "*",
     "@saflib/sdk": "*",
-    "@saflib/vendors-sentry-client": "*",
     "@saflib/vue": "*"
   },
   "sideEffects": [

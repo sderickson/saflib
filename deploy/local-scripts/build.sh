@@ -34,7 +34,7 @@ echo "Container registry: $CONTAINER_REGISTRY"
 
 git status
 
-npx saf-git-hashes
+npm exec saf-git-hashes
 
 docker_build() {
   local dockerfile=$1

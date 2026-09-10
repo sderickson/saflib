@@ -19,6 +19,7 @@ describe("isDevelopmentDeployment", () => {
   it("returns false for other deployment names", () => {
     expect(isDevelopmentDeployment("production")).toBe(false);
     expect(isDevelopmentDeployment("staging")).toBe(false);
-    expect(isDevelopmentDeployment(undefined)).toBe(false);
+    delete process.env.DEPLOYMENT_NAME;
+    expect(isDevelopmentDeployment()).toBe(false);
   });
 });

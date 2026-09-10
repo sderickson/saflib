@@ -8,7 +8,7 @@ import {
 } from "@saflib/object-store";
 import { getStorage } from "./client.ts";
 import { typedEnv } from "@saflib/env";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { getSafReporters } from "@saflib/node";
 
 export interface GcsObjectStoreOptions {

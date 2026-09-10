@@ -1,5 +1,5 @@
 import { Readable } from "stream";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 
 export class PathTraversalError extends Error {
   constructor(path: string) {

@@ -1,8 +1,7 @@
 {
   "name": "@saflib/vendors-loki",
   "saf": {
-    "kind": "lib",
-    "envExtends": ["@saflib/env"]
+    "kind": "lib"
   },
   "description": "Winston Loki transport helper for sending logs to a Loki instance",
   "private": true,
@@ -24,7 +23,6 @@
     "winston-loki": "^6.1.3"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
   },

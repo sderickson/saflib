@@ -5,7 +5,7 @@ import { computeRowHash, GENESIS_HASH } from "../../hash-chain.ts";
 import { withAuditWriteLock } from "../../audit-write-lock.ts";
 import { generateShortId, queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { desc, sql } from "drizzle-orm";
 import { getGitHashes } from "@saflib/node";
 import { typedEnv } from "@saflib/env";

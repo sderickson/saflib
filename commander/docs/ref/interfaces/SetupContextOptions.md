@@ -4,7 +4,7 @@
 
 # Interface: SetupContextOptions
 
-Name.
+CLI runtime context options.
 
 ## Properties
 

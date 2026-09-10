@@ -27,13 +27,13 @@
       "path": "../../../env"
     },
     {
-      "path": "../../../errors/errors-http"
+      "path": "../../../errors/errors-service"
     },
     {
       "path": "../../../express"
     },
     {
-      "path": "../../../jobs/jobs"
+      "path": "../../../jobs/jobs-http"
     },
     {
       "path": "../../../monorepo"
@@ -42,10 +42,10 @@
       "path": "../../../node"
     },
     {
-      "path": "../../../vendors/loki"
+      "path": "../../../ory-kratos/ory-kratos-http"
     },
     {
-      "path": "../../../vendors/sentry-node"
+      "path": "../../../vendors/loki"
     },
     {
       "path": "../audit"

@@ -3,37 +3,23 @@
   "saf": {
     "kind": "lib"
   },
-  "description": "Tools for software development",
+  "description": "Development utilities for SAF packages",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": "./index.ts",
-    "./types": "./types.ts"
-  },
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc"
   },
   "bin": {
-    "saf-docker": "./src/saf-docker-cli.ts",
-    "saf-tests": "./src/saf-tests-cli.ts",
-    "saf-git-hashes": "./src/git-hashes-cli.ts",
-    "saf-docs": "./bin/saf-docs-cli/index.ts",
-    "saf-ts-run": "./src/saf-ts-run-cli.ts",
-    "analyze-package": "./src/analyze-package-cli.ts"
+    "saf-analyze-package": "./bin/saf-analyze-package/index.ts"
   },
   "dependencies": {
-    "@saflib/imports": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/commander": "*",
+    "@saflib/imports": "*"
   },
   "devDependencies": {
-    "@saflib/commander": "*",
+    "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
-    "memfs": "^4.17.0",
-    "typedoc": "^0.28.10",
-    "typedoc-plugin-markdown": "^4.8.1"
+    "@types/node": "^24.0.0"
   },
   "sideEffects": false
 }

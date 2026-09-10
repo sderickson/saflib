@@ -1,15 +1,14 @@
 {
-  "extends": [
-    "@saflib/monorepo/tsconfig.json",
-    "@vue/tsconfig/tsconfig.dom.json"
-  ],
+  "extends": "../monorepo/tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
     "noEmit": false,
     "emitDeclarationOnly": true,
     "target": "esnext",
+    "module": "esnext",
     "lib": ["esnext", "dom"],
-    "types": ["vite/client"]
+    "moduleResolution": "bundler",
+    "types": ["vite/client", "node"]
   },
   "exclude": [
     "**/node_modules/**",

@@ -16,7 +16,7 @@ Parameters provided to error collectors.
 
 ### extra
 
-> **extra**: `Record`\<`string`, `unknown`\>
+> **extra**: `Record`\<`string`, `unknown`>\>
 
 ---
 
@@ -28,7 +28,7 @@ Parameters provided to error collectors.
 
 ### tags
 
-> **tags**: `Record`\<`string`, `string` \| `undefined`\>
+> **tags**: `Record`\<`string`, `string` \| `undefined`>\>
 
 ---
 
@@ -40,6 +40,6 @@ Parameters provided to error collectors.
 
 > **id**: `string`
 
-#### ip_address?
+#### ip\_address?
 
-> `optional` **ip_address**: `string`
+> `optional` **ip\_address**: `string`

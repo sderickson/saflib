@@ -29,7 +29,7 @@
   },
   "references": [
     {
-      "path": "../../ory-kratos-spa"
+      "path": "../../ory-kratos/ory-kratos-spa"
     },
     {
       "path": "../../playwright"

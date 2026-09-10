@@ -67,20 +67,25 @@ export interface components {
             request_id: string;
         } | {
             /**
-             * @example importer
+             * @example resource
              * @enum {string}
              */
-            kind: "importer";
+            kind: "resource";
             /**
-             * @description Importer creator whose authority is used.
+             * @description Owner of the resource whose authority is used.
              * @example Us7k_pQ2
              */
             user_id: string;
             /**
-             * @description Short id of the importer row that authorized the chain.
-             * @example Im7k_mN2
+             * @description Product-specific resource type for `resource_id` (e.g. `channel_subscription`, `importer`). Tells consumers which table or domain object to resolve.
+             * @example channel_subscription
              */
-            importer_id: string;
+            resource_kind: string;
+            /**
+             * @description Short id of the resource row that authorized the chain.
+             * @example Ch7k_mN2
+             */
+            resource_id: string;
         } | {
             /**
              * @example cron
@@ -160,20 +165,25 @@ export interface components {
                 request_id: string;
             } | {
                 /**
-                 * @example importer
+                 * @example resource
                  * @enum {string}
                  */
-                kind: "importer";
+                kind: "resource";
                 /**
-                 * @description Importer creator whose authority is used.
+                 * @description Owner of the resource whose authority is used.
                  * @example Us7k_pQ2
                  */
                 user_id: string;
                 /**
-                 * @description Short id of the importer row that authorized the chain.
-                 * @example Im7k_mN2
+                 * @description Product-specific resource type for `resource_id` (e.g. `channel_subscription`, `importer`). Tells consumers which table or domain object to resolve.
+                 * @example channel_subscription
                  */
-                importer_id: string;
+                resource_kind: string;
+                /**
+                 * @description Short id of the resource row that authorized the chain.
+                 * @example Ch7k_mN2
+                 */
+                resource_id: string;
             } | {
                 /**
                  * @example cron
@@ -343,7 +353,7 @@ export interface operations {
                          * @example Us7k_pQ2
                          */
                         user_id: string;
-                        /** @description Evidence grant for the override (request, importer, or cron kind). */
+                        /** @description Evidence grant for the override (request, resource, or cron kind). */
                         authority: components["schemas"]["authority"];
                     };
                 };

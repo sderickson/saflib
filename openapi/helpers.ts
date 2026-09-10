@@ -10,8 +10,19 @@ export type OpenApiDocument =
  * express-openapi-validator can validate the JSON against the OpenAPI spec without
  * complaining about a type mismatch.
  */
-export const castJson = (json: { default: unknown }): OpenApiDocument => {
-  return json.default as OpenApiDocument;
+type JsonModule = { default: unknown };
+
+/** OpenAPI JSON from `import * as json from "./openapi.json" with { type: "json" }`. */
+export const castJson = (json: unknown): OpenApiDocument => {
+  if (
+    typeof json === "object" &&
+    json !== null &&
+    "default" in json &&
+    (json as JsonModule).default !== undefined
+  ) {
+    return (json as JsonModule).default as OpenApiDocument;
+  }
+  return json as OpenApiDocument;
 };
 
 /** Cast an inline OpenAPI object (e.g. in tests) to {@link OpenApiDocument}. */

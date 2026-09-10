@@ -4,4 +4,4 @@
 
 # Type Alias: SetEnabledResult
 
-> **SetEnabledResult** = `ReturnsError`\<[`JobSetting`](../interfaces/JobSetting.md), `never`\>
+> **SetEnabledResult** = `ReturnsError`\<[`JobSetting`](../interfaces/JobSetting.md), `never`>\>

@@ -22,10 +22,12 @@
   },
   "dependencies": {
     "@saflib/base-__offshoot-name__-db": "*",
-    "@saflib/drizzle": "*"
+    "@saflib/drizzle": "*",
+    "@saflib/utils": "*"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "drizzle-kit": "*"
   },
   "sideEffects": false,
   "imports": {

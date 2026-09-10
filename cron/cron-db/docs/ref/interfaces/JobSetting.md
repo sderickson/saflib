@@ -8,9 +8,9 @@ The current state and settings of a cron job.
 
 ## Properties
 
-### createdAt
+### created\_at
 
-> **createdAt**: `Date`
+> **created\_at**: `Date`
 
 ---
 
@@ -20,30 +20,38 @@ The current state and settings of a cron job.
 
 ---
 
+### enabled\_by
+
+> **enabled\_by**: `null` \| `string`
+
+Kratos identity id of the admin who last enabled the job; null until re-enabled post-migration.
+
+---
+
 ### id
 
 > **id**: `number`
 
 ---
 
-### jobName
+### job\_name
 
-> **jobName**: `string`
-
----
-
-### lastRunAt
-
-> **lastRunAt**: `null` \| `Date`
+> **job\_name**: `string`
 
 ---
 
-### lastRunStatus
+### last\_run\_at
 
-> **lastRunStatus**: `null` \| `"success"` \| `"fail"` \| `"running"` \| `"timed out"`
+> **last\_run\_at**: `null` \| `Date`
 
 ---
 
-### updatedAt
+### last\_run\_status
 
-> **updatedAt**: `Date`
+> **last\_run\_status**: `null` \| `"success"` \| `"fail"` \| `"running"` \| `"timed out"`
+
+---
+
+### updated\_at
+
+> **updated\_at**: `Date`

@@ -26,6 +26,9 @@
       "path": "../../parser"
     },
     {
+      "path": "../../utils"
+    },
+    {
       "path": "../dev-site-db"
     },
     {
@@ -36,7 +39,8 @@
     "outDir": "./dist/types",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "noEmit": false,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "rootDir": "."
   },
   "exclude": [
     "node_modules",

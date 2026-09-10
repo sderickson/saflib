@@ -8,8 +8,8 @@ import {
   classifySafPackage,
   DEFAULT_MAX_SOURCE_LINES,
   type PackageJsonLayoutFields,
-  type ReturnsError,
 } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import type { GitCommandError } from "@saflib/git";
 import { listTree, readBlobs } from "@saflib/git";
 import {

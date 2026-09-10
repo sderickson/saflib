@@ -1,11 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ref } from "vue";
+import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse } from "msw";
 import type { DevLogResponseBody } from "@saflib/node-log-spec";
 import DevLogsPage from "./DevLogsPage.vue";
-import { mountTestApp } from "../test-app";
+import { mountTestApp } from "../test-app.ts";
 
 type ListDevLogsResponse = DevLogResponseBody["listDevLogs"][200];
 
@@ -29,31 +28,20 @@ const mockLogs: ListDevLogsResponse = {
   ],
 };
 
-vi.mock("@saflib/node-log-sdk", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@saflib/node-log-sdk")>();
-  return {
-    ...actual,
-    useStreamDevLogs: () => ({
-      logs: ref(mockLogs.logs),
-      status: ref("live" as const),
-      errorMessage: ref(""),
-      reconnect: vi.fn(),
-      clearLocal: vi.fn(),
-    }),
-  };
-});
-
 const handlers = [
   http.get("http://api.localhost:3000/dev/logs", () => {
     return HttpResponse.json(mockLogs);
   }),
+  http.get("http://api.localhost:3000/dev/logs/stream", () => {
+    return new HttpResponse(":ok\n\n", {
+      headers: { "Content-Type": "text/event-stream" },
+    });
+  }),
 ];
 
 describe("DevLogsPage", () => {
-  beforeEach(() => {
-    stubGlobals();
-    setupMockServer(handlers);
-  });
+  stubGlobals();
+  setupMockServer(handlers);
 
   it("renders log entries from the list endpoint", async () => {
     const wrapper = mountTestApp(DevLogsPage, {

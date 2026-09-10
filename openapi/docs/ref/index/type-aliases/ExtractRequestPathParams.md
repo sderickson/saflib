@@ -4,7 +4,7 @@
 
 # Type Alias: ExtractRequestPathParams\<Ops\>
 
-> **ExtractRequestPathParams**\<`Ops`\> = `{ [OpKey in keyof Ops]: Ops[OpKey]["parameters"]["path"] }`
+> **ExtractRequestPathParams**\<`Ops`> \> = `{ [OpKey in keyof Ops]: Ops[OpKey]["parameters"]["path"] }`
 
 Convenience type to lookup the path params by operationId.
 

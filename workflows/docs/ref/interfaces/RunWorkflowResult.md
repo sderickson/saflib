@@ -20,6 +20,6 @@ The output of the workflow state machine.
 
 ### state
 
-> **state**: `undefined` \| `Snapshot`\<`any`\>
+> **state**: `undefined` \| `Snapshot`\<`any`>\>
 
 The state of the workflow state machine.

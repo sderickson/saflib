@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 import { resolveRef } from "@saflib/git";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
 import { devSiteDb } from "@saflib/dev-site-db/instances";

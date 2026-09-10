@@ -5,7 +5,6 @@ import {
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
   AUTH_ERROR_MFA_REQUIRED,
 } from "@saflib/sdk";
-import type { QueryClient } from "@tanstack/vue-query";
 import {
   aal2LoginFlowHasMfaMethods,
   createLoginFlowQueryOptions,
@@ -20,6 +19,11 @@ export type BaseMfaProbeResult =
   | { kind: "setup"; href: string }
   | { kind: "step_up"; href: string }
   | { kind: "error" };
+
+/** Minimal query client surface for MFA probe (avoids @tanstack/vue-query resolution duplicates). */
+type MfaProbeQueryClient = {
+  fetchQuery: (...args: any[]) => Promise<unknown>;
+};
 
 function returnToParam(): string | undefined {
   if (typeof window === "undefined") return undefined;
@@ -84,7 +88,7 @@ export function baseMfaSetupHref(returnTo?: string): string {
  * Probes Kratos AAL2 login flow to distinguish MFA setup vs session step-up.
  */
 export async function probeBaseMfaRequirement(
-  queryClient: QueryClient,
+  queryClient: MfaProbeQueryClient,
 ): Promise<BaseMfaProbeResult> {
   const rt = returnToParam();
   const setupHref = baseMfaSetupHref(rt);

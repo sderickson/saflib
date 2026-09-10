@@ -40,7 +40,7 @@ jobs:
       - uses: ./.github/actions/setup-node-deps
 
       - name: Generate Docker assets
-        run: node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/dev-tools/src/saf-docker-cli.ts generate
+        run: npm exec saf-docker generate
 
       - name: Build prod images (CI)
         run: npm run build:ci

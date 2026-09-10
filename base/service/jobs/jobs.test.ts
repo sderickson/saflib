@@ -4,7 +4,7 @@ import {
   TIMEOUT_CEILING_MS,
   validateCronTriggerKeys,
   validateJobsStartup,
-} from "@saflib/jobs";
+} from "@saflib/jobs-http";
 import { jsonSpec } from "@saflib/base-spec";
 import { baseJobs } from "@saflib/base-cron";
 import {

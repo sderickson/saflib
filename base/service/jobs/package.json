@@ -20,7 +20,7 @@
     "@saflib/base-spec": "*",
     "@saflib/drizzle": "*",
     "@saflib/env": "*",
-    "@saflib/jobs": "*",
+    "@saflib/jobs-http": "*",
     "@saflib/jobs-db": "*"
   },
   "devDependencies": {

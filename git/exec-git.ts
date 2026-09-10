@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { GitCommandError } from "./errors.ts";
 
 export interface ExecGitOptions {
@@ -36,7 +36,7 @@ function toGitCommandError(
 /**
  * Thin `git` runner for this package.
  *
- * Deliberately does **not** reuse `@saflib/dev-tools`'s `execGit`: that helper is
+ * Deliberately does **not** reuse `@saflib/docker`'s `execGit`: that helper is
  * CLI/dev-tooling flavored (`execSync` with a joined shell string, swallows
  * stderr, returns exit codes without typed errors). `@saflib/git` needs to be a
  * dependency-light library other packages can import at runtime, so it owns its

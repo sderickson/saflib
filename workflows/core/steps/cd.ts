@@ -1,5 +1,5 @@
 import { setup } from "xstate";
-import type { WorkflowInput, WorkflowOutput } from "../types.ts";
+import type { WorkflowContext, WorkflowInput, WorkflowOutput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 import { workflowActions, workflowActors } from "../xstate.ts";
 import path from "node:path";
@@ -21,7 +21,7 @@ export type CwdStepInput = CdStepInput;
 /**
  * @internal
  */
-export interface CdStepContext {
+export interface CdStepContext extends WorkflowContext {
   newCwd: string;
 }
 
@@ -62,11 +62,14 @@ export const CdStepMachine = setup({
     },
   },
   output: ({ context }) => {
-    const actualCwd = process.cwd();
-    const relativeCwd = path.relative(actualCwd, context.newCwd);
+    const relativeCwd = path.relative(
+      context.originalWorkingDirectory,
+      context.newCwd,
+    );
+    const display = relativeCwd === "" ? "." : relativeCwd;
     return {
       checklist: {
-        description: `Change working directory to ${relativeCwd}`,
+        description: `Change working directory to ${display}`,
       },
       newCwd: context.newCwd,
     };

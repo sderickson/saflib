@@ -2,6 +2,8 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    fsModuleCache: true,
+    isolate: false,
     env: {
       TZ: "UTC",
       NODE_OPTIONS: "--disable-warning=DEP0040",
@@ -10,6 +12,8 @@ export default defineConfig({
     projects: [
       // BEGIN WORKFLOW AREA test-product-dependencies FOR product/init
       "*/**/vitest.config.{ts,js,mts,mjs}",
+      // Scaffold template is copied to product roots; not a runnable vitest workspace here.
+      "!templates/scaffold/**",
       // Packages under tmp/ are tested by workflow-script CI / live-test.
       "!tmp/**",
       "tmp/**/vitest.config.{ts,js,mts,mjs}",

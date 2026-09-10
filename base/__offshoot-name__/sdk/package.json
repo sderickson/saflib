@@ -19,8 +19,7 @@
     "@saflib/base-__offshoot-name__-spec": "*",
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
-    "@saflib/vue": "*",
-    "msw": "^2.11.3"
+    "@saflib/vue": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

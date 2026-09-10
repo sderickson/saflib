@@ -63,7 +63,7 @@ const baseLightTheme = {
  *
  * One config keeps app, auth, admin, account, and marketing pages on the same palette.
  */
-export const vuetifyConfig = {
+export const vuetifyConfig: VuetifyOptions = {
   icons: {
     defaultSet: "mdi",
     aliases,
@@ -92,4 +92,4 @@ export const vuetifyConfig = {
       light: baseLightTheme,
     },
   },
-} satisfies VuetifyOptions;
+};

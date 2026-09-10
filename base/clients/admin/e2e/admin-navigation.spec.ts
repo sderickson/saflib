@@ -35,6 +35,11 @@ function adminUrl(path: string): string {
   return `${protocol()}://admin.${domain()}${path}`;
 }
 
+/**
+ * Only pages that render for a plain registered (unverified, non-admin) session.
+ * Cron/jobs/audit need verified site-admin (+ MFA); emails/logs/metrics/events
+ * are development-deployment-only and must stay out of prod builds.
+ */
 const sidebarPages: {
   path: string;
   assert: (page: import("@playwright/test").Page) => Promise<void>;
@@ -52,72 +57,6 @@ const sidebarPages: {
     assert: async (page) => {
       await expect(
         page.getByRole("heading", { name: usersStrings.title }),
-      ).toBeVisible();
-    },
-  },
-  {
-    path: adminLinks.cronJobs.path,
-    assert: async (page) => {
-      await expect(
-        page.getByRole("heading", { name: "Cron Jobs" }),
-      ).toBeVisible();
-    },
-  },
-  {
-    path: adminLinks.jobs.path,
-    assert: async (page) => {
-      await expect(page.getByRole("heading", { name: "Jobs" })).toBeVisible();
-    },
-  },
-  {
-    path: adminLinks.emails.path,
-    assert: async (page) => {
-      await expect(
-        page
-          .getByText(
-            /No emails have been sent yet\.|Last Mock Email|Time Sent|subject/i,
-          )
-          .first(),
-      ).toBeVisible({ timeout: 30_000 });
-    },
-  },
-  {
-    path: adminLinks.logs.path,
-    assert: async (page) => {
-      await expect(
-        page.getByRole("heading", { name: "Server Logs" }),
-      ).toBeVisible();
-    },
-  },
-  {
-    path: adminLinks.metrics.path,
-    assert: async (page) => {
-      await expect(
-        page.getByRole("heading", { name: "Metrics" }),
-      ).toBeVisible();
-    },
-  },
-  {
-    path: adminLinks.events.path,
-    assert: async (page) => {
-      await expect(
-        page.getByRole("heading", { name: "Product Events" }),
-      ).toBeVisible();
-    },
-  },
-  {
-    path: adminLinks.errors.path,
-    assert: async (page) => {
-      await expect(
-        page.getByRole("heading", { name: "Errors" }),
-      ).toBeVisible();
-    },
-  },
-  {
-    path: adminLinks.audit.path,
-    assert: async (page) => {
-      await expect(
-        page.getByRole("heading", { name: "Audit log" }),
       ).toBeVisible();
     },
   },

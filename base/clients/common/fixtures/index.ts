@@ -1,4 +1,4 @@
 export {
   BaseFixture,
   baseFixture,
-} from "./base";
+} from "./base.ts";

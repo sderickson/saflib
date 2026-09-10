@@ -1,0 +1,41 @@
+{
+  "name": "@saflib/ory-kratos-spa",
+  "saf": {
+    "kind": "spa"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./strings": "./strings.ts",
+    "./i18n": "./i18n.ts",
+    "./test-app": "./test-app.ts",
+    "./router": "./router.ts",
+    "./session-routes": "./session-routes.ts",
+    "./settings": "./settings.ts",
+    "./registration": "./registration.ts",
+    "./verification": "./verification.ts",
+    "./fixtures": "./fixtures.ts",
+    "./mdi-icons": "./mdi-icons.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.2"
+  },
+  "scripts": {
+    "dev": "vite",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "npm exec playwright test",
+    "test:e2e:ui": "npm exec playwright test --ui",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@mdi/js": "^7.4.47",
+    "@saflib/sdk": "*",
+    "@saflib/links": "*",
+    "@saflib/vue": "*",
+    "@saflib/ory-kratos-sdk": "*",
+    "vue-router": "^5.0.0"
+  },
+  "sideEffects": false
+}

@@ -1,7 +1,7 @@
 import createError from "http-errors";
 import { createHandler } from "./handler.ts";
 import type { ErrorsResponseBody } from "@saflib/errors-spec";
-import { listReportedErrors, type ReportedErrorKind } from "../lib/reportedErrorBuffer.ts";
+import { getErrorService, type ReportedErrorKind } from "@saflib/errors-service";
 
 const REPORTED_ERROR_KINDS = new Set<ReportedErrorKind>([
   "csp-violation",
@@ -34,7 +34,11 @@ export function createListReportedErrorsHandler() {
       }
     }
 
-    const reported_errors = listReportedErrors({ kind, source, limit });
+    const reported_errors = getErrorService().listReportedErrors({
+      kind,
+      source,
+      limit,
+    });
     res
       .status(200)
       .json({ reported_errors } satisfies ErrorsResponseBody["listReportedErrors"][200]);

@@ -2,7 +2,7 @@ import { auditDbManager } from "../../instances.ts";
 import { auditEventTable } from "../../schemas/audit-event.ts";
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import type { ReturnsError } from "@saflib/monorepo";
+import type { ReturnsError } from "@saflib/utils";
 import { max, min } from "drizzle-orm";
 
 export type AuditEventTimestampBounds = {

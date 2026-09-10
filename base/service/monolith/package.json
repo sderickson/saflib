@@ -19,13 +19,13 @@
     "@saflib/base-service-common": "*",
     "@saflib/base-spec": "*",
     "@saflib/env": "*",
-    "@saflib/errors-http": "*",
+    "@saflib/errors-service": "*",
     "@saflib/express": "*",
-    "@saflib/jobs": "*",
+    "@saflib/jobs-http": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
-    "@saflib/vendors-loki": "*",
-    "@saflib/vendors-sentry-node": "*"
+    "@saflib/ory-kratos-http": "*",
+    "@saflib/vendors-loki": "*"
   },
   "sideEffects": false,
   "imports": {

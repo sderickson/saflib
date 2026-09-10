@@ -27,11 +27,14 @@
     "typecheck": "vue-tsc"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
+    "@saflib/docs": "*",
     "@saflib/templates": "*",
     "@saflib/vitest": "*",
     "@saflib/workflows": "*",
-    "msw": "^2.0.0"
+    "msw": "^2.0.0",
+    "path-to-regexp": "^8.0.0",
+    "vue": "^3.5.20",
+    "vue-router": "^5.0.0"
   },
   "sideEffects": []
 }

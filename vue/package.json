@@ -7,12 +7,14 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./dev-product-events": "./src/dev-product-events.ts",
     "./useResolvedHref": "./src/useResolvedHref.ts",
     "./components": "./components/index.ts",
     "./composables/useAsyncPageErrorComponent": "./composables/useAsyncPageErrorComponent.ts",
     "./types": "./types.ts",
     "./fixtures": "./fixtures/index.ts",
     "./testing": "./testing/index.ts",
+    "./testing/vitest-setup": "./testing/vitest-setup.js",
     "./tsconfig.app.json": "./tsconfig.app.base.json",
     "./tsconfig.node.json": "./tsconfig.node.json",
     "./workflows": "./workflows/index.ts",
@@ -26,6 +28,9 @@
     "typecheck:workflows": "tsc --project tsconfig.workflows.json"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
+    "@saflib/analytics-sdk": "*",
+    "@saflib/analytics-spec": "*",
     "@saflib/links": "*",
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
@@ -33,9 +38,10 @@
     "@saflib/utils": "*",
     "@tanstack/vue-query": "^5.85.9",
     "@vue/devtools-kit": "^8.0.0",
+    "@vue/tsconfig": "^0.9.1",
     "vue": "^3.5.20",
     "vue-i18n": "^11.1.11",
-    "vue-router": "^5.0.0",
+    "vue-router": "^5.3.1",
     "vuetify": "^4.1.6"
   },
   "devDependencies": {
@@ -45,7 +51,6 @@
     "@saflib/workflows": "*",
     "@types/node": "^24.3.0",
     "@vue/test-utils": "^2.0.0",
-    "@vue/tsconfig": "^0.9.1",
     "jsdom": "^30.0.0",
     "sass-embedded": "^1.0.0",
     "vite-plugin-vuetify": "^2.1.3",

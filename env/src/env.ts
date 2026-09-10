@@ -51,34 +51,13 @@ export function packageHasEnvFiles(packageDir: string): boolean {
 }
 
 /**
- * Direct env-parent packages for `extends` / combined-schema closure.
- * Prefer explicit `package.json` `saf.envExtends` when set; otherwise use direct
- * workspace dependencies that themselves have env.ts / env.schema.json.
+ * Direct env-parent packages for `extends` / combined-schema closure: workspace
+ * dependencies that have `env.ts` / `env.schema.json`.
  */
 export function getDirectEnvParents(
   packageName: packageName,
   context: MonorepoContext,
 ): packageName[] {
-  const packageJson = context.monorepoPackageJsons[packageName];
-  const explicitExtends = packageJson?.saf?.envExtends;
-
-  if (explicitExtends !== undefined) {
-    for (const parent of explicitExtends) {
-      const packagePath = context.monorepoPackageDirectories[parent];
-      if (packagePath === undefined) {
-        throw new Error(
-          `Package ${packageName} saf.envExtends references unknown package ${parent}`,
-        );
-      }
-      if (!packageHasEnvFiles(packagePath)) {
-        throw new Error(
-          `Package ${packageName} saf.envExtends references ${parent} which has no env.ts / env.schema.json`,
-        );
-      }
-    }
-    return [...explicitExtends].sort();
-  }
-
   const directDependencies = context.workspaceDependencyGraph[packageName] ?? [];
   return directDependencies
     .filter((dependency) => {

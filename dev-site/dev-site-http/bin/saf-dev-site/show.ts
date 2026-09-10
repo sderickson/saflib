@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { throwError } from "@saflib/monorepo";
+import { throwError } from "@saflib/utils";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import { getCommit } from "../../get-commit.ts";
 import {

@@ -6,37 +6,29 @@
 
 ## Classes
 
-| Class                                                           | Description |
-| --------------------------------------------------------------- | ----------- |
-| [AzureContainerError](classes/AzureContainerError.md)           | -           |
-| [AzureDeleteError](classes/AzureDeleteError.md)                 | -           |
-| [AzureObjectStore](classes/AzureObjectStore.md)                 | -           |
-| [AzureStorageError](classes/AzureStorageError.md)               | -           |
-| [BlobAlreadyExistsError](classes/BlobAlreadyExistsError.md)     | -           |
-| [BlobNotFoundError](classes/BlobNotFoundError.md)               | -           |
-| [ContainerCreationError](classes/ContainerCreationError.md)     | -           |
-| [ContainerUpdateError](classes/ContainerUpdateError.md)         | -           |
-| [InvalidUploadParamsError](classes/InvalidUploadParamsError.md) | -           |
-| [ObjectStore](classes/ObjectStore.md)                           | -           |
-| [PathTraversalError](classes/PathTraversalError.md)             | -           |
-| [StorageError](classes/StorageError.md)                         | -           |
+| Class                                               | Description                                                                                                                 |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| [DiskObjectStore](classes/DiskObjectStore.md)       | -                                                                                                                           |
+| [FileNotFoundError](classes/FileNotFoundError.md)   | -                                                                                                                           |
+| [ObjectStore](classes/ObjectStore.md)               | -                                                                                                                           |
+| [PathTraversalError](classes/PathTraversalError.md) | -                                                                                                                           |
+| [StorageError](classes/StorageError.md)             | -                                                                                                                           |
+| [TestObjectStore](classes/TestObjectStore.md)       | In-memory ObjectStore for tests. Use setFiles/getFiles to seed or inspect state when testing code that uses an ObjectStore. |
 
 ## Interfaces
 
-| Interface                                                    | Description |
-| ------------------------------------------------------------ | ----------- |
-| [ContainerResult](interfaces/ContainerResult.md)             | -           |
-| [DeleteBlobParams](interfaces/DeleteBlobParams.md)           | -           |
-| [DeleteBlobResult](interfaces/DeleteBlobResult.md)           | -           |
-| [UploadFileParams](interfaces/UploadFileParams.md)           | -           |
-| [UploadResult](interfaces/UploadResult.md)                   | -           |
-| [UpsertContainerParams](interfaces/UpsertContainerParams.md) | -           |
+| Interface                          | Description |
+| ---------------------------------- | ----------- |
+| [TestFile](interfaces/TestFile.md) | -           |
+
+## Type Aliases
+
+| Type Alias                                                           | Description |
+| -------------------------------------------------------------------- | ----------- |
+| [CreateObjectStoreOptions](type-aliases/CreateObjectStoreOptions.md) | -           |
 
 ## Functions
 
-| Function                                                  | Description |
-| --------------------------------------------------------- | ----------- |
-| [deleteBlob](functions/deleteBlob.md)                     | -           |
-| [testAzureBlobStorage](functions/testAzureBlobStorage.md) | -           |
-| [uploadFile](functions/uploadFile.md)                     | -           |
-| [upsertContainer](functions/upsertContainer.md)           | -           |
+| Function                                            | Description                                                                                                                                                                                                                                                                         |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [createObjectStore](functions/createObjectStore.md) | Creates an ObjectStore instance. When NODE_ENV is "test", always returns a TestObjectStore (in-memory) regardless of the requested type, so tests don't write to disk. Stores are cached by container key so multiple contexts with the same config share the same in-memory store. |

@@ -26,7 +26,7 @@ The arguments to pass to the workflow.
 
 ### definition
 
-> **definition**: [`WorkflowDefinition`](WorkflowDefinition.md)\<`any`, `any`\>
+> **definition**: [`WorkflowDefinition`](WorkflowDefinition.md)\<`any`, `any`>\>
 
 The workflow definition to run.
 

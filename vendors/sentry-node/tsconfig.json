@@ -22,7 +22,8 @@
     "noEmit": false,
     "emitDeclarationOnly": true,
     "types": [
-      "vite/client"
+      "vite/client",
+      "node"
     ]
   },
   "references": [
@@ -30,7 +31,7 @@
       "path": "../../env"
     },
     {
-      "path": "../../errors/errors-http"
+      "path": "../../errors/errors-service"
     },
     {
       "path": "../../node"

@@ -44,8 +44,8 @@ test.describe("CSRF (double-submit)", () => {
 
     const res = await page.request.put(`${apiOrigin()}/user-configs/mine`, {
       data: {
-        displayName: "csrf probe",
-        marketingEmailsOptIn: false,
+        display_name: "csrf probe",
+        marketing_emails_opt_in: false,
       },
       headers: { "Content-Type": "application/json" },
     });
@@ -69,8 +69,8 @@ test.describe("CSRF (double-submit)", () => {
     await getCsrfToken(page, origin);
     const res = await page.request.put(`${origin}/user-configs/mine`, {
       data: {
-        displayName: "bad token",
-        marketingEmailsOptIn: false,
+        display_name: "bad token",
+        marketing_emails_opt_in: false,
       },
       headers: {
         "Content-Type": "application/json",
@@ -97,8 +97,8 @@ test.describe("CSRF (double-submit)", () => {
     const csrf = await getCsrfToken(page, origin);
     const res = await page.request.put(`${origin}/user-configs/mine`, {
       data: {
-        displayName: `csrf ok ${Date.now()}`,
-        marketingEmailsOptIn: false,
+        display_name: `csrf ok ${Date.now()}`,
+        marketing_emails_opt_in: false,
       },
       headers: {
         "Content-Type": "application/json",

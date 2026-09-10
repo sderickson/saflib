@@ -9,8 +9,8 @@ import type {
   JobsServiceResponseBody,
 } from "@saflib/jobs-spec";
 import JobsPage from "./JobsPage.vue";
-import { router } from "./test_router";
-import { mountTestApp } from "../test-app";
+import { router } from "./test_router.ts";
+import { mountTestApp } from "../test-app.ts";
 
 type ListJobsResponse = JobsServiceResponseBody["listJobs"][200];
 type GetJobResponse = JobsServiceResponseBody["getJob"][200];

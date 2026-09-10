@@ -15,7 +15,8 @@
     "@saflib/express": "*",
     "@saflib/monorepo": "*",
     "@saflib/backup-service-common": "*",
-    "@saflib/backup-spec": "*"
+    "@saflib/backup-spec": "*",
+    "@saflib/utils": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

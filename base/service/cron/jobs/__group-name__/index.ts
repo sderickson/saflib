@@ -1,4 +1,4 @@
-import type { JobsMap } from "@saflib/cron";
+import type { JobsMap } from "@saflib/cron-http";
 
 import { __targetName__Config } from "./__target-name__.ts";
 

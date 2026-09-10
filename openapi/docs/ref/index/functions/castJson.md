@@ -4,16 +4,16 @@
 
 # Function: castJson()
 
-> **castJson**(`json`): `DocumentV3`
+> **castJson**(`json`): [`OpenApiDocument`](../type-aliases/OpenApiDocument.md)
 
-Takes an imported JSON object and casts it to the OpenAPIV3.DocumentV3 type so that express-openapi-validator can validate the JSON against the OpenAPI spec without complaining about a type mismatch.
+OpenAPI JSON from `import * as json from "./openapi.json" with { type: "json" }`.
 
 ## Parameters
 
-| Parameter | Type  |
-| --------- | ----- |
-| `json`    | `any` |
+| Parameter | Type      |
+| --------- | --------- |
+| `json`    | `unknown` |
 
 ## Returns
 
-`DocumentV3`
+[`OpenApiDocument`](../type-aliases/OpenApiDocument.md)
