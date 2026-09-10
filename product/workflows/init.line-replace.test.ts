@@ -118,6 +118,22 @@ describe("makeProductInitLineReplace", () => {
     expect(out).not.toContain("integrations/");
   });
 
+  it("keeps and interpolates known placeholders in Dockerfile COPY lines", () => {
+    expect(
+      replace(
+        "COPY ./deploy/__product-name__/env.defaults /etc/__product-name__/env.defaults",
+      ),
+    ).toBe("COPY ./deploy/tmp/env.defaults /etc/tmp/env.defaults");
+  });
+
+  it("drops COPY lines that only referenced unknown stub paths", () => {
+    expect(
+      replace(
+        "COPY --from=static-subdomain-name-static-builder /app/__product-name__/clients/__static-subdomain-name__/.vitepress/dist /srv/__product-name__-__static-subdomain-name__",
+      ),
+    ).toBe("");
+  });
+
   it("renames product package prefix and domain", () => {
     expect(replace('  "name": "@saflib/base-db",')).toBe(
       '  "name": "@saflib/tmp-db",',

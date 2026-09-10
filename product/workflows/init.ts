@@ -171,13 +171,33 @@ export function makeProductInitLineReplace(context: InitProductWorkflowContext) 
     }
 
     // Generated Dockerfiles list stub package paths for base's own builds;
-    // drop those segments before placeholder replace so unknown __tokens__
-    // in COPY lines do not warn.
+    // drop segments whose placeholders are unknown to this context so
+    // makeLineReplace does not warn — but keep paths that only use known
+    // tokens (e.g. __product-name__) so they can be interpolated.
     if (/^\s*COPY\b/.test(prepared)) {
       prepared = prepared
         .split(/\s+/)
-        .filter((tok) => !/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(tok))
+        .filter((tok) => {
+          if (!/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(tok)) return true;
+          try {
+            placeholderReplace(tok);
+            return true;
+          } catch (error) {
+            if (
+              error instanceof Error &&
+              error.message.startsWith("Missing replacement")
+            ) {
+              return false;
+            }
+            throw error;
+          }
+        })
         .join(" ");
+      // Stub-only COPY lines can collapse to `COPY` / `COPY --from=…` with no
+      // sources left — drop them rather than emitting invalid Dockerfiles.
+      if (/^\s*COPY(?:\s+--\S+)*\s*$/.test(prepared)) {
+        return "";
+      }
     }
 
     // Unknown __tokens__ in comments / SQL stay literal when not dropped above —
