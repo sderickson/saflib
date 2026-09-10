@@ -37,7 +37,7 @@ Example:
 cd "${TMPDIR:-/tmp}/saf-bootstrap-test-initdoc"
 ```
 
-Bootstrap takes about one to two minutes (two `npm install` passes, lock-prune, and the full `product/init` workflow).
+Bootstrap takes about one to two minutes (platform override sync, two `npm install` passes, lock-prune, and the full `product/init` workflow).
 
 ## Verify the result
 
@@ -51,7 +51,7 @@ npm test
 
 Expect **26 test files / 64 tests** for a fresh golden product.
 
-If db or http integration tests fail with `Could not locate the bindings file` for **better-sqlite3**, rebuild the native module once (bootstrap runs an initial `npm install --ignore-scripts` before lock-prune):
+If db or http integration tests fail with `Could not locate the bindings file` for **better-sqlite3**, rebuild the native module once (bootstrap runs `npm install --ignore-scripts` before approving native scripts):
 
 ```bash
 npm rebuild better-sqlite3

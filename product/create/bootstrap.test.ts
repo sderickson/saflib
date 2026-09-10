@@ -13,6 +13,7 @@ import {
   hasSaflibSubmodule,
   resolveOrganizationName,
   runBootstrap,
+  syncSaflibOverridesIntoProductRoot,
   validateProductName,
 } from "./bootstrap.ts";
 import { materializeMonorepoScaffold } from "./scaffold.ts";
@@ -153,6 +154,57 @@ describe("materializeMonorepoScaffold", () => {
   });
 });
 
+describe("syncSaflibOverridesIntoProductRoot", () => {
+  it("merges saflib overrides into the product root before install", () => {
+    const cwd = mkdtempSync(join(tmpdir(), "saf-create-overrides-"));
+    writeFileSync(
+      join(cwd, "package.json"),
+      JSON.stringify(
+        {
+          name: "@acme/acme",
+          overrides: { "better-sqlite3": "12.11.1" },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+    mkdirSync(join(cwd, "saflib"), { recursive: true });
+    writeFileSync(
+      join(cwd, "saflib", "package.json"),
+      JSON.stringify(
+        {
+          name: "@saflib/saflib",
+          overrides: {
+            vite: "8.0.13",
+            vue: "3.5.20",
+            "better-sqlite3": "12.11.1",
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    expect(syncSaflibOverridesIntoProductRoot(cwd)).toEqual([
+      "vite@8.0.13",
+      "vue@3.5.20",
+    ]);
+
+    const pkg = JSON.parse(
+      readFileSync(join(cwd, "package.json"), "utf8"),
+    ) as {
+      overrides: Record<string, string>;
+    };
+    expect(pkg.overrides).toEqual({
+      "better-sqlite3": "12.11.1",
+      vite: "8.0.13",
+      vue: "3.5.20",
+    });
+  });
+});
+
 describe("runBootstrap", () => {
   it("runs submodule add, install, and product/init in order", () => {
     const cwd = mkdtempSync(join(tmpdir(), "saf-create-run-"));
@@ -182,5 +234,10 @@ describe("runBootstrap", () => {
       'npm exec saf-workflow kickoff product/init "demo" "example.com"',
     ]);
     expect(existsSync(join(cwd, ".gitignore"))).toBe(true);
+    const pkg = JSON.parse(
+      readFileSync(join(cwd, "package.json"), "utf8"),
+    ) as { overrides?: Record<string, string> };
+    expect(pkg.overrides?.vite).toBe("8.0.13");
+    expect(pkg.overrides?.vue).toBe("3.5.20");
   });
 });

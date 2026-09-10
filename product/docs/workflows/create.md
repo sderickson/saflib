@@ -1,8 +1,10 @@
 # product/create
 
-Bootstrap a **new SAF monorepo** in an empty git repository: add the saflib submodule, then run [`product/init`](./init.md).
+Bootstrap a **new SAF monorepo** in an empty git repository: add the saflib submodule, sync platform `overrides` into the product root, install, then run [`product/init`](./init.md).
 
 Requires **Node.js 26+** (`saf-create` runs TypeScript via `--experimental-strip-types`).
+
+Platform overrides are copied **before** the first `npm install` so optional peers (Vite, Vue compilers, etc.) resolve to saflib pins instead of latest.
 
 ## CLI: `saf-create`
 

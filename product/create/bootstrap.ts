@@ -14,6 +14,7 @@ export interface PackageJsonShape {
   workspaces?: string[];
   devDependencies?: Record<string, string>;
   scripts?: Record<string, string>;
+  overrides?: Record<string, string>;
   [key: string]: unknown;
 }
 
@@ -225,6 +226,59 @@ export function ensureRootPackageJson(
   return updated;
 }
 
+/**
+ * Copy `saflib/package.json` overrides into the product root **before** the first
+ * `npm install`. Without this, npm resolves optional peers (e.g. vite) to latest
+ * and locks them; later override sync often cannot rewrite that lock.
+ *
+ * Does not import `@saflib/monorepo` — that package is not linked until install.
+ *
+ * @param saflibPath — directory containing saflib's package.json (defaults to `{cwd}/saflib`)
+ */
+export function syncSaflibOverridesIntoProductRoot(
+  cwd: string,
+  saflibPath = join(cwd, "saflib"),
+): string[] {
+  const saflibPkgPath = join(saflibPath, "package.json");
+  const productPkgPath = join(cwd, "package.json");
+  if (!existsSync(saflibPkgPath)) {
+    throw new Error(
+      `saflib package.json is missing at ${saflibPkgPath}; add the saflib submodule before syncing overrides.`,
+    );
+  }
+  if (!existsSync(productPkgPath)) {
+    throw new Error(
+      "product root package.json is missing; create it before syncing overrides.",
+    );
+  }
+
+  const saflibPkg = JSON.parse(readFileSync(saflibPkgPath, "utf8")) as {
+    overrides?: Record<string, string>;
+  };
+  const productPkg = JSON.parse(
+    readFileSync(productPkgPath, "utf8"),
+  ) as PackageJsonShape;
+  const platformOverrides = saflibPkg.overrides ?? {};
+  const nextOverrides = { ...(productPkg.overrides ?? {}) };
+  const applied: string[] = [];
+
+  for (const [name, version] of Object.entries(platformOverrides)) {
+    if (nextOverrides[name] === version) continue;
+    nextOverrides[name] = version;
+    applied.push(`${name}@${version}`);
+  }
+
+  if (applied.length === 0) return applied;
+
+  productPkg.overrides = nextOverrides;
+  writeFileSync(
+    productPkgPath,
+    `${JSON.stringify(productPkg, null, 2)}\n`,
+    "utf8",
+  );
+  return applied;
+}
+
 export function addSaflibSubmodule(
   cwd: string,
   repo: string,
@@ -305,7 +359,14 @@ export function runBootstrap(options: BootstrapOptions): void {
   log("Applying monorepo root scaffold…");
   materializeMonorepoScaffold({ cwd, saflibPath, log });
 
-  log("Aligning dependency graph with saflib platform pins…");
+  log("Syncing saflib platform overrides into product root (before install)…");
+  const syncedOverrides = syncSaflibOverridesIntoProductRoot(cwd, saflibPath);
+  if (syncedOverrides.length > 0) {
+    log(`  pinned: ${syncedOverrides.join(", ")}`);
+  } else {
+    log("  overrides already aligned with saflib.");
+  }
+
   log("Installing npm dependencies (workspace link pass)…");
   runCommand("npm install --ignore-scripts", { cwd });
   runCommand(LOCK_PRUNE_CMD, { cwd });
@@ -313,8 +374,8 @@ export function runBootstrap(options: BootstrapOptions): void {
   log("Installing npm dependencies…");
   runCommand("npm install", { cwd });
 
-  // First install uses --ignore-scripts so lock-prune can run; native addons
-  // still need an approved install script + rebuild after the real install.
+  // First install uses --ignore-scripts so native addons skip compile until
+  // approved; rebuild after the real install.
   log("Approving better-sqlite3 install scripts…");
   runCommand("npm approve-scripts better-sqlite3", { cwd });
   runCommand("npm rebuild better-sqlite3", { cwd });
