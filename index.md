@@ -30,15 +30,26 @@ These docs are also accessible when coding with SAF by searching for their markd
 
 ### New project
 
-From a **git repository** (run `git init` first if needed). Requires **Node.js 26+**. saflib is an npm workspace monorepo, so install the bootstrap script with `curl` (not `npx` subpaths):
+To create a new SAF project:
+
+1. Choose a project name and domain name (domain name can be easily changed later, product name less so).
+2. Make sure you have **Node.js 26+** installed and **Docker** running.
+3. Create a new git repository and initialize it with `git init`.
+4. From inside the empty repo, run the following commands, inserting your project name and domain name:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sderickson/saflib/main/product/create/saf-create.sh -o /tmp/saf-create.sh
-chmod +x /tmp/saf-create.sh
-/tmp/saf-create.sh <name> <domain> --saflib-ref main
+curl -fsSL https://raw.githubusercontent.com/sderickson/saflib/main/product/create/saf-create.sh -o saf-create.sh
+chmod +x saf-create.sh
+./saf-create.sh <name> <domain> --saflib-ref main
+rm saf-create.sh
 ```
 
 This adds [`saflib`](https://github.com/sderickson/saflib) as a submodule, creates the root workspace `package.json`, and runs [`product/init`](./product/docs/workflows/init.md).
+
+To make sure everything works:
+
+1. Run `npm run typecheck`. Run it a second time and it should go much faster.
+2. Run `npm run test` (unit tests).
 
 ### Existing project
 

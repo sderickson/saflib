@@ -391,7 +391,9 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       lineReplace: makeProductInitLineReplace(context),
       // Keep expansion stubs (__subdomain-name__, __group-name__, …) in base only.
       // Both globs: dir trees (`__/…`) and stub filenames (`__…__-links.ts`).
-      skipSourceGlobs: ["**/__*__/**", "**/__*__*"],
+      // Suite docs under base/docs are for the golden template itself — products
+      // should not inherit them.
+      skipSourceGlobs: ["**/__*__/**", "**/__*__*", "**/base/docs/**"],
     })),
     // lineReplace drops stub `"path"` lines but can leave empty `{ }` objects in
     // multi-line tsconfig references; strip those before npm install / saf-imports.

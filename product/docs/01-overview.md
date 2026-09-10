@@ -22,7 +22,7 @@ From the monorepo root (alongside `saflib/`):
 npm exec saf-workflow kickoff product/init <name> <domain> [--productOnly]
 ```
 
-This copies `base` into `{name}/`, rewrites package names and paths, adds the product to root workspaces, runs install, and bootstraps env, tsconfig, and database migrations. See [init workflow docs](./workflows/init.md) for the full checklist.
+This copies `base` into `{name}/` (skipping suite docs under `base/docs/`), rewrites package names and paths, adds the product to root workspaces, runs install, and bootstraps env, tsconfig, and database migrations. See [init workflow docs](./workflows/init.md) for the full checklist.
 
 To test bootstrap and init locally against your saflib checkout, see [local init testing](./02-local-init-testing.md).
 
