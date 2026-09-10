@@ -86,6 +86,19 @@ export interface LockfileVersionSkewIssue {
   platformVersion: string;
 }
 
+/**
+ * Product root `node_modules/<dep>` does not match the platform lock version for a
+ * package pinned in `saflib/package.json` overrides (e.g. vite 8.3 peer-hoisted
+ * while the platform lock resolves 8.0.13).
+ */
+export interface RootLockfileVersionSkewIssue {
+  kind: "root-lockfile-version-skew";
+  dependency: string;
+  productLockfileKey: string;
+  productVersion: string;
+  platformVersion: string;
+}
+
 export interface PlatformOverrideSyncIssue {
   kind: "platform-override-sync";
   missing: Record<string, string>;
@@ -99,11 +112,14 @@ export type LockPruneIssue =
   | StaleLockfileIssue
   | UnhoistedRegistryDependencyIssue
   | LockfileVersionSkewIssue
+  | RootLockfileVersionSkewIssue
   | PlatformOverrideSyncIssue;
 
 export interface PlatformContract {
   overrides: Record<string, string>;
   resolvedVersions: Map<string, string>;
+  /** Full `packages` map from `saflib/package-lock.json` (for copying root trees). */
+  lockPackages: Record<string, LockPackageEntry | undefined>;
 }
 
 export interface LockPruneAnalysis {
@@ -210,17 +226,19 @@ export function readPlatformContract(rootDir: string): PlatformContract {
   }
 
   const resolvedVersions = new Map<string, string>();
+  let lockPackages: Record<string, LockPackageEntry | undefined> = {};
   const saflibLockPath = path.join(saflibDir, "package-lock.json");
   if (existsSync(saflibLockPath)) {
     const lock = JSON.parse(readFileSync(saflibLockPath, "utf8")) as PackageLock;
-    for (const [key, entry] of Object.entries(lock.packages ?? {})) {
+    lockPackages = lock.packages ?? {};
+    for (const [key, entry] of Object.entries(lockPackages)) {
       const name = packageNameFromRootLockfileKey(key);
       if (!name || !entry?.version || entry.link) continue;
       resolvedVersions.set(name, entry.version);
     }
   }
 
-  return { overrides, resolvedVersions };
+  return { overrides, resolvedVersions, lockPackages };
 }
 
 function buildCanonicalRegistrySpecs(
@@ -515,6 +533,91 @@ export function findLockfileVersionSkew(
   return issues.sort((a, b) => a.dependency.localeCompare(b.dependency));
 }
 
+/**
+ * Platform override pins must resolve at the product root to the same version as
+ * `saflib/package-lock.json`. Catches peer-hoisted drift (e.g. vite 8.3 at root
+ * while the platform lock and nested saflib copy are 8.0.13).
+ */
+export function findRootLockfileVersionSkew(
+  lockfile: PackageLock,
+  platform: PlatformContract,
+): RootLockfileVersionSkewIssue[] {
+  const packages = lockfile.packages ?? {};
+  const issues: RootLockfileVersionSkewIssue[] = [];
+
+  for (const name of Object.keys(platform.overrides).sort()) {
+    const platformVersion = platform.resolvedVersions.get(name);
+    if (!platformVersion) continue;
+    const platformRootKey = lockfileKeyForPackage("node_modules", name);
+    if (!platform.lockPackages[platformRootKey]?.version) continue;
+
+    const rootKey = platformRootKey;
+    const entry = packages[rootKey];
+    const productVersion = entry?.link ? undefined : entry?.version;
+    if (productVersion === platformVersion) continue;
+
+    issues.push({
+      kind: "root-lockfile-version-skew",
+      dependency: name,
+      productLockfileKey: rootKey,
+      productVersion: productVersion ?? "(missing)",
+      platformVersion,
+    });
+  }
+
+  return issues;
+}
+
+/**
+ * Replace skewed (or missing) product-root lock trees with the platform lock trees
+ * for override-pinned packages, and drop nested saflib workspace copies of that package.
+ */
+export function alignRootLockfileWithPlatform(
+  productLockfile: PackageLock,
+  platform: PlatformContract,
+  issues: RootLockfileVersionSkewIssue[],
+): string[] {
+  const productPkgs =
+    productLockfile.packages ?? (productLockfile.packages = {});
+  const platformPkgs = platform.lockPackages;
+  const fixed: string[] = [];
+
+  for (const issue of issues) {
+    const rootKey = issue.productLockfileKey;
+    const platformEntry = platformPkgs[rootKey];
+    if (!platformEntry?.version) continue;
+
+    for (const key of Object.keys(productPkgs)) {
+      if (key === rootKey || key.startsWith(`${rootKey}/`)) {
+        delete productPkgs[key];
+      }
+    }
+
+    for (const [key, entry] of Object.entries(platformPkgs)) {
+      if (key === rootKey || key.startsWith(`${rootKey}/`)) {
+        if (!entry) continue;
+        productPkgs[key] = { ...entry };
+      }
+    }
+
+    const nestedRoots = Object.keys(productPkgs).filter((key) => {
+      const parsed = parseNestedSaflibRegistryLockKey(key);
+      return parsed?.dependency === issue.dependency;
+    });
+    for (const nestedRoot of nestedRoots) {
+      for (const key of Object.keys(productPkgs)) {
+        if (key === nestedRoot || key.startsWith(`${nestedRoot}/`)) {
+          delete productPkgs[key];
+        }
+      }
+    }
+
+    fixed.push(issue.dependency);
+  }
+
+  return fixed;
+}
+
 export function findPlatformOverrideDrift(
   rootDir: string,
   platform: PlatformContract,
@@ -735,6 +838,7 @@ export function analyzeProductLockPrune(rootDir: string): LockPruneAnalysis {
     ...findHoistingHazards(rootDir),
     ...findUnhoistedRegistryDependencies(lockfile),
     ...findLockfileVersionSkew(lockfile, platform),
+    ...findRootLockfileVersionSkew(lockfile, platform),
   ];
 
   const overrideDrift = findPlatformOverrideDrift(rootDir, platform);
@@ -784,6 +888,11 @@ function formatIssue(issue: LockPruneIssue): string[] {
       return [
         `${issue.dependency} resolves to ${issue.productVersion} in the product lockfile but ${issue.platformVersion} in saflib/package-lock.json.`,
         `  remove nested lock entry: ${issue.productLockfileKey}`,
+      ];
+    case "root-lockfile-version-skew":
+      return [
+        `${issue.dependency} at the product root resolves to ${issue.productVersion} but saflib/package-lock.json has ${issue.platformVersion} (platform override pin).`,
+        `  replace lockfile tree: ${issue.productLockfileKey} from saflib/package-lock.json`,
       ];
     case "platform-override-sync":
       return [
@@ -835,6 +944,7 @@ export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
   const hoistingHazards: HoistingHazardIssue[] = [];
   const unhoistedRegistry: UnhoistedRegistryDependencyIssue[] = [];
   const versionSkew: LockfileVersionSkewIssue[] = [];
+  const rootVersionSkew: RootLockfileVersionSkewIssue[] = [];
   let wroteLockfile = false;
   const platform = readPlatformContract(analysis.rootDir);
 
@@ -869,6 +979,9 @@ export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
       case "lockfile-version-skew":
         versionSkew.push(issue);
         break;
+      case "root-lockfile-version-skew":
+        rootVersionSkew.push(issue);
+        break;
       case "platform-override-sync":
         for (const pin of syncPlatformOverrides(analysis.rootDir, platform)) {
           applied.push(`synced platform override ${pin}`);
@@ -889,7 +1002,8 @@ export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
   if (
     hoistingHazards.length > 0 ||
     unhoistedRegistry.length > 0 ||
-    versionSkew.length > 0
+    versionSkew.length > 0 ||
+    rootVersionSkew.length > 0
   ) {
     writePrunedLockfile(analysis.lockfilePath, (lockfile) => {
       if (hoistingHazards.length > 0) {
@@ -904,6 +1018,17 @@ export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
         )) {
           applied.push(
             `hoisted registry dependency ${dep} to the product root in package-lock.json`,
+          );
+        }
+      }
+      if (rootVersionSkew.length > 0) {
+        for (const dep of alignRootLockfileWithPlatform(
+          lockfile,
+          platform,
+          rootVersionSkew,
+        )) {
+          applied.push(
+            `aligned root lock entry for ${dep} to ${platform.resolvedVersions.get(dep)} from saflib/package-lock.json`,
           );
         }
       }

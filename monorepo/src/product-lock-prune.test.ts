@@ -2,12 +2,14 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
+  alignRootLockfileWithPlatform,
   analyzeProductLockPrune,
   applyLockPruneFixes,
   findCompetingDependencies,
   findHoistingHazards,
   findLockfileVersionSkew,
   findRedundantDependencies,
+  findRootLockfileVersionSkew,
   findUnhoistedRegistryDependencies,
   hoistMisplacedLockfilePeers,
   hoistUnhoistedRegistryDependencies,
@@ -324,6 +326,7 @@ describe("findLockfileVersionSkew", () => {
     const platform = {
       overrides: {},
       resolvedVersions: new Map([["@tanstack/vue-query", "5.85.9"]]),
+      lockPackages: {},
     };
 
     expect(findLockfileVersionSkew(lockfile, platform)).toEqual([
@@ -335,6 +338,108 @@ describe("findLockfileVersionSkew", () => {
         platformVersion: "5.85.9",
       },
     ]);
+  });
+});
+
+describe("findRootLockfileVersionSkew", () => {
+  it("flags override-pinned root packages that differ from the platform lock", () => {
+    const lockfile = {
+      packages: {
+        "node_modules/vite": { version: "8.3.0" },
+        "saflib/node_modules/vite": { version: "8.0.13" },
+      },
+    };
+    const platform = {
+      overrides: { vite: "8.0.13" },
+      resolvedVersions: new Map([["vite", "8.0.13"]]),
+      lockPackages: {
+        "node_modules/vite": {
+          version: "8.0.13",
+          resolved: "https://registry.npmjs.org/vite/-/vite-8.0.13.tgz",
+        },
+        "node_modules/vite/node_modules/rolldown": { version: "1.0.1" },
+      },
+    };
+
+    expect(findRootLockfileVersionSkew(lockfile, platform)).toEqual([
+      {
+        kind: "root-lockfile-version-skew",
+        dependency: "vite",
+        productLockfileKey: "node_modules/vite",
+        productVersion: "8.3.0",
+        platformVersion: "8.0.13",
+      },
+    ]);
+  });
+
+  it("flags missing root entries for override pins present in the platform lock", () => {
+    const lockfile = { packages: {} };
+    const platform = {
+      overrides: { vite: "8.0.13" },
+      resolvedVersions: new Map([["vite", "8.0.13"]]),
+      lockPackages: {
+        "node_modules/vite": { version: "8.0.13" },
+      },
+    };
+
+    expect(findRootLockfileVersionSkew(lockfile, platform)).toEqual([
+      {
+        kind: "root-lockfile-version-skew",
+        dependency: "vite",
+        productLockfileKey: "node_modules/vite",
+        productVersion: "(missing)",
+        platformVersion: "8.0.13",
+      },
+    ]);
+  });
+});
+
+describe("alignRootLockfileWithPlatform", () => {
+  it("replaces the root tree from the platform lock and drops nested saflib copies", () => {
+    const productLockfile = {
+      packages: {
+        "node_modules/vite": { version: "8.3.0" },
+        "node_modules/vite/node_modules/rolldown": { version: "1.2.6" },
+        "saflib/node_modules/vite": { version: "8.0.13" },
+        "saflib/vite/node_modules/vite": { version: "8.0.13" },
+      },
+    };
+    const platform = {
+      overrides: { vite: "8.0.13" },
+      resolvedVersions: new Map([["vite", "8.0.13"]]),
+      lockPackages: {
+        "node_modules/vite": {
+          version: "8.0.13",
+          resolved: "https://registry.npmjs.org/vite/-/vite-8.0.13.tgz",
+        },
+        "node_modules/vite/node_modules/rolldown": { version: "1.0.1" },
+      },
+    };
+
+    const fixed = alignRootLockfileWithPlatform(productLockfile, platform, [
+      {
+        kind: "root-lockfile-version-skew",
+        dependency: "vite",
+        productLockfileKey: "node_modules/vite",
+        productVersion: "8.3.0",
+        platformVersion: "8.0.13",
+      },
+    ]);
+
+    expect(fixed).toEqual(["vite"]);
+    const packages = productLockfile.packages as Record<
+      string,
+      { version?: string; resolved?: string }
+    >;
+    expect(packages["node_modules/vite"]).toMatchObject({
+      version: "8.0.13",
+      resolved: "https://registry.npmjs.org/vite/-/vite-8.0.13.tgz",
+    });
+    expect(packages["node_modules/vite/node_modules/rolldown"]).toMatchObject({
+      version: "1.0.1",
+    });
+    expect(packages["saflib/node_modules/vite"]).toBeUndefined();
+    expect(packages["saflib/vite/node_modules/vite"]).toBeUndefined();
   });
 });
 
