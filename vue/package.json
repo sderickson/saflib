@@ -28,6 +28,7 @@
     "typecheck:workflows": "tsc --project tsconfig.workflows.json"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@saflib/analytics-sdk": "*",
     "@saflib/analytics-spec": "*",
     "@saflib/links": "*",
