@@ -19,7 +19,7 @@
   "devDependencies": {
     "@vitest/coverage-v8": "^5.0.0",
     "drizzle-kit": "^0.31.10",
-    "typescript": "~6.0.0",
+    "typescript": "~7.0.0",
     "vitest": "^5.0.0",
     "vue-router": "^5.0.0",
     "vue-tsc": "^3.0.6"
@@ -44,7 +44,7 @@
     "@vue/server-renderer": "3.5.20",
     "@vue/shared": "3.5.20",
     "@types/node": "^24.3.0",
-    "typescript": "~6.0.0",
+    "typescript": "~7.0.0",
     "msw": "2.12.7",
     "drizzle-kit": "^0.31.10"
   },
