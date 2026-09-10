@@ -27,3 +27,17 @@ if (typeof globalThis.ResizeObserver === "undefined") {
     disconnect() {}
   };
 }
+
+// Vuetify reads `window.navigator.maxTouchPoints` at module load (globals.ts).
+// Some CI workers briefly have `window` without a usable `navigator`.
+if (typeof globalThis.navigator === "undefined") {
+  Object.defineProperty(globalThis, "navigator", {
+    value: { maxTouchPoints: 0 },
+    configurable: true,
+  });
+} else if (typeof globalThis.navigator.maxTouchPoints !== "number") {
+  Object.defineProperty(globalThis.navigator, "maxTouchPoints", {
+    value: 0,
+    configurable: true,
+  });
+}
