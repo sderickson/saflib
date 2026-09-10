@@ -4,19 +4,26 @@ import {
   linkToProps,
   setClientName,
 } from "./utils.ts";
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import {
+  clearDocumentStub,
+  restoreDocumentLocationStub,
+  stubDocumentLocation,
+} from "@saflib/vitest/document-location-stub";
 import { linkToHref } from "./index.ts";
 import { typedEnv } from "@saflib/env";
 
 beforeEach(() => {
-  globalThis.document = {
-    location: {
-      hostname: "test.docker.localhost",
-      host: "test.docker.localhost",
-      protocol: "http:",
-    },
-  } as unknown as Document;
+  stubDocumentLocation({
+    hostname: "test.docker.localhost",
+    host: "test.docker.localhost",
+    protocol: "http:",
+  });
   setClientName("test");
+});
+
+afterEach(() => {
+  restoreDocumentLocationStub();
 });
 
 describe("constructPath", () => {
@@ -161,7 +168,7 @@ describe("linkToHref", () => {
   });
 
   it("also works on backend with process.env", () => {
-    globalThis.document = undefined as unknown as Document;
+    clearDocumentStub();
     typedEnv.DOMAIN = "some.domain";
     typedEnv.PROTOCOL = "https";
     expect(linkToHref({ subdomain: "test", path: "/" })).toBe(
@@ -195,36 +202,30 @@ describe("nested subdomains (hub model)", () => {
   });
 
   it("setClientName accepts dotted client name when hostname matches", () => {
-    globalThis.document = {
-      location: {
-        hostname: "app.recipes.scotterickson.info",
-        host: "app.recipes.scotterickson.info",
-        protocol: "http:",
-      },
-    } as unknown as Document;
+    stubDocumentLocation({
+      hostname: "app.recipes.scotterickson.info",
+      host: "app.recipes.scotterickson.info",
+      protocol: "http:",
+    });
     expect(() => setClientName("app.recipes")).not.toThrow();
   });
 
   it("getHost returns root domain after setClientName with dotted client", () => {
-    globalThis.document = {
-      location: {
-        hostname: "app.recipes.scotterickson.info",
-        host: "app.recipes.scotterickson.info",
-        protocol: "http:",
-      },
-    } as unknown as Document;
+    stubDocumentLocation({
+      hostname: "app.recipes.scotterickson.info",
+      host: "app.recipes.scotterickson.info",
+      protocol: "http:",
+    });
     setClientName("app.recipes");
     expect(getHost()).toBe("scotterickson.info");
   });
 
   it("linkToProps returns to for same product subdomain, href for other product", () => {
-    globalThis.document = {
-      location: {
-        hostname: "app.recipes.scotterickson.info",
-        host: "app.recipes.scotterickson.info",
-        protocol: "http:",
-      },
-    } as unknown as Document;
+    stubDocumentLocation({
+      hostname: "app.recipes.scotterickson.info",
+      host: "app.recipes.scotterickson.info",
+      protocol: "http:",
+    });
     setClientName("app.recipes");
 
     expect(linkToProps({ subdomain: "app.recipes", path: "/" })).toEqual({
