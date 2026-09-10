@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@saflib/vitest": "*",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.11"
   },
   "sideEffects": [
     "./../../scripts/apply-side-effects.mjs",
