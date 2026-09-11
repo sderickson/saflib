@@ -42,7 +42,8 @@ export function createSettingsFlowQueryOptions({
         throw e;
       }
     },
-    staleTime: 30_000,
+    // Always mint a fresh flow (and CSRF cookie) when the create route mounts.
+    staleTime: 0,
     enabled,
   });
 }

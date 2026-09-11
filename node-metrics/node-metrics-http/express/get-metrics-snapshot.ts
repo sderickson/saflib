@@ -1,4 +1,5 @@
 import client from "prom-client";
+import { assertDevelopmentObservabilityAvailable } from "@saflib/env";
 import { createHandler } from "./handler.ts";
 import type { MetricsResponseBody } from "@saflib/node-metrics-spec";
 import { parsePromText } from "../lib/parsePromText.ts";
@@ -16,6 +17,7 @@ export function createGetMetricsSnapshotHandler(
     (() => Promise.resolve(client.register.metrics()));
 
   return createHandler(async (_req, res) => {
+    assertDevelopmentObservabilityAvailable("Metrics snapshot");
     const text = await collectMetrics();
     const metrics = parsePromText(text);
     res

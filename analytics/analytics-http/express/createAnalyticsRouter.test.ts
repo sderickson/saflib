@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import express from "express";
 import request from "supertest";
 import { createErrorMiddleware } from "@saflib/express";
@@ -10,8 +10,19 @@ import {
 import { createDevAnalyticsRouter } from "./createAnalyticsRouter.ts";
 
 describe("createDevAnalyticsRouter", () => {
+  const originalDeployment = process.env.DEPLOYMENT_NAME;
+
   beforeEach(() => {
+    process.env.DEPLOYMENT_NAME = "development";
     resetProductEventBufferForTests();
+  });
+
+  afterEach(() => {
+    if (originalDeployment === undefined) {
+      delete process.env.DEPLOYMENT_NAME;
+    } else {
+      process.env.DEPLOYMENT_NAME = originalDeployment;
+    }
   });
 
   function makeApp() {
@@ -21,6 +32,11 @@ describe("createDevAnalyticsRouter", () => {
     app.use(createErrorMiddleware());
     return app;
   }
+
+  it("returns 500 outside development (mis-mounted dev handler)", async () => {
+    process.env.DEPLOYMENT_NAME = "production";
+    await request(makeApp()).get("/admin/product-events").expect(500);
+  });
 
   it("records client events via POST and lists them without auth", async () => {
     await request(makeApp())

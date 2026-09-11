@@ -26,6 +26,7 @@ export {
   resolveMfaContinueHref,
   sessionSatisfiesMfa,
 } from "./helpers/mfa-aal2-probe.ts";
+export { isKratosSecurityCsrfResponseBody } from "./get-flow-query-error.ts";
 
 // ── Queries: session ────────────────────────────────────────────────────────
 export {

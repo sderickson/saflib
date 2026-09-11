@@ -11,7 +11,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List buffered product events */
+        /**
+         * List buffered product events
+         * @description Development ring-buffer listing (`createDevAnalyticsRouter` only). Tagged `no-auth` so local dev stacks can read captured events without a session.
+         */
         get: operations["listProductEvents"];
         put?: never;
         post?: never;

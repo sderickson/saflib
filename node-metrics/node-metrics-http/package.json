@@ -15,6 +15,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/env": "*",
     "@saflib/node-metrics-spec": "*",
     "express": "^5.0.0",
     "http-errors": "^2.0.0",

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@saflib/analytics-spec": "*",
+    "@saflib/env": "*",
     "express": "^5.0.0",
     "http-errors": "^2.0.0"
   },

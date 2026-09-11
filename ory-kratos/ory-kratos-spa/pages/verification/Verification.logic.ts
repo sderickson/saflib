@@ -145,6 +145,20 @@ export function emailForVerificationResend(
   return undefined;
 }
 
+/** Registration handoff stubs have no UI nodes — resend needs a fresh browser flow. */
+export function verificationFlowNeedsCsrfRefresh(
+  flow: VerificationFlow,
+): boolean {
+  return csrfTokenFromVerificationFlow(flow).length === 0;
+}
+
+function verificationBodyCsrf(
+  flow: VerificationFlow,
+): { csrf_token?: string } {
+  const csrf_token = csrfTokenFromVerificationFlow(flow);
+  return csrf_token ? { csrf_token } : {};
+}
+
 /** Resend payload: `method: code` with `email` and no `code` (per Ory Kratos verification API). */
 export function buildVerificationResendCodeBody(
   flow: VerificationFlow,
@@ -152,7 +166,7 @@ export function buildVerificationResendCodeBody(
 ): UpdateVerificationFlowBody {
   return {
     method: "code",
-    csrf_token: csrfTokenFromVerificationFlow(flow),
+    ...verificationBodyCsrf(flow),
     email: email.trim(),
   };
 }
@@ -163,7 +177,7 @@ export function buildVerificationCodeBody(
 ): UpdateVerificationFlowBody {
   return {
     method: "code",
-    csrf_token: csrfTokenFromVerificationFlow(flow),
+    ...verificationBodyCsrf(flow),
     code: code.trim(),
   };
 }

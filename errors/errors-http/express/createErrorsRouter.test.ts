@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, beforeAll } from "vitest";
+import { describe, it, expect, beforeEach, beforeAll, afterEach } from "vitest";
 import express from "express";
 import request from "supertest";
 import { createErrorMiddleware } from "@saflib/express";
@@ -20,12 +20,23 @@ const siteAdminHeaders = {
 } as const;
 
 describe("errors routers", () => {
+  const originalDeployment = process.env.DEPLOYMENT_NAME;
+
   beforeAll(() => {
     configureMockErrors();
   });
 
   beforeEach(() => {
+    process.env.DEPLOYMENT_NAME = "development";
     resetReportedErrorBufferForTests();
+  });
+
+  afterEach(() => {
+    if (originalDeployment === undefined) {
+      delete process.env.DEPLOYMENT_NAME;
+    } else {
+      process.env.DEPLOYMENT_NAME = originalDeployment;
+    }
   });
 
   function makeApp() {
@@ -117,19 +128,22 @@ describe("errors routers", () => {
     );
   });
 
-  it("rejects non-admin listing of buffered errors", async () => {
-    const res = await request(makeApp())
-      .get("/admin/errors")
-      .set({
-        "x-requested-with": "XMLHttpRequest",
-        "x-user-id": "user-1",
-        "x-user-email": "user@example.com",
-        "x-user-email-verified": "true",
-        "x-user-mfa-completed": "true",
-      })
-      .expect(403);
+  it("returns 500 outside development (mis-mounted dev handler)", async () => {
+    process.env.DEPLOYMENT_NAME = "production";
+    await request(makeApp()).get("/admin/errors").expect(500);
+  });
 
-    expect(res.body.message).toContain("Forbidden");
+  it("lists buffered errors without auth (dev ring buffer)", async () => {
+    recordReportedError({
+      kind: "client",
+      message: "no session required",
+      source: "web-app",
+    });
+
+    const res = await request(makeApp()).get("/admin/errors").expect(200);
+
+    expect(res.body.reported_errors).toHaveLength(1);
+    expect(res.body.reported_errors[0].message).toBe("no session required");
   });
 
   it("filters listed errors by kind", async () => {

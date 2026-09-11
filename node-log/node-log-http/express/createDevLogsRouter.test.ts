@@ -42,9 +42,9 @@ describe("createDevLogsRouter", () => {
     expect(res.body.logs[0].message).toBe("hello");
   });
 
-  it("returns 403 outside development", async () => {
+  it("returns 500 outside development (mis-mounted dev handler)", async () => {
     process.env.DEPLOYMENT_NAME = "production";
-    await request(makeApp()).get("/dev/logs").expect(403);
+    await request(makeApp()).get("/dev/logs").expect(500);
   });
 
   it("returns 503 when buffer is disabled", async () => {

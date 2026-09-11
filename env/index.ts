@@ -25,3 +25,4 @@ export const validateEnv = (env: any, envSchema: any): boolean => {
 
 export * from "./env.ts";
 export * from "./src/deployment.ts";
+export * from "./src/assertDevelopmentObservability.ts";

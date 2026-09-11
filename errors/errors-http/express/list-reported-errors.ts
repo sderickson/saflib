@@ -1,4 +1,5 @@
 import createError from "http-errors";
+import { assertDevelopmentObservabilityAvailable } from "@saflib/env";
 import { createHandler } from "./handler.ts";
 import type { ErrorsResponseBody } from "@saflib/errors-spec";
 import { getErrorService, type ReportedErrorKind } from "@saflib/errors-service";
@@ -12,6 +13,7 @@ const REPORTED_ERROR_KINDS = new Set<ReportedErrorKind>([
 
 export function createListReportedErrorsHandler() {
   return createHandler(async (req, res) => {
+    assertDevelopmentObservabilityAvailable("Buffered errors");
     const kindRaw =
       typeof req.query.kind === "string" ? req.query.kind : undefined;
     let kind: ReportedErrorKind | undefined;

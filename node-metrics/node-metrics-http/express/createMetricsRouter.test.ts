@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import express from "express";
 import request from "supertest";
 import {
@@ -15,6 +15,20 @@ demo_requests_total{route="home"} 3
 `.trim();
 
 describe("createMetricsRouter", () => {
+  const originalDeployment = process.env.DEPLOYMENT_NAME;
+
+  beforeEach(() => {
+    process.env.DEPLOYMENT_NAME = "development";
+  });
+
+  afterEach(() => {
+    if (originalDeployment === undefined) {
+      delete process.env.DEPLOYMENT_NAME;
+    } else {
+      process.env.DEPLOYMENT_NAME = originalDeployment;
+    }
+  });
+
   function makeApp(promText: string = samplePromText) {
     const app = express();
     app.get(
@@ -29,6 +43,11 @@ describe("createMetricsRouter", () => {
     app.use(createErrorMiddleware());
     return app;
   }
+
+  it("returns 500 outside development (mis-mounted dev handler)", async () => {
+    process.env.DEPLOYMENT_NAME = "production";
+    await request(makeApp()).get("/admin/metrics/snapshot").expect(500);
+  });
 
   it("returns parsed metrics without auth", async () => {
     const res = await request(makeApp())

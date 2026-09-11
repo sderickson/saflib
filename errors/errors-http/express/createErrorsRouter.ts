@@ -37,7 +37,7 @@ export function createErrorsRouter(): Router {
 /**
  * Development-only mock error routes (ring buffer):
  * - `POST /errors/record` — browser client error capture
- * - `GET /admin/errors` — ring buffer listing (site-admin-only)
+ * - `GET /admin/errors` — ring buffer listing (no-auth; dev router only)
  */
 export function createDevErrorsRouter(): Router {
   const router = Router();
@@ -50,7 +50,9 @@ export function createDevErrorsRouter(): Router {
 
   router.get(
     "/admin/errors",
-    ...createOperationScopedMiddleware(listReportedErrorsOperationJsonSpec),
+    ...createOperationScopedMiddleware(listReportedErrorsOperationJsonSpec, {
+      enforceAuth: false,
+    }),
     createListReportedErrorsHandler(),
   );
 
