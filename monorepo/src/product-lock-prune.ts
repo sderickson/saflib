@@ -406,10 +406,11 @@ export function findCompetingDependencies(
   const canonicalSpecs = buildCanonicalRegistrySpecs(rootDir, packageIndex, platform);
   const issues: CompetingDependencyIssue[] = [];
 
-  for (const [, info] of packageIndex) {
-    if (isSaflibPackageDir(rootDir, info.dir)) continue;
-    const packageJsonPath = path.join(info.dir, "package.json");
-    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps;
+  for (const packageDir of collectProductPackageDirs(rootDir, packageIndex)) {
+    const packageJsonPath = path.join(packageDir, "package.json");
+    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps & {
+      name?: string;
+    };
     for (const { field, name, spec } of collectDependencySpecs(pkg)) {
       if (isProductOwnedDependencyName(name, spec)) continue;
       const ownedSpecs = saflibSpecs.get(name);
@@ -449,6 +450,19 @@ function isDeployPackage(packageJsonPath: string, rootDir: string): boolean {
   return rel === "deploy/package.json" || rel.startsWith("deploy/");
 }
 
+/** Product package dirs to scan; always includes the monorepo root (index name collisions can hide it). */
+function collectProductPackageDirs(
+  rootDir: string,
+  packageIndex: ReturnType<typeof buildPackageIndex>,
+): string[] {
+  const dirs = new Set<string>([path.resolve(rootDir)]);
+  for (const [, info] of packageIndex) {
+    if (isSaflibPackageDir(rootDir, info.dir)) continue;
+    dirs.add(path.resolve(info.dir));
+  }
+  return [...dirs];
+}
+
 export function findRedundantDependencies(
   rootDir: string,
   packageIndex: ReturnType<typeof buildPackageIndex>,
@@ -457,13 +471,14 @@ export function findRedundantDependencies(
   const saflibSpecs = buildSaflibSpecs(rootDir, packageIndex);
   const issues: RedundantDependencyIssue[] = [];
 
-  for (const [, info] of packageIndex) {
-    if (isSaflibPackageDir(rootDir, info.dir)) continue;
-    const packageJsonPath = path.join(info.dir, "package.json");
+  for (const packageDir of collectProductPackageDirs(rootDir, packageIndex)) {
+    const packageJsonPath = path.join(packageDir, "package.json");
     if (options.fixableOnly && isDeployPackage(packageJsonPath, rootDir)) {
       continue;
     }
-    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps;
+    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps & {
+      name?: string;
+    };
     for (const { field, name, spec } of collectDependencySpecs(pkg)) {
       if (isProductOwnedDependencyName(name, spec)) continue;
       const ownedSpecs = saflibSpecs.get(name);

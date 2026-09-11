@@ -8,7 +8,13 @@ import {
 
 export { matchExportPattern, sortExportPatternKeys } from "./match-export-pattern.ts";
 
-const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "coverage"]);
+const SKIP_DIRS = new Set([
+  "node_modules",
+  ".git",
+  "dist",
+  "coverage",
+  ".saf-docker",
+]);
 
 /**
  * Walk up from `fromDir` until a package.json with a `workspaces` field is found.

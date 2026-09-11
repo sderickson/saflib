@@ -77,6 +77,36 @@ function relativePathToFs(relativePath: string): string {
   return relativePath.replace(/^\.\//, "");
 }
 
+export function stageRootPackageName(
+  rootName: string | undefined,
+  imageName: string,
+): string {
+  const base = rootName?.trim() || "workspace";
+  return `${base}--docker-${imageName}`;
+}
+
+function isSaflibMonorepoRoot(
+  rootDir: string,
+  rootName: unknown,
+): boolean {
+  if (typeof rootName === "string" && rootName.startsWith("@saflib/")) {
+    return true;
+  }
+  return path.basename(rootDir) === "saflib";
+}
+
+function readLockRootManifest(rootDir: string): {
+  devDependencies?: unknown;
+  dependencies?: unknown;
+} | undefined {
+  const lock = JSON.parse(
+    readFileSync(path.join(rootDir, "package-lock.json"), "utf-8"),
+  ) as {
+    packages?: Record<string, { devDependencies?: unknown; dependencies?: unknown }>;
+  };
+  return lock.packages?.[""];
+}
+
 function stagePackageJsonsForInstall(
   ctx: MonorepoContext,
   imageName: string,
@@ -89,9 +119,29 @@ function stagePackageJsonsForInstall(
   const rootPackageJson = JSON.parse(
     readFileSync(path.join(ctx.rootDir, "package.json"), "utf-8"),
   ) as Record<string, unknown>;
+  const stagedRootPackageJson = stripPackageJsonForInstall(rootPackageJson);
+  stagedRootPackageJson.name = stageRootPackageName(
+    typeof stagedRootPackageJson.name === "string"
+      ? stagedRootPackageJson.name
+      : undefined,
+    imageName,
+  );
+  stagedRootPackageJson.private = true;
+  if (isSaflibMonorepoRoot(ctx.rootDir, stagedRootPackageJson.name)) {
+    // Saflib lock root omits override metadata; restating overrides in the staged
+    // root makes `npm ci` reject the copied lock (EUSAGE / Missing: …).
+    delete stagedRootPackageJson.overrides;
+    const lockRoot = readLockRootManifest(ctx.rootDir);
+    if (lockRoot?.devDependencies) {
+      stagedRootPackageJson.devDependencies = lockRoot.devDependencies;
+    }
+    if (lockRoot?.dependencies) {
+      stagedRootPackageJson.dependencies = lockRoot.dependencies;
+    }
+  }
   writeFileSync(
     path.join(stageDir, "package.json"),
-    JSON.stringify(stripPackageJsonForInstall(rootPackageJson), null, 2) + "\n",
+    JSON.stringify(stagedRootPackageJson, null, 2) + "\n",
   );
 
   writeFileSync(

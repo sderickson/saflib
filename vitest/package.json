@@ -8,7 +8,8 @@
   "exports": {
     "./vitest.config.js": "./base-vitest.config.js",
     "./import-graph-reporter.js": "./import-graph-reporter.js",
-    "./local-storage-stub": "./local-storage-stub.ts"
+    "./local-storage-stub": "./local-storage-stub.ts",
+    "./document-location-stub": "./document-location-stub.ts"
   },
   "dependencies": {
     "@saflib/commander": "*"

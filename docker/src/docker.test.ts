@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { vol } from "memfs";
 import {
   generateDockerfiles,
+  stageRootPackageName,
   stripPackageJsonForInstall,
 } from "./docker.ts";
 import { monorepoPackageMock } from "./monorepo.mock.ts";
@@ -46,6 +47,14 @@ describe("stripPackageJsonForInstall", () => {
   });
 });
 
+describe("stageRootPackageName", () => {
+  it("suffixes the image name so staged roots do not collide with the monorepo root", () => {
+    expect(stageRootPackageName("@pathclerk/pathclerk", "pathclerk-daemon-monolith")).toBe(
+      "@pathclerk/pathclerk--docker-pathclerk-daemon-monolith",
+    );
+  });
+});
+
 describe("generateDockerfiles", () => {
   it("should generate the correct dockerfiles", () => {
     const context = buildMonorepoContext("/app");
@@ -77,6 +86,17 @@ describe("generateDockerfiles", () => {
     expect(stagedPackageJson).not.toHaveProperty("scripts");
     expect(stagedPackageJson).not.toHaveProperty("safImports");
     expect(stagedPackageJson.name).toBe("@foo/auth-web-client");
+
+    const stagedRootPackageJson = JSON.parse(
+      vol.readFileSync(
+        "/app/.saf-docker/stage/foo-auth-web-client/package.json",
+        "utf-8",
+      ) as string,
+    );
+    expect(stagedRootPackageJson.name).toBe(
+      "@foo/foo--docker-foo-auth-web-client",
+    );
+    expect(stagedRootPackageJson.private).toBe(true);
 
     expect(
       vol.existsSync(
