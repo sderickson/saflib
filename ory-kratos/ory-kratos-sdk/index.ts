@@ -30,6 +30,7 @@ export { isKratosSecurityCsrfResponseBody } from "./get-flow-query-error.ts";
 
 // ── Queries: session ────────────────────────────────────────────────────────
 export {
+  invalidateKratosSessionQueries,
   kratosSessionQueryKey,
   kratosSessionQueryOptions,
   useKratosSession,
