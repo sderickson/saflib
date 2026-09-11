@@ -8,9 +8,10 @@
     "/admin/product-events": {
       "get": {
         "summary": "List buffered product events",
+        "description": "Development ring-buffer listing (`createDevAnalyticsRouter` only). Tagged `no-auth` so local dev stacks can read captured events without a session.\n",
         "operationId": "listProductEvents",
         "tags": [
-          "site-admin-only"
+          "no-auth"
         ],
         "parameters": [
           {

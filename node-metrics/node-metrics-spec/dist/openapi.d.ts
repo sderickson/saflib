@@ -12,7 +12,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Snapshot of parsed in-process Prometheus metrics */
+        /**
+         * Snapshot of parsed in-process Prometheus metrics
+         * @description Development-only metrics viewer (`createMetricsRouter` only). Tagged `no-auth` for local dev stacks without a session.
+         */
         get: operations["getMetricsSnapshot"];
         put?: never;
         post?: never;

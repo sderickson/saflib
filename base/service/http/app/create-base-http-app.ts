@@ -90,11 +90,10 @@ export function buildBaseHttpApp(
 
   // Production error routes — before auth gate.
   app.use(createErrorsRouter());
-  // In-memory error admin/list routes (golden product always uses configureMockErrors).
-  app.use(createDevErrorsRouter());
 
   // Development-only observability routes — before auth gate.
   if (isDevelopmentDeployment()) {
+    app.use(createDevErrorsRouter());
     app.use(createDevLogsRouter());
     app.use(createDevAnalyticsRouter());
     app.use(

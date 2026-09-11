@@ -69,7 +69,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List buffered reported errors */
+        /**
+         * List buffered reported errors
+         * @description Development ring-buffer listing (`createDevErrorsRouter` only). Tagged `no-auth` so local dev stacks can read captured errors without a session, matching `/dev/logs`.
+         */
         get: operations["listReportedErrors"];
         put?: never;
         post?: never;

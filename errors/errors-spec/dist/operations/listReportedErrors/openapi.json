@@ -8,9 +8,10 @@
     "/admin/errors": {
       "get": {
         "summary": "List buffered reported errors",
+        "description": "Development ring-buffer listing (`createDevErrorsRouter` only). Tagged `no-auth` so local dev stacks can read captured errors without a session, matching `/dev/logs`.\n",
         "operationId": "listReportedErrors",
         "tags": [
-          "site-admin-only"
+          "no-auth"
         ],
         "parameters": [
           {

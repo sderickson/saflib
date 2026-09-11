@@ -1,8 +1,11 @@
 getMetricsSnapshot:
   summary: Snapshot of parsed in-process Prometheus metrics
+  description: >
+    Development-only metrics viewer (`createMetricsRouter` only). Tagged
+    `no-auth` for local dev stacks without a session.
   operationId: getMetricsSnapshot
   tags:
-    - site-admin-only
+    - no-auth
   responses:
     "200":
       description: Parsed metric series from the in-process prom-client registry.

@@ -1,14 +1,9 @@
 import createError from "http-errors";
+import { assertDevelopmentObservabilityAvailable } from "@saflib/env";
 import { isDevLogBufferEnabled } from "../lib/devLogBuffer.ts";
 
-function deploymentName(): string {
-  return process.env.DEPLOYMENT_NAME ?? "";
-}
-
 export function assertDevLogsAvailable(): void {
-  if (deploymentName() !== "development") {
-    throw createError(403, "Dev logs are only available in development");
-  }
+  assertDevelopmentObservabilityAvailable("Dev logs");
   if (!isDevLogBufferEnabled()) {
     throw createError(503, "Dev log buffer is not enabled");
   }
