@@ -1,8 +1,11 @@
 import { computed, ref, watch, type Ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { useQueryClient } from "@tanstack/vue-query";
 import type { Session, VerificationFlow } from "@ory/client";
 import {
+  createVerificationFlowQueryOptions,
   useUpdateVerificationFlowMutation,
+  VerificationFlowCreated,
   VerificationFlowUpdated,
 } from "@saflib/ory-kratos-sdk";
 import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
@@ -14,6 +17,7 @@ import {
   emailForVerificationResend,
   parseReturnToFromQuery,
   verificationFlowIsComplete,
+  verificationFlowNeedsCsrfRefresh,
 } from "./Verification.logic.ts";
 
 /**
@@ -27,6 +31,8 @@ export function useVerificationStubFlow(args: {
   needsEmailBootstrap: Ref<boolean>;
 }) {
   const route = useRoute();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const postAuthFallbackHref = useAuthPostAuthFallbackHref();
   const updateVerification = useUpdateVerificationFlowMutation();
 
@@ -60,6 +66,36 @@ export function useVerificationStubFlow(args: {
 
   const canSubmit = computed(() => canSubmitVerificationCode(code.value));
   const isPending = computed(() => updateVerification.isPending.value);
+
+  async function createFreshVerificationFlow(): Promise<VerificationFlow> {
+    const created = await queryClient.fetchQuery(
+      createVerificationFlowQueryOptions({}),
+    );
+    if (!(created instanceof VerificationFlowCreated)) {
+      throw new Error("Could not create verification flow");
+    }
+    return created.flow;
+  }
+
+  async function ensureVerificationFlowForResend(
+    flow: VerificationFlow,
+  ): Promise<VerificationFlow> {
+    if (!verificationFlowNeedsCsrfRefresh(flow)) {
+      return flow;
+    }
+    return createFreshVerificationFlow();
+  }
+
+  async function adoptVerificationFlow(flow: VerificationFlow): Promise<void> {
+    currentFlow.value = flow;
+    if (route.query.flow === flow.id) {
+      return;
+    }
+    await router.replace({
+      path: route.path,
+      query: { ...route.query, flow: flow.id },
+    });
+  }
 
   async function applyUpdatedFlow(updated: VerificationFlowUpdated) {
     currentFlow.value = updated.flow;
@@ -142,10 +178,12 @@ export function useVerificationStubFlow(args: {
     submitError.value = null;
     resendInfo.value = null;
     try {
+      const flowForResend = await ensureVerificationFlowForResend(flow);
+      await adoptVerificationFlow(flowForResend);
       const updated = await updateVerification.mutateAsync({
-        flow: flow.id,
+        flow: flowForResend.id,
         updateVerificationFlowBody: buildVerificationResendCodeBody(
-          flow,
+          flowForResend,
           emailValue,
         ),
       });
