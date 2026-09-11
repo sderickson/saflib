@@ -19,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+import { useQueryClient } from "@tanstack/vue-query";
 import { useRouter } from "vue-router";
 import type { SecurityCsrfViolation } from "@saflib/ory-kratos-sdk";
 import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
@@ -34,8 +35,10 @@ const props = defineProps<{
 const { t } = useReverseT();
 const authApp = useAuthAppConfig();
 const router = useRouter();
+const queryClient = useQueryClient();
 
 function restart() {
+  void queryClient.invalidateQueries({ queryKey: ["kratos"] });
   void router.push({
     path: props.restartPath,
     query: props.restartQuery ?? {},

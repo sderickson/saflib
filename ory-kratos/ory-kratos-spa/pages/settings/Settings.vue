@@ -212,6 +212,7 @@
 </template>
 
 <script setup lang="ts">
+import { useQueryClient } from "@tanstack/vue-query";
 import { computed, ref, toValue, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
@@ -273,6 +274,7 @@ const props = withDefaults(
 const { t } = useReverseT();
 const route = useRoute();
 const router = useRouter();
+const queryClient = useQueryClient();
 const { getSettingsFlowQuery } = useSettingsLoader();
 
 const queryData = computed(() => toValue(getSettingsFlowQuery.data));
@@ -408,9 +410,18 @@ function notifyTotpLinked() {
   props.onTotpLinked();
 }
 
+function restartSettingsFlowAfterCsrfViolation() {
+  void queryClient.invalidateQueries({ queryKey: ["kratos"] });
+  void router.replace({
+    path: props.flowCreatePath ?? route.path,
+    query: settingsRestartQuery.value,
+  });
+}
+
 const { submitting, submitError, clearSubmitError, submitSettingsForm } =
   useSettingsFlow(flowIdForSubmit, {
     onTotpLinked: notifyTotpLinked,
+    onCsrfViolation: restartSettingsFlowAfterCsrfViolation,
   });
 
 /** If TOTP is already linked when the flow loads, notify the host once. */

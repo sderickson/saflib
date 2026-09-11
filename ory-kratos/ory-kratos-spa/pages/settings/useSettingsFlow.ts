@@ -1,6 +1,8 @@
+import { isAxiosError } from "axios";
 import { ref, toValue, type MaybeRefOrGetter } from "vue";
 import {
   BrowserRedirectRequired,
+  isKratosSecurityCsrfResponseBody,
   SettingsFlowUpdated,
   useUpdateSettingsFlowMutation,
 } from "@saflib/ory-kratos-sdk";
@@ -20,6 +22,8 @@ export function useSettingsFlow(
   options?: {
     /** Fired after a successful TOTP link (not unlink). */
     onTotpLinked?: () => void;
+    /** Restart the browser settings flow after a CSRF mismatch on submit. */
+    onCsrfViolation?: () => void;
   },
 ) {
   const updateSettings = useUpdateSettingsFlowMutation();
@@ -61,6 +65,14 @@ export function useSettingsFlow(
         options?.onTotpLinked?.();
       }
     } catch (e) {
+      if (
+        isAxiosError(e) &&
+        e.response?.status === 403 &&
+        isKratosSecurityCsrfResponseBody(e.response.data)
+      ) {
+        options?.onCsrfViolation?.();
+        return;
+      }
       submitError.value = kratosSubmitErrorMessage(
         e,
         pageStrings.settings_failed,
