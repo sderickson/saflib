@@ -11,7 +11,7 @@ FROM saflib-base-static-subdomain-name-static:latest AS static-subdomain-name-st
 RUN npm run build
 # END WORKFLOW AREA
 
-FROM caddy:2.11.3
+FROM caddy:2.11.4
 COPY --from=static-root-builder /app/base/clients/root/.vitepress/dist /srv/base-static-root
 # BEGIN WORKFLOW AREA static-site-assets FOR vue/add-static-site
 COPY --from=static-subdomain-name-static-builder /app/base/clients/__static-subdomain-name__/.vitepress/dist /srv/base-static-__static-subdomain-name__
