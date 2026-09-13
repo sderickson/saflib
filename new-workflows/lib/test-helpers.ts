@@ -8,6 +8,8 @@ export function makeTestContext(
   const ctx: WorkflowContext = {
     runId: "test-run",
     workflowId: "test/workflow",
+    stepIndex: 0,
+    dbKey: Symbol("test-db-key"),
     cwd: "/tmp",
     originalWorkingDirectory: "/tmp",
     copiedFiles: {},

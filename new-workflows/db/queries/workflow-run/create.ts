@@ -13,6 +13,8 @@ export type CreateWorkflowRunParams = Pick<
   | "skip_todos"
   | "cwd"
   | "agent_config"
+  | "parent_run_id"
+  | "parent_step_index"
 > & {
   now: Date;
 };

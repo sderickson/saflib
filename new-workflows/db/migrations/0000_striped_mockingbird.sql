@@ -18,12 +18,15 @@ CREATE TABLE `workflow_run` (
 	`current_step_index` integer DEFAULT 0 NOT NULL,
 	`cwd` text NOT NULL,
 	`agent_config` text,
+	`parent_run_id` text,
+	`parent_step_index` integer,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL
 );
 --> statement-breakpoint
 CREATE INDEX `workflow_run_workflow_ref_idx` ON `workflow_run` (`workflow_ref`);--> statement-breakpoint
 CREATE INDEX `workflow_run_status_idx` ON `workflow_run` (`status`);--> statement-breakpoint
+CREATE INDEX `workflow_run_parent_idx` ON `workflow_run` (`parent_run_id`,`parent_step_index`);--> statement-breakpoint
 CREATE TABLE `workflow_step` (
 	`id` text PRIMARY KEY NOT NULL,
 	`run_id` text NOT NULL,

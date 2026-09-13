@@ -76,11 +76,9 @@ export interface components {
             sessionId?: string;
         };
         /**
-         * @description Body of a one-off, config-defined workflow (a `workflow_config` row) — a name, an optional description, and a list of steps built entirely from the same primitives `new-workflows/lib` gives code-defined workflows, so no TypeScript is required to author one.
+         * @description Body of a one-off, config-defined workflow (a `workflow_config` row) — a name, an optional description, and a list of steps, so no TypeScript is required to author one.
          *
-         *     First-draft shape: field names and the step set will likely change once Phase 3 (config-defined workflow validation) is actually built — this is meant to make the intended structure reviewable now, not to be final.
-         *
-         *     `transform-file` is deliberately excluded: its `transform` argument is an arbitrary function and can't be expressed as data, so it stays a code-only step kind. Function-typed fields on the other step kinds (`lineReplace` on `copy`, `skipSourcePath` on `copy`) are excluded for the same reason — config-defined `copy` steps get only mechanical renames.
+         *     Config workflows get `prompt`/`command`/`cd`/`npm-script`, plus `call-workflow` to invoke another workflow (typically a reusable, code-defined one) as a nested run. `copy`/`update`/`transform-file` stay code-only: templates are worth building and maintaining for reusable workflows, but a one-off config workflow shouldn't need one — if it needs templated scaffolding, it calls a code-defined workflow that already does that instead of duplicating the logic.
          */
         "workflow-config-body": {
             /**
@@ -95,51 +93,6 @@ export interface components {
             description?: string;
             /** @description Executed in order by `new-workflows/lib`'s `advanceRun`. */
             steps: ({
-                /**
-                 * @example copy
-                 * @enum {string}
-                 */
-                kind: "copy";
-                /**
-                 * @description Map of file id to source path. TBD (Phase 3): how a config-defined workflow's own template sources are stored and resolved — this is not yet a path on the runner's disk.
-                 * @example {
-                 *       "flag": "templates/feature-flag.ts"
-                 *     }
-                 */
-                templateFiles: {
-                    [key: string]: string;
-                };
-                /**
-                 * @description Directory (relative to the run's cwd) the copied files land in.
-                 * @example src/flags
-                 */
-                targetDir: string;
-                /**
-                 * @description kebab-case name substituted for `template-file` and its case variants.
-                 * @example example-flag
-                 */
-                name?: string;
-                /** @description Flags for `IF <flag>`/`ELSE` workflow-area branches. */
-                flags?: {
-                    [key: string]: boolean;
-                };
-            } | {
-                /**
-                 * @example update
-                 * @enum {string}
-                 */
-                kind: "update";
-                /**
-                 * @description Id into the accumulated `copiedFiles` map from prior `copy` steps.
-                 * @example flag
-                 */
-                fileId: string;
-                /**
-                 * @description Instruction shown to the agent. Defaults to a generic "update this file" prompt.
-                 * @example Wire the new flag into the admin toggle list.
-                 */
-                prompt?: string;
-            } | {
                 /**
                  * @example prompt
                  * @enum {string}
@@ -201,6 +154,21 @@ export interface components {
                 errorPrompt?: string;
                 /** @default false */
                 forceInScript: boolean;
+            } | {
+                /**
+                 * @example call-workflow
+                 * @enum {string}
+                 */
+                kind: "call-workflow";
+                /**
+                 * @description A code-defined workflow's id, or a path to another workflow file (.ts for code, .json/.yaml for another config).
+                 * @example vue/add-view
+                 */
+                workflowId: string;
+                /** @description Input for the target workflow. */
+                input?: {
+                    [key: string]: unknown;
+                };
             })[];
         };
     };

@@ -12,5 +12,14 @@ export {
   runTransformFileStep,
   type TransformFileStepInput,
 } from "./steps/transform-file.ts";
+export {
+  runCallWorkflowStep,
+  type CallWorkflowStepInput,
+} from "./steps/call-workflow.ts";
+
+export {
+  validateWorkflowConfigBody,
+} from "./config/validate.ts";
+export { compileConfigWorkflow } from "./config/compile.ts";
 
 export { HelloWorkflowDefinition } from "./example-workflows/hello-workflow.ts";

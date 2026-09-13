@@ -1,3 +1,4 @@
+import type { DbKey } from "@saflib/drizzle";
 import type { WorkflowRunMode } from "@saflib/new-workflows-db";
 
 export type { WorkflowRunMode };
@@ -31,6 +32,18 @@ export interface AgentConfig {
 export interface WorkflowContext {
   runId: string;
   workflowId: string;
+  /**
+   * Index of the step currently executing. Internal — used by
+   * `call-workflow` (`steps/call-workflow.ts`) to key its child run
+   * lookup; ordinary step authors don't need it.
+   */
+  stepIndex: number;
+  /**
+   * The db key for this run's connection. Internal — used by
+   * `call-workflow` to create/advance a child run; ordinary step authors
+   * shouldn't need direct db access (use `log` to communicate instead).
+   */
+  dbKey: DbKey;
   mode: WorkflowRunMode;
   cwd: string;
   originalWorkingDirectory: string;

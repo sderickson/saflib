@@ -34,6 +34,9 @@ export interface WorkflowRunEntity {
   current_step_index: number;
   cwd: string;
   agent_config: WorkflowRunAgentConfig | null;
+  /** Set when this run was spawned by a `call-workflow` step in another run. */
+  parent_run_id: string | null;
+  parent_step_index: number | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -61,12 +64,15 @@ export const workflowRunTable = sqliteTable(
     agent_config: text("agent_config", { mode: "json" }).$type<
       WorkflowRunAgentConfig | null
     >(),
+    parent_run_id: text("parent_run_id"),
+    parent_step_index: integer("parent_step_index"),
     created_at: integer("created_at", { mode: "timestamp" }).notNull(),
     updated_at: integer("updated_at", { mode: "timestamp" }).notNull(),
   },
   (table) => [
     index("workflow_run_workflow_ref_idx").on(table.workflow_ref),
     index("workflow_run_status_idx").on(table.status),
+    index("workflow_run_parent_idx").on(table.parent_run_id, table.parent_step_index),
   ],
 );
 

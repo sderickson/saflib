@@ -17,8 +17,11 @@
   },
   "dependencies": {
     "@saflib/new-workflows-db": "*",
+    "@saflib/new-workflows-spec": "*",
     "@saflib/drizzle": "*",
-    "minimatch": "^10.1.1"
+    "@saflib/utils": "*",
+    "minimatch": "^10.1.1",
+    "ajv": "^8.17.1"
   },
   "devDependencies": {
     "@saflib/dev-tools": "*",

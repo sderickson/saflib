@@ -11,8 +11,7 @@ describe("new-workflows-spec", () => {
     const body: WorkflowConfigBody = {
       name: "Add a demo feature flag",
       steps: [
-        { kind: "copy", templateFiles: { flag: "templates/flag.ts" }, targetDir: "src/flags" },
-        { kind: "update", fileId: "flag" },
+        { kind: "prompt", prompt: "Review the plan before continuing." },
         {
           kind: "command",
           command: "npm",
@@ -20,6 +19,7 @@ describe("new-workflows-spec", () => {
           ignoreError: false,
           forceInScript: false,
         },
+        { kind: "call-workflow", workflowId: "example/hello", input: { name: "example-thing" } },
       ],
     };
     expect(body.steps).toHaveLength(3);

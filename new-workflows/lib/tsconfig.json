@@ -26,7 +26,13 @@
       "path": "../../drizzle"
     },
     {
+      "path": "../../utils"
+    },
+    {
       "path": "../db"
+    },
+    {
+      "path": "../spec"
     }
   ]
 }

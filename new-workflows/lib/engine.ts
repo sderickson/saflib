@@ -49,6 +49,9 @@ export async function createRun(
     mode: WorkflowRunMode;
     agentConfig?: AgentConfig;
     skipTodos?: boolean;
+    /** Set by `call-workflow` when this run is a nested child of another. */
+    parentRunId?: string;
+    parentStepIndex?: number;
   },
 ): Promise<string> {
   const { result, error } = await createWorkflowRun(dbKey, {
@@ -59,6 +62,8 @@ export async function createRun(
     skip_todos: opts.skipTodos ?? false,
     cwd: opts.cwd,
     agent_config: (opts.agentConfig as Record<string, unknown> | undefined) ?? null,
+    parent_run_id: opts.parentRunId ?? null,
+    parent_step_index: opts.parentStepIndex ?? null,
     now: new Date(),
   });
   if (error) throw error;
@@ -133,6 +138,8 @@ async function runStep(
   const ctx: WorkflowContext = {
     runId,
     workflowId: def.id,
+    stepIndex,
+    dbKey,
     mode: run.mode,
     cwd,
     originalWorkingDirectory: run.cwd,

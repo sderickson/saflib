@@ -23,7 +23,9 @@
     "@saflib/node": "*",
     "@saflib/new-workflows": "*",
     "@saflib/new-workflows-db": "*",
-    "@saflib/drizzle": "*"
+    "@saflib/new-workflows-spec": "*",
+    "@saflib/drizzle": "*",
+    "yaml": "^2.6.1"
   },
   "devDependencies": {
     "@saflib/dev-tools": "*",

@@ -9,9 +9,13 @@ export const newWorkflowsDb = newWorkflowsDbManager.publicInterface();
 export { createWorkflowRun } from "./queries/workflow-run/create.ts";
 export { getByIdWorkflowRun } from "./queries/workflow-run/get-by-id.ts";
 export { updateStatusAndStepWorkflowRun } from "./queries/workflow-run/update-status-and-step.ts";
+export { getChildByParentStepWorkflowRun } from "./queries/workflow-run/get-child-by-parent-step.ts";
 export { createWorkflowStep } from "./queries/workflow-step/create.ts";
 export { updateResultWorkflowStep } from "./queries/workflow-step/update-result.ts";
 export { listByRunWorkflowStep } from "./queries/workflow-step/list-by-run.ts";
 export { appendWorkflowLog } from "./queries/workflow-log/append.ts";
 export { listByRunWorkflowLog } from "./queries/workflow-log/list-by-run.ts";
+export { createWorkflowConfig } from "./queries/workflow-config/create.ts";
+export { getByIdWorkflowConfig } from "./queries/workflow-config/get-by-id.ts";
+export { listWorkflowConfig } from "./queries/workflow-config/list.ts";
 // END WORKFLOW AREA
