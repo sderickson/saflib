@@ -1,13 +1,14 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 import { generateShortId } from "@saflib/drizzle";
+import type { WorkflowLogChannel, WorkflowLogLevel } from "@saflib/new-workflows-spec";
+
+export type { WorkflowLogChannel, WorkflowLogLevel };
 
 /**
- * Output channels a step's stream can tag chunks with:
- * - `terminal`: raw stdout/stderr from a subprocess the workflow ran
- * - `agent`: output from the coding agent (what it said, what it executed)
- * - `tool`: the workflow engine's own narration
- * - `agent-input`: the prompt text sent to the agent
+ * Runtime values for drizzle's enum columns — kept in sync with
+ * `@saflib/new-workflows-spec`'s `WorkflowLogChannel`/`WorkflowLogLevel`
+ * schemas by the `Expect<Equal<>>` guards below.
  */
 const workflowLogChannel = [
   "terminal",
@@ -15,10 +16,14 @@ const workflowLogChannel = [
   "tool",
   "agent-input",
 ] as const;
-export type WorkflowLogChannel = (typeof workflowLogChannel)[number];
+export type WorkflowLogChannelTest = Expect<
+  Equal<(typeof workflowLogChannel)[number], WorkflowLogChannel>
+>;
 
 const workflowLogLevel = ["info", "warn", "error"] as const;
-export type WorkflowLogLevel = (typeof workflowLogLevel)[number];
+export type WorkflowLogLevelTest = Expect<
+  Equal<(typeof workflowLogLevel)[number], WorkflowLogLevel>
+>;
 
 export interface WorkflowLogEntity {
   id: string;

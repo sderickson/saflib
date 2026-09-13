@@ -1,7 +1,15 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 import { generateShortId } from "@saflib/drizzle";
+import type { WorkflowStepStatus } from "@saflib/new-workflows-spec";
 
+export type { WorkflowStepStatus };
+
+/**
+ * Runtime values for drizzle's enum column — kept in sync with
+ * `@saflib/new-workflows-spec`'s `WorkflowStepStatus` schema by the
+ * `Expect<Equal<>>` guard below.
+ */
 const workflowStepStatus = [
   "running",
   "success",
@@ -9,7 +17,9 @@ const workflowStepStatus = [
   "awaiting_prompt",
   "awaiting_user",
 ] as const;
-export type WorkflowStepStatus = (typeof workflowStepStatus)[number];
+export type WorkflowStepStatusTest = Expect<
+  Equal<(typeof workflowStepStatus)[number], WorkflowStepStatus>
+>;
 
 export interface WorkflowStepEntity {
   id: string;

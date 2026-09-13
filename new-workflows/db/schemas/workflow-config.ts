@@ -1,9 +1,9 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 import { generateShortId } from "@saflib/drizzle";
+import type { WorkflowConfigBody } from "@saflib/new-workflows-spec";
 
-/** One-off, config-defined workflow body. Shape is validated by `new-workflows` lib, not here. */
-export type WorkflowConfigBody = Record<string, unknown>;
+export type { WorkflowConfigBody };
 
 export interface WorkflowConfigEntity {
   id: string;

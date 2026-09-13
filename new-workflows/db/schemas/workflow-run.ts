@@ -1,13 +1,27 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 import { generateShortId } from "@saflib/drizzle";
+import type {
+  WorkflowRunMode,
+  WorkflowRunStatus,
+  WorkflowRunAgentConfig,
+} from "@saflib/new-workflows-spec";
+
+export type { WorkflowRunMode, WorkflowRunStatus, WorkflowRunAgentConfig };
 
 const workflowSource = ["code", "config"] as const;
 export type WorkflowSource = (typeof workflowSource)[number];
 
-/** Same execution modes as today's engine: see `@saflib/workflows` docs. */
+/**
+ * Runtime values for drizzle's enum column — kept in sync with
+ * `@saflib/new-workflows-spec`'s `WorkflowRunMode` schema by the
+ * `Expect<Equal<>>` guard below (a JSON schema's `enum` isn't a value
+ * drizzle can read directly, so this array is hand-kept, not derived).
+ */
 const workflowRunMode = ["dry", "script", "print", "run", "checklist"] as const;
-export type WorkflowRunMode = (typeof workflowRunMode)[number];
+export type WorkflowRunModeTest = Expect<
+  Equal<(typeof workflowRunMode)[number], WorkflowRunMode>
+>;
 
 const workflowRunStatus = [
   "pending",
@@ -17,10 +31,9 @@ const workflowRunStatus = [
   "done",
   "failed",
 ] as const;
-export type WorkflowRunStatus = (typeof workflowRunStatus)[number];
-
-/** Agent CLI + session/timeout state for a run, opaque to the db layer. */
-export type WorkflowRunAgentConfig = Record<string, unknown>;
+export type WorkflowRunStatusTest = Expect<
+  Equal<(typeof workflowRunStatus)[number], WorkflowRunStatus>
+>;
 
 export interface WorkflowRunEntity {
   id: string;

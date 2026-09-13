@@ -1,15 +1,21 @@
 import type { DbKey } from "@saflib/drizzle";
-import type { WorkflowRunMode } from "@saflib/new-workflows-db";
+import type {
+  WorkflowRunMode,
+  WorkflowLogChannel,
+  WorkflowLogLevel,
+  WorkflowRunAgentConfig,
+} from "@saflib/new-workflows-db";
 
 export type { WorkflowRunMode };
 
 /**
- * Output channels a step's stream tags chunks with. See
- * `new-workflows/plans/spec.md` for the rationale — these mirror
- * `WorkflowLogChannel` in `@saflib/new-workflows-db`.
+ * Output channels a step's stream tags chunks with — `@saflib/
+ * new-workflows-spec`'s `WorkflowLogChannel`/`WorkflowLogLevel` schemas
+ * are the contract; `new-workflows-db` re-exports them (guarded against
+ * drift there), and this just aliases to the names used throughout `lib`.
  */
-export type Channel = "terminal" | "agent" | "tool" | "agent-input";
-export type LogLevel = "info" | "warn" | "error";
+export type Channel = WorkflowLogChannel;
+export type LogLevel = WorkflowLogLevel;
 
 export interface LogChunk {
   channel: Channel;
@@ -17,13 +23,13 @@ export interface LogChunk {
   content: string;
 }
 
-/** Agent CLI selectable per run. `claude-agent` is backlog (spec item 5). */
-export type AgentCli = "cursor-agent" | "mock-agent";
-
-export interface AgentConfig {
-  cli: AgentCli;
-  sessionId?: string;
-}
+/**
+ * Agent CLI + session, per the spec's `WorkflowRunAgentConfig` schema —
+ * that schema is the contract for this shape, not this interface.
+ * `claude-agent` joining the `cli` enum is backlog (spec item 5).
+ */
+export type AgentConfig = WorkflowRunAgentConfig;
+export type AgentCli = AgentConfig["cli"];
 
 /**
  * Context passed to every step function. Assembled by `advanceRun` from the
