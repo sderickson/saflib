@@ -48,6 +48,7 @@ export async function createRun(
     cwd: string;
     mode: WorkflowRunMode;
     agentConfig?: AgentConfig;
+    skipTodos?: boolean;
   },
 ): Promise<string> {
   const { result, error } = await createWorkflowRun(dbKey, {
@@ -55,6 +56,7 @@ export async function createRun(
     workflow_ref: def.id,
     input: opts.input,
     mode: opts.mode,
+    skip_todos: opts.skipTodos ?? false,
     cwd: opts.cwd,
     agent_config: (opts.agentConfig as Record<string, unknown> | undefined) ?? null,
     now: new Date(),
@@ -124,6 +126,7 @@ async function runStep(
     if (r.copiedFiles) Object.assign(copiedFiles, r.copiedFiles);
     if (r.newCwd) cwd = r.newCwd;
   }
+  const isResume = (priorSteps ?? []).some((s) => s.step_index === stepIndex);
 
   const context = def.context({ input: run.input, cwd: run.cwd });
 
@@ -135,6 +138,8 @@ async function runStep(
     originalWorkingDirectory: run.cwd,
     agentConfig: (run.agent_config as AgentConfig | null) ?? undefined,
     copiedFiles,
+    skipTodos: run.skip_todos,
+    isResume,
     log: write,
   };
 

@@ -248,6 +248,9 @@
       "path": "./monorepo"
     },
     {
+      "path": "./new-workflows/cli"
+    },
+    {
       "path": "./new-workflows/db"
     },
     {

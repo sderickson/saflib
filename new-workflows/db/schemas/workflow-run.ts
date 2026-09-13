@@ -29,6 +29,7 @@ export interface WorkflowRunEntity {
   workflow_ref: string;
   input: Record<string, unknown>;
   mode: WorkflowRunMode;
+  skip_todos: boolean;
   status: WorkflowRunStatus;
   current_step_index: number;
   cwd: string;
@@ -51,6 +52,7 @@ export const workflowRunTable = sqliteTable(
       .$type<Record<string, unknown>>()
       .notNull(),
     mode: text("mode", { enum: workflowRunMode }).notNull().default("print"),
+    skip_todos: integer("skip_todos", { mode: "boolean" }).notNull().default(false),
     status: text("status", { enum: workflowRunStatus })
       .notNull()
       .default("pending"),

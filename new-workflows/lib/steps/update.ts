@@ -30,11 +30,24 @@ export const runUpdateStep: StepFn<UpdateStepInput> = async (rawInput, ctx) => {
     return { status: "success", result: { filePath } };
   }
 
-  ctx.log({ channel: "agent-input", level: "info", content: prompt });
-
   if (ctx.mode === "print") {
+    if (ctx.isResume) {
+      // The caller (e.g. the CLI's `next`) says the external agent is done —
+      // re-check the file for real, same as the old UpdateStepMachine's
+      // standby->continue transition.
+      const hasTodos = !ctx.skipTodos && TODO_REGEX.test(readFileSync(filePath, "utf-8"));
+      if (hasTodos) {
+        const retryPrompt = `File ${filePath} contains TODO strings. Make sure to resolve them before continuing.`;
+        ctx.log({ channel: "agent-input", level: "info", content: retryPrompt });
+        return { status: "awaiting_prompt", prompt: retryPrompt };
+      }
+      return { status: "success", result: { filePath } };
+    }
+    ctx.log({ channel: "agent-input", level: "info", content: prompt });
     return { status: "awaiting_prompt", prompt };
   }
+
+  ctx.log({ channel: "agent-input", level: "info", content: prompt });
 
   // mode === "run"
   let { shouldContinue } = await runAgentTurn(prompt, ctx);

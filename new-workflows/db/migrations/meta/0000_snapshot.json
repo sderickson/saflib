@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c0f8c4d8-9a1d-4a3a-9532-92207ed76618",
+  "id": "19a6568b-718b-4335-affe-0d4bead21c62",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "workflow_config": {
@@ -94,6 +94,14 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'print'"
+        },
+        "skip_todos": {
+          "name": "skip_todos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         },
         "status": {
           "name": "status",

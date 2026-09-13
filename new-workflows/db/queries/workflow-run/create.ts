@@ -6,7 +6,13 @@ import { workflowRunTable } from "../../schemas/workflow-run.ts";
 
 export type CreateWorkflowRunParams = Pick<
   typeof workflowRunTable.$inferInsert,
-  "workflow_source" | "workflow_ref" | "input" | "mode" | "cwd" | "agent_config"
+  | "workflow_source"
+  | "workflow_ref"
+  | "input"
+  | "mode"
+  | "skip_todos"
+  | "cwd"
+  | "agent_config"
 > & {
   now: Date;
 };

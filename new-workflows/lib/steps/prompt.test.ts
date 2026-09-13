@@ -23,6 +23,13 @@ describe("runPromptStep", () => {
     });
   });
 
+  it("succeeds on resume in print mode, without re-emitting the prompt", async () => {
+    const { ctx, chunks } = makeTestContext({ mode: "print", isResume: true });
+    const result = await runPromptStep({ prompt: "do something" }, ctx);
+    expect(result).toEqual({ status: "success" });
+    expect(chunks).toEqual([]);
+  });
+
   it("runs the agent and succeeds in run mode with a mock agent", async () => {
     const { ctx, chunks } = makeTestContext({
       mode: "run",

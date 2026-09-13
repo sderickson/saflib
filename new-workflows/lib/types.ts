@@ -38,6 +38,14 @@ export interface WorkflowContext {
   /** Absolute paths of files copied so far in this run, keyed by template file id. */
   copiedFiles: Record<string, string>;
   skipTodos?: boolean;
+  /**
+   * True when a prior attempt already ran this exact step index (the
+   * caller is resuming after `awaiting_prompt`/`awaiting_user`/`error`,
+   * e.g. via the CLI's `next`). In `print` mode this is what tells
+   * `prompt`/`update` "the external agent says it's done" rather than
+   * "emit the prompt for the first time".
+   */
+  isResume: boolean;
   /** Emits one chunk onto this step's output stream. */
   log: (chunk: LogChunk) => void;
 }
@@ -70,9 +78,29 @@ export interface WorkflowStep<C> {
   run: StepFn<unknown>;
 }
 
+/**
+ * Deliberately small JSON-Schema-*shaped* subset — just enough for a CLI (or
+ * future dev-site form) to coerce named args into a workflow's input. Not a
+ * general validator: no nesting, no `oneOf`, no patterns.
+ */
+export interface WorkflowInputSchema {
+  type: "object";
+  properties: Record<
+    string,
+    {
+      type: "string" | "boolean" | "number";
+      description?: string;
+      default?: string | boolean | number;
+    }
+  >;
+  required?: string[];
+}
+
 export interface WorkflowDefinition<Input = unknown, C = unknown> {
   id: string;
   description: string;
+  /** Omit for workflows with no CLI-relevant input (e.g. config-authored only). */
+  inputSchema?: WorkflowInputSchema;
   context: (arg: { input: Input; cwd: string }) => C;
   steps: WorkflowStep<C>[];
 }

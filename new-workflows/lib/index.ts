@@ -12,3 +12,5 @@ export {
   runTransformFileStep,
   type TransformFileStepInput,
 } from "./steps/transform-file.ts";
+
+export { HelloWorkflowDefinition } from "./example-workflows/hello-workflow.ts";

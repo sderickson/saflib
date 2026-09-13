@@ -13,6 +13,7 @@ CREATE TABLE `workflow_run` (
 	`workflow_ref` text NOT NULL,
 	`input` text NOT NULL,
 	`mode` text DEFAULT 'print' NOT NULL,
+	`skip_todos` integer DEFAULT false NOT NULL,
 	`status` text DEFAULT 'pending' NOT NULL,
 	`current_step_index` integer DEFAULT 0 NOT NULL,
 	`cwd` text NOT NULL,

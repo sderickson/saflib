@@ -11,6 +11,7 @@ export function makeTestContext(
     cwd: "/tmp",
     originalWorkingDirectory: "/tmp",
     copiedFiles: {},
+    isResume: false,
     log: (chunk) => chunks.push(chunk),
     ...overrides,
   };

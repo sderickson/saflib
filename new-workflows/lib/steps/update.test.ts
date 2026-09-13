@@ -51,6 +51,51 @@ describe("runUpdateStep", () => {
     expect(result.status).toBe("error");
   });
 
+  it("in print mode, halts on first attempt and emits the prompt", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "update-step-"));
+    const filePath = path.join(dir, "file.ts");
+    writeFileSync(filePath, "export const x = 1;\n");
+    const { ctx, chunks } = makeTestContext({
+      mode: "print",
+      copiedFiles: { file: filePath },
+    });
+
+    const result = await runUpdateStep({ fileId: "file" }, ctx);
+
+    expect(result.status).toBe("awaiting_prompt");
+    expect(chunks.some((c) => c.channel === "agent-input")).toBe(true);
+  });
+
+  it("in print mode, succeeds on resume once TODOs are gone", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "update-step-"));
+    const filePath = path.join(dir, "file.ts");
+    writeFileSync(filePath, "export const x = 1;\n");
+    const { ctx } = makeTestContext({
+      mode: "print",
+      isResume: true,
+      copiedFiles: { file: filePath },
+    });
+
+    const result = await runUpdateStep({ fileId: "file" }, ctx);
+
+    expect(result).toEqual({ status: "success", result: { filePath } });
+  });
+
+  it("in print mode, re-halts on resume if TODOs are still present", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "update-step-"));
+    const filePath = path.join(dir, "file.ts");
+    writeFileSync(filePath, "// TODO: still here\n");
+    const { ctx } = makeTestContext({
+      mode: "print",
+      isResume: true,
+      copiedFiles: { file: filePath },
+    });
+
+    const result = await runUpdateStep({ fileId: "file" }, ctx);
+
+    expect(result.status).toBe("awaiting_prompt");
+  });
+
   it("skips the TODO check when skipTodos is set", async () => {
     const dir = mkdtempSync(path.join(tmpdir(), "update-step-"));
     const filePath = path.join(dir, "file.ts");
