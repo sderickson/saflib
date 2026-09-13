@@ -1,0 +1,30 @@
+openapi: 3.1.0
+info:
+  title: new-workflows API
+  version: 1.0.0
+  description: >
+    Shared business-object schemas for the sqlite-backed workflows engine
+    rewrite (see new-workflows/plans/spec.md). No HTTP paths yet — this
+    package exists ahead of new-workflows-http so the frontend and lib can
+    share these types before the endpoints themselves are designed.
+
+paths: {}
+
+components:
+  schemas:
+    Error:
+      $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    WorkflowRunMode:
+      $ref: "./schemas/workflow-run-mode.yaml"
+    WorkflowRunStatus:
+      $ref: "./schemas/workflow-run-status.yaml"
+    WorkflowStepStatus:
+      $ref: "./schemas/workflow-step-status.yaml"
+    WorkflowLogChannel:
+      $ref: "./schemas/workflow-log-channel.yaml"
+    WorkflowLogLevel:
+      $ref: "./schemas/workflow-log-level.yaml"
+    WorkflowRunAgentConfig:
+      $ref: "./schemas/workflow-run-agent-config.yaml"
+    WorkflowConfigBody:
+      $ref: "./schemas/workflow-config-body.yaml"

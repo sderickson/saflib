@@ -1,0 +1,15 @@
+type: string
+description: >
+  Outcome of a single step attempt row. `running` while the step is in
+  flight (the row is inserted before the step function is called);
+  `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/
+  `awaiting_user` mean the step handed control back to the caller without
+  finishing — the same step index will be attempted again on the next
+  `advance` call.
+enum:
+  - running
+  - success
+  - error
+  - awaiting_prompt
+  - awaiting_user
+example: "success"

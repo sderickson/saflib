@@ -1,0 +1,7 @@
+type: string
+description: Severity of a single log line, independent of its channel.
+enum:
+  - info
+  - warn
+  - error
+example: "info"

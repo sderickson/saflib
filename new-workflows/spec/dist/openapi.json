@@ -1,0 +1,378 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "new-workflows API",
+    "version": "1.0.0",
+    "description": "Shared business-object schemas for the sqlite-backed workflows engine rewrite (see new-workflows/plans/spec.md). No HTTP paths yet — this package exists ahead of new-workflows-http so the frontend and lib can share these types before the endpoints themselves are designed.\n"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "WorkflowRunMode": {
+        "$ref": "#/components/schemas/workflow-run-mode"
+      },
+      "WorkflowRunStatus": {
+        "$ref": "#/components/schemas/workflow-run-status"
+      },
+      "WorkflowStepStatus": {
+        "$ref": "#/components/schemas/workflow-step-status"
+      },
+      "WorkflowLogChannel": {
+        "$ref": "#/components/schemas/workflow-log-channel"
+      },
+      "WorkflowLogLevel": {
+        "$ref": "#/components/schemas/workflow-log-level"
+      },
+      "WorkflowRunAgentConfig": {
+        "$ref": "#/components/schemas/workflow-run-agent-config"
+      },
+      "WorkflowConfigBody": {
+        "$ref": "#/components/schemas/workflow-config-body"
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "workflow-run-mode": {
+        "type": "string",
+        "description": "Execution mode for a run, set once at `createRun` and unchanged for its lifetime. Same modes as today's `@saflib/workflows`: `dry`/`checklist` never touch the filesystem or run commands; `script` runs mechanical steps (copy, command) but skips prompts, TODO checks, and validation commands (typecheck/test); `print` hands prompts to an external agent and halts between steps; `run` drives the agent itself.\n",
+        "enum": [
+          "dry",
+          "script",
+          "print",
+          "run",
+          "checklist"
+        ],
+        "example": "run"
+      },
+      "workflow-run-status": {
+        "type": "string",
+        "description": "Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.\n",
+        "enum": [
+          "pending",
+          "running",
+          "awaiting_prompt",
+          "awaiting_user",
+          "done",
+          "failed"
+        ],
+        "example": "running"
+      },
+      "workflow-step-status": {
+        "type": "string",
+        "description": "Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.\n",
+        "enum": [
+          "running",
+          "success",
+          "error",
+          "awaiting_prompt",
+          "awaiting_user"
+        ],
+        "example": "success"
+      },
+      "workflow-log-channel": {
+        "type": "string",
+        "description": "Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. \"running step 3: copy\"). `agent-input`: the prompt text sent to the agent.\n",
+        "enum": [
+          "terminal",
+          "agent",
+          "tool",
+          "agent-input"
+        ],
+        "example": "tool"
+      },
+      "workflow-log-level": {
+        "type": "string",
+        "description": "Severity of a single log line, independent of its channel.",
+        "enum": [
+          "info",
+          "warn",
+          "error"
+        ],
+        "example": "info"
+      },
+      "workflow-run-agent-config": {
+        "type": "object",
+        "description": "Which agent CLI drives a run's `run`-mode steps, and its resumable session. Set at `createRun` (or when the run is retried against a different agent) and persisted on the run row so a resumed process can `--resume` the same underlying session.\n",
+        "additionalProperties": false,
+        "required": [
+          "cli"
+        ],
+        "properties": {
+          "cli": {
+            "type": "string",
+            "description": "Agent CLI adapter to use. `mock-agent` is test-only (no subprocess). More CLIs (e.g. Claude Code) are expected to join this enum later.\n",
+            "enum": [
+              "cursor-agent",
+              "mock-agent"
+            ],
+            "example": "cursor-agent"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Session id returned by the agent CLI's first turn, passed back on subsequent turns (e.g. `--resume`) so multi-turn steps share context.\n",
+            "example": "a1b2c3d4"
+          }
+        },
+        "example": {
+          "cli": "cursor-agent",
+          "sessionId": "a1b2c3d4"
+        }
+      },
+      "workflow-config-body": {
+        "type": "object",
+        "description": "Body of a one-off, config-defined workflow (a `workflow_config` row) — a name, an optional description, and a list of steps built entirely from the same primitives `new-workflows/lib` gives code-defined workflows, so no TypeScript is required to author one.\n\nFirst-draft shape: field names and the step set will likely change once Phase 3 (config-defined workflow validation) is actually built — this is meant to make the intended structure reviewable now, not to be final.\n\n`transform-file` is deliberately excluded: its `transform` argument is an arbitrary function and can't be expressed as data, so it stays a code-only step kind. Function-typed fields on the other step kinds (`lineReplace` on `copy`, `skipSourcePath` on `copy`) are excluded for the same reason — config-defined `copy` steps get only mechanical renames.\n",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "steps"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Human-readable name shown in the CLI/dev-site, not the run id.",
+            "example": "Add a demo feature flag"
+          },
+          "description": {
+            "type": "string",
+            "description": "Longer explanation of what this workflow does and when to use it.",
+            "example": "Scaffolds a new feature flag: adds the flag constant, wires it into the admin toggle list, and runs typecheck.\n"
+          },
+          "steps": {
+            "type": "array",
+            "description": "Executed in order by `new-workflows/lib`'s `advanceRun`.",
+            "items": {
+              "discriminator": {
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "type": "object",
+                  "description": "Copies template files into a target directory, resolving workflow-area markers along the way.",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "templateFiles",
+                    "targetDir"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "copy"
+                      ],
+                      "example": "copy"
+                    },
+                    "templateFiles": {
+                      "type": "object",
+                      "description": "Map of file id to source path. TBD (Phase 3): how a config-defined workflow's own template sources are stored and resolved — this is not yet a path on the runner's disk.\n",
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "example": {
+                        "flag": "templates/feature-flag.ts"
+                      }
+                    },
+                    "targetDir": {
+                      "type": "string",
+                      "description": "Directory (relative to the run's cwd) the copied files land in.",
+                      "example": "src/flags"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "kebab-case name substituted for `template-file` and its case variants.",
+                      "example": "example-flag"
+                    },
+                    "flags": {
+                      "type": "object",
+                      "description": "Flags for `IF <flag>`/`ELSE` workflow-area branches.",
+                      "additionalProperties": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "description": "Prompts the agent to edit a file a `copy` step already produced, blocking on TODO markers until resolved.",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "fileId"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "update"
+                      ],
+                      "example": "update"
+                    },
+                    "fileId": {
+                      "type": "string",
+                      "description": "Id into the accumulated `copiedFiles` map from prior `copy` steps.",
+                      "example": "flag"
+                    },
+                    "prompt": {
+                      "type": "string",
+                      "description": "Instruction shown to the agent. Defaults to a generic \"update this file\" prompt.",
+                      "example": "Wire the new flag into the admin toggle list."
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "description": "Prompts the agent (or, in `print` mode, the caller) to do an arbitrary task.",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "prompt"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "prompt"
+                      ],
+                      "example": "prompt"
+                    },
+                    "prompt": {
+                      "type": "string",
+                      "example": "Run the drizzle migration and confirm it applied cleanly."
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "description": "Runs a shell command.",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "command"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "command"
+                      ],
+                      "example": "command"
+                    },
+                    "command": {
+                      "type": "string",
+                      "example": "npm"
+                    },
+                    "args": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "run",
+                        "typecheck"
+                      ]
+                    },
+                    "ignoreError": {
+                      "type": "boolean",
+                      "description": "Treat a non-zero exit as success.",
+                      "default": false
+                    },
+                    "errorPrompt": {
+                      "type": "string",
+                      "description": "Extra text shown to the agent alongside the failure, in `run` mode."
+                    },
+                    "forceInScript": {
+                      "type": "boolean",
+                      "description": "Run even in `script` mode if it would otherwise be treated as a skipped validation command (typecheck/test).\n",
+                      "default": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "description": "Changes the working directory for subsequent steps.",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "path"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "cd"
+                      ],
+                      "example": "cd"
+                    },
+                    "path": {
+                      "type": "string",
+                      "description": "Absolute, or relative to the run's original working directory.",
+                      "example": "packages/my-lib"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "description": "Runs `npm run <script> -w <workspace>`, validating both exist first.",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "workspace",
+                    "script"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "npm-script"
+                      ],
+                      "example": "npm-script"
+                    },
+                    "workspace": {
+                      "type": "string",
+                      "example": "@saflib/new-workflows"
+                    },
+                    "script": {
+                      "type": "string",
+                      "example": "test"
+                    },
+                    "args": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "ignoreError": {
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "errorPrompt": {
+                      "type": "string"
+                    },
+                    "forceInScript": {
+                      "type": "boolean",
+                      "default": false
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@saflib/new-workflows",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Sqlite-backed workflow engine (rewrite of @saflib/workflows off XState).",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/new-workflows-db": "*",
+    "@saflib/drizzle": "*",
+    "minimatch": "^10.1.1"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@saflib/vitest": "*",
+    "@saflib/monorepo": "*"
+  },
+  "sideEffects": false
+}

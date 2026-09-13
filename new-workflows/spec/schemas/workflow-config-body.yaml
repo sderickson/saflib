@@ -1,0 +1,185 @@
+type: object
+description: >
+  Body of a one-off, config-defined workflow (a `workflow_config` row) — a
+  name, an optional description, and a list of steps built entirely from
+  the same primitives `new-workflows/lib` gives code-defined workflows, so
+  no TypeScript is required to author one.
+
+
+  First-draft shape: field names and the step set will likely change once
+  Phase 3 (config-defined workflow validation) is actually built — this is
+  meant to make the intended structure reviewable now, not to be final.
+
+
+  `transform-file` is deliberately excluded: its `transform` argument is an
+  arbitrary function and can't be expressed as data, so it stays a
+  code-only step kind. Function-typed fields on the other step kinds
+  (`lineReplace` on `copy`, `skipSourcePath` on `copy`) are excluded for the
+  same reason — config-defined `copy` steps get only mechanical renames.
+additionalProperties: false
+required:
+  - name
+  - steps
+properties:
+  name:
+    type: string
+    description: Human-readable name shown in the CLI/dev-site, not the run id.
+    example: "Add a demo feature flag"
+  description:
+    type: string
+    description: Longer explanation of what this workflow does and when to use it.
+    example: >
+      Scaffolds a new feature flag: adds the flag constant, wires it into
+      the admin toggle list, and runs typecheck.
+  steps:
+    type: array
+    description: Executed in order by `new-workflows/lib`'s `advanceRun`.
+    items:
+      discriminator:
+        propertyName: kind
+      oneOf:
+        - type: object
+          description: Copies template files into a target directory, resolving workflow-area markers along the way.
+          additionalProperties: false
+          required:
+            - kind
+            - templateFiles
+            - targetDir
+          properties:
+            kind:
+              type: string
+              enum: ["copy"]
+              example: "copy"
+            templateFiles:
+              type: object
+              description: >
+                Map of file id to source path. TBD (Phase 3): how a
+                config-defined workflow's own template sources are stored
+                and resolved — this is not yet a path on the runner's disk.
+              additionalProperties:
+                type: string
+              example:
+                flag: "templates/feature-flag.ts"
+            targetDir:
+              type: string
+              description: Directory (relative to the run's cwd) the copied files land in.
+              example: "src/flags"
+            name:
+              type: string
+              description: kebab-case name substituted for `template-file` and its case variants.
+              example: "example-flag"
+            flags:
+              type: object
+              description: Flags for `IF <flag>`/`ELSE` workflow-area branches.
+              additionalProperties:
+                type: boolean
+        - type: object
+          description: Prompts the agent to edit a file a `copy` step already produced, blocking on TODO markers until resolved.
+          additionalProperties: false
+          required:
+            - kind
+            - fileId
+          properties:
+            kind:
+              type: string
+              enum: ["update"]
+              example: "update"
+            fileId:
+              type: string
+              description: Id into the accumulated `copiedFiles` map from prior `copy` steps.
+              example: "flag"
+            prompt:
+              type: string
+              description: Instruction shown to the agent. Defaults to a generic "update this file" prompt.
+              example: "Wire the new flag into the admin toggle list."
+        - type: object
+          description: Prompts the agent (or, in `print` mode, the caller) to do an arbitrary task.
+          additionalProperties: false
+          required:
+            - kind
+            - prompt
+          properties:
+            kind:
+              type: string
+              enum: ["prompt"]
+              example: "prompt"
+            prompt:
+              type: string
+              example: "Run the drizzle migration and confirm it applied cleanly."
+        - type: object
+          description: Runs a shell command.
+          additionalProperties: false
+          required:
+            - kind
+            - command
+          properties:
+            kind:
+              type: string
+              enum: ["command"]
+              example: "command"
+            command:
+              type: string
+              example: "npm"
+            args:
+              type: array
+              items:
+                type: string
+              example: ["run", "typecheck"]
+            ignoreError:
+              type: boolean
+              description: Treat a non-zero exit as success.
+              default: false
+            errorPrompt:
+              type: string
+              description: Extra text shown to the agent alongside the failure, in `run` mode.
+            forceInScript:
+              type: boolean
+              description: >
+                Run even in `script` mode if it would otherwise be treated as
+                a skipped validation command (typecheck/test).
+              default: false
+        - type: object
+          description: Changes the working directory for subsequent steps.
+          additionalProperties: false
+          required:
+            - kind
+            - path
+          properties:
+            kind:
+              type: string
+              enum: ["cd"]
+              example: "cd"
+            path:
+              type: string
+              description: Absolute, or relative to the run's original working directory.
+              example: "packages/my-lib"
+        - type: object
+          description: Runs `npm run <script> -w <workspace>`, validating both exist first.
+          additionalProperties: false
+          required:
+            - kind
+            - workspace
+            - script
+          properties:
+            kind:
+              type: string
+              enum: ["npm-script"]
+              example: "npm-script"
+            workspace:
+              type: string
+              example: "@saflib/new-workflows"
+            script:
+              type: string
+              example: "test"
+            args:
+              type: array
+              items:
+                type: string
+            ignoreError:
+              type: boolean
+              default: false
+            errorPrompt:
+              type: string
+            forceInScript:
+              type: boolean
+              default: false

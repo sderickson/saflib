@@ -1,0 +1,28 @@
+type: object
+description: >
+  Which agent CLI drives a run's `run`-mode steps, and its resumable
+  session. Set at `createRun` (or when the run is retried against a
+  different agent) and persisted on the run row so a resumed process
+  can `--resume` the same underlying session.
+additionalProperties: false
+required:
+  - cli
+properties:
+  cli:
+    type: string
+    description: >
+      Agent CLI adapter to use. `mock-agent` is test-only (no subprocess).
+      More CLIs (e.g. Claude Code) are expected to join this enum later.
+    enum:
+      - cursor-agent
+      - mock-agent
+    example: "cursor-agent"
+  sessionId:
+    type: string
+    description: >
+      Session id returned by the agent CLI's first turn, passed back on
+      subsequent turns (e.g. `--resume`) so multi-turn steps share context.
+    example: "a1b2c3d4"
+example:
+  cli: "cursor-agent"
+  sessionId: "a1b2c3d4"
