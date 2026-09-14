@@ -78,6 +78,30 @@ drop the `new-` prefix (folder becomes `workflows/`, packages become
 docs already flag it as likely to shrink or disappear once workflows drop
 XState — this rewrite is that trigger.
 
+### Where ported, per-family workflows live
+
+Same as today's XState workflows, a family's new-engine workflows are a
+`new-workflows/` folder *inside* that family's own package (e.g.
+`vue/new-workflows/`, `express/new-workflows/`, `openapi/new-workflows/`,
+`sdk/new-workflows/`) — structurally the same fixture as today's
+`vue/workflows/`, `express/workflows/`, etc., not a separate top-level
+package.
+
+**`@saflib/drizzle` is the one exception.** `@saflib/new-workflows-db`
+(the engine's own storage) is itself built on `@saflib/drizzle`
+(`DbManager`, `queryWrapper`, `generateShortId`, ...). If
+`@saflib/drizzle` also depended on `@saflib/new-workflows` (lib) to define
+a workflow in-package, that's a genuine cycle —
+`drizzle → new-workflows/lib → new-workflows-db → drizzle` — not a stale
+build-cache artifact; `tsc -b`/project references fundamentally reject
+it. No other family sits upstream of the engine's own dependency chain
+this way, so this only bites `@saflib/drizzle`. The fix: drizzle's
+ported workflows live in a separate sibling package, `drizzle-workflows/`
+(`@saflib/drizzle-workflows`), which depends on both `@saflib/drizzle`
+and `@saflib/new-workflows` without either depending back on it. Confirm
+with `npm exec saf-imports tsconfig cycles` after adding any new
+in-package `new-workflows/` folder — it should report zero cycles.
+
 ### `db`
 
 Drizzle/sqlite schema, modeled on `jobs-db` / `dev-site-db`. Rough shape:
