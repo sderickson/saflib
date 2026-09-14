@@ -150,11 +150,11 @@ export interface components {
          */
         "workflow-run-agent-config": {
             /**
-             * @description Agent CLI adapter to use. `mock-agent` is test-only (no subprocess). More CLIs (e.g. Claude Code) are expected to join this enum later.
+             * @description Agent CLI adapter to use. `mock-agent` is test-only (no subprocess).
              * @example cursor-agent
              * @enum {string}
              */
-            cli: "cursor-agent" | "mock-agent";
+            cli: "cursor-agent" | "claude-agent" | "mock-agent";
             /**
              * @description Session id returned by the agent CLI's first turn, passed back on subsequent turns (e.g. `--resume`) so multi-turn steps share context.
              * @example a1b2c3d4

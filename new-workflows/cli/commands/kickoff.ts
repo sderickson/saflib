@@ -7,17 +7,27 @@ import { runAdvanceLoop } from "../advance-loop.ts";
 import { reportOutcome } from "../report-outcome.ts";
 import { writeRunPointer } from "../run-pointer.ts";
 
+const RUN_VALUE_TO_CLI: Record<string, AgentCli> = {
+  cursor: "cursor-agent",
+  claude: "claude-agent",
+  mock: "mock-agent",
+};
+
 function parseAgent(run: string | undefined): AgentConfig | undefined {
   if (!run) return undefined;
-  const cli: AgentCli | undefined = run === "cursor" ? "cursor-agent" : run === "mock" ? "mock-agent" : undefined;
-  if (!cli) throw new Error(`Unsupported --run value "${run}" (expected "cursor" or "mock")`);
+  const cli = RUN_VALUE_TO_CLI[run];
+  if (!cli) {
+    throw new Error(
+      `Unsupported --run value "${run}" (expected one of: ${Object.keys(RUN_VALUE_TO_CLI).join(", ")})`,
+    );
+  }
   return { cli };
 }
 
 export function addKickoffCommand(ctx: CliContext): void {
   const runOption = new Option(
     "-r, --run <mode>",
-    'Directly command an agent instead of printing prompts. "cursor" or "mock".',
+    'Directly command an agent instead of printing prompts. "cursor", "claude", or "mock".',
   );
   const skipTodosOption = new Option("-s, --skip-todos", "Skip TODO checks in update steps.");
 

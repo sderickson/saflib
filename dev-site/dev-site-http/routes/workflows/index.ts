@@ -2,6 +2,7 @@ import type { IRouter } from "express";
 import { newWorkflowsDbManager } from "@saflib/new-workflows-db/instances";
 import { createNewWorkflowsRouter } from "@saflib/new-workflows-http";
 import { HelloWorkflowDefinition } from "@saflib/new-workflows";
+import { AddDrizzleQueryWorkflowDefinition } from "@saflib/drizzle-workflows";
 import { devSiteHttpStorage } from "../../context.ts";
 
 // A local dev tool, not a server: default to a real on-disk db so runs
@@ -21,7 +22,7 @@ export function createWorkflowsRouter(): IRouter {
 
   return createNewWorkflowsRouter({
     dbKey,
-    registry: [HelloWorkflowDefinition],
+    registry: [HelloWorkflowDefinition, AddDrizzleQueryWorkflowDefinition],
     // dev-site-http's own `repo_root` isn't known until *its* per-request
     // context is set up, so this is resolved fresh per request.
     defaultCwd: () => devSiteHttpStorage.getStore()!.repo_root,

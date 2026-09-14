@@ -1,6 +1,7 @@
 import { describe, it, expect, afterAll } from "vitest";
 import request from "supertest";
 import { HelloWorkflowDefinition } from "@saflib/new-workflows";
+import { AddDrizzleQueryWorkflowDefinition } from "@saflib/drizzle-workflows";
 import {
   acquireRouterSlimRouteTest,
   releaseSlimRouteTest,
@@ -27,6 +28,12 @@ describe("workflows routes (mounted into dev-site-http)", () => {
         description: HelloWorkflowDefinition.description,
         source: "code",
         inputSchema: HelloWorkflowDefinition.inputSchema,
+      },
+      {
+        id: "drizzle/add-query",
+        description: AddDrizzleQueryWorkflowDefinition.description,
+        source: "code",
+        inputSchema: AddDrizzleQueryWorkflowDefinition.inputSchema,
       },
     ]);
   });

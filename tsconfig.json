@@ -188,6 +188,9 @@
       "path": "./drizzle"
     },
     {
+      "path": "./drizzle-workflows"
+    },
+    {
       "path": "./email/email-service"
     },
     {

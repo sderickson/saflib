@@ -23,25 +23,16 @@
   },
   "references": [
     {
-      "path": "../../commander"
+      "path": "../drizzle"
     },
     {
-      "path": "../../drizzle"
+      "path": "../new-workflows/db"
     },
     {
-      "path": "../../drizzle-workflows"
+      "path": "../new-workflows/lib"
     },
     {
-      "path": "../../node"
-    },
-    {
-      "path": "../db"
-    },
-    {
-      "path": "../lib"
-    },
-    {
-      "path": "../spec"
+      "path": "../templates"
     }
   ]
 }

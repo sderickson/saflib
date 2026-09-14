@@ -366,9 +366,10 @@
         "properties": {
           "cli": {
             "type": "string",
-            "description": "Agent CLI adapter to use. `mock-agent` is test-only (no subprocess). More CLIs (e.g. Claude Code) are expected to join this enum later.\n",
+            "description": "Agent CLI adapter to use. `mock-agent` is test-only (no subprocess).\n",
             "enum": [
               "cursor-agent",
+              "claude-agent",
               "mock-agent"
             ],
             "example": "cursor-agent"

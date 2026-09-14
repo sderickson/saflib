@@ -25,6 +25,7 @@
     "@saflib/new-workflows-db": "*",
     "@saflib/new-workflows-spec": "*",
     "@saflib/drizzle": "*",
+    "@saflib/drizzle-workflows": "*",
     "yaml": "^2.6.1"
   },
   "devDependencies": {

@@ -1,4 +1,3 @@
-import type { DbKey } from "@saflib/drizzle";
 import {
   createWorkflowRun,
   getByIdWorkflowRun,
@@ -7,7 +6,7 @@ import {
   updateResultWorkflowStep,
   listByRunWorkflowStep,
 } from "@saflib/new-workflows-db";
-import type { WorkflowRunStatus } from "@saflib/new-workflows-db";
+import type { DbKey, WorkflowRunStatus } from "@saflib/new-workflows-db";
 import { createOutputStream } from "./output.ts";
 import type {
   AgentConfig,

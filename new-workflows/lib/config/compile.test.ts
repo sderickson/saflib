@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { DbKey } from "@saflib/drizzle";
+import type { DbKey } from "@saflib/new-workflows-db";
 import { newWorkflowsDbManager } from "@saflib/new-workflows-db/instances";
 import { validateWorkflowConfigBody } from "./validate.ts";
 import { compileConfigWorkflow } from "./compile.ts";

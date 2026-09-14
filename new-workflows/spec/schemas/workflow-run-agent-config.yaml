@@ -12,9 +12,9 @@ properties:
     type: string
     description: >
       Agent CLI adapter to use. `mock-agent` is test-only (no subprocess).
-      More CLIs (e.g. Claude Code) are expected to join this enum later.
     enum:
       - cursor-agent
+      - claude-agent
       - mock-agent
     example: "cursor-agent"
   sessionId:

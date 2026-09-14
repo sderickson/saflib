@@ -1,6 +1,7 @@
 import type { WorkflowContext } from "../types.ts";
 import type { AgentTurnResult } from "./types.ts";
 import { executePromptWithCursor } from "./cursor-agent.ts";
+import { executePromptWithClaude } from "./claude-agent.ts";
 import { executePromptWithMock } from "./mock-agent.ts";
 
 /** Runs one agent turn in `run` mode. Only called when `ctx.mode === "run"`. */
@@ -14,6 +15,8 @@ export async function runAgentTurn(
   switch (ctx.agentConfig.cli) {
     case "cursor-agent":
       return executePromptWithCursor(msg, ctx);
+    case "claude-agent":
+      return executePromptWithClaude(msg, ctx);
     case "mock-agent":
       return executePromptWithMock(msg, ctx);
   }

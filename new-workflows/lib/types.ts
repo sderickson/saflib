@@ -1,5 +1,5 @@
-import type { DbKey } from "@saflib/drizzle";
 import type {
+  DbKey,
   WorkflowRunMode,
   WorkflowLogChannel,
   WorkflowLogLevel,

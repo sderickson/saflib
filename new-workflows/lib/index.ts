@@ -22,4 +22,16 @@ export {
 } from "./config/validate.ts";
 export { compileConfigWorkflow } from "./config/compile.ts";
 
+export {
+  getPackageName,
+  checkPackageDependency,
+  parsePackageName,
+  parsePath,
+  makeLineReplace,
+  type ParsePackageNameInput,
+  type ParsePackageNameOutput,
+  type ParsePathInput,
+  type ParsePathOutput,
+} from "./templating.ts";
+
 export { HelloWorkflowDefinition } from "./example-workflows/hello-workflow.ts";

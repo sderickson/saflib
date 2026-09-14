@@ -23,9 +23,6 @@
   },
   "references": [
     {
-      "path": "../../drizzle"
-    },
-    {
       "path": "../../utils"
     },
     {

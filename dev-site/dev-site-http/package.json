@@ -39,7 +39,8 @@
     "@saflib/parser": "*",
     "http-errors": "*",
     "yaml": "^2.9.0",
-    "@saflib/utils": "*"
+    "@saflib/utils": "*",
+    "@saflib/drizzle-workflows": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

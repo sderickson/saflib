@@ -8,6 +8,9 @@
       "path": "../../drizzle"
     },
     {
+      "path": "../../drizzle-workflows"
+    },
+    {
       "path": "../../express"
     },
     {

@@ -1,9 +1,9 @@
 {
-  "name": "@saflib/new-workflows",
+  "name": "@saflib/drizzle-workflows",
   "saf": {
     "kind": "lib"
   },
-  "description": "Sqlite-backed workflow engine (rewrite of @saflib/workflows off XState).",
+  "description": "New-engine (sqlite-backed) workflows for scaffolding drizzle-sqlite3 database packages.",
   "private": true,
   "type": "module",
   "exports": {
@@ -16,11 +16,10 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/drizzle": "*",
+    "@saflib/new-workflows": "*",
     "@saflib/new-workflows-db": "*",
-    "@saflib/new-workflows-spec": "*",
-    "@saflib/utils": "*",
-    "minimatch": "^10.1.1",
-    "ajv": "^8.17.1"
+    "@saflib/templates": "*"
   },
   "devDependencies": {
     "@saflib/dev-tools": "*",

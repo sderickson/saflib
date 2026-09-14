@@ -3,11 +3,12 @@ import { setupContext } from "@saflib/commander";
 import { setServiceName } from "@saflib/node";
 import { newWorkflowsDbManager } from "@saflib/new-workflows-db/instances";
 import { HelloWorkflowDefinition } from "@saflib/new-workflows";
+import { AddDrizzleQueryWorkflowDefinition } from "@saflib/drizzle-workflows";
 import { runNewWorkflowCli } from "../../index.ts";
 
 // Hand-written registry for Phase 2 dogfooding — a real registry-building
 // tool (mirroring `workflows/add-workflow`) is Phase 5 territory.
-const registry = [HelloWorkflowDefinition];
+const registry = [HelloWorkflowDefinition, AddDrizzleQueryWorkflowDefinition];
 
 setServiceName("new-workflow");
 

@@ -1,5 +1,10 @@
 export type * from "./types.ts";
 export * from "./errors.ts";
+// Re-exported so consumers (e.g. `@saflib/new-workflows`) don't need their
+// own direct dependency on `@saflib/drizzle` just for this opaque type —
+// avoids a real cycle for any platform package (like `@saflib/drizzle`
+// itself) that defines workflows using `@saflib/new-workflows`.
+export type { DbKey } from "@saflib/drizzle";
 
 import { newWorkflowsDbManager } from "./instances.ts";
 export const newWorkflowsDb = newWorkflowsDbManager.publicInterface();
