@@ -28,7 +28,9 @@ function clientAccessUrls(): string[] {
     .map((s) => s.trim())
     .filter((s) => !skip.has(s))
     .map((sub) =>
-      sub === "" ? `${protocol}://${domain}/` : `${protocol}://${sub}.${domain}/`,
+      sub === ""
+        ? `${protocol}://${domain}/`
+        : `${protocol}://${sub}.${domain}/`,
     );
 }
 
@@ -169,7 +171,6 @@ export function makeConfig(config: MakeConfigProps = {}) {
       fs: {
         allow: [monorepoRoot ?? "."], // works inside and outside of docker
       },
-      strictPort: true,
       host: true,
     },
   });
