@@ -1,0 +1,23 @@
+listWorkflows:
+  summary: List registered workflows
+  description: >
+    Code-defined workflows from the server's registry. Config-defined
+    (`workflow_configs`) workflows aren't included yet — nothing creates
+    them via this API surface today.
+  operationId: listWorkflows
+
+  responses:
+    "200":
+      description: Registered workflows.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - workflows
+            properties:
+              workflows:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/WorkflowSummary"

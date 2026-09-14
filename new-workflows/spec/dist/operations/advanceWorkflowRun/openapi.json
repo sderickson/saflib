@@ -1,0 +1,179 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "advanceWorkflowRun",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/runs/{runId}/advance": {
+      "post": {
+        "summary": "Run the next step of a run",
+        "description": "The HTTP face of `new-workflows/lib`'s single \"run next step\" entry point — the caller (this endpoint's caller) decides whether/when to call it again. Persists the step's output to `workflow_logs` and publishes a change hint on this run's SSE channel as a side effect.\n",
+        "operationId": "advanceWorkflowRun",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Outcome of the step that just ran.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/step-result"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "step-result": {
+        "description": "Result of advancing a run by one step (`POST /runs/{runId}/advance`) — the wire form of `new-workflows/lib`'s `StepResult`.\n",
+        "discriminator": {
+          "propertyName": "status"
+        },
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "The step succeeded; more steps remain.",
+            "additionalProperties": false,
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "success"
+                ],
+                "example": "success"
+              },
+              "result": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "The step failed.",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "message"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "error"
+                ],
+                "example": "error"
+              },
+              "message": {
+                "type": "string"
+              },
+              "errorPrompt": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Waiting on the agent (mode `print`, or `run` after a timeout).",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "prompt"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "awaiting_prompt"
+                ],
+                "example": "awaiting_prompt"
+              },
+              "prompt": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Waiting on a human action outside the agent loop.",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "message"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "awaiting_user"
+                ],
+                "example": "awaiting_user"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "No more steps to run.",
+            "additionalProperties": false,
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "done"
+                ],
+                "example": "done"
+              }
+            }
+          }
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+listWorkflowRunLogs:
+  summary: List a run's logs
+  description: >
+    Cursor-paginated by `since` (an ISO timestamp) — the client re-fetches
+    this after an SSE change hint rather than getting log content pushed
+    over the wire.
+  operationId: listWorkflowRunLogs
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+    - name: since
+      in: query
+      required: false
+      description: Only rows created strictly after this timestamp.
+      schema:
+        type: string
+        format: date-time
+
+  responses:
+    "200":
+      description: Log rows, oldest first.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - logs
+            properties:
+              logs:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/WorkflowLogEntry"
+    "404":
+      description: No run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

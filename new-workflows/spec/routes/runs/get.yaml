@@ -1,0 +1,31 @@
+getWorkflowRun:
+  summary: Get a run by id
+  operationId: getWorkflowRun
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+
+  responses:
+    "200":
+      description: Run detail.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - run
+            properties:
+              run:
+                $ref: "../../openapi.yaml#/components/schemas/WorkflowRun"
+    "404":
+      description: No run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

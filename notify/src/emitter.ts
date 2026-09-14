@@ -10,8 +10,8 @@ import type {
 } from "./types.ts";
 
 export interface InProcessChangeEmitterOptions {
-  /** Max events retained per org (default {@link RING_BUFFER_MAX_EVENTS}). */
-  maxEventsPerOrg?: number;
+  /** Max events retained per channel (default {@link RING_BUFFER_MAX_EVENTS}). */
+  maxEventsPerChannel?: number;
   /** Drop buffered events older than this (default {@link RING_BUFFER_MAX_AGE_MS}). */
   maxEventAgeMs?: number;
   /** Clock for expiry; inject in tests. */
@@ -24,11 +24,11 @@ interface BufferedEntry {
 }
 
 /**
- * Single-process ChangeEmitter with per-org subscribers and a small ring buffer
- * for Last-Event-ID reconnect replay.
+ * Single-process ChangeEmitter with per-channel subscribers and a small
+ * ring buffer for Last-Event-ID reconnect replay.
  */
 export class InProcessChangeEmitter implements ChangeEmitter {
-  readonly #maxEventsPerOrg: number;
+  readonly #maxEventsPerChannel: number;
   readonly #maxEventAgeMs: number;
   readonly #now: () => number;
   #nextId = 1;
@@ -36,7 +36,7 @@ export class InProcessChangeEmitter implements ChangeEmitter {
   readonly #buffers = new Map<string, BufferedEntry[]>();
 
   constructor(options: InProcessChangeEmitterOptions = {}) {
-    this.#maxEventsPerOrg = options.maxEventsPerOrg ?? RING_BUFFER_MAX_EVENTS;
+    this.#maxEventsPerChannel = options.maxEventsPerChannel ?? RING_BUFFER_MAX_EVENTS;
     this.#maxEventAgeMs = options.maxEventAgeMs ?? RING_BUFFER_MAX_AGE_MS;
     this.#now = options.now ?? Date.now;
   }
@@ -47,8 +47,8 @@ export class InProcessChangeEmitter implements ChangeEmitter {
       id: String(this.#nextId++),
     };
     const createdAt = this.#now();
-    this.#append(event.org_id, { event: withId, createdAt });
-    const listeners = this.#subscribers.get(event.org_id);
+    this.#append(event.channel_id, { event: withId, createdAt });
+    const listeners = this.#subscribers.get(event.channel_id);
     if (!listeners) {
       return;
     }
@@ -61,24 +61,24 @@ export class InProcessChangeEmitter implements ChangeEmitter {
     }
   }
 
-  subscribe(orgId: string, listener: ChangeEventListener): () => void {
-    let listeners = this.#subscribers.get(orgId);
+  subscribe(channelId: string, listener: ChangeEventListener): () => void {
+    let listeners = this.#subscribers.get(channelId);
     if (!listeners) {
       listeners = new Set();
-      this.#subscribers.set(orgId, listeners);
+      this.#subscribers.set(channelId, listeners);
     }
     listeners.add(listener);
     return () => {
       listeners.delete(listener);
       if (listeners.size === 0) {
-        this.#subscribers.delete(orgId);
+        this.#subscribers.delete(channelId);
       }
     };
   }
 
-  getEventsAfter(orgId: string, lastEventId: string): ChangeEventWithId[] {
-    this.#prune(orgId);
-    const buffer = this.#buffers.get(orgId);
+  getEventsAfter(channelId: string, lastEventId: string): ChangeEventWithId[] {
+    this.#prune(channelId);
+    const buffer = this.#buffers.get(channelId);
     if (!buffer || buffer.length === 0) {
       return [];
     }
@@ -91,18 +91,18 @@ export class InProcessChangeEmitter implements ChangeEmitter {
       .map((entry) => entry.event);
   }
 
-  #append(orgId: string, entry: BufferedEntry): void {
-    let buffer = this.#buffers.get(orgId);
+  #append(channelId: string, entry: BufferedEntry): void {
+    let buffer = this.#buffers.get(channelId);
     if (!buffer) {
       buffer = [];
-      this.#buffers.set(orgId, buffer);
+      this.#buffers.set(channelId, buffer);
     }
     buffer.push(entry);
-    this.#prune(orgId);
+    this.#prune(channelId);
   }
 
-  #prune(orgId: string): void {
-    const buffer = this.#buffers.get(orgId);
+  #prune(channelId: string): void {
+    const buffer = this.#buffers.get(channelId);
     if (!buffer) {
       return;
     }
@@ -114,12 +114,12 @@ export class InProcessChangeEmitter implements ChangeEmitter {
     if (start > 0) {
       buffer.splice(0, start);
     }
-    const overflow = buffer.length - this.#maxEventsPerOrg;
+    const overflow = buffer.length - this.#maxEventsPerChannel;
     if (overflow > 0) {
       buffer.splice(0, overflow);
     }
     if (buffer.length === 0) {
-      this.#buffers.delete(orgId);
+      this.#buffers.delete(channelId);
     }
   }
 }

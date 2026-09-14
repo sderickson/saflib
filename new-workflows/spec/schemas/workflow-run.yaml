@@ -1,0 +1,63 @@
+type: object
+description: >
+  A single workflow run — the wire form of a `workflow_run` row
+  (`new-workflows-db/schemas/workflow-run.ts`).
+additionalProperties: false
+required:
+  - id
+  - workflow_source
+  - workflow_ref
+  - input
+  - mode
+  - skip_todos
+  - status
+  - current_step_index
+  - cwd
+  - agent_config
+  - parent_run_id
+  - parent_step_index
+  - created_at
+  - updated_at
+properties:
+  id:
+    type: string
+    example: "0SG36FJe6m4W"
+  workflow_source:
+    type: string
+    enum: ["code", "config"]
+    example: "code"
+  workflow_ref:
+    type: string
+    description: A code workflow's `defineWorkflow` id, or a `workflow_config` row id.
+    example: "example/hello"
+  input:
+    type: object
+    description: The input this run was started with.
+    additionalProperties: true
+  mode:
+    $ref: "./workflow-run-mode.yaml"
+  skip_todos:
+    type: boolean
+  status:
+    $ref: "./workflow-run-status.yaml"
+  current_step_index:
+    type: integer
+    example: 1
+  cwd:
+    type: string
+    example: "/home/user/my-project"
+  agent_config:
+    oneOf:
+      - $ref: "./workflow-run-agent-config.yaml"
+      - type: "null"
+  parent_run_id:
+    type: [string, "null"]
+    description: Set when this run was spawned by a `call-workflow` step in another run.
+  parent_step_index:
+    type: [integer, "null"]
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

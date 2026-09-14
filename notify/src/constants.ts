@@ -1,4 +1,4 @@
-/** Default per-org ring buffer capacity (~50 events). */
+/** Default per-channel ring buffer capacity (~50 events). */
 export const RING_BUFFER_MAX_EVENTS = 50;
 
 /** Default max age for buffered events (~5 minutes). */

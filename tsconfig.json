@@ -254,6 +254,9 @@
       "path": "./new-workflows/db"
     },
     {
+      "path": "./new-workflows/http"
+    },
+    {
       "path": "./new-workflows/lib"
     },
     {

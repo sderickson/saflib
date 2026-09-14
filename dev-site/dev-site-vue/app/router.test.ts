@@ -16,6 +16,7 @@ describe("@saflib/dev-site-vue/app router", () => {
         "/history",
         "/history/commits/:hash",
         "/history/compare",
+        "/workflows",
       ].sort(),
     );
   });

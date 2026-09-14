@@ -6,6 +6,7 @@ import {
   ComparePage,
   CheckoutPage,
   BuildPage,
+  WorkflowsPage,
 } from "../index.ts";
 import { readDevSiteRuntimeConfig } from "./runtime-config.ts";
 
@@ -101,6 +102,11 @@ export function createDevSiteRouter(options: CreateDevSiteRouterOptions = {}) {
       {
         path: "/build",
         component: BuildPage,
+        props: { hubPath: "/" },
+      },
+      {
+        path: "/workflows",
+        component: WorkflowsPage,
         props: { hubPath: "/" },
       },
       {

@@ -3,9 +3,274 @@
   "info": {
     "title": "new-workflows API",
     "version": "1.0.0",
-    "description": "Shared business-object schemas for the sqlite-backed workflows engine rewrite (see new-workflows/plans/spec.md). No HTTP paths yet — this package exists ahead of new-workflows-http so the frontend and lib can share these types before the endpoints themselves are designed.\n"
+    "description": "HTTP surface + shared business-object schemas for the sqlite-backed workflows engine rewrite (see new-workflows/plans/spec.md). Mounted into dev-site-http as monolith chrome, not run as a standalone service — see new-workflows-http's docs. The SSE run-events route (GET /api/runs/{runId}/events) is intentionally not modeled here; text/event-stream doesn't fit request/response validation and isn't a validated operation, matching node-log-http's precedent.\n"
   },
-  "paths": {},
+  "paths": {
+    "/api/workflows": {
+      "get": {
+        "summary": "List registered workflows",
+        "description": "Code-defined workflows from the server's registry. Config-defined (`workflow_configs`) workflows aren't included yet — nothing creates them via this API surface today.\n",
+        "operationId": "listWorkflows",
+        "responses": {
+          "200": {
+            "description": "Registered workflows.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "workflows"
+                  ],
+                  "properties": {
+                    "workflows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-summary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workflows/{id}/runs": {
+      "post": {
+        "summary": "Start a run of a registered workflow",
+        "operationId": "createWorkflowRun",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "A registered workflow's id.",
+            "schema": {
+              "type": "string",
+              "example": "example/hello"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "input"
+                ],
+                "properties": {
+                  "input": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "mode": {
+                    "$ref": "#/components/schemas/workflow-run-mode"
+                  },
+                  "agentConfig": {
+                    "$ref": "#/components/schemas/workflow-run-agent-config"
+                  },
+                  "skipTodos": {
+                    "type": "boolean"
+                  },
+                  "cwd": {
+                    "type": "string",
+                    "description": "Overrides the mount's default working directory (e.g. dev-site's repo checkout root) for this run.\n",
+                    "example": "/home/user/my-project"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Run created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "run"
+                  ],
+                  "properties": {
+                    "run": {
+                      "$ref": "#/components/schemas/workflow-run"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No registered workflow with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{runId}": {
+      "get": {
+        "summary": "Get a run by id",
+        "operationId": "getWorkflowRun",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run detail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "run"
+                  ],
+                  "properties": {
+                    "run": {
+                      "$ref": "#/components/schemas/workflow-run"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{runId}/advance": {
+      "post": {
+        "summary": "Run the next step of a run",
+        "description": "The HTTP face of `new-workflows/lib`'s single \"run next step\" entry point — the caller (this endpoint's caller) decides whether/when to call it again. Persists the step's output to `workflow_logs` and publishes a change hint on this run's SSE channel as a side effect.\n",
+        "operationId": "advanceWorkflowRun",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Outcome of the step that just ran.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/step-result"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{runId}/logs": {
+      "get": {
+        "summary": "List a run's logs",
+        "description": "Cursor-paginated by `since` (an ISO timestamp) — the client re-fetches this after an SSE change hint rather than getting log content pushed over the wire.\n",
+        "operationId": "listWorkflowRunLogs",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "Only rows created strictly after this timestamp.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log rows, oldest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "logs"
+                  ],
+                  "properties": {
+                    "logs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-log-entry"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
   "components": {
     "schemas": {
       "Error": {
@@ -32,17 +297,50 @@
       "WorkflowConfigBody": {
         "$ref": "#/components/schemas/workflow-config-body"
       },
-      "error": {
+      "WorkflowSummary": {
+        "$ref": "#/components/schemas/workflow-summary"
+      },
+      "WorkflowRun": {
+        "$ref": "#/components/schemas/workflow-run"
+      },
+      "WorkflowLogEntry": {
+        "$ref": "#/components/schemas/workflow-log-entry"
+      },
+      "StepResult": {
+        "$ref": "#/components/schemas/step-result"
+      },
+      "workflow-summary": {
         "type": "object",
+        "description": "One entry in the registered-workflow list (`GET /workflows`).",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "description",
+          "source"
+        ],
         "properties": {
-          "code": {
+          "id": {
             "type": "string",
-            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+            "description": "A code workflow's `defineWorkflow` id, or a `workflow_config` row id.",
+            "example": "example/hello"
           },
-          "message": {
+          "description": {
             "type": "string",
-            "description": "A human-readable description of the error.",
-            "example": "The requested resource could not be found."
+            "example": "Copies a template file, prompts about it, and runs a command."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "code",
+              "config"
+            ],
+            "description": "Whether this is a code-defined or config-defined workflow.",
+            "example": "code"
+          },
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The workflow's declared input schema (`new-workflows/lib`'s `WorkflowInputSchema`), if it has one — a generic passthrough here rather than a fully modeled schema, since it's already well-typed on the TypeScript side and a client only needs it to build a form.\n"
           }
         }
       },
@@ -57,52 +355,6 @@
           "checklist"
         ],
         "example": "run"
-      },
-      "workflow-run-status": {
-        "type": "string",
-        "description": "Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.\n",
-        "enum": [
-          "pending",
-          "running",
-          "awaiting_prompt",
-          "awaiting_user",
-          "done",
-          "failed"
-        ],
-        "example": "running"
-      },
-      "workflow-step-status": {
-        "type": "string",
-        "description": "Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.\n",
-        "enum": [
-          "running",
-          "success",
-          "error",
-          "awaiting_prompt",
-          "awaiting_user"
-        ],
-        "example": "success"
-      },
-      "workflow-log-channel": {
-        "type": "string",
-        "description": "Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. \"running step 3: copy\"). `agent-input`: the prompt text sent to the agent.\n",
-        "enum": [
-          "terminal",
-          "agent",
-          "tool",
-          "agent-input"
-        ],
-        "example": "tool"
-      },
-      "workflow-log-level": {
-        "type": "string",
-        "description": "Severity of a single log line, independent of its channel.",
-        "enum": [
-          "info",
-          "warn",
-          "error"
-        ],
-        "example": "info"
       },
       "workflow-run-agent-config": {
         "type": "object",
@@ -131,6 +383,315 @@
           "cli": "cursor-agent",
           "sessionId": "a1b2c3d4"
         }
+      },
+      "workflow-run-status": {
+        "type": "string",
+        "description": "Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.\n",
+        "enum": [
+          "pending",
+          "running",
+          "awaiting_prompt",
+          "awaiting_user",
+          "done",
+          "failed"
+        ],
+        "example": "running"
+      },
+      "workflow-run": {
+        "type": "object",
+        "description": "A single workflow run — the wire form of a `workflow_run` row (`new-workflows-db/schemas/workflow-run.ts`).\n",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "workflow_source",
+          "workflow_ref",
+          "input",
+          "mode",
+          "skip_todos",
+          "status",
+          "current_step_index",
+          "cwd",
+          "agent_config",
+          "parent_run_id",
+          "parent_step_index",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "0SG36FJe6m4W"
+          },
+          "workflow_source": {
+            "type": "string",
+            "enum": [
+              "code",
+              "config"
+            ],
+            "example": "code"
+          },
+          "workflow_ref": {
+            "type": "string",
+            "description": "A code workflow's `defineWorkflow` id, or a `workflow_config` row id.",
+            "example": "example/hello"
+          },
+          "input": {
+            "type": "object",
+            "description": "The input this run was started with.",
+            "additionalProperties": true
+          },
+          "mode": {
+            "$ref": "#/components/schemas/workflow-run-mode"
+          },
+          "skip_todos": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/workflow-run-status"
+          },
+          "current_step_index": {
+            "type": "integer",
+            "example": 1
+          },
+          "cwd": {
+            "type": "string",
+            "example": "/home/user/my-project"
+          },
+          "agent_config": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/workflow-run-agent-config"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parent_run_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Set when this run was spawned by a `call-workflow` step in another run."
+          },
+          "parent_step_index": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "step-result": {
+        "description": "Result of advancing a run by one step (`POST /runs/{runId}/advance`) — the wire form of `new-workflows/lib`'s `StepResult`.\n",
+        "discriminator": {
+          "propertyName": "status"
+        },
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "The step succeeded; more steps remain.",
+            "additionalProperties": false,
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "success"
+                ],
+                "example": "success"
+              },
+              "result": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "The step failed.",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "message"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "error"
+                ],
+                "example": "error"
+              },
+              "message": {
+                "type": "string"
+              },
+              "errorPrompt": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Waiting on the agent (mode `print`, or `run` after a timeout).",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "prompt"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "awaiting_prompt"
+                ],
+                "example": "awaiting_prompt"
+              },
+              "prompt": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Waiting on a human action outside the agent loop.",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "message"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "awaiting_user"
+                ],
+                "example": "awaiting_user"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "No more steps to run.",
+            "additionalProperties": false,
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "done"
+                ],
+                "example": "done"
+              }
+            }
+          }
+        ]
+      },
+      "workflow-log-channel": {
+        "type": "string",
+        "description": "Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. \"running step 3: copy\"). `agent-input`: the prompt text sent to the agent.\n",
+        "enum": [
+          "terminal",
+          "agent",
+          "tool",
+          "agent-input"
+        ],
+        "example": "tool"
+      },
+      "workflow-log-level": {
+        "type": "string",
+        "description": "Severity of a single log line, independent of its channel.",
+        "enum": [
+          "info",
+          "warn",
+          "error"
+        ],
+        "example": "info"
+      },
+      "workflow-log-entry": {
+        "type": "object",
+        "description": "One log line for a run — the wire form of a `workflow_log` row (`new-workflows-db/schemas/workflow-log.ts`).\n",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "run_id",
+          "step_index",
+          "channel",
+          "level",
+          "content",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "aBcD1234"
+          },
+          "run_id": {
+            "type": "string",
+            "example": "0SG36FJe6m4W"
+          },
+          "step_index": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "channel": {
+            "$ref": "#/components/schemas/workflow-log-channel"
+          },
+          "level": {
+            "$ref": "#/components/schemas/workflow-log-level"
+          },
+          "content": {
+            "type": "string",
+            "example": "Generated \"example-thing.ts\" from template"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "workflow-step-status": {
+        "type": "string",
+        "description": "Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.\n",
+        "enum": [
+          "running",
+          "success",
+          "error",
+          "awaiting_prompt",
+          "awaiting_user"
+        ],
+        "example": "success"
       },
       "workflow-config-body": {
         "type": "object",

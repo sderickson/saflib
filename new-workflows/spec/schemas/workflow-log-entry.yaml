@@ -1,0 +1,32 @@
+type: object
+description: >
+  One log line for a run — the wire form of a `workflow_log` row
+  (`new-workflows-db/schemas/workflow-log.ts`).
+additionalProperties: false
+required:
+  - id
+  - run_id
+  - step_index
+  - channel
+  - level
+  - content
+  - created_at
+properties:
+  id:
+    type: string
+    example: "aBcD1234"
+  run_id:
+    type: string
+    example: "0SG36FJe6m4W"
+  step_index:
+    type: [integer, "null"]
+  channel:
+    $ref: "./workflow-log-channel.yaml"
+  level:
+    $ref: "./workflow-log-level.yaml"
+  content:
+    type: string
+    example: "Generated \"example-thing.ts\" from template"
+  created_at:
+    type: string
+    format: date-time

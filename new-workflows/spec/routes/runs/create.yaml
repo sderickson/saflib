@@ -1,0 +1,58 @@
+createWorkflowRun:
+  summary: Start a run of a registered workflow
+  operationId: createWorkflowRun
+
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: A registered workflow's id.
+      schema:
+        type: string
+        example: "example/hello"
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required:
+            - input
+          properties:
+            input:
+              type: object
+              additionalProperties: true
+            mode:
+              $ref: "../../openapi.yaml#/components/schemas/WorkflowRunMode"
+            agentConfig:
+              $ref: "../../openapi.yaml#/components/schemas/WorkflowRunAgentConfig"
+            skipTodos:
+              type: boolean
+            cwd:
+              type: string
+              description: >
+                Overrides the mount's default working directory (e.g.
+                dev-site's repo checkout root) for this run.
+              example: "/home/user/my-project"
+
+  responses:
+    "201":
+      description: Run created.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - run
+            properties:
+              run:
+                $ref: "../../openapi.yaml#/components/schemas/WorkflowRun"
+    "404":
+      description: No registered workflow with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

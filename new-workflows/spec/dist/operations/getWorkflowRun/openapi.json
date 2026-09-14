@@ -1,0 +1,221 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "getWorkflowRun",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/runs/{runId}": {
+      "get": {
+        "summary": "Get a run by id",
+        "operationId": "getWorkflowRun",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run detail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "run"
+                  ],
+                  "properties": {
+                    "run": {
+                      "$ref": "#/components/schemas/workflow-run"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "workflow-run": {
+        "type": "object",
+        "description": "A single workflow run — the wire form of a `workflow_run` row (`new-workflows-db/schemas/workflow-run.ts`).\n",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "workflow_source",
+          "workflow_ref",
+          "input",
+          "mode",
+          "skip_todos",
+          "status",
+          "current_step_index",
+          "cwd",
+          "agent_config",
+          "parent_run_id",
+          "parent_step_index",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "0SG36FJe6m4W"
+          },
+          "workflow_source": {
+            "type": "string",
+            "enum": [
+              "code",
+              "config"
+            ],
+            "example": "code"
+          },
+          "workflow_ref": {
+            "type": "string",
+            "description": "A code workflow's `defineWorkflow` id, or a `workflow_config` row id.",
+            "example": "example/hello"
+          },
+          "input": {
+            "type": "object",
+            "description": "The input this run was started with.",
+            "additionalProperties": true
+          },
+          "mode": {
+            "$ref": "#/components/schemas/workflow-run-mode"
+          },
+          "skip_todos": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/workflow-run-status"
+          },
+          "current_step_index": {
+            "type": "integer",
+            "example": 1
+          },
+          "cwd": {
+            "type": "string",
+            "example": "/home/user/my-project"
+          },
+          "agent_config": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/workflow-run-agent-config"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parent_run_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Set when this run was spawned by a `call-workflow` step in another run."
+          },
+          "parent_step_index": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "workflow-run-mode": {
+        "type": "string",
+        "description": "Execution mode for a run, set once at `createRun` and unchanged for its lifetime. Same modes as today's `@saflib/workflows`: `dry`/`checklist` never touch the filesystem or run commands; `script` runs mechanical steps (copy, command) but skips prompts, TODO checks, and validation commands (typecheck/test); `print` hands prompts to an external agent and halts between steps; `run` drives the agent itself.\n",
+        "enum": [
+          "dry",
+          "script",
+          "print",
+          "run",
+          "checklist"
+        ],
+        "example": "run"
+      },
+      "workflow-run-status": {
+        "type": "string",
+        "description": "Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.\n",
+        "enum": [
+          "pending",
+          "running",
+          "awaiting_prompt",
+          "awaiting_user",
+          "done",
+          "failed"
+        ],
+        "example": "running"
+      },
+      "workflow-run-agent-config": {
+        "type": "object",
+        "description": "Which agent CLI drives a run's `run`-mode steps, and its resumable session. Set at `createRun` (or when the run is retried against a different agent) and persisted on the run row so a resumed process can `--resume` the same underlying session.\n",
+        "additionalProperties": false,
+        "required": [
+          "cli"
+        ],
+        "properties": {
+          "cli": {
+            "type": "string",
+            "description": "Agent CLI adapter to use. `mock-agent` is test-only (no subprocess). More CLIs (e.g. Claude Code) are expected to join this enum later.\n",
+            "enum": [
+              "cursor-agent",
+              "mock-agent"
+            ],
+            "example": "cursor-agent"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Session id returned by the agent CLI's first turn, passed back on subsequent turns (e.g. `--resume`) so multi-turn steps share context.\n",
+            "example": "a1b2c3d4"
+          }
+        },
+        "example": {
+          "cli": "cursor-agent",
+          "sessionId": "a1b2c3d4"
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

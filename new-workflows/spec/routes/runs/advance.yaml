@@ -1,0 +1,30 @@
+advanceWorkflowRun:
+  summary: Run the next step of a run
+  description: >
+    The HTTP face of `new-workflows/lib`'s single "run next step" entry
+    point — the caller (this endpoint's caller) decides whether/when to
+    call it again. Persists the step's output to `workflow_logs` and
+    publishes a change hint on this run's SSE channel as a side effect.
+  operationId: advanceWorkflowRun
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+
+  responses:
+    "200":
+      description: Outcome of the step that just ran.
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/StepResult"
+    "404":
+      description: No run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

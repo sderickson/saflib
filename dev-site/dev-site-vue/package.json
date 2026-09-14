@@ -23,6 +23,8 @@
     "@saflib/dev-site-spec": "*",
     "@saflib/imports": "*",
     "@saflib/links": "*",
+    "@saflib/new-workflows": "*",
+    "@saflib/new-workflows-spec": "*",
     "@saflib/sdk": "*",
     "@saflib/vite": "*",
     "@saflib/vue": "*",

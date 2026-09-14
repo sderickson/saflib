@@ -1,5 +1,13 @@
-import type { components } from "./dist/openapi.d.ts";
-import { castJson } from "@saflib/openapi";
+import type { components, operations } from "./dist/openapi.d.ts";
+export type { paths } from "./dist/openapi.d.ts";
+import {
+  type ExtractResponseBody,
+  type ExtractRequestBody,
+  castJson,
+} from "@saflib/openapi";
+
+export type NewWorkflowsResponseBody = ExtractResponseBody<operations>;
+export type NewWorkflowsRequestBody = ExtractRequestBody<operations>;
 
 export type Error = components["schemas"]["Error"];
 export type WorkflowRunMode = components["schemas"]["WorkflowRunMode"];
@@ -10,10 +18,14 @@ export type WorkflowLogLevel = components["schemas"]["WorkflowLogLevel"];
 export type WorkflowRunAgentConfig =
   components["schemas"]["WorkflowRunAgentConfig"];
 export type WorkflowConfigBody = components["schemas"]["WorkflowConfigBody"];
+export type WorkflowSummary = components["schemas"]["WorkflowSummary"];
+export type WorkflowRun = components["schemas"]["WorkflowRun"];
+export type WorkflowLogEntry = components["schemas"]["WorkflowLogEntry"];
+export type StepResult = components["schemas"]["StepResult"];
 
 import * as json from "./dist/openapi.json" with { type: "json" };
 
 /**
- * For validating Express requests and responses once new-workflows-http exists.
+ * For validating Express requests and responses in new-workflows-http.
  */
 export const jsonSpec = castJson(json);

@@ -7,8 +7,14 @@ export interface ChangeEvent {
   operation_id: string;
   /** Path params from the request (string values only). */
   params: Record<string, string>;
-  /** Org scope for routing. */
-  org_id: string;
+  /**
+   * Which channel this event publishes on. Purely a routing key — this
+   * package has no opinion on what a channel *means*; the product decides
+   * and should name it so that's clear from the string itself (e.g.
+   * `"org:<id>"` for an org-wide channel, `"workflow-run:<id>"` for a
+   * single run's own channel).
+   */
+  channel_id: string;
 }
 
 /** Change event plus monotonic id for SSE `id:` / Last-Event-ID replay. */
@@ -23,16 +29,16 @@ export type ChangeEventListener = (event: ChangeEventWithId) => void;
  * Never import product-specific types into implementations.
  */
 export interface ChangeEmitter {
-  /** Publish a change for the event's `org_id` channel. */
+  /** Publish a change on the event's `channel_id` channel. */
   publish(event: ChangeEvent): void;
   /**
-   * Subscribe to an org channel. Returns an unsubscribe function.
+   * Subscribe to a channel. Returns an unsubscribe function.
    * Does not replay history — use `getEventsAfter` with Last-Event-ID for that.
    */
-  subscribe(orgId: string, listener: ChangeEventListener): () => void;
+  subscribe(channelId: string, listener: ChangeEventListener): () => void;
   /**
-   * Events strictly after `lastEventId` still held in the per-org ring buffer.
-   * Empty when the id is unknown, expired, or at the tip.
+   * Events strictly after `lastEventId` still held in the channel's ring
+   * buffer. Empty when the id is unknown, expired, or at the tip.
    */
-  getEventsAfter(orgId: string, lastEventId: string): ChangeEventWithId[];
+  getEventsAfter(channelId: string, lastEventId: string): ChangeEventWithId[];
 }

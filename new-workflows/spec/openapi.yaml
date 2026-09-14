@@ -3,12 +3,30 @@ info:
   title: new-workflows API
   version: 1.0.0
   description: >
-    Shared business-object schemas for the sqlite-backed workflows engine
-    rewrite (see new-workflows/plans/spec.md). No HTTP paths yet — this
-    package exists ahead of new-workflows-http so the frontend and lib can
-    share these types before the endpoints themselves are designed.
+    HTTP surface + shared business-object schemas for the sqlite-backed
+    workflows engine rewrite (see new-workflows/plans/spec.md). Mounted
+    into dev-site-http as monolith chrome, not run as a standalone
+    service — see new-workflows-http's docs. The SSE run-events route
+    (GET /api/runs/{runId}/events) is intentionally not modeled here;
+    text/event-stream doesn't fit request/response validation and isn't
+    a validated operation, matching node-log-http's precedent.
 
-paths: {}
+paths:
+  /api/workflows:
+    get:
+      $ref: "./routes/workflows/list.yaml#/listWorkflows"
+  /api/workflows/{id}/runs:
+    post:
+      $ref: "./routes/runs/create.yaml#/createWorkflowRun"
+  /api/runs/{runId}:
+    get:
+      $ref: "./routes/runs/get.yaml#/getWorkflowRun"
+  /api/runs/{runId}/advance:
+    post:
+      $ref: "./routes/runs/advance.yaml#/advanceWorkflowRun"
+  /api/runs/{runId}/logs:
+    get:
+      $ref: "./routes/runs/logs.yaml#/listWorkflowRunLogs"
 
 components:
   schemas:
@@ -28,3 +46,11 @@ components:
       $ref: "./schemas/workflow-run-agent-config.yaml"
     WorkflowConfigBody:
       $ref: "./schemas/workflow-config-body.yaml"
+    WorkflowSummary:
+      $ref: "./schemas/workflow-summary.yaml"
+    WorkflowRun:
+      $ref: "./schemas/workflow-run.yaml"
+    WorkflowLogEntry:
+      $ref: "./schemas/workflow-log-entry.yaml"
+    StepResult:
+      $ref: "./schemas/step-result.yaml"

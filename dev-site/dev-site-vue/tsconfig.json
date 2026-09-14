@@ -34,6 +34,12 @@
       "path": "../../links"
     },
     {
+      "path": "../../new-workflows/lib"
+    },
+    {
+      "path": "../../new-workflows/spec"
+    },
+    {
       "path": "../../sdk"
     },
     {

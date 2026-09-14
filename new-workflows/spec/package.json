@@ -3,12 +3,13 @@
   "saf": {
     "kind": "spec"
   },
-  "description": "Shared business-object schemas for the sqlite-backed workflows engine rewrite. No HTTP paths yet — see new-workflows-http (later phase).",
+  "description": "HTTP surface + shared business-object schemas for the sqlite-backed workflows engine rewrite. Mounted into dev-site-http as monolith chrome — see new-workflows-http.",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./index.ts",
     "./openapi.yaml": "./openapi.yaml",
+    "./operations/*": "./dist/operations/*/index.ts",
     "./schemas/*": "./dist/schemas/*/index.ts"
   },
   "scripts": {

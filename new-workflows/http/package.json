@@ -1,0 +1,35 @@
+{
+  "name": "@saflib/new-workflows-http",
+  "saf": {
+    "kind": "http"
+  },
+  "description": "HTTP surface for the sqlite-backed workflows engine. Mounted as monolith chrome (see dev-site-http) — not run as its own service.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/drizzle": "*",
+    "@saflib/express": "*",
+    "@saflib/node": "*",
+    "@saflib/notify": "*",
+    "@saflib/openapi": "*",
+    "@saflib/new-workflows": "*",
+    "@saflib/new-workflows-db": "*",
+    "@saflib/new-workflows-spec": "*",
+    "@saflib/utils": "*",
+    "http-errors": "^2.0.0"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@saflib/monorepo": "*"
+  },
+  "sideEffects": false
+}

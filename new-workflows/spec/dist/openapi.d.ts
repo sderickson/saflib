@@ -4,7 +4,102 @@ import type { Error as _Ext0_Error } from "@saflib/openapi/schemas/Error";
  * Do not make direct changes to the file.
  */
 
-export type paths = Record<string, never>;
+export interface paths {
+    "/api/workflows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List registered workflows
+         * @description Code-defined workflows from the server's registry. Config-defined (`workflow_configs`) workflows aren't included yet — nothing creates them via this API surface today.
+         */
+        get: operations["listWorkflows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/{id}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start a run of a registered workflow */
+        post: operations["createWorkflowRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{runId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a run by id */
+        get: operations["getWorkflowRun"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{runId}/advance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run the next step of a run
+         * @description The HTTP face of `new-workflows/lib`'s single "run next step" entry point — the caller (this endpoint's caller) decides whether/when to call it again. Persists the step's output to `workflow_logs` and publishes a change hint on this run's SSE channel as a side effect.
+         */
+        post: operations["advanceWorkflowRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{runId}/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a run's logs
+         * @description Cursor-paginated by `since` (an ISO timestamp) — the client re-fetches this after an SSE change hint rather than getting log content pushed over the wire.
+         */
+        get: operations["listWorkflowRunLogs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+}
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
@@ -16,14 +111,29 @@ export interface components {
         WorkflowLogLevel: components["schemas"]["workflow-log-level"];
         WorkflowRunAgentConfig: components["schemas"]["workflow-run-agent-config"];
         WorkflowConfigBody: components["schemas"]["workflow-config-body"];
-        error: {
-            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
-            code?: string;
+        WorkflowSummary: components["schemas"]["workflow-summary"];
+        WorkflowRun: components["schemas"]["workflow-run"];
+        WorkflowLogEntry: components["schemas"]["workflow-log-entry"];
+        StepResult: components["schemas"]["step-result"];
+        /** @description One entry in the registered-workflow list (`GET /workflows`). */
+        "workflow-summary": {
             /**
-             * @description A human-readable description of the error.
-             * @example The requested resource could not be found.
+             * @description A code workflow's `defineWorkflow` id, or a `workflow_config` row id.
+             * @example example/hello
              */
-            message?: string;
+            id: string;
+            /** @example Copies a template file, prompts about it, and runs a command. */
+            description: string;
+            /**
+             * @description Whether this is a code-defined or config-defined workflow.
+             * @example code
+             * @enum {string}
+             */
+            source: "code" | "config";
+            /** @description The workflow's declared input schema (`new-workflows/lib`'s `WorkflowInputSchema`), if it has one — a generic passthrough here rather than a fully modeled schema, since it's already well-typed on the TypeScript side and a client only needs it to build a form. */
+            inputSchema?: {
+                [key: string]: unknown;
+            };
         };
         /**
          * @description Execution mode for a run, set once at `createRun` and unchanged for its lifetime. Same modes as today's `@saflib/workflows`: `dry`/`checklist` never touch the filesystem or run commands; `script` runs mechanical steps (copy, command) but skips prompts, TODO checks, and validation commands (typecheck/test); `print` hands prompts to an external agent and halts between steps; `run` drives the agent itself.
@@ -31,30 +141,6 @@ export interface components {
          * @enum {string}
          */
         "workflow-run-mode": "dry" | "script" | "print" | "run" | "checklist";
-        /**
-         * @description Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.
-         * @example running
-         * @enum {string}
-         */
-        "workflow-run-status": "pending" | "running" | "awaiting_prompt" | "awaiting_user" | "done" | "failed";
-        /**
-         * @description Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.
-         * @example success
-         * @enum {string}
-         */
-        "workflow-step-status": "running" | "success" | "error" | "awaiting_prompt" | "awaiting_user";
-        /**
-         * @description Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. "running step 3: copy"). `agent-input`: the prompt text sent to the agent.
-         * @example tool
-         * @enum {string}
-         */
-        "workflow-log-channel": "terminal" | "agent" | "tool" | "agent-input";
-        /**
-         * @description Severity of a single log line, independent of its channel.
-         * @example info
-         * @enum {string}
-         */
-        "workflow-log-level": "info" | "warn" | "error";
         /**
          * @description Which agent CLI drives a run's `run`-mode steps, and its resumable session. Set at `createRun` (or when the run is retried against a different agent) and persisted on the run row so a resumed process can `--resume` the same underlying session.
          * @example {
@@ -75,6 +161,126 @@ export interface components {
              */
             sessionId?: string;
         };
+        /**
+         * @description Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.
+         * @example running
+         * @enum {string}
+         */
+        "workflow-run-status": "pending" | "running" | "awaiting_prompt" | "awaiting_user" | "done" | "failed";
+        /** @description A single workflow run — the wire form of a `workflow_run` row (`new-workflows-db/schemas/workflow-run.ts`). */
+        "workflow-run": {
+            /** @example 0SG36FJe6m4W */
+            id: string;
+            /**
+             * @example code
+             * @enum {string}
+             */
+            workflow_source: "code" | "config";
+            /**
+             * @description A code workflow's `defineWorkflow` id, or a `workflow_config` row id.
+             * @example example/hello
+             */
+            workflow_ref: string;
+            /** @description The input this run was started with. */
+            input: {
+                [key: string]: unknown;
+            };
+            mode: components["schemas"]["workflow-run-mode"];
+            skip_todos: boolean;
+            status: components["schemas"]["workflow-run-status"];
+            /** @example 1 */
+            current_step_index: number;
+            /** @example /home/user/my-project */
+            cwd: string;
+            agent_config: components["schemas"]["workflow-run-agent-config"] | null;
+            /** @description Set when this run was spawned by a `call-workflow` step in another run. */
+            parent_run_id: string | null;
+            parent_step_index: number | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        error: {
+            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
+            code?: string;
+            /**
+             * @description A human-readable description of the error.
+             * @example The requested resource could not be found.
+             */
+            message?: string;
+        };
+        /** @description Result of advancing a run by one step (`POST /runs/{runId}/advance`) — the wire form of `new-workflows/lib`'s `StepResult`. */
+        "step-result": {
+            /**
+             * @example success
+             * @enum {string}
+             */
+            status: "success";
+            result?: {
+                [key: string]: unknown;
+            };
+        } | {
+            /**
+             * @example error
+             * @enum {string}
+             */
+            status: "error";
+            message: string;
+            errorPrompt?: string;
+        } | {
+            /**
+             * @example awaiting_prompt
+             * @enum {string}
+             */
+            status: "awaiting_prompt";
+            prompt: string;
+        } | {
+            /**
+             * @example awaiting_user
+             * @enum {string}
+             */
+            status: "awaiting_user";
+            message: string;
+        } | {
+            /**
+             * @example done
+             * @enum {string}
+             */
+            status: "done";
+        };
+        /**
+         * @description Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. "running step 3: copy"). `agent-input`: the prompt text sent to the agent.
+         * @example tool
+         * @enum {string}
+         */
+        "workflow-log-channel": "terminal" | "agent" | "tool" | "agent-input";
+        /**
+         * @description Severity of a single log line, independent of its channel.
+         * @example info
+         * @enum {string}
+         */
+        "workflow-log-level": "info" | "warn" | "error";
+        /** @description One log line for a run — the wire form of a `workflow_log` row (`new-workflows-db/schemas/workflow-log.ts`). */
+        "workflow-log-entry": {
+            /** @example aBcD1234 */
+            id: string;
+            /** @example 0SG36FJe6m4W */
+            run_id: string;
+            step_index: number | null;
+            channel: components["schemas"]["workflow-log-channel"];
+            level: components["schemas"]["workflow-log-level"];
+            /** @example Generated "example-thing.ts" from template */
+            content: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        /**
+         * @description Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.
+         * @example success
+         * @enum {string}
+         */
+        "workflow-step-status": "running" | "success" | "error" | "awaiting_prompt" | "awaiting_user";
         /**
          * @description Body of a one-off, config-defined workflow (a `workflow_config` row) — a name, an optional description, and a list of steps, so no TypeScript is required to author one.
          *
@@ -179,4 +385,177 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export interface operations {
+    listWorkflows: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Registered workflows. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        workflows: components["schemas"]["workflow-summary"][];
+                    };
+                };
+            };
+        };
+    };
+    createWorkflowRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A registered workflow's id. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    input: {
+                        [key: string]: unknown;
+                    };
+                    mode?: components["schemas"]["workflow-run-mode"];
+                    agentConfig?: components["schemas"]["workflow-run-agent-config"];
+                    skipTodos?: boolean;
+                    /**
+                     * @description Overrides the mount's default working directory (e.g. dev-site's repo checkout root) for this run.
+                     * @example /home/user/my-project
+                     */
+                    cwd?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Run created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        run: components["schemas"]["workflow-run"];
+                    };
+                };
+            };
+            /** @description No registered workflow with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getWorkflowRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Run detail. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        run: components["schemas"]["workflow-run"];
+                    };
+                };
+            };
+            /** @description No run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    advanceWorkflowRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Outcome of the step that just ran. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["step-result"];
+                };
+            };
+            /** @description No run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listWorkflowRunLogs: {
+        parameters: {
+            query?: {
+                /** @description Only rows created strictly after this timestamp. */
+                since?: string;
+            };
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Log rows, oldest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        logs: components["schemas"]["workflow-log-entry"][];
+                    };
+                };
+            };
+            /** @description No run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+}
