@@ -1,33 +1,35 @@
 import { resolve, extname } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { parse as parseYaml } from "yaml";
-import {
-  validateWorkflowConfigBody,
-  compileConfigWorkflow,
-  type WorkflowDefinition,
-} from "@saflib/new-workflows";
+import { validateWorkflowConfigBody } from "./config/validate.ts";
+import { compileConfigWorkflow } from "./config/compile.ts";
+import type { WorkflowDefinition } from "./types.ts";
 import type { WorkflowConfigBody } from "@saflib/new-workflows-spec";
 
 const CONFIG_EXTENSIONS = new Set([".json", ".yaml", ".yml"]);
 
 /**
- * Same dual lookup as the old CLI's `loadWorkflowDefinition`, plus a third
- * form: a `.json`/`.yaml`/`.yml` path is a config-defined workflow — no
- * TypeScript required. A bare id looks up the in-memory registry; a
+ * Shared by the CLI and HTTP: a bare id looks up the in-memory registry; a
  * `./`-prefixed or `.ts`-suffixed path dynamic-imports a code workflow
- * file's default export. The path forms are what make dogfooding a new
- * workflow (code or config) possible without a registry-scaffolding tool.
+ * file's default export; a `.json`/`.yaml`/`.yml` path is a config-defined
+ * workflow (a saved plan) — no TypeScript required. The path forms are
+ * what make dogfooding a new workflow (code or config) possible without a
+ * registry-scaffolding tool, and what let a saved plan run the same way a
+ * registered workflow does.
  */
 export async function loadWorkflowDefinition(
   idOrPath: string,
   registry: WorkflowDefinition<any, any>[],
+  opts: { cwd?: string } = {},
 ): Promise<WorkflowDefinition<any, any>> {
+  const cwd = opts.cwd ?? process.cwd();
+
   if (CONFIG_EXTENSIONS.has(extname(idOrPath))) {
-    return loadConfigWorkflowDefinition(idOrPath, registry);
+    return loadConfigWorkflowDefinition(idOrPath, registry, cwd);
   }
 
   if (idOrPath.startsWith("./") || idOrPath.endsWith(".ts")) {
-    const resolvedPath = resolve(process.cwd(), idOrPath);
+    const resolvedPath = resolve(cwd, idOrPath);
     if (!existsSync(resolvedPath)) {
       throw new Error(`File not found: ${resolvedPath}`);
     }
@@ -50,8 +52,9 @@ export async function loadWorkflowDefinition(
 async function loadConfigWorkflowDefinition(
   idOrPath: string,
   registry: WorkflowDefinition<any, any>[],
+  cwd: string,
 ): Promise<WorkflowDefinition<any, any>> {
-  const resolvedPath = resolve(process.cwd(), idOrPath);
+  const resolvedPath = resolve(cwd, idOrPath);
   if (!existsSync(resolvedPath)) {
     throw new Error(`File not found: ${resolvedPath}`);
   }
@@ -61,7 +64,7 @@ async function loadConfigWorkflowDefinition(
   const { result: body, error } = validateWorkflowConfigBody(raw);
   if (error) throw error;
 
-  const resolvedWorkflows = await resolveCallWorkflowTargets(body!, registry);
+  const resolvedWorkflows = await resolveCallWorkflowTargets(body!, registry, cwd);
   return compileConfigWorkflow(idOrPath, body!, resolvedWorkflows);
 }
 
@@ -69,6 +72,7 @@ async function loadConfigWorkflowDefinition(
 async function resolveCallWorkflowTargets(
   body: WorkflowConfigBody,
   registry: WorkflowDefinition<any, any>[],
+  cwd: string,
 ): Promise<Record<string, WorkflowDefinition<any, any>>> {
   const resolved: Record<string, WorkflowDefinition<any, any>> = {};
   for (const configStep of body.steps) {
@@ -77,6 +81,7 @@ async function resolveCallWorkflowTargets(
     resolved[configStep.workflowId] = await loadWorkflowDefinition(
       configStep.workflowId,
       registry,
+      { cwd },
     );
   }
   return resolved;

@@ -151,6 +151,17 @@
                     ·
                     <code>{{ selectedPkg.directory || "." }}</code>
                   </span>
+                  <v-spacer />
+                  <v-btn
+                    v-if="drizzleWorkflowHref"
+                    size="small"
+                    variant="tonal"
+                    color="primary"
+                    prepend-icon="mdi-database-plus"
+                    :to="drizzleWorkflowHref"
+                  >
+                    Add query
+                  </v-btn>
                 </header>
                 <p
                   v-if="packageDescription"
@@ -491,6 +502,7 @@ const mapPackageRow = (
     };
     source_files?: number;
     prod_lines?: number;
+    dependencies?: string[];
   },
   change?: ChangeKind,
   locDelta?: { source: number; test: number },
@@ -559,6 +571,24 @@ const locDeltaText = computed(() => {
   const d = selectedPkg.value?.locDelta;
   if (!d || (d.source === 0 && d.test === 0)) return "";
   return `${formatLocChangePair(d.source, d.test)} LOC`;
+});
+
+/**
+ * Packages built on `@saflib/drizzle` can use `drizzle/add-query` (see
+ * `@saflib/drizzle-workflows`) to scaffold a new query — link to the
+ * Workflows page pre-filled with that workflow and this package's cwd, so
+ * saving the form there creates a `cd` + `call-workflow` plan for it.
+ */
+const drizzleWorkflowHref = computed(() => {
+  const pkg = selectedPkg.value;
+  if (!pkg?.dependencies?.includes("@saflib/drizzle")) return undefined;
+  return {
+    path: "/workflows",
+    query: {
+      workflow: "drizzle/add-query",
+      cwd: repoPathPrefix(checkout.value?.product_root, pkg.directory),
+    },
+  };
 });
 
 const paneCommitHash = computed(() => {

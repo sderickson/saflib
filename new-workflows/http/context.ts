@@ -9,6 +9,8 @@ export interface NewWorkflowsHttpContext {
   registry: WorkflowDefinition<any, any>[];
   /** Default cwd for new runs (e.g. dev-site's repo checkout root) — a request body's `cwd` overrides it. */
   defaultCwd: string;
+  /** Folder plans (saved config-defined workflows) are read from/written to, e.g. `<repo>/<product>/plans`. Unset hosts get a clear error from the plans routes, not a crash. */
+  plansRoot?: string;
 }
 
 export const newWorkflowsHttpStorage: AsyncLocalStorage<NewWorkflowsHttpContext> =

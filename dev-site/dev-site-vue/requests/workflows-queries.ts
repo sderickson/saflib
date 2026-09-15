@@ -9,10 +9,20 @@ import type {
 } from "@saflib/new-workflows-spec";
 import { TanstackError, handleClientMethod } from "@saflib/sdk";
 
-/** Same-origin — the workflows API is mounted into dev-site-http itself. */
+/**
+ * Same-origin — the workflows API is mounted into dev-site-http itself.
+ * An empty `baseUrl` resolves fine in a real browser (relative to the
+ * current page), but `openapi-fetch` builds requests via `new Request()`,
+ * which — unlike browser `fetch` — cannot resolve a bare relative path
+ * (throws `Failed to parse URL`), including under Node/undici in tests.
+ * Using the literal current origin (not `@saflib/links`' `getHost`, which
+ * strips the current subdomain to find the *root* domain — wrong here,
+ * since this stays on dev-site's own host) works in both.
+ */
 function createWorkflowsClient() {
+  const baseUrl = typeof document !== "undefined" ? document.location.origin : "";
   return createClient<paths>({
-    baseUrl: "",
+    baseUrl,
     credentials: "include",
     fetch: (request) => {
       const csrfToken = document.cookie
@@ -78,6 +88,29 @@ export function useWorkflowRunLogsQuery(runId: MaybeRefOrGetter<string | undefin
       handleClientMethod(
         client.GET("/api/runs/{runId}/logs", { params: { path: { runId: toValue(runId)! } } }),
       ),
+  });
+}
+
+export function usePlansQuery() {
+  const client = createWorkflowsClient();
+  return useQuery<NewWorkflowsResponseBody["listPlans"][200], TanstackError>({
+    queryKey: ["new-workflows", "plans"],
+    queryFn: () => handleClientMethod(client.GET("/api/plans", {})),
+  });
+}
+
+export function useCreatePlanMutation() {
+  const client = createWorkflowsClient();
+  const queryClient = useQueryClient();
+  return useMutation<
+    NewWorkflowsResponseBody["createPlan"][201],
+    TanstackError,
+    NewWorkflowsRequestBody["createPlan"]
+  >({
+    mutationFn: (body) => handleClientMethod(client.POST("/api/plans", { body })),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "plans"] });
+    },
   });
 }
 

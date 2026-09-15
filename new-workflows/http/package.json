@@ -25,7 +25,8 @@
     "@saflib/new-workflows-db": "*",
     "@saflib/new-workflows-spec": "*",
     "@saflib/utils": "*",
-    "http-errors": "^2.0.0"
+    "http-errors": "^2.0.0",
+    "yaml": "^2.6.1"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

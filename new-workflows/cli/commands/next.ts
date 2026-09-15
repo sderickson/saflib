@@ -1,5 +1,5 @@
 import type { CliContext } from "../types.ts";
-import { loadWorkflowDefinition } from "../lookup.ts";
+import { loadWorkflowDefinition } from "@saflib/new-workflows";
 import { runAdvanceLoop } from "../advance-loop.ts";
 import { reportOutcome } from "../report-outcome.ts";
 import { readRunPointer } from "../run-pointer.ts";

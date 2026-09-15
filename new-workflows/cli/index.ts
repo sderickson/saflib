@@ -11,7 +11,7 @@ import { addStatusCommand } from "./commands/status.ts";
 import { addGotoCommand } from "./commands/goto.ts";
 
 export { parseNamedArgs } from "./args.ts";
-export { loadWorkflowDefinition } from "./lookup.ts";
+export { loadWorkflowDefinition } from "@saflib/new-workflows";
 export { runAdvanceLoop } from "./advance-loop.ts";
 
 /**

@@ -177,6 +177,17 @@
             "type": "integer",
             "minimum": 0,
             "description": "Sum of all issue kinds (dead-code + oversized-file + package-layout).\n"
+          },
+          "dependencies": {
+            "type": "array",
+            "description": "npm package names from this package's own package.json dependencies (not devDependencies) — e.g. used to show a \"run this workflow\" button when a package depends on a `*-workflows` package.\n",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "@saflib/drizzle",
+              "@saflib/drizzle-workflows"
+            ]
           }
         },
         "required": [

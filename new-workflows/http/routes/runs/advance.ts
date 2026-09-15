@@ -2,7 +2,7 @@ import { createHandler } from "@saflib/express";
 import createError from "http-errors";
 import type { NewWorkflowsResponseBody } from "@saflib/new-workflows-spec";
 import { getByIdWorkflowRun, WorkflowRunNotFoundError, appendWorkflowLog } from "@saflib/new-workflows-db";
-import { advanceRun, type LogChunk } from "@saflib/new-workflows";
+import { advanceRun, loadWorkflowDefinition, type LogChunk } from "@saflib/new-workflows";
 import { newWorkflowsHttpStorage } from "../../context.ts";
 import { publishRunChanged } from "../../change-emitter.ts";
 
@@ -26,10 +26,16 @@ export const advanceWorkflowRunHandler = createHandler(async (req, res) => {
     }
   }
 
-  const definition = ctx.registry.find((w) => w.id === run.workflow_ref);
-  if (!definition) {
+  // Same dual lookup as run creation (see runs/create.ts): a run's
+  // `workflow_ref` is either a registered code workflow's id, or a plan
+  // file's path — HTTP requests are stateless, so the definition has to be
+  // re-derived on every advance, not just once at creation.
+  if (!ctx.registry.some((w) => w.id === run.workflow_ref) && !/\.(ya?ml|json)$/.test(run.workflow_ref)) {
     throw createError(500, `Workflow "${run.workflow_ref}" is not in the registry`);
   }
+  const definition = await loadWorkflowDefinition(run.workflow_ref, ctx.registry, {
+    cwd: ctx.defaultCwd,
+  });
 
   const stepIndex = run.current_step_index;
   const { output, result } = advanceRun(ctx.dbKey, definition, runId);

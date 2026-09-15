@@ -311,6 +311,14 @@ export interface components {
             issue_counts_by_kind: components["schemas"]["issue-counts-by-kind"];
             /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
             debt_count: number;
+            /**
+             * @description npm package names from this package's own package.json dependencies (not devDependencies) — e.g. used to show a "run this workflow" button when a package depends on a `*-workflows` package.
+             * @example [
+             *       "@saflib/drizzle",
+             *       "@saflib/drizzle-workflows"
+             *     ]
+             */
+            dependencies?: string[];
         };
         /** @description One exported symbol extracted from a source file at a commit. */
         "export-entry": {

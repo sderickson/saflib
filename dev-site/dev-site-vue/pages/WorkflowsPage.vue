@@ -6,14 +6,20 @@
     </div>
 
     <v-card class="mb-8" variant="outlined">
-      <v-card-title>Start a run</v-card-title>
+      <v-card-title>{{ planCwd ? "Save as plan" : "Start a run" }}</v-card-title>
       <v-card-text>
+        <v-alert v-if="planCwd" type="info" density="compact" variant="tonal" class="mb-4">
+          Will <code>cd</code> into <code>{{ planCwd }}</code> before running
+          <code>{{ selectedWorkflowId }}</code>.
+        </v-alert>
+
         <v-select
           v-model="selectedWorkflowId"
           :items="workflowItems"
           item-title="title"
           item-value="value"
           label="Workflow"
+          :disabled="Boolean(planCwd)"
           :loading="workflowsQuery.isPending.value"
         />
 
@@ -35,7 +41,29 @@
           />
         </template>
 
+        <template v-if="planCwd">
+          <v-text-field
+            v-model="planName"
+            label="Plan name"
+            hint="kebab-case — used for the folder and file name"
+            persistent-hint
+            required
+          />
+          <v-btn
+            color="primary"
+            class="mt-3"
+            :loading="createPlanMutation.isPending.value"
+            :disabled="!selectedWorkflowId || !planName"
+            @click="savePlan"
+          >
+            Save plan
+          </v-btn>
+          <p v-if="createPlanMutation.isError.value" class="text-error mt-2">
+            {{ createPlanMutation.error.value?.message }}
+          </p>
+        </template>
         <v-btn
+          v-else
           color="primary"
           :loading="createRunMutation.isPending.value"
           :disabled="!selectedWorkflowId"
@@ -43,9 +71,37 @@
         >
           Start
         </v-btn>
-        <p v-if="createRunMutation.isError.value" class="text-error mt-2">
+        <p v-if="!planCwd && createRunMutation.isError.value" class="text-error mt-2">
           {{ createRunMutation.error.value?.message }}
         </p>
+      </v-card-text>
+    </v-card>
+
+    <v-card class="mb-8" variant="outlined">
+      <v-card-title>Plans</v-card-title>
+      <v-card-text>
+        <p v-if="!plansQuery.data.value?.plans.length" class="text-body-2 text-medium-emphasis">
+          No saved plans yet — save one above, or from a package's Checkout page.
+        </p>
+        <v-list v-else lines="two">
+          <v-list-item v-for="plan in plansQuery.data.value.plans" :key="plan.folder">
+            <v-list-item-title>{{ plan.name }}</v-list-item-title>
+            <v-list-item-subtitle>{{ plan.folder }}</v-list-item-subtitle>
+            <template #append>
+              <v-btn
+                v-for="file in plan.files"
+                :key="file.path"
+                size="small"
+                variant="tonal"
+                color="primary"
+                :loading="createRunMutation.isPending.value"
+                @click="runPlanFile(file.path)"
+              >
+                Run {{ file.name }}
+              </v-btn>
+            </template>
+          </v-list-item>
+        </v-list>
       </v-card-text>
     </v-card>
 
@@ -82,7 +138,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from "vue";
+import { ref, computed, reactive, watchEffect } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import type { WorkflowInputSchema } from "@saflib/new-workflows";
 import {
   useWorkflowsQuery,
@@ -90,15 +147,34 @@ import {
   useWorkflowRunQuery,
   useWorkflowRunLogsQuery,
   useAdvanceWorkflowRunMutation,
+  usePlansQuery,
+  useCreatePlanMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 
 withDefaults(defineProps<{ hubPath?: string }>(), { hubPath: "/" });
 
+const route = useRoute();
+const router = useRouter();
+
 const workflowsQuery = useWorkflowsQuery();
 const selectedWorkflowId = ref<string>();
 const formValues = reactive<Record<string, string | boolean>>({});
 const activeRunId = ref<string>();
+
+/**
+ * Arriving from a package's Checkout page (`?workflow=...&cwd=...`) fixes
+ * the workflow + cd target and switches this card from "run it now" to
+ * "save it as a plan" — see `drizzleWorkflowHref` in CheckoutPage.vue.
+ */
+const planCwd = ref<string>();
+const planName = ref("");
+watchEffect(() => {
+  const workflow = route.query.workflow;
+  const cwd = route.query.cwd;
+  if (typeof workflow === "string" && workflow) selectedWorkflowId.value = workflow;
+  planCwd.value = typeof cwd === "string" && cwd ? cwd : undefined;
+});
 
 const workflowItems = computed(
   () =>
@@ -132,6 +208,45 @@ function startRun() {
     {
       onSuccess: (data) => {
         activeRunId.value = data.run.id;
+      },
+    },
+  );
+}
+
+function runPlanFile(path: string) {
+  createRunMutation.mutate(
+    { id: path, body: { input: {} } },
+    {
+      onSuccess: (data) => {
+        activeRunId.value = data.run.id;
+      },
+    },
+  );
+}
+
+const plansQuery = usePlansQuery();
+const createPlanMutation = useCreatePlanMutation();
+function savePlan() {
+  if (!selectedWorkflowId.value || !planCwd.value || !planName.value) return;
+  createPlanMutation.mutate(
+    {
+      name: planName.value,
+      body: {
+        name: planName.value,
+        steps: [
+          { kind: "cd", path: planCwd.value },
+          {
+            kind: "call-workflow",
+            workflowId: selectedWorkflowId.value,
+            input: { ...formValues },
+          },
+        ],
+      },
+    },
+    {
+      onSuccess: () => {
+        planName.value = "";
+        router.replace({ path: "/workflows" });
       },
     },
   );

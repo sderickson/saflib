@@ -2,7 +2,7 @@ import { Option } from "commander";
 import { createRun, type AgentCli, type AgentConfig } from "@saflib/new-workflows";
 import type { CliContext } from "../types.ts";
 import { parseNamedArgs } from "../args.ts";
-import { loadWorkflowDefinition } from "../lookup.ts";
+import { loadWorkflowDefinition } from "@saflib/new-workflows";
 import { runAdvanceLoop } from "../advance-loop.ts";
 import { reportOutcome } from "../report-outcome.ts";
 import { writeRunPointer } from "../run-pointer.ts";

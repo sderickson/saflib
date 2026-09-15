@@ -20,7 +20,8 @@
     "@saflib/new-workflows-spec": "*",
     "@saflib/utils": "*",
     "minimatch": "^10.1.1",
-    "ajv": "^8.17.1"
+    "ajv": "^8.17.1",
+    "yaml": "^2.6.1"
   },
   "devDependencies": {
     "@saflib/dev-tools": "*",

@@ -99,6 +99,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List saved plans (config-defined workflow folders)
+         * @description Scans the plans root (e.g. `test-product/plans/`) for folders holding workflow config files, newest-first.
+         */
+        get: operations["listPlans"];
+        put?: never;
+        /**
+         * Save a new plan (a config-defined workflow) to the plans folder
+         * @description Writes `<plansRoot>/<date>-<name>/<name>.yaml` with the given config body. Doesn't run it — see POST /workflows/{id}/runs with the returned file's `path` as `id`.
+         */
+        post: operations["createPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -115,6 +139,8 @@ export interface components {
         WorkflowRun: components["schemas"]["workflow-run"];
         WorkflowLogEntry: components["schemas"]["workflow-log-entry"];
         StepResult: components["schemas"]["step-result"];
+        PlanFile: components["schemas"]["plan-file"];
+        PlanSummary: components["schemas"]["plan-summary"];
         /** @description One entry in the registered-workflow list (`GET /workflows`). */
         "workflow-summary": {
             /**
@@ -275,12 +301,27 @@ export interface components {
             /** Format: date-time */
             created_at: string;
         };
-        /**
-         * @description Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.
-         * @example success
-         * @enum {string}
-         */
-        "workflow-step-status": "running" | "success" | "error" | "awaiting_prompt" | "awaiting_user";
+        /** @description One workflow config file inside a plan folder. */
+        "plan-file": {
+            /** @example add-list-users-query.yaml */
+            name: string;
+            /**
+             * @description Path usable as the `id` in POST /workflows/{id}/runs — relative to the repo root.
+             * @example test-product/plans/2026-09-15-add-list-users-query/add-list-users-query.yaml
+             */
+            path: string;
+        };
+        /** @description A folder under the plans root (e.g. `test-product/plans/`) holding one or more workflow config files — a one-off plan authored outside a code-defined workflow. Folder naming convention: `<date>-<name>`. */
+        "plan-summary": {
+            /** @example 2026-09-15-add-list-users-query */
+            folder: string;
+            /**
+             * @description Human name portion of the folder (after the date prefix).
+             * @example add-list-users-query
+             */
+            name: string;
+            files: components["schemas"]["plan-file"][];
+        };
         /**
          * @description Body of a one-off, config-defined workflow (a `workflow_config` row) — a name, an optional description, and a list of steps, so no TypeScript is required to author one.
          *
@@ -377,6 +418,12 @@ export interface components {
                 };
             })[];
         };
+        /**
+         * @description Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.
+         * @example success
+         * @enum {string}
+         */
+        "workflow-step-status": "running" | "success" | "error" | "awaiting_prompt" | "awaiting_user";
     };
     responses: never;
     parameters: never;
@@ -413,7 +460,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A registered workflow's id. */
+                /** @description A registered workflow's id, or a plan file's `path` (from GET /plans) to run a config-defined workflow. */
                 id: string;
             };
             cookie?: never;
@@ -549,6 +596,88 @@ export interface operations {
             };
             /** @description No run with that id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listPlans: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Plans under the plans root. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        plans: components["schemas"]["plan-summary"][];
+                    };
+                };
+            };
+            /** @description This host hasn't configured a plans folder. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    createPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description kebab-case slug used for the folder and file name.
+                     * @example add-list-users-query
+                     */
+                    name: string;
+                    body: components["schemas"]["workflow-config-body"];
+                };
+            };
+        };
+        responses: {
+            /** @description Plan created. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        plan: components["schemas"]["plan-summary"];
+                    };
+                };
+            };
+            /** @description Invalid plan name or config body. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description This host hasn't configured a plans folder. */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };

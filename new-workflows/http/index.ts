@@ -5,6 +5,7 @@ import type { WorkflowDefinition } from "@saflib/new-workflows";
 import { newWorkflowsHttpStorage } from "./context.ts";
 import { createWorkflowsRouter } from "./routes/workflows/index.ts";
 import { createRunsRouter } from "./routes/runs/index.ts";
+import { createPlansRouter } from "./routes/plans/index.ts";
 
 export type { NewWorkflowsHttpContext } from "./context.ts";
 export { newWorkflowsChangeEmitter, publishRunChanged } from "./change-emitter.ts";
@@ -20,6 +21,14 @@ export interface CreateNewWorkflowsRouterOptions {
    * `devSiteHttpStorage` during a request, not at router-mount time).
    */
   defaultCwd: string | (() => string);
+  /**
+   * Folder plans (saved config-defined workflows) are read from/written to,
+   * e.g. dev-site's `<repo>/<product>/plans`. Same resolve-per-request shape
+   * as `defaultCwd`, for the same reason. Omit to leave the plans routes
+   * erroring clearly instead of crashing (e.g. a standalone test app that
+   * doesn't need them).
+   */
+  plansRoot?: string | (() => string);
 }
 
 /**
@@ -39,6 +48,9 @@ export function createNewWorkflowsRouter(
   const router = express.Router();
   const resolveDefaultCwd =
     typeof options.defaultCwd === "function" ? options.defaultCwd : () => options.defaultCwd as string;
+  const plansRootOption = options.plansRoot;
+  const resolvePlansRoot: () => string | undefined =
+    typeof plansRootOption === "function" ? plansRootOption : () => plansRootOption;
 
   const innerRouter = express.Router();
   // Defensive, not load-bearing when mounted into a host that already
@@ -52,12 +64,14 @@ export function createNewWorkflowsRouter(
         dbKey: options.dbKey,
         registry: options.registry,
         defaultCwd: resolveDefaultCwd(),
+        plansRoot: resolvePlansRoot(),
       },
       next,
     );
   });
   innerRouter.use(createWorkflowsRouter());
   innerRouter.use(createRunsRouter());
+  innerRouter.use(createPlansRouter());
   innerRouter.use(createErrorMiddleware());
 
   router.use("/api", innerRouter);

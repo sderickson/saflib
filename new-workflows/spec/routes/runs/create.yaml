@@ -6,7 +6,9 @@ createWorkflowRun:
     - name: id
       in: path
       required: true
-      description: A registered workflow's id.
+      description: >
+        A registered workflow's id, or a plan file's `path` (from
+        GET /plans) to run a config-defined workflow.
       schema:
         type: string
         example: "example/hello"

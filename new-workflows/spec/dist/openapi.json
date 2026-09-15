@@ -46,7 +46,7 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "description": "A registered workflow's id.",
+            "description": "A registered workflow's id, or a plan file's `path` (from GET /plans) to run a config-defined workflow.\n",
             "schema": {
               "type": "string",
               "example": "example/hello"
@@ -269,6 +269,118 @@
           }
         }
       }
+    },
+    "/api/plans": {
+      "get": {
+        "summary": "List saved plans (config-defined workflow folders)",
+        "description": "Scans the plans root (e.g. `test-product/plans/`) for folders holding workflow config files, newest-first.\n",
+        "operationId": "listPlans",
+        "responses": {
+          "200": {
+            "description": "Plans under the plans root.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "plans"
+                  ],
+                  "properties": {
+                    "plans": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/plan-summary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "This host hasn't configured a plans folder.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Save a new plan (a config-defined workflow) to the plans folder",
+        "description": "Writes `<plansRoot>/<date>-<name>/<name>.yaml` with the given config body. Doesn't run it — see POST /workflows/{id}/runs with the returned file's `path` as `id`.\n",
+        "operationId": "createPlan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "body"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "kebab-case slug used for the folder and file name.",
+                    "example": "add-list-users-query"
+                  },
+                  "body": {
+                    "$ref": "#/components/schemas/workflow-config-body"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Plan created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "plan"
+                  ],
+                  "properties": {
+                    "plan": {
+                      "$ref": "#/components/schemas/plan-summary"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid plan name or config body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "This host hasn't configured a plans folder.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -308,6 +420,12 @@
       },
       "StepResult": {
         "$ref": "#/components/schemas/step-result"
+      },
+      "PlanFile": {
+        "$ref": "#/components/schemas/plan-file"
+      },
+      "PlanSummary": {
+        "$ref": "#/components/schemas/plan-summary"
       },
       "workflow-summary": {
         "type": "object",
@@ -682,17 +800,52 @@
           }
         }
       },
-      "workflow-step-status": {
-        "type": "string",
-        "description": "Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.\n",
-        "enum": [
-          "running",
-          "success",
-          "error",
-          "awaiting_prompt",
-          "awaiting_user"
+      "plan-file": {
+        "type": "object",
+        "description": "One workflow config file inside a plan folder.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "path"
         ],
-        "example": "success"
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "add-list-users-query.yaml"
+          },
+          "path": {
+            "type": "string",
+            "description": "Path usable as the `id` in POST /workflows/{id}/runs — relative to the repo root.\n",
+            "example": "test-product/plans/2026-09-15-add-list-users-query/add-list-users-query.yaml"
+          }
+        }
+      },
+      "plan-summary": {
+        "type": "object",
+        "description": "A folder under the plans root (e.g. `test-product/plans/`) holding one or more workflow config files — a one-off plan authored outside a code-defined workflow. Folder naming convention: `<date>-<name>`.\n",
+        "additionalProperties": false,
+        "required": [
+          "folder",
+          "name",
+          "files"
+        ],
+        "properties": {
+          "folder": {
+            "type": "string",
+            "example": "2026-09-15-add-list-users-query"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human name portion of the folder (after the date prefix).",
+            "example": "add-list-users-query"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/plan-file"
+            }
+          }
+        }
       },
       "workflow-config-body": {
         "type": "object",
@@ -888,6 +1041,18 @@
             }
           }
         }
+      },
+      "workflow-step-status": {
+        "type": "string",
+        "description": "Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.\n",
+        "enum": [
+          "running",
+          "success",
+          "error",
+          "awaiting_prompt",
+          "awaiting_user"
+        ],
+        "example": "success"
       }
     }
   }

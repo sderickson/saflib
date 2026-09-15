@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { IRouter } from "express";
 import { newWorkflowsDbManager } from "@saflib/new-workflows-db/instances";
 import { createNewWorkflowsRouter } from "@saflib/new-workflows-http";
@@ -26,5 +27,9 @@ export function createWorkflowsRouter(): IRouter {
     // dev-site-http's own `repo_root` isn't known until *its* per-request
     // context is set up, so this is resolved fresh per request.
     defaultCwd: () => devSiteHttpStorage.getStore()!.repo_root,
+    plansRoot: () => {
+      const store = devSiteHttpStorage.getStore()!;
+      return path.join(store.repo_root, store.product_root, "plans");
+    },
   });
 }

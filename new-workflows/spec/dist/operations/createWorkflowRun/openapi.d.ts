@@ -114,7 +114,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description A registered workflow's id. */
+                /** @description A registered workflow's id, or a plan file's `path` (from GET /plans) to run a config-defined workflow. */
                 id: string;
             };
             cookie?: never;

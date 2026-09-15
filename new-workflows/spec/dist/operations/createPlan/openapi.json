@@ -1,0 +1,342 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "createPlan",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/plans": {
+      "post": {
+        "summary": "Save a new plan (a config-defined workflow) to the plans folder",
+        "description": "Writes `<plansRoot>/<date>-<name>/<name>.yaml` with the given config body. Doesn't run it — see POST /workflows/{id}/runs with the returned file's `path` as `id`.\n",
+        "operationId": "createPlan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "body"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "kebab-case slug used for the folder and file name.",
+                    "example": "add-list-users-query"
+                  },
+                  "body": {
+                    "$ref": "#/components/schemas/workflow-config-body"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Plan created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "plan"
+                  ],
+                  "properties": {
+                    "plan": {
+                      "$ref": "#/components/schemas/plan-summary"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid plan name or config body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "This host hasn't configured a plans folder.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "workflow-config-body": {
+        "type": "object",
+        "description": "Body of a one-off, config-defined workflow (a `workflow_config` row) — a name, an optional description, and a list of steps, so no TypeScript is required to author one.\n\nConfig workflows get `prompt`/`command`/`cd`/`npm-script`, plus `call-workflow` to invoke another workflow (typically a reusable, code-defined one) as a nested run. `copy`/`update`/`transform-file` stay code-only: templates are worth building and maintaining for reusable workflows, but a one-off config workflow shouldn't need one — if it needs templated scaffolding, it calls a code-defined workflow that already does that instead of duplicating the logic.\n",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "steps"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Human-readable name shown in the CLI/dev-site, not the run id.",
+            "example": "Add a demo feature flag"
+          },
+          "description": {
+            "type": "string",
+            "description": "Longer explanation of what this workflow does and when to use it.",
+            "example": "Scaffolds a new feature flag: adds the flag constant, wires it into the admin toggle list, and runs typecheck.\n"
+          },
+          "steps": {
+            "type": "array",
+            "description": "Executed in order by `new-workflows/lib`'s `advanceRun`.",
+            "items": {
+              "discriminator": {
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "type": "object",
+                  "description": "Prompts the agent (or, in `print` mode, the caller) to do an arbitrary task.",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "prompt"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "prompt"
+                      ],
+                      "example": "prompt"
+                    },
+                    "prompt": {
+                      "type": "string",
+                      "example": "Run the drizzle migration and confirm it applied cleanly."
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "description": "Runs a shell command.",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "command"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "command"
+                      ],
+                      "example": "command"
+                    },
+                    "command": {
+                      "type": "string",
+                      "example": "npm"
+                    },
+                    "args": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "run",
+                        "typecheck"
+                      ]
+                    },
+                    "ignoreError": {
+                      "type": "boolean",
+                      "description": "Treat a non-zero exit as success.",
+                      "default": false
+                    },
+                    "errorPrompt": {
+                      "type": "string",
+                      "description": "Extra text shown to the agent alongside the failure, in `run` mode."
+                    },
+                    "forceInScript": {
+                      "type": "boolean",
+                      "description": "Run even in `script` mode if it would otherwise be treated as a skipped validation command (typecheck/test).\n",
+                      "default": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "description": "Changes the working directory for subsequent steps.",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "path"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "cd"
+                      ],
+                      "example": "cd"
+                    },
+                    "path": {
+                      "type": "string",
+                      "description": "Absolute, or relative to the run's original working directory.",
+                      "example": "packages/my-lib"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "description": "Runs `npm run <script> -w <workspace>`, validating both exist first.",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "workspace",
+                    "script"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "npm-script"
+                      ],
+                      "example": "npm-script"
+                    },
+                    "workspace": {
+                      "type": "string",
+                      "example": "@saflib/new-workflows"
+                    },
+                    "script": {
+                      "type": "string",
+                      "example": "test"
+                    },
+                    "args": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "ignoreError": {
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "errorPrompt": {
+                      "type": "string"
+                    },
+                    "forceInScript": {
+                      "type": "boolean",
+                      "default": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "description": "Calls another workflow — typically a reusable, code-defined one — as a nested run, blocking this step until it completes.\n",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "workflowId"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "call-workflow"
+                      ],
+                      "example": "call-workflow"
+                    },
+                    "workflowId": {
+                      "type": "string",
+                      "description": "A code-defined workflow's id, or a path to another workflow file (.ts for code, .json/.yaml for another config).\n",
+                      "example": "vue/add-view"
+                    },
+                    "input": {
+                      "type": "object",
+                      "description": "Input for the target workflow.",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "plan-summary": {
+        "type": "object",
+        "description": "A folder under the plans root (e.g. `test-product/plans/`) holding one or more workflow config files — a one-off plan authored outside a code-defined workflow. Folder naming convention: `<date>-<name>`.\n",
+        "additionalProperties": false,
+        "required": [
+          "folder",
+          "name",
+          "files"
+        ],
+        "properties": {
+          "folder": {
+            "type": "string",
+            "example": "2026-09-15-add-list-users-query"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human name portion of the folder (after the date prefix).",
+            "example": "add-list-users-query"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/plan-file"
+            }
+          }
+        }
+      },
+      "plan-file": {
+        "type": "object",
+        "description": "One workflow config file inside a plan folder.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "path"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "add-list-users-query.yaml"
+          },
+          "path": {
+            "type": "string",
+            "description": "Path usable as the `id` in POST /workflows/{id}/runs — relative to the repo root.\n",
+            "example": "test-product/plans/2026-09-15-add-list-users-query/add-list-users-query.yaml"
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}
