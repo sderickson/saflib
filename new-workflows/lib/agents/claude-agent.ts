@@ -75,17 +75,19 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
         if (json.type === "assistant" || json.type === "user") {
           const label = json.type === "assistant" ? "AGENT" : "TOOL";
           for (const block of json.message?.content ?? []) {
-            ctx.log({
-              channel: "agent",
-              level: "info",
-              content: `---------- ${label} ----------\n${summarizeContentBlock(block)}`,
-            });
+            const content = `---------- ${label} ----------\n${summarizeContentBlock(block)}`;
+            // TODO(debug): remove once we've confirmed the frontend gets a
+            // live update per chunk, not just at the end of the turn.
+            console.log(`[claude-agent ${ctx.runId}] ${content}`);
+            ctx.log({ channel: "agent", level: "info", content });
           }
         } else if (json.type === "result") {
+          const content = `---------- RESULT ----------\n${json.is_error ? `Error (${json.subtype})` : "Success"}`;
+          console.log(`[claude-agent ${ctx.runId}] ${content}`);
           ctx.log({
             channel: "agent",
             level: json.is_error ? "error" : "info",
-            content: `---------- RESULT ----------\n${json.is_error ? `Error (${json.subtype})` : "Success"}`,
+            content,
           });
           resultReceived = true;
           maybeResolve();

@@ -49,6 +49,11 @@ export const advanceWorkflowRunHandler = createHandler(async (req, res) => {
       content: chunk.content,
       now: new Date(),
     });
+    // Per-chunk, not just once at the end: a step (an agent turn
+    // especially) can run for a long time, and the SSE hint is what tells
+    // the frontend to go refetch logs — without this, everything shows up
+    // in one batch only once the whole step finishes.
+    publishRunChanged(runId);
   }
   const outcome = await result;
 
