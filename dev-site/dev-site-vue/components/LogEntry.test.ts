@@ -21,46 +21,44 @@ function mountLogEntry(log: WorkflowLogEntry) {
 }
 
 describe("LogEntry", () => {
-  it("shows a short entry inline without needing to expand", () => {
+  it("shows a short entry inline with no expand affordance", () => {
     const wrapper = mountLogEntry(logFixture({ content: "Running command: npm --version" }));
     expect(wrapper.text()).toContain("Running command: npm --version");
-    expect(wrapper.find(".log-entry__full").exists()).toBe(false);
+    expect(wrapper.find(".log-entry__toggle").exists()).toBe(false);
   });
 
-  it("strips the ---------- LABEL ---------- header into a badge and summarizes the body", () => {
+  it("strips the ---------- LABEL ---------- header into a badge", () => {
     const wrapper = mountLogEntry(
       logFixture({
         channel: "agent",
-        content:
-          "---------- AGENT ----------\nTool: Bash({\"command\":\"npm run typecheck\",\"description\":\"Check types\"})",
+        content: "---------- AGENT ----------\nsome text the agent said",
       }),
     );
     expect(wrapper.text()).toContain("AGENT");
-    expect(wrapper.text()).toContain("Tool: Bash");
-    expect(wrapper.find(".log-entry__full").exists()).toBe(false);
+    expect(wrapper.text()).toContain("some text the agent said");
   });
 
-  it("collapses a multi-line body to its first line, and expands on click", async () => {
-    const fullBody = "line one\nline two\nline three";
-    const wrapper = mountLogEntry(
-      logFixture({ channel: "terminal", content: fullBody }),
-    );
+  it("shows up to 4 lines by default, and reveals the rest on click", async () => {
+    const fullBody = "line one\nline two\nline three\nline four\nline five\nline six";
+    const wrapper = mountLogEntry(logFixture({ channel: "terminal", content: fullBody }));
 
     expect(wrapper.text()).toContain("line one");
-    expect(wrapper.text()).not.toContain("line two");
-    expect(wrapper.find(".log-entry__full").exists()).toBe(false);
+    expect(wrapper.text()).toContain("line four");
+    expect(wrapper.text()).not.toContain("line five");
+    expect(wrapper.find(".log-entry__toggle").text()).toContain("2 more line");
 
-    await wrapper.find(".log-entry__head").trigger("click");
+    await wrapper.find(".log-entry__toggle").trigger("click");
 
-    expect(wrapper.find(".log-entry__full").exists()).toBe(true);
-    expect(wrapper.find(".log-entry__full").text()).toBe(fullBody);
+    expect(wrapper.text()).toContain("line five");
+    expect(wrapper.text()).toContain("line six");
+    expect(wrapper.find(".log-entry__toggle").text()).toBe("Show less");
 
-    await wrapper.find(".log-entry__head").trigger("click");
-    expect(wrapper.find(".log-entry__full").exists()).toBe(false);
+    await wrapper.find(".log-entry__toggle").trigger("click");
+    expect(wrapper.text()).not.toContain("line five");
   });
 
   it("applies an error class for error-level entries", () => {
     const wrapper = mountLogEntry(logFixture({ level: "error", content: "boom" }));
-    expect(wrapper.find(".log-error").exists()).toBe(true);
+    expect(wrapper.find(".log-entry--error").exists()).toBe(true);
   });
 });

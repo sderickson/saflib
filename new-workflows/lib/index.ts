@@ -23,6 +23,12 @@ export {
 export { compileConfigWorkflow } from "./config/compile.ts";
 export { loadWorkflowDefinition } from "./load-definition.ts";
 export { cancelActiveAgentProcess } from "./agents/registry.ts";
+export {
+  parseToolLogPayload,
+  type ToolUseLogPayload,
+  type ToolResultLogPayload,
+  type ToolLogPayload,
+} from "./agents/tool-log-payload.ts";
 
 export {
   getPackageName,

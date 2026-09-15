@@ -138,4 +138,47 @@ describe("RunPage", () => {
       expect(cancelled).toBe(true);
     });
   });
+
+  it("does not yank the scroll position back down once the user has scrolled away from the bottom", async () => {
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, () => {
+        logsState = [
+          ...logsState,
+          {
+            id: "l2",
+            run_id: "run-1",
+            step_index: 0,
+            channel: "tool",
+            level: "info",
+            content: "more output",
+            created_at: "2026-09-15T00:00:01.000Z",
+          },
+        ];
+        return HttpResponse.json({ status: "success", result: {} });
+      }),
+    );
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    const el = wrapper.find(".run-page__logs").element as HTMLElement;
+    // jsdom doesn't compute real layout — fake a tall, scrolled-up container.
+    Object.defineProperty(el, "scrollHeight", { value: 1000, configurable: true });
+    Object.defineProperty(el, "clientHeight", { value: 200, configurable: true });
+    Object.defineProperty(el, "scrollTop", { value: 100, writable: true, configurable: true });
+    el.dispatchEvent(new Event("scroll"));
+
+    const advanceButton = wrapper.findAll("button").find((b) => b.text() === "Advance");
+    await advanceButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("more output");
+    });
+    // Would be forced to 1000 (scrollHeight) if the page auto-scrolled.
+    expect(el.scrollTop).toBe(100);
+  });
 });

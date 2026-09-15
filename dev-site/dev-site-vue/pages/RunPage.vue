@@ -10,8 +10,16 @@
       </span>
     </header>
 
-    <div ref="logContainer" class="run-page__logs">
-      <LogEntry v-for="log in logs" :key="log.id" :log="log" />
+    <div ref="logContainer" class="run-page__logs" @scroll="onScroll">
+      <template v-for="item in logItems" :key="item.type === 'tool-call' ? item.id : item.log.id">
+        <ToolCallCard
+          v-if="item.type === 'tool-call'"
+          :name="item.name"
+          :input="item.input"
+          :result-log="item.resultLog"
+        />
+        <LogEntry v-else :log="item.log" />
+      </template>
     </div>
 
     <footer class="run-page__foot">
@@ -65,6 +73,8 @@ import {
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import LogEntry from "../components/LogEntry.vue";
+import ToolCallCard from "../components/ToolCallCard.vue";
+import { groupLogs } from "../group-logs.ts";
 
 withDefaults(defineProps<{ workflowsPath?: string }>(), { workflowsPath: "/workflows" });
 
@@ -75,6 +85,7 @@ const runQuery = useWorkflowRunQuery(runId);
 const run = computed(() => runQuery.data.value?.run);
 const logsQuery = useWorkflowRunLogsQuery(runId);
 const logs = computed(() => logsQuery.data.value?.logs ?? []);
+const logItems = computed(() => groupLogs(logs.value));
 const advanceMutation = useAdvanceWorkflowRunMutation();
 const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
@@ -82,16 +93,32 @@ useRunEvents(runId);
 const logContainer = ref<HTMLElement | null>(null);
 const SCROLL_BOTTOM_THRESHOLD_PX = 32;
 
-/** Only follow new logs if the user was already at (or near) the bottom — otherwise scrolling up to read earlier lines gets constantly yanked back down. */
+/**
+ * Whether to keep following new logs to the bottom. Tracked as its own
+ * piece of state updated on every scroll event — not re-derived from
+ * scroll position only at the moment new logs arrive — because during an
+ * active agent turn logs can land many times a second (one SSE hint per
+ * chunk); checking synchronously at that instant is too easy to race with
+ * an in-progress manual scroll gesture. A real scroll event only fires
+ * from an actual position change, so appending content below the fold
+ * (which grows scrollHeight but not scrollTop) never flips this back on
+ * by itself — only the user (or our own scroll-to-bottom) does.
+ */
+const isFollowing = ref(true);
+
 function isNearBottom(el: HTMLElement): boolean {
   return el.scrollHeight - el.scrollTop - el.clientHeight <= SCROLL_BOTTOM_THRESHOLD_PX;
 }
 
-watch(logs, async () => {
+function onScroll() {
   const el = logContainer.value;
-  const wasAtBottom = el ? isNearBottom(el) : true;
+  if (el) isFollowing.value = isNearBottom(el);
+}
+
+watch(logItems, async () => {
   await nextTick();
-  if (wasAtBottom && el) {
+  const el = logContainer.value;
+  if (isFollowing.value && el) {
     el.scrollTop = el.scrollHeight;
   }
 });

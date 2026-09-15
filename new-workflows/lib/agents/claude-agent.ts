@@ -2,6 +2,24 @@ import { spawn } from "node:child_process";
 import type { AgentAdapter } from "./types.ts";
 import { registerActiveAgentProcess, unregisterActiveAgentProcess } from "./registry.ts";
 import { subprocessEnv } from "../subprocess-env.ts";
+import type { ToolUseLogPayload, ToolResultLogPayload } from "./tool-log-payload.ts";
+
+/** Kills a whole detached process group (see `spawn(..., {detached: true})` below). No-op if the pid is unknown or already gone. */
+export function killProcessGroup(pid: number | undefined, signal: NodeJS.Signals): void {
+  if (!pid) return;
+  try {
+    process.kill(-pid, signal);
+  } catch {
+    // Already exited, or this platform doesn't support negative-pid group
+    // kills — falling back to the single process is still better than
+    // throwing out of a "best effort" cancel.
+    try {
+      process.kill(pid, signal);
+    } catch {
+      // Already gone.
+    }
+  }
+}
 
 /**
  * Drives the Claude Code CLI headlessly, same shape as `cursor-agent.ts`'s
@@ -33,7 +51,14 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
       args.push("--resume", ctx.agentConfig.sessionId);
     }
 
-    const agent = spawn("claude", args, { env: subprocessEnv() });
+    // `detached: true` makes `agent` the leader of its own process group,
+    // so killing the *group* (negative pid) also reaches any Bash tool
+    // calls etc. it spawned — killing just the top-level process left
+    // those running, and since claude's own signal handling doesn't
+    // reliably exit promptly while a child is active, the Stop button
+    // could hang waiting for a `close` event that took a long time (or
+    // never came).
+    const agent = spawn("claude", args, { env: subprocessEnv(), detached: true });
     agent.stdin.end();
 
     let buffer = "";
@@ -46,7 +71,12 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
       kill: () => {
         cancelled = true;
         ctx.log({ channel: "tool", level: "info", content: "Stopping agent…" });
-        agent.kill("SIGTERM");
+        killProcessGroup(agent.pid, "SIGTERM");
+        // Escalate if it's still around after a grace period — some
+        // processes ignore SIGTERM outright, or take a while to unwind.
+        setTimeout(() => {
+          if (!pipeClosed) killProcessGroup(agent.pid, "SIGKILL");
+        }, 3000);
       },
     });
 
@@ -76,15 +106,40 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
         if (json.type === "assistant" || json.type === "user") {
           const label = json.type === "assistant" ? "AGENT" : "TOOL";
           for (const block of json.message?.content ?? []) {
-            const content = `---------- ${label} ----------\n${summarizeContentBlock(block)}`;
-            // TODO(debug): remove once we've confirmed the frontend gets a
-            // live update per chunk, not just at the end of the turn.
-            console.log(`[claude-agent ${ctx.runId}] ${content}`);
-            ctx.log({ channel: "agent", level: "info", content });
+            // `tool_use`/`tool_result` get a structured JSON payload
+            // instead of the plain `---------- LABEL ----------` text —
+            // the frontend pairs them by `id`/`tool_use_id` into one
+            // collapsible card (the command + its own output), rather
+            // than two unrelated-looking log lines.
+            let content: string;
+            if (block.type === "tool_use") {
+              content = JSON.stringify({
+                kind: "tool_use",
+                id: block.id,
+                name: block.name,
+                input: block.input,
+              } satisfies ToolUseLogPayload);
+            } else if (block.type === "tool_result") {
+              content = JSON.stringify({
+                kind: "tool_result",
+                tool_use_id: block.tool_use_id,
+                content:
+                  typeof block.content === "string"
+                    ? block.content
+                    : JSON.stringify(block.content),
+                is_error: Boolean(block.is_error),
+              } satisfies ToolResultLogPayload);
+            } else {
+              content = `---------- ${label} ----------\n${summarizeContentBlock(block)}`;
+            }
+            ctx.log({
+              channel: "agent",
+              level: block.type === "tool_result" && block.is_error ? "error" : "info",
+              content,
+            });
           }
         } else if (json.type === "result") {
           const content = `---------- RESULT ----------\n${json.is_error ? `Error (${json.subtype})` : "Success"}`;
-          console.log(`[claude-agent ${ctx.runId}] ${content}`);
           ctx.log({
             channel: "agent",
             level: json.is_error ? "error" : "info",
@@ -116,17 +171,11 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
   });
 };
 
+/** Summarizes block kinds that stay plain text (everything but tool_use/tool_result — see `ToolLogPayload`). */
 export function summarizeContentBlock(block: any): string {
   switch (block.type) {
     case "text":
       return block.text ?? "";
-    case "tool_use":
-      return `Tool: ${block.name}(${JSON.stringify(block.input)})`;
-    case "tool_result": {
-      const content =
-        typeof block.content === "string" ? block.content : JSON.stringify(block.content);
-      return block.is_error ? `Tool result (error): ${content}` : `Tool result: ${content}`;
-    }
     case "thinking":
       // Extended-thinking blocks carry a `signature` (an opaque,
       // multi-KB base64 blob for verifying the block came from the
