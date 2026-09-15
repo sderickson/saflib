@@ -123,6 +123,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{runId}/steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a run's workflow steps
+         * @description The full step list for the run's workflow definition (resolved the same way `advance` resolves it — a registered code id or a plan file path), for a sidebar/outline view. Best-effort `label` per step: the step's own rendered input where that's safe to compute without executing it, else just the step `kind`.
+         */
+        get: operations["getWorkflowRunSteps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/plans": {
         parameters: {
             query?: never;
@@ -162,6 +182,7 @@ export interface components {
         WorkflowSummary: components["schemas"]["workflow-summary"];
         WorkflowRun: components["schemas"]["workflow-run"];
         WorkflowLogEntry: components["schemas"]["workflow-log-entry"];
+        WorkflowRunStep: components["schemas"]["workflow-run-step"];
         StepResult: components["schemas"]["step-result"];
         PlanFile: components["schemas"]["plan-file"];
         PlanSummary: components["schemas"]["plan-summary"];
@@ -324,6 +345,16 @@ export interface components {
             content: string;
             /** Format: date-time */
             created_at: string;
+        };
+        "workflow-run-step": {
+            index: number;
+            /** @example call-workflow */
+            kind: string;
+            /**
+             * @description Best-effort human-readable summary of the step's input.
+             * @example call-workflow: drizzle/add-query
+             */
+            label?: string;
         };
         /** @description One workflow config file inside a plan folder. */
         "plan-file": {
@@ -664,6 +695,39 @@ export interface operations {
                 content: {
                     "application/json": {
                         logs: components["schemas"]["workflow-log-entry"][];
+                    };
+                };
+            };
+            /** @description No run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getWorkflowRunSteps: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The run's steps, in execution order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        steps: components["schemas"]["workflow-run-step"][];
                     };
                 };
             };

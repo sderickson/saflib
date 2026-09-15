@@ -350,6 +350,58 @@
         }
       }
     },
+    "/api/runs/{runId}/steps": {
+      "get": {
+        "summary": "List a run's workflow steps",
+        "description": "The full step list for the run's workflow definition (resolved the same way `advance` resolves it — a registered code id or a plan file path), for a sidebar/outline view. Best-effort `label` per step: the step's own rendered input where that's safe to compute without executing it, else just the step `kind`.\n",
+        "operationId": "getWorkflowRunSteps",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The run's steps, in execution order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "steps"
+                  ],
+                  "properties": {
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-run-step"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/plans": {
       "get": {
         "summary": "List saved plans (config-defined workflow folders)",
@@ -497,6 +549,9 @@
       },
       "WorkflowLogEntry": {
         "$ref": "#/components/schemas/workflow-log-entry"
+      },
+      "WorkflowRunStep": {
+        "$ref": "#/components/schemas/workflow-run-step"
       },
       "StepResult": {
         "$ref": "#/components/schemas/step-result"
@@ -877,6 +932,29 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "workflow-run-step": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "kind"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "kind": {
+            "type": "string",
+            "example": "call-workflow"
+          },
+          "label": {
+            "type": "string",
+            "description": "Best-effort human-readable summary of the step's input.",
+            "example": "call-workflow: drizzle/add-query"
           }
         }
       },

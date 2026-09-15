@@ -104,6 +104,18 @@ export function useWorkflowRunLogsQuery(runId: MaybeRefOrGetter<string | undefin
   });
 }
 
+export function useWorkflowRunStepsQuery(runId: MaybeRefOrGetter<string | undefined>) {
+  const client = createWorkflowsClient();
+  return useQuery<NewWorkflowsResponseBody["getWorkflowRunSteps"][200], TanstackError>({
+    queryKey: ["new-workflows", "run-steps", runId],
+    enabled: () => Boolean(toValue(runId)),
+    queryFn: () =>
+      handleClientMethod(
+        client.GET("/api/runs/{runId}/steps", { params: { path: { runId: toValue(runId)! } } }),
+      ),
+  });
+}
+
 export function usePlansQuery() {
   const client = createWorkflowsClient();
   return useQuery<NewWorkflowsResponseBody["listPlans"][200], TanstackError>({

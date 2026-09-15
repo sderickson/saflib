@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { nextTick } from "vue";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse } from "msw";
@@ -51,6 +52,14 @@ let logsState: unknown[] = [
 const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId`, () => HttpResponse.json({ run: runState })),
   http.get(`${ORIGIN}/api/runs/:runId/logs`, () => HttpResponse.json({ logs: logsState })),
+  http.get(`${ORIGIN}/api/runs/:runId/steps`, () =>
+    HttpResponse.json({
+      steps: [
+        { index: 0, kind: "cd", label: "cd test-product/service/db" },
+        { index: 1, kind: "prompt", label: "Say hello!" },
+      ],
+    }),
+  ),
 ];
 
 describe("RunPage", () => {
@@ -180,5 +189,61 @@ describe("RunPage", () => {
     });
     // Would be forced to 1000 (scrollHeight) if the page auto-scrolled.
     expect(el.scrollTop).toBe(100);
+  });
+
+  it("shows a step sidebar, highlights the step at the top of the view, and marks the last agent-input sticky", async () => {
+    logsState = [
+      {
+        id: "l1",
+        run_id: "run-1",
+        step_index: 0,
+        channel: "agent-input",
+        level: "info",
+        content: "Do the first thing",
+        created_at: "2026-09-15T00:00:00.000Z",
+      },
+      {
+        id: "l2",
+        run_id: "run-1",
+        step_index: 1,
+        channel: "agent-input",
+        level: "info",
+        content: "Do the second thing",
+        created_at: "2026-09-15T00:00:01.000Z",
+      },
+    ];
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("cd test-product/service/db");
+      expect(wrapper.text()).toContain("Say hello!");
+    });
+
+    // Only the most recent agent-input entry is sticky.
+    const items = wrapper.findAll(".run-page__log-item");
+    const stickyItems = items.filter((i) => i.classes().includes("run-page__log-item--sticky"));
+    expect(stickyItems).toHaveLength(1);
+    expect(stickyItems[0].text()).toContain("Do the second thing");
+
+    // Fake layout: item 0 (step 0) above the fold, item 1 (step 1) at top of view.
+    const itemEls = items.map((i) => i.element as HTMLElement);
+    vi.spyOn(itemEls[0], "getBoundingClientRect").mockReturnValue({
+      top: -50,
+      bottom: -10,
+    } as DOMRect);
+    vi.spyOn(itemEls[1], "getBoundingClientRect").mockReturnValue({
+      top: 0,
+      bottom: 40,
+    } as DOMRect);
+    const el = wrapper.find(".run-page__logs").element as HTMLElement;
+    vi.spyOn(el, "getBoundingClientRect").mockReturnValue({ top: 0, bottom: 500 } as DOMRect);
+    el.dispatchEvent(new Event("scroll"));
+    await nextTick();
+
+    const sidebarSteps = wrapper.findAll(".run-page__sidebar-step");
+    expect(sidebarSteps[1].classes()).toContain("run-page__sidebar-step--active");
+    expect(sidebarSteps[0].classes()).not.toContain("run-page__sidebar-step--active");
   });
 });

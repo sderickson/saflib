@@ -10,16 +10,37 @@
       </span>
     </header>
 
-    <div ref="logContainer" class="run-page__logs" @scroll="onScroll">
-      <template v-for="item in logItems" :key="item.type === 'tool-call' ? item.id : item.log.id">
-        <ToolCallCard
-          v-if="item.type === 'tool-call'"
-          :name="item.name"
-          :input="item.input"
-          :result-log="item.resultLog"
-        />
-        <LogEntry v-else :log="item.log" />
-      </template>
+    <div class="run-page__body">
+      <aside class="run-page__sidebar">
+        <div
+          v-for="step in steps"
+          :key="step.index"
+          class="run-page__sidebar-step"
+          :class="{ 'run-page__sidebar-step--active': step.index === currentStepIndex }"
+          @click="scrollToStep(step.index)"
+        >
+          <span class="run-page__sidebar-step-index">{{ step.index }}</span>
+          <span class="run-page__sidebar-step-label">{{ step.label ?? step.kind }}</span>
+        </div>
+      </aside>
+
+      <div ref="logContainer" class="run-page__logs" @scroll="onScroll">
+        <template v-for="item in logItems" :key="item.type === 'tool-call' ? item.id : item.log.id">
+          <div
+            class="run-page__log-item"
+            :data-step-index="itemStepIndex(item)"
+            :class="{ 'run-page__log-item--sticky': isLastAgentInput(item) }"
+          >
+            <ToolCallCard
+              v-if="item.type === 'tool-call'"
+              :name="item.name"
+              :input="item.input"
+              :result-log="item.resultLog"
+            />
+            <LogEntry v-else :log="item.log" />
+          </div>
+        </template>
+      </div>
     </div>
 
     <footer class="run-page__foot">
@@ -68,13 +89,14 @@ import { useRoute } from "vue-router";
 import {
   useWorkflowRunQuery,
   useWorkflowRunLogsQuery,
+  useWorkflowRunStepsQuery,
   useAdvanceWorkflowRunMutation,
   useCancelWorkflowRunMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import LogEntry from "../components/LogEntry.vue";
 import ToolCallCard from "../components/ToolCallCard.vue";
-import { groupLogs } from "../group-logs.ts";
+import { groupLogs, type LogItem } from "../group-logs.ts";
 
 withDefaults(defineProps<{ workflowsPath?: string }>(), { workflowsPath: "/workflows" });
 
@@ -86,6 +108,8 @@ const run = computed(() => runQuery.data.value?.run);
 const logsQuery = useWorkflowRunLogsQuery(runId);
 const logs = computed(() => logsQuery.data.value?.logs ?? []);
 const logItems = computed(() => groupLogs(logs.value));
+const stepsQuery = useWorkflowRunStepsQuery(runId);
+const steps = computed(() => stepsQuery.data.value?.steps ?? []);
 const advanceMutation = useAdvanceWorkflowRunMutation();
 const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
@@ -110,9 +134,62 @@ function isNearBottom(el: HTMLElement): boolean {
   return el.scrollHeight - el.scrollTop - el.clientHeight <= SCROLL_BOTTOM_THRESHOLD_PX;
 }
 
+function itemStepIndex(item: LogItem): number | null {
+  return item.type === "tool-call" ? item.useLog.step_index : item.log.step_index;
+}
+
+/**
+ * The most recent instruction handed to the agent — kept visible via a
+ * `position: sticky` wrapper so it doesn't scroll out of view while
+ * reading earlier history (the whole point of scrolling back is usually
+ * "what was I asked to do again?").
+ */
+const lastAgentInputLogId = computed(() => {
+  for (let i = logs.value.length - 1; i >= 0; i--) {
+    if (logs.value[i].channel === "agent-input") return logs.value[i].id;
+  }
+  return undefined;
+});
+function isLastAgentInput(item: LogItem): boolean {
+  return item.type === "single" && item.log.id === lastAgentInputLogId.value;
+}
+
+/**
+ * Which step's logs are at the top of the visible viewport — drives the
+ * sidebar highlight. Recomputed from actual rendered positions (not the
+ * run's own `current_step_index`) so scrolling back through history
+ * highlights the step you're actually looking at, not the live one.
+ */
+const currentStepIndex = ref<number | undefined>(undefined);
+
+function updateCurrentStepIndex() {
+  const el = logContainer.value;
+  if (!el) return;
+  const containerTop = el.getBoundingClientRect().top;
+  const items = el.querySelectorAll<HTMLElement>("[data-step-index]");
+  let found: number | undefined;
+  for (const itemEl of items) {
+    if (itemEl.getBoundingClientRect().bottom - containerTop > 0) {
+      found = Number(itemEl.dataset.stepIndex);
+      break;
+    }
+  }
+  if (found === undefined && items.length > 0) {
+    found = Number(items[items.length - 1].dataset.stepIndex);
+  }
+  currentStepIndex.value = found;
+}
+
+function scrollToStep(index: number) {
+  const el = logContainer.value;
+  const target = el?.querySelector<HTMLElement>(`[data-step-index="${index}"]`);
+  target?.scrollIntoView({ block: "start" });
+}
+
 function onScroll() {
   const el = logContainer.value;
   if (el) isFollowing.value = isNearBottom(el);
+  updateCurrentStepIndex();
 }
 
 watch(logItems, async () => {
@@ -121,6 +198,7 @@ watch(logItems, async () => {
   if (isFollowing.value && el) {
     el.scrollTop = el.scrollHeight;
   }
+  updateCurrentStepIndex();
 });
 
 const failureMessage = computed(() => {
@@ -163,6 +241,41 @@ const statusColor = computed(() => {
 .run-page__title {
   font-weight: 600;
 }
+.run-page__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+.run-page__sidebar {
+  flex: 0 0 220px;
+  overflow-y: auto;
+  border-right: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  padding: 0.5rem 0;
+}
+.run-page__sidebar-step {
+  padding: 0.4rem 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+.run-page__sidebar-step:hover {
+  background: rgba(128, 128, 128, 0.08);
+}
+.run-page__sidebar-step--active {
+  border-left-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.08);
+  font-weight: 600;
+}
+.run-page__sidebar-step-index {
+  opacity: 0.5;
+}
+.run-page__sidebar-step-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .run-page__logs {
   flex: 1 1 auto;
   min-height: 0;
@@ -171,6 +284,13 @@ const statusColor = computed(() => {
   font-size: 0.85rem;
   padding: 0.75rem 1rem;
   background: rgba(128, 128, 128, 0.05);
+}
+.run-page__log-item--sticky {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgb(var(--v-theme-surface));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 .run-page__foot {
   flex: 0 0 auto;

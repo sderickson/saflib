@@ -18,4 +18,12 @@ if [ -d /repo ]; then
   su node -c 'cd /repo && npm install --include=dev'
 fi
 
+# Same story for /data/new-workflows (see docker-compose.yaml's
+# `new_workflows_data`): a fresh named volume mount is root-owned, and
+# @saflib/new-workflows-db's sqlite file lives there instead of on the
+# bind-mounted /repo (see routes/workflows/index.ts).
+if [ -d /data/new-workflows ]; then
+  chown -R node:node /data/new-workflows
+fi
+
 exec su node -c "cd $(pwd) && $*"

@@ -93,6 +93,21 @@ describe("createNewWorkflowsRouter", () => {
     expect(response.body).toEqual({ cancelled: false });
   });
 
+  it("GET /api/runs/:runId/steps lists the workflow's steps", async () => {
+    const created = await request(app)
+      .post("/api/workflows/example%2Fhello/runs")
+      .send({ input: { name: "example-thing" } });
+    const runId = created.body.run.id;
+
+    const response = await request(app).get(`/api/runs/${runId}/steps`);
+    expect(response.status).toBe(200);
+    expect(response.body.steps).toEqual([
+      { index: 0, kind: "copy" },
+      { index: 1, kind: "update", label: "update: file" },
+      { index: 2, kind: "command", label: "npm --version" },
+    ]);
+  });
+
   it("GET /api/workflows/:id/runs lists runs for that workflow, newest first", async () => {
     const empty = await request(app).get("/api/workflows/example%2Fhello/runs");
     expect(empty.status).toBe(200);

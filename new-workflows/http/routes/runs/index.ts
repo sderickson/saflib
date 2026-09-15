@@ -6,11 +6,13 @@ import { operationJsonSpec as getWorkflowRunOperationJsonSpec } from "@saflib/ne
 import { operationJsonSpec as advanceWorkflowRunOperationJsonSpec } from "@saflib/new-workflows-spec/operations/advanceWorkflowRun";
 import { operationJsonSpec as cancelWorkflowRunOperationJsonSpec } from "@saflib/new-workflows-spec/operations/cancelWorkflowRun";
 import { operationJsonSpec as listWorkflowRunLogsOperationJsonSpec } from "@saflib/new-workflows-spec/operations/listWorkflowRunLogs";
+import { operationJsonSpec as getWorkflowRunStepsOperationJsonSpec } from "@saflib/new-workflows-spec/operations/getWorkflowRunSteps";
 import { createWorkflowRunHandler } from "./create.ts";
 import { getWorkflowRunHandler } from "./get.ts";
 import { advanceWorkflowRunHandler } from "./advance.ts";
 import { cancelWorkflowRunHandler } from "./cancel.ts";
 import { listWorkflowRunLogsHandler } from "./logs.ts";
+import { getWorkflowRunStepsHandler } from "./steps.ts";
 import { listWorkflowRunsHandler } from "./list-by-workflow.ts";
 import { streamWorkflowRunEventsHandler } from "./events.ts";
 
@@ -63,6 +65,14 @@ export function createRunsRouter(): IRouter {
       enforceAuth: false,
     }),
     listWorkflowRunLogsHandler,
+  );
+
+  router.get(
+    "/runs/:runId/steps",
+    ...createOperationScopedMiddleware(getWorkflowRunStepsOperationJsonSpec, {
+      enforceAuth: false,
+    }),
+    getWorkflowRunStepsHandler,
   );
 
   // SSE — not modeled as an OpenAPI operation (text/event-stream doesn't

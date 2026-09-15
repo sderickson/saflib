@@ -1,0 +1,16 @@
+type: object
+additionalProperties: false
+required:
+  - index
+  - kind
+properties:
+  index:
+    type: integer
+    minimum: 0
+  kind:
+    type: string
+    example: "call-workflow"
+  label:
+    type: string
+    description: Best-effort human-readable summary of the step's input.
+    example: "call-workflow: drizzle/add-query"

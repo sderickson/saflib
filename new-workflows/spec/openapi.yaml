@@ -32,6 +32,9 @@ paths:
   /api/runs/{runId}/logs:
     get:
       $ref: "./routes/runs/logs.yaml#/listWorkflowRunLogs"
+  /api/runs/{runId}/steps:
+    get:
+      $ref: "./routes/runs/steps.yaml#/getWorkflowRunSteps"
   /api/plans:
     get:
       $ref: "./routes/plans/list.yaml#/listPlans"
@@ -62,6 +65,8 @@ components:
       $ref: "./schemas/workflow-run.yaml"
     WorkflowLogEntry:
       $ref: "./schemas/workflow-log-entry.yaml"
+    WorkflowRunStep:
+      $ref: "./schemas/workflow-run-step.yaml"
     StepResult:
       $ref: "./schemas/step-result.yaml"
     PlanFile:

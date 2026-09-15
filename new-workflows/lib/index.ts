@@ -22,6 +22,10 @@ export {
 } from "./config/validate.ts";
 export { compileConfigWorkflow } from "./config/compile.ts";
 export { loadWorkflowDefinition } from "./load-definition.ts";
+export {
+  describeWorkflowSteps,
+  type WorkflowRunStepDescription,
+} from "./describe-steps.ts";
 export { cancelActiveAgentProcess } from "./agents/registry.ts";
 export {
   parseToolLogPayload,

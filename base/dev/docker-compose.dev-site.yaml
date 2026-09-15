@@ -24,6 +24,11 @@ services:
       DEV_SITE_PRODUCT_ROOT: ${DEV_SITE_PRODUCT_ROOT:-base}
       DEV_SITE_MAIN_REF: main
       DEV_SITE_DB_PATH: /data/dev-site.sqlite
+      # Named volume (new_workflows_data below), not the /repo bind mount —
+      # see routes/workflows/index.ts for why: a heavily-written sqlite file
+      # on a macOS bind mount from a Linux container risks the same
+      # mmap/locking trouble sharing node_modules did.
+      NEW_WORKFLOWS_DB_PATH: /data/new-workflows/local.sqlite
       DEV_SITE_GITHUB_REPO: sderickson/saflib
     volumes:
       # Read-write: workflow "update" steps (see @saflib/new-workflows) edit
@@ -35,6 +40,9 @@ services:
       # seeds/updates this on every start.
       - repo_node_modules:/repo/node_modules
       - ./dev-site-data:/data
+      # Workflow-run history (@saflib/new-workflows-db) — persists across
+      # container restarts without ever touching the host filesystem.
+      - new_workflows_data:/data/new-workflows
       # Host's Claude Code OAuth session (see resolve-claude-credentials.sh).
       # Read-write so the container's own token refresh writes back to it.
       - ./.claude-credentials.json:/home/node/.claude/.credentials.json
@@ -42,3 +50,5 @@ services:
 volumes:
   repo_node_modules:
     name: saflib-base-dev-site-repo-node-modules
+  new_workflows_data:
+    name: saflib-base-dev-site-new-workflows-data

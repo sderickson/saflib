@@ -19,7 +19,19 @@ process.env.ALLOW_DB_CREATION ??= "true";
  * registry: no registry-building tool exists yet (same note as the CLI's).
  */
 export function createWorkflowsRouter(): IRouter {
-  const dbKey = newWorkflowsDbManager.connect({ onDisk: true });
+  // `onDisk: true` (the default) writes into the package's own `data/`
+  // folder — fine on a host checkout, but inside the docker container that
+  // package dir is the bind-mounted `/repo` (see resolve-dev-site-env.sh's
+  // SAFLIB_ROOT fix for the same class of problem with @saflib/templates).
+  // Writing a heavily-written sqlite file onto a macOS bind mount from a
+  // Linux container risks the same mmap/locking trouble as sharing
+  // node_modules did (see docker-entrypoint.sh) — so docker-compose points
+  // this at a container-only named volume instead, via NEW_WORKFLOWS_DB_PATH.
+  const dbKey = newWorkflowsDbManager.connect(
+    process.env.NEW_WORKFLOWS_DB_PATH
+      ? { onDisk: process.env.NEW_WORKFLOWS_DB_PATH }
+      : { onDisk: true },
+  );
 
   return createNewWorkflowsRouter({
     dbKey,
