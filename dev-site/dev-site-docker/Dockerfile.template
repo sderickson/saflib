@@ -34,17 +34,27 @@ ENV NODE_ENV=production \
   DEV_SITE_DB_PATH=/data/dev-site.sqlite
 
 # `--dangerously-skip-permissions` (which the claude-agent adapter always
-# passes) refuses to run as root, so run the service as the image's
-# built-in non-root `node` user — also just better hygiene generally.
-# `chown /app`: some packages (e.g. new-workflows-db) fall back to a local
-# on-disk sqlite file under their own package dir when no explicit path is
-# configured; that tree is root-owned from the COPY/npm ci steps above.
-# Pre-create `.claude` too so the CLI can write session state there
-# alongside the bind-mounted credentials file (see docker-compose.yaml).
+# passes) refuses to run as root, so the app itself runs as the image's
+# built-in non-root `node` user (see docker-entrypoint.sh) — also just
+# better hygiene generally. `chown /app`: some packages (e.g.
+# new-workflows-db) fall back to a local on-disk sqlite file under their
+# own package dir when no explicit path is configured; that tree is
+# root-owned from the COPY/npm ci steps above. Pre-create `.claude` too so
+# the CLI can write session state there alongside the bind-mounted
+# credentials file (see docker-compose.yaml).
 RUN mkdir -p /home/node/.claude \
   && chown -R node:node /home/node/.claude /app
-USER node
+
+# Stays root here (unlike the old `USER node` at this point): the
+# entrypoint needs a moment as root to fix ownership on /repo/node_modules
+# — a fresh named volume — before dropping to `node` itself. See
+# docker-entrypoint.sh for why /repo/node_modules is a separate volume at
+# all (never share it with the host). Already present at this path —
+# `#{ copy_src }#` above copies this whole package, entrypoint script
+# included — so no separate COPY is needed here.
+RUN chmod +x #{ package_root }#/docker-entrypoint.sh
 
 WORKDIR #{ package_root }#/service/http
 EXPOSE 3099
+ENTRYPOINT ["#{ package_root }#/docker-entrypoint.sh"]
 CMD ["npm", "start"]

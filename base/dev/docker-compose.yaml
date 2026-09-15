@@ -116,6 +116,11 @@ services:
       # Read-write: workflow "update" steps (see @saflib/new-workflows) edit
       # files here directly, same repo checkout the host sees.
       - ${DEV_SITE_REPO_MOUNT:-../..}:/repo
+      # Isolated from the host: a Linux npm install inside the container
+      # (e.g. an agent fixing a missing package) must never touch the
+      # host's own native bindings, and vice versa. docker-entrypoint.sh
+      # seeds/updates this on every start.
+      - repo_node_modules:/repo/node_modules
       - ./dev-site-data:/data
       # Host's Claude Code OAuth session (see resolve-claude-credentials.sh).
       # Read-write so the container's own token refresh writes back to it.
@@ -132,3 +137,5 @@ volumes:
     name: saflib-base-dev-monolith-node-modules
   kratos_home:
     name: saflib-base-dev-kratos-home
+  repo_node_modules:
+    name: saflib-base-dev-repo-node-modules

@@ -116,7 +116,7 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
   });
 };
 
-function summarizeContentBlock(block: any): string {
+export function summarizeContentBlock(block: any): string {
   switch (block.type) {
     case "text":
       return block.text ?? "";
@@ -127,6 +127,14 @@ function summarizeContentBlock(block: any): string {
         typeof block.content === "string" ? block.content : JSON.stringify(block.content);
       return block.is_error ? `Tool result (error): ${content}` : `Tool result: ${content}`;
     }
+    case "thinking":
+      // Extended-thinking blocks carry a `signature` (an opaque,
+      // multi-KB base64 blob for verifying the block came from the
+      // model) alongside the human-readable `thinking` text, which is
+      // often empty for a redacted/summarized turn. Falling through to
+      // the default JSON.stringify dumped that whole signature into the
+      // log — unreadable, and by far the largest single log entries.
+      return block.thinking?.trim() ? block.thinking : "(thinking…)";
     default:
       return JSON.stringify(block);
   }

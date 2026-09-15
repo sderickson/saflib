@@ -11,13 +11,7 @@
     </header>
 
     <div ref="logContainer" class="run-page__logs">
-      <div
-        v-for="log in logs"
-        :key="log.id"
-        :class="['log-line', `log-${log.channel}`, { 'log-error': log.level === 'error' }]"
-      >
-        <span class="log-channel">[{{ log.channel }}]</span> {{ log.content }}
-      </div>
+      <LogEntry v-for="log in logs" :key="log.id" :log="log" />
     </div>
 
     <footer class="run-page__foot">
@@ -70,6 +64,7 @@ import {
   useCancelWorkflowRunMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
+import LogEntry from "../components/LogEntry.vue";
 
 withDefaults(defineProps<{ workflowsPath?: string }>(), { workflowsPath: "/workflows" });
 
@@ -85,10 +80,20 @@ const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
 
 const logContainer = ref<HTMLElement | null>(null);
+const SCROLL_BOTTOM_THRESHOLD_PX = 32;
+
+/** Only follow new logs if the user was already at (or near) the bottom — otherwise scrolling up to read earlier lines gets constantly yanked back down. */
+function isNearBottom(el: HTMLElement): boolean {
+  return el.scrollHeight - el.scrollTop - el.clientHeight <= SCROLL_BOTTOM_THRESHOLD_PX;
+}
+
 watch(logs, async () => {
-  await nextTick();
   const el = logContainer.value;
-  if (el) el.scrollTop = el.scrollHeight;
+  const wasAtBottom = el ? isNearBottom(el) : true;
+  await nextTick();
+  if (wasAtBottom && el) {
+    el.scrollTop = el.scrollHeight;
+  }
 });
 
 const failureMessage = computed(() => {
@@ -144,27 +149,5 @@ const statusColor = computed(() => {
   flex: 0 0 auto;
   padding: 0.75rem 1rem;
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-}
-.log-line {
-  white-space: pre-wrap;
-}
-.log-channel {
-  opacity: 0.6;
-}
-.log-tool {
-  color: #4caf50;
-}
-.log-agent {
-  color: #2196f3;
-}
-.log-agent-input {
-  color: #ff9800;
-}
-.log-terminal {
-  opacity: 0.7;
-}
-.log-error {
-  color: #f44336;
-  font-weight: 600;
 }
 </style>
