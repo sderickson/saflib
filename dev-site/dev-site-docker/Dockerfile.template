@@ -10,6 +10,11 @@ RUN apt-get update \
 
 RUN npm install -g npm@11.14.1
 
+# For workflow "update" steps run with --run=claude (see @saflib/new-workflows):
+# the CLI reads its OAuth session from ~/.claude/.credentials.json, which
+# docker-compose.yaml bind-mounts in from the host (see resolve-claude-credentials.sh).
+RUN npm install -g @anthropic-ai/claude-code
+
 WORKDIR /app
 
 #{ copy_packages }#

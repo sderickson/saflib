@@ -112,8 +112,13 @@ services:
       # DEV_SITE_STATIC_DIR comes from the image ENV (saf-docker generate).
       DEV_SITE_GITHUB_REPO: sderickson/saflib
     volumes:
-      - ${DEV_SITE_REPO_MOUNT:-../..}:/repo:ro
+      # Read-write: workflow "update" steps (see @saflib/new-workflows) edit
+      # files here directly, same repo checkout the host sees.
+      - ${DEV_SITE_REPO_MOUNT:-../..}:/repo
       - ./dev-site-data:/data
+      # Host's Claude Code OAuth session (see resolve-claude-credentials.sh).
+      # Read-write so the container's own token refresh writes back to it.
+      - ./.claude-credentials.json:/root/.claude/.credentials.json
 
 volumes:
   caddy_data:
