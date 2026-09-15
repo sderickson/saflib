@@ -7,7 +7,7 @@ export function createWorkflowsRouter(): IRouter {
   const router = express.Router();
 
   router.get(
-    "/api/workflows",
+    "/workflows",
     ...createOperationScopedMiddleware(listWorkflowsOperationJsonSpec, {
       enforceAuth: false,
     }),

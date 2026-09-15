@@ -25,8 +25,13 @@ export interface CreateNewWorkflowsRouterOptions {
 /**
  * Workflows router for monolith chrome — designed to be mounted into a
  * host app (e.g. `dev-site-http`), same shape as `jobs-http`'s
- * `createJobsRouter`. Owns its own `/api/workflows`/`/api/runs` paths and
- * scopes its own error middleware, so it's portable regardless of host.
+ * `createJobsRouter`. Owns its own `/api/workflows`/`/api/runs` paths;
+ * only handles those — other paths fall through so sibling chrome routers
+ * (and the host's own static/SPA serving) can run. Error middleware is
+ * scoped to `/api` for the same reason (mirrors `createJobsRouter`
+ * scoping its error middleware to `/jobs`): mounted with no path prefix,
+ * this router's own blanket `notFoundHandler` would swallow every
+ * otherwise-unmatched request reaching the host app, not just its own.
  */
 export function createNewWorkflowsRouter(
   options: CreateNewWorkflowsRouterOptions,
@@ -55,7 +60,7 @@ export function createNewWorkflowsRouter(
   innerRouter.use(createRunsRouter());
   innerRouter.use(createErrorMiddleware());
 
-  router.use(innerRouter);
+  router.use("/api", innerRouter);
 
   return router;
 }

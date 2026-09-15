@@ -14,7 +14,7 @@ export function createRunsRouter(): IRouter {
   const router = express.Router();
 
   router.post(
-    "/api/workflows/:id/runs",
+    "/workflows/:id/runs",
     ...createOperationScopedMiddleware(createWorkflowRunOperationJsonSpec, {
       enforceAuth: false,
     }),
@@ -22,7 +22,7 @@ export function createRunsRouter(): IRouter {
   );
 
   router.get(
-    "/api/runs/:runId",
+    "/runs/:runId",
     ...createOperationScopedMiddleware(getWorkflowRunOperationJsonSpec, {
       enforceAuth: false,
     }),
@@ -30,7 +30,7 @@ export function createRunsRouter(): IRouter {
   );
 
   router.post(
-    "/api/runs/:runId/advance",
+    "/runs/:runId/advance",
     ...createOperationScopedMiddleware(advanceWorkflowRunOperationJsonSpec, {
       enforceAuth: false,
     }),
@@ -38,7 +38,7 @@ export function createRunsRouter(): IRouter {
   );
 
   router.get(
-    "/api/runs/:runId/logs",
+    "/runs/:runId/logs",
     ...createOperationScopedMiddleware(listWorkflowRunLogsOperationJsonSpec, {
       enforceAuth: false,
     }),
@@ -47,7 +47,7 @@ export function createRunsRouter(): IRouter {
 
   // SSE — not modeled as an OpenAPI operation (text/event-stream doesn't
   // fit request/response validation), so no scoped middleware here.
-  router.get("/api/runs/:runId/events", streamWorkflowRunEventsHandler);
+  router.get("/runs/:runId/events", streamWorkflowRunEventsHandler);
 
   return router;
 }
