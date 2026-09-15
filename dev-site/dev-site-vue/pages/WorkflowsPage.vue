@@ -139,13 +139,24 @@
           {{ failureMessage }}
         </v-alert>
         <v-btn
+          v-if="advanceMutation.isPending.value"
+          color="error"
+          :loading="cancelMutation.isPending.value"
+          @click="cancelMutation.mutate(activeRunId!)"
+        >
+          Stop
+        </v-btn>
+        <v-btn
+          v-else
           color="primary"
-          :loading="advanceMutation.isPending.value"
           :disabled="run?.status === 'done' || run?.status === 'failed'"
           @click="advanceMutation.mutate(activeRunId!)"
         >
           Advance
         </v-btn>
+        <p v-if="advanceMutation.isPending.value" class="text-body-2 text-medium-emphasis mt-2">
+          Agent is running…
+        </p>
       </v-card-text>
     </v-card>
     </v-container>
@@ -162,6 +173,7 @@ import {
   useWorkflowRunQuery,
   useWorkflowRunLogsQuery,
   useAdvanceWorkflowRunMutation,
+  useCancelWorkflowRunMutation,
   usePlansQuery,
   useCreatePlanMutation,
 } from "../requests/workflows-queries.ts";
@@ -219,7 +231,10 @@ const createRunMutation = useCreateWorkflowRunMutation();
 function startRun() {
   if (!selectedWorkflowId.value) return;
   createRunMutation.mutate(
-    { id: selectedWorkflowId.value, body: { input: { ...formValues } } },
+    {
+      id: selectedWorkflowId.value,
+      body: { input: { ...formValues }, mode: "run", agentConfig: { cli: "claude-agent" } },
+    },
     {
       onSuccess: (data) => {
         activeRunId.value = data.run.id;
@@ -230,7 +245,7 @@ function startRun() {
 
 function runPlanFile(path: string) {
   createRunMutation.mutate(
-    { id: path, body: { input: {} } },
+    { id: path, body: { input: {}, mode: "run", agentConfig: { cli: "claude-agent" } } },
     {
       onSuccess: (data) => {
         activeRunId.value = data.run.id;
@@ -272,6 +287,7 @@ const run = computed(() => runQuery.data.value?.run);
 const logsQuery = useWorkflowRunLogsQuery(activeRunId);
 const logs = computed(() => logsQuery.data.value?.logs ?? []);
 const advanceMutation = useAdvanceWorkflowRunMutation();
+const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(activeRunId);
 
 /**

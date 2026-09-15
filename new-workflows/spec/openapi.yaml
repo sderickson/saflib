@@ -24,6 +24,9 @@ paths:
   /api/runs/{runId}/advance:
     post:
       $ref: "./routes/runs/advance.yaml#/advanceWorkflowRun"
+  /api/runs/{runId}/cancel:
+    post:
+      $ref: "./routes/runs/cancel.yaml#/cancelWorkflowRun"
   /api/runs/{runId}/logs:
     get:
       $ref: "./routes/runs/logs.yaml#/listWorkflowRunLogs"

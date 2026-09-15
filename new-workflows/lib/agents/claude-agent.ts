@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import type { AgentAdapter } from "./types.ts";
+import { registerActiveAgentProcess, unregisterActiveAgentProcess } from "./registry.ts";
 
 /**
  * Drives the Claude Code CLI headlessly, same shape as `cursor-agent.ts`'s
@@ -38,6 +39,15 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
     let sessionId = "";
     let resultReceived = false;
     let pipeClosed = false;
+    let cancelled = false;
+
+    registerActiveAgentProcess(ctx.runId, {
+      kill: () => {
+        cancelled = true;
+        ctx.log({ channel: "tool", level: "info", content: "Stopping agent…" });
+        agent.kill("SIGTERM");
+      },
+    });
 
     const maybeResolve = () => {
       if (resultReceived && pipeClosed) {
@@ -87,9 +97,17 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
       ctx.log({ channel: "agent", level: "error", content: data.toString() });
     });
 
-    agent.on("error", reject);
+    agent.on("error", (err) => {
+      unregisterActiveAgentProcess(ctx.runId);
+      reject(err);
+    });
     agent.on("close", () => {
+      unregisterActiveAgentProcess(ctx.runId);
       pipeClosed = true;
+      if (cancelled) {
+        reject(new Error("Cancelled by user"));
+        return;
+      }
       maybeResolve();
     });
   });

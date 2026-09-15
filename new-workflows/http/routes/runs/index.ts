@@ -3,10 +3,12 @@ import { createOperationScopedMiddleware } from "@saflib/express";
 import { operationJsonSpec as createWorkflowRunOperationJsonSpec } from "@saflib/new-workflows-spec/operations/createWorkflowRun";
 import { operationJsonSpec as getWorkflowRunOperationJsonSpec } from "@saflib/new-workflows-spec/operations/getWorkflowRun";
 import { operationJsonSpec as advanceWorkflowRunOperationJsonSpec } from "@saflib/new-workflows-spec/operations/advanceWorkflowRun";
+import { operationJsonSpec as cancelWorkflowRunOperationJsonSpec } from "@saflib/new-workflows-spec/operations/cancelWorkflowRun";
 import { operationJsonSpec as listWorkflowRunLogsOperationJsonSpec } from "@saflib/new-workflows-spec/operations/listWorkflowRunLogs";
 import { createWorkflowRunHandler } from "./create.ts";
 import { getWorkflowRunHandler } from "./get.ts";
 import { advanceWorkflowRunHandler } from "./advance.ts";
+import { cancelWorkflowRunHandler } from "./cancel.ts";
 import { listWorkflowRunLogsHandler } from "./logs.ts";
 import { streamWorkflowRunEventsHandler } from "./events.ts";
 
@@ -35,6 +37,14 @@ export function createRunsRouter(): IRouter {
       enforceAuth: false,
     }),
     advanceWorkflowRunHandler,
+  );
+
+  router.post(
+    "/runs/:runId/cancel",
+    ...createOperationScopedMiddleware(cancelWorkflowRunOperationJsonSpec, {
+      enforceAuth: false,
+    }),
+    cancelWorkflowRunHandler,
   );
 
   router.get(

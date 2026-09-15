@@ -86,4 +86,10 @@ describe("createNewWorkflowsRouter", () => {
     const response = await request(app).get("/api/runs/does-not-exist");
     expect(response.status).toBe(404);
   });
+
+  it("POST /api/runs/:runId/cancel is a no-op when nothing is running for that run", async () => {
+    const response = await request(app).post("/api/runs/no-agent-running/cancel");
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ cancelled: false });
+  });
 });

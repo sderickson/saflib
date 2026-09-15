@@ -79,6 +79,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{runId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop the agent turn currently running for a run, if any
+         * @description Kills the in-process agent subprocess for this run (e.g. a `claude -p` call in flight from a concurrent `advance` request), if one is running. That `advance` call's own response then resolves on its own with a `status: "error"` outcome — this endpoint doesn't wait for it. A no-op (returns `cancelled: false`) if nothing was running, including the common race where the agent had already finished.
+         */
+        post: operations["cancelWorkflowRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs/{runId}/logs": {
         parameters: {
             query?: never;
@@ -565,6 +585,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    cancelWorkflowRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Whether a running agent process was found and asked to stop. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        cancelled: boolean;
+                    };
                 };
             };
         };

@@ -128,3 +128,19 @@ export function useAdvanceWorkflowRunMutation() {
     },
   });
 }
+
+/**
+ * Stops the agent subprocess (if any) currently running for a run — the
+ * in-flight `advance` request this races against resolves on its own once
+ * the killed process exits (see `claude-agent.ts`); this call doesn't wait
+ * for that, it only asks the process to stop.
+ */
+export function useCancelWorkflowRunMutation() {
+  const client = createWorkflowsClient();
+  return useMutation<NewWorkflowsResponseBody["cancelWorkflowRun"][200], TanstackError, string>({
+    mutationFn: (runId) =>
+      handleClientMethod(
+        client.POST("/api/runs/{runId}/cancel", { params: { path: { runId } } }),
+      ),
+  });
+}
