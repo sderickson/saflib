@@ -33,6 +33,18 @@ ENV NODE_ENV=production \
   DEV_SITE_STATIC_DIR=#{ package_root }#/clients/app/dist \
   DEV_SITE_DB_PATH=/data/dev-site.sqlite
 
+# `--dangerously-skip-permissions` (which the claude-agent adapter always
+# passes) refuses to run as root, so run the service as the image's
+# built-in non-root `node` user — also just better hygiene generally.
+# `chown /app`: some packages (e.g. new-workflows-db) fall back to a local
+# on-disk sqlite file under their own package dir when no explicit path is
+# configured; that tree is root-owned from the COPY/npm ci steps above.
+# Pre-create `.claude` too so the CLI can write session state there
+# alongside the bind-mounted credentials file (see docker-compose.yaml).
+RUN mkdir -p /home/node/.claude \
+  && chown -R node:node /home/node/.claude /app
+USER node
+
 WORKDIR #{ package_root }#/service/http
 EXPOSE 3099
 CMD ["npm", "start"]

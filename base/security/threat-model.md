@@ -28,6 +28,7 @@ Portable subset of threat-model controls:
 | Playwright regression                                         | This package (`npm run test:e2e` against `base/dev`)                      |
 | Audit fail-closed (when wired)                                | `@saflib/audit-http` + product audit map                                  |
 | Secrets                                                       | `createSecretStore({ type: "env" })` only                                 |
+| Claude Code agent in the dev-site container (`base/dev`)      | Non-root container user, scoped read-write repo mount, host OAuth session reused as a local gitignored copy — see [`base/docs/02-claude-agent-in-docker.md`](../docs/02-claude-agent-in-docker.md) |
 
 ## Public API surface (skip Kratos `forward_auth` at Caddy + Express early auth gate)
 

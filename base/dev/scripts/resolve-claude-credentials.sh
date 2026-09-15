@@ -2,7 +2,7 @@
 # Writes ./.claude-credentials.json from the host's Claude Code OAuth session,
 # so the dev-site container's `claude` CLI can reuse it instead of needing its
 # own login or a metered API key. Bind-mounted read-write into the container
-# at /root/.claude/.credentials.json (see docker-compose.yaml).
+# at /home/node/.claude/.credentials.json (see docker-compose.yaml).
 #
 # macOS stores the session in Keychain, not a file — this reads it out.
 # Linux stores it as a plain file already (no OS keychain), so it's just

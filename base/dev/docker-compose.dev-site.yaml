@@ -31,4 +31,4 @@ services:
       - ./dev-site-data:/data
       # Host's Claude Code OAuth session (see resolve-claude-credentials.sh).
       # Read-write so the container's own token refresh writes back to it.
-      - ./.claude-credentials.json:/root/.claude/.credentials.json
+      - ./.claude-credentials.json:/home/node/.claude/.credentials.json
