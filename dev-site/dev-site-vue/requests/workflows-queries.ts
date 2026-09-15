@@ -61,9 +61,22 @@ export function useCreateWorkflowRunMutation() {
       handleClientMethod(
         client.POST("/api/workflows/{id}/runs", { params: { path: { id } }, body }),
       ),
-    onSuccess: () => {
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run"] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs", id] });
     },
+  });
+}
+
+export function useWorkflowRunsQuery(id: MaybeRefOrGetter<string | undefined>) {
+  const client = createWorkflowsClient();
+  return useQuery<NewWorkflowsResponseBody["listWorkflowRuns"][200], TanstackError>({
+    queryKey: ["new-workflows", "workflow-runs", id],
+    enabled: () => Boolean(toValue(id)),
+    queryFn: () =>
+      handleClientMethod(
+        client.GET("/api/workflows/{id}/runs", { params: { path: { id: toValue(id)! } } }),
+      ),
   });
 }
 

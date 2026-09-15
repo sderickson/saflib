@@ -7,6 +7,7 @@ import {
   CheckoutPage,
   BuildPage,
   WorkflowsPage,
+  RunPage,
 } from "../index.ts";
 import { readDevSiteRuntimeConfig } from "./runtime-config.ts";
 
@@ -108,6 +109,11 @@ export function createDevSiteRouter(options: CreateDevSiteRouterOptions = {}) {
         path: "/workflows",
         component: WorkflowsPage,
         props: { hubPath: "/" },
+      },
+      {
+        path: "/workflows/runs/:runId",
+        component: RunPage,
+        props: { workflowsPath: "/workflows" },
       },
       {
         path: "/commits/:hash",

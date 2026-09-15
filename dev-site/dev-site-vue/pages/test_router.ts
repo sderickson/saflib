@@ -6,6 +6,7 @@ import HubPage from "./HubPage.vue";
 import CheckoutPage from "./CheckoutPage.vue";
 import BuildPage from "./BuildPage.vue";
 import WorkflowsPage from "./WorkflowsPage.vue";
+import RunPage from "./RunPage.vue";
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -24,5 +25,6 @@ export const router = createRouter({
     },
     { path: "/build", component: BuildPage },
     { path: "/workflows", component: WorkflowsPage },
+    { path: "/workflows/runs/:runId", component: RunPage },
   ],
 });

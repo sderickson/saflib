@@ -22,6 +22,8 @@ export type WorkflowSummary = components["schemas"]["WorkflowSummary"];
 export type WorkflowRun = components["schemas"]["WorkflowRun"];
 export type WorkflowLogEntry = components["schemas"]["WorkflowLogEntry"];
 export type StepResult = components["schemas"]["StepResult"];
+export type PlanFile = components["schemas"]["PlanFile"];
+export type PlanSummary = components["schemas"]["PlanSummary"];
 
 import * as json from "./dist/openapi.json" with { type: "json" };
 

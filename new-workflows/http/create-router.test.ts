@@ -92,4 +92,24 @@ describe("createNewWorkflowsRouter", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ cancelled: false });
   });
+
+  it("GET /api/workflows/:id/runs lists runs for that workflow, newest first", async () => {
+    const empty = await request(app).get("/api/workflows/example%2Fhello/runs");
+    expect(empty.status).toBe(200);
+    expect(empty.body.runs).toEqual([]);
+
+    const first = await request(app)
+      .post("/api/workflows/example%2Fhello/runs")
+      .send({ input: { name: "one" } });
+    const second = await request(app)
+      .post("/api/workflows/example%2Fhello/runs")
+      .send({ input: { name: "two" } });
+
+    const listed = await request(app).get("/api/workflows/example%2Fhello/runs");
+    expect(listed.status).toBe(200);
+    expect(listed.body.runs.map((r: { id: string }) => r.id)).toEqual([
+      second.body.run.id,
+      first.body.run.id,
+    ]);
+  });
 });

@@ -1,0 +1,33 @@
+listWorkflowRuns:
+  summary: List runs of a registered workflow or plan, newest first
+  description: >
+    Lets a UI show "start a new run" alongside "go to an existing run" for
+    a workflow or plan, without having to track run ids separately.
+  operationId: listWorkflowRuns
+
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: >
+        A registered workflow's id, or a plan file's `path` (from
+        GET /plans) — same value as POST /workflows/{id}/runs takes.
+      schema:
+        type: string
+        example: "example/hello"
+
+  responses:
+    "200":
+      description: Runs of this workflow or plan.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - runs
+            properties:
+              runs:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/WorkflowRun"

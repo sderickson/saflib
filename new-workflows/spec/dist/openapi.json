@@ -38,6 +38,47 @@
       }
     },
     "/api/workflows/{id}/runs": {
+      "get": {
+        "summary": "List runs of a registered workflow or plan, newest first",
+        "description": "Lets a UI show \"start a new run\" alongside \"go to an existing run\" for a workflow or plan, without having to track run ids separately.\n",
+        "operationId": "listWorkflowRuns",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "A registered workflow's id, or a plan file's `path` (from GET /plans) — same value as POST /workflows/{id}/runs takes.\n",
+            "schema": {
+              "type": "string",
+              "example": "example/hello"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Runs of this workflow or plan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "runs"
+                  ],
+                  "properties": {
+                    "runs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-run"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "summary": "Start a run of a registered workflow",
         "operationId": "createWorkflowRun",
@@ -513,6 +554,19 @@
         ],
         "example": "run"
       },
+      "workflow-run-status": {
+        "type": "string",
+        "description": "Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.\n",
+        "enum": [
+          "pending",
+          "running",
+          "awaiting_prompt",
+          "awaiting_user",
+          "done",
+          "failed"
+        ],
+        "example": "running"
+      },
       "workflow-run-agent-config": {
         "type": "object",
         "description": "Which agent CLI drives a run's `run`-mode steps, and its resumable session. Set at `createRun` (or when the run is retried against a different agent) and persisted on the run row so a resumed process can `--resume` the same underlying session.\n",
@@ -541,19 +595,6 @@
           "cli": "cursor-agent",
           "sessionId": "a1b2c3d4"
         }
-      },
-      "workflow-run-status": {
-        "type": "string",
-        "description": "Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.\n",
-        "enum": [
-          "pending",
-          "running",
-          "awaiting_prompt",
-          "awaiting_user",
-          "done",
-          "failed"
-        ],
-        "example": "running"
       },
       "workflow-run": {
         "type": "object",

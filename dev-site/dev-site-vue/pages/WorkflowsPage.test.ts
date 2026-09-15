@@ -1,12 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
-
-// jsdom has no EventSource; `useRunEvents` opens one once a run exists.
-class EventSourceStub {
-  addEventListener() {}
-  removeEventListener() {}
-  close() {}
-}
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse } from "msw";
 import WorkflowsPage from "./WorkflowsPage.vue";
@@ -64,12 +57,12 @@ const runFixture = {
   workflow_source: "code",
   workflow_ref: "test-product/plans/2026-09-15-add-list-users-query/add-list-users-query.yaml",
   input: {},
-  mode: "print",
+  mode: "run",
   skip_todos: false,
   status: "pending",
   current_step_index: 0,
   cwd: "/repo",
-  agent_config: null,
+  agent_config: { cli: "claude-agent" },
   parent_run_id: null,
   parent_step_index: null,
   created_at: "2026-09-15T00:00:00.000Z",
@@ -85,6 +78,7 @@ let plansState: typeof emptyPlansResponse | typeof onePlanResponse = emptyPlansR
 const handlers = [
   http.get(`${ORIGIN}/api/workflows`, () => HttpResponse.json(workflowsResponse)),
   http.get(`${ORIGIN}/api/plans`, () => HttpResponse.json(plansState)),
+  http.get(`${ORIGIN}/api/workflows/:id/runs`, () => HttpResponse.json({ runs: [] })),
 ];
 
 describe("WorkflowsPage", () => {
@@ -93,18 +87,18 @@ describe("WorkflowsPage", () => {
 
   beforeEach(() => {
     plansState = emptyPlansResponse;
-    vi.stubGlobal("EventSource", EventSourceStub);
   });
 
-  it("renders without error once the workflow list loads", async () => {
+  it("renders without error once the workflow list loads, with no Start a run form", async () => {
     await router.push({ path: "/workflows" });
     const wrapper = mountTestApp(WorkflowsPage);
 
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("Workflows");
-      expect(wrapper.text()).toContain("Start a run");
+      expect(wrapper.text()).toContain("Plans");
     });
-    expect(wrapper.find(".v-select").exists()).toBe(true);
+    expect(wrapper.text()).not.toContain("Start a run");
+    expect(wrapper.find(".v-select").exists()).toBe(false);
   });
 
   it("shows a message when there are no saved plans", async () => {
@@ -128,7 +122,6 @@ describe("WorkflowsPage", () => {
     });
     expect(wrapper.text()).toContain("test-product/service/db");
     expect(wrapper.text()).toContain("drizzle/add-query");
-    expect(wrapper.text()).not.toContain("Start a run");
   });
 
   it("Save plan posts a cd + call-workflow config to POST /api/plans", async () => {
@@ -182,19 +175,15 @@ describe("WorkflowsPage", () => {
     });
   });
 
-  it("lists a saved plan and starts a run from it", async () => {
-    let runCreated = false;
+  it("lists a saved plan and navigates to a new run started from it", async () => {
     plansState = onePlanResponse;
     server.use(
       http.post(`${ORIGIN}/api/workflows/:id/runs`, ({ params }) => {
-        runCreated = true;
         expect(decodeURIComponent(params.id as string)).toBe(
           "test-product/plans/2026-09-15-add-list-users-query/add-list-users-query.yaml",
         );
         return HttpResponse.json({ run: runFixture }, { status: 201 });
       }),
-      http.get(`${ORIGIN}/api/runs/:runId`, () => HttpResponse.json({ run: runFixture })),
-      http.get(`${ORIGIN}/api/runs/:runId/logs`, () => HttpResponse.json({ logs: [] })),
     );
 
     await router.push({ path: "/workflows" });
@@ -203,13 +192,12 @@ describe("WorkflowsPage", () => {
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("add-list-users-query");
     });
-    const runButton = wrapper.findAll("button").find((b) => b.text().includes("Run"));
-    expect(runButton).toBeTruthy();
-    await runButton!.trigger("click");
+    const newRunButton = wrapper.findAll("button").find((b) => b.text().includes("New run"));
+    expect(newRunButton).toBeTruthy();
+    await newRunButton!.trigger("click");
 
     await vi.waitFor(() => {
-      expect(runCreated).toBe(true);
-      expect(wrapper.text()).toContain("run-1");
+      expect(router.currentRoute.value.path).toBe("/workflows/runs/run-1");
     });
   });
 });

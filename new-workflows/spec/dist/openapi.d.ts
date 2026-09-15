@@ -32,7 +32,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List runs of a registered workflow or plan, newest first
+         * @description Lets a UI show "start a new run" alongside "go to an existing run" for a workflow or plan, without having to track run ids separately.
+         */
+        get: operations["listWorkflowRuns"];
         put?: never;
         /** Start a run of a registered workflow */
         post: operations["createWorkflowRun"];
@@ -188,6 +192,12 @@ export interface components {
          */
         "workflow-run-mode": "dry" | "script" | "print" | "run" | "checklist";
         /**
+         * @description Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.
+         * @example running
+         * @enum {string}
+         */
+        "workflow-run-status": "pending" | "running" | "awaiting_prompt" | "awaiting_user" | "done" | "failed";
+        /**
          * @description Which agent CLI drives a run's `run`-mode steps, and its resumable session. Set at `createRun` (or when the run is retried against a different agent) and persisted on the run row so a resumed process can `--resume` the same underlying session.
          * @example {
          *       "cli": "cursor-agent",
@@ -207,12 +217,6 @@ export interface components {
              */
             sessionId?: string;
         };
-        /**
-         * @description Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.
-         * @example running
-         * @enum {string}
-         */
-        "workflow-run-status": "pending" | "running" | "awaiting_prompt" | "awaiting_user" | "done" | "failed";
         /** @description A single workflow run — the wire form of a `workflow_run` row (`new-workflows-db/schemas/workflow-run.ts`). */
         "workflow-run": {
             /** @example 0SG36FJe6m4W */
@@ -470,6 +474,31 @@ export interface operations {
                 content: {
                     "application/json": {
                         workflows: components["schemas"]["workflow-summary"][];
+                    };
+                };
+            };
+        };
+    };
+    listWorkflowRuns: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A registered workflow's id, or a plan file's `path` (from GET /plans) — same value as POST /workflows/{id}/runs takes. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Runs of this workflow or plan. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        runs: components["schemas"]["workflow-run"][];
                     };
                 };
             };

@@ -5,6 +5,7 @@ import HubPage from "./pages/HubPage.vue";
 import CheckoutPage from "./pages/CheckoutPage.vue";
 import BuildPage from "./pages/BuildPage.vue";
 import WorkflowsPage from "./pages/WorkflowsPage.vue";
+import RunPage from "./pages/RunPage.vue";
 export { commitHealth } from "./health.ts";
 export type { CommitHealth, CommitHealthStatus } from "./health.ts";
 export { classifyPackageKind, PACKAGE_KIND_SURFACES } from "./package-kind.ts";
@@ -46,4 +47,5 @@ export {
   CheckoutPage,
   BuildPage,
   WorkflowsPage,
+  RunPage,
 };

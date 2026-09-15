@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import type { AgentAdapter } from "./types.ts";
+import { subprocessEnv } from "../subprocess-env.ts";
 
 /**
  * Mechanical port of the old `cursor-agent.ts` adapter's NDJSON parsing and
@@ -19,7 +20,7 @@ export const executePromptWithCursor: AgentAdapter = async (msg, ctx) => {
       args.push("--model", "auto");
     }
 
-    const agent = spawn("cursor-agent", args);
+    const agent = spawn("cursor-agent", args, { env: subprocessEnv() });
     agent.stdin.end();
 
     let buffer = "";

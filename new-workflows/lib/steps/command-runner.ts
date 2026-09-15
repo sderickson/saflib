@@ -1,5 +1,6 @@
 import { spawn, type SpawnOptions } from "node:child_process";
 import type { WorkflowContext } from "../types.ts";
+import { subprocessEnv } from "../subprocess-env.ts";
 
 /**
  * Port of the old `runCommandAsync` (`xstate-actions/utils.ts`), except it
@@ -15,7 +16,7 @@ export function runCommandAsync(
   ctx: WorkflowContext,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { cwd: options.cwd });
+    const child = spawn(command, args, { cwd: options.cwd, env: subprocessEnv() });
     child.stdout?.on("data", (data: Buffer) => {
       ctx.log({ channel: "terminal", level: "info", content: data.toString() });
     });

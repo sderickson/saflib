@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import type { AgentAdapter } from "./types.ts";
 import { registerActiveAgentProcess, unregisterActiveAgentProcess } from "./registry.ts";
+import { subprocessEnv } from "../subprocess-env.ts";
 
 /**
  * Drives the Claude Code CLI headlessly, same shape as `cursor-agent.ts`'s
@@ -32,7 +33,7 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
       args.push("--resume", ctx.agentConfig.sessionId);
     }
 
-    const agent = spawn("claude", args);
+    const agent = spawn("claude", args, { env: subprocessEnv() });
     agent.stdin.end();
 
     let buffer = "";

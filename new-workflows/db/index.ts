@@ -15,6 +15,7 @@ export { createWorkflowRun } from "./queries/workflow-run/create.ts";
 export { getByIdWorkflowRun } from "./queries/workflow-run/get-by-id.ts";
 export { updateStatusAndStepWorkflowRun } from "./queries/workflow-run/update-status-and-step.ts";
 export { getChildByParentStepWorkflowRun } from "./queries/workflow-run/get-child-by-parent-step.ts";
+export { listByWorkflowRefWorkflowRun } from "./queries/workflow-run/list-by-workflow-ref.ts";
 export { createWorkflowStep } from "./queries/workflow-step/create.ts";
 export { updateResultWorkflowStep } from "./queries/workflow-step/update-result.ts";
 export { listByRunWorkflowStep } from "./queries/workflow-step/list-by-run.ts";
