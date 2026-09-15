@@ -27,10 +27,13 @@ const refDoc = path.join(import.meta.dirname, "../drizzle/docs/03-queries.md");
 
 interface AddDrizzleQueryInput {
   path: string;
+  /** What the query should actually do, e.g. "list all users ordered by name". */
+  prompt?: string;
 }
 
 interface AddDrizzleQueryContext extends ParsePathOutput, ParsePackageNameOutput {
   cwd: string;
+  prompt?: string;
 }
 
 /**
@@ -54,6 +57,11 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
         type: "string",
         description: "Path of the new query (e.g. './queries/contacts/get-by-id.ts')",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the query should actually do, e.g. 'list all users ordered by name'. Passed to the agent implementing it.",
+      },
     },
     required: ["path"],
   },
@@ -74,6 +82,7 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
         cwd,
       }),
       cwd,
+      prompt: input.prompt,
     };
   },
 
@@ -92,9 +101,9 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step<UpdateStepInput, AddDrizzleQueryContext>("update", runUpdateStep, () => ({
+    step<UpdateStepInput, AddDrizzleQueryContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "query",
-      prompt: `Implement the new query following the documentation guidelines.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Implement the new query following the documentation guidelines.
 
 * As much as possible, types should be based on the types that drizzle provides.
 * A resource not being found by ID is an error.
@@ -111,9 +120,9 @@ Please reference the documentation here for more information: ${refDoc}`,
       args: ["run", "typecheck"],
     })),
 
-    step<UpdateStepInput, AddDrizzleQueryContext>("update", runUpdateStep, () => ({
+    step<UpdateStepInput, AddDrizzleQueryContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "test",
-      prompt: `Implement the generated test file.
+      prompt: `${context.prompt ? `The query implements: ${context.prompt}\n\n` : ""}Implement the generated test file.
 
 Aim for 100% coverage; there should be a known way to achieve every handled error. If it's not possible to cause a returned error, it should not be in the implementation.
 

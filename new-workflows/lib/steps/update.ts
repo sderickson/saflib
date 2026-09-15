@@ -24,7 +24,12 @@ export const runUpdateStep: StepFn<UpdateStepInput> = async (rawInput, ctx) => {
       message: `copiedFiles[${input.fileId}] not found. Did the copy step run first?`,
     };
   }
-  const prompt = input.prompt ?? `Update \`${filePath}\`.`;
+  // Always tell the agent the exact file to edit — a custom `prompt`
+  // describes what to do, not where, and it's easy for a workflow author
+  // to forget to interpolate `filePath` into their own template.
+  const prompt = input.prompt
+    ? `${input.prompt}\n\nFull path: ${filePath}`
+    : `Update \`${filePath}\`.`;
 
   if (ctx.mode === "dry" || ctx.mode === "checklist" || ctx.mode === "script") {
     return { status: "success", result: { filePath } };
