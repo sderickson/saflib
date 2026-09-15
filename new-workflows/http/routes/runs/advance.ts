@@ -51,6 +51,23 @@ export const advanceWorkflowRunHandler = createHandler(async (req, res) => {
     });
   }
   const outcome = await result;
+
+  // The engine only returns a step's error message in this response — it's
+  // not part of the output stream drained above, so persist it as its own
+  // log line too. Otherwise the message only survives as long as the
+  // client that made this exact request holds onto the response (gone on
+  // reload, or if a different client polls the run afterwards).
+  if (outcome.status === "error") {
+    await appendWorkflowLog(ctx.dbKey, {
+      run_id: runId,
+      step_index: stepIndex,
+      channel: "tool",
+      level: "error",
+      content: outcome.message,
+      now: new Date(),
+    });
+  }
+
   publishRunChanged(runId);
 
   const response: NewWorkflowsResponseBody["advanceWorkflowRun"][200] = outcome;

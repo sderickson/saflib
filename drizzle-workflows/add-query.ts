@@ -16,14 +16,20 @@ import {
   type ParsePathOutput,
   type ParsePackageNameOutput,
 } from "@saflib/new-workflows";
-import { templatesProductRoot } from "@saflib/templates";
+import { templatesProductRoot, templatesSaflibRoot } from "@saflib/templates";
 
 const dbRoot = path.join(templatesProductRoot, "service", "db");
 const queryDir = path.join(dbRoot, "queries", "__group-name__");
 /** Anchors sharedPrefix at db/ (package already has these from product/init). */
 const typesLive = path.join(dbRoot, "types.ts");
 const errorsLive = path.join(dbRoot, "errors.ts");
-const refDoc = path.join(import.meta.dirname, "../drizzle/docs/03-queries.md");
+// `templatesSaflibRoot`, not `import.meta.dirname` — this module can be
+// loaded from a container's baked copy of saflib (e.g. dev-site-docker)
+// while the docs it should point at live in the *bind-mounted* checkout
+// dev-site actually operates on. `@saflib/templates` already resolves that
+// distinction via the SAFLIB_ROOT env override; reuse it instead of
+// re-deriving a self-relative path here.
+const refDoc = path.join(templatesSaflibRoot, "drizzle", "docs", "03-queries.md");
 
 interface AddDrizzleQueryInput {
   path: string;

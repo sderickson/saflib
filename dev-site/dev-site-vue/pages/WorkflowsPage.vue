@@ -1,5 +1,6 @@
 <template>
-  <v-container class="py-12" style="max-width: 56rem">
+  <div class="workflows-page">
+    <v-container class="py-12" style="max-width: 56rem">
     <div class="d-flex align-center mb-6">
       <v-btn variant="text" :to="hubPath" class="mr-2">&larr; Hub</v-btn>
       <h1 class="text-h4">Workflows</h1>
@@ -114,7 +115,11 @@
       </v-card-title>
       <v-card-text>
         <div class="log-list mb-4">
-          <div v-for="log in logs" :key="log.id" :class="['log-line', `log-${log.channel}`]">
+          <div
+            v-for="log in logs"
+            :key="log.id"
+            :class="['log-line', `log-${log.channel}`, { 'log-error': log.level === 'error' }]"
+          >
             <span class="log-channel">[{{ log.channel }}]</span> {{ log.content }}
           </div>
         </div>
@@ -124,6 +129,15 @@
         <div v-if="run?.status === 'awaiting_user'" class="mb-4">
           <em>{{ (advanceMutation.data.value as { message?: string } | undefined)?.message }}</em>
         </div>
+        <v-alert
+          v-if="run?.status === 'failed'"
+          type="error"
+          density="compact"
+          variant="tonal"
+          class="mb-4"
+        >
+          {{ failureMessage }}
+        </v-alert>
         <v-btn
           color="primary"
           :loading="advanceMutation.isPending.value"
@@ -134,7 +148,8 @@
         </v-btn>
       </v-card-text>
     </v-card>
-  </v-container>
+    </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -259,6 +274,19 @@ const logs = computed(() => logsQuery.data.value?.logs ?? []);
 const advanceMutation = useAdvanceWorkflowRunMutation();
 useRunEvents(activeRunId);
 
+/**
+ * Prefer this session's own failing `advance` response (freshest, and
+ * present even before the log-persist round-trip finishes); fall back to
+ * the last error-level log line, since `advance.ts` persists the message
+ * there too — so a failure still explains itself after a page reload.
+ */
+const failureMessage = computed(() => {
+  const fromMutation = (advanceMutation.data.value as { message?: string } | undefined)?.message;
+  if (fromMutation) return fromMutation;
+  const lastError = [...logs.value].reverse().find((l) => l.level === "error");
+  return lastError?.content ?? "Failed — no error details available.";
+});
+
 const statusColor = computed(() => {
   switch (run.value?.status) {
     case "done":
@@ -275,6 +303,10 @@ const statusColor = computed(() => {
 </script>
 
 <style scoped>
+.workflows-page {
+  height: 100%;
+  overflow-y: auto;
+}
 .log-list {
   max-height: 24rem;
   overflow-y: auto;
@@ -301,5 +333,9 @@ const statusColor = computed(() => {
 }
 .log-terminal {
   opacity: 0.7;
+}
+.log-error {
+  color: #f44336;
+  font-weight: 600;
 }
 </style>
