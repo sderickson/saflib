@@ -40,7 +40,18 @@
     "http-errors": "*",
     "yaml": "^2.9.0",
     "@saflib/utils": "*",
-    "@saflib/drizzle-workflows": "*"
+    "@saflib/drizzle-workflows": "*",
+    "@saflib/service-workflows": "*",
+    "@saflib/express-workflows": "*",
+    "@saflib/monorepo-workflows": "*",
+    "@saflib/commander-workflows": "*",
+    "@saflib/sdk-workflows": "*",
+    "@saflib/openapi-workflows": "*",
+    "@saflib/env-workflows": "*",
+    "@saflib/integrations-workflows": "*",
+    "@saflib/email-service-workflows": "*",
+    "@saflib/cron-http-workflows": "*",
+    "@saflib/jobs-http-workflows": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

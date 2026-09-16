@@ -16,26 +16,54 @@ describe("workflows routes (mounted into dev-site-http)", () => {
     releaseSlimRouteTest(ctx.lease);
   });
 
-  it("GET /api/workflows lists the registry through the real mount", async () => {
+  it("GET /api/workflows lists the registry through the real mount, including ported workflows", async () => {
     ctx = acquireRouterSlimRouteTest(createWorkflowsRouter);
 
     const response = await request(ctx.app).get("/api/workflows");
 
     expect(response.status).toBe(200);
-    expect(response.body.workflows).toEqual([
-      {
-        id: "example/hello",
-        description: HelloWorkflowDefinition.description,
-        source: "code",
-        inputSchema: HelloWorkflowDefinition.inputSchema,
-      },
-      {
-        id: "drizzle/add-query",
-        description: AddDrizzleQueryWorkflowDefinition.description,
-        source: "code",
-        inputSchema: AddDrizzleQueryWorkflowDefinition.inputSchema,
-      },
-    ]);
+    const ids = response.body.workflows.map((w: { id: string }) => w.id);
+    // Not an exact-list assertion — the registry grows as more workflows get
+    // ported off the old XState engine; just prove the mount actually wires
+    // up the whole registry (one representative id per ported package).
+    expect(ids).toEqual(expect.arrayContaining([
+      "example/hello",
+      "drizzle/add-query",
+      "drizzle/update-schema",
+      "service/add-store",
+      "express/add-handler",
+      "monorepo/add-export",
+      "monorepo/add-package",
+      "commander/add-cli",
+      "commander/add-command",
+      "sdk/add-component",
+      "sdk/add-mutation",
+      "sdk/add-query",
+      "openapi/route",
+      "openapi/schema",
+      "openapi/add-event",
+      "env/add-var",
+      "integrations/add-call",
+      "email/add-template",
+      "cron/add-job",
+      "jobs/add-job",
+    ]));
+    expect(new Set(ids).size).toBe(ids.length);
+
+    const hello = response.body.workflows.find((w: { id: string }) => w.id === "example/hello");
+    expect(hello).toEqual({
+      id: "example/hello",
+      description: HelloWorkflowDefinition.description,
+      source: "code",
+      inputSchema: HelloWorkflowDefinition.inputSchema,
+    });
+    const addQuery = response.body.workflows.find((w: { id: string }) => w.id === "drizzle/add-query");
+    expect(addQuery).toEqual({
+      id: "drizzle/add-query",
+      description: AddDrizzleQueryWorkflowDefinition.description,
+      source: "code",
+      inputSchema: AddDrizzleQueryWorkflowDefinition.inputSchema,
+    });
   });
 
   it("a run's default cwd is dev-site's own repo_root", async () => {

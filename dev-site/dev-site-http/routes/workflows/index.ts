@@ -2,9 +2,42 @@ import path from "node:path";
 import type { IRouter } from "express";
 import { newWorkflowsDbManager } from "@saflib/new-workflows-db/instances";
 import { createNewWorkflowsRouter } from "@saflib/new-workflows-http";
-import { HelloWorkflowDefinition } from "@saflib/new-workflows";
-import { AddDrizzleQueryWorkflowDefinition } from "@saflib/drizzle-workflows";
+import { HelloWorkflowDefinition, type WorkflowDefinition } from "@saflib/new-workflows";
+import drizzleWorkflows from "@saflib/drizzle-workflows";
+import serviceWorkflows from "@saflib/service-workflows";
+import expressWorkflows from "@saflib/express-workflows";
+import monorepoWorkflows from "@saflib/monorepo-workflows";
+import commanderWorkflows from "@saflib/commander-workflows";
+import sdkWorkflows from "@saflib/sdk-workflows";
+import openapiWorkflows from "@saflib/openapi-workflows";
+import envWorkflows from "@saflib/env-workflows";
+import integrationsWorkflows from "@saflib/integrations-workflows";
+import emailServiceWorkflows from "@saflib/email-service-workflows";
+import cronHttpWorkflows from "@saflib/cron-http-workflows";
+import jobsHttpWorkflows from "@saflib/jobs-http-workflows";
 import { devSiteHttpStorage } from "../../context.ts";
+
+/**
+ * Every registered code workflow, ported package by package off the old
+ * XState engine (see the individual `*-workflows` packages). Still
+ * hand-written — no registry-building tool exists yet (same note as the
+ * CLI's own registry).
+ */
+const registry: WorkflowDefinition<any, any>[] = [
+  HelloWorkflowDefinition,
+  ...drizzleWorkflows,
+  ...serviceWorkflows,
+  ...expressWorkflows,
+  ...monorepoWorkflows,
+  ...commanderWorkflows,
+  ...sdkWorkflows,
+  ...openapiWorkflows,
+  ...envWorkflows,
+  ...integrationsWorkflows,
+  ...emailServiceWorkflows,
+  ...cronHttpWorkflows,
+  ...jobsHttpWorkflows,
+];
 
 // A local dev tool, not a server: default to a real on-disk db so runs
 // persist across dev-site restarts, without requiring deployment env vars
@@ -35,7 +68,7 @@ export function createWorkflowsRouter(): IRouter {
 
   return createNewWorkflowsRouter({
     dbKey,
-    registry: [HelloWorkflowDefinition, AddDrizzleQueryWorkflowDefinition],
+    registry,
     // dev-site-http's own `repo_root` isn't known until *its* per-request
     // context is set up, so this is resolved fresh per request.
     defaultCwd: () => devSiteHttpStorage.getStore()!.repo_root,

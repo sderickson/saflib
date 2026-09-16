@@ -1,0 +1,31 @@
+{
+  "name": "@saflib/express-workflows",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "New-engine (sqlite-backed) workflows for scaffolding @saflib/express route handlers.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/new-workflows": "*",
+    "@saflib/new-workflows-db": "*",
+    "@saflib/service-workflows": "*",
+    "@saflib/templates": "*",
+    "@saflib/utils": "*"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@saflib/vitest": "*",
+    "@saflib/monorepo": "*"
+  },
+  "sideEffects": false
+}
