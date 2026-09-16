@@ -7,6 +7,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "esbuild": "^0.27.0",
     "vitepress": "^1.6.3"
   },
   "sideEffects": false
