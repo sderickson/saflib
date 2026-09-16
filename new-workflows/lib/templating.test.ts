@@ -7,6 +7,7 @@ import {
   parsePackageName,
   parsePath,
   makeLineReplace,
+  isSkippedStubRefLine,
 } from "./templating.ts";
 
 describe("getPackageName", () => {
@@ -98,5 +99,59 @@ describe("makeLineReplace", () => {
   it("throws on an unresolved placeholder", () => {
     const lineReplace = makeLineReplace({ targetName: "get-by-id" });
     expect(() => lineReplace("const __other-thing__ = 1;")).toThrow(/Missing replacement/);
+  });
+
+  it("drops a package.json dependency line referencing a skipped stub, instead of throwing", () => {
+    const lineReplace = makeLineReplace({ serviceName: "widgets-common" });
+    expect(
+      lineReplace('    "@saflib/base-__integration-name__-integration": "*",'),
+    ).toBe("");
+  });
+
+  it("drops a tsconfig project reference to a skipped stub, instead of throwing", () => {
+    const lineReplace = makeLineReplace({ serviceName: "widgets-common" });
+    expect(lineReplace('{ "path": "../integrations/__integration-name__" }')).toBe("");
+    expect(lineReplace('      "path": "../integrations/__integration-name__"')).toBe(
+      "",
+    );
+  });
+
+  it("drops a JS/TS import from a skipped stub module, instead of throwing", () => {
+    const lineReplace = makeLineReplace({ serviceName: "widgets-common" });
+    expect(
+      lineReplace(
+        "import { configure__IntegrationName__ } from \"@saflib/base-__integration-name__-integration\";",
+      ),
+    ).toBe("");
+  });
+
+  it("still resolves a legitimately-templated import (not a skipped-stub reference)", () => {
+    const lineReplace = makeLineReplace({ serviceName: "identity-db" });
+    expect(lineReplace("import { __service-name__ } from './__service-name__'")).toBe(
+      "import { identity-db } from './identity-db'",
+    );
+  });
+});
+
+describe("isSkippedStubRefLine", () => {
+  it("matches package.json dependency, tsconfig path, and import/export from lines", () => {
+    expect(
+      isSkippedStubRefLine('"@saflib/base-__integration-name__-integration": "*"'),
+    ).toBe(true);
+    expect(isSkippedStubRefLine('"path": "../integrations/__integration-name__"')).toBe(
+      true,
+    );
+    expect(isSkippedStubRefLine("export { x } from './__group-name__/index.ts';")).toBe(
+      true,
+    );
+  });
+
+  it("does not match lines with no __xxx__ token at all", () => {
+    expect(isSkippedStubRefLine('"@saflib/base-cron": "*"')).toBe(false);
+    expect(isSkippedStubRefLine("import { x } from './y.ts'")).toBe(false);
+  });
+
+  it("does not match a Caddy-style import with no `from` keyword", () => {
+    expect(isSkippedStubRefLine("import __product-name__.Caddyfile")).toBe(false);
   });
 });

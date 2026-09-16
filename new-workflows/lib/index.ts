@@ -3,7 +3,11 @@ export * from "./output.ts";
 export { defineWorkflow, step, createRun, advanceRun } from "./engine.ts";
 export { stepSkipIf } from "./conditional-step.ts";
 
-export { runCopyStep, type CopyStepInput } from "./steps/copy/copy-step.ts";
+export {
+  runCopyStep,
+  repairJsonAfterDroppedLines,
+  type CopyStepInput,
+} from "./steps/copy/copy-step.ts";
 export { runUpdateStep, type UpdateStepInput } from "./steps/update.ts";
 export { runPromptStep, type PromptStepInput } from "./steps/prompt.ts";
 export { runCommandStep, type CommandStepInput } from "./steps/command.ts";
@@ -42,6 +46,7 @@ export {
   parsePackageName,
   parsePath,
   makeLineReplace,
+  isSkippedStubRefLine,
   type ParsePackageNameInput,
   type ParsePackageNameOutput,
   type ParsePathInput,

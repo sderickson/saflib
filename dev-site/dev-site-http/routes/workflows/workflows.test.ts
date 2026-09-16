@@ -54,11 +54,8 @@ describe("workflows routes (mounted into dev-site-http)", () => {
       "cron/init",
       "jobs/init",
       "processes/spec-project",
+      "service/init-common",
     ]));
-    // Deliberately NOT registered — see service-workflows/index.ts's comment:
-    // `service/init-common` throws on a fresh copy due to a pre-existing
-    // template/workflow coupling issue unrelated to this port.
-    expect(ids).not.toContain("service/init-common");
     expect(new Set(ids).size).toBe(ids.length);
 
     const hello = response.body.workflows.find((w: { id: string }) => w.id === "example/hello");

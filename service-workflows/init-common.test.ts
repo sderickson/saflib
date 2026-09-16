@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { DbKey } from "@saflib/new-workflows-db";
@@ -22,14 +22,7 @@ describe("service/init-common (ported to the new engine)", () => {
     newWorkflowsDbManager.clearAllTablesForTests(dbKey);
   });
 
-  // See the KNOWN BROKEN comment in init-common.ts: `base/service/common/
-  // dependencies.ts` has a `__integration-name__` placeholder only
-  // `integrations/init` ever supplies, so a fresh copy always throws
-  // during placeholder substitution — predating this port (the old
-  // engine's identical `makeLineReplace` would throw the same way). This
-  // test documents that current, pre-existing behavior rather than
-  // asserting a success this workflow can't currently reach.
-  it("fails on a fresh copy due to an unrelated pre-existing template/workflow coupling issue", async () => {
+  it("copies the service-common package stub, dropping the skipped-stub dependency line", async () => {
     const cwd = mkdtempSync(path.join(tmpdir(), "service-init-common-"));
 
     const runId = await createRun(dbKey, InitCommonWorkflowDefinition, {
@@ -38,12 +31,26 @@ describe("service/init-common (ported to the new engine)", () => {
       mode: "script",
     });
 
+    // Just the first ("copy") step — the "cd"/"command" steps that follow
+    // need a real installable package tree to run against.
     const { output, result } = advanceRun(dbKey, InitCommonWorkflowDefinition, runId);
     await collectOutput(output);
     const outcome = await result;
-    expect(outcome).toEqual({
-      status: "error",
-      message: "Missing replacement for __integration-name__",
-    });
+    expect(outcome.status).toBe("success");
+
+    const packageJsonPath = path.join(
+      cwd,
+      "services",
+      "widgets-service-common",
+      "package.json",
+    );
+    const packageJson = readFileSync(packageJsonPath, "utf-8");
+    // This workflow's own lineReplace has no "@saflib/base-*" package-name
+    // remapping (unlike e.g. drizzle/express's), so the golden package name
+    // is faithfully carried through unchanged — same pre-existing behavior
+    // as the old engine's version. Once dropped in per makeLineReplace's
+    // isSkippedStubRefLine handling, not left half-templated:
+    expect(packageJson).toContain('"name": "@saflib/base-service-common"');
+    expect(packageJson).not.toContain("__integration-name__");
   });
 });

@@ -3,6 +3,7 @@ import {
   parsePackageName,
   parsePath,
   makeLineReplace,
+  isSkippedStubRefLine,
   type ParsePackageNameInput,
   type ParsePathInput,
 } from "./templating.ts";
@@ -404,6 +405,81 @@ export const createUser = async (data: CreateUserData) => {
       const result = lineReplace(template);
 
       expect(result).toBe(expected);
+    });
+
+    it("drops a package.json dependency line referencing a skipped stub, instead of throwing", () => {
+      const context = { serviceName: "widgets-common" };
+      const lineReplace = makeLineReplace(context);
+
+      const result = lineReplace(
+        '    "@saflib/base-__integration-name__-integration": "*",',
+      );
+
+      expect(result).toBe("");
+    });
+
+    it("drops a tsconfig project reference to a skipped stub, instead of throwing", () => {
+      const context = { serviceName: "widgets-common" };
+      const lineReplace = makeLineReplace(context);
+
+      expect(lineReplace('{ "path": "../integrations/__integration-name__" }')).toBe("");
+      expect(
+        lineReplace('      "path": "../integrations/__integration-name__"'),
+      ).toBe("");
+    });
+
+    it("drops a JS/TS import from a skipped stub module, instead of throwing", () => {
+      const context = { serviceName: "widgets-common" };
+      const lineReplace = makeLineReplace(context);
+
+      const result = lineReplace(
+        "import { configure__IntegrationName__ } from \"@saflib/base-__integration-name__-integration\";",
+      );
+
+      expect(result).toBe("");
+    });
+
+    it("still throws for a genuinely unresolvable token that isn't a skipped-stub reference", () => {
+      const context = { serviceName: "widgets-common" };
+      const lineReplace = makeLineReplace(context);
+
+      expect(() => lineReplace("const x = '__totally-unknown-token__';")).toThrow(
+        "Missing replacement for __totally-unknown-token__",
+      );
+    });
+
+    it("still resolves a legitimately-templated import (not a skipped-stub reference)", () => {
+      const context = { serviceName: "identity-db" };
+      const lineReplace = makeLineReplace(context);
+
+      const result = lineReplace(
+        "import { __service-name__ } from './__service-name__'",
+      );
+
+      expect(result).toBe("import { identity-db } from './identity-db'");
+    });
+  });
+
+  describe("isSkippedStubRefLine", () => {
+    it("matches package.json dependency, tsconfig path, and import/export from lines", () => {
+      expect(
+        isSkippedStubRefLine('"@saflib/base-__integration-name__-integration": "*"'),
+      ).toBe(true);
+      expect(
+        isSkippedStubRefLine('"path": "../integrations/__integration-name__"'),
+      ).toBe(true);
+      expect(
+        isSkippedStubRefLine("export { x } from './__group-name__/index.ts';"),
+      ).toBe(true);
+    });
+
+    it("does not match lines with no __xxx__ token at all", () => {
+      expect(isSkippedStubRefLine('"@saflib/base-cron": "*"')).toBe(false);
+      expect(isSkippedStubRefLine("import { x } from './y.ts'")).toBe(false);
+    });
+
+    it("does not match a Caddy-style import with no `from` keyword", () => {
+      expect(isSkippedStubRefLine("import __product-name__.Caddyfile")).toBe(false);
     });
   });
 });

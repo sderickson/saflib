@@ -148,6 +148,22 @@ function processFileContent(
   );
 }
 
+/**
+ * Repairs the two shapes a dropped line (see `isSkippedStubRefLine` in
+ * `templating.ts`) can leave behind in JSON content: an empty `{ }` object
+ * (a dropped multi-line `{ "path": "...__xxx__..." }` reference) and a
+ * dangling trailing comma before `]`/`}` (the dropped line was the last
+ * entry). Ported from `product/workflows/strip-stub-tsconfig-refs.ts`'s
+ * `repairTsconfigJsonText` — that repair ran as a separate cleanup command
+ * step *after* product/init's copy, which only products remembering to
+ * run it (or wire it in) benefited from. Folding it into the copy step
+ * itself means every workflow's JSON output is valid immediately, with no
+ * separate step required.
+ */
+export function repairJsonAfterDroppedLines(raw: string): string {
+  return raw.replace(/\{\s*\},?\s*/g, "").replace(/,(\s*[\]}])/g, "$1");
+}
+
 /** Flattens directory template sources into individual file entries. */
 function flattenTemplateFiles(input: CopyStepInput): Record<string, string> {
   const flattened: Record<string, string> = {};
@@ -254,7 +270,11 @@ async function copyAndRenameOneFile(params: {
         workflowId,
         flags,
       );
-      await writeFile(targetPath, updated.join("\n"));
+      let finalContent = updated.join("\n");
+      if (path.extname(targetPath).toLowerCase() === ".json") {
+        finalContent = repairJsonAfterDroppedLines(finalContent);
+      }
+      await writeFile(targetPath, finalContent);
     }
   }
 

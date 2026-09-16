@@ -161,6 +161,39 @@ export function parsePath(rawPath: string, input: ParsePathInput): ParsePathOutp
 }
 
 /**
+ * True for a line that only *references* a skipped expansion stub (a
+ * `__xxx__`-named package/path excluded from a bulk copy via
+ * `skipSourceGlobs`, e.g. `service/integrations/__integration-name__/`) —
+ * a package.json dependency entry, a tsconfig project reference, or a
+ * JS/TS import/export `from` a stub module. These can never be resolved by
+ * the copying workflow's own context (the placeholder belongs to a
+ * *different*, not-yet-run workflow, e.g. `integrations/init`), so
+ * `makeLineReplace` drops the whole line instead of throwing — ported from
+ * the old engine's `product/workflows/init.ts`-local `isSkippedStubRefLine`,
+ * promoted here (and into the old engine's own shared `templating.ts`) so
+ * every workflow gets the same protection, not just product/init.
+ */
+export function isSkippedStubRefLine(line: string): boolean {
+  if (!/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(line)) return false;
+  // package.json dependency on a skipped stub package
+  if (/^\s*"@[^"]*__[^"]*"\s*:/.test(line)) return true;
+  // tsconfig project reference (single- or multi-line `"path"` entry)
+  if (/"path"\s*:\s*"[^"]*__[^"]*"/.test(line)) return true;
+  if (/^\s*\{\s*"path"\s*:\s*"[^"]*__[^"]*"\s*\}\s*,?\s*$/.test(line)) {
+    return true;
+  }
+  // JS/TS import/export of skipped stub modules (e.g. schemas/__group-name__.ts).
+  // Require `from` so Caddy `import __product-name__.Caddyfile` is not dropped.
+  if (
+    /^\s*(export|import)\b/.test(line) &&
+    /\bfrom\s+['"][^'"]*__[^'"]*['"]/.test(line)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Builds a `lineReplace` function for `CopyStepInput` from a context
  * object (camelCase keys -> kebab-case-ish values): finds `__variables__`
  * (in kebab/snake/Pascal/camel/SNAKE case variants) and substitutes them.
@@ -196,6 +229,15 @@ export function makeLineReplace(
       const unique = [...new Set(matches)].sort((a, b) => b.length - a.length);
       for (const match of unique) {
         if (replaceMap[match] === undefined) {
+          // Only reached for a token this context genuinely can't resolve —
+          // a legitimately-templated (resolvable) line never gets here. If
+          // the whole line is just a reference to a *different* workflow's
+          // skipped expansion stub (package.json dep / tsconfig path /
+          // import-export from a __xxx__ module), drop the line instead of
+          // throwing — see `isSkippedStubRefLine`.
+          if (isSkippedStubRefLine(line)) {
+            return "";
+          }
           throw new Error(`Missing replacement for ${match}`);
         }
         newLine = newLine.replaceAll(match, replaceMap[match]);

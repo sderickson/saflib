@@ -34,18 +34,6 @@ interface InitCommonWorkflowContext extends ParsePackageNameOutput {
  *
  * @deprecated Prefer product/init (copies base service/common) and domain
  * offshoot init workflows. Offshoots reuse the parent common package.
- *
- * KNOWN BROKEN against the current `base/service/common` templates,
- * independent of this port: `dependencies.ts` has a `__integration-name__`
- * placeholder inside a `WORKFLOW AREA integration-imports FOR
- * integrations/init` block — a token only `integrations/init` ever
- * supplies, not this workflow's own context. A fresh (never-copied-before)
- * `service/init-common` run hits the copy step's full-file
- * placeholder substitution, which throws "Missing replacement for
- * __integration-name__". The old XState engine's `makeLineReplace` has
- * the identical throw-on-missing behavior, so this reproduces there too —
- * it's a template/workflow coupling issue predating this port, not
- * introduced by it. Not wired into the registry until that's resolved.
  */
 export const InitCommonWorkflowDefinition = defineWorkflow<
   InitCommonInput,

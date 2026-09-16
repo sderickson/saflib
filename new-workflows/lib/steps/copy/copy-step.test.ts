@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { runCopyStep } from "./copy-step.ts";
+import { runCopyStep, repairJsonAfterDroppedLines } from "./copy-step.ts";
 import { makeTestContext } from "../../test-helpers.ts";
 import { makeLineReplace } from "../../templating.ts";
 
@@ -128,5 +128,63 @@ describe("runCopyStep", () => {
 
     expect(result).toEqual({ status: "success", result: { copiedFiles: {} } });
     expect(existsSync(path.join(targetDir, "file.ts"))).toBe(false);
+  });
+
+  it("produces valid JSON when a dropped skipped-stub line was a tsconfig array's last entry", async () => {
+    // Reproduces `service/init-common`'s tsconfig.json: a single-line
+    // `{ "path": "...__xxx__..." }` reference with no trailing comma (last
+    // array entry) — dropping it (see makeLineReplace's isSkippedStubRefLine
+    // handling) leaves a dangling comma on the *previous* entry, which
+    // repairJsonAfterDroppedLines must clean up so the output stays valid.
+    const sourceDir = mkdtempSync(path.join(tmpdir(), "copy-step-source-"));
+    const sourcePath = path.join(sourceDir, "tsconfig.json");
+    writeFileSync(
+      sourcePath,
+      [
+        "{",
+        '  "references": [',
+        "    {",
+        '      "path": "../db"',
+        "    },",
+        '    { "path": "../integrations/__integration-name__" }',
+        "  ]",
+        "}",
+        "",
+      ].join("\n"),
+    );
+    const targetDir = mkdtempSync(path.join(tmpdir(), "copy-step-target-"));
+    const { ctx } = makeTestContext({ mode: "run" });
+    const lineReplace = makeLineReplace({ serviceName: "widgets-common" });
+
+    const result = await runCopyStep(
+      { templateFiles: { tsconfig: sourcePath }, targetDir, lineReplace },
+      ctx,
+    );
+
+    expect(result.status).toBe("success");
+    const content = readFileSync(path.join(targetDir, "tsconfig.json"), "utf-8");
+    expect(() => JSON.parse(content)).not.toThrow();
+    expect(JSON.parse(content).references).toEqual([{ path: "../db" }]);
+  });
+});
+
+describe("repairJsonAfterDroppedLines", () => {
+  it("removes a dangling trailing comma left before a closing bracket", () => {
+    const input = '{\n  "a": [\n    "x",\n    \n  ]\n}\n';
+    const repaired = repairJsonAfterDroppedLines(input);
+    expect(() => JSON.parse(repaired)).not.toThrow();
+    expect(JSON.parse(repaired)).toEqual({ a: ["x"] });
+  });
+
+  it("removes an empty object left by a dropped multi-line reference", () => {
+    const input = '{\n  "references": [\n    { "path": "../db" },\n    {\n    },\n  ]\n}\n';
+    const repaired = repairJsonAfterDroppedLines(input);
+    expect(() => JSON.parse(repaired)).not.toThrow();
+    expect(JSON.parse(repaired).references).toEqual([{ path: "../db" }]);
+  });
+
+  it("leaves already-valid JSON unchanged in substance", () => {
+    const input = '{\n  "a": [\n    "x",\n    "y"\n  ]\n}\n';
+    expect(JSON.parse(repairJsonAfterDroppedLines(input))).toEqual({ a: ["x", "y"] });
   });
 });
