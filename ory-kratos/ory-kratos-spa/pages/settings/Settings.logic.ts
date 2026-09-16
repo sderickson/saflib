@@ -26,6 +26,7 @@ export function settingsFlowHasPasswordRecoveryMessage(
 
 /** SPA-only query `tab=` values; must match {@link Settings.vue} tab model. */
 const SETTINGS_TAB_QUERY_VALUES = [
+  "profile",
   "email",
   "password",
   "totp",
@@ -34,6 +35,13 @@ const SETTINGS_TAB_QUERY_VALUES = [
 ] as const;
 
 export type SettingsTabQueryValue = (typeof SETTINGS_TAB_QUERY_VALUES)[number];
+
+/**
+ * Which Kratos profile traits to show as editable fields.
+ * Omitted traits stay in the form as `type: "hidden"` so profile submits still
+ * send a complete traits object (Kratos replaces traits; omitting would wipe them).
+ */
+export type ProfileSettingsFields = "email" | "profile" | "all";
 
 /** Parses the `tab` query param for the settings page (not validated against available groups). */
 export function parseSettingsTabQuery(
@@ -147,6 +155,69 @@ export function settingsNodesForGroup(
     return dedupeKratosProfileTraitNodes(filtered);
   }
   return filtered;
+}
+
+/** True when the node is a Kratos `traits.email` (or escaped equivalent) input. */
+export function isKratosEmailTraitInputNode(node: UiNode): boolean {
+  if (!isKratosInputNode(node)) return false;
+  const name = node.attributes.name;
+  if (typeof name !== "string") return false;
+  return normalizeKratosTraitPathFromFormKey(name) === "email";
+}
+
+function isKratosTraitInputNode(node: UiNode): boolean {
+  return (
+    isKratosInputNode(node) &&
+    typeof node.attributes.name === "string" &&
+    node.attributes.name.startsWith("traits.")
+  );
+}
+
+/**
+ * Restrict which profile traits are editable. Non-matching trait inputs become
+ * hidden so their current values still submit with the profile method.
+ */
+export function applyProfileSettingsFieldFilter(
+  nodes: readonly UiNode[],
+  fields: ProfileSettingsFields,
+): UiNode[] {
+  if (fields === "all") {
+    return [...nodes];
+  }
+  return nodes.map((node) => {
+    if (!isKratosTraitInputNode(node)) return node;
+    const isEmail = isKratosEmailTraitInputNode(node);
+    const keepVisible = fields === "email" ? isEmail : !isEmail;
+    if (keepVisible) return node;
+    if (node.attributes.type === "hidden") return node;
+    return {
+      ...node,
+      attributes: { ...node.attributes, type: "hidden" as const },
+    };
+  });
+}
+
+/** True when at least one non-hidden, non-submit input would render in the UI. */
+export function settingsNodesHaveVisibleInputs(nodes: readonly UiNode[]): boolean {
+  return nodes.some((node) => {
+    if (!isKratosInputNode(node)) return false;
+    const t = node.attributes.type;
+    return t !== "hidden" && t !== "submit" && t !== "button";
+  });
+}
+
+/**
+ * Profile-group nodes for the email or profile settings section (hidden traits
+ * preserve a full traits payload on submit).
+ */
+export function settingsNodesForProfileFields(
+  flow: SettingsFlow,
+  fields: Exclude<ProfileSettingsFields, "all">,
+): UiNode[] {
+  return applyProfileSettingsFieldFilter(
+    settingsNodesForGroup(flow, "profile"),
+    fields,
+  );
 }
 
 /**

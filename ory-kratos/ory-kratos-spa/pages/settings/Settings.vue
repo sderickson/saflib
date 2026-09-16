@@ -54,12 +54,24 @@
 
         <div class="settings-panel flex-grow-1">
           <v-window v-model="tab" class="settings-window">
+            <v-window-item value="profile">
+              <SettingsGroupUi
+                :flow="flow"
+                group="profile"
+                profile-fields="profile"
+                :submitting="submitting"
+                id-prefix="settings-profile"
+                :message-filter="settingsMessageFilter"
+                @submit="submitSettingsForm"
+              />
+            </v-window-item>
             <v-window-item value="email">
               <SettingsGroupUi
                 :flow="flow"
                 group="profile"
+                profile-fields="email"
                 :submitting="submitting"
-                id-prefix="settings-profile"
+                id-prefix="settings-email"
                 :message-filter="settingsMessageFilter"
                 @submit="submitSettingsForm"
               />
@@ -291,7 +303,7 @@ const flowIdForSubmit = computed(() => flow.value?.id ?? "");
 
 type SettingsSectionTab = Exclude<SettingsTabQueryValue, "passkey">;
 
-const tab = ref<SettingsSectionTab>("email");
+const tab = ref<SettingsSectionTab>("profile");
 
 const { data: kratosSession, isPending: kratosSessionPending } =
   useKratosSession();
@@ -445,7 +457,8 @@ const hasTotpSettings = computed(() =>
 
 const sidebarItems = computed((): { value: SettingsSectionTab; title: string }[] => {
   const items: { value: SettingsSectionTab; title: string; show: boolean }[] = [
-    { value: "email", title: t(tabs.general), show: true },
+    { value: "profile", title: t(tabs.profile), show: true },
+    { value: "email", title: t(tabs.email), show: true },
     { value: "password", title: t(tabs.password), show: true },
     { value: "totp", title: t(tabs.totp), show: hasTotpSettings.value },
     { value: "sessions", title: t(tabs.sessions), show: true },
@@ -514,7 +527,7 @@ watch(
 );
 
 watch([tab, hasTotpSettings], () => {
-  if (tab.value === "totp" && !hasTotpSettings.value) tab.value = "email";
+  if (tab.value === "totp" && !hasTotpSettings.value) tab.value = "profile";
 });
 
 watch(tab, (next, prev) => {
