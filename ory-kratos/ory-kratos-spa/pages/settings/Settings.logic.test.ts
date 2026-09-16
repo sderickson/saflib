@@ -329,6 +329,70 @@ describe("settingsNodesForGroup", () => {
     expect(settingsNodesHaveVisibleInputs(hiddenOnly)).toBe(false);
   });
 
+  it("treats linked-totp unlink submit as visible UI", () => {
+    expect(
+      settingsNodesHaveVisibleInputs([
+        {
+          type: "input",
+          group: "default",
+          attributes: {
+            node_type: "input",
+            name: "csrf_token",
+            type: "hidden",
+            value: "c",
+          },
+        },
+        {
+          type: "input",
+          group: "default",
+          attributes: {
+            node_type: "input",
+            name: "method",
+            type: "submit",
+            value: "totp",
+          },
+        },
+        {
+          type: "input",
+          group: "totp",
+          attributes: {
+            node_type: "input",
+            name: "totp_unlink",
+            type: "submit",
+            value: "true",
+          },
+        },
+      ] as UiNode[]),
+    ).toBe(true);
+  });
+
+  it("does not treat lone method submit as visible UI", () => {
+    expect(
+      settingsNodesHaveVisibleInputs([
+        {
+          type: "input",
+          group: "default",
+          attributes: {
+            node_type: "input",
+            name: "csrf_token",
+            type: "hidden",
+            value: "c",
+          },
+        },
+        {
+          type: "input",
+          group: "default",
+          attributes: {
+            node_type: "input",
+            name: "method",
+            type: "submit",
+            value: "profile",
+          },
+        },
+      ] as UiNode[]),
+    ).toBe(false);
+  });
+
   it("includes default-group webauthn.js script for passkey group so Ory hooks load", () => {
     const flow = {
       ui: {

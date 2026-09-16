@@ -197,12 +197,22 @@ export function applyProfileSettingsFieldFilter(
   });
 }
 
-/** True when at least one non-hidden, non-submit input would render in the UI. */
+/** True when at least one control would render in the UI (fields, QR/img, or
+ * action submits like `totp_unlink` / `passkey_remove`). Generic `method`
+ * submits alone do not count — those ride along with every group. */
 export function settingsNodesHaveVisibleInputs(nodes: readonly UiNode[]): boolean {
   return nodes.some((node) => {
+    if (node.type === "img" || node.type === "text" || node.type === "a") {
+      return true;
+    }
     if (!isKratosInputNode(node)) return false;
     const t = node.attributes.type;
-    return t !== "hidden" && t !== "submit" && t !== "button";
+    if (t === "hidden") return false;
+    if (t === "submit" || t === "button") {
+      const name = node.attributes.name;
+      return typeof name === "string" && name !== "method";
+    }
+    return true;
   });
 }
 
