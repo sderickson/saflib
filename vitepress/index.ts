@@ -1,1 +1,2 @@
-export { vitepressLeanJsRolldownCompat } from "./lean-js-plugin.ts";
+/** Shared VitePress dependency surface for SAF static sites / docs. */
+export {};
