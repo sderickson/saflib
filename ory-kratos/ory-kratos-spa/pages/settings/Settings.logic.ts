@@ -165,7 +165,11 @@ export function isKratosEmailTraitInputNode(node: UiNode): boolean {
   return normalizeKratosTraitPathFromFormKey(name) === "email";
 }
 
-function isKratosTraitInputNode(node: UiNode): boolean {
+function isKratosTraitInputNode(
+  node: UiNode,
+): node is UiNode & {
+  attributes: Extract<UiNode["attributes"], { node_type: "input" }>;
+} {
   return (
     isKratosInputNode(node) &&
     typeof node.attributes.name === "string" &&
