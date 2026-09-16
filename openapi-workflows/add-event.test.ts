@@ -49,4 +49,15 @@ describe("openapi/add-event (ported to the new engine)", () => {
     const eventPath = path.join(cwd, "events", "product_view.yaml");
     expect(readFileSync(eventPath, "utf-8")).toContain("product_view");
   });
+
+  it("threads a passed prompt into the update step's prompt text", () => {
+    const cwd = mkdtempSync(path.join(tmpdir(), "openapi-add-event-"));
+    const context = AddEventWorkflowDefinition.context({
+      input: { path: "./events/product-view.yaml", prompt: "user views a product detail page" },
+      cwd,
+    });
+    const updateStep = AddEventWorkflowDefinition.steps[1];
+    const stepInput = updateStep.input({ context }) as { prompt: string };
+    expect(stepInput.prompt).toContain("Task: user views a product detail page");
+  });
 });

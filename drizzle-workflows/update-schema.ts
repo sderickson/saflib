@@ -28,11 +28,13 @@ interface UpdateSchemaInput {
   file?: boolean;
   /** Ignore the plural check for the schema name. */
   ignorePlural?: boolean;
+  prompt?: string;
 }
 
 interface UpdateSchemaWorkflowContext extends ParsePathOutput {
   cwd: string;
   file: boolean;
+  prompt?: string;
 }
 
 /**
@@ -64,6 +66,11 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
         type: "boolean",
         description: "Ignore the plural check for the schema name",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the schema should actually look like, e.g. 'a todos table with title, completed, and due date'. Passed to the agent implementing it.",
+      },
     },
     required: ["path"],
   },
@@ -83,6 +90,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
       ...pathResult,
       cwd,
       file: input.file ?? false,
+      prompt: input.prompt,
     };
   },
 
@@ -100,7 +108,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, UpdateSchemaWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "schema",
-      prompt: `Update ${context.targetName}.ts to add the new table, or modify it.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update ${context.targetName}.ts to add the new table, or modify it.
 
 Use generateShortId() from @saflib/drizzle for primary key id columns (not crypto.randomUUID()).
 If there's a foreign key relationship, DO NOT set onDelete/onUpdate to cascade — leave the

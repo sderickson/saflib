@@ -48,4 +48,14 @@ describe("sdk/add-query (ported to the new engine)", () => {
     expect(content).toContain("GET");
     expect(content).not.toContain("__");
   });
+
+  it("threads a passed prompt into the update step's own prompt text", () => {
+    const context = AddSdkQueryWorkflowDefinition.context({
+      input: { path: "./requests/contacts/list.ts", urlPath: "/contacts", method: "get", prompt: "list contacts alphabetically" },
+      cwd: "/repo",
+    });
+    const updateStep = AddSdkQueryWorkflowDefinition.steps[1];
+    const stepInput = updateStep.input({ context }) as { prompt: string };
+    expect(stepInput.prompt).toContain("Task: list contacts alphabetically");
+  });
 });

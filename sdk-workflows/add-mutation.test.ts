@@ -45,4 +45,14 @@ describe("sdk/add-mutation (ported to the new engine)", () => {
     const content = readFileSync(mutationPath, "utf-8");
     expect(content).not.toContain("__");
   });
+
+  it("threads a passed prompt into the update step's own prompt text", () => {
+    const context = AddSdkMutationWorkflowDefinition.context({
+      input: { path: "./requests/contacts/create.ts", urlPath: "/contacts", method: "post", prompt: "create a contact from name and email" },
+      cwd: "/repo",
+    });
+    const updateStep = AddSdkMutationWorkflowDefinition.steps[1];
+    const stepInput = updateStep.input({ context }) as { prompt: string };
+    expect(stepInput.prompt).toContain("Task: create a contact from name and email");
+  });
 });

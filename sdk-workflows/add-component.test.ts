@@ -61,4 +61,24 @@ describe("sdk/add-component (ported to the new engine)", () => {
     const content = readFileSync(vueFile!, "utf-8");
     expect(content).not.toContain("__");
   });
+
+  it("threads a passed prompt into both update steps' own prompt text", () => {
+    const root = mkdtempSync(path.join(tmpdir(), "sdk-add-component-"));
+    const cwd = path.join(root, "service", "sdk");
+    mkdirSync(cwd, { recursive: true });
+    writeFileSync(
+      path.join(cwd, "package.json"),
+      JSON.stringify({ name: "@example/widgets-sdk" }, null, 2),
+    );
+
+    const context = AddComponentWorkflowDefinition.context({
+      input: { path: "./displays/contact-card", prompt: "a card showing a contact's name and email" },
+      cwd,
+    });
+    const [, vueUpdateStep, testUpdateStep] = AddComponentWorkflowDefinition.steps;
+    const vueInput = vueUpdateStep.input({ context }) as { prompt: string };
+    const testInput = testUpdateStep.input({ context }) as { prompt: string };
+    expect(vueInput.prompt).toContain("Task: a card showing a contact's name and email");
+    expect(testInput.prompt).toContain("It implements: a card showing a contact's name and email");
+  });
 });

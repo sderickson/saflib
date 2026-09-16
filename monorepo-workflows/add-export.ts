@@ -26,11 +26,14 @@ const exportDir = path.join(sourceDir, "__group-name__");
 
 interface AddExportInput {
   path: string;
+  /** What the export should actually do, e.g. "parse a kebab-case package name into its parts". */
+  prompt?: string;
 }
 
 interface AddExportWorkflowContext extends ParsePathOutput {
   cwd: string;
   packageName: string;
+  prompt?: string;
 }
 
 function readPackageName(cwd: string): string {
@@ -61,6 +64,11 @@ export const AddExportWorkflowDefinition = defineWorkflow<
         description:
           "Path of the new export module (e.g., './lib/myFunction.ts' or './http/headers.ts')",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the export should actually do, e.g. 'parse a kebab-case package name into its parts'. Passed to the agent implementing it.",
+      },
     },
     required: ["path"],
   },
@@ -77,6 +85,7 @@ export const AddExportWorkflowDefinition = defineWorkflow<
       ...pathResult,
       cwd,
       packageName: readPackageName(cwd),
+      prompt: input.prompt,
     };
   },
 
@@ -121,12 +130,12 @@ export const AddExportWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, AddExportWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "export",
-      prompt: `Update **${context.targetName}.ts** to implement the ${context.targetName} export.`,
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update **${context.targetName}.ts** to implement the ${context.targetName} export.`,
     })),
 
     step<UpdateStepInput, AddExportWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "test",
-      prompt: `Update **${context.targetName}.test.ts** to test the ${context.targetName} functionality.
+      prompt: `${context.prompt ? `The export implements: ${context.prompt}\n\n` : ""}Update **${context.targetName}.test.ts** to test the ${context.targetName} functionality.
 
 Prefer factories from product \`*-test\` packages when the unit under test deals with OpenAPI/service model shapes.`,
     })),

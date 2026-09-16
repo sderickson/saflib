@@ -21,11 +21,14 @@ const sourceDir = path.join(templatesProductRoot, "service", "spec");
 
 interface AddEventInput {
   path: string;
+  /** What the event should actually track, e.g. "user views a product detail page". Passed to the agent implementing it. */
+  prompt?: string;
 }
 
 interface AddEventWorkflowContext extends ParsePackageNameOutput, ParsePathOutput {
   eventName: string;
   targetDir: string;
+  prompt?: string;
 }
 
 /**
@@ -48,6 +51,11 @@ export const AddEventWorkflowDefinition = defineWorkflow<
         type: "string",
         description: "The path for the event (e.g., 'product_view' or 'cart_add')",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the event should actually track, e.g. 'user views a product detail page'. Passed to the agent implementing it.",
+      },
     },
     required: ["path"],
   },
@@ -67,6 +75,7 @@ export const AddEventWorkflowDefinition = defineWorkflow<
     return {
       ...context,
       eventName,
+      prompt: input.prompt,
     };
   },
 
@@ -86,7 +95,7 @@ export const AddEventWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, AddEventWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "event",
-      prompt: `Update **${context.eventName}.yaml**. Resolve all TODOs.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update **${context.eventName}.yaml**. Resolve all TODOs.
 
       Replace the template properties with actual event definition.
       `,

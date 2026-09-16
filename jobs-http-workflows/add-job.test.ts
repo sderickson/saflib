@@ -47,4 +47,22 @@ describe("jobs/add-job (ported to the new engine)", () => {
     const jobsPath = path.join(productRoot, "service", "jobs", "jobs.ts");
     expect(readFileSync(jobsPath, "utf-8")).toBeTruthy();
   });
+
+  it("threads the input prompt into the update-step prompt", () => {
+    const context = {
+      packageName: "@example/widgets-jobs",
+      serviceName: "widgets",
+      organizationName: "example",
+      sharedPackagePrefix: "@example/widgets",
+      callerOperationId: "startDemo",
+      targetOperationId: "demoStepB",
+      jobsDir: "/repo/service/jobs",
+      prompt: "resize the uploaded image and store thumbnails",
+    };
+    const updateStep = JobsAddJobWorkflowDefinition.steps[2];
+    const updateInput = updateStep.input({ context }) as { prompt: string };
+    expect(updateInput.prompt).toContain(
+      "Task: resize the uploaded image and store thumbnails",
+    );
+  });
 });

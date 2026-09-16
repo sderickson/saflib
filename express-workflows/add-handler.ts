@@ -35,6 +35,7 @@ interface AddHandlerInput {
   upload?: boolean;
   /** Return binary response (e.g. stream/send file from store or generated content). */
   download?: boolean;
+  prompt?: string;
 }
 
 interface AddHandlerWorkflowContext extends ParsePackageNameOutput, ParsePathOutput {
@@ -43,6 +44,7 @@ interface AddHandlerWorkflowContext extends ParsePackageNameOutput, ParsePathOut
   download: boolean;
   storeName: string;
   operationId: string;
+  prompt?: string;
 }
 
 /**
@@ -80,6 +82,11 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         type: "boolean",
         description: "Return binary response (e.g. stream/send file from store or generated content)",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the handler should actually do, e.g. 'list todos ordered by most-recently-updated'. Passed to the agent implementing it.",
+      },
     },
     required: ["path"],
   },
@@ -105,6 +112,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       operationId,
       upload: input.upload ?? false,
       download: input.download ?? false,
+      prompt: input.prompt,
     };
   },
 
@@ -155,7 +163,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, AddHandlerWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "handler",
-      prompt: `Implement the ${context.targetName} route handler.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Implement the ${context.targetName} route handler.
 
       Make sure to:
       - Use createHandler from @saflib/express
@@ -216,7 +224,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, AddHandlerWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "test",
-      prompt: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns.
+      prompt: `${context.prompt ? `The handler implements: ${context.prompt}\n\n` : ""}Update the generated ${context.targetName}.test.ts file following the testing guide patterns.
 
         * Make sure to implement proper test cases that cover both success and error scenarios.
         * Do not do any mocking. Databases are in memory, and integrations have fake implementations. Do not use vitest's mock!

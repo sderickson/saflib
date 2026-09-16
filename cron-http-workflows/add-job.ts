@@ -27,10 +27,13 @@ const overviewDoc = path.join(templatesSaflibRoot, "cron", "docs", "01-overview.
 
 interface CronAddJobInput {
   path: string;
+  /** What the job should actually do, e.g. "enqueue the weekly digest email every Monday at 9am". */
+  prompt?: string;
 }
 
 interface CronAddJobContext extends ParsePathOutput, ParsePackageNameOutput {
   jobsDir: string;
+  prompt?: string;
 }
 
 /**
@@ -52,6 +55,11 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       path: {
         type: "string",
         description: "Path of the new cron job (e.g., './jobs/notifications/send-reminders.ts')",
+      },
+      prompt: {
+        type: "string",
+        description:
+          "What the job should actually do, e.g. 'enqueue the weekly digest email every Monday at 9am'. Passed to the agent implementing it.",
       },
     },
     required: ["path"],
@@ -75,6 +83,7 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       }),
       targetDir: cwd,
       jobsDir,
+      prompt: input.prompt,
     };
   },
 
@@ -108,7 +117,7 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, CronAddJobContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "job",
-      prompt: `Finalize the ${context.targetName} declarative JobConfig. Make sure to:
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Finalize the ${context.targetName} declarative JobConfig. Make sure to:
         1. Set a real cron \`schedule\`
         2. Set \`enqueue.operationId\` to an existing (or newly added) background API operation
         3. Optionally set \`enqueue.request\`, \`enqueue.dedupeKey\` (default \`cron:{jobName}\`), and \`enqueue.priority\`
@@ -129,7 +138,7 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, CronAddJobContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "test",
-      prompt: `Update the generated ${context.targetName}.test.ts file to assert the declarative JobConfig.
+      prompt: `${context.prompt ? `The job implements: ${context.prompt}\n\n` : ""}Update the generated ${context.targetName}.test.ts file to assert the declarative JobConfig.
         
         * Assert schedule and enqueue.operationId are set
         * Assert there is no \`handler\` property
@@ -142,7 +151,7 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       runUpdateStep,
       ({ context }) => ({
         fileId: "jobs",
-        prompt: `Finalize the \`cron:${context.targetName}\` edge in service/jobs/jobs.ts (\`cron-trigger-map\` area). The target must be a background-tagged operationId matching enqueue.operationId.`,
+        prompt: `${context.prompt ? `The job implements: ${context.prompt}\n\n` : ""}Finalize the \`cron:${context.targetName}\` edge in service/jobs/jobs.ts (\`cron-trigger-map\` area). The target must be a background-tagged operationId matching enqueue.operationId.`,
       }),
     ),
 

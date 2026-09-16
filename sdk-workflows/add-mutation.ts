@@ -30,6 +30,8 @@ interface AddMutationInput {
   method: string;
   upload?: boolean;
   download?: boolean;
+  /** What the mutation should actually do, e.g. "execute a scan and return its id". */
+  prompt?: string;
 }
 
 interface AddMutationContext extends ParsePackageNameOutput, ParsePathOutput {
@@ -39,6 +41,7 @@ interface AddMutationContext extends ParsePackageNameOutput, ParsePathOutput {
   download: boolean;
   urlPath: string;
   method: string;
+  prompt?: string;
 }
 
 /** Ported from `sdk/workflows/add-mutation.ts` — same templates/prompts/step order. */
@@ -74,6 +77,11 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
         type: "boolean",
         description: "Mutation returns binary (e.g. blob/arrayBuffer from fetch)",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the mutation should actually do, e.g. 'execute a scan and return its id'. Passed to the agent implementing it.",
+      },
     },
     required: ["path", "urlPath", "method"],
   },
@@ -101,6 +109,7 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       download: input.download ?? false,
       urlPath: input.urlPath,
       method: input.method,
+      prompt: input.prompt,
     };
   },
 
@@ -129,7 +138,7 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, AddMutationContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "templateFile",
-      prompt: `Update **${context.targetName}.ts** to implement the API mutation.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update **${context.targetName}.ts** to implement the API mutation.
       ${context.upload ? "This mutation accepts a File and sends it as FormData (body: formData as unknown as request body type)." : ""}
       ${context.download ? "This mutation returns binary: use fetch (or similar) to call the endpoint, then response.arrayBuffer() or response.blob() and return it. Set Accept or leave default as needed. Handle non-ok responses (e.g. parse JSON error body when available)." : ""}
 

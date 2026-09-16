@@ -24,6 +24,8 @@ const sourceDir = packageStubRoot;
 interface AddTsPackageInput {
   name: string;
   path: string;
+  /** What the package should actually do, e.g. "shared date-formatting helpers". */
+  prompt?: string;
 }
 
 interface AddTsPackageWorkflowContext {
@@ -33,6 +35,7 @@ interface AddTsPackageWorkflowContext {
   packageDirName: string; // e.g. "package-name"
   path: string; // Relative path from monorepo root
   rootDir: string;
+  prompt?: string;
 }
 
 /**
@@ -60,6 +63,11 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
         description:
           "The RELATIVE path from monorepo root where the package directory (containing package.json) will be created (e.g., my-product/lib/my-lib or saflib/node)",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the package should actually do, e.g. 'shared date-formatting helpers'. Passed to the agent implementing it.",
+      },
     },
     required: ["name", "path"],
   },
@@ -75,6 +83,7 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
       packageDirName,
       path: input.path,
       rootDir: cwd,
+      prompt: input.prompt,
     };
   },
 
@@ -124,7 +133,7 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, AddTsPackageWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "packageJson",
-      prompt: `The file '${path.join(context.path, "package.json")}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}The file '${path.join(context.path, "package.json")}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.
 
 Do not add a root \`"."\` barrel. Glob exports (and matching package-local \`#\` imports) are added automatically by \`monorepo/add-export\` when you add the first module under a top-level folder. Prefer \`#lib/foo.ts\` over \`../\` climbs inside the package.`,
     })),

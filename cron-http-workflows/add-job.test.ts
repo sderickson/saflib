@@ -79,4 +79,29 @@ describe("cron/add-job (ported to the new engine)", () => {
       expect((await result).status).toBe("success");
     }
   });
+
+  it("threads the input prompt into the job and test update-step prompts", () => {
+    const context = {
+      groupName: "notifications",
+      targetName: "send-reminders",
+      targetDir: "/repo",
+      jobsDir: "/repo/../jobs",
+      packageName: "@example/widgets-cron",
+      serviceName: "widgets",
+      organizationName: "example",
+      sharedPackagePrefix: "@example/widgets",
+      prompt: "enqueue the weekly digest email every Monday at 9am",
+    };
+    const jobStep = CronAddJobWorkflowDefinition.steps[2];
+    const jobInput = jobStep.input({ context }) as { prompt: string };
+    expect(jobInput.prompt).toContain(
+      "Task: enqueue the weekly digest email every Monday at 9am",
+    );
+
+    const testStep = CronAddJobWorkflowDefinition.steps[4];
+    const testInput = testStep.input({ context }) as { prompt: string };
+    expect(testInput.prompt).toContain(
+      "The job implements: enqueue the weekly digest email every Monday at 9am",
+    );
+  });
 });

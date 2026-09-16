@@ -31,6 +31,8 @@ interface OpenApiRouteInput {
   method: string;
   upload?: boolean;
   download?: boolean;
+  /** What the route should actually do, e.g. "list recipes owned by the current user". Passed to the agent implementing it. */
+  prompt?: string;
 }
 
 interface OpenApiRouteWorkflowContext extends ParsePathOutput {
@@ -40,6 +42,7 @@ interface OpenApiRouteWorkflowContext extends ParsePathOutput {
   urlPath: string;
   method: string;
   targetDir: string;
+  prompt?: string;
 }
 
 /**
@@ -78,6 +81,11 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
         type: "boolean",
         description: "Route returns binary (e.g. application/octet-stream or specific type)",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the route should actually do, e.g. 'list recipes owned by the current user'. Passed to the agent implementing it.",
+      },
     },
     required: ["path", "urlPath", "method"],
   },
@@ -94,6 +102,7 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
       download: input.download ?? false,
       urlPath: input.urlPath,
       method: input.method,
+      prompt: input.prompt,
     };
     const operationId =
       kebabCaseToCamelCase(context.targetName.split(".")[0]) +
@@ -119,7 +128,7 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, OpenApiRouteWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "route",
-      prompt: `Update **${context.targetName}.yaml**.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update **${context.targetName}.yaml**.
       - Request parameters and body schemas, and response schemas should $ref existing schemas
       - **Response envelope:** 2xx \`application/json\` bodies must be a flat object keyed by resource name
         (e.g. \`{ recipe: Recipe }\`, \`{ recipes: Recipe[] }\`). Never put a business object, array, or bare

@@ -44,4 +44,14 @@ describe("vue/add-e2e-test (ported to the new engine)", () => {
     const specPath = path.join(cwd, "e2e", "my-test.spec.ts");
     expect(readFileSync(specPath, "utf-8")).toContain("MyTest");
   });
+
+  it("threads a given prompt into the update step's prompt text", () => {
+    const context = AddE2eTestWorkflowDefinition.context({
+      input: { path: "./e2e/my-test.spec.ts", prompt: "create a todo and confirm it appears" },
+      cwd: "/repo",
+    });
+    const updateStep = AddE2eTestWorkflowDefinition.steps[1];
+    const stepInput = updateStep.input({ context }) as { prompt: string };
+    expect(stepInput.prompt).toContain("Task: create a todo and confirm it appears");
+  });
 });

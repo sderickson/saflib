@@ -41,4 +41,20 @@ describe("openapi/route (ported to the new engine)", () => {
     const routePath = path.join(cwd, "routes", "contacts", "get-by-id.yaml");
     expect(readFileSync(routePath, "utf-8")).toContain("getByIdContacts");
   });
+
+  it("threads a passed prompt into the update step's prompt text", () => {
+    const cwd = mkdtempSync(path.join(tmpdir(), "openapi-add-route-"));
+    const context = OpenApiRouteWorkflowDefinition.context({
+      input: {
+        path: "./routes/contacts/get-by-id.yaml",
+        urlPath: "/contacts/{id}",
+        method: "get",
+        prompt: "look up a contact by id",
+      },
+      cwd,
+    });
+    const updateStep = OpenApiRouteWorkflowDefinition.steps[1];
+    const stepInput = updateStep.input({ context }) as { prompt: string };
+    expect(stepInput.prompt).toContain("Task: look up a contact by id");
+  });
 });

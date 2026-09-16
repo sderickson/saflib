@@ -21,12 +21,15 @@ const sourceDir = path.join(templatesProductRoot, "service", "sdk");
 
 interface AddComponentInput {
   path: string;
+  /** What the component should actually do, e.g. "a table listing recipes with edit/delete actions". */
+  prompt?: string;
 }
 
 interface AddComponentContext extends ParsePathOutput, ParsePackageNameOutput {
   targetDir: string;
   prefixName: string;
   fullName: string;
+  prompt?: string;
 }
 
 /**
@@ -58,6 +61,11 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
         type: "string",
         description:
           "Path of the new component (e.g., './displays/example-table' or './forms/user-form')",
+      },
+      prompt: {
+        type: "string",
+        description:
+          "What the component should actually do, e.g. 'a table listing recipes with edit/delete actions'. Passed to the agent implementing it.",
       },
     },
     required: ["path"],
@@ -110,6 +118,7 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       prefixName: firstDir,
       fullName,
       groupName: folderPath,
+      prompt: input.prompt,
     };
   },
 
@@ -135,9 +144,9 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       };
     }),
 
-    step<UpdateStepInput, AddComponentContext>("update", runUpdateStep, () => ({
+    step<UpdateStepInput, AddComponentContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "vue",
-      prompt: `Update the component file to implement the component.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update the component file to implement the component.
 
       * The component should take as props some combination of the schemas exported by the adjacent "spec" package.
       * For form components, make a ref for each field in the form, populated with the prop data.
@@ -148,9 +157,9 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       * If the component uses mutations, make sure to use "showError" for network errors.`,
     })),
 
-    step<UpdateStepInput, AddComponentContext>("update", runUpdateStep, () => ({
+    step<UpdateStepInput, AddComponentContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "test",
-      prompt: `Update the generated test file to test the component.
+      prompt: `${context.prompt ? `It implements: ${context.prompt}\n\n` : ""}Update the generated test file to test the component.
 
       * Make sure to use the dedicated test app, and the getElementByString helper function.
       * You don't really have to mock the server; the component should not load data directly itself. You also don't have to thoroughly test the component; just give it some sample inputs and make sure it renders correctly.

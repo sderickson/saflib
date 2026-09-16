@@ -44,4 +44,15 @@ describe("openapi/schema (ported to the new engine)", () => {
     const schemaPath = path.join(cwd, "schemas", "contact.yaml");
     expect(readFileSync(schemaPath, "utf-8")).toContain("type: object");
   });
+
+  it("threads a passed prompt into the update step's prompt text", () => {
+    const cwd = mkdtempSync(path.join(tmpdir(), "openapi-add-schema-"));
+    const context = OpenApiSchemaWorkflowDefinition.context({
+      input: { name: "contact", prompt: "a contact with a name and email" },
+      cwd,
+    });
+    const updateStep = OpenApiSchemaWorkflowDefinition.steps[1];
+    const stepInput = updateStep.input({ context }) as { prompt: string };
+    expect(stepInput.prompt).toContain("Task: a contact with a name and email");
+  });
 });

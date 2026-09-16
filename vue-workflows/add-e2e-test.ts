@@ -21,9 +21,13 @@ const sourceDir = path.join(templatesProductRoot, "clients/__subdomain-name__/e2
 
 interface AddE2eTestInput {
   path: string;
+  /** What the test should actually cover, e.g. "create a todo and confirm it appears in the list". */
+  prompt?: string;
 }
 
-interface AddE2eTestWorkflowContext extends ParsePathOutput, ParsePackageNameOutput {}
+interface AddE2eTestWorkflowContext extends ParsePathOutput, ParsePackageNameOutput {
+  prompt?: string;
+}
 
 /**
  * Ported from `vue/workflows/add-e2e-test.ts` — same templates, same
@@ -46,6 +50,11 @@ export const AddE2eTestWorkflowDefinition = defineWorkflow<
         type: "string",
         description: "Path of the new e2e test (e.g., './e2e/test-name.spec.ts')",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the test should actually cover, e.g. 'create a todo and confirm it appears in the list'. Passed to the agent implementing it.",
+      },
     },
     required: ["path"],
   },
@@ -60,6 +69,7 @@ export const AddE2eTestWorkflowDefinition = defineWorkflow<
       silentError: true, // so checklists/dry-runs don't error
       requiredSuffix: ["-spa", "-sdk"],
     }),
+    prompt: input.prompt,
   }),
 
   steps: [
@@ -74,7 +84,7 @@ export const AddE2eTestWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, AddE2eTestWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "spec",
-      prompt: `Update **${context.targetName}.spec.ts** to implement the E2E test workflow:
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update **${context.targetName}.spec.ts** to implement the E2E test workflow:
 
         * Import page fixtures from co-located paths via the SPA package glob (e.g. \`@scope/pkg/pages/home/Home.fixture.ts\`) or a same-package relative path — never from a root \`@pkg/fixtures\` barrel.
         * Import shared product helpers from the adjacent "common" package (\`@scope/product-clients-common/fixtures\`).

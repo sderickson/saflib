@@ -29,11 +29,14 @@ const overviewDoc = path.join(templatesSaflibRoot, "integrations", "docs", "01-o
 interface AddCallInput {
   /** Path of the new call (e.g., './calls/parse-file.ts'). */
   path: string;
+  /** What the call should actually do, e.g. "fetch the customer's active subscriptions". */
+  prompt?: string;
 }
 
 interface AddCallContext extends ParsePathOutput, ParsePackageNameOutput {
   cwd: string;
   integrationName: string;
+  prompt?: string;
 }
 
 /**
@@ -52,6 +55,11 @@ export const AddCallWorkflowDefinition = defineWorkflow<AddCallInput, AddCallCon
       path: {
         type: "string",
         description: "Path of the new call (e.g., './calls/parse-file.ts')",
+      },
+      prompt: {
+        type: "string",
+        description:
+          "What the call should actually do, e.g. 'fetch the customer's active subscriptions'. Passed to the agent implementing it.",
       },
     },
     required: ["path"],
@@ -72,6 +80,7 @@ export const AddCallWorkflowDefinition = defineWorkflow<AddCallInput, AddCallCon
       }),
       integrationName,
       cwd,
+      prompt: input.prompt,
     };
   },
 
@@ -102,7 +111,7 @@ export const AddCallWorkflowDefinition = defineWorkflow<AddCallInput, AddCallCon
 
     step<UpdateStepInput, AddCallContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "call",
-      prompt: `Implement the **${context.targetName}** call.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Implement the **${context.targetName}** call.
 
 Read the overview doc first: ${overviewDoc}
 
@@ -115,9 +124,9 @@ This call wraps the scoped client to provide product-specific functionality. It 
 See other integration packages in the monorepo for examples of complex calls with validation and caching.`,
     })),
 
-    step<UpdateStepInput, AddCallContext>("update", runUpdateStep, () => ({
+    step<UpdateStepInput, AddCallContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "bin",
-      prompt: `Update the bin script to call the implementation with appropriate test arguments. The script should demonstrate a realistic invocation so you can verify the call works end-to-end with \`npm run <script-name>\`.`,
+      prompt: `${context.prompt ? `The call implements: ${context.prompt}\n\n` : ""}Update the bin script to call the implementation with appropriate test arguments. The script should demonstrate a realistic invocation so you can verify the call works end-to-end with \`npm run <script-name>\`.`,
     })),
 
     step<TransformFileStepInput, AddCallContext>(

@@ -25,6 +25,8 @@ interface JobsAddJobInput {
   callerOperationId: string;
   targetOperationId: string;
   cronJobName?: string;
+  /** What the background operation should actually do, e.g. "resize the uploaded image and store thumbnails". */
+  prompt?: string;
 }
 
 interface JobsAddJobContext extends ParsePackageNameOutput {
@@ -32,6 +34,7 @@ interface JobsAddJobContext extends ParsePackageNameOutput {
   targetOperationId: string;
   cronJobName?: string;
   jobsDir: string;
+  prompt?: string;
 }
 
 /**
@@ -64,6 +67,11 @@ export const JobsAddJobWorkflowDefinition = defineWorkflow<
         type: "string",
         description: "Optional cron job name when adding a cron: trigger key (omit for HTTP-only edges)",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the background operation should actually do, e.g. 'resize the uploaded image and store thumbnails'. Passed to the agent implementing it.",
+      },
     },
     required: ["callerOperationId", "targetOperationId"],
   },
@@ -88,6 +96,7 @@ export const JobsAddJobWorkflowDefinition = defineWorkflow<
       targetOperationId: input.targetOperationId,
       cronJobName: input.cronJobName,
       jobsDir,
+      prompt: input.prompt,
     };
   },
 
@@ -115,7 +124,7 @@ export const JobsAddJobWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, JobsAddJobContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "jobs",
-      prompt: `Finalize trigger map and operationConfig for ${context.targetOperationId}.`,
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Finalize trigger map and operationConfig for ${context.targetOperationId}.`,
     })),
 
     step<CdStepInput, JobsAddJobContext>("cd", runCdStep, ({ context }) => ({

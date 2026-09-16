@@ -20,9 +20,13 @@ const emailStub = path.join(templatesProductRoot, "service/email/emails/__target
 interface AddEmailTemplateInput {
   /** Path of the new email template (e.g. './emails/weekly-report.ts'). */
   path: string;
+  /** What the email should actually say/do, e.g. "notify the user their export finished". */
+  prompt?: string;
 }
 
-interface AddEmailTemplateContext extends ParsePathOutput, ParsePackageNameOutput {}
+interface AddEmailTemplateContext extends ParsePathOutput, ParsePackageNameOutput {
+  prompt?: string;
+}
 
 /**
  * Ported from `email/email-service/workflows/add-email-template.ts` — same
@@ -44,6 +48,11 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
         type: "string",
         description: "Path of the new email template (e.g. './emails/weekly-report.ts')",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the email should actually say/do, e.g. 'notify the user their export finished'. Passed to the agent implementing it.",
+      },
     },
     required: ["path"],
   },
@@ -56,6 +65,7 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
         requiredSuffix: ".ts",
         cwd,
       }),
+      prompt: input.prompt,
     };
   },
 
@@ -74,9 +84,9 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step<UpdateStepInput, AddEmailTemplateContext>("update", runUpdateStep, () => ({
+    step<UpdateStepInput, AddEmailTemplateContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "template",
-      prompt: `Implement the email template.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Implement the email template.
 
       1. Update the function signature and export name to match your use case
       2. Define the email subject and HTML content

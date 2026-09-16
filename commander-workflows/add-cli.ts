@@ -18,6 +18,8 @@ const sourceDir = packageStubRoot;
 
 interface AddCliInput {
   name: string;
+  /** What the CLI should actually do, e.g. "deploy the current product to staging". */
+  prompt?: string;
 }
 
 interface AddCliContext {
@@ -25,6 +27,7 @@ interface AddCliContext {
   targetDir: string;
   groupName: string;
   targetName: string;
+  prompt?: string;
 }
 
 /**
@@ -44,6 +47,11 @@ export const AddCLIWorkflowDefinition = defineWorkflow<AddCliInput, AddCliContex
         type: "string",
         description: "The name of the cli to create (e.g., 'build' or 'deploy')",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the CLI should actually do, e.g. 'deploy the current product to staging'. Passed to the agent implementing it.",
+      },
     },
     required: ["name"],
   },
@@ -55,6 +63,7 @@ export const AddCLIWorkflowDefinition = defineWorkflow<AddCliInput, AddCliContex
       targetDir,
       groupName: input.name,
       targetName: input.name,
+      prompt: input.prompt,
     };
   },
 
@@ -68,9 +77,9 @@ export const AddCLIWorkflowDefinition = defineWorkflow<AddCliInput, AddCliContex
       lineReplace: makeLineReplace(context),
     })),
 
-    step<UpdateStepInput, AddCliContext>("update", runUpdateStep, () => ({
+    step<UpdateStepInput, AddCliContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "index",
-      prompt: `Update **index.ts**, resolving any TODOs.`,
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update **index.ts**, resolving any TODOs.`,
     })),
 
     step<CommandStepInput, AddCliContext>("command", runCommandStep, ({ context }) => ({

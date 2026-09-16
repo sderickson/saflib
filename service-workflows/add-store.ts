@@ -22,11 +22,13 @@ const contextTemplate = path.join(templatesProductRoot, "service", "common", "co
 interface ServiceAddStoreInput {
   /** camelCase property name for the store (e.g. 'recipesFileContainer'). */
   name: string;
+  prompt?: string;
 }
 
 interface ServiceAddStoreWorkflowContext extends ParsePackageNameOutput {
   storeName: string;
   targetDir: string;
+  prompt?: string;
 }
 
 /**
@@ -55,6 +57,11 @@ export const ServiceAddStoreWorkflowDefinition = defineWorkflow<
         type: "string",
         description: "camelCase property name for the store (e.g. 'recipesFileContainer')",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the store should actually be for, e.g. 'store uploaded recipe photos'. Passed to the agent implementing it.",
+      },
     },
     required: ["name"],
   },
@@ -70,6 +77,7 @@ export const ServiceAddStoreWorkflowDefinition = defineWorkflow<
       }),
       storeName: input.name,
       targetDir: cwd,
+      prompt: input.prompt,
     };
   },
 
@@ -88,9 +96,9 @@ export const ServiceAddStoreWorkflowDefinition = defineWorkflow<
       args: ["install", "@saflib/object-store"],
     })),
 
-    step<UpdateStepInput, ServiceAddStoreWorkflowContext>("update", runUpdateStep, () => ({
+    step<UpdateStepInput, ServiceAddStoreWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "context",
-      prompt: `Update the copied \`context.ts\` file to set up the desired file store. Right now it's a test store.`,
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update the copied \`context.ts\` file to set up the desired file store. Right now it's a test store.`,
     })),
 
     step<PromptStepInput, ServiceAddStoreWorkflowContext>("prompt", runPromptStep, () => ({

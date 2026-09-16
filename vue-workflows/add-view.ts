@@ -39,6 +39,8 @@ const i18nDoc = path.join(templatesSaflibRoot, "vue", "docs", "03-i18n.md");
 interface AddViewInput {
   path: string;
   urlPath: string;
+  /** What the view should actually render/do, e.g. "list todos, with a form to create new ones". */
+  prompt?: string;
 }
 
 interface AddViewWorkflowContext extends ParsePathOutput, ParsePackageNameOutput {
@@ -46,6 +48,7 @@ interface AddViewWorkflowContext extends ParsePathOutput, ParsePackageNameOutput
   targetDir: string;
   fullName: string;
   subdomainName: string;
+  prompt?: string;
 }
 
 /**
@@ -75,6 +78,11 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<AddViewInput, AddView
       urlPath: {
         type: "string",
         description: "The URL path for the view (e.g., '/recipes/:id' or '/recipes/create')",
+      },
+      prompt: {
+        type: "string",
+        description:
+          "What the view should actually render/do, e.g. 'list todos, with a form to create new ones'. Passed to the agent implementing it.",
       },
     },
     required: ["path", "urlPath"],
@@ -111,6 +119,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<AddViewInput, AddView
       groupName: folderPath,
       urlPath: input.urlPath.slice(1),
       fullName,
+      prompt: input.prompt,
     };
   },
 
@@ -162,7 +171,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<AddViewInput, AddView
       const pascalName = kebabCaseToPascalCase(context.targetName);
       return {
         fileId: "vue",
-        prompt: `Update **${pascalName}.vue** to render the page:
+        prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update **${pascalName}.vue** to render the page:
 
       * Use the adjacent (${pascalName}.loader.ts) to add Tanstack queries for any data needed to render the page (the Tanstack queries are imported from the appropriate sdk package)
       * Use the adjacent (${pascalName}.strings.ts) for all user-facing copy. Keep \`documentTitle\` in that file for the browser tab (the Async component already wires it via \`useAsyncPageDocumentTitle\`).

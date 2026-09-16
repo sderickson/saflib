@@ -20,10 +20,13 @@ const sourceDir = packageStubRoot;
 
 interface AddCommandInput {
   path: string;
+  /** What the command should actually do, e.g. "list all pending jobs". */
+  prompt?: string;
 }
 
 interface AddCommandContext extends ParsePathOutput {
   cwd: string;
+  prompt?: string;
 }
 
 /**
@@ -46,6 +49,11 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
         type: "string",
         description: "Relative path to the new command file, e.g. bin/cli-name/command-name.ts",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the command should actually do, e.g. 'list all pending jobs'. Passed to the agent implementing it.",
+      },
     },
     required: ["path"],
   },
@@ -57,6 +65,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
       cwd,
     }),
     cwd,
+    prompt: input.prompt,
   }),
 
   steps: [
@@ -72,7 +81,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, AddCommandContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "command",
-      prompt: `Update **${context.targetName}.ts**
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update **${context.targetName}.ts**
 
       Implement the command functionality.`,
     })),

@@ -27,12 +27,15 @@ interface AddQueryInput {
   path: string;
   urlPath: string;
   method: string;
+  /** What the query should actually do, e.g. "list all secrets ordered by name". */
+  prompt?: string;
 }
 
 interface AddQueryContext extends ParsePackageNameOutput, ParsePathOutput {
   queryName: string;
   urlPath: string;
   method: string;
+  prompt?: string;
 }
 
 /** Ported from `sdk/workflows/add-query.ts` — same templates/prompts/step order. */
@@ -57,6 +60,11 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<AddQueryInput, AddQu
         type: "string",
         description: "The HTTP method in lowercase (e.g., 'get', 'post', 'put', 'delete')",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the query should actually do, e.g. 'list all secrets ordered by name'. Passed to the agent implementing it.",
+      },
     },
     required: ["path", "urlPath", "method"],
   },
@@ -78,6 +86,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<AddQueryInput, AddQu
       queryName: pathResult.targetName,
       urlPath: input.urlPath,
       method: input.method,
+      prompt: input.prompt,
     };
   },
 
@@ -106,7 +115,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<AddQueryInput, AddQu
 
     step<UpdateStepInput, AddQueryContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "templateFile",
-      prompt: `Update **${context.targetName}.ts** to implement the API query.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update **${context.targetName}.ts** to implement the API query.
 
       Please review documentation here first: ${overviewDoc}`,
     })),

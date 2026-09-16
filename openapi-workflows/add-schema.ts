@@ -25,10 +25,13 @@ const openapiLive = path.join(specRoot, "openapi.yaml");
 
 interface OpenApiSchemaInput {
   name: string;
+  /** What the schema should actually contain, e.g. "a recipe with a title, ingredients list, and steps". Passed to the agent implementing it. */
+  prompt?: string;
 }
 
 interface OpenApiSchemaWorkflowContext extends ParsePackageNameOutput, ParsePathOutput {
   targetDir: string;
+  prompt?: string;
 }
 
 /**
@@ -51,6 +54,11 @@ export const OpenApiSchemaWorkflowDefinition = defineWorkflow<
         type: "string",
         description: "The name of the schema (e.g., 'user' or 'product')",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What the schema should actually contain, e.g. 'a recipe with a title, ingredients list, and steps'. Passed to the agent implementing it.",
+      },
     },
     required: ["name"],
   },
@@ -69,6 +77,7 @@ export const OpenApiSchemaWorkflowDefinition = defineWorkflow<
         requiredPrefix: "./schemas/",
       }),
       targetDir: cwd,
+      prompt: input.prompt,
     };
   },
 
@@ -85,7 +94,7 @@ export const OpenApiSchemaWorkflowDefinition = defineWorkflow<
 
     step<UpdateStepInput, OpenApiSchemaWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "schema",
-      prompt: `Update **${context.targetName}**
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Update **${context.targetName}**
       - Add or update object properties and their types
       - Include appropriate descriptions and examples with new or updated properties
       - Update the required property as necessary

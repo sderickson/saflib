@@ -17,12 +17,15 @@ const sourceDir = packageStubRoot;
 interface AddEnvVarInput {
   /** The name of the environment variable (in all upper case, e.g., 'API_KEY' or 'DATABASE_URL'). */
   name: string;
+  /** What this variable is for, e.g. "the API key for the Stripe integration". */
+  prompt?: string;
 }
 
 interface AddEnvVarContext {
   cwd: string;
   name: string;
   variableName: string;
+  prompt?: string;
 }
 
 /**
@@ -44,13 +47,18 @@ export const AddEnvVarWorkflowDefinition = defineWorkflow<AddEnvVarInput, AddEnv
         description:
           "The name of the environment variable (in all upper case, e.g., 'API_KEY' or 'DATABASE_URL')",
       },
+      prompt: {
+        type: "string",
+        description:
+          "What this variable is for, e.g. 'the API key for the Stripe integration'. Passed to the agent implementing it.",
+      },
     },
     required: ["name"],
   },
 
   context: ({ input, cwd }) => {
     const variableName = input.name.toUpperCase();
-    return { cwd, name: input.name, variableName };
+    return { cwd, name: input.name, variableName, prompt: input.prompt };
   },
 
   steps: [
@@ -65,7 +73,7 @@ export const AddEnvVarWorkflowDefinition = defineWorkflow<AddEnvVarInput, AddEnv
 
     step<UpdateStepInput, AddEnvVarContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "schema",
-      prompt: `Add the environment variable '${context.variableName}' to the env.schema.json file.
+      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Add the environment variable '${context.variableName}' to the env.schema.json file.
 
       Add it to the properties object with an appropriate type and description. If it is effectively a boolean, use the enum type with values 'true', 'false', and ''.`,
     })),
