@@ -27,6 +27,7 @@ export {
   type WorkflowRunStepDescription,
 } from "./describe-steps.ts";
 export { cancelActiveAgentProcess } from "./agents/registry.ts";
+export { cancelRunAndDescendants } from "./cancel-run.ts";
 export {
   parseToolLogPayload,
   type ToolUseLogPayload,
