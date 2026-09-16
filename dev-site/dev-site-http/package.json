@@ -51,7 +51,8 @@
     "@saflib/integrations-workflows": "*",
     "@saflib/email-service-workflows": "*",
     "@saflib/cron-http-workflows": "*",
-    "@saflib/jobs-http-workflows": "*"
+    "@saflib/jobs-http-workflows": "*",
+    "@saflib/vue-workflows": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

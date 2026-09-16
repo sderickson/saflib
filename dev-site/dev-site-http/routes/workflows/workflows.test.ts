@@ -47,6 +47,10 @@ describe("workflows routes (mounted into dev-site-http)", () => {
       "email/add-template",
       "cron/add-job",
       "jobs/add-job",
+      "vue/add-e2e-test",
+      "vue/add-spa",
+      "vue/add-static-site",
+      "vue/add-view",
     ]));
     expect(new Set(ids).size).toBe(ids.length);
 

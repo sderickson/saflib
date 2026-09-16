@@ -15,6 +15,7 @@ import integrationsWorkflows from "@saflib/integrations-workflows";
 import emailServiceWorkflows from "@saflib/email-service-workflows";
 import cronHttpWorkflows from "@saflib/cron-http-workflows";
 import jobsHttpWorkflows from "@saflib/jobs-http-workflows";
+import vueWorkflows from "@saflib/vue-workflows";
 import { devSiteHttpStorage } from "../../context.ts";
 
 /**
@@ -37,6 +38,7 @@ const registry: WorkflowDefinition<any, any>[] = [
   ...emailServiceWorkflows,
   ...cronHttpWorkflows,
   ...jobsHttpWorkflows,
+  ...vueWorkflows,
 ];
 
 // A local dev tool, not a server: default to a real on-disk db so runs

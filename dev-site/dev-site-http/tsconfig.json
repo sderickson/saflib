@@ -56,6 +56,9 @@
       "path": "../../service-workflows"
     },
     {
+      "path": "../../vue-workflows"
+    },
+    {
       "path": "../../new-workflows/db"
     },
     {
