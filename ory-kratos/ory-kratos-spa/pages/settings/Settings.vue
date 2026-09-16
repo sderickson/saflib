@@ -86,7 +86,7 @@
                 @submit="submitSettingsForm"
               />
             </v-window-item>
-            <v-window-item v-if="hasTotpSettings" value="totp">
+            <v-window-item v-if="showTotpSection" value="totp">
               <SettingsGroupUi
                 :flow="flow"
                 group="totp"
@@ -455,6 +455,12 @@ const hasTotpSettings = computed(() =>
   Boolean(flow.value?.ui.nodes.some((node) => node.group === "totp")),
 );
 
+/** Keep the TOTP panel mounted when a host forces `section=totp` so we show
+ * empty-state copy instead of leaking the default profile tab. */
+const showTotpSection = computed(
+  () => hasTotpSettings.value || props.section === "totp",
+);
+
 const sidebarItems = computed((): { value: SettingsSectionTab; title: string }[] => {
   const items: { value: SettingsSectionTab; title: string; show: boolean }[] = [
     { value: "profile", title: t(tabs.profile), show: true },
@@ -513,7 +519,8 @@ watch(
     }
     const fromProp = asSectionTab(props.section);
     if (fromProp) {
-      if (fromProp === "totp" && !hasTotpSettings.value) return;
+      // Embedded hosts pass `section` explicitly — honor it even when Kratos
+      // has no totp nodes yet (show empty state rather than profile fields).
       tab.value = fromProp;
       return;
     }
@@ -526,7 +533,9 @@ watch(
   { immediate: true },
 );
 
-watch([tab, hasTotpSettings], () => {
+watch([tab, hasTotpSettings, () => props.section], () => {
+  // Never steal a host-forced totp section; only fall back in free-nav mode.
+  if (props.section === "totp") return;
   if (tab.value === "totp" && !hasTotpSettings.value) tab.value = "profile";
 });
 
