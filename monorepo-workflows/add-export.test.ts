@@ -42,14 +42,8 @@ describe("monorepo/add-export (ported to the new engine)", () => {
     const outcome = await result;
     expect(outcome.status).toBe("success");
 
-    // The copy step's shared-prefix computation collapses the group
-    // segment when only two sibling template files are given (both live
-    // directly under `__group-name__/`, so their shared prefix IS that
-    // directory) — same mechanical behavior as the old engine's identical
-    // algorithm (`workflows/core/steps/copy/copy-template-machine.ts`).
-    // Files land flat in `cwd`, not nested under `lib/`.
-    const exportPath = path.join(cwd, "my-function.ts");
-    const testPath = path.join(cwd, "my-function.test.ts");
+    const exportPath = path.join(cwd, "lib", "my-function.ts");
+    const testPath = path.join(cwd, "lib", "my-function.test.ts");
     expect(readFileSync(exportPath, "utf-8")).toContain("myFunction");
     expect(readFileSync(testPath, "utf-8")).toContain("myFunction");
   });

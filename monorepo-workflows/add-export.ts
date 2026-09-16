@@ -89,6 +89,13 @@ export const AddExportWorkflowDefinition = defineWorkflow<
       name: context.targetName,
       targetDir: context.cwd,
       lineReplace: makeLineReplace(context),
+      // Both template files live directly inside `__group-name__/`, with
+      // nothing anchored a level above it — the auto-detected shared
+      // prefix would land on that directory itself, dropping it from the
+      // output path instead of reconstructing it (renamed via
+      // `lineReplace`) under `targetDir`. `sourceDir` (its parent) fixes
+      // that explicitly. See `CopyStepInput.templateRoot`'s doc comment.
+      templateRoot: sourceDir,
     })),
 
     step<TransformFileStepInput, AddExportWorkflowContext>(

@@ -30,6 +30,30 @@ export interface CopyStepInput {
   skipSourceGlobs?: string[];
   skipSourcePath?: (fullPath: string) => boolean;
   skipUnlessPathExists?: string;
+  /**
+   * Overrides the auto-detected "shared prefix" directory (see
+   * `sharedPrefixOf`) that each template file's path is taken relative to
+   * when reconstructing subdirectories under `targetDir`. Needed when
+   * every template file lives directly inside one variable directory
+   * (e.g. `monorepo/add-export`'s `export`/`test` templates both sit in
+   * `__group-name__/`, with nothing anchored a level above it like
+   * `drizzle/add-query`'s sibling `types.ts`/`errors.ts`) — the
+   * auto-detected prefix would otherwise land ON that directory itself,
+   * silently dropping it from the output path instead of preserving it
+   * (renamed via `lineReplace`) as a real subdirectory.
+   *
+   * There is no reliable *general* signal for this — a "climb to the
+   * nearest package.json" heuristic looks appealing (every real template
+   * tree does have one at its true root) but isn't safe: several other
+   * workflows (`monorepo/add-package`, `commander/add-command`, ...) have
+   * templates nested identically deep under the same kind of
+   * package.json-rooted tree, but deliberately pass an already-fully-
+   * resolved `targetDir` and need *zero* reconstruction — the copy step
+   * can't tell those two intents apart from the filesystem alone, only
+   * the calling workflow knows. Left auto-detected (undefined) by default;
+   * opt in explicitly per workflow instead of guessing.
+   */
+  templateRoot?: string;
 }
 
 /** Always skipped when expanding directory template sources. */
@@ -261,7 +285,7 @@ export const runCopyStep: StepFn<CopyStepInput> = async (rawInput, ctx) => {
 
   const templateFiles = flattenTemplateFiles(input);
   const fileIds = Object.keys(templateFiles);
-  const sharedPrefix = sharedPrefixOf(Object.values(templateFiles));
+  const sharedPrefix = input.templateRoot ?? sharedPrefixOf(Object.values(templateFiles));
   const copiedFiles: Record<string, string> = {};
 
   if (ctx.mode === "dry" || ctx.mode === "checklist") {
