@@ -6,6 +6,10 @@
   "description": "Shared VitePress dependency for SAF documentation and static sites",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./lean-js-plugin": "./lean-js-plugin.ts"
+  },
   "dependencies": {
     "esbuild": "^0.27.0",
     "vitepress": "^1.6.3"
