@@ -490,4 +490,44 @@ describe("RunPage", () => {
     expect(quackSpy).toHaveBeenCalledTimes(1);
     expect(notifySpy).toHaveBeenCalledTimes(2);
   });
+
+  it("mute button toggles run-alerts' persisted mute state and its own icon/label", async () => {
+    localStorage.clear();
+    runAlerts.__resetRunAlertsStateForTests();
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    const muteButton = wrapper.find('[aria-label="Mute"]');
+    expect(muteButton.exists()).toBe(true);
+
+    await muteButton.trigger("click");
+
+    expect(runAlerts.isMuted()).toBe(true);
+    expect(wrapper.find('[aria-label="Unmute"]').exists()).toBe(true);
+
+    await wrapper.find('[aria-label="Unmute"]').trigger("click");
+    expect(runAlerts.isMuted()).toBe(false);
+  });
+
+  it("volume slider persists via run-alerts.setVolume", async () => {
+    localStorage.clear();
+    runAlerts.__resetRunAlertsStateForTests();
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    const slider = wrapper.find('[aria-label="Alert volume"]');
+    expect(slider.exists()).toBe(true);
+
+    await wrapper.findComponent({ name: "VSlider" }).vm.$emit("update:modelValue", 0.9);
+
+    expect(runAlerts.getVolume()).toBeCloseTo(0.9);
+  });
 });

@@ -63,13 +63,16 @@ describe("commitIfDirty", () => {
     writeFileSync(path.join(dir, "file-a.ts"), "export const a = 1;\n");
     writeFileSync(path.join(dir, "file-b.ts"), "export const b = 1;\n");
 
-    const [resultA, resultB] = await Promise.all([
-      commitIfDirty(dir, "commit A"),
-      commitIfDirty(dir, "commit B"),
-    ]);
+    // Neither call may throw regardless of which wins the race to
+    // `git commit` — the loser now typically finds nothing left to stage
+    // at all (the winner already grabbed it via `add -A`) and returns
+    // `false` without even attempting a commit; a still-possible narrower
+    // window where the loser *did* stage something ahead of the winner's
+    // add returns `true` via the "nothing to commit" recovery instead.
+    // Either is correct; only one of them actually did the committing.
+    const results = await Promise.all([commitIfDirty(dir, "commit A"), commitIfDirty(dir, "commit B")]);
+    expect(results.some(Boolean)).toBe(true);
 
-    expect(resultA).toBe(true);
-    expect(resultB).toBe(true);
     const { stdout: status } = await execFileAsync("git", ["status", "--porcelain"], { cwd: dir });
     expect(status.trim()).toBe("");
     const { stdout: files } = await execFileAsync("git", ["ls-files"], { cwd: dir });
@@ -91,6 +94,65 @@ describe("commitIfDirty", () => {
     );
 
     await expect(commitIfDirty(dir, "message")).rejects.toThrow(/rejected by pre-commit hook/);
+  });
+
+  it("is a no-op (returns false) when the only dirty path is a submodule with uncommitted content, not a real gitlink change", async () => {
+    // Regression: this monorepo's own `saflib` is a submodule — a step
+    // that leaves the *submodule's own working tree* dirty (not a new
+    // commit checked out in it) makes the superproject's `git status`
+    // report it as modified, but there's nothing for `git add -A` to
+    // stage for it (only committing *inside* the submodule resolves
+    // that). Attempting the commit anyway used to fail with git's own
+    // "no changes added to commit" — surfacing as "Step succeeded but
+    // failed to commit its changes" even though nothing was actually
+    // wrong.
+    const innerDir = mkdtempSync(path.join(tmpdir(), "git-test-submodule-inner-"));
+    await execFileAsync("git", ["init"], { cwd: innerDir });
+    await execFileAsync("git", ["config", "user.email", "test@example.com"], { cwd: innerDir });
+    await execFileAsync("git", ["config", "user.name", "Test"], { cwd: innerDir });
+    writeFileSync(path.join(innerDir, "f.txt"), "hi\n");
+    await execFileAsync("git", ["add", "-A"], { cwd: innerDir });
+    await execFileAsync("git", ["commit", "-m", "init"], { cwd: innerDir });
+
+    const dir = await initRepo();
+    await execFileAsync(
+      "git",
+      ["-c", "protocol.file.allow=always", "submodule", "add", "-q", innerDir, "sub"],
+      { cwd: dir },
+    );
+    await execFileAsync("git", ["commit", "-m", "add submodule"], { cwd: dir });
+    // Dirty the submodule's own working tree — not a new commit in it.
+    writeFileSync(path.join(dir, "sub", "f.txt"), "hi\nmore\n");
+
+    const committed = await commitIfDirty(dir, "should not attempt this");
+
+    expect(committed).toBe(false);
+    expect(await log(dir)).toEqual(["add submodule", "initial"]);
+  });
+
+  it("still commits real changes alongside an unstageable dirty submodule", async () => {
+    const innerDir = mkdtempSync(path.join(tmpdir(), "git-test-submodule-inner-"));
+    await execFileAsync("git", ["init"], { cwd: innerDir });
+    await execFileAsync("git", ["config", "user.email", "test@example.com"], { cwd: innerDir });
+    await execFileAsync("git", ["config", "user.name", "Test"], { cwd: innerDir });
+    writeFileSync(path.join(innerDir, "f.txt"), "hi\n");
+    await execFileAsync("git", ["add", "-A"], { cwd: innerDir });
+    await execFileAsync("git", ["commit", "-m", "init"], { cwd: innerDir });
+
+    const dir = await initRepo();
+    await execFileAsync(
+      "git",
+      ["-c", "protocol.file.allow=always", "submodule", "add", "-q", innerDir, "sub"],
+      { cwd: dir },
+    );
+    await execFileAsync("git", ["commit", "-m", "add submodule"], { cwd: dir });
+    writeFileSync(path.join(dir, "sub", "f.txt"), "hi\nmore\n");
+    writeFileSync(path.join(dir, "real-change.ts"), "export const x = 1;\n");
+
+    const committed = await commitIfDirty(dir, "add real-change");
+
+    expect(committed).toBe(true);
+    expect(await log(dir)).toEqual(["add real-change", "add submodule", "initial"]);
   });
 
   it("commits from any subdirectory, capturing the whole repo's changes", async () => {

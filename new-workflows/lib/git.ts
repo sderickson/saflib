@@ -78,6 +78,18 @@ export async function commitIfDirty(cwd: string, message: string): Promise<boole
   const status = await runGit(root, ["status", "--porcelain"]);
   if (!status.trim()) return false;
   await runGit(root, ["add", "-A"]);
+  // `git add -A` can leave *nothing* actually staged even though `status`
+  // reported the tree as dirty — a submodule (e.g. this monorepo's own
+  // `saflib`) whose own working tree has uncommitted changes, but whose
+  // checked-out commit hasn't changed, shows up as dirty in the
+  // superproject ("modified content") with nothing for the superproject
+  // itself to stage; only committing *inside* the submodule resolves
+  // that, which is out of scope here. Committing anyway would just fail
+  // with git's own "no changes added to commit". Checking what's staged
+  // (rather than special-casing submodules by name/pattern) generalizes
+  // to any other "reported dirty but unstageable from here" case too.
+  const staged = await runGit(root, ["diff", "--cached", "--name-only"]);
+  if (!staged.trim()) return false;
   try {
     await runGit(root, ["commit", "-m", message]);
   } catch (error) {

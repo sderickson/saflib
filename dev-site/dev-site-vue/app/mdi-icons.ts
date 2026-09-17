@@ -19,6 +19,9 @@ import {
   mdiPackageVariantClosed,
   mdiTable,
   mdiTestTube,
+  mdiVolumeHigh,
+  mdiVolumeMedium,
+  mdiVolumeOff,
   mdiVuejs,
 } from "@mdi/js";
 
@@ -39,5 +42,8 @@ export const mdiIconPaths: Record<string, string> = {
   "mdi-package-variant-closed": mdiPackageVariantClosed,
   "mdi-table": mdiTable,
   "mdi-test-tube": mdiTestTube,
+  "mdi-volume-high": mdiVolumeHigh,
+  "mdi-volume-medium": mdiVolumeMedium,
+  "mdi-volume-off": mdiVolumeOff,
   "mdi-vuejs": mdiVuejs,
 };

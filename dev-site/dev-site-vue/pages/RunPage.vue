@@ -134,6 +134,28 @@
           </span>
         </div>
         <div class="run-page__foot-actions-right">
+          <v-btn
+            icon
+            variant="text"
+            size="small"
+            :aria-label="muted ? 'Unmute' : 'Mute'"
+            :title="muted ? 'Unmute' : 'Mute'"
+            @click="onToggleMute()"
+          >
+            <v-icon :icon="volumeIcon" />
+          </v-btn>
+          <v-slider
+            :model-value="volume"
+            :disabled="muted"
+            min="0"
+            max="1"
+            step="0.05"
+            hide-details
+            density="compact"
+            class="run-page__volume-slider"
+            aria-label="Alert volume"
+            @update:model-value="onVolumeChange"
+          />
           <v-btn size="small" variant="text" @click="testAlert('success')">
             Test success sound
           </v-btn>
@@ -167,6 +189,10 @@ import {
   playFailureQuack,
   requestNotificationPermission,
   notify,
+  getVolume,
+  setVolume,
+  isMuted,
+  toggleMuted,
 } from "../run-alerts.ts";
 
 withDefaults(defineProps<{ workflowsPath?: string }>(), { workflowsPath: "/workflows" });
@@ -266,6 +292,27 @@ function testAlert(kind: "success" | "failure") {
     notify("Test notification", "This is what a failed run looks like.");
   }
 }
+
+// Volume/mute — local reactive mirror of run-alerts.ts's own
+// localStorage-backed state, so this control (and any other page that
+// adds one later) reflects the same persisted setting everywhere.
+const volume = ref(getVolume());
+const muted = ref(isMuted());
+
+function onVolumeChange(next: number) {
+  setVolume(next);
+  volume.value = getVolume();
+}
+
+function onToggleMute() {
+  muted.value = toggleMuted();
+}
+
+const volumeIcon = computed(() => {
+  if (muted.value || volume.value <= 0) return "mdi-volume-off";
+  if (volume.value < 0.5) return "mdi-volume-medium";
+  return "mdi-volume-high";
+});
 
 // Chains further plain advances for as long as each one succeeds — same
 // "keep going while success" contract as the CLI's own advance loop (see
@@ -544,5 +591,9 @@ watch(
   display: flex;
   align-items: center;
   gap: 0.25rem;
+}
+.run-page__volume-slider {
+  max-width: 100px;
+  margin-right: 0.5rem;
 }
 </style>

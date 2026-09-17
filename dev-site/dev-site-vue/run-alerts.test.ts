@@ -5,7 +5,12 @@ import {
   playFailureQuack,
   requestNotificationPermission,
   notify,
-  __resetAudioContextForTests,
+  getVolume,
+  setVolume,
+  isMuted,
+  setMuted,
+  toggleMuted,
+  __resetRunAlertsStateForTests,
 } from "./run-alerts.ts";
 
 class FakeGain {
@@ -44,7 +49,8 @@ class FakeAudioContext {
 describe("run-alerts", () => {
   beforeEach(() => {
     FakeAudioContext.instances = [];
-    __resetAudioContextForTests();
+    localStorage.clear();
+    __resetRunAlertsStateForTests();
     vi.stubGlobal("AudioContext", FakeAudioContext);
   });
 
@@ -79,6 +85,49 @@ describe("run-alerts", () => {
     expect(() => playSuccessBell()).not.toThrow();
     expect(() => playFailureQuack()).not.toThrow();
     expect(() => unlockAudio()).not.toThrow();
+  });
+
+  it("scales the gain applied to each tone by the current volume", () => {
+    setVolume(0.4);
+    playSuccessBell();
+    const ctx = FakeAudioContext.instances[0];
+    const gains = ctx.createGain.mock.results.map((r) => r.value as FakeGain);
+    // Peak gain (0.2) * volume (0.4) = 0.08 for each of the two tones.
+    for (const gain of gains) {
+      expect(gain.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+        expect.closeTo(0.08, 5),
+        expect.anything(),
+      );
+    }
+  });
+
+  it("plays nothing (no oscillators at all) while muted", () => {
+    setMuted(true);
+    playSuccessBell();
+    expect(FakeAudioContext.instances[0]?.createOscillator).not.toHaveBeenCalled();
+  });
+
+  it("mute/volume state is persisted to localStorage across module state resets", () => {
+    setVolume(0.75);
+    setMuted(true);
+    __resetRunAlertsStateForTests(); // simulates a fresh page load re-reading localStorage
+    expect(getVolume()).toBeCloseTo(0.75);
+    expect(isMuted()).toBe(true);
+  });
+
+  it("toggleMuted flips and returns the new state", () => {
+    setMuted(false);
+    expect(toggleMuted()).toBe(true);
+    expect(isMuted()).toBe(true);
+    expect(toggleMuted()).toBe(false);
+    expect(isMuted()).toBe(false);
+  });
+
+  it("clamps volume to [0, 1]", () => {
+    setVolume(5);
+    expect(getVolume()).toBe(1);
+    setVolume(-2);
+    expect(getVolume()).toBe(0);
   });
 });
 
