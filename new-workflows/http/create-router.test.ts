@@ -107,8 +107,13 @@ describe("createNewWorkflowsRouter", () => {
     expect(response.status).toBe(200);
     expect(response.body.steps).toEqual([
       { index: 0, kind: "copy" },
-      { index: 1, kind: "update", label: "update: file" },
-      { index: 2, kind: "command", label: "npm --version" },
+      {
+        index: 1,
+        kind: "update",
+        label: "update: file",
+        params: { fileId: "file", prompt: "Take a look at the generated file and confirm it looks right." },
+      },
+      { index: 2, kind: "command", label: "npm --version", params: { command: "npm", args: "--version" } },
     ]);
   });
 

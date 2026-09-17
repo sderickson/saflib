@@ -4,6 +4,12 @@ export interface WorkflowRunStepDescription {
   index: number;
   kind: string;
   label?: string;
+  /**
+   * Key/value breakdown of this step's own input fields — e.g. a
+   * `call-workflow` step's `targetInput` — for a detail list in the UI
+   * instead of cramming everything into `label`'s single line.
+   */
+  params?: Record<string, string>;
 }
 
 /**
@@ -20,13 +26,15 @@ export function describeWorkflowSteps(
 ): WorkflowRunStepDescription[] {
   return definition.steps.map((step, index) => {
     let label: string | undefined;
+    let params: Record<string, string> | undefined;
     try {
       const input = step.input({ context: {} });
       label = summarizeStepInput(step.kind, input);
+      params = describeStepParams(step.kind, input);
     } catch {
       label = undefined;
     }
-    return { index, kind: step.kind, label };
+    return { index, kind: step.kind, label, params };
   });
 }
 
@@ -57,23 +65,66 @@ export function summarizeStepInput(kind: string, input: unknown): string | undef
     case "update":
       return typeof obj.fileId === "string" ? `update: ${obj.fileId}` : undefined;
     case "call-workflow": {
+      // Just the target id — no "call-workflow:" prefix, no inlined
+      // targetInput JSON. A nested call's own params are numerous enough
+      // (and the sidebar column narrow enough) that cramming them into
+      // this one line made the label unreadable; see `describeStepParams`
+      // for where they now go instead.
       const target = obj.targetDefinition as { id?: string } | undefined;
-      if (!target?.id) return undefined;
-      // Config-compiled `call-workflow` steps' `targetInput` is a closure
-      // over the config file's own step body (see `compile.ts`), not
-      // context-dependent — safe (and important) to show here, e.g. so a
-      // "did my edit to this step's `path` actually take" question can be
-      // answered by just looking at the sidebar instead of guessing.
-      const targetInput = obj.targetInput;
-      const hasTargetInput =
-        targetInput && typeof targetInput === "object" && Object.keys(targetInput).length > 0;
-      return hasTargetInput
-        ? `call-workflow: ${target.id} ${truncate(JSON.stringify(targetInput))}`
-        : `call-workflow: ${target.id}`;
+      return target?.id;
     }
     case "copy":
       return typeof obj.name === "string" ? `copy: ${obj.name}` : undefined;
     default:
       return undefined;
   }
+}
+
+/**
+ * A step's own input fields as a flat key/value string map, for a sidebar
+ * detail list (one `<li>key: value</li>` per entry) instead of `label`'s
+ * single truncated line. `undefined` (rather than `{}`) when there's
+ * nothing worth listing, so the UI can skip rendering an empty list.
+ */
+export function describeStepParams(
+  kind: string,
+  input: unknown,
+): Record<string, string> | undefined {
+  if (!input || typeof input !== "object") return undefined;
+  const obj = input as Record<string, unknown>;
+  const params: Record<string, string> = {};
+
+  switch (kind) {
+    case "cd":
+      if (typeof obj.path === "string") params.path = obj.path;
+      break;
+    case "command":
+    case "npm-script":
+      if (typeof obj.command === "string") params.command = obj.command;
+      if (typeof obj.script === "string") params.script = obj.script;
+      if (typeof obj.workspace === "string") params.workspace = obj.workspace;
+      if (Array.isArray(obj.args) && obj.args.length > 0) params.args = obj.args.join(" ");
+      break;
+    case "prompt":
+      if (typeof obj.prompt === "string") params.prompt = obj.prompt;
+      break;
+    case "update":
+      if (typeof obj.fileId === "string") params.fileId = obj.fileId;
+      if (typeof obj.prompt === "string") params.prompt = obj.prompt;
+      break;
+    case "copy":
+      if (typeof obj.name === "string") params.name = obj.name;
+      break;
+    case "call-workflow": {
+      const targetInput = obj.targetInput;
+      if (targetInput && typeof targetInput === "object") {
+        for (const [key, value] of Object.entries(targetInput as Record<string, unknown>)) {
+          params[key] = typeof value === "string" ? value : JSON.stringify(value);
+        }
+      }
+      break;
+    }
+  }
+
+  return Object.keys(params).length > 0 ? params : undefined;
 }

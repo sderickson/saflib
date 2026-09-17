@@ -192,7 +192,7 @@ describe("RunPage", () => {
     expect(el.scrollTop).toBe(100);
   });
 
-  it("shows a step sidebar, highlights the step at the top of the view, and marks the last agent-input sticky", async () => {
+  it("shows a step sidebar, highlights the step at the bottom of the view, and marks the last agent-input sticky", async () => {
     logsState = [
       {
         id: "l1",
@@ -228,15 +228,18 @@ describe("RunPage", () => {
     expect(stickyItems).toHaveLength(1);
     expect(stickyItems[0].text()).toContain("Do the second thing");
 
-    // Fake layout: item 0 (step 0) above the fold, item 1 (step 1) at top of view.
+    // Fake layout: item 0 (step 0) fills almost the whole viewport starting
+    // at its very top; item 1 (step 1) only just peeks over the viewport's
+    // *bottom* edge. A top-of-viewport rule would pick item 0 (it's the one
+    // at the top); a bottom-of-viewport rule picks item 1.
     const itemEls = items.map((i) => i.element as HTMLElement);
     vi.spyOn(itemEls[0], "getBoundingClientRect").mockReturnValue({
-      top: -50,
-      bottom: -10,
+      top: 0,
+      bottom: 490,
     } as DOMRect);
     vi.spyOn(itemEls[1], "getBoundingClientRect").mockReturnValue({
-      top: 0,
-      bottom: 40,
+      top: 490,
+      bottom: 600,
     } as DOMRect);
     const el = wrapper.find(".run-page__logs").element as HTMLElement;
     vi.spyOn(el, "getBoundingClientRect").mockReturnValue({ top: 0, bottom: 500 } as DOMRect);
@@ -246,6 +249,44 @@ describe("RunPage", () => {
     const sidebarSteps = wrapper.findAll(".run-page__sidebar-step");
     expect(sidebarSteps[1].classes()).toContain("run-page__sidebar-step--active");
     expect(sidebarSteps[0].classes()).not.toContain("run-page__sidebar-step--active");
+  });
+
+  it("colors sidebar steps by the run's progress, and lists each step's params", async () => {
+    runState = runFixture({ current_step_index: 1 });
+    stepsState = [
+      { index: 0, kind: "cd", label: "cd test-product/service/db", params: { path: "test-product/service/db" } },
+      {
+        index: 1,
+        kind: "call-workflow",
+        label: "drizzle/update-schema",
+        params: { path: "./schemas/todo.ts", prompt: "Add a title column" },
+      },
+      { index: 2, kind: "command", label: "npm test" },
+    ];
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("drizzle/update-schema");
+    });
+
+    const sidebarSteps = wrapper.findAll(".run-page__sidebar-step");
+    // Step 0 already ran (current_step_index is 1) -> done.
+    expect(sidebarSteps[0].classes()).toContain("run-page__sidebar-step--done");
+    expect(sidebarSteps[0].classes()).not.toContain("run-page__sidebar-step--running");
+    // Step 1 is the current one -> running.
+    expect(sidebarSteps[1].classes()).toContain("run-page__sidebar-step--running");
+    expect(sidebarSteps[1].classes()).not.toContain("run-page__sidebar-step--done");
+    // Step 2 hasn't been reached -> neither.
+    expect(sidebarSteps[2].classes()).not.toContain("run-page__sidebar-step--done");
+    expect(sidebarSteps[2].classes()).not.toContain("run-page__sidebar-step--running");
+
+    // No raw "call-workflow: ..." blob in the label — just the target id —
+    // with its input broken out into its own list instead.
+    expect(sidebarSteps[1].text()).not.toContain("call-workflow");
+    const params = sidebarSteps[1].findAll(".run-page__sidebar-step-param");
+    expect(params.map((p) => p.text())).toEqual(["path: ./schemas/todo.ts", "prompt: Add a title column"]);
   });
 
   it("offers Retry/Revert & Retry/Skip Step when failed, sending the right options and extra prompt", async () => {
@@ -286,4 +327,72 @@ describe("RunPage", () => {
     });
   });
 
+  it("auto-continue: turning it on immediately advances, and keeps chaining while each step succeeds", async () => {
+    let advanceCount = 0;
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, () => {
+        advanceCount++;
+        // Third call finishes the run — the chain should then stop on its own.
+        if (advanceCount >= 3) return HttpResponse.json({ status: "done" });
+        return HttpResponse.json({ status: "success", result: {} });
+      }),
+    );
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+    // Depends on the run query having actually resolved — the header's
+    // "Run {{ runId }}" renders from the route param alone and would pass
+    // immediately regardless, which isn't enough to know `run.value` (and
+    // so `canAutoAdvance`) is populated yet.
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    const autoButton = wrapper.findAll("button").find((b) => b.text().includes("Auto-continue"));
+    expect(autoButton!.text()).toBe("Auto-continue: Off");
+    await autoButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(autoButton!.text()).toBe("Auto-continue: On");
+      expect(advanceCount).toBe(3);
+    });
+  });
+
+  it("auto-continue: turning it off mid-turn lets the current step finish but doesn't chain another", async () => {
+    let advanceCount = 0;
+    let resolveFirst!: () => void;
+    const firstCallStarted = new Promise<void>((resolve) => {
+      resolveFirst = resolve;
+    });
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, async () => {
+        advanceCount++;
+        if (advanceCount === 1) {
+          resolveFirst();
+          // Hold the first call open until the test turns auto-continue off.
+          await new Promise((r) => setTimeout(r, 20));
+        }
+        return HttpResponse.json({ status: "success", result: {} });
+      }),
+    );
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    const autoButton = wrapper.findAll("button").find((b) => b.text().includes("Auto-continue"));
+    await autoButton!.trigger("click");
+    await firstCallStarted;
+    // Toggle off while the first call is still in flight.
+    await autoButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(autoButton!.text()).toBe("Auto-continue: Off");
+    });
+    // Give any (wrongly) chained call a chance to fire before asserting none did.
+    await new Promise((r) => setTimeout(r, 50));
+    expect(advanceCount).toBe(1);
+  });
 });

@@ -18,13 +18,13 @@ describe("describeWorkflowSteps", () => {
     const definition = compileConfigWorkflow("test/plan", body!, {});
 
     expect(describeWorkflowSteps(definition)).toEqual([
-      { index: 0, kind: "cd", label: "cd test-product/service/db" },
-      { index: 1, kind: "prompt", label: "Say hello!" },
-      { index: 2, kind: "command", label: "npm --version" },
+      { index: 0, kind: "cd", label: "cd test-product/service/db", params: { path: "test-product/service/db" } },
+      { index: 1, kind: "prompt", label: "Say hello!", params: { prompt: "Say hello!" } },
+      { index: 2, kind: "command", label: "npm --version", params: { command: "npm", args: "--version" } },
     ]);
   });
 
-  it("labels a call-workflow step with its targetInput, so an edited field is visible", () => {
+  it("labels a call-workflow step with just the target id, and its targetInput as params", () => {
     const { result: body } = validateWorkflowConfigBody({
       name: "test",
       steps: [
@@ -43,7 +43,8 @@ describe("describeWorkflowSteps", () => {
       {
         index: 0,
         kind: "call-workflow",
-        label: 'call-workflow: example/hello {"path":"./schemas/todo.ts"}',
+        label: "example/hello",
+        params: { path: "./schemas/todo.ts" },
       },
     ]);
   });
@@ -66,7 +67,7 @@ describe("describeWorkflowSteps", () => {
     });
 
     expect(describeWorkflowSteps(definition)).toEqual([
-      { index: 0, kind: "custom", label: undefined },
+      { index: 0, kind: "custom", label: undefined, params: undefined },
     ]);
   });
 });

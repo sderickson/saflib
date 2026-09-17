@@ -983,7 +983,17 @@
           "label": {
             "type": "string",
             "description": "Best-effort human-readable summary of the step's input.",
-            "example": "call-workflow: drizzle/add-query"
+            "example": "drizzle/add-query"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key/value breakdown of this step's own input fields (e.g. a call-workflow step's targetInput), for a detail list in the UI instead of cramming everything into `label`.\n",
+            "example": {
+              "path": "./schemas/todo.ts"
+            }
           }
         }
       },

@@ -16,11 +16,25 @@
           v-for="step in steps"
           :key="step.index"
           class="run-page__sidebar-step"
-          :class="{ 'run-page__sidebar-step--active': step.index === currentStepIndex }"
+          :class="stepStatusClasses(step)"
           @click="scrollToStep(step.index)"
         >
-          <span class="run-page__sidebar-step-index">{{ step.index }}</span>
-          <span class="run-page__sidebar-step-label">{{ step.label ?? step.kind }}</span>
+          <div class="run-page__sidebar-step-head">
+            <span class="run-page__sidebar-step-index">{{ step.index }}</span>
+            <span class="run-page__sidebar-step-label" :title="step.label ?? step.kind">{{
+              step.label ?? step.kind
+            }}</span>
+          </div>
+          <ul v-if="step.params" class="run-page__sidebar-step-params">
+            <li
+              v-for="(value, key) in step.params"
+              :key="key"
+              class="run-page__sidebar-step-param"
+              :title="`${key}: ${value}`"
+            >
+              <span class="run-page__sidebar-step-param-key">{{ key }}:</span> {{ value }}
+            </li>
+          </ul>
         </div>
       </aside>
 
@@ -101,9 +115,17 @@
         v-else-if="run?.status !== 'failed'"
         color="primary"
         :disabled="run?.status === 'done'"
-        @click="advanceMutation.mutate(runId)"
+        @click="advanceOnce()"
       >
         Advance
+      </v-btn>
+      <v-btn
+        :color="autoContinue ? 'primary' : undefined"
+        :variant="autoContinue ? 'flat' : 'outlined'"
+        class="ml-2"
+        @click="toggleAutoContinue()"
+      >
+        Auto-continue: {{ autoContinue ? "On" : "Off" }}
       </v-btn>
       <span v-if="advanceMutation.isPending.value" class="text-body-2 text-medium-emphasis ml-3">
         Agent is running…
@@ -147,6 +169,22 @@ const advanceMutation = useAdvanceWorkflowRunMutation();
 const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
 
+/**
+ * Done/running status coloring, derived purely from `run.current_step_index`
+ * — no per-step status from the server needed. A step before the run's
+ * current index has already succeeded; the step *at* the current index is
+ * whatever's blocking progress right now (mid-turn, or the one that just
+ * failed); anything after is simply not reached yet.
+ */
+function stepStatusClasses(step: { index: number }): Record<string, boolean> {
+  const currentIndex = run.value?.current_step_index;
+  return {
+    "run-page__sidebar-step--done": currentIndex !== undefined && step.index < currentIndex,
+    "run-page__sidebar-step--running": currentIndex !== undefined && step.index === currentIndex,
+    "run-page__sidebar-step--active": step.index === currentStepIndex.value,
+  };
+}
+
 const extraPrompt = ref("");
 
 function retry(options: { revert?: boolean; skip?: boolean } = {}) {
@@ -157,6 +195,56 @@ function retry(options: { revert?: boolean; skip?: boolean } = {}) {
   });
   extraPrompt.value = "";
 }
+
+function advanceOnce() {
+  advanceMutation.mutate(runId.value);
+}
+
+/**
+ * Whether a plain (no revert/skip/extraPrompt) advance makes sense right
+ * now — same states the manual Advance button itself allows (see its
+ * `v-else-if`/`:disabled` above). Auto-continue deliberately never fires
+ * for a `failed` run: that state's Retry/Revert/Skip choice is the user's
+ * to make, not something to loop past automatically.
+ */
+const canAutoAdvance = computed(
+  () => run.value !== undefined && run.value.status !== "failed" && run.value.status !== "done",
+);
+
+/**
+ * On/off, flippable at any time — including mid-turn, per the ask. Turning
+ * it off doesn't cancel anything in flight; the in-progress step (if any)
+ * still runs to completion, and the chain below just doesn't get extended
+ * after it. Turning it on kicks off a chain immediately if nothing's
+ * currently running and the run's in an advance-able state.
+ */
+const autoContinue = ref(false);
+
+function toggleAutoContinue() {
+  autoContinue.value = !autoContinue.value;
+  if (autoContinue.value && !advanceMutation.isPending.value && canAutoAdvance.value) {
+    advanceOnce();
+  }
+}
+
+// Chains further plain advances for as long as each one succeeds — same
+// "keep going while success" contract as the CLI's own advance loop (see
+// `new-workflows/cli/advance-loop.ts`): `lib` never decides to continue on
+// its own, so something has to. Watches the mutation's pending/settled
+// transition (rather than a per-call `onSuccess`) so this covers *every*
+// advance that finishes — a manual click, a Retry, or a previous link in
+// this same chain — not just calls this function itself made.
+watch(
+  () => advanceMutation.isPending.value,
+  (pending, wasPending) => {
+    if (!wasPending || pending) return;
+    if (!autoContinue.value) return;
+    const outcome = advanceMutation.data.value as { status?: string } | undefined;
+    if (outcome?.status === "success") {
+      advanceOnce();
+    }
+  },
+);
 
 const logContainer = ref<HTMLElement | null>(null);
 const SCROLL_BOTTOM_THRESHOLD_PX = 32;
@@ -207,27 +295,33 @@ function isLastAgentInput(item: LogItem): boolean {
 }
 
 /**
- * Which step's logs are at the top of the visible viewport — drives the
- * sidebar highlight. Recomputed from actual rendered positions (not the
- * run's own `current_step_index`) so scrolling back through history
- * highlights the step you're actually looking at, not the live one.
+ * Which step's logs are at the *bottom* of the visible viewport — drives
+ * the sidebar highlight. That's the step whose content you're actually
+ * reading as you scroll down (the top of the viewport is usually already-
+ * read history scrolling away), recomputed from actual rendered positions
+ * rather than the run's own `current_step_index` so scrolling back through
+ * history highlights the step you're looking at, not the live one.
  */
 const currentStepIndex = ref<number | undefined>(undefined);
 
 function updateCurrentStepIndex() {
   const el = logContainer.value;
   if (!el) return;
-  const containerTop = el.getBoundingClientRect().top;
+  const containerBottom = el.getBoundingClientRect().bottom;
   const items = el.querySelectorAll<HTMLElement>("[data-step-index]");
   let found: number | undefined;
   for (const itemEl of items) {
-    if (itemEl.getBoundingClientRect().bottom - containerTop > 0) {
+    // Keep advancing `found` through every item that's started above the
+    // viewport's bottom edge; the last one is whichever item occupies (or
+    // overlaps) that edge. Items entirely below it end the search.
+    if (itemEl.getBoundingClientRect().top < containerBottom) {
       found = Number(itemEl.dataset.stepIndex);
+    } else {
       break;
     }
   }
   if (found === undefined && items.length > 0) {
-    found = Number(items[items.length - 1].dataset.stepIndex);
+    found = Number(items[0].dataset.stepIndex);
   }
   currentStepIndex.value = found;
 }
@@ -306,8 +400,6 @@ const statusColor = computed(() => {
 }
 .run-page__sidebar-step {
   padding: 0.4rem 0.75rem;
-  display: flex;
-  gap: 0.5rem;
   font-size: 0.8rem;
   cursor: pointer;
   border-left: 3px solid transparent;
@@ -315,10 +407,23 @@ const statusColor = computed(() => {
 .run-page__sidebar-step:hover {
   background: rgba(128, 128, 128, 0.08);
 }
+/* Done/running reflect the run's own progress (current_step_index) —
+   unstarted steps keep the plain, uncolored background. */
+.run-page__sidebar-step--done {
+  background: rgba(var(--v-theme-success), 0.12);
+}
+.run-page__sidebar-step--running {
+  background: rgba(var(--v-theme-warning), 0.16);
+}
+/* The step currently scrolled to (bottom-of-viewport) — independent of
+   done/running, so it layers a border + bold on top of either. */
 .run-page__sidebar-step--active {
   border-left-color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.08);
   font-weight: 600;
+}
+.run-page__sidebar-step-head {
+  display: flex;
+  gap: 0.5rem;
 }
 .run-page__sidebar-step-index {
   opacity: 0.5;
@@ -327,6 +432,21 @@ const statusColor = computed(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.run-page__sidebar-step-params {
+  margin: 0.2rem 0 0 1.25rem;
+  padding: 0;
+  list-style: disc;
+  opacity: 0.7;
+}
+.run-page__sidebar-step-param {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+}
+.run-page__sidebar-step-param-key {
+  opacity: 0.7;
 }
 .run-page__logs {
   flex: 1 1 auto;

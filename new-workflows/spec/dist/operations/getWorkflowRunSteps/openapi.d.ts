@@ -34,9 +34,18 @@ export interface components {
             kind: string;
             /**
              * @description Best-effort human-readable summary of the step's input.
-             * @example call-workflow: drizzle/add-query
+             * @example drizzle/add-query
              */
             label?: string;
+            /**
+             * @description Key/value breakdown of this step's own input fields (e.g. a call-workflow step's targetInput), for a detail list in the UI instead of cramming everything into `label`.
+             * @example {
+             *       "path": "./schemas/todo.ts"
+             *     }
+             */
+            params?: {
+                [key: string]: string;
+            };
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
