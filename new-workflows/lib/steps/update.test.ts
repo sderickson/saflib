@@ -70,6 +70,29 @@ describe("runUpdateStep", () => {
     expect(result.status).toBe("error");
   });
 
+  it("logs each TODO-retry prompt as its own agent-input entry, not silently", async () => {
+    // Regression: the retry prompt was only ever handed to `runAgentTurn`,
+    // never `ctx.log`'d — a TODO-triggered retry turn was invisible in the
+    // log feed, indistinguishable from the agent's own initial turn just
+    // continuing on its own.
+    const dir = mkdtempSync(path.join(tmpdir(), "update-step-"));
+    const filePath = path.join(dir, "file.ts");
+    writeFileSync(filePath, "// TODO: implement\n");
+    const { ctx, chunks } = makeTestContext({
+      mode: "run",
+      agentConfig: { cli: "mock-agent" },
+      copiedFiles: { file: filePath },
+    });
+
+    await runUpdateStep({ fileId: "file" }, ctx);
+
+    const agentInputs = chunks.filter((c) => c.channel === "agent-input");
+    // The initial prompt, plus one retry prompt per try (3 tries before
+    // giving up) — each one logged, not just the first.
+    expect(agentInputs.length).toBeGreaterThanOrEqual(4);
+    expect(agentInputs.filter((c) => c.content.includes("contains TODO strings")).length).toBe(3);
+  });
+
   it("in print mode, halts on first attempt and emits the prompt", async () => {
     const dir = mkdtempSync(path.join(tmpdir(), "update-step-"));
     const filePath = path.join(dir, "file.ts");

@@ -58,7 +58,7 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
     // reliably exit promptly while a child is active, the Stop button
     // could hang waiting for a `close` event that took a long time (or
     // never came).
-    const agent = spawn("claude", args, { env: subprocessEnv(), detached: true });
+    const agent = spawn("claude", args, { env: subprocessEnv(), cwd: ctx.cwd, detached: true });
     agent.stdin.end();
 
     let buffer = "";

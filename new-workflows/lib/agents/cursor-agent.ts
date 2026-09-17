@@ -20,7 +20,7 @@ export const executePromptWithCursor: AgentAdapter = async (msg, ctx) => {
       args.push("--model", "auto");
     }
 
-    const agent = spawn("cursor-agent", args, { env: subprocessEnv() });
+    const agent = spawn("cursor-agent", args, { env: subprocessEnv(), cwd: ctx.cwd });
     agent.stdin.end();
 
     let buffer = "";

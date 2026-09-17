@@ -73,10 +73,12 @@ export const runUpdateStep: StepFn<UpdateStepInput> = async (rawInput, ctx) => {
         message: `Agent failed to remove TODOs from ${filePath}.`,
       };
     }
-    const retry = await runAgentTurn(
-      `File ${filePath} contains TODO strings. Make sure to resolve them before continuing.`,
-      ctx,
-    );
+    // Same visibility as the initial prompt — without this, a TODO-retry
+    // turn is invisible in the log feed: it looks like the agent's own
+    // turn just kept going, with no indication a new instruction was sent.
+    const retryPrompt = `File ${filePath} contains TODO strings. Make sure to resolve them before continuing.`;
+    ctx.log({ channel: "agent-input", level: "info", content: retryPrompt });
+    const retry = await runAgentTurn(retryPrompt, ctx);
     shouldContinue = retry.shouldContinue;
     if (!shouldContinue) break;
     tries++;
