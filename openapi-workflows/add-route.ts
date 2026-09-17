@@ -172,7 +172,9 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
     })),
 
     step<PromptStepInput, OpenApiRouteWorkflowContext>("prompt", runPromptStep, ({ context }) => ({
-      prompt: `## Audit map (when this route matters)
+      prompt: `Decide whether **${context.method.toUpperCase()} ${context.urlPath}** needs an entry in the product's audit map, using the criteria below, and add one now if it does. If it doesn't, say so and move on — no further action needed.
+
+## Audit map (when this route matters)
 
 Routes are **not** audited by default. If this operation is security- or compliance-relevant, add an entry to the product audit map (e.g. \`saflib/base/service/audit/audit-map.ts\` or \`<product>/service/audit/audit-map.ts\`).
 
