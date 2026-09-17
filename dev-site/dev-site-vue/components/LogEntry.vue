@@ -66,8 +66,26 @@ const moreLabel = computed(
 .log-entry {
   margin: 0.3rem 0;
   padding: 0.4rem 0.65rem;
-  font-family: monospace;
   font-size: 0.82rem;
+  border-left-width: 3px;
+  border-left-style: solid;
+  border-left-color: transparent;
+}
+/* A left accent bar per channel — quick to scan for which kind of
+   activity a card is, before reading its content. Declared before
+   `.log-entry--error` so a failed entry's red always wins over its
+   channel's own color when both classes apply. */
+.log-entry--agent {
+  border-left-color: #2196f3;
+}
+.log-entry--agent-input {
+  border-left-color: #ff9800;
+}
+.log-entry--terminal {
+  border-left-color: #9e9e9e;
+}
+.log-entry--tool {
+  border-left-color: #4caf50;
 }
 .log-entry--error {
   border-color: rgb(var(--v-theme-error));
@@ -76,6 +94,7 @@ const moreLabel = computed(
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  font-family: monospace;
 }
 .log-entry__channel {
   opacity: 0.6;
@@ -89,10 +108,13 @@ const moreLabel = computed(
   word-break: break-word;
   margin-top: 0.2rem;
   opacity: 0.85;
+  font-family: monospace;
 }
 .log-entry__body--markdown {
+  /* Prose, not a text dump — no monospace, no white-space override; the
+     agent's own markdown just uses the page's normal body font. */
   white-space: normal;
-  font-family: initial;
+  font-family: unset;
 }
 .log-entry__body--markdown :deep(p),
 .log-entry__body--markdown :deep(ul),

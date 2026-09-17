@@ -103,6 +103,11 @@ const moreLabel = computed(() => {
   padding: 0.5rem 0.65rem;
   font-family: monospace;
   font-size: 0.82rem;
+  border-left-width: 3px;
+  border-left-style: solid;
+  /* Same left-accent-bar convention as `LogEntry.vue`'s `agent` channel —
+     a tool call is always agent-driven. */
+  border-left-color: #2196f3;
 }
 .tool-call-card--error {
   border-color: rgb(var(--v-theme-error));

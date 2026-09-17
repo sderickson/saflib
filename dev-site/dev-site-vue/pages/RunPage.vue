@@ -103,33 +103,45 @@
         </div>
       </template>
 
-      <v-btn
-        v-if="advanceMutation.isPending.value"
-        color="error"
-        :loading="cancelMutation.isPending.value"
-        @click="cancelMutation.mutate(runId)"
-      >
-        Stop
-      </v-btn>
-      <v-btn
-        v-else-if="run?.status !== 'failed'"
-        color="primary"
-        :disabled="run?.status === 'done'"
-        @click="advanceOnce()"
-      >
-        Advance
-      </v-btn>
-      <v-btn
-        :color="autoContinue ? 'primary' : undefined"
-        :variant="autoContinue ? 'flat' : 'outlined'"
-        class="ml-2"
-        @click="toggleAutoContinue()"
-      >
-        Auto-continue: {{ autoContinue ? "On" : "Off" }}
-      </v-btn>
-      <span v-if="advanceMutation.isPending.value" class="text-body-2 text-medium-emphasis ml-3">
-        Agent is running…
-      </span>
+      <div class="run-page__foot-actions">
+        <div class="run-page__foot-actions-left">
+          <v-btn
+            v-if="advanceMutation.isPending.value"
+            color="error"
+            :loading="cancelMutation.isPending.value"
+            @click="cancelMutation.mutate(runId)"
+          >
+            Stop
+          </v-btn>
+          <v-btn
+            v-else-if="run?.status !== 'failed'"
+            color="primary"
+            :disabled="run?.status === 'done'"
+            @click="advanceOnce()"
+          >
+            Advance
+          </v-btn>
+          <v-btn
+            :color="autoContinue ? 'primary' : undefined"
+            :variant="autoContinue ? 'flat' : 'outlined'"
+            class="ml-2"
+            @click="toggleAutoContinue()"
+          >
+            Auto-continue: {{ autoContinue ? "On" : "Off" }}
+          </v-btn>
+          <span v-if="advanceMutation.isPending.value" class="text-body-2 text-medium-emphasis ml-3">
+            Agent is running…
+          </span>
+        </div>
+        <div class="run-page__foot-actions-right">
+          <v-btn size="small" variant="text" @click="testAlert('success')">
+            Test success sound
+          </v-btn>
+          <v-btn size="small" variant="text" @click="testAlert('failure')">
+            Test failure sound
+          </v-btn>
+        </div>
+      </div>
     </footer>
   </div>
 </template>
@@ -235,6 +247,23 @@ function toggleAutoContinue() {
   autoContinue.value = !autoContinue.value;
   if (autoContinue.value && !advanceMutation.isPending.value && canAutoAdvance.value) {
     advanceOnce();
+  }
+}
+
+/**
+ * Plays/shows exactly what a real finish or failure would, on demand — so
+ * "did I actually grant notification permission, is the sound audible,
+ * is the tab/OS suppressing it" can be checked directly instead of
+ * waiting on (and hoping to catch) a real run finishing.
+ */
+function testAlert(kind: "success" | "failure") {
+  unlockAudio();
+  if (kind === "success") {
+    playSuccessBell();
+    notify("Test notification", "This is what a successful run looks like.");
+  } else {
+    playFailureQuack();
+    notify("Test notification", "This is what a failed run looks like.");
   }
 }
 
@@ -483,7 +512,6 @@ watch(
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  font-family: monospace;
   font-size: 0.85rem;
   padding: 0.75rem 1rem;
   background: rgba(128, 128, 128, 0.05);
@@ -503,5 +531,18 @@ watch(
 .run-page__recovery-actions {
   display: flex;
   gap: 0.5rem;
+}
+.run-page__foot-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.run-page__foot-actions-left,
+.run-page__foot-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 </style>

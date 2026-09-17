@@ -59,6 +59,25 @@ const moreLabel = computed(
   padding: 0.4rem 0.65rem;
   font-family: monospace;
   font-size: 0.82rem;
+  border-left-width: 3px;
+  border-left-style: solid;
+  border-left-color: transparent;
+}
+/* Same left-accent-bar convention as `LogEntry.vue` — see its comment.
+   Only `tool`/`terminal` groups actually occur here (see
+   `MERGEABLE_CHANNELS` in group-logs.ts), but kept for all four channels
+   for consistency/future-proofing. */
+.log-entry--agent {
+  border-left-color: #2196f3;
+}
+.log-entry--agent-input {
+  border-left-color: #ff9800;
+}
+.log-entry--terminal {
+  border-left-color: #9e9e9e;
+}
+.log-entry--tool {
+  border-left-color: #4caf50;
 }
 .log-entry--error {
   border-color: rgb(var(--v-theme-error));
