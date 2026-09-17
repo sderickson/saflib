@@ -149,6 +149,13 @@ import LogEntry from "../components/LogEntry.vue";
 import LogEntryGroup from "../components/LogEntryGroup.vue";
 import ToolCallCard from "../components/ToolCallCard.vue";
 import { groupLogs, type LogItem } from "../group-logs.ts";
+import {
+  unlockAudio,
+  playSuccessBell,
+  playFailureQuack,
+  requestNotificationPermission,
+  notify,
+} from "../run-alerts.ts";
 
 withDefaults(defineProps<{ workflowsPath?: string }>(), { workflowsPath: "/workflows" });
 
@@ -185,9 +192,12 @@ function stepStatusClasses(step: { index: number }): Record<string, boolean> {
   };
 }
 
+requestNotificationPermission();
+
 const extraPrompt = ref("");
 
 function retry(options: { revert?: boolean; skip?: boolean } = {}) {
+  unlockAudio();
   advanceMutation.mutate({
     runId: runId.value,
     ...options,
@@ -197,6 +207,7 @@ function retry(options: { revert?: boolean; skip?: boolean } = {}) {
 }
 
 function advanceOnce() {
+  unlockAudio();
   advanceMutation.mutate(runId.value);
 }
 
@@ -367,6 +378,26 @@ const statusColor = computed(() => {
       return undefined;
   }
 });
+
+// Sound + desktop notification when a run stops *on its own* — worth
+// knowing about without keeping the tab in view, especially with
+// auto-continue running unattended. Only reacts to a live transition
+// witnessed while on this page (guarded by `previousStatus === undefined`
+// below) — opening an already-finished run's history page shouldn't
+// replay its outcome.
+watch(
+  () => run.value?.status,
+  (status, previousStatus) => {
+    if (!status || status === previousStatus || previousStatus === undefined) return;
+    if (status === "done") {
+      playSuccessBell();
+      notify("Workflow finished", `Run ${runId.value} completed successfully.`);
+    } else if (status === "failed") {
+      playFailureQuack();
+      notify("Workflow failed", failureMessage.value);
+    }
+  },
+);
 </script>
 
 <style scoped>

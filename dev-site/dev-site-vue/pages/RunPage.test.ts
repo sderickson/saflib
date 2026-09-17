@@ -6,6 +6,7 @@ import { http, HttpResponse } from "msw";
 import RunPage from "./RunPage.vue";
 import { mountTestApp } from "../test-app.ts";
 import { router } from "./test_router.ts";
+import * as runAlerts from "../run-alerts.ts";
 
 const ORIGIN = "http://localhost:3000";
 
@@ -394,5 +395,74 @@ describe("RunPage", () => {
     // Give any (wrongly) chained call a chance to fire before asserting none did.
     await new Promise((r) => setTimeout(r, 50));
     expect(advanceCount).toBe(1);
+  });
+
+  it("plays a sound and shows a notification when the run finishes on its own", async () => {
+    const bellSpy = vi.spyOn(runAlerts, "playSuccessBell").mockImplementation(() => {});
+    const notifySpy = vi.spyOn(runAlerts, "notify").mockImplementation(() => {});
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, () => {
+        runState = runFixture({ status: "done", current_step_index: 2 });
+        return HttpResponse.json({ status: "done" });
+      }),
+    );
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    const advanceButton = wrapper.findAll("button").find((b) => b.text() === "Advance");
+    await advanceButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(bellSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(notifySpy).toHaveBeenCalledTimes(1);
+    expect(notifySpy.mock.calls[0][0]).toContain("finished");
+  });
+
+  it("plays a different sound and notification when the run fails on its own", async () => {
+    const quackSpy = vi.spyOn(runAlerts, "playFailureQuack").mockImplementation(() => {});
+    const notifySpy = vi.spyOn(runAlerts, "notify").mockImplementation(() => {});
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, () => {
+        runState = runFixture({ status: "failed" });
+        return HttpResponse.json({ status: "error", message: "it broke" });
+      }),
+    );
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    const advanceButton = wrapper.findAll("button").find((b) => b.text() === "Advance");
+    await advanceButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(quackSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(notifySpy).toHaveBeenCalledTimes(1);
+    expect(notifySpy.mock.calls[0][1]).toBe("it broke");
+  });
+
+  it("does not replay sound/notification for a run that was already finished when the page loaded", async () => {
+    const bellSpy = vi.spyOn(runAlerts, "playSuccessBell").mockImplementation(() => {});
+    const quackSpy = vi.spyOn(runAlerts, "playFailureQuack").mockImplementation(() => {});
+    runState = runFixture({ status: "done", current_step_index: 2 });
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+    // Give any (wrongly) fired watcher a chance to run.
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(bellSpy).not.toHaveBeenCalled();
+    expect(quackSpy).not.toHaveBeenCalled();
   });
 });
