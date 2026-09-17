@@ -25,7 +25,7 @@
       </aside>
 
       <div ref="logContainer" class="run-page__logs" @scroll="onScroll">
-        <template v-for="item in logItems" :key="item.type === 'tool-call' ? item.id : item.log.id">
+        <template v-for="item in logItems" :key="itemKey(item)">
           <div
             class="run-page__log-item"
             :data-step-index="itemStepIndex(item)"
@@ -37,6 +37,7 @@
               :input="item.input"
               :result-log="item.resultLog"
             />
+            <LogEntryGroup v-else-if="item.type === 'channel-group'" :logs="item.logs" />
             <LogEntry v-else :log="item.log" />
           </div>
         </template>
@@ -123,6 +124,7 @@ import {
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import LogEntry from "../components/LogEntry.vue";
+import LogEntryGroup from "../components/LogEntryGroup.vue";
 import ToolCallCard from "../components/ToolCallCard.vue";
 import { groupLogs, type LogItem } from "../group-logs.ts";
 
@@ -177,7 +179,15 @@ function isNearBottom(el: HTMLElement): boolean {
 }
 
 function itemStepIndex(item: LogItem): number | null {
-  return item.type === "tool-call" ? item.useLog.step_index : item.log.step_index;
+  if (item.type === "tool-call") return item.useLog.step_index;
+  if (item.type === "channel-group") return item.logs[0]!.step_index;
+  return item.log.step_index;
+}
+
+function itemKey(item: LogItem): string {
+  if (item.type === "tool-call") return item.id;
+  if (item.type === "channel-group") return item.id;
+  return item.log.id;
 }
 
 /**

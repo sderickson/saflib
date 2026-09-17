@@ -74,6 +74,66 @@ describe("groupLogs", () => {
     expect(items).toEqual([{ type: "single", log: orphanResult }]);
   });
 
+  it("merges 2+ consecutive same-channel entries into one channel-group", () => {
+    const a = logFixture({ id: "a", channel: "tool", content: "Running command: npm run typecheck" });
+    const b = logFixture({ id: "b", channel: "tool", content: "Successfully ran `npm run typecheck`" });
+    const c = logFixture({ id: "c", channel: "tool", content: "Committed: drizzle/update-schema: update" });
+
+    const items = groupLogs([a, b, c]);
+
+    expect(items).toEqual([
+      { type: "channel-group", id: "group-a", channel: "tool", logs: [a, b, c] },
+    ]);
+  });
+
+  it("leaves a lone entry as a single item, even with the merge pass applied", () => {
+    const a = logFixture({ id: "a", channel: "tool", content: "cd into test-product/service/db" });
+    const b = logFixture({ id: "b", channel: "agent", content: "---------- AGENT ----------\nhi" });
+
+    const items = groupLogs([a, b]);
+
+    expect(items).toEqual([
+      { type: "single", log: a },
+      { type: "single", log: b },
+    ]);
+  });
+
+  it("breaks a channel-group at a channel change, then starts a new one", () => {
+    const a = logFixture({ id: "a", channel: "tool", content: "one" });
+    const b = logFixture({ id: "b", channel: "tool", content: "two" });
+    const c = logFixture({ id: "c", channel: "terminal", content: "npm output" });
+    const d = logFixture({ id: "d", channel: "tool", content: "three" });
+    const e = logFixture({ id: "e", channel: "tool", content: "four" });
+
+    const items = groupLogs([a, b, c, d, e]);
+
+    expect(items).toEqual([
+      { type: "channel-group", id: "group-a", channel: "tool", logs: [a, b] },
+      { type: "single", log: c },
+      { type: "channel-group", id: "group-d", channel: "tool", logs: [d, e] },
+    ]);
+  });
+
+  it("does not merge a channel-group across an intervening tool-call", () => {
+    const a = logFixture({ id: "a", channel: "tool", content: "one" });
+    const b = logFixture({ id: "b", channel: "tool", content: "two" });
+    const useLog = logFixture({
+      id: "u",
+      channel: "agent",
+      content: JSON.stringify({ kind: "tool_use", id: "toolu_1", name: "Bash", input: { command: "ls" } }),
+    });
+    const c = logFixture({ id: "c", channel: "tool", content: "three" });
+    const d = logFixture({ id: "d", channel: "tool", content: "four" });
+
+    const items = groupLogs([a, b, useLog, c, d]);
+
+    expect(items).toEqual([
+      { type: "channel-group", id: "group-a", channel: "tool", logs: [a, b] },
+      { type: "tool-call", id: "toolu_1", name: "Bash", input: { command: "ls" }, useLog },
+      { type: "channel-group", id: "group-c", channel: "tool", logs: [c, d] },
+    ]);
+  });
+
   it("interleaves standalone entries and tool calls in their original order", () => {
     const text1 = logFixture({ content: "---------- AGENT ----------\nfirst" });
     const useLog = logFixture({
