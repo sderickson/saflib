@@ -117,6 +117,13 @@ services:
       NEW_WORKFLOWS_DB_PATH: /data/new-workflows/local.sqlite
       # DEV_SITE_STATIC_DIR comes from the image ENV (saf-docker generate).
       DEV_SITE_GITHUB_REPO: sderickson/saflib
+      # Forwarded from the host (see resolve-dev-site-env.sh) so workflow
+      # step commits (@saflib/new-workflows's `commitIfDirty`) succeed as
+      # the container's `node` user, which has no git identity of its own.
+      GIT_AUTHOR_NAME: ${GIT_AUTHOR_NAME:-}
+      GIT_AUTHOR_EMAIL: ${GIT_AUTHOR_EMAIL:-}
+      GIT_COMMITTER_NAME: ${GIT_COMMITTER_NAME:-}
+      GIT_COMMITTER_EMAIL: ${GIT_COMMITTER_EMAIL:-}
     volumes:
       # Read-write: workflow "update" steps (see @saflib/new-workflows) edit
       # files here directly, same repo checkout the host sees.

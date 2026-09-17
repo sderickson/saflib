@@ -214,15 +214,6 @@ async function runStep(
     }
   }
 
-  const finishedAt = new Date();
-  await updateResultWorkflowStep(dbKey, {
-    id: stepRow.id,
-    status: stepResult.status === "success" ? "success" : stepResult.status,
-    result: "result" in stepResult ? (stepResult.result ?? null) : null,
-    error: stepResult.status === "error" ? stepResult.message : null,
-    now: finishedAt,
-  });
-
   if (stepResult.status === "success") {
     const label = summarizeStepInput(step.kind, stepInput) ?? step.kind;
     const commitMessage = options?.skip
@@ -234,15 +225,29 @@ async function runStep(
         write({ channel: "tool", level: "info", content: `Committed: ${commitMessage}` });
       }
     } catch (error) {
-      // A commit failure shouldn't retroactively fail an otherwise-
-      // successful step — surface it as a log line, not an error result.
-      write({
-        channel: "tool",
-        level: "error",
-        content: `Failed to commit after this step: ${error instanceof Error ? error.message : String(error)}`,
-      });
+      // The whole revert/skip/retry recovery flow (`options.revert`,
+      // `call-workflow.ts`'s stale-input refresh on a *failed* child, etc.)
+      // assumes every successful step leaves a clean commit behind before
+      // the next step runs. A commit failure breaks that invariant — left
+      // as just a log line, the run would silently keep going with an
+      // ever-growing pile of uncommitted, unattributed changes instead of
+      // stopping where the problem actually is. Treat it as this step
+      // failing outright instead.
+      stepResult = {
+        status: "error",
+        message: `Step succeeded but failed to commit its changes: ${error instanceof Error ? error.message : String(error)}`,
+      };
     }
   }
+
+  const finishedAt = new Date();
+  await updateResultWorkflowStep(dbKey, {
+    id: stepRow.id,
+    status: stepResult.status === "success" ? "success" : stepResult.status,
+    result: "result" in stepResult ? (stepResult.result ?? null) : null,
+    error: stepResult.status === "error" ? stepResult.message : null,
+    now: finishedAt,
+  });
 
   const isLastStep = stepIndex + 1 >= def.steps.length;
   const nextStepIndex = stepResult.status === "success" ? stepIndex + 1 : stepIndex;

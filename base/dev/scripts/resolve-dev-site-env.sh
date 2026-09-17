@@ -12,6 +12,20 @@ OUT="$DEV_DIR/dev-site.env"
 PRODUCT_ROOT="base"
 REPO_MOUNT="$SAFLIB_ROOT"
 
+# Workflow "update"/step commits (see @saflib/new-workflows's `commitIfDirty`)
+# run as the container's `node` user, which has no git identity of its own —
+# `git commit` fails outright ("unable to auto-detect email address") without
+# this. Forwarded as GIT_AUTHOR_*/GIT_COMMITTER_* env vars (which git reads
+# directly, no `git config --global` needed) rather than bind-mounting the
+# host's ~/.gitconfig, since a template global config can carry unrelated
+# host-specific settings (signing keys, includeIf blocks) that don't
+# translate into the container. Empty string if the host has no identity
+# configured either — same "soft failure, still proceed" approach as
+# resolve-claude-credentials.sh; a workflow needing to commit just fails
+# with the same clear error until the host sets one.
+GIT_AUTHOR_NAME="$(git config --get user.name || true)"
+GIT_AUTHOR_EMAIL="$(git config --get user.email || true)"
+
 # Where @saflib/templates should resolve its root from *inside the
 # container*, not from wherever the code happens to be loaded from (see
 # saflib/templates/index.ts's SAFLIB_ROOT override) — self-determining so
@@ -28,6 +42,10 @@ cat > "$OUT" <<EOF
 DEV_SITE_REPO_MOUNT=$REPO_MOUNT
 DEV_SITE_PRODUCT_ROOT=$PRODUCT_ROOT
 DEV_SITE_SAFLIB_ROOT=$CONTAINER_SAFLIB_ROOT
+GIT_AUTHOR_NAME=$GIT_AUTHOR_NAME
+GIT_AUTHOR_EMAIL=$GIT_AUTHOR_EMAIL
+GIT_COMMITTER_NAME=$GIT_AUTHOR_NAME
+GIT_COMMITTER_EMAIL=$GIT_AUTHOR_EMAIL
 EOF
 
 if [[ -f "$SAFLIB_ROOT/.git" ]] && grep -q '^gitdir:' "$SAFLIB_ROOT/.git" 2>/dev/null; then
