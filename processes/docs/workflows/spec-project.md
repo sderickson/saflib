@@ -22,7 +22,8 @@ When run, the workflow will:
 
 - Upsert 3 templates.
 - Update **example-project.spec.md**.
-- Check with the user that the spec is complete and correct.
+- Check with the user that the spec is complete and correct. Call out the **Security Model Updates** section specifically so the user confirms the security impact before planning begins.
+- Apply the **Security Model Updates** section of the spec to the product's threat model at `../security/threat-model.md`.
 - Update **example-project.plan.md**.
 - Have the user review the plan and make sure it's good to go.
 - Update **example-project.workflow.ts**.

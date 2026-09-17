@@ -28,6 +28,10 @@ const input = [
 export interface SpecProjectWorkflowContext {
   targetName: string;
   targetDir: string;
+  /** Absolute path to the product's threat model, e.g. `{product}/security/threat-model.md`. */
+  threatModelPath: string;
+  /** Same path relative to the workflow cwd, for prompts and checklists. */
+  threatModelDisplayPath: string;
 }
 
 export const SpecProjectWorkflowDefinition = defineWorkflow<
@@ -46,10 +50,19 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
     const date = new Date().toISOString().split("T")[0];
     const projectDirName = `${date}-${input.name}`;
     const targetDir = path.resolve(input.cwd, "notes", projectDirName);
+    // This workflow is run from `{product}/plans`; the threat model lives in `{product}/security`.
+    const threatModelDisplayPath = path.join(
+      "..",
+      "security",
+      "threat-model.md",
+    );
+    const threatModelPath = path.resolve(input.cwd, threatModelDisplayPath);
 
     return {
       targetName: input.name,
       targetDir,
+      threatModelPath,
+      threatModelDisplayPath,
     };
   },
 
@@ -62,7 +75,10 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    allowPaths: ({ context }) => [`${context.targetDir}/**`],
+    allowPaths: ({ context }) => [
+      `${context.targetDir}/**`,
+      context.threatModelPath,
+    ],
   },
 
   steps: [
@@ -75,11 +91,23 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       fileId: "spec",
       promptMessage: `Update **${path.basename(context.copiedFiles!.spec)}**.
 
-      When specifying API endpoints, follow the conventions in /saflib/openapi/docs/02-api-design.md — in particular: one URL per distinct action (don't overload endpoints), batch endpoints when child resources need to be fetched for multiple parents, and JSON object responses keyed by resource name (never a bare business object or array at the root).`,
+      When specifying API endpoints, follow the conventions in /saflib/openapi/docs/02-api-design.md — in particular: one URL per distinct action (don't overload endpoints), batch endpoints when child resources need to be fetched for multiple parents, and JSON object responses keyed by resource name (never a bare business object or array at the root).
+
+      **Security Model Updates**: Before filling in this section, read the product's threat model at \`${context.threatModelDisplayPath}\`. Then, for the feature being specified, work through every bullet in the section: new public surface, authorization, data collected/stored/shared, integrations and secrets, file handling, and security tests. Be concrete (name the routes, tags, tables, and services). If the feature genuinely changes none of these, write "None" with a one-sentence justification rather than deleting the section. If the threat model file does not exist, say so in the section and note that one should be created.`,
     })),
 
     step(PromptStepMachine, () => ({
-      promptText: `Check with the user that the spec is complete and correct.`,
+      promptText: `Check with the user that the spec is complete and correct. Call out the **Security Model Updates** section specifically so the user confirms the security impact before planning begins.`,
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Apply the **Security Model Updates** section of the spec to the product's threat model at \`${context.threatModelDisplayPath}\`.
+
+      * If the section says "None", skip this step.
+      * Otherwise, update the threat model so that it reflects the feature as specified: add new public routes to the public API surface list, add new authz tags or roles to the controls table, add new data flows and integrations, and add any new security specs to the spec map or owner responsibilities. Match the document's existing structure and tone; do not restructure it.
+      * If the threat model file does not exist, create a minimal one modeled on /saflib/base/security/threat-model.md and tell the user.
+
+      The goal is that the threat model is updated *before* implementation starts, so the plan and workflows that follow can reference it.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -87,6 +115,8 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       promptMessage: `Update **${path.basename(context.copiedFiles!.plan)}**.
 
       Note that the project is spec'd, it's time to sketch a plan to implement the spec. The way you'll be doing this is mainly with workflows. Before you write any workflows, though, you should understand what workflows are available, and lay out a plan in the plan.md file.
+
+      If the spec's **Security Model Updates** section is not "None", the plan must include the work it implies: authz tags on new routes, mock clients for new integrations, and a phase (or step within a phase) that adds the security specs listed there. Don't leave security work for after the feature is "done".
 
       You may need to plan for multiple workflows if the spec is larger. It's good to break them down by resource (e.g. database table and related business object) and frontend/backend. So for each resource have one workflow for the frontend and one for the backend, unless it's a small change. It's also generally good to organize workflows in a way that after each one is a good stopping point, where changes can be tested and polished.
       
