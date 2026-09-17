@@ -1,3 +1,4 @@
+import type { App } from "vue";
 import type { Theme } from "vitepress";
 import { createVuetify } from "vuetify";
 import { vuetifyConfig } from "@saflib/base-clients-common/vuetify-config";
@@ -12,10 +13,13 @@ setClientName("__subdomain-name__");
 
 const vuetify = createVuetify(vuetifyConfig);
 
+// `as Theme` (not `satisfies`) — assigning Layout to Theme crashes TS 6's
+// satisfies elaborator when VitePress's nested @vue/* types diverge by path.
 export default {
   Layout: StaticSiteLayout,
   enhanceApp({ app }) {
-    enhanceStaticSiteApp(app);
-    app.use(vuetify);
+    const vueApp = app as unknown as App;
+    enhanceStaticSiteApp(vueApp);
+    vueApp.use(vuetify);
   },
-} satisfies Theme;
+} as Theme;
