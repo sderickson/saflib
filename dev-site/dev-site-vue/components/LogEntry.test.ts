@@ -61,4 +61,33 @@ describe("LogEntry", () => {
     const wrapper = mountLogEntry(logFixture({ level: "error", content: "boom" }));
     expect(wrapper.find(".log-entry--error").exists()).toBe(true);
   });
+
+  it("renders agent-channel content as markdown, not a raw text dump", () => {
+    const wrapper = mountLogEntry(
+      logFixture({
+        channel: "agent",
+        content: "---------- AGENT ----------\n# Heading\n\nSome **bold** text and a [link](https://example.com).",
+      }),
+    );
+    expect(wrapper.find("h1").text()).toBe("Heading");
+    expect(wrapper.find("strong").text()).toBe("bold");
+    const link = wrapper.find("a");
+    expect(link.attributes("href")).toBe("https://example.com");
+    // No line-truncation affordance for markdown entries — they render in full.
+    expect(wrapper.find(".log-entry__toggle").exists()).toBe(false);
+  });
+
+  it("renders agent-input (prompt) content as markdown too", () => {
+    const wrapper = mountLogEntry(
+      logFixture({ channel: "agent-input", content: "Please update:\n\n- `a.ts`\n- `b.ts`" }),
+    );
+    expect(wrapper.findAll("li")).toHaveLength(2);
+    expect(wrapper.find("code").text()).toBe("a.ts");
+  });
+
+  it("does not render tool/terminal content as markdown (plain text, unaffected by markdown syntax)", () => {
+    const wrapper = mountLogEntry(logFixture({ channel: "tool", content: "# not a heading" }));
+    expect(wrapper.find("h1").exists()).toBe(false);
+    expect(wrapper.text()).toContain("# not a heading");
+  });
 });

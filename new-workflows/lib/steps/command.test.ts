@@ -29,6 +29,29 @@ describe("runCommandStep", () => {
     expect(chunks.some((c) => c.channel === "terminal" && c.content.includes("hi"))).toBe(true);
   });
 
+  it("forces color/interactivity off for the spawned process, so tool output (e.g. vitest) doesn't emit cursor-control escape codes", async () => {
+    // Regression: a workflow step's `command`/`npm-script` output is
+    // captured via a pipe and persisted as a plain-text log line, never a
+    // real TTY a tool could render interactively into — but an inherited
+    // `FORCE_COLOR` from the parent process defeats most tools' own
+    // non-TTY auto-detection, producing garbled ANSI escape sequences
+    // wherever that log later gets displayed.
+    const { ctx, chunks } = makeTestContext({ mode: "run" });
+    const result = await runCommandStep(
+      {
+        command: "node",
+        args: ["-e", "console.log(JSON.stringify({ci: process.env.CI, forceColor: process.env.FORCE_COLOR, noColor: process.env.NO_COLOR}))"],
+      },
+      ctx,
+    );
+    expect(result.status).toBe("success");
+    const output = chunks
+      .filter((c) => c.channel === "terminal")
+      .map((c) => c.content)
+      .join("");
+    expect(JSON.parse(output)).toEqual({ ci: "true", forceColor: "0", noColor: "1" });
+  });
+
   it("hard-fails immediately on failure in script mode (no retry)", async () => {
     const { ctx } = makeTestContext({ mode: "script" });
     const result = await runCommandStep({ command: "node", args: ["-e", "process.exit(1)"] }, ctx);

@@ -16,7 +16,26 @@ export function runCommandAsync(
   ctx: WorkflowContext,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { cwd: options.cwd, env: subprocessEnv() });
+    const child = spawn(command, args, {
+      cwd: options.cwd,
+      env: {
+        ...subprocessEnv(),
+        // stdout/stderr are captured via a pipe below, then persisted as
+        // plain-text log lines (dev-site's UI, the CLI) — never a real
+        // TTY a tool could render interactively into. Most tools (chalk,
+        // vitest, tsc) already auto-detect a non-TTY pipe and disable
+        // color/live-updating output on their own, but that detection is
+        // easily defeated by an inherited `FORCE_COLOR` from the parent
+        // process — force it off explicitly rather than trust every
+        // tool's own heuristic. `CI=true` is the more direct signal most
+        // test runners check to skip interactive-only behavior (vitest's
+        // live-updating "RUN" status line, which is what actually
+        // produces cursor-rewrite escape sequences, not just color).
+        FORCE_COLOR: "0",
+        NO_COLOR: "1",
+        CI: "true",
+      },
+    });
     child.stdout?.on("data", (data: Buffer) => {
       ctx.log({ channel: "terminal", level: "info", content: data.toString() });
     });

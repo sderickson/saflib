@@ -8,16 +8,21 @@
       <span class="log-entry__channel">[{{ log.channel }}]</span>
       <span v-if="label" class="log-entry__label">{{ label }}</span>
     </div>
-    <div v-if="previewLines.length" class="log-entry__body">{{ previewText }}</div>
-    <div v-if="expanded && remainingLineCount > 0" class="log-entry__body">{{ restText }}</div>
-    <button v-if="canExpand" type="button" class="log-entry__toggle" @click="expanded = !expanded">
-      {{ expanded ? "Show less" : moreLabel }}
-    </button>
+    <!-- eslint-disable-next-line vue/no-v-html -->
+    <div v-if="isMarkdown" class="log-entry__body log-entry__body--markdown" v-html="renderedHtml" />
+    <template v-else>
+      <div v-if="previewLines.length" class="log-entry__body">{{ previewText }}</div>
+      <div v-if="expanded && remainingLineCount > 0" class="log-entry__body">{{ restText }}</div>
+      <button v-if="canExpand" type="button" class="log-entry__toggle" @click="expanded = !expanded">
+        {{ expanded ? "Show less" : moreLabel }}
+      </button>
+    </template>
   </v-card>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { marked } from "marked";
 import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
 
 const props = defineProps<{ log: WorkflowLogEntry }>();
@@ -32,6 +37,18 @@ const PREVIEW_LINE_COUNT = 4;
 const headerMatch = computed(() => props.log.content.match(/^-{6,} (\S+) -{6,}\n?([\s\S]*)$/));
 const label = computed(() => headerMatch.value?.[1]);
 const body = computed(() => headerMatch.value?.[2] ?? props.log.content);
+
+// The prompts we send the agent and the natural-language turns it sends
+// back are authored/formatted as markdown (headings, lists, code fences,
+// bold) — worth rendering as such instead of a monospace text dump.
+// `tool`/`terminal` entries are one-line narration or raw command output,
+// not prose, so they keep the plain preview/expand behavior below.
+const isMarkdown = computed(
+  () => props.log.channel === "agent" || props.log.channel === "agent-input",
+);
+const renderedHtml = computed(() =>
+  isMarkdown.value ? (marked.parse(body.value, { async: false }) as string) : "",
+);
 
 const lines = computed(() => body.value.split("\n"));
 const previewLines = computed(() => lines.value.slice(0, PREVIEW_LINE_COUNT));
@@ -72,6 +89,42 @@ const moreLabel = computed(
   word-break: break-word;
   margin-top: 0.2rem;
   opacity: 0.85;
+}
+.log-entry__body--markdown {
+  white-space: normal;
+  font-family: initial;
+}
+.log-entry__body--markdown :deep(p),
+.log-entry__body--markdown :deep(ul),
+.log-entry__body--markdown :deep(ol) {
+  margin: 0.4em 0;
+}
+.log-entry__body--markdown :deep(p:first-child) {
+  margin-top: 0;
+}
+.log-entry__body--markdown :deep(p:last-child) {
+  margin-bottom: 0;
+}
+.log-entry__body--markdown :deep(h1),
+.log-entry__body--markdown :deep(h2),
+.log-entry__body--markdown :deep(h3) {
+  margin: 0.6em 0 0.3em;
+  font-size: 1em;
+}
+.log-entry__body--markdown :deep(pre) {
+  overflow: auto;
+  padding: 0.5rem;
+  background: rgba(var(--v-theme-on-surface), 0.06);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+.log-entry__body--markdown :deep(code) {
+  font-family: monospace;
+  font-size: 0.9em;
+}
+.log-entry__body--markdown :deep(a) {
+  color: rgb(var(--v-theme-primary));
 }
 .log-entry__toggle {
   display: block;
