@@ -10,6 +10,7 @@ import type { DbKey, WorkflowRunStatus } from "@saflib/new-workflows-db";
 import { createOutputStream } from "./output.ts";
 import { commitIfDirty, revertUncommittedChanges } from "./git.ts";
 import { summarizeStepInput } from "./describe-steps.ts";
+import { withRunLock, RUN_LOCK_MESSAGE } from "./run-lock.ts";
 import type {
   AgentConfig,
   StepFn,
@@ -115,7 +116,14 @@ export function advanceRun(
 ): { output: Readable; result: Promise<StepResult> } {
   const { stream, write, end } = createOutputStream();
 
-  const resultPromise = runStep(dbKey, def, runId, write, options).finally(end);
+  // Locked out entirely — no step row created, no run state touched — if
+  // another root `advanceRun` call is already doing real work. See
+  // `run-lock.ts` for why: this system's git integration is repo-wide and
+  // not safe under concurrent steps. Nested calls (a `call-workflow`
+  // step's own `advanceRun` for its child) are reentrant and pass through.
+  const resultPromise = withRunLock(dbKey, () => runStep(dbKey, def, runId, write, options))
+    .then((outcome): StepResult => (outcome.locked ? { status: "error", message: RUN_LOCK_MESSAGE } : outcome.result))
+    .finally(end);
 
   return { output: stream, result: resultPromise };
 }

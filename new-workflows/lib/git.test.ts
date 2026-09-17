@@ -51,6 +51,48 @@ describe("commitIfDirty", () => {
     await expect(commitIfDirty(dir, "message")).resolves.toBe(false);
   });
 
+  it("treats a concurrent commit elsewhere in the same repo as success, not a failure", async () => {
+    // Regression: this operates repo-wide (`git add -A` from the root), so
+    // two callers racing on the *same* repo can have one's `git commit`
+    // sweep up and commit the other's changes too — the loser's own
+    // `git commit` then fails with "nothing to commit, working tree
+    // clean" (a message git only prints to *stdout*, which `execFile`'s
+    // error `.message` never includes). That's not a real failure; the
+    // changes the loser cared about ARE committed, just not by it.
+    const dir = await initRepo();
+    writeFileSync(path.join(dir, "file-a.ts"), "export const a = 1;\n");
+    writeFileSync(path.join(dir, "file-b.ts"), "export const b = 1;\n");
+
+    const [resultA, resultB] = await Promise.all([
+      commitIfDirty(dir, "commit A"),
+      commitIfDirty(dir, "commit B"),
+    ]);
+
+    expect(resultA).toBe(true);
+    expect(resultB).toBe(true);
+    const { stdout: status } = await execFileAsync("git", ["status", "--porcelain"], { cwd: dir });
+    expect(status.trim()).toBe("");
+    const { stdout: files } = await execFileAsync("git", ["ls-files"], { cwd: dir });
+    expect(files).toContain("file-a.ts");
+    expect(files).toContain("file-b.ts");
+  });
+
+  it("still throws (with the underlying git output, not just a bare 'Command failed') for a genuine commit failure", async () => {
+    const dir = await initRepo();
+    writeFileSync(path.join(dir, "file.ts"), "x\n");
+    // A real, non-race rejection — the tree is still dirty afterward, so
+    // the benign-race recovery above must not swallow this one.
+    const hooksDir = path.join(dir, ".git", "hooks");
+    mkdirSync(hooksDir, { recursive: true });
+    writeFileSync(
+      path.join(hooksDir, "pre-commit"),
+      "#!/bin/sh\necho 'rejected by pre-commit hook' >&2\nexit 1\n",
+      { mode: 0o755 },
+    );
+
+    await expect(commitIfDirty(dir, "message")).rejects.toThrow(/rejected by pre-commit hook/);
+  });
+
   it("commits from any subdirectory, capturing the whole repo's changes", async () => {
     const dir = await initRepo();
     mkdirSync(path.join(dir, "sub"), { recursive: true });

@@ -9,6 +9,7 @@ export {
 } from "./engine.ts";
 export { stepSkipIf } from "./conditional-step.ts";
 export { commitIfDirty, revertUncommittedChanges } from "./git.ts";
+export { RUN_LOCK_MESSAGE } from "./run-lock.ts";
 
 export {
   runCopyStep,

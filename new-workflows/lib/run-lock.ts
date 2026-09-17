@@ -1,0 +1,58 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+
+export const RUN_LOCK_MESSAGE =
+  "Another workflow run is already advancing. Only one run may advance at a time — wait for it to finish (or stop it), then retry.";
+
+/**
+ * Which lock keys are currently held. Keyed by `dbKey` (the caller's own
+ * `@saflib/new-workflows-db` connection) rather than an unconditional
+ * single global — in production there's exactly one `dbKey` per running
+ * dev-site process anyway (one process, one repo), so this is equivalent
+ * to a true process-wide lock there. Keying it matters for *this
+ * package's own test suite*: it runs with `isolate: false` (module state
+ * shared across test files, for speed — see base-vitest.config.js), so
+ * an unconditional global would let one test file's in-flight
+ * `advanceRun` call spuriously lock out a *different* file's unrelated
+ * one if vitest happens to interleave them.
+ */
+const lockedKeys = new Set<unknown>();
+/** Marks "the current async call chain already holds this key's lock" — set for the duration of the locked call, visible through any depth of further `await`s. */
+const holderContext = new AsyncLocalStorage<unknown>();
+
+export type RunLockResult<T> = { locked: false; result: T } | { locked: true };
+
+/**
+ * Runs `fn` under a lock scoped to `key`. This system's git integration
+ * (`commitIfDirty`, `revertUncommittedChanges` in `git.ts`) operates on
+ * the whole repo, not just one run's own files, and isn't safe under
+ * concurrent steps — two runs (or the same run advanced twice at once,
+ * e.g. a double-click racing an auto-continue chain) committing at the
+ * same moment is exactly what produced the "nothing to commit" and
+ * `index.lock` failures this lock exists to prevent. At most one *root*
+ * `advanceRun` call for a given `key` may be doing real work at any
+ * moment.
+ *
+ * Reentrant for nested calls made from *within* an already-locked call
+ * chain — a `call-workflow` step's own `advanceRun` invocation for its
+ * child run isn't a second concurrent workflow, just the same one going
+ * one level deeper, and must not deadlock against itself.
+ *
+ * Returns `{locked: true}` immediately rather than queuing behind the
+ * current holder: advancing is user-initiated and interactive, so
+ * silently waiting would just leave a caller hanging for however long
+ * the current step (often a full agent turn) takes, with no feedback.
+ */
+export async function withRunLock<T>(key: unknown, fn: () => Promise<T>): Promise<RunLockResult<T>> {
+  if (holderContext.getStore() === key) {
+    return { locked: false, result: await fn() };
+  }
+  if (lockedKeys.has(key)) {
+    return { locked: true };
+  }
+  lockedKeys.add(key);
+  try {
+    return { locked: false, result: await holderContext.run(key, fn) };
+  } finally {
+    lockedKeys.delete(key);
+  }
+}

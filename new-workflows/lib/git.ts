@@ -3,9 +3,48 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
+const LOCK_RETRY_ATTEMPTS = 5;
+const LOCK_RETRY_DELAY_MS = 100;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function runGit(cwd: string, args: string[]): Promise<string> {
-  const { stdout } = await execFileAsync("git", args, { cwd });
-  return stdout;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const { stdout } = await execFileAsync("git", args, { cwd });
+      return stdout;
+    } catch (error) {
+      const detail = gitErrorDetail(error);
+      // `index.lock` is transient by nature — held only for the brief
+      // window of another `git add`/`commit` actually running. This
+      // module operates repo-*wide* (see `commitIfDirty`'s doc), so two
+      // steps (different runs, or a nested + parent pair) touching the
+      // same shared checkout at the same moment is an expected case here,
+      // not a rare fluke — worth a few short retries before giving up.
+      if (detail?.includes("index.lock") && attempt < LOCK_RETRY_ATTEMPTS) {
+        await sleep(LOCK_RETRY_DELAY_MS);
+        continue;
+      }
+      // `execFile`'s own error `.message` only ever includes stderr — a
+      // git failure that explains itself on stdout (e.g. `commit`'s
+      // "nothing to commit, working tree clean") otherwise vanishes
+      // entirely from whatever error message a caller persists or
+      // displays, making a real failure undiagnosable after the fact.
+      if (detail) throw new Error(`git ${args.join(" ")} failed: ${detail}`);
+      throw error;
+    }
+  }
+}
+
+function gitErrorDetail(error: unknown): string | undefined {
+  if (!error || typeof error !== "object" || !("stdout" in error || "stderr" in error)) {
+    return undefined;
+  }
+  const { stdout, stderr } = error as { stdout?: string; stderr?: string };
+  const detail = [stdout, stderr].filter(Boolean).join("\n").trim();
+  return detail || undefined;
 }
 
 /**
@@ -39,7 +78,21 @@ export async function commitIfDirty(cwd: string, message: string): Promise<boole
   const status = await runGit(root, ["status", "--porcelain"]);
   if (!status.trim()) return false;
   await runGit(root, ["add", "-A"]);
-  await runGit(root, ["commit", "-m", message]);
+  try {
+    await runGit(root, ["commit", "-m", message]);
+  } catch (error) {
+    // This operates repo-*wide* (see the module doc), so a genuinely
+    // concurrent commit — a different run/step touching the same shared
+    // checkout — can land its own commit in the gap between the dirty
+    // check above and this one, leaving nothing staged by the time we get
+    // here ("nothing to commit, working tree clean"). Re-check rather than
+    // pattern-match the error text: if the tree is clean now, the changes
+    // this call cared about are already committed (just not by us) — a
+    // benign race, not a failure worth surfacing as one.
+    const statusAfter = await runGit(root, ["status", "--porcelain"]);
+    if (!statusAfter.trim()) return true;
+    throw error;
+  }
   return true;
 }
 
