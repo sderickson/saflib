@@ -2,6 +2,8 @@
 
 Use this when you change `product/create` (bootstrap) or `product/init` and want to exercise the full path locally without pushing to GitHub or cloning saflib again.
 
+For the normal **new product** path (empty repo → `saf-create`), see [Getting Started](../../getting-started.md) and the [`saf-create` CLI](./cli/saf-create.md).
+
 ## Requirements
 
 - **Node.js 22+** (product monorepo `engines`; Node 26+ if you use `saf-create` / `run.ts` directly)
@@ -10,7 +12,7 @@ Use this when you change `product/create` (bootstrap) or `product/init` and want
 
 ## Full bootstrap + init (recommended)
 
-[`product/create/repro-local.sh`](./workflows/create.md#local-testing) creates a throwaway product monorepo under `$TMPDIR` (or `/tmp`), copies your current saflib checkout into `saflib/`, and runs the same bootstrap + `product/init` sequence as [`saf-create`](./workflows/create.md).
+`product/create/repro-local.sh` creates a throwaway product monorepo under `$TMPDIR` (or `/tmp`), copies your current saflib checkout into `saflib/`, and runs the same bootstrap + `product/init` sequence as `saf-create`.
 
 ```bash
 # From the saflib repo root
@@ -99,7 +101,7 @@ If the repo already has a `saflib/` submodule and root scaffold, run init from t
 npm exec saf-workflow kickoff product/init <name> <domain>
 ```
 
-See [product/init](./workflows/init.md) for the full checklist. Do **not** use this when saflib is missing — use [`saf-create`](./workflows/create.md) or `repro-local.sh` instead.
+See [product/init](./workflows/init.md) for the full checklist. Do **not** use this when saflib is missing — use [Getting Started](../../getting-started.md) / `saf-create`, or `repro-local.sh` above.
 
 ### Faster smoke: `--productOnly`
 
@@ -119,6 +121,7 @@ rm -rf "${TMPDIR:-/tmp}/saf-bootstrap-test-<name>"
 
 ## Related docs
 
-- [Overview](./01-overview.md) — create vs init
-- [saf-create / bootstrap](./workflows/create.md) — production install path
+- [Getting Started](../../getting-started.md) — new repo bootstrap
+- [Overview](./01-overview.md) — package role and `product/init`
+- [`saf-create` CLI](./cli/saf-create.md) — CLI reference
 - [product/init](./workflows/init.md) — workflow checklist
