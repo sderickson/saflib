@@ -165,24 +165,6 @@ async function runStep(
   }
   const isResume = (priorSteps ?? []).some((s) => s.step_index === stepIndex);
 
-  const context = def.context({ input: run.input, cwd: run.cwd });
-
-  const ctx: WorkflowContext = {
-    runId,
-    workflowId: def.id,
-    stepIndex,
-    dbKey,
-    mode: run.mode,
-    cwd,
-    originalWorkingDirectory: run.cwd,
-    agentConfig: run.agent_config ?? undefined,
-    copiedFiles,
-    skipTodos: run.skip_todos,
-    isResume,
-    extraPrompt: options?.skip ? undefined : options?.extraPrompt,
-    log: write,
-  };
-
   const now = new Date();
   const { result: stepRow, error: stepCreateError } = await createWorkflowStep(
     dbKey,
@@ -190,12 +172,39 @@ async function runStep(
   );
   if (stepCreateError) throw stepCreateError;
 
-  const stepInput = step.input({ context });
+  // `def.context()` and `step.input()` run inside this try, not before it —
+  // some workflows validate input from inside `context()` (e.g.
+  // `drizzle/update-schema`'s plural-table-name check) and throw
+  // synchronously. That used to happen *before* the step row above was
+  // created and before the run's status/step were ever persisted, so a
+  // context-level failure left the run stuck at its original "pending"
+  // status forever — invisible to callers checking `status === "failed"`
+  // (see `call-workflow.ts`'s retry-refreshes-stale-input logic, which
+  // silently never fired for this failure mode) and to anyone retrying,
+  // since the retry saw no recorded failure to react to.
+  let stepInput: unknown;
   let stepResult: StepOutcome;
   if (options?.skip) {
     stepResult = { status: "success", result: { skipped: true } };
   } else {
     try {
+      const context = def.context({ input: run.input, cwd: run.cwd });
+      const ctx: WorkflowContext = {
+        runId,
+        workflowId: def.id,
+        stepIndex,
+        dbKey,
+        mode: run.mode,
+        cwd,
+        originalWorkingDirectory: run.cwd,
+        agentConfig: run.agent_config ?? undefined,
+        copiedFiles,
+        skipTodos: run.skip_todos,
+        isResume,
+        extraPrompt: options?.skip ? undefined : options?.extraPrompt,
+        log: write,
+      };
+      stepInput = step.input({ context });
       stepResult = await step.run(stepInput, ctx);
     } catch (error) {
       stepResult = {

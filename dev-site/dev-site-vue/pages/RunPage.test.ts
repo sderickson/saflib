@@ -48,18 +48,15 @@ let logsState: unknown[] = [
     created_at: "2026-09-15T00:00:00.000Z",
   },
 ];
+let stepsState: unknown[] = [
+  { index: 0, kind: "cd", label: "cd test-product/service/db" },
+  { index: 1, kind: "prompt", label: "Say hello!" },
+];
 
 const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId`, () => HttpResponse.json({ run: runState })),
   http.get(`${ORIGIN}/api/runs/:runId/logs`, () => HttpResponse.json({ logs: logsState })),
-  http.get(`${ORIGIN}/api/runs/:runId/steps`, () =>
-    HttpResponse.json({
-      steps: [
-        { index: 0, kind: "cd", label: "cd test-product/service/db" },
-        { index: 1, kind: "prompt", label: "Say hello!" },
-      ],
-    }),
-  ),
+  http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: stepsState })),
 ];
 
 describe("RunPage", () => {
@@ -78,6 +75,10 @@ describe("RunPage", () => {
         content: "starting",
         created_at: "2026-09-15T00:00:00.000Z",
       },
+    ];
+    stepsState = [
+      { index: 0, kind: "cd", label: "cd test-product/service/db" },
+      { index: 1, kind: "prompt", label: "Say hello!" },
     ];
     vi.stubGlobal("EventSource", EventSourceStub);
   });
@@ -284,4 +285,5 @@ describe("RunPage", () => {
       });
     });
   });
+
 });

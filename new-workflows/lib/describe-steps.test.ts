@@ -3,6 +3,7 @@ import { describeWorkflowSteps } from "./describe-steps.ts";
 import { validateWorkflowConfigBody } from "./config/validate.ts";
 import { compileConfigWorkflow } from "./config/compile.ts";
 import { defineWorkflow } from "./engine.ts";
+import { HelloWorkflowDefinition } from "./example-workflows/hello-workflow.ts";
 
 describe("describeWorkflowSteps", () => {
   it("labels config-defined steps from their rendered input", () => {
@@ -20,6 +21,30 @@ describe("describeWorkflowSteps", () => {
       { index: 0, kind: "cd", label: "cd test-product/service/db" },
       { index: 1, kind: "prompt", label: "Say hello!" },
       { index: 2, kind: "command", label: "npm --version" },
+    ]);
+  });
+
+  it("labels a call-workflow step with its targetInput, so an edited field is visible", () => {
+    const { result: body } = validateWorkflowConfigBody({
+      name: "test",
+      steps: [
+        {
+          kind: "call-workflow",
+          workflowId: "example/hello",
+          input: { path: "./schemas/todo.ts" },
+        },
+      ],
+    });
+    const definition = compileConfigWorkflow("test/plan", body!, {
+      "example/hello": HelloWorkflowDefinition,
+    });
+
+    expect(describeWorkflowSteps(definition)).toEqual([
+      {
+        index: 0,
+        kind: "call-workflow",
+        label: 'call-workflow: example/hello {"path":"./schemas/todo.ts"}',
+      },
     ]);
   });
 

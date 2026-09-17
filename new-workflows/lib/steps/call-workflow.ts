@@ -1,4 +1,4 @@
-import { getChildByParentStepWorkflowRun } from "@saflib/new-workflows-db";
+import { getChildByParentStepWorkflowRun, updateInputWorkflowRun } from "@saflib/new-workflows-db";
 import type { StepFn, WorkflowDefinition } from "../types.ts";
 import { createRun, advanceRun } from "../engine.ts";
 
@@ -26,9 +26,29 @@ export const runCallWorkflowStep: StepFn<CallWorkflowStepInput> = async (input, 
   );
   if (lookupError) throw lookupError;
 
-  const childRunId =
-    existingChild?.id ??
-    (await createRun(ctx.dbKey, input.targetDefinition, {
+  let childRunId: string;
+  if (existingChild) {
+    childRunId = existingChild.id;
+    // A *failed* child hasn't completed anything worth preserving frozen
+    // input for — and it's the common case a parent-level retry is meant
+    // to fix (e.g. a corrected `path` in a config plan's `call-workflow`
+    // input, after a bad first attempt). Without this, `targetInput` gets
+    // recomputed fresh from the parent's (possibly just-edited) config on
+    // every retry, but the child keeps resuming with whatever input it
+    // was *first* created with, forever reproducing the original mistake.
+    // Left alone for `awaiting_prompt`/`awaiting_user` children — those
+    // are legitimately mid-flow and should resume as-is, not have their
+    // input reset out from under them.
+    if (existingChild.status === "failed") {
+      const { error: updateError } = await updateInputWorkflowRun(ctx.dbKey, {
+        id: childRunId,
+        input: input.targetInput,
+        now: new Date(),
+      });
+      if (updateError) throw updateError;
+    }
+  } else {
+    childRunId = await createRun(ctx.dbKey, input.targetDefinition, {
       input: input.targetInput,
       cwd: ctx.cwd,
       mode: ctx.mode,
@@ -36,7 +56,8 @@ export const runCallWorkflowStep: StepFn<CallWorkflowStepInput> = async (input, 
       skipTodos: ctx.skipTodos,
       parentRunId: ctx.runId,
       parentStepIndex: ctx.stepIndex,
-    }));
+    });
+  }
 
   // Drive the child to its own natural stopping point — same "keep going
   // while success" loop the CLI's advance-loop.ts runs for a top-level
@@ -44,8 +65,15 @@ export const runCallWorkflowStep: StepFn<CallWorkflowStepInput> = async (input, 
   // child workflow not yet done) would bubble straight up as *this*
   // step's own success, prematurely advancing the parent past the whole
   // nested call after the child's first step.
+  let isFirstChildAdvance = true;
   while (true) {
-    const { output, result } = advanceRun(ctx.dbKey, input.targetDefinition, childRunId);
+    // Only the *retried* step (the first one this call makes) is what a
+    // parent-level extraPrompt is actually about — later steps in this
+    // same loop are new child steps that were never asked for it.
+    const { output, result } = advanceRun(ctx.dbKey, input.targetDefinition, childRunId, {
+      extraPrompt: isFirstChildAdvance ? ctx.extraPrompt : undefined,
+    });
+    isFirstChildAdvance = false;
     for await (const chunk of output) {
       ctx.log(chunk);
     }

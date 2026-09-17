@@ -137,6 +137,9 @@ const logsQuery = useWorkflowRunLogsQuery(runId);
 const logs = computed(() => logsQuery.data.value?.logs ?? []);
 const logItems = computed(() => groupLogs(logs.value));
 const stepsQuery = useWorkflowRunStepsQuery(runId);
+// Config-defined (plan file) workflows are re-read from disk fresh on
+// every real `advance`/`GET .../steps` call server-side — reloading this
+// page is what picks up an on-disk edit; no client-side polling needed.
 const steps = computed(() => stepsQuery.data.value?.steps ?? []);
 const advanceMutation = useAdvanceWorkflowRunMutation();
 const cancelMutation = useCancelWorkflowRunMutation();

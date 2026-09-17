@@ -186,4 +186,49 @@ describe("advanceRun recovery options", () => {
 
     expect(seen).toEqual(["Use ignorePlural, it's already singular."]);
   });
+
+  it("persists a run as failed (with a step row) when def.context() itself throws, not just when step.run() does", async () => {
+    // Regression: `drizzle/update-schema`'s plural-table-name check lives
+    // inside `context()`, which used to run *before* the step row was
+    // created and before the run's status was ever persisted — a throw
+    // there left the run stuck at "pending" forever, invisible to any
+    // retry logic gated on `status === "failed"`.
+    const cwd = await initRepo();
+    let shouldThrow = true;
+    const definition = defineWorkflow<Record<string, unknown>, Record<string, unknown>>({
+      id: "test/context-throws",
+      description: "test",
+      context: () => {
+        if (shouldThrow) throw new Error("simulated context validation failure");
+        return {};
+      },
+      steps: [
+        step<Record<string, never>, Record<string, unknown>>(
+          "command",
+          async () => ({ status: "success" }),
+          () => ({}),
+        ),
+      ],
+    });
+
+    const runId = await createRun(dbKey, definition, { input: {}, cwd, mode: "run" });
+    const first = advanceRun(dbKey, definition, runId);
+    await collectOutput(first.output);
+    const firstOutcome = await first.result;
+
+    expect(firstOutcome).toEqual({
+      status: "error",
+      message: "simulated context validation failure",
+    });
+    const { result: failedRun } = await getByIdWorkflowRun(dbKey, { id: runId });
+    expect(failedRun?.status).toBe("failed");
+    expect(failedRun?.current_step_index).toBe(0);
+
+    shouldThrow = false;
+    const second = advanceRun(dbKey, definition, runId);
+    await collectOutput(second.output);
+    const secondOutcome = await second.result;
+
+    expect(secondOutcome.status).toBe("success");
+  });
 });

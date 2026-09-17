@@ -58,7 +58,18 @@ export function summarizeStepInput(kind: string, input: unknown): string | undef
       return typeof obj.fileId === "string" ? `update: ${obj.fileId}` : undefined;
     case "call-workflow": {
       const target = obj.targetDefinition as { id?: string } | undefined;
-      return target?.id ? `call-workflow: ${target.id}` : undefined;
+      if (!target?.id) return undefined;
+      // Config-compiled `call-workflow` steps' `targetInput` is a closure
+      // over the config file's own step body (see `compile.ts`), not
+      // context-dependent — safe (and important) to show here, e.g. so a
+      // "did my edit to this step's `path` actually take" question can be
+      // answered by just looking at the sidebar instead of guessing.
+      const targetInput = obj.targetInput;
+      const hasTargetInput =
+        targetInput && typeof targetInput === "object" && Object.keys(targetInput).length > 0;
+      return hasTargetInput
+        ? `call-workflow: ${target.id} ${truncate(JSON.stringify(targetInput))}`
+        : `call-workflow: ${target.id}`;
     }
     case "copy":
       return typeof obj.name === "string" ? `copy: ${obj.name}` : undefined;
