@@ -36,6 +36,25 @@ describe("runUpdateStep", () => {
     expect(result).toEqual({ status: "success", result: { filePath } });
   });
 
+  it("succeeds in run mode when the file just mentions lowercase 'todo' as product vocabulary, not a marker", async () => {
+    // Regression: a todo-list app's own generated code legitimately says
+    // "todo" constantly (`// the todo table`, `interface Todo`, etc.) —
+    // the TODO-marker check must not fire on that, only on an actual caps
+    // `TODO` comment.
+    const dir = mkdtempSync(path.join(tmpdir(), "update-step-"));
+    const filePath = path.join(dir, "file.ts");
+    writeFileSync(filePath, "// the todo table needs a title column\nexport interface Todo {}\n");
+    const { ctx } = makeTestContext({
+      mode: "run",
+      agentConfig: { cli: "mock-agent" },
+      copiedFiles: { file: filePath },
+    });
+
+    const result = await runUpdateStep({ fileId: "file" }, ctx);
+
+    expect(result).toEqual({ status: "success", result: { filePath } });
+  });
+
   it("errors after 3 tries if TODOs are never removed (mock agent never edits the file)", async () => {
     const dir = mkdtempSync(path.join(tmpdir(), "update-step-"));
     const filePath = path.join(dir, "file.ts");

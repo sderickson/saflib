@@ -8,7 +8,12 @@ export interface UpdateStepInput {
   prompt?: string;
 }
 
-const TODO_REGEX = /\s*(?:#|\/\/).*todo/i;
+// Case-sensitive, and requires the marker as its own word — deliberately
+// not `/i`. A product whose own domain vocabulary includes "todo" (e.g. a
+// todo-list app) would otherwise trip this on every ordinary comment or
+// identifier mentioning it; `TODO` as a genuine marker convention is
+// always written in caps.
+const TODO_REGEX = /\s*(?:#|\/\/).*\bTODO\b/;
 
 /**
  * Prompts the agent to update a file the copy step produced, then blocks on
