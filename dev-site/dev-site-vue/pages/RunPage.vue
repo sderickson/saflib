@@ -60,6 +60,34 @@
         {{ failureMessage }}
       </v-alert>
 
+      <template v-if="run?.status === 'failed' && !advanceMutation.isPending.value">
+        <v-textarea
+          v-model="extraPrompt"
+          label="Guidance for the next attempt (optional)"
+          placeholder="e.g. Use ignorePlural, the table name is already singular."
+          rows="2"
+          auto-grow
+          density="compact"
+          variant="outlined"
+          class="mb-3"
+          hide-details
+        />
+        <div class="run-page__recovery-actions">
+          <v-btn color="primary" @click="retry()">Retry</v-btn>
+          <v-btn color="warning" variant="tonal" @click="retry({ revert: true })">
+            Revert &amp; Retry
+          </v-btn>
+          <v-btn variant="tonal" @click="retry({ skip: true })">Skip Step</v-btn>
+        </div>
+        <div class="text-caption text-medium-emphasis mt-2">
+          Retry re-runs this step as-is. Revert &amp; Retry discards
+          <strong>all</strong> uncommitted changes in the repo first (not
+          just this step's — see the docs before using on a shared
+          checkout). Skip Step commits whatever's currently there and
+          moves on without running this step.
+        </div>
+      </template>
+
       <v-btn
         v-if="advanceMutation.isPending.value"
         color="error"
@@ -69,9 +97,9 @@
         Stop
       </v-btn>
       <v-btn
-        v-else
+        v-else-if="run?.status !== 'failed'"
         color="primary"
-        :disabled="run?.status === 'done' || run?.status === 'failed'"
+        :disabled="run?.status === 'done'"
         @click="advanceMutation.mutate(runId)"
       >
         Advance
@@ -113,6 +141,17 @@ const steps = computed(() => stepsQuery.data.value?.steps ?? []);
 const advanceMutation = useAdvanceWorkflowRunMutation();
 const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
+
+const extraPrompt = ref("");
+
+function retry(options: { revert?: boolean; skip?: boolean } = {}) {
+  advanceMutation.mutate({
+    runId: runId.value,
+    ...options,
+    extraPrompt: extraPrompt.value.trim() || undefined,
+  });
+  extraPrompt.value = "";
+}
 
 const logContainer = ref<HTMLElement | null>(null);
 const SCROLL_BOTTOM_THRESHOLD_PX = 32;
@@ -296,5 +335,9 @@ const statusColor = computed(() => {
   flex: 0 0 auto;
   padding: 0.75rem 1rem;
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+.run-page__recovery-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 </style>

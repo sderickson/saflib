@@ -1,7 +1,14 @@
 export * from "./types.ts";
 export * from "./output.ts";
-export { defineWorkflow, step, createRun, advanceRun } from "./engine.ts";
+export {
+  defineWorkflow,
+  step,
+  createRun,
+  advanceRun,
+  type AdvanceRunOptions,
+} from "./engine.ts";
 export { stepSkipIf } from "./conditional-step.ts";
+export { commitIfDirty, revertUncommittedChanges } from "./git.ts";
 
 export {
   runCopyStep,
@@ -29,6 +36,7 @@ export { compileConfigWorkflow } from "./config/compile.ts";
 export { loadWorkflowDefinition } from "./load-definition.ts";
 export {
   describeWorkflowSteps,
+  summarizeStepInput,
   type WorkflowRunStepDescription,
 } from "./describe-steps.ts";
 export { cancelActiveAgentProcess } from "./agents/registry.ts";

@@ -65,6 +65,14 @@ export interface WorkflowContext {
    * "emit the prompt for the first time".
    */
   isResume: boolean;
+  /**
+   * User-supplied extra guidance for *this* advance call only (e.g. "use
+   * ignorePlural, the table really is singular already"), given alongside
+   * a retry after a failed step. `update`/`prompt` steps prepend it to
+   * whatever prompt they'd otherwise send the agent. Not persisted —
+   * scoped to one `advanceRun` call, same as `skip`/`revert`.
+   */
+  extraPrompt?: string;
   /** Emits one chunk onto this step's output stream. */
   log: (chunk: LogChunk) => void;
 }

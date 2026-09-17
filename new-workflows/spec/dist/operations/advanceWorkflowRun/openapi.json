@@ -21,6 +21,35 @@
             }
           }
         ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Recovery options for re-advancing a run that's currently `failed` — omit entirely for a normal advance. `revert` and `skip` are mutually exclusive; `skip` wins if both are set.\n",
+                "properties": {
+                  "revert": {
+                    "type": "boolean",
+                    "description": "Discard uncommitted changes in the run's repo (whatever the failed step itself left behind) before retrying it. Repo-wide and destructive — see `revertUncommittedChanges`.\n",
+                    "default": false
+                  },
+                  "skip": {
+                    "type": "boolean",
+                    "description": "Skip the current step entirely instead of running it: commits whatever's currently dirty (if anything) and advances past it, same as a successful run of it.\n",
+                    "default": false
+                  },
+                  "extraPrompt": {
+                    "type": "string",
+                    "description": "Prepended to whatever prompt this step call sends the agent (update/prompt steps only). Ignored when `skip` is set — nothing gets prompted.\n",
+                    "example": "Use ignorePlural, the table name is already singular."
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Outcome of the step that just ran.",

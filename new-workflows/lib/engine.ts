@@ -8,6 +8,8 @@ import {
 } from "@saflib/new-workflows-db";
 import type { DbKey, WorkflowRunStatus } from "@saflib/new-workflows-db";
 import { createOutputStream } from "./output.ts";
+import { commitIfDirty, revertUncommittedChanges } from "./git.ts";
+import { summarizeStepInput } from "./describe-steps.ts";
 import type {
   AgentConfig,
   StepFn,
@@ -82,6 +84,24 @@ function statusForStepResult(status: StepOutcome["status"]): WorkflowRunStatus {
   }
 }
 
+export interface AdvanceRunOptions {
+  /**
+   * Discard uncommitted changes in the run's repo (see
+   * `revertUncommittedChanges`) before (re-)running the current step —
+   * for retrying a just-failed step from a clean slate instead of on top
+   * of whatever it left behind.
+   */
+  revert?: boolean;
+  /**
+   * Skip the current step entirely instead of running it: commits
+   * whatever's currently dirty (if anything) and advances past it, same
+   * as a successful run of it.
+   */
+  skip?: boolean;
+  /** See `WorkflowContext.extraPrompt`. Ignored when `skip` is set (nothing gets prompted). */
+  extraPrompt?: string;
+}
+
 /**
  * Runs exactly one step of a run — the only execution entry point lib
  * exposes. Never loops, never decides whether to keep going; the caller
@@ -91,10 +111,11 @@ export function advanceRun(
   dbKey: DbKey,
   def: WorkflowDefinition<any, any>,
   runId: string,
+  options?: AdvanceRunOptions,
 ): { output: Readable; result: Promise<StepResult> } {
   const { stream, write, end } = createOutputStream();
 
-  const resultPromise = runStep(dbKey, def, runId, write).finally(end);
+  const resultPromise = runStep(dbKey, def, runId, write, options).finally(end);
 
   return { output: stream, result: resultPromise };
 }
@@ -104,6 +125,7 @@ async function runStep(
   def: WorkflowDefinition<any, any>,
   runId: string,
   write: (chunk: Parameters<WorkflowContext["log"]>[0]) => void,
+  options?: AdvanceRunOptions,
 ): Promise<StepResult> {
   const { result: run, error: runError } = await getByIdWorkflowRun(dbKey, {
     id: runId,
@@ -114,6 +136,17 @@ async function runStep(
   const step = def.steps[stepIndex];
   if (!step) {
     return { status: "done" };
+  }
+
+  if (options?.revert) {
+    try {
+      await revertUncommittedChanges(run.cwd);
+    } catch (error) {
+      return {
+        status: "error",
+        message: `Failed to revert uncommitted changes before retrying: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
   }
 
   const { result: priorSteps, error: priorError } = await listByRunWorkflowStep(
@@ -146,6 +179,7 @@ async function runStep(
     copiedFiles,
     skipTodos: run.skip_todos,
     isResume,
+    extraPrompt: options?.skip ? undefined : options?.extraPrompt,
     log: write,
   };
 
@@ -158,13 +192,17 @@ async function runStep(
 
   const stepInput = step.input({ context });
   let stepResult: StepOutcome;
-  try {
-    stepResult = await step.run(stepInput, ctx);
-  } catch (error) {
-    stepResult = {
-      status: "error",
-      message: error instanceof Error ? error.message : String(error),
-    };
+  if (options?.skip) {
+    stepResult = { status: "success", result: { skipped: true } };
+  } else {
+    try {
+      stepResult = await step.run(stepInput, ctx);
+    } catch (error) {
+      stepResult = {
+        status: "error",
+        message: error instanceof Error ? error.message : String(error),
+      };
+    }
   }
 
   const finishedAt = new Date();
@@ -175,6 +213,27 @@ async function runStep(
     error: stepResult.status === "error" ? stepResult.message : null,
     now: finishedAt,
   });
+
+  if (stepResult.status === "success") {
+    const label = summarizeStepInput(step.kind, stepInput) ?? step.kind;
+    const commitMessage = options?.skip
+      ? `${def.id}: skip ${label}`
+      : `${def.id}: ${label}`;
+    try {
+      const committed = await commitIfDirty(run.cwd, commitMessage);
+      if (committed) {
+        write({ channel: "tool", level: "info", content: `Committed: ${commitMessage}` });
+      }
+    } catch (error) {
+      // A commit failure shouldn't retroactively fail an otherwise-
+      // successful step — surface it as a log line, not an error result.
+      write({
+        channel: "tool",
+        level: "error",
+        content: `Failed to commit after this step: ${error instanceof Error ? error.message : String(error)}`,
+      });
+    }
+  }
 
   const isLastStep = stepIndex + 1 >= def.steps.length;
   const nextStepIndex = stepResult.status === "success" ? stepIndex + 1 : stepIndex;

@@ -27,9 +27,10 @@ export const runUpdateStep: StepFn<UpdateStepInput> = async (rawInput, ctx) => {
   // Always tell the agent the exact file to edit — a custom `prompt`
   // describes what to do, not where, and it's easy for a workflow author
   // to forget to interpolate `filePath` into their own template.
-  const prompt = input.prompt
+  const basePrompt = input.prompt
     ? `${input.prompt}\n\nFull path: ${filePath}`
     : `Update \`${filePath}\`.`;
+  const prompt = ctx.extraPrompt ? `${ctx.extraPrompt}\n\n${basePrompt}` : basePrompt;
 
   if (ctx.mode === "dry" || ctx.mode === "checklist" || ctx.mode === "script") {
     return { status: "success", result: { filePath } };

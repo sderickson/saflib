@@ -1,13 +1,17 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import type { DbKey } from "@saflib/drizzle";
 import { newWorkflowsDbManager } from "@saflib/new-workflows-db/instances";
-import { HelloWorkflowDefinition } from "@saflib/new-workflows";
+import { HelloWorkflowDefinition, defineWorkflow, step } from "@saflib/new-workflows";
 import { createNewWorkflowsRouter } from "./index.ts";
+
+const execFileAsync = promisify(execFile);
 
 describe("createNewWorkflowsRouter", () => {
   let dbKey: DbKey;
@@ -126,5 +130,97 @@ describe("createNewWorkflowsRouter", () => {
       second.body.run.id,
       first.body.run.id,
     ]);
+  });
+});
+
+describe("POST /api/runs/:runId/advance recovery options", () => {
+  let dbKey: DbKey;
+  let app: express.Express;
+  let cwd: string;
+  let attempt: number;
+
+  const FlakyWorkflowDefinition = defineWorkflow<Record<string, unknown>, Record<string, unknown>>({
+    id: "test/flaky",
+    description: "Fails on the first attempt, succeeds after.",
+    context: ({ input }) => input,
+    steps: [
+      step<Record<string, never>, Record<string, unknown>>(
+        "command",
+        async (_input, ctx) => {
+          attempt++;
+          writeFileSync(path.join(ctx.cwd, `attempt-${attempt}.txt`), "x\n");
+          if (attempt === 1) {
+            return { status: "error", message: "simulated failure" };
+          }
+          return { status: "success" };
+        },
+        () => ({}),
+      ),
+    ],
+  });
+
+  beforeAll(() => {
+    dbKey = newWorkflowsDbManager.connect();
+  });
+
+  afterAll(() => {
+    newWorkflowsDbManager.disconnect(dbKey);
+  });
+
+  beforeEach(async () => {
+    newWorkflowsDbManager.clearAllTablesForTests(dbKey);
+    attempt = 0;
+    cwd = mkdtempSync(path.join(tmpdir(), "new-workflows-http-recovery-"));
+    await execFileAsync("git", ["init"], { cwd });
+    await execFileAsync("git", ["config", "user.email", "test@example.com"], { cwd });
+    await execFileAsync("git", ["config", "user.name", "Test"], { cwd });
+    writeFileSync(path.join(cwd, "README.md"), "hello\n");
+    await execFileAsync("git", ["add", "-A"], { cwd });
+    await execFileAsync("git", ["commit", "-m", "initial"], { cwd });
+    app = express();
+    app.use(
+      createNewWorkflowsRouter({
+        dbKey,
+        registry: [FlakyWorkflowDefinition],
+        defaultCwd: cwd,
+      }),
+    );
+  });
+
+  it("retries with revert after a failure, discarding the failed attempt's file", async () => {
+    const created = await request(app)
+      .post("/api/workflows/test%2Fflaky/runs")
+      .send({ input: {}, mode: "run" });
+    const runId = created.body.run.id;
+
+    const failed = await request(app).post(`/api/runs/${runId}/advance`);
+    expect(failed.status).toBe(200);
+    expect(failed.body.status).toBe("error");
+    expect(existsSync(path.join(cwd, "attempt-1.txt"))).toBe(true);
+
+    const retried = await request(app)
+      .post(`/api/runs/${runId}/advance`)
+      .send({ revert: true });
+    expect(retried.status).toBe(200);
+    expect(retried.body.status).toBe("success");
+    expect(existsSync(path.join(cwd, "attempt-1.txt"))).toBe(false);
+    expect(existsSync(path.join(cwd, "attempt-2.txt"))).toBe(true);
+  });
+
+  it("skips the current step and advances without running it", async () => {
+    const created = await request(app)
+      .post("/api/workflows/test%2Fflaky/runs")
+      .send({ input: {}, mode: "run" });
+    const runId = created.body.run.id;
+
+    const skipped = await request(app)
+      .post(`/api/runs/${runId}/advance`)
+      .send({ skip: true });
+    expect(skipped.status).toBe(200);
+    expect(skipped.body).toEqual({ status: "success", result: { skipped: true } });
+    expect(attempt).toBe(0);
+
+    const run = await request(app).get(`/api/runs/${runId}`);
+    expect(run.body.run.status).toBe("done");
   });
 });

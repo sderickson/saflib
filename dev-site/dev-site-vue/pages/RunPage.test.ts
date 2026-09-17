@@ -246,4 +246,42 @@ describe("RunPage", () => {
     expect(sidebarSteps[1].classes()).toContain("run-page__sidebar-step--active");
     expect(sidebarSteps[0].classes()).not.toContain("run-page__sidebar-step--active");
   });
+
+  it("offers Retry/Revert & Retry/Skip Step when failed, sending the right options and extra prompt", async () => {
+    runState = runFixture({ status: "failed" });
+    let lastBody: unknown;
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, async ({ request }) => {
+        lastBody = await request.json();
+        return HttpResponse.json({ status: "success", result: {} });
+      }),
+    );
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("failed");
+    });
+
+    // No plain "Advance" button while failed — recovery actions instead.
+    expect(wrapper.findAll("button").find((b) => b.text() === "Advance")).toBeUndefined();
+    const retryButton = wrapper.findAll("button").find((b) => b.text() === "Retry");
+    const revertButton = wrapper.findAll("button").find((b) => b.text().includes("Revert"));
+    const skipButton = wrapper.findAll("button").find((b) => b.text() === "Skip Step");
+    expect(retryButton).toBeTruthy();
+    expect(revertButton).toBeTruthy();
+    expect(skipButton).toBeTruthy();
+
+    const textarea = wrapper.find("textarea");
+    await textarea.setValue("Use ignorePlural, it's already singular.");
+    await revertButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(lastBody).toEqual({
+        revert: true,
+        extraPrompt: "Use ignorePlural, it's already singular.",
+      });
+    });
+  });
 });

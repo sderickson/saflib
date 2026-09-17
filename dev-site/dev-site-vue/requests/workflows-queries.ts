@@ -139,15 +139,32 @@ export function useCreatePlanMutation() {
   });
 }
 
+export interface AdvanceWorkflowRunVariables {
+  runId: string;
+  /** Discard uncommitted changes in the run's repo before retrying the current step. */
+  revert?: boolean;
+  /** Skip the current step entirely (commits whatever's dirty) instead of running it. */
+  skip?: boolean;
+  /** Prepended to whatever prompt this step call sends the agent. */
+  extraPrompt?: string;
+}
+
 export function useAdvanceWorkflowRunMutation() {
   const client = createWorkflowsClient();
   const queryClient = useQueryClient();
-  return useMutation<NewWorkflowsResponseBody["advanceWorkflowRun"][200], TanstackError, string>({
-    mutationFn: (runId) =>
-      handleClientMethod(
-        client.POST("/api/runs/{runId}/advance", { params: { path: { runId } } }),
-      ),
-    onSuccess: (_data, runId) => {
+  return useMutation<
+    NewWorkflowsResponseBody["advanceWorkflowRun"][200],
+    TanstackError,
+    string | AdvanceWorkflowRunVariables
+  >({
+    mutationFn: (vars) => {
+      const { runId, ...body } = typeof vars === "string" ? { runId: vars } : vars;
+      return handleClientMethod(
+        client.POST("/api/runs/{runId}/advance", { params: { path: { runId } }, body }),
+      );
+    },
+    onSuccess: (_data, vars) => {
+      const runId = typeof vars === "string" ? vars : vars.runId;
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-logs", runId] });
     },

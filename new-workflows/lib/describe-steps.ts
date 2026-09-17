@@ -34,7 +34,12 @@ function truncate(value: string, max = 60): string {
   return value.length > max ? `${value.slice(0, max)}…` : value;
 }
 
-function summarizeStepInput(kind: string, input: unknown): string | undefined {
+/**
+ * Exported so `engine.ts` can build a git commit message from a step's
+ * *real* rendered input (not the empty-context best-effort guess
+ * `describeWorkflowSteps` uses for the sidebar).
+ */
+export function summarizeStepInput(kind: string, input: unknown): string | undefined {
   if (!input || typeof input !== "object") return undefined;
   const obj = input as Record<string, unknown>;
   switch (kind) {

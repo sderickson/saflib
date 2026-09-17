@@ -94,7 +94,27 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Discard uncommitted changes in the run's repo (whatever the failed step itself left behind) before retrying it. Repo-wide and destructive — see `revertUncommittedChanges`.
+                     * @default false
+                     */
+                    revert?: boolean;
+                    /**
+                     * @description Skip the current step entirely instead of running it: commits whatever's currently dirty (if anything) and advances past it, same as a successful run of it.
+                     * @default false
+                     */
+                    skip?: boolean;
+                    /**
+                     * @description Prepended to whatever prompt this step call sends the agent (update/prompt steps only). Ignored when `skip` is set — nothing gets prompted.
+                     * @example Use ignorePlural, the table name is already singular.
+                     */
+                    extraPrompt?: string;
+                };
+            };
+        };
         responses: {
             /** @description Outcome of the step that just ran. */
             200: {

@@ -7,6 +7,21 @@ import { newWorkflowsHttpStorage } from "../../context.ts";
 import { publishRunChanged } from "../../change-emitter.ts";
 
 /**
+ * Matches `advance.yaml`'s (optional) requestBody schema — hand-typed
+ * rather than via the generated `NewWorkflowsRequestBody` helper, which
+ * only supports `required: true` request bodies (its conditional type
+ * resolves to `never` for an optional one, since `X | undefined` doesn't
+ * extend `{content: ...}`). This body has to stay optional: a normal
+ * advance sends none at all, and marking it `required: true` at the spec
+ * level would make validation reject that.
+ */
+interface AdvanceWorkflowRunRequestBody {
+  revert?: boolean;
+  skip?: boolean;
+  extraPrompt?: string;
+}
+
+/**
  * `http`'s version of the CLI's `printAndPersist` — persist, don't print.
  * The route responsible for turning `lib`'s per-step output stream into
  * `workflow_logs` rows plus a notify hint (`lib` itself never writes to
@@ -38,7 +53,12 @@ export const advanceWorkflowRunHandler = createHandler(async (req, res) => {
   });
 
   const stepIndex = run.current_step_index;
-  const { output, result } = advanceRun(ctx.dbKey, definition, runId);
+  const body = (req.body ?? {}) as AdvanceWorkflowRunRequestBody;
+  const { output, result } = advanceRun(ctx.dbKey, definition, runId, {
+    revert: body.revert,
+    skip: body.skip,
+    extraPrompt: body.extraPrompt,
+  });
 
   for await (const chunk of output as AsyncIterable<LogChunk>) {
     await appendWorkflowLog(ctx.dbKey, {
