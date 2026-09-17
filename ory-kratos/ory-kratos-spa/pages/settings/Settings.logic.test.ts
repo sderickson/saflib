@@ -1,6 +1,7 @@
 import type { Session, SettingsFlow, UiNode } from "@ory/client";
 import { describe, expect, it } from "vitest";
 import {
+  applyProfileSettingsFieldFilter,
   buildSettingsUpdateBodyFromFormData,
   dedupeKratosProfileTraitNodes,
   parseSettingsTabQuery,
@@ -8,6 +9,8 @@ import {
   settingsFlowHasPasswordRecoveryMessage,
   settingsFlowShouldFetch,
   settingsNodesForGroup,
+  settingsNodesForProfileFields,
+  settingsNodesHaveVisibleInputs,
 } from "./Settings.logic.ts";
 
 describe("settingsFlowShouldFetch", () => {
@@ -208,6 +211,188 @@ describe("settingsNodesForGroup", () => {
     ]);
   });
 
+  it("filters profile traits for email vs name sections (others stay hidden)", () => {
+    const flow = {
+      ui: {
+        nodes: [
+          {
+            type: "input",
+            group: "default",
+            attributes: {
+              node_type: "input",
+              name: "csrf_token",
+              type: "hidden",
+              value: "c",
+            },
+            meta: {},
+            messages: [],
+          },
+          {
+            type: "input",
+            group: "profile",
+            attributes: {
+              node_type: "input",
+              name: "traits.email",
+              type: "email",
+              value: "a@b.co",
+            },
+            meta: {},
+            messages: [],
+          },
+          {
+            type: "input",
+            group: "profile",
+            attributes: {
+              node_type: "input",
+              name: "traits.name.first",
+              type: "text",
+              value: "Pat",
+            },
+            meta: {},
+            messages: [],
+          },
+          {
+            type: "input",
+            group: "profile",
+            attributes: {
+              node_type: "input",
+              name: "traits.name.last",
+              type: "text",
+              value: "Lee",
+            },
+            meta: {},
+            messages: [],
+          },
+          {
+            type: "input",
+            group: "profile",
+            attributes: {
+              node_type: "input",
+              name: "method",
+              type: "submit",
+              value: "profile",
+            },
+            meta: {},
+            messages: [],
+          },
+        ],
+      },
+    } as unknown as SettingsFlow;
+
+    const emailNodes = settingsNodesForProfileFields(flow, "email");
+    expect(
+      emailNodes.map((n) => [
+        (n.attributes as { name?: string }).name,
+        (n.attributes as { type?: string }).type,
+      ]),
+    ).toEqual([
+      ["csrf_token", "hidden"],
+      ["traits.email", "email"],
+      ["traits.name.first", "hidden"],
+      ["traits.name.last", "hidden"],
+      ["method", "submit"],
+    ]);
+    expect(settingsNodesHaveVisibleInputs(emailNodes)).toBe(true);
+
+    const profileNodes = settingsNodesForProfileFields(flow, "profile");
+    expect(
+      profileNodes.map((n) => [
+        (n.attributes as { name?: string }).name,
+        (n.attributes as { type?: string }).type,
+      ]),
+    ).toEqual([
+      ["csrf_token", "hidden"],
+      ["traits.email", "hidden"],
+      ["traits.name.first", "text"],
+      ["traits.name.last", "text"],
+      ["method", "submit"],
+    ]);
+    expect(settingsNodesHaveVisibleInputs(profileNodes)).toBe(true);
+
+    const hiddenOnly = applyProfileSettingsFieldFilter(
+      [
+        {
+          type: "input",
+          group: "profile",
+          attributes: {
+            node_type: "input",
+            name: "traits.email",
+            type: "email",
+            value: "a@b.co",
+          },
+          meta: {},
+          messages: [],
+        } as unknown as UiNode,
+      ],
+      "profile",
+    );
+    expect(settingsNodesHaveVisibleInputs(hiddenOnly)).toBe(false);
+  });
+
+  it("treats linked-totp unlink submit as visible UI", () => {
+    expect(
+      settingsNodesHaveVisibleInputs([
+        {
+          type: "input",
+          group: "default",
+          attributes: {
+            node_type: "input",
+            name: "csrf_token",
+            type: "hidden",
+            value: "c",
+          },
+        },
+        {
+          type: "input",
+          group: "default",
+          attributes: {
+            node_type: "input",
+            name: "method",
+            type: "submit",
+            value: "totp",
+          },
+        },
+        {
+          type: "input",
+          group: "totp",
+          attributes: {
+            node_type: "input",
+            name: "totp_unlink",
+            type: "submit",
+            value: "true",
+          },
+        },
+      ] as UiNode[]),
+    ).toBe(true);
+  });
+
+  it("does not treat lone method submit as visible UI", () => {
+    expect(
+      settingsNodesHaveVisibleInputs([
+        {
+          type: "input",
+          group: "default",
+          attributes: {
+            node_type: "input",
+            name: "csrf_token",
+            type: "hidden",
+            value: "c",
+          },
+        },
+        {
+          type: "input",
+          group: "default",
+          attributes: {
+            node_type: "input",
+            name: "method",
+            type: "submit",
+            value: "profile",
+          },
+        },
+      ] as UiNode[]),
+    ).toBe(false);
+  });
+
   it("includes default-group webauthn.js script for passkey group so Ory hooks load", () => {
     const flow = {
       ui: {
@@ -288,10 +473,11 @@ describe("parseSettingsTabQuery", () => {
   it("returns null for invalid values", () => {
     expect(parseSettingsTabQuery(undefined)).toBeNull();
     expect(parseSettingsTabQuery("")).toBeNull();
-    expect(parseSettingsTabQuery("profile")).toBeNull();
+    expect(parseSettingsTabQuery("unknown")).toBeNull();
   });
 
   it("accepts known tab keys", () => {
+    expect(parseSettingsTabQuery("profile")).toBe("profile");
     expect(parseSettingsTabQuery("password")).toBe("password");
     expect(parseSettingsTabQuery(" email ")).toBe("email");
   });

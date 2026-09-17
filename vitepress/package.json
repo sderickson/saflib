@@ -6,8 +6,12 @@
   "description": "Shared VitePress dependency for SAF documentation and static sites",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
   "dependencies": {
-    "vitepress": "^1.6.3"
+    "esbuild": "^0.27.0",
+    "vitepress": "2.0.0-alpha.20"
   },
   "sideEffects": false
 }
