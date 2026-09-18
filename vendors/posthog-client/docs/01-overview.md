@@ -4,10 +4,12 @@
 
 ## What this package provides
 
-- **`initPostHogIfConfigured()`** — optional SPA init from `VITE_POSTHOG_*` build-time env
+- **`initPostHogIfConfigured(options?)`** — optional SPA init from `VITE_POSTHOG_*` build-time env. Defaults are cookieless (`cookieless_mode: "always"`), no session recording, and `person_profiles: "never"` (no cookie banner). Pass PostHog config overrides to change that.
 - **`makePosthogScriptTag()`** — Vite HTML plugin snippet for server-side env injection via `@saflib/env`
 - **`usePostHog()` / `usePostHogFeatureFlag()`** — read flags from the global client
 - **`identifyToPostHog(session)`** — call after Kratos session is available
+
+Cookieless mode must also be enabled under PostHog **Project settings → Web analytics → Cookieless server hash mode**, or events are ignored at ingest.
 
 ## Product events
 
