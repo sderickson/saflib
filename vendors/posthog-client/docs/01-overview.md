@@ -15,7 +15,7 @@ Cookieless mode must also be enabled under PostHog **Project settings → Web an
 
 `@saflib/vue` emits product events through `commonEventLogger`, which forwards to any loaded `globalThis.posthog` client. This package does **not** own the event logger — it only loads PostHog so captures work.
 
-1. **Load PostHog** — in `main.ts` call `initPostHogIfConfigured()`, or use `makePosthogScriptTag()` in your Vite build config.
+1. **Load PostHog** — in `main.ts` / the VitePress theme call `initPostHogIfConfigured({ apiKey: import.meta.env.VITE_POSTHOG_PROJECT_API_KEY, apiHost: import.meta.env.VITE_POSTHOG_PROJECT_HOST })`, or use `makePosthogScriptTag()` in your Vite build config. Pass the `VITE_*` values from **app** source so Vite inlines them (env reads inside this package are not substituted in production builds).
 2. **Emit events** — use your product's `clients/events.ts` (`makeProductEventLogger` → `commonEventLogger`).
 3. **Dev backend buffer (optional)** — call `registerDevBackendProductEventConnector()` from `@saflib/analytics-vue` in `events.ts` for local admin visibility.
 

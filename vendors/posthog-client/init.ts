@@ -1,9 +1,16 @@
 import { posthog, type PostHogConfig } from "posthog-js";
 
 /**
- * Overrides for {@link posthog.init}. Merged on top of {@link DEFAULT_INIT_OPTIONS}.
+ * Overrides for {@link posthog.init}, plus optional explicit credentials.
+ *
+ * Prefer passing `apiKey` / `apiHost` from app source (`import.meta.env.VITE_*`
+ * there). Vite only substitutes env in the app graph — values read inside this
+ * package are often empty in production builds.
  */
-export type InitPostHogOptions = Partial<PostHogConfig>;
+export type InitPostHogOptions = Partial<PostHogConfig> & {
+  apiKey?: string;
+  apiHost?: string;
+};
 
 /**
  * Conservative defaults: cookieless (no cookie banner) and no session replay.
@@ -19,7 +26,7 @@ export const DEFAULT_INIT_OPTIONS = {
 } as const satisfies Partial<PostHogConfig>;
 
 /**
- * Optional PostHog init when `VITE_POSTHOG_PROJECT_API_KEY` is set at build time.
+ * Optional PostHog init when an API key is available.
  *
  * Product events reach PostHog through {@link @saflib/vue}'s
  * {@link commonEventLogger}, which calls `globalThis.posthog.capture` when the
@@ -27,13 +34,23 @@ export const DEFAULT_INIT_OPTIONS = {
  * {@link makePosthogScriptTag} in Vite HTML instead).
  *
  * @param options - Merged over {@link DEFAULT_INIT_OPTIONS} (later keys win).
+ *   Pass `apiKey` from the app entry so Vite inlines `VITE_POSTHOG_*`.
  */
 export function initPostHogIfConfigured(
   options: InitPostHogOptions = {},
 ): void {
-  const apiKey = import.meta.env.VITE_POSTHOG_PROJECT_API_KEY;
+  const {
+    apiKey: apiKeyOption,
+    apiHost: apiHostOption,
+    ...posthogOptions
+  } = options;
+
+  const apiKey =
+    apiKeyOption || import.meta.env.VITE_POSTHOG_PROJECT_API_KEY || "";
   const apiHost =
-    import.meta.env.VITE_POSTHOG_PROJECT_HOST ?? "https://us.i.posthog.com";
+    apiHostOption ||
+    import.meta.env.VITE_POSTHOG_PROJECT_HOST ||
+    "https://us.i.posthog.com";
 
   if (!apiKey || typeof globalThis.window === "undefined") {
     return;
@@ -50,7 +67,7 @@ export function initPostHogIfConfigured(
   posthog.init(apiKey, {
     api_host: apiHost,
     ...DEFAULT_INIT_OPTIONS,
-    ...options,
+    ...posthogOptions,
   });
   console.log("PostHog initialized");
 }
