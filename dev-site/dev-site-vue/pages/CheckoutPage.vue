@@ -583,7 +583,7 @@ const drizzleWorkflowHref = computed(() => {
   const pkg = selectedPkg.value;
   if (!pkg?.dependencies?.includes("@saflib/drizzle")) return undefined;
   return {
-    path: "/workflows",
+    path: "/plans",
     query: {
       workflow: "drizzle/add-query",
       cwd: repoPathPrefix(checkout.value?.product_root, pkg.directory),

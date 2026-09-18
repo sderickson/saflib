@@ -19,8 +19,14 @@ import { pickScopeDocFile, summarizeScopeDoc } from "../scope-docs.ts";
  */
 export function createDevSiteClient(subdomain: string) {
   if (subdomain === "") {
+    // Not a bare `""` — `openapi-fetch` builds requests via `new
+    // Request()`, which (unlike browser `fetch`) can't resolve a bare
+    // relative path (throws `Failed to parse URL`) under Node/undici,
+    // including in tests. Same fix as `workflows-queries.ts`'s
+    // `createWorkflowsClient`.
+    const baseUrl = typeof document !== "undefined" ? document.location.origin : "";
     return createClient<paths>({
-      baseUrl: "",
+      baseUrl,
       credentials: "include",
       fetch: (request) => {
         const csrfToken = document.cookie

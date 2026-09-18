@@ -1,7 +1,7 @@
 <template>
   <div class="run-page">
     <header class="run-page__head">
-      <v-btn variant="text" :to="workflowsPath" class="mr-2">&larr; Workflows</v-btn>
+      <v-btn variant="text" :to="workflowsPath" class="mr-2">&larr; Plans</v-btn>
       <span class="run-page__title">Run {{ runId }}</span>
       <v-chip class="ml-2" size="small" :color="statusColor">{{ run?.status ?? "…" }}</v-chip>
       <v-spacer />
@@ -147,21 +147,15 @@
           <v-slider
             :model-value="volume"
             :disabled="muted"
-            min="0"
-            max="1"
-            step="0.05"
+            :min="0"
+            :max="1"
+            :step="0.05"
             hide-details
             density="compact"
             class="run-page__volume-slider"
             aria-label="Alert volume"
             @update:model-value="onVolumeChange"
           />
-          <v-btn size="small" variant="text" @click="testAlert('success')">
-            Test success sound
-          </v-btn>
-          <v-btn size="small" variant="text" @click="testAlert('failure')">
-            Test failure sound
-          </v-btn>
         </div>
       </div>
     </footer>
@@ -195,7 +189,7 @@ import {
   toggleMuted,
 } from "../run-alerts.ts";
 
-withDefaults(defineProps<{ workflowsPath?: string }>(), { workflowsPath: "/workflows" });
+withDefaults(defineProps<{ workflowsPath?: string }>(), { workflowsPath: "/plans" });
 
 const route = useRoute();
 const runId = computed(() => route.params.runId as string);
@@ -273,23 +267,6 @@ function toggleAutoContinue() {
   autoContinue.value = !autoContinue.value;
   if (autoContinue.value && !advanceMutation.isPending.value && canAutoAdvance.value) {
     advanceOnce();
-  }
-}
-
-/**
- * Plays/shows exactly what a real finish or failure would, on demand — so
- * "did I actually grant notification permission, is the sound audible,
- * is the tab/OS suppressing it" can be checked directly instead of
- * waiting on (and hoping to catch) a real run finishing.
- */
-function testAlert(kind: "success" | "failure") {
-  unlockAudio();
-  if (kind === "success") {
-    playSuccessBell();
-    notify("Test notification", "This is what a successful run looks like.");
-  } else {
-    playFailureQuack();
-    notify("Test notification", "This is what a failed run looks like.");
   }
 }
 
@@ -593,7 +570,11 @@ watch(
   gap: 0.25rem;
 }
 .run-page__volume-slider {
-  max-width: 100px;
+  /* A flex child with no explicit width shrinks toward its own tiny
+     intrinsic content width (just the thumb), which broke the slider's
+     drag-to-value mapping — it only ever reported the two extremes. */
+  flex: 0 0 120px;
+  width: 120px;
   margin-right: 0.5rem;
 }
 </style>

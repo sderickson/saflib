@@ -77,12 +77,34 @@ describe("LogEntry", () => {
     expect(wrapper.find(".log-entry__toggle").exists()).toBe(false);
   });
 
-  it("renders agent-input (prompt) content as markdown too", () => {
+  it("collapses agent-input prompts by default, to a one-line preview", () => {
+    const wrapper = mountLogEntry(
+      logFixture({
+        channel: "agent-input",
+        content: "Please update the file with a lot of detail:\n\n- `a.ts`\n- `b.ts`",
+      }),
+    );
+    // No full markdown render yet — just the preview line — and no
+    // sticky-affixed giant prompt dominating the log.
+    expect(wrapper.find("li").exists()).toBe(false);
+    expect(wrapper.text()).toContain("Please update the file with a lot of detail:");
+    const toggle = wrapper.find(".log-entry__toggle");
+    expect(toggle.text()).toBe("Show prompt");
+  });
+
+  it("expands an agent-input prompt to full markdown on click, and back on a second click", async () => {
     const wrapper = mountLogEntry(
       logFixture({ channel: "agent-input", content: "Please update:\n\n- `a.ts`\n- `b.ts`" }),
     );
+
+    await wrapper.find(".log-entry__toggle").trigger("click");
+
     expect(wrapper.findAll("li")).toHaveLength(2);
     expect(wrapper.find("code").text()).toBe("a.ts");
+    expect(wrapper.find(".log-entry__toggle").text()).toBe("Collapse prompt");
+
+    await wrapper.find(".log-entry__toggle").trigger("click");
+    expect(wrapper.find("li").exists()).toBe(false);
   });
 
   it("does not render tool/terminal content as markdown (plain text, unaffected by markdown syntax)", () => {

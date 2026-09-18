@@ -8,15 +8,23 @@
       <span class="log-entry__channel">[{{ log.channel }}]</span>
       <span v-if="label" class="log-entry__label">{{ label }}</span>
     </div>
-    <!-- eslint-disable-next-line vue/no-v-html -->
-    <div v-if="isMarkdown" class="log-entry__body log-entry__body--markdown" v-html="renderedHtml" />
+    <div v-if="isMarkdown" class="log-entry__body log-entry__body--markdown">
+      <div v-if="isAgentInput && !expanded" class="log-entry__markdown-preview">
+        {{ markdownPreviewText }}
+      </div>
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <div v-else v-html="renderedHtml" />
+    </div>
     <template v-else>
       <div v-if="previewLines.length" class="log-entry__body">{{ previewText }}</div>
       <div v-if="expanded && remainingLineCount > 0" class="log-entry__body">{{ restText }}</div>
-      <button v-if="canExpand" type="button" class="log-entry__toggle" @click="expanded = !expanded">
-        {{ expanded ? "Show less" : moreLabel }}
-      </button>
     </template>
+    <button v-if="isAgentInput" type="button" class="log-entry__toggle" @click="expanded = !expanded">
+      {{ expanded ? "Collapse prompt" : "Show prompt" }}
+    </button>
+    <button v-else-if="canExpand" type="button" class="log-entry__toggle" @click="expanded = !expanded">
+      {{ expanded ? "Show less" : moreLabel }}
+    </button>
   </v-card>
 </template>
 
@@ -26,9 +34,13 @@ import { marked } from "marked";
 import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
 
 const props = defineProps<{ log: WorkflowLogEntry }>();
+// Also doubles as "expanded" for the plain-text show-more toggle below —
+// `false` means "collapsed" in both cases, so a single flag covers both
+// without needing per-channel default wiring.
 const expanded = ref(false);
 
 const PREVIEW_LINE_COUNT = 4;
+const MARKDOWN_PREVIEW_CHAR_LIMIT = 100;
 
 // `claude-agent.ts` tags each agent-channel entry with a
 // `---------- LABEL ----------\n<body>` header (AGENT / RESULT) — pull
@@ -49,6 +61,19 @@ const isMarkdown = computed(
 const renderedHtml = computed(() =>
   isMarkdown.value ? (marked.parse(body.value, { async: false }) as string) : "",
 );
+
+// Collapsed by default (see `expanded`'s default above) — a large prompt
+// (e.g. a workflow step's whole `promptMessage`) otherwise dominates the
+// log, especially once it's the one pinned via `position: sticky` at the
+// top of the scroll container. `agent` (the model's own replies) is left
+// alone: those are usually what you actually want to read, not skip past.
+const isAgentInput = computed(() => props.log.channel === "agent-input");
+const markdownPreviewText = computed(() => {
+  const firstLine = body.value.split("\n").find((l) => l.trim().length > 0) ?? "";
+  return firstLine.length > MARKDOWN_PREVIEW_CHAR_LIMIT
+    ? `${firstLine.slice(0, MARKDOWN_PREVIEW_CHAR_LIMIT)}…`
+    : firstLine;
+});
 
 const lines = computed(() => body.value.split("\n"));
 const previewLines = computed(() => lines.value.slice(0, PREVIEW_LINE_COUNT));
@@ -115,6 +140,13 @@ const moreLabel = computed(
      agent's own markdown just uses the page's normal body font. */
   white-space: normal;
   font-family: unset;
+}
+.log-entry__markdown-preview {
+  opacity: 0.6;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .log-entry__body--markdown :deep(p),
 .log-entry__body--markdown :deep(ul),

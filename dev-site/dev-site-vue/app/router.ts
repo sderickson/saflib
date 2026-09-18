@@ -5,8 +5,7 @@ import {
   CommitDetailPage,
   ComparePage,
   CheckoutPage,
-  BuildPage,
-  WorkflowsPage,
+  PlansPage,
   RunPage,
 } from "../index.ts";
 import { readDevSiteRuntimeConfig } from "./runtime-config.ts";
@@ -101,20 +100,39 @@ export function createDevSiteRouter(options: CreateDevSiteRouterOptions = {}) {
         }),
       },
       {
-        path: "/build",
-        component: BuildPage,
+        path: "/plans",
+        component: PlansPage,
+        props: { hubPath: "/" },
+      },
+      // Extension-specific routes first (most specific to least), so a
+      // `.md`/`.yaml` file matches its dedicated view; anything else falls
+      // through to the plain-text catch-all. All three render the same
+      // `PlansPage` — it reads `planName`/`fileName` off the route itself
+      // (see `RunPage`'s `runId` for the same pattern) and picks a view
+      // based on the file's extension.
+      {
+        path: "/plans/:planName/:fileName(.+\\.md)",
+        component: PlansPage,
         props: { hubPath: "/" },
       },
       {
-        path: "/workflows",
-        component: WorkflowsPage,
+        path: "/plans/:planName/:fileName(.+\\.ya?ml)",
+        component: PlansPage,
+        props: { hubPath: "/" },
+      },
+      {
+        path: "/plans/:planName/:fileName",
+        component: PlansPage,
         props: { hubPath: "/" },
       },
       {
         path: "/workflows/runs/:runId",
         component: RunPage,
-        props: { workflowsPath: "/workflows" },
+        props: { workflowsPath: "/plans" },
       },
+      // Merged into /plans — see PlansPage.
+      { path: "/build", redirect: "/plans" },
+      { path: "/workflows", redirect: "/plans" },
       {
         path: "/commits/:hash",
         redirect: (to) => `/history/commits/${to.params.hash}`,

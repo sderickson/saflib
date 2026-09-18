@@ -3,8 +3,7 @@ import CommitDetailPage from "./pages/CommitDetailPage.vue";
 import ComparePage from "./pages/ComparePage.vue";
 import HubPage from "./pages/HubPage.vue";
 import CheckoutPage from "./pages/CheckoutPage.vue";
-import BuildPage from "./pages/BuildPage.vue";
-import WorkflowsPage from "./pages/WorkflowsPage.vue";
+import PlansPage from "./pages/PlansPage.vue";
 import RunPage from "./pages/RunPage.vue";
 export { commitHealth } from "./health.ts";
 export type { CommitHealth, CommitHealthStatus } from "./health.ts";
@@ -45,7 +44,6 @@ export {
   ComparePage,
   HubPage,
   CheckoutPage,
-  BuildPage,
-  WorkflowsPage,
+  PlansPage,
   RunPage,
 };

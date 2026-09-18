@@ -4,18 +4,31 @@ export const RUN_LOCK_MESSAGE =
   "Another workflow run is already advancing. Only one run may advance at a time — wait for it to finish (or stop it), then retry.";
 
 /**
- * Which lock keys are currently held. Keyed by `dbKey` (the caller's own
- * `@saflib/new-workflows-db` connection) rather than an unconditional
- * single global — in production there's exactly one `dbKey` per running
- * dev-site process anyway (one process, one repo), so this is equivalent
- * to a true process-wide lock there. Keying it matters for *this
- * package's own test suite*: it runs with `isolate: false` (module state
- * shared across test files, for speed — see base-vitest.config.js), so
- * an unconditional global would let one test file's in-flight
- * `advanceRun` call spuriously lock out a *different* file's unrelated
- * one if vitest happens to interleave them.
+ * How long a lock may be held before it's treated as stale and forcibly
+ * released. `finally` below only runs once `fn()`'s promise actually
+ * settles — if something it awaits (an agent subprocess, a DB call) never
+ * resolves or rejects at all (not merely slow), the lock would otherwise
+ * stay held *forever*, silently rejecting every future advance — for
+ * every run, not just the stuck one — until the whole process is
+ * restarted. Comfortably above any real advance: the longest legitimate
+ * agent turns observed in practice run a few minutes.
  */
-const lockedKeys = new Set<unknown>();
+const LOCK_MAX_HOLD_MS = 15 * 60 * 1000;
+
+/**
+ * Which lock keys are currently held, and when each was acquired. Keyed by
+ * `dbKey` (the caller's own `@saflib/new-workflows-db` connection) rather
+ * than an unconditional single global — in production there's exactly one
+ * `dbKey` per running dev-site process anyway (one process, one repo), so
+ * this is equivalent to a true process-wide lock there. Keying it matters
+ * for *this package's own test suite*: it runs with `isolate: false`
+ * (module state shared across test files, for speed — see
+ * base-vitest.config.js), so an unconditional global would let one test
+ * file's in-flight `advanceRun` call spuriously lock out a *different*
+ * file's unrelated one if vitest happens to interleave them.
+ */
+const lockedKeys = new Map<unknown, { acquiredAt: number; token: number }>();
+let nextToken = 0;
 /** Marks "the current async call chain already holds this key's lock" — set for the duration of the locked call, visible through any depth of further `await`s. */
 const holderContext = new AsyncLocalStorage<unknown>();
 
@@ -46,13 +59,33 @@ export async function withRunLock<T>(key: unknown, fn: () => Promise<T>): Promis
   if (holderContext.getStore() === key) {
     return { locked: false, result: await fn() };
   }
-  if (lockedKeys.has(key)) {
-    return { locked: true };
+  const existing = lockedKeys.get(key);
+  if (existing !== undefined) {
+    if (Date.now() - existing.acquiredAt < LOCK_MAX_HOLD_MS) {
+      return { locked: true };
+    }
+    // Stale: whatever acquired this lock is never coming back to release
+    // it via `finally` below. Force it clear so the system stays usable —
+    // the original stuck call is abandoned in place, not cancelled; it
+    // may still be occupying resources (an orphaned agent process, an
+    // open DB connection), but at least it can no longer wedge every
+    // other run's ability to advance.
+    console.error(
+      `[run-lock] forcibly releasing a lock held for over ${LOCK_MAX_HOLD_MS}ms — a previous advance call never completed`,
+    );
   }
-  lockedKeys.add(key);
+  const token = nextToken++;
+  lockedKeys.set(key, { acquiredAt: Date.now(), token });
   try {
     return { locked: false, result: await holderContext.run(key, fn) };
   } finally {
-    lockedKeys.delete(key);
+    // Only release the slot if it's still ours — if this call was the
+    // *stale* one above and got force-evicted, a newer call may already
+    // hold the lock by the time this (abandoned, still-running) one
+    // finally settles; clearing unconditionally would release that
+    // newer, legitimate holder's lock out from under it.
+    if (lockedKeys.get(key)?.token === token) {
+      lockedKeys.delete(key);
+    }
   }
 }

@@ -4,8 +4,7 @@ import CommitDetailPage from "./CommitDetailPage.vue";
 import ComparePage from "./ComparePage.vue";
 import HubPage from "./HubPage.vue";
 import CheckoutPage from "./CheckoutPage.vue";
-import BuildPage from "./BuildPage.vue";
-import WorkflowsPage from "./WorkflowsPage.vue";
+import PlansPage from "./PlansPage.vue";
 import RunPage from "./RunPage.vue";
 
 export const router = createRouter({
@@ -23,8 +22,10 @@ export const router = createRouter({
         query: { package: decodeURIComponent(to.params.package_name as string) },
       }),
     },
-    { path: "/build", component: BuildPage },
-    { path: "/workflows", component: WorkflowsPage },
+    { path: "/plans", component: PlansPage },
+    { path: "/plans/:planName/:fileName(.+\\.md)", component: PlansPage },
+    { path: "/plans/:planName/:fileName(.+\\.ya?ml)", component: PlansPage },
+    { path: "/plans/:planName/:fileName", component: PlansPage },
     { path: "/workflows/runs/:runId", component: RunPage },
   ],
 });

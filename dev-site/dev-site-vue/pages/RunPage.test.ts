@@ -466,31 +466,6 @@ describe("RunPage", () => {
     expect(quackSpy).not.toHaveBeenCalled();
   });
 
-  it("test buttons play/show the real alert on demand, regardless of run status", async () => {
-    const bellSpy = vi.spyOn(runAlerts, "playSuccessBell").mockImplementation(() => {});
-    const quackSpy = vi.spyOn(runAlerts, "playFailureQuack").mockImplementation(() => {});
-    const notifySpy = vi.spyOn(runAlerts, "notify").mockImplementation(() => {});
-
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
-    await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("starting");
-    });
-
-    const successButton = wrapper.findAll("button").find((b) => b.text() === "Test success sound");
-    const failureButton = wrapper.findAll("button").find((b) => b.text() === "Test failure sound");
-    expect(successButton).toBeTruthy();
-    expect(failureButton).toBeTruthy();
-
-    await successButton!.trigger("click");
-    expect(bellSpy).toHaveBeenCalledTimes(1);
-    expect(notifySpy).toHaveBeenCalledTimes(1);
-
-    await failureButton!.trigger("click");
-    expect(quackSpy).toHaveBeenCalledTimes(1);
-    expect(notifySpy).toHaveBeenCalledTimes(2);
-  });
-
   it("mute button toggles run-alerts' persisted mute state and its own icon/label", async () => {
     localStorage.clear();
     runAlerts.__resetRunAlertsStateForTests();

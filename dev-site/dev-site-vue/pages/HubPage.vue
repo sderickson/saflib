@@ -57,28 +57,7 @@
             <div class="text-overline">Future</div>
             <div class="text-h6">Build</div>
             <div class="text-caption text-medium-emphasis">
-              Coming soon — gaps and next work
-            </div>
-          </div>
-        </v-btn>
-      </v-col>
-    </v-row>
-
-    <v-row justify="center" class="hub-ctas mt-4">
-      <v-col cols="12" md="4">
-        <v-btn
-          block
-          size="x-large"
-          variant="outlined"
-          height="120"
-          :to="workflowsPath"
-          class="hub-cta"
-        >
-          <div class="text-left w-100 px-2">
-            <div class="text-overline">Do</div>
-            <div class="text-h6">Workflows</div>
-            <div class="text-caption text-medium-emphasis">
-              Run and watch project workflows
+              Browse plans and run project workflows
             </div>
           </div>
         </v-btn>
@@ -93,13 +72,11 @@ withDefaults(
     historyPath?: string;
     checkoutPath?: string;
     buildPath?: string;
-    workflowsPath?: string;
   }>(),
   {
     historyPath: "/history",
     checkoutPath: "/checkout",
-    buildPath: "/build",
-    workflowsPath: "/workflows",
+    buildPath: "/plans",
   },
 );
 </script>
