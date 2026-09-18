@@ -712,6 +712,63 @@
           }
         }
       }
+    },
+    "/api/workflow-runs/{runId}/preview-diff": {
+      "get": {
+        "summary": "Preview a workflow run's effect as a commit diff",
+        "operationId": "previewWorkflowRunDiff",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Computes what the run's workflow (walking `copy`/`transform-file`/`cd` steps, recursing into `call-workflow`) would change, as a real but never-persisted, never-referenced git commit — then diffs it against the repo's current commit the same way `diffCommits` diffs two real ones. Steps that genuinely need a real run (an agent turn, a shell command) are reported in `entries`, not silently skipped.\n",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The hypothetical diff, plus which steps it could and couldn't cover.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "commit_diff",
+                    "entries"
+                  ],
+                  "properties": {
+                    "commit_diff": {
+                      "$ref": "#/components/schemas/commit-diff"
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/preview-step-entry"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No workflow run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -766,6 +823,9 @@
       },
       "CheckoutCompare": {
         "$ref": "#/components/schemas/checkout-compare"
+      },
+      "PreviewStepEntry": {
+        "$ref": "#/components/schemas/preview-step-entry"
       },
       "commit-ref": {
         "type": "object",
@@ -2099,6 +2159,41 @@
             }
           }
         }
+      },
+      "preview-step-entry": {
+        "type": "object",
+        "description": "One step a workflow-run preview walked past — either applied (its file content folded into the preview's synthetic commit) or skipped, when its kind (`prompt`/`command`/`npm-script`/`update`, or anything else that isn't mechanical) genuinely needs a real run.\n",
+        "properties": {
+          "workflow_id": {
+            "type": "string",
+            "description": "The root workflow's id, or a nested `call-workflow` target's id — lets the UI say *which* workflow a given step belongs to.\n",
+            "example": "drizzle/add-query"
+          },
+          "step_index": {
+            "type": "integer",
+            "description": "Index within that workflow's own step list."
+          },
+          "kind": {
+            "type": "string",
+            "description": "The step's kind (e.g. `copy`, `transform-file`, `cd`, `command`, `call-workflow`).",
+            "example": "copy"
+          },
+          "applied": {
+            "type": "boolean",
+            "description": "Whether this step's effect is reflected in the preview's diff."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why a step wasn't applied — its kind isn't previewable, or it threw while trying.",
+            "example": "needs a real run"
+          }
+        },
+        "required": [
+          "workflow_id",
+          "step_index",
+          "kind",
+          "applied"
+        ]
       },
       "login": {
         "type": "object",

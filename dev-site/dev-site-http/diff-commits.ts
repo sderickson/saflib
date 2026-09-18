@@ -39,11 +39,14 @@ export type DiffCommitsResult = ReturnsError<
   AnalyzedCommitNotFoundError
 >;
 
-function packageKey(m: PackageMetrics): string {
+// Exported alongside `diffCommits` — reused by `preview-diff.ts` to diff a
+// freshly-computed (never-persisted) `AnalyzedSnapshot` against a real
+// commit's, without duplicating this comparison logic.
+export function packageKey(m: PackageMetrics): string {
   return m.package_name;
 }
 
-function metricsEqual(a: PackageMetrics, b: PackageMetrics): boolean {
+export function metricsEqual(a: PackageMetrics, b: PackageMetrics): boolean {
   return (
     a.source_files === b.source_files &&
     a.source_lines === b.source_lines &&
@@ -55,15 +58,15 @@ function metricsEqual(a: PackageMetrics, b: PackageMetrics): boolean {
   );
 }
 
-function exportKey(e: AnalyzedExport | ExportEntry): string {
+export function exportKey(e: AnalyzedExport | ExportEntry): string {
   return `${e.package_name}\0${e.file_path}\0${e.name}\0${e.kind}`;
 }
 
-function testCaseKey(t: AnalyzedTestCase | TestCase): string {
+export function testCaseKey(t: AnalyzedTestCase | TestCase): string {
   return `${t.package_name}\0${t.file_path}\0${t.full_name}`;
 }
 
-function toApiTestCase(t: AnalyzedTestCase): TestCase {
+export function toApiTestCase(t: AnalyzedTestCase): TestCase {
   if (!t.subject_name || !t.subject_confidence || !t.subject_file_path) {
     return {
       package_name: t.package_name,
@@ -83,7 +86,7 @@ function toApiTestCase(t: AnalyzedTestCase): TestCase {
   };
 }
 
-function diffLists<T>(
+export function diffLists<T>(
   before: T[],
   after: T[],
   keyOf: (item: T) => string,
@@ -114,7 +117,7 @@ function issueCountsByPackage(
   return byPackage;
 }
 
-function toPackageMetrics(
+export function toPackageMetrics(
   m: {
     package_name: string;
     directory: string;

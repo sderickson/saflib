@@ -65,3 +65,10 @@ export {
 } from "./templating.ts";
 
 export { HelloWorkflowDefinition } from "./example-workflows/hello-workflow.ts";
+
+export {
+  previewRun,
+  type PreviewResult,
+  type PreviewStepEntry,
+  type PreviewRunOptions,
+} from "./preview/preview-run.ts";

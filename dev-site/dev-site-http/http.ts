@@ -16,6 +16,7 @@ import { createScanRouter } from "./routes/scan/index.ts";
 import { createCheckoutRouter } from "./routes/checkout/index.ts";
 import { createRepoRouter } from "./routes/repo/index.ts";
 import { createWorkflowsRouter } from "./routes/workflows/index.ts";
+import { createWorkflowRunsRouter } from "./routes/workflow-runs/index.ts";
 // END WORKFLOW AREA
 
 export type HttpRouterMount = {
@@ -95,6 +96,7 @@ function defaultRouterMounts(): HttpRouterMount[] {
     { kind: "router", createRouter: createCheckoutRouter },
     { kind: "router", createRouter: createRepoRouter },
     { kind: "router", createRouter: createWorkflowsRouter },
+    { kind: "router", createRouter: createWorkflowRunsRouter },
     // END WORKFLOW AREA
   ];
 }

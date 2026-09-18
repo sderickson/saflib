@@ -16,6 +16,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/git": "*",
     "@saflib/new-workflows-db": "*",
     "@saflib/new-workflows-spec": "*",
     "@saflib/utils": "*",

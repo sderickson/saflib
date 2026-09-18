@@ -32,6 +32,9 @@ paths:
   /api/repo/file:
     get:
       $ref: "./routes/repo/file.yaml#/getRepoFile"
+  /api/workflow-runs/{runId}/preview-diff:
+    get:
+      $ref: "./routes/workflow-runs/preview-diff.yaml#/previewWorkflowRunDiff"
   # END WORKFLOW AREA
 
 components:
@@ -73,4 +76,6 @@ components:
       $ref: "./schemas/db-schema-column.yaml"
     CheckoutCompare:
       $ref: "./schemas/checkout-compare.yaml"
+    PreviewStepEntry:
+      $ref: "./schemas/preview-step-entry.yaml"
     # END WORKFLOW AREA

@@ -23,9 +23,11 @@ import { devSiteHttpStorage } from "../../context.ts";
  * Every registered code workflow, ported package by package off the old
  * XState engine (see the individual `*-workflows` packages). Still
  * hand-written — no registry-building tool exists yet (same note as the
- * CLI's own registry).
+ * CLI's own registry). Exported: `preview-diff.ts` needs the same registry
+ * to resolve a run's `WorkflowDefinition` outside the mounted
+ * `new-workflows-http` router's own request-scoped context.
  */
-const registry: WorkflowDefinition<any, any>[] = [
+export const registry: WorkflowDefinition<any, any>[] = [
   HelloWorkflowDefinition,
   ...drizzleWorkflows,
   ...serviceWorkflows,
@@ -49,6 +51,25 @@ const registry: WorkflowDefinition<any, any>[] = [
 process.env.DEPLOYMENT_NAME ??= "local";
 process.env.ALLOW_DB_CREATION ??= "true";
 
+// `onDisk: true` (the default) writes into the package's own `data/`
+// folder — fine on a host checkout, but inside the docker container that
+// package dir is the bind-mounted `/repo` (see resolve-dev-site-env.sh's
+// SAFLIB_ROOT fix for the same class of problem with @saflib/templates).
+// Writing a heavily-written sqlite file onto a macOS bind mount from a
+// Linux container risks the same mmap/locking trouble as sharing
+// node_modules did (see docker-entrypoint.sh) — so docker-compose points
+// this at a container-only named volume instead, via NEW_WORKFLOWS_DB_PATH.
+//
+// Module-scope (connected once, not per `createWorkflowsRouter()` call):
+// `preview-diff.ts` needs the exact same connection the mounted router
+// uses, to read the same runs. A real server only calls
+// `createWorkflowsRouter()` once anyway (see `defaultRouterMounts()`).
+export const workflowsDbKey = newWorkflowsDbManager.connect(
+  process.env.NEW_WORKFLOWS_DB_PATH
+    ? { onDisk: process.env.NEW_WORKFLOWS_DB_PATH }
+    : { onDisk: true },
+);
+
 /**
  * Mounts `new-workflows-http`'s router as monolith chrome — the workflows
  * engine's HTTP surface lives here, not as its own service (see
@@ -56,22 +77,8 @@ process.env.ALLOW_DB_CREATION ??= "true";
  * registry: no registry-building tool exists yet (same note as the CLI's).
  */
 export function createWorkflowsRouter(): IRouter {
-  // `onDisk: true` (the default) writes into the package's own `data/`
-  // folder — fine on a host checkout, but inside the docker container that
-  // package dir is the bind-mounted `/repo` (see resolve-dev-site-env.sh's
-  // SAFLIB_ROOT fix for the same class of problem with @saflib/templates).
-  // Writing a heavily-written sqlite file onto a macOS bind mount from a
-  // Linux container risks the same mmap/locking trouble as sharing
-  // node_modules did (see docker-entrypoint.sh) — so docker-compose points
-  // this at a container-only named volume instead, via NEW_WORKFLOWS_DB_PATH.
-  const dbKey = newWorkflowsDbManager.connect(
-    process.env.NEW_WORKFLOWS_DB_PATH
-      ? { onDisk: process.env.NEW_WORKFLOWS_DB_PATH }
-      : { onDisk: true },
-  );
-
   return createNewWorkflowsRouter({
-    dbKey,
+    dbKey: workflowsDbKey,
     registry,
     // dev-site-http's own `repo_root` isn't known until *its* per-request
     // context is set up, so this is resolved fresh per request.

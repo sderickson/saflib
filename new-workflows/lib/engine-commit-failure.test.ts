@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -7,6 +7,7 @@ import { newWorkflowsDbManager } from "@saflib/new-workflows-db/instances";
 import { getByIdWorkflowRun } from "@saflib/new-workflows-db";
 import { defineWorkflow, step, createRun, advanceRun } from "./engine.ts";
 import { collectOutput } from "./output.ts";
+import * as git from "./git.ts";
 
 // Regression: a container with no git identity configured (no
 // user.name/user.email — exactly what happens when the host's git identity
@@ -14,17 +15,14 @@ import { collectOutput } from "./output.ts";
 // identity unknown". Previously that was just a `write({level: "error",
 // ...})` log line inside `runStep`, and the run kept advancing to the next
 // step on top of an ever-growing pile of uncommitted changes, defeating the
-// whole point of committing after every step. `commitIfDirty` is mocked
+// whole point of committing after every step. `commitIfDirty` is stubbed
 // here (rather than reproducing a real failing `git commit`, which depends
 // on OS-specific identity-fallback behavior — macOS's git happily falls
 // back to the system username/hostname where Linux's doesn't) so this
-// exercises `runStep`'s handling deterministically everywhere.
-vi.mock("./git.ts", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("./git.ts")>()),
-  commitIfDirty: vi.fn().mockRejectedValue(
-    new Error("Command failed: git commit -m ...: fatal: unable to auto-detect email address"),
-  ),
-}));
+// exercises `runStep`'s handling deterministically everywhere. A scoped
+// `vi.spyOn` (restored per-test), not `vi.mock` — under this suite's
+// `isolate:false`, a module-level `vi.mock` replaces `./git.ts` for every
+// test file sharing the worker, not just this one.
 
 async function initRepo(): Promise<string> {
   const dir = mkdtempSync(path.join(tmpdir(), "engine-commit-failure-"));
@@ -46,7 +44,14 @@ describe("advanceRun when the post-step commit fails", () => {
     newWorkflowsDbManager.clearAllTablesForTests(dbKey);
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("fails the run (not just a log line) instead of silently continuing", async () => {
+    vi.spyOn(git, "commitIfDirty").mockRejectedValue(
+      new Error("Command failed: git commit -m ...: fatal: unable to auto-detect email address"),
+    );
     const cwd = await initRepo();
     const definition = defineWorkflow<Record<string, unknown>, Record<string, unknown>>({
       id: "test/commit-failure",

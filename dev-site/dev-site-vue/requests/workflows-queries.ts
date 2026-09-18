@@ -7,7 +7,9 @@ import type {
   NewWorkflowsResponseBody,
   NewWorkflowsRequestBody,
 } from "@saflib/new-workflows-spec";
+import type { DevSiteResponseBody } from "@saflib/dev-site-spec";
 import { TanstackError, handleClientMethod } from "@saflib/sdk";
+import { createDevSiteClient } from "./queries.ts";
 
 /**
  * Same-origin — the workflows API is mounted into dev-site-http itself.
@@ -201,6 +203,29 @@ export function useCancelWorkflowRunMutation() {
     mutationFn: (runId) =>
       handleClientMethod(
         client.POST("/api/runs/{runId}/cancel", { params: { path: { runId } } }),
+      ),
+  });
+}
+
+/**
+ * Computes what the run's workflow would change, as a diff against the
+ * repo's current commit — see `preview-diff.ts` (dev-site-http). A
+ * mutation, not a query: triggered on demand (a button click), and each
+ * call does real (if cheap, dangling-object) git work server-side, so it
+ * shouldn't run automatically or get silently refetched.
+ */
+export function usePreviewWorkflowRunDiffMutation() {
+  const client = createDevSiteClient("");
+  return useMutation<
+    DevSiteResponseBody["previewWorkflowRunDiff"][200],
+    TanstackError,
+    string
+  >({
+    mutationFn: (runId) =>
+      handleClientMethod(
+        client.GET("/api/workflow-runs/{runId}/preview-diff", {
+          params: { path: { runId } },
+        }),
       ),
   });
 }

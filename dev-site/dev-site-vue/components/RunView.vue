@@ -129,6 +129,14 @@
               @click="toggleAutoContinue()"
             />
           </v-btn-group>
+          <v-btn
+            variant="tonal"
+            class="ml-3"
+            :loading="previewMutation.isPending.value"
+            @click="openPreview()"
+          >
+            Preview changes
+          </v-btn>
           <span v-if="isAdvancing" class="text-body-2 text-medium-emphasis ml-3">
             Agent is running…
           </span>
@@ -159,6 +167,37 @@
         </div>
       </div>
     </footer>
+
+    <v-dialog v-model="previewDialogOpen" max-width="900">
+      <v-card>
+        <v-card-title>Preview changes</v-card-title>
+        <v-card-text>
+          <v-progress-linear v-if="previewMutation.isPending.value" indeterminate class="mb-4" />
+          <v-alert v-if="previewMutation.isError.value" type="error" class="mb-4">
+            {{ previewMutation.error.value?.message }}
+          </v-alert>
+          <template v-if="previewMutation.data.value">
+            <v-alert
+              v-if="skippedPreviewEntries.length > 0"
+              type="warning"
+              variant="tonal"
+              density="compact"
+              class="mb-4"
+            >
+              {{ skippedPreviewEntries.length }} step(s) need a real run to preview:
+              <span v-for="(e, i) in skippedPreviewEntries" :key="i">
+                {{ e.kind }} ({{ e.workflow_id }}){{ i < skippedPreviewEntries.length - 1 ? ", " : "" }}
+              </span>
+            </v-alert>
+            <CommitDiffView :diff="previewMutation.data.value.commit_diff" />
+          </template>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="previewDialogOpen = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -170,12 +209,14 @@ import {
   useWorkflowRunStepsQuery,
   useAdvanceWorkflowRunMutation,
   useCancelWorkflowRunMutation,
+  usePreviewWorkflowRunDiffMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import { runStatusVisual, type RunStatusVisual } from "../run-status-visual.ts";
 import LogEntry from "./LogEntry.vue";
 import LogEntryGroup from "./LogEntryGroup.vue";
 import ToolCallCard from "./ToolCallCard.vue";
+import CommitDiffView from "./CommitDiffView.vue";
 import { groupLogs, type LogItem } from "../group-logs.ts";
 import {
   unlockAudio,
@@ -205,6 +246,18 @@ const steps = computed(() => stepsQuery.data.value?.steps ?? []);
 const advanceMutation = useAdvanceWorkflowRunMutation();
 const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
+
+const previewMutation = usePreviewWorkflowRunDiffMutation();
+const previewDialogOpen = ref(false);
+
+function openPreview() {
+  previewDialogOpen.value = true;
+  previewMutation.mutate(runId.value);
+}
+
+const skippedPreviewEntries = computed(
+  () => previewMutation.data.value?.entries.filter((e) => !e.applied) ?? [],
+);
 
 /**
  * Whether a step is genuinely in progress right now, combining this page's

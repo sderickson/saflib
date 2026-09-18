@@ -165,6 +165,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workflow-runs/{runId}/preview-diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview a workflow run's effect as a commit diff
+         * @description Computes what the run's workflow (walking `copy`/`transform-file`/`cd` steps, recursing into `call-workflow`) would change, as a real but never-persisted, never-referenced git commit — then diffs it against the repo's current commit the same way `diffCommits` diffs two real ones. Steps that genuinely need a real run (an agent turn, a shell command) are reported in `entries`, not silently skipped.
+         */
+        get: operations["previewWorkflowRunDiff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -186,6 +206,7 @@ export interface components {
         DbSchemaTable: components["schemas"]["db-schema-table"];
         DbSchemaColumn: components["schemas"]["db-schema-column"];
         CheckoutCompare: components["schemas"]["checkout-compare"];
+        PreviewStepEntry: components["schemas"]["preview-step-entry"];
         /** @description A branch or tag pointer observed at scan time for a commit. */
         "commit-ref": {
             /**
@@ -643,6 +664,28 @@ export interface components {
                 score?: number;
             }[];
         };
+        /** @description One step a workflow-run preview walked past — either applied (its file content folded into the preview's synthetic commit) or skipped, when its kind (`prompt`/`command`/`npm-script`/`update`, or anything else that isn't mechanical) genuinely needs a real run. */
+        "preview-step-entry": {
+            /**
+             * @description The root workflow's id, or a nested `call-workflow` target's id — lets the UI say *which* workflow a given step belongs to.
+             * @example drizzle/add-query
+             */
+            workflow_id: string;
+            /** @description Index within that workflow's own step list. */
+            step_index: number;
+            /**
+             * @description The step's kind (e.g. `copy`, `transform-file`, `cd`, `command`, `call-workflow`).
+             * @example copy
+             */
+            kind: string;
+            /** @description Whether this step's effect is reflected in the preview's diff. */
+            applied: boolean;
+            /**
+             * @description Why a step wasn't applied — its kind isn't previewable, or it threw while trying.
+             * @example needs a real run
+             */
+            reason?: string;
+        };
         login: {
             /** @enum {string} */
             event: "login";
@@ -1047,6 +1090,40 @@ export interface operations {
             };
             /** @description Git command failed */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    previewWorkflowRunDiff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The hypothetical diff, plus which steps it could and couldn't cover. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commit_diff: components["schemas"]["commit-diff"];
+                        entries: components["schemas"]["preview-step-entry"][];
+                    };
+                };
+            };
+            /** @description No workflow run with that id. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
