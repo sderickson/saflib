@@ -2,6 +2,7 @@ import { createHandler } from "@saflib/express";
 import createError from "http-errors";
 import type { NewWorkflowsResponseBody } from "@saflib/new-workflows-spec";
 import { getByIdWorkflowRun, WorkflowRunNotFoundError } from "@saflib/new-workflows-db";
+import { isRunAdvancing } from "@saflib/new-workflows";
 import { newWorkflowsHttpStorage } from "../../context.ts";
 import { mapRunToWire } from "../../map-run.ts";
 
@@ -20,7 +21,7 @@ export const getWorkflowRunHandler = createHandler(async (req, res) => {
   }
 
   const response: NewWorkflowsResponseBody["getWorkflowRun"][200] = {
-    run: mapRunToWire(run),
+    run: mapRunToWire(run, isRunAdvancing(ctx.dbKey, run.id)),
   };
   res.status(200).json(response);
 });

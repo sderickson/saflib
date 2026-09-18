@@ -45,7 +45,9 @@ export const createWorkflowRunHandler = createHandler(async (req, res) => {
   if (error) throw error;
 
   const response: NewWorkflowsResponseBody["createWorkflowRun"][201] = {
-    run: mapRunToWire(run),
+    // Never advancing yet — this run was just created, nothing has called
+    // advance on it.
+    run: mapRunToWire(run, false),
   };
   res.status(201).json(response);
 });

@@ -69,7 +69,8 @@
           "parent_run_id",
           "parent_step_index",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "is_advancing"
         ],
         "properties": {
           "id": {
@@ -141,6 +142,10 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "is_advancing": {
+            "type": "boolean",
+            "description": "True while this run (or a nested call-workflow descendant advancing on its behalf) is actively being advanced right now, server-side — independent of `status`, which only reflects the last *completed* step. Lets a client that reloaded mid-step (losing its own \"request still pending\" state) tell \"actively running\" apart from \"idle\".\n"
           }
         }
       },

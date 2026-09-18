@@ -33,6 +33,7 @@ function runFixture(overrides: Partial<Record<string, unknown>> = {}) {
     parent_step_index: null,
     created_at: "2026-09-15T00:00:00.000Z",
     updated_at: "2026-09-15T00:00:00.000Z",
+    is_advancing: false,
     ...overrides,
   };
 }
@@ -504,5 +505,41 @@ describe("RunPage", () => {
     await wrapper.findComponent({ name: "VSlider" }).vm.$emit("update:modelValue", 0.9);
 
     expect(runAlerts.getVolume()).toBeCloseTo(0.9);
+  });
+
+  it("reflects a step actively in progress server-side even on a fresh page load (no local pending mutation)", async () => {
+    // Regression: after a page reload (or the browser losing its own
+    // "is my request still pending" state some other way), a step could
+    // still be genuinely running server-side — `run.status` alone only
+    // ever reflects the *last completed* step, so a stale "failed" run
+    // with an active retry in flight looked exactly like an idle failure
+    // with no way to tell otherwise, and no way to Stop it.
+    runState = runFixture({ status: "failed", is_advancing: true });
+    let cancelled = false;
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/cancel`, () => {
+        cancelled = true;
+        return HttpResponse.json({ cancelled: true });
+      }),
+    );
+
+    await router.push({ path: "/workflows/runs/run-1" });
+    const wrapper = mountTestApp(RunPage);
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Agent is running");
+    });
+    // The stale "failed" banner/recovery form must not show while a retry
+    // is actually in progress.
+    expect(wrapper.text()).not.toContain("Retry");
+    expect(wrapper.findAll("button").find((b) => b.text() === "Advance")).toBeUndefined();
+
+    const stopButton = wrapper.findAll("button").find((b) => b.text() === "Stop");
+    expect(stopButton).toBeTruthy();
+    await stopButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(cancelled).toBe(true);
+    });
   });
 });

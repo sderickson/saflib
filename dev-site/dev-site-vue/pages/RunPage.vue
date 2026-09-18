@@ -66,7 +66,7 @@
         <em>{{ (advanceMutation.data.value as { message?: string } | undefined)?.message }}</em>
       </div>
       <v-alert
-        v-if="run?.status === 'failed'"
+        v-if="run?.status === 'failed' && !isAdvancing"
         type="error"
         density="compact"
         variant="tonal"
@@ -75,7 +75,7 @@
         {{ failureMessage }}
       </v-alert>
 
-      <template v-if="run?.status === 'failed' && !advanceMutation.isPending.value">
+      <template v-if="run?.status === 'failed' && !isAdvancing">
         <v-textarea
           v-model="extraPrompt"
           label="Guidance for the next attempt (optional)"
@@ -106,7 +106,7 @@
       <div class="run-page__foot-actions">
         <div class="run-page__foot-actions-left">
           <v-btn
-            v-if="advanceMutation.isPending.value"
+            v-if="isAdvancing"
             color="error"
             :loading="cancelMutation.isPending.value"
             @click="cancelMutation.mutate(runId)"
@@ -129,7 +129,7 @@
           >
             Auto-continue: {{ autoContinue ? "On" : "Off" }}
           </v-btn>
-          <span v-if="advanceMutation.isPending.value" class="text-body-2 text-medium-emphasis ml-3">
+          <span v-if="isAdvancing" class="text-body-2 text-medium-emphasis ml-3">
             Agent is running…
           </span>
         </div>
@@ -209,6 +209,20 @@ const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
 
 /**
+ * Whether a step is genuinely in progress right now, combining this page's
+ * own in-flight mutation with the server's `is_advancing` (see
+ * `engine.ts`'s `isRunAdvancing`). The mutation alone isn't enough: a page
+ * reload (or a container restart) loses that client-side pending state
+ * entirely, even while a step is still actively running server-side —
+ * without the server signal, a freshly-loaded page shows a plain idle
+ * Advance button with no way to tell "it's already working" from "nothing
+ * is happening", and no way to Stop it either.
+ */
+const isAdvancing = computed(
+  () => advanceMutation.isPending.value || run.value?.is_advancing === true,
+);
+
+/**
  * Done/running status coloring, derived purely from `run.current_step_index`
  * — no per-step status from the server needed. A step before the run's
  * current index has already succeeded; the step *at* the current index is
@@ -265,7 +279,7 @@ const autoContinue = ref(false);
 
 function toggleAutoContinue() {
   autoContinue.value = !autoContinue.value;
-  if (autoContinue.value && !advanceMutation.isPending.value && canAutoAdvance.value) {
+  if (autoContinue.value && !isAdvancing.value && canAutoAdvance.value) {
     advanceOnce();
   }
 }

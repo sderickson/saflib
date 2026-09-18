@@ -58,6 +58,8 @@ export interface components {
             created_at: string;
             /** Format: date-time */
             updated_at: string;
+            /** @description True while this run (or a nested call-workflow descendant advancing on its behalf) is actively being advanced right now, server-side — independent of `status`, which only reflects the last *completed* step. Lets a client that reloaded mid-step (losing its own "request still pending" state) tell "actively running" apart from "idle". */
+            is_advancing: boolean;
         };
         /**
          * @description Execution mode for a run, set once at `createRun` and unchanged for its lifetime. Same modes as today's `@saflib/workflows`: `dry`/`checklist` never touch the filesystem or run commands; `script` runs mechanical steps (copy, command) but skips prompts, TODO checks, and validation commands (typecheck/test); `print` hands prompts to an external agent and halts between steps; `run` drives the agent itself.

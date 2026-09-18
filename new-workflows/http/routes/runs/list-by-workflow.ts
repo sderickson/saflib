@@ -1,6 +1,7 @@
 import { createHandler } from "@saflib/express";
 import type { NewWorkflowsResponseBody } from "@saflib/new-workflows-spec";
 import { listByWorkflowRefWorkflowRun } from "@saflib/new-workflows-db";
+import { isRunAdvancing } from "@saflib/new-workflows";
 import { newWorkflowsHttpStorage } from "../../context.ts";
 import { mapRunToWire } from "../../map-run.ts";
 
@@ -14,7 +15,7 @@ export const listWorkflowRunsHandler = createHandler(async (req, res) => {
   if (error) throw error;
 
   const response: NewWorkflowsResponseBody["listWorkflowRuns"][200] = {
-    runs: runs.map(mapRunToWire),
+    runs: runs.map((run) => mapRunToWire(run, isRunAdvancing(ctx.dbKey, run.id))),
   };
   res.status(200).json(response);
 });

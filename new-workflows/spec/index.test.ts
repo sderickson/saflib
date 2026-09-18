@@ -51,6 +51,7 @@ describe("new-workflows-spec", () => {
       parent_step_index: null,
       created_at: "2026-09-13T00:00:00.000Z",
       updated_at: "2026-09-13T00:00:00.000Z",
+      is_advancing: false,
     };
     expect(run.workflow_ref).toBe(summary.id);
   });

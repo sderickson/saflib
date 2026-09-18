@@ -84,6 +84,8 @@ export interface components {
             created_at: string;
             /** Format: date-time */
             updated_at: string;
+            /** @description True while this run (or a nested call-workflow descendant advancing on its behalf) is actively being advanced right now, server-side — independent of `status`, which only reflects the last *completed* step. Lets a client that reloaded mid-step (losing its own "request still pending" state) tell "actively running" apart from "idle". */
+            is_advancing: boolean;
         };
         /**
          * @description Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.

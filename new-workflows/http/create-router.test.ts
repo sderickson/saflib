@@ -229,3 +229,78 @@ describe("POST /api/runs/:runId/advance recovery options", () => {
     expect(run.body.run.status).toBe("done");
   });
 });
+
+describe("GET /api/runs/:runId reports is_advancing from live server state", () => {
+  let dbKey: DbKey;
+  let app: express.Express;
+  let cwd: string;
+  let releaseStep: (() => void) | undefined;
+
+  const slowWorkflowDefinition = defineWorkflow<Record<string, unknown>, Record<string, unknown>>({
+    id: "test/slow-http",
+    description: "test",
+    context: ({ input }) => input,
+    steps: [
+      step(
+        "command",
+        () =>
+          new Promise<{ status: "success" }>((resolve) => {
+            releaseStep = () => resolve({ status: "success" });
+          }),
+        () => ({}),
+      ),
+    ],
+  });
+
+  beforeAll(() => {
+    dbKey = newWorkflowsDbManager.connect();
+  });
+
+  afterAll(() => {
+    newWorkflowsDbManager.disconnect(dbKey);
+  });
+
+  beforeEach(() => {
+    newWorkflowsDbManager.clearAllTablesForTests(dbKey);
+    releaseStep = undefined;
+    cwd = mkdtempSync(path.join(tmpdir(), "new-workflows-http-advancing-"));
+    app = express();
+    app.use(
+      createNewWorkflowsRouter({ dbKey, registry: [slowWorkflowDefinition], defaultCwd: cwd }),
+    );
+  });
+
+  it("is false right after creation, true while a step is actively in flight, false again once it settles", async () => {
+    const created = await request(app)
+      .post("/api/workflows/test%2Fslow-http/runs")
+      .send({ input: {}, mode: "run" });
+    const runId = created.body.run.id;
+    expect(created.body.run.is_advancing).toBe(false);
+
+    // supertest/superagent requests are lazy — the underlying HTTP call
+    // isn't actually dispatched until something consumes the thenable
+    // (typically the first `await`/`.then()`), so `.then()` right away to
+    // kick it off now rather than only once awaited below.
+    const advancePromise = request(app).post(`/api/runs/${runId}/advance`).then((r) => r);
+    let midFlightIsAdvancing = false;
+    let midFlightStatus = "";
+    for (let attempt = 0; !midFlightIsAdvancing && attempt <= 50; attempt++) {
+      const midFlight = await request(app).get(`/api/runs/${runId}`);
+      midFlightIsAdvancing = midFlight.body.run.is_advancing;
+      midFlightStatus = midFlight.body.run.status;
+      if (!midFlightIsAdvancing) await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect(midFlightIsAdvancing).toBe(true);
+    // `status` still only reflects the *last completed* step (there isn't
+    // one yet) — is_advancing is what actually distinguishes this from a
+    // plain idle run.
+    expect(midFlightStatus).toBe("pending");
+
+    releaseStep?.();
+    await advancePromise;
+
+    const after = await request(app).get(`/api/runs/${runId}`);
+    expect(after.body.run.is_advancing).toBe(false);
+    expect(after.body.run.status).toBe("done");
+  });
+});

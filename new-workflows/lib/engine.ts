@@ -10,7 +10,7 @@ import type { DbKey, WorkflowRunStatus } from "@saflib/new-workflows-db";
 import { createOutputStream } from "./output.ts";
 import { commitIfDirty, revertUncommittedChanges } from "./git.ts";
 import { summarizeStepInput } from "./describe-steps.ts";
-import { withRunLock, RUN_LOCK_MESSAGE } from "./run-lock.ts";
+import { withRunLock, RUN_LOCK_MESSAGE, getActiveLockHolder } from "./run-lock.ts";
 import type {
   AgentConfig,
   StepFn,
@@ -121,11 +121,27 @@ export function advanceRun(
   // `run-lock.ts` for why: this system's git integration is repo-wide and
   // not safe under concurrent steps. Nested calls (a `call-workflow`
   // step's own `advanceRun` for its child) are reentrant and pass through.
-  const resultPromise = withRunLock(dbKey, () => runStep(dbKey, def, runId, write, options))
+  const resultPromise = withRunLock(dbKey, runId, () => runStep(dbKey, def, runId, write, options))
     .then((outcome): StepResult => (outcome.locked ? { status: "error", message: RUN_LOCK_MESSAGE } : outcome.result))
     .finally(end);
 
   return { output: stream, result: resultPromise };
+}
+
+/**
+ * Whether `runId` (a *root* run — this is `undefined`/`false` for a
+ * nested child's own id, since nested calls don't re-label the lock; see
+ * `withRunLock`'s reentrancy) is currently being advanced somewhere in
+ * this process, right now — including while a nested `call-workflow`
+ * descendant is the one actually doing the work. Reflects live server
+ * state rather than any one client's own (page-reload-fragile) notion of
+ * "is my request still pending" — e.g. a `GET /runs/:id` response can use
+ * this to tell a freshly-reloaded page "yes, a step really is in progress
+ * right now" even though its own `status` field is still whatever it was
+ * after the *last completed* step.
+ */
+export function isRunAdvancing(dbKey: DbKey, runId: string): boolean {
+  return getActiveLockHolder(dbKey)?.label === runId;
 }
 
 async function runStep(

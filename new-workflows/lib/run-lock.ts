@@ -27,12 +27,31 @@ const LOCK_MAX_HOLD_MS = 15 * 60 * 1000;
  * file's in-flight `advanceRun` call spuriously lock out a *different*
  * file's unrelated one if vitest happens to interleave them.
  */
-const lockedKeys = new Map<unknown, { acquiredAt: number; token: number }>();
+const lockedKeys = new Map<unknown, { acquiredAt: number; token: number; label: string }>();
 let nextToken = 0;
 /** Marks "the current async call chain already holds this key's lock" — set for the duration of the locked call, visible through any depth of further `await`s. */
 const holderContext = new AsyncLocalStorage<unknown>();
 
 export type RunLockResult<T> = { locked: false; result: T } | { locked: true };
+
+export interface ActiveLockHolder {
+  /** Whatever the outermost (non-reentrant) caller identified itself as — the root run's id, for `engine.ts`'s use. */
+  label: string;
+  acquiredAt: number;
+}
+
+/**
+ * Who (if anyone) currently holds `key`'s lock — the *root* caller's own
+ * label, unaffected by however many reentrant/nested calls are happening
+ * underneath it (see `withRunLock`'s reentrancy). Lets a caller answer "is
+ * this specific thing actively being worked on right now" from server
+ * state, not from a client's own possibly-stale/reloaded-away notion of
+ * whether its request is still pending.
+ */
+export function getActiveLockHolder(key: unknown): ActiveLockHolder | undefined {
+  const entry = lockedKeys.get(key);
+  return entry ? { label: entry.label, acquiredAt: entry.acquiredAt } : undefined;
+}
 
 /**
  * Runs `fn` under a lock scoped to `key`. This system's git integration
@@ -55,7 +74,11 @@ export type RunLockResult<T> = { locked: false; result: T } | { locked: true };
  * silently waiting would just leave a caller hanging for however long
  * the current step (often a full agent turn) takes, with no feedback.
  */
-export async function withRunLock<T>(key: unknown, fn: () => Promise<T>): Promise<RunLockResult<T>> {
+export async function withRunLock<T>(
+  key: unknown,
+  label: string,
+  fn: () => Promise<T>,
+): Promise<RunLockResult<T>> {
   if (holderContext.getStore() === key) {
     return { locked: false, result: await fn() };
   }
@@ -75,7 +98,7 @@ export async function withRunLock<T>(key: unknown, fn: () => Promise<T>): Promis
     );
   }
   const token = nextToken++;
-  lockedKeys.set(key, { acquiredAt: Date.now(), token });
+  lockedKeys.set(key, { acquiredAt: Date.now(), token, label });
   try {
     return { locked: false, result: await holderContext.run(key, fn) };
   } finally {

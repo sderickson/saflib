@@ -5,6 +5,7 @@ export {
   step,
   createRun,
   advanceRun,
+  isRunAdvancing,
   type AdvanceRunOptions,
 } from "./engine.ts";
 export { stepSkipIf } from "./conditional-step.ts";
