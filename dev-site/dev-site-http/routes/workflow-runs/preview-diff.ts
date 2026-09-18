@@ -8,13 +8,13 @@ import { GitCommandError } from "@saflib/git";
 import createError from "http-errors";
 import { getDevSiteHttpContext } from "../../context.ts";
 import { previewRunDiff } from "../../preview-diff.ts";
-import { registry, workflowsDbKey } from "../workflows/index.ts";
+import { registry, getWorkflowsDbKey } from "../workflows/index.ts";
 
 export const previewWorkflowRunDiffHandler = createHandler(async (req, res) => {
   const { dbKey, repo_root, product_root, mainRef } = getDevSiteHttpContext();
   const { runId } = req.params as PathParams["previewWorkflowRunDiff"];
 
-  const { result, error } = await previewRunDiff(workflowsDbKey, dbKey, runId, registry, {
+  const { result, error } = await previewRunDiff(getWorkflowsDbKey(), dbKey, runId, registry, {
     repo_root,
     product_root,
     mainRef,

@@ -51,24 +51,32 @@ export const registry: WorkflowDefinition<any, any>[] = [
 process.env.DEPLOYMENT_NAME ??= "local";
 process.env.ALLOW_DB_CREATION ??= "true";
 
-// `onDisk: true` (the default) writes into the package's own `data/`
-// folder — fine on a host checkout, but inside the docker container that
-// package dir is the bind-mounted `/repo` (see resolve-dev-site-env.sh's
-// SAFLIB_ROOT fix for the same class of problem with @saflib/templates).
-// Writing a heavily-written sqlite file onto a macOS bind mount from a
-// Linux container risks the same mmap/locking trouble as sharing
-// node_modules did (see docker-entrypoint.sh) — so docker-compose points
-// this at a container-only named volume instead, via NEW_WORKFLOWS_DB_PATH.
-//
-// Module-scope (connected once, not per `createWorkflowsRouter()` call):
-// `preview-diff.ts` needs the exact same connection the mounted router
-// uses, to read the same runs. A real server only calls
-// `createWorkflowsRouter()` once anyway (see `defaultRouterMounts()`).
-export const workflowsDbKey = newWorkflowsDbManager.connect(
-  process.env.NEW_WORKFLOWS_DB_PATH
-    ? { onDisk: process.env.NEW_WORKFLOWS_DB_PATH }
-    : { onDisk: true },
-);
+let _workflowsDbKey: ReturnType<typeof newWorkflowsDbManager.connect> | undefined;
+
+/**
+ * `onDisk: true` (the default) writes into the package's own `data/`
+ * folder — fine on a host checkout, but inside the docker container that
+ * package dir is the bind-mounted `/repo` (see resolve-dev-site-env.sh's
+ * SAFLIB_ROOT fix for the same class of problem with @saflib/templates).
+ * Writing a heavily-written sqlite file onto a macOS bind mount from a
+ * Linux container risks the same mmap/locking trouble as sharing
+ * node_modules did (see docker-entrypoint.sh) — so docker-compose points
+ * this at a container-only named volume instead, via NEW_WORKFLOWS_DB_PATH.
+ *
+ * Connected lazily on first call, then memoized — NOT at module load: the
+ * container's own service-name/logging context isn't set up yet at import
+ * time (`DbManager.connect`'s own logger setup throws "Service name is not
+ * set" if called that early), and `preview-diff.ts` needs the exact same
+ * connection the mounted router uses, to read the same runs.
+ */
+export function getWorkflowsDbKey() {
+  _workflowsDbKey ??= newWorkflowsDbManager.connect(
+    process.env.NEW_WORKFLOWS_DB_PATH
+      ? { onDisk: process.env.NEW_WORKFLOWS_DB_PATH }
+      : { onDisk: true },
+  );
+  return _workflowsDbKey;
+}
 
 /**
  * Mounts `new-workflows-http`'s router as monolith chrome — the workflows
@@ -78,7 +86,7 @@ export const workflowsDbKey = newWorkflowsDbManager.connect(
  */
 export function createWorkflowsRouter(): IRouter {
   return createNewWorkflowsRouter({
-    dbKey: workflowsDbKey,
+    dbKey: getWorkflowsDbKey(),
     registry,
     // dev-site-http's own `repo_root` isn't known until *its* per-request
     // context is set up, so this is resolved fresh per request.

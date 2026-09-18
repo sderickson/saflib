@@ -8,7 +8,7 @@ import { HelloWorkflowDefinition, createRun } from "@saflib/new-workflows";
 import { createWorkflowRunsRouter } from "./index.ts";
 import { createDevSiteHttpApp, type DevSiteHttpAppLease } from "../../http.ts";
 import { releaseSlimRouteTest } from "../../testing/slim-route-test.ts";
-import { workflowsDbKey } from "../workflows/index.ts";
+import { getWorkflowsDbKey } from "../workflows/index.ts";
 
 function git(repo_root: string, args: string[]): string {
   return execFileSync("git", args, {
@@ -42,7 +42,7 @@ describe("GET /api/workflow-runs/:runId/preview-diff", () => {
     git(repo_root, ["commit", "-m", "base"]);
     baseHash = git(repo_root, ["rev-parse", "HEAD"]);
 
-    runId = await createRun(workflowsDbKey, HelloWorkflowDefinition, {
+    runId = await createRun(getWorkflowsDbKey(), HelloWorkflowDefinition, {
       input: { name: "widget" },
       cwd: join(repo_root, "src"),
       mode: "run",
