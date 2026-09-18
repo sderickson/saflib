@@ -205,6 +205,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workflows/{id}/preview-diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview a workflow's effect as a commit diff, without running it
+         * @description Same as `previewWorkflowRunDiff`, but for a workflow that's never been run at all — no `workflow_run` row required, so this works before ever clicking "Start workflow". `id` is the same thing `POST /api/workflows/{id}/runs` accepts (a registered workflow id, or a plan file's path); `input`/`cwd` default the same way a real run's would.
+         */
+        post: operations["previewWorkflowDiff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1191,6 +1211,56 @@ export interface operations {
             };
             /** @description This run has no base_commit_hash to diff from. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    previewWorkflowDiff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A registered workflow's id, or a plan file's path. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    input?: {
+                        [key: string]: unknown;
+                    };
+                    /**
+                     * @description Overrides the default working directory (e.g. dev-site's repo checkout root).
+                     * @example /home/user/my-project
+                     */
+                    cwd?: string;
+                    /** @description Zero or more other run ids, earliest first — see `previewWorkflowRunDiff`'s own `baseRunId` parameter. */
+                    baseRunIds?: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description The hypothetical diff, plus which steps it could and couldn't cover. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commit_diff: components["schemas"]["commit-diff"];
+                        entries: components["schemas"]["preview-step-entry"][];
+                    };
+                };
+            };
+            /** @description No registered workflow (or plan file) with that id. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

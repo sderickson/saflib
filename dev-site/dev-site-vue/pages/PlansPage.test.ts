@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { enableAutoUnmount } from "@vue/test-utils";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse } from "msw";
@@ -98,6 +99,10 @@ const PHASE_1_PATH = "test-product/plans/2026-09-16-todo-app/phase-1-backend-sch
 describe("PlansPage", () => {
   stubGlobals();
   const server = setupMockServer(handlers);
+  // Vuetify's `v-dialog` teleports to the real `document.body`, which
+  // otherwise survives across tests since nothing else unmounts a
+  // previous test's wrapper (see RunView.test.ts's identical note).
+  enableAutoUnmount(afterEach);
 
   beforeEach(() => {
     runsStateByFile = {};
@@ -173,6 +178,64 @@ describe("PlansPage", () => {
     expect(router.currentRoute.value.path).toBe(
       "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml",
     );
+  });
+
+  it("Preview changes works on a .yaml file with no runs — no run gets created", async () => {
+    let createdRun = false;
+    let requestBody: unknown;
+    server.use(
+      http.post(`${ORIGIN}/api/workflows/:id/runs`, () => {
+        createdRun = true;
+        return HttpResponse.json({ run: runFixture() }, { status: 201 });
+      }),
+      http.post(`${ORIGIN}/api/workflows/:id/preview-diff`, async ({ params, request }) => {
+        expect(decodeURIComponent(params.id as string)).toBe(PHASE_1_PATH);
+        requestBody = await request.json();
+        return HttpResponse.json({
+          commit_diff: {
+            from_hash: "a",
+            to_hash: "b",
+            package_metrics: { added: [], removed: [], changed: [] },
+            exports: {
+              added: [
+                {
+                  package_name: "@fixture/todo",
+                  file_path: "schemas/todo.yaml",
+                  name: "todo",
+                  kind: "const",
+                  signature: null,
+                  docstring: null,
+                },
+              ],
+              removed: [],
+            },
+            test_cases: { added: [], removed: [] },
+            db_schemas: {
+              tables: { added: [], removed: [] },
+              columns: { added: [], removed: [], changed: [] },
+            },
+          },
+          entries: [],
+        });
+      }),
+    );
+
+    await router.push({ path: "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml" });
+    const wrapper = mountTestApp(PlansPage);
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("hasn't been run yet");
+    });
+    const previewButton = wrapper.findAll("button").find((b) => b.text() === "Preview changes");
+    expect(previewButton).toBeTruthy();
+    await previewButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(document.body.textContent).toContain("todo");
+    });
+    expect(requestBody).toEqual({ input: undefined, cwd: undefined, baseRunIds: [] });
+    expect(createdRun).toBe(false);
+    expect(wrapper.text()).toContain("hasn't been run yet");
   });
 
   it("a .yaml file with existing runs shows the most recent one inline, no click needed", async () => {

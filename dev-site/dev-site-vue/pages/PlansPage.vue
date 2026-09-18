@@ -109,9 +109,25 @@
                 >
                   Start workflow
                 </v-btn>
+                <v-btn
+                  variant="tonal"
+                  class="ml-2"
+                  :loading="unstartedPreviewMutation.isPending.value"
+                  @click="openUnstartedPreview"
+                >
+                  Preview changes
+                </v-btn>
                 <p v-if="createRunMutation.isError.value" class="text-error mt-2">
                   {{ createRunMutation.error.value?.message }}
                 </p>
+                <PreviewDiffDialog
+                  v-model="unstartedPreviewDialogOpen"
+                  :is-pending="unstartedPreviewMutation.isPending.value"
+                  :is-error="unstartedPreviewMutation.isError.value"
+                  :error="unstartedPreviewMutation.error.value"
+                  :data="unstartedPreviewMutation.data.value"
+                  :base-run-ids="earlierPhaseRunIds"
+                />
               </div>
             </template>
             <template v-else>
@@ -135,12 +151,14 @@ import {
   useWorkflowRunsQuery,
   useCreateWorkflowRunMutation,
   useSiblingMostRecentRunIds,
+  usePreviewWorkflowDiffMutation,
 } from "../requests/workflows-queries.ts";
 import { useRepoFiles } from "../requests/queries.ts";
 import ResizableColumns from "../components/ResizableColumns.vue";
 import PlanFileContent from "../components/PlanFileContent.vue";
 import PlanNavIcon from "../components/PlanNavIcon.vue";
 import RunView from "../components/RunView.vue";
+import PreviewDiffDialog from "../components/PreviewDiffDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -321,6 +339,21 @@ function startWorkflow() {
   // No navigation needed — creating a run invalidates this same
   // `workflow-runs` query, so `mostRecentRun` above picks it up and
   // `RunView` renders automatically.
+}
+
+// --- Preview before ever starting the workflow — same diff as RunView's
+// own "Preview changes", just against the plan file directly (`POST
+// /workflows/{id}/preview-diff`) instead of an existing run, since one
+// doesn't exist yet here. ---
+const unstartedPreviewMutation = usePreviewWorkflowDiffMutation();
+const unstartedPreviewDialogOpen = ref(false);
+function openUnstartedPreview() {
+  if (!selectedFilePath.value) return;
+  unstartedPreviewDialogOpen.value = true;
+  unstartedPreviewMutation.mutate({
+    id: selectedFilePath.value,
+    baseRunIds: earlierPhaseRunIds.value,
+  });
 }
 </script>
 

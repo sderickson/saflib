@@ -846,6 +846,94 @@
           }
         }
       }
+    },
+    "/api/workflows/{id}/preview-diff": {
+      "post": {
+        "summary": "Preview a workflow's effect as a commit diff, without running it",
+        "operationId": "previewWorkflowDiff",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Same as `previewWorkflowRunDiff`, but for a workflow that's never been run at all — no `workflow_run` row required, so this works before ever clicking \"Start workflow\". `id` is the same thing `POST /api/workflows/{id}/runs` accepts (a registered workflow id, or a plan file's path); `input`/`cwd` default the same way a real run's would.\n",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "A registered workflow's id, or a plan file's path.",
+            "schema": {
+              "type": "string",
+              "example": "example/hello"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "input": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "cwd": {
+                    "type": "string",
+                    "description": "Overrides the default working directory (e.g. dev-site's repo checkout root).",
+                    "example": "/home/user/my-project"
+                  },
+                  "baseRunIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Zero or more other run ids, earliest first — see `previewWorkflowRunDiff`'s own `baseRunId` parameter.\n"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The hypothetical diff, plus which steps it could and couldn't cover.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "commit_diff",
+                    "entries"
+                  ],
+                  "properties": {
+                    "commit_diff": {
+                      "$ref": "#/components/schemas/commit-diff"
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/preview-step-entry"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No registered workflow (or plan file) with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

@@ -266,6 +266,38 @@ export function usePreviewWorkflowRunDiffMutation() {
   });
 }
 
+export interface PreviewWorkflowDiffVariables {
+  /** A registered workflow's id, or a plan file's path. */
+  id: string;
+  input?: Record<string, unknown>;
+  /** Defaults server-side to the repo root, same as a real run's would. */
+  cwd?: string;
+  /** Other run ids, earliest first — see `previewWorkflowDiff`'s doc comment (dev-site-http). */
+  baseRunIds?: string[];
+}
+
+/**
+ * Same as {@link usePreviewWorkflowRunDiffMutation}, but for a workflow
+ * that's never been run at all — no run needs to exist first. See
+ * `preview-workflow-diff.ts` (dev-site-http).
+ */
+export function usePreviewWorkflowDiffMutation() {
+  const client = createDevSiteClient("");
+  return useMutation<
+    DevSiteResponseBody["previewWorkflowDiff"][200],
+    TanstackError,
+    PreviewWorkflowDiffVariables
+  >({
+    mutationFn: ({ id, input, cwd, baseRunIds }) =>
+      handleClientMethod(
+        client.POST("/api/workflows/{id}/preview-diff", {
+          params: { path: { id } },
+          body: { input, cwd, baseRunIds },
+        }),
+      ),
+  });
+}
+
 /**
  * A run's actual diff (`base_commit_hash` → `completion_hash`, or live
  * HEAD if not done yet — see `is_final` on the result) — see

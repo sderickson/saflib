@@ -176,46 +176,14 @@
       </div>
     </footer>
 
-    <v-dialog v-model="previewDialogOpen" max-width="900">
-      <v-card>
-        <v-card-title>Preview changes</v-card-title>
-        <v-card-text>
-          <v-progress-linear v-if="previewMutation.isPending.value" indeterminate class="mb-4" />
-          <v-alert v-if="previewMutation.isError.value" type="error" class="mb-4">
-            {{ previewMutation.error.value?.message }}
-          </v-alert>
-          <template v-if="previewMutation.data.value">
-            <v-alert
-              v-if="baseRunIds.length > 0"
-              type="info"
-              variant="tonal"
-              density="compact"
-              class="mb-4"
-            >
-              Chained onto {{ baseRunIds.length }} earlier phase run(s) in this plan folder's own
-              hypothetical results, not the repo's current state.
-            </v-alert>
-            <v-alert
-              v-if="skippedPreviewEntries.length > 0"
-              type="warning"
-              variant="tonal"
-              density="compact"
-              class="mb-4"
-            >
-              {{ skippedPreviewEntries.length }} step(s) need a real run to preview:
-              <span v-for="(e, i) in skippedPreviewEntries" :key="i">
-                {{ e.kind }} ({{ e.workflow_id }}){{ i < skippedPreviewEntries.length - 1 ? ", " : "" }}
-              </span>
-            </v-alert>
-            <CommitDiffView :diff="previewMutation.data.value.commit_diff" />
-          </template>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="previewDialogOpen = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <PreviewDiffDialog
+      v-model="previewDialogOpen"
+      :is-pending="previewMutation.isPending.value"
+      :is-error="previewMutation.isError.value"
+      :error="previewMutation.error.value"
+      :data="previewMutation.data.value"
+      :base-run-ids="baseRunIds"
+    />
 
     <v-dialog v-model="reflectionDialogOpen" max-width="900">
       <v-card>
@@ -265,6 +233,7 @@ import LogEntry from "./LogEntry.vue";
 import LogEntryGroup from "./LogEntryGroup.vue";
 import ToolCallCard from "./ToolCallCard.vue";
 import CommitDiffView from "./CommitDiffView.vue";
+import PreviewDiffDialog from "./PreviewDiffDialog.vue";
 import { groupLogs, type LogItem } from "../group-logs.ts";
 import {
   unlockAudio,
@@ -312,10 +281,6 @@ function openPreview() {
   previewDialogOpen.value = true;
   previewMutation.mutate({ runId: runId.value, baseRunIds: baseRunIds.value });
 }
-
-const skippedPreviewEntries = computed(
-  () => previewMutation.data.value?.entries.filter((e) => !e.applied) ?? [],
-);
 
 const reflectMutation = useReflectWorkflowRunDiffMutation();
 const reflectionDialogOpen = ref(false);
