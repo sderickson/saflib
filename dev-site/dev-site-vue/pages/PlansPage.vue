@@ -1,11 +1,6 @@
 <template>
   <div class="plans-page">
-    <v-container class="py-6" :class="{ 'plans-page__container--split': !planCwd }" fluid>
-      <div class="d-flex align-center mb-4">
-        <v-btn variant="text" :to="hubPath" class="mr-2">&larr; Hub</v-btn>
-        <h1 class="text-h4">Plans</h1>
-      </div>
-
+    <v-container class="py-3" :class="{ 'plans-page__container--split': !planCwd }" fluid>
       <v-card v-if="planCwd" variant="outlined">
         <v-card-title>Save as plan</v-card-title>
         <v-card-text>
@@ -140,8 +135,6 @@ import ResizableColumns from "../components/ResizableColumns.vue";
 import PlanFileContent from "../components/PlanFileContent.vue";
 import PlanNavIcon from "../components/PlanNavIcon.vue";
 import RunView from "../components/RunView.vue";
-
-withDefaults(defineProps<{ hubPath?: string }>(), { hubPath: "/" });
 
 const route = useRoute();
 const router = useRouter();

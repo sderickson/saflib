@@ -163,10 +163,28 @@ export function useAdvanceWorkflowRunMutation() {
         client.POST("/api/runs/{runId}/advance", { params: { path: { runId } }, body }),
       );
     },
+    // Also on *mutate* (not just success) — the server marks a run
+    // `is_advancing` synchronously as soon as the advance call starts, so
+    // refetching `workflow-runs` right away (rather than only once the
+    // whole step finishes, which can take minutes) is what makes a
+    // spinner in the nav/plans page show up promptly instead of only
+    // after the fact.
+    onMutate: () => {
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+    },
     onSuccess: (_data, vars) => {
       const runId = typeof vars === "string" ? vars : vars.runId;
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-logs", runId] });
+      // Also every open `workflow-runs` (list-by-file) query — e.g.
+      // `PlanNavIcon`'s and `PlansPage`'s own "most recent run" — not just
+      // this run's own detail. Without this, retrying a failed run left
+      // the nav icon and the plans page's inline run picker both showing
+      // stale pre-retry status until something else happened to refetch
+      // them; this call only knows the runId, not which workflow/file it
+      // belongs to, so invalidate the whole `workflow-runs` key prefix
+      // rather than one specific id.
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
     },
   });
 }

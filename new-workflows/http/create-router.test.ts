@@ -8,7 +8,12 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import type { DbKey } from "@saflib/drizzle";
 import { newWorkflowsDbManager } from "@saflib/new-workflows-db/instances";
-import { HelloWorkflowDefinition, defineWorkflow, step } from "@saflib/new-workflows";
+import {
+  HelloWorkflowDefinition,
+  defineWorkflow,
+  step,
+  CANCELLED_BY_USER_MESSAGE,
+} from "@saflib/new-workflows";
 import { createNewWorkflowsRouter } from "./index.ts";
 
 const execFileAsync = promisify(execFile);
@@ -302,5 +307,102 @@ describe("GET /api/runs/:runId reports is_advancing from live server state", () 
     const after = await request(app).get(`/api/runs/${runId}`);
     expect(after.body.run.is_advancing).toBe(false);
     expect(after.body.run.status).toBe("done");
+  });
+});
+
+describe("WorkflowRun.was_cancelled distinguishes a user Stop from a genuine failure", () => {
+  let dbKey: DbKey;
+  let app: express.Express;
+  let cwd: string;
+
+  const cancelledWorkflowDefinition = defineWorkflow<Record<string, unknown>, Record<string, unknown>>(
+    {
+      id: "test/cancelled-http",
+      description: "test",
+      context: ({ input }) => input,
+      steps: [
+        step(
+          "command",
+          // Same shape claude-agent.ts's cancel handling actually throws —
+          // this is how a user-initiated Stop is (and can only be) told
+          // apart from a real step error; there's no separate DB status.
+          async () => {
+            throw new Error(CANCELLED_BY_USER_MESSAGE);
+          },
+          () => ({}),
+        ),
+      ],
+    },
+  );
+
+  const brokenWorkflowDefinition = defineWorkflow<Record<string, unknown>, Record<string, unknown>>({
+    id: "test/broken-http",
+    description: "test",
+    context: ({ input }) => input,
+    steps: [
+      step(
+        "command",
+        async () => {
+          throw new Error("something actually went wrong");
+        },
+        () => ({}),
+      ),
+    ],
+  });
+
+  beforeAll(() => {
+    dbKey = newWorkflowsDbManager.connect();
+  });
+
+  afterAll(() => {
+    newWorkflowsDbManager.disconnect(dbKey);
+  });
+
+  beforeEach(() => {
+    newWorkflowsDbManager.clearAllTablesForTests(dbKey);
+    cwd = mkdtempSync(path.join(tmpdir(), "new-workflows-http-cancelled-"));
+    app = express();
+    app.use(
+      createNewWorkflowsRouter({
+        dbKey,
+        registry: [cancelledWorkflowDefinition, brokenWorkflowDefinition],
+        defaultCwd: cwd,
+      }),
+    );
+  });
+
+  it("is true when the failure was a user Stop", async () => {
+    const created = await request(app)
+      .post("/api/workflows/test%2Fcancelled-http/runs")
+      .send({ input: {}, mode: "run" });
+    const runId = created.body.run.id;
+
+    const advanced = await request(app).post(`/api/runs/${runId}/advance`);
+    expect(advanced.body.status).toBe("error");
+
+    const run = await request(app).get(`/api/runs/${runId}`);
+    expect(run.body.run.status).toBe("failed");
+    expect(run.body.run.was_cancelled).toBe(true);
+  });
+
+  it("is false for a genuine step failure", async () => {
+    const created = await request(app)
+      .post("/api/workflows/test%2Fbroken-http/runs")
+      .send({ input: {}, mode: "run" });
+    const runId = created.body.run.id;
+
+    await request(app).post(`/api/runs/${runId}/advance`);
+
+    const run = await request(app).get(`/api/runs/${runId}`);
+    expect(run.body.run.status).toBe("failed");
+    expect(run.body.run.was_cancelled).toBe(false);
+  });
+
+  it("is false for a run that hasn't failed at all", async () => {
+    const created = await request(app)
+      .post("/api/workflows/test%2Fbroken-http/runs")
+      .send({ input: {}, mode: "run" });
+
+    expect(created.body.run.was_cancelled).toBe(false);
   });
 });

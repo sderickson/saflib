@@ -4,6 +4,15 @@ import { registerActiveAgentProcess, unregisterActiveAgentProcess } from "./regi
 import { subprocessEnv } from "../subprocess-env.ts";
 import type { ToolUseLogPayload, ToolResultLogPayload } from "./tool-log-payload.ts";
 
+/**
+ * The exact step-failure message a user-initiated Stop produces — exported
+ * so callers that need to tell "the user stopped this" apart from a
+ * genuine step failure (e.g. the HTTP layer's `was_cancelled` on
+ * `WorkflowRun`, see `map-run.ts`) can check for it without duplicating
+ * the string.
+ */
+export const CANCELLED_BY_USER_MESSAGE = "Cancelled by user";
+
 /** Kills a whole detached process group (see `spawn(..., {detached: true})` below). No-op if the pid is unknown or already gone. */
 export function killProcessGroup(pid: number | undefined, signal: NodeJS.Signals): void {
   if (!pid) return;
@@ -163,7 +172,7 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
       unregisterActiveAgentProcess(ctx.runId);
       pipeClosed = true;
       if (cancelled) {
-        reject(new Error("Cancelled by user"));
+        reject(new Error(CANCELLED_BY_USER_MESSAGE));
         return;
       }
       maybeResolve();

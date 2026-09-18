@@ -104,9 +104,9 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const advanceButton = wrapper.findAll("button").find((b) => b.text() === "Advance");
-    expect(advanceButton).toBeTruthy();
-    await advanceButton!.trigger("click");
+    const continueButton = wrapper.find('[aria-label="Continue"]');
+    expect(continueButton.exists()).toBe(true);
+    await continueButton.trigger("click");
 
     await vi.waitFor(() => {
       expect(advanced).toBe(true);
@@ -136,13 +136,13 @@ describe("RunView", () => {
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("starting");
     });
-    const advanceButton = wrapper.findAll("button").find((b) => b.text() === "Advance");
-    await advanceButton!.trigger("click");
+    const continueButton = wrapper.find('[aria-label="Continue"]');
+    await continueButton.trigger("click");
 
     let stopButton;
     await vi.waitFor(() => {
-      stopButton = wrapper.findAll("button").find((b) => b.text() === "Stop");
-      expect(stopButton).toBeTruthy();
+      stopButton = wrapper.find('[aria-label="Stop"]');
+      expect(stopButton.exists()).toBe(true);
     });
     await stopButton!.trigger("click");
 
@@ -183,8 +183,8 @@ describe("RunView", () => {
     Object.defineProperty(el, "scrollTop", { value: 100, writable: true, configurable: true });
     el.dispatchEvent(new Event("scroll"));
 
-    const advanceButton = wrapper.findAll("button").find((b) => b.text() === "Advance");
-    await advanceButton!.trigger("click");
+    const continueButton = wrapper.find('[aria-label="Continue"]');
+    await continueButton.trigger("click");
 
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("more output");
@@ -288,7 +288,7 @@ describe("RunView", () => {
     expect(params.map((p) => p.text())).toEqual(["path: ./schemas/todo.ts", "prompt: Add a title column"]);
   });
 
-  it("offers Retry/Revert & Retry/Skip Step when failed, sending the right options and extra prompt", async () => {
+  it("offers Continue (Play)/Revert & Continue/Skip Step when failed, sending the right options and extra prompt", async () => {
     runState = runFixture({ status: "failed" });
     let lastBody: unknown;
     server.use(
@@ -304,12 +304,14 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("failed");
     });
 
-    // No plain "Advance" button while failed — recovery actions instead.
-    expect(wrapper.findAll("button").find((b) => b.text() === "Advance")).toBeUndefined();
-    const retryButton = wrapper.findAll("button").find((b) => b.text() === "Retry");
+    // The universal Play/Continue button stays enabled even while failed —
+    // it's the same "just retry as-is" action a dedicated Retry button used
+    // to be.
+    const continueButton = wrapper.find('[aria-label="Continue"]');
+    expect(continueButton.exists()).toBe(true);
+    expect(continueButton.attributes("disabled")).toBeFalsy();
     const revertButton = wrapper.findAll("button").find((b) => b.text().includes("Revert"));
     const skipButton = wrapper.findAll("button").find((b) => b.text() === "Skip Step");
-    expect(retryButton).toBeTruthy();
     expect(revertButton).toBeTruthy();
     expect(skipButton).toBeTruthy();
 
@@ -342,12 +344,12 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const autoButton = wrapper.findAll("button").find((b) => b.text().includes("Auto-continue"));
-    expect(autoButton!.text()).toBe("Auto-continue: Off");
-    await autoButton!.trigger("click");
+    const autoButton = wrapper.find('[aria-label="Turn on auto-continue"]');
+    expect(autoButton.exists()).toBe(true);
+    await autoButton.trigger("click");
 
     await vi.waitFor(() => {
-      expect(autoButton!.text()).toBe("Auto-continue: On");
+      expect(wrapper.find('[aria-label="Turn off auto-continue"]').exists()).toBe(true);
       expect(advanceCount).toBe(3);
     });
   });
@@ -375,14 +377,13 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const autoButton = wrapper.findAll("button").find((b) => b.text().includes("Auto-continue"));
-    await autoButton!.trigger("click");
+    await wrapper.find('[aria-label="Turn on auto-continue"]').trigger("click");
     await firstCallStarted;
     // Toggle off while the first call is still in flight.
-    await autoButton!.trigger("click");
+    await wrapper.find('[aria-label="Turn off auto-continue"]').trigger("click");
 
     await vi.waitFor(() => {
-      expect(autoButton!.text()).toBe("Auto-continue: Off");
+      expect(wrapper.find('[aria-label="Turn on auto-continue"]').exists()).toBe(true);
     });
     // Give any (wrongly) chained call a chance to fire before asserting none did.
     await new Promise((r) => setTimeout(r, 50));
@@ -404,8 +405,8 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const advanceButton = wrapper.findAll("button").find((b) => b.text() === "Advance");
-    await advanceButton!.trigger("click");
+    const continueButton = wrapper.find('[aria-label="Continue"]');
+    await continueButton.trigger("click");
 
     await vi.waitFor(() => {
       expect(bellSpy).toHaveBeenCalledTimes(1);
@@ -429,8 +430,8 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const advanceButton = wrapper.findAll("button").find((b) => b.text() === "Advance");
-    await advanceButton!.trigger("click");
+    const continueButton = wrapper.find('[aria-label="Continue"]');
+    await continueButton.trigger("click");
 
     await vi.waitFor(() => {
       expect(quackSpy).toHaveBeenCalledTimes(1);
@@ -515,13 +516,14 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("Agent is running");
     });
     // The stale "failed" banner/recovery form must not show while a retry
-    // is actually in progress.
-    expect(wrapper.text()).not.toContain("Retry");
-    expect(wrapper.findAll("button").find((b) => b.text() === "Advance")).toBeUndefined();
+    // is actually in progress, and the Play/Continue button must be
+    // disabled while it's genuinely running server-side.
+    expect(wrapper.text()).not.toContain("Skip Step");
+    expect(wrapper.find('[aria-label="Continue"]').attributes("disabled")).not.toBeUndefined();
 
-    const stopButton = wrapper.findAll("button").find((b) => b.text() === "Stop");
-    expect(stopButton).toBeTruthy();
-    await stopButton!.trigger("click");
+    const stopButton = wrapper.find('[aria-label="Stop"]');
+    expect(stopButton.exists()).toBe(true);
+    await stopButton.trigger("click");
 
     await vi.waitFor(() => {
       expect(cancelled).toBe(true);

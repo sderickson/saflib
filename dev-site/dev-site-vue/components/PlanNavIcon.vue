@@ -1,10 +1,19 @@
 <template>
-  <v-icon size="16" :color="color" :icon="icon" class="plan-nav-icon" />
+  <v-progress-circular
+    v-if="visual.spinner"
+    size="14"
+    width="2"
+    :color="visual.color"
+    indeterminate
+    class="plan-nav-icon"
+  />
+  <v-icon v-else size="16" :color="visual.color" :icon="visual.icon" class="plan-nav-icon" />
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
 import { useWorkflowRunsQuery } from "../requests/workflows-queries.ts";
+import { runStatusVisual, NOT_RUN_YET_ICON, type RunStatusVisual } from "../run-status-visual.ts";
 
 const props = defineProps<{
   filePath: string;
@@ -18,42 +27,17 @@ const runsQuery = useWorkflowRunsQuery(() =>
 );
 const mostRecentRun = computed(() => runsQuery.data.value?.runs[0]);
 
-const icon = computed(() => {
-  if (props.kind === "markdown") return "mdi-file-document-outline";
-  if (props.kind === "text") return "mdi-file-outline";
-  // workflow
-  const run = mostRecentRun.value;
-  if (!run) return "mdi-play-circle-outline";
-  if (run.is_advancing) return "mdi-progress-clock";
-  switch (run.status) {
-    case "done":
-      return "mdi-check-circle";
-    case "failed":
-      return "mdi-close-circle";
-    case "awaiting_prompt":
-    case "awaiting_user":
-      return "mdi-pause-circle";
-    default:
-      return "mdi-progress-clock";
+const visual = computed<RunStatusVisual>(() => {
+  if (props.kind === "markdown") {
+    return { label: "doc", spinner: false, icon: "mdi-file-document-outline" };
   }
-});
-
-const color = computed(() => {
-  if (props.kind !== "workflow") return undefined;
-  const run = mostRecentRun.value;
-  if (!run) return undefined;
-  if (run.is_advancing) return "info";
-  switch (run.status) {
-    case "done":
-      return "success";
-    case "failed":
-      return "error";
-    case "awaiting_prompt":
-    case "awaiting_user":
-      return "warning";
-    default:
-      return "info";
+  if (props.kind === "text") {
+    return { label: "file", spinner: false, icon: "mdi-file-outline" };
   }
+  if (!mostRecentRun.value) {
+    return { label: "not run yet", spinner: false, icon: NOT_RUN_YET_ICON };
+  }
+  return runStatusVisual(mostRecentRun.value);
 });
 </script>
 

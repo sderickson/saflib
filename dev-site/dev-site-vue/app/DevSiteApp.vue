@@ -55,7 +55,14 @@ function navActive(section: "history" | "checkout" | "build"): boolean {
   if (section === "checkout") {
     return p === "/checkout" || p.startsWith("/checkout/");
   }
-  return p === "/build" || p.startsWith("/build/");
+  // "Build" links to /build, which redirects straight to /plans — match
+  // both so the nav item still highlights once that redirect lands.
+  return (
+    p === "/build" ||
+    p.startsWith("/build/") ||
+    p === "/plans" ||
+    p.startsWith("/plans/")
+  );
 }
 </script>
 

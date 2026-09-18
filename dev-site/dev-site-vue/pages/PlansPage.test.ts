@@ -161,7 +161,7 @@ describe("PlansPage", () => {
     // inline via the same workflow-runs query, still on the same URL.
     await vi.waitFor(() => {
       expect(wrapper.text()).not.toContain("hasn't been run yet");
-      expect(wrapper.findAll("button").find((b) => b.text() === "Advance")).toBeTruthy();
+      expect(wrapper.find('[aria-label="Continue"]').exists()).toBe(true);
     });
     expect(router.currentRoute.value.path).toBe(
       "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml",

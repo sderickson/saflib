@@ -1,7 +1,11 @@
 <template>
   <div class="run-view">
     <header class="run-view__head">
-      <v-chip size="small" :color="statusColor">{{ run?.status ?? "…" }}</v-chip>
+      <v-chip size="small" :color="statusVisual.color">
+        <v-progress-circular v-if="statusVisual.spinner" size="12" width="2" indeterminate class="mr-1" />
+        <v-icon v-else-if="statusVisual.icon" :icon="statusVisual.icon" size="14" class="mr-1" />
+        {{ statusVisual.label }}
+      </v-chip>
       <v-spacer />
       <span class="text-body-2 text-medium-emphasis">step {{ run?.current_step_index }}</span>
     </header>
@@ -63,12 +67,13 @@
       </div>
       <v-alert
         v-if="run?.status === 'failed' && !isAdvancing"
-        type="error"
+        :type="wasCancelled ? 'info' : 'error'"
+        :color="wasCancelled ? 'light-blue' : undefined"
         density="compact"
         variant="tonal"
         class="mb-3"
       >
-        {{ failureMessage }}
+        {{ wasCancelled ? "Stopped." : failureMessage }}
       </v-alert>
 
       <template v-if="run?.status === 'failed' && !isAdvancing">
@@ -84,47 +89,46 @@
           hide-details
         />
         <div class="run-view__recovery-actions">
-          <v-btn color="primary" @click="retry()">Retry</v-btn>
-          <v-btn color="warning" variant="tonal" @click="retry({ revert: true })">
-            Revert &amp; Retry
+          <v-btn color="warning" variant="tonal" @click="continueRun({ revert: true })">
+            Revert &amp; Continue
           </v-btn>
-          <v-btn variant="tonal" @click="retry({ skip: true })">Skip Step</v-btn>
+          <v-btn variant="tonal" @click="continueRun({ skip: true })">Skip Step</v-btn>
         </div>
         <div class="text-caption text-medium-emphasis mt-2">
-          Retry re-runs this step as-is. Revert &amp; Retry discards
-          <strong>all</strong> uncommitted changes in the repo first (not
-          just this step's — see the docs before using on a shared
-          checkout). Skip Step commits whatever's currently there and
-          moves on without running this step.
+          Continue (the play button below) re-runs this step as-is. Revert
+          &amp; Continue discards <strong>all</strong> uncommitted changes
+          in the repo first (not just this step's — see the docs before
+          using on a shared checkout). Skip Step commits whatever's
+          currently there and moves on without running this step.
         </div>
       </template>
 
       <div class="run-view__foot-actions">
         <div class="run-view__foot-actions-left">
-          <v-btn
-            v-if="isAdvancing"
-            color="error"
-            :loading="cancelMutation.isPending.value"
-            @click="cancelMutation.mutate(runId)"
-          >
-            Stop
-          </v-btn>
-          <v-btn
-            v-else-if="run?.status !== 'failed'"
-            color="primary"
-            :disabled="run?.status === 'done'"
-            @click="advanceOnce()"
-          >
-            Advance
-          </v-btn>
-          <v-btn
-            :color="autoContinue ? 'primary' : undefined"
-            :variant="autoContinue ? 'flat' : 'outlined'"
-            class="ml-2"
-            @click="toggleAutoContinue()"
-          >
-            Auto-continue: {{ autoContinue ? "On" : "Off" }}
-          </v-btn>
+          <v-btn-group density="comfortable" variant="tonal" divided>
+            <v-btn
+              icon="mdi-stop"
+              :disabled="!isAdvancing"
+              :loading="cancelMutation.isPending.value"
+              :aria-label="'Stop'"
+              title="Stop"
+              @click="cancelMutation.mutate(runId)"
+            />
+            <v-btn
+              icon="mdi-play"
+              :disabled="isAdvancing || run?.status === 'done'"
+              :aria-label="'Continue'"
+              title="Continue"
+              @click="continueRun()"
+            />
+            <v-btn
+              icon="mdi-repeat"
+              :color="autoContinue ? 'primary' : undefined"
+              :aria-label="autoContinue ? 'Turn off auto-continue' : 'Turn on auto-continue'"
+              :title="autoContinue ? 'Auto-continue: On' : 'Auto-continue: Off'"
+              @click="toggleAutoContinue()"
+            />
+          </v-btn-group>
           <span v-if="isAdvancing" class="text-body-2 text-medium-emphasis ml-3">
             Agent is running…
           </span>
@@ -168,6 +172,7 @@ import {
   useCancelWorkflowRunMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
+import { runStatusVisual, type RunStatusVisual } from "../run-status-visual.ts";
 import LogEntry from "./LogEntry.vue";
 import LogEntryGroup from "./LogEntryGroup.vue";
 import ToolCallCard from "./ToolCallCard.vue";
@@ -215,6 +220,15 @@ const isAdvancing = computed(
   () => advanceMutation.isPending.value || run.value?.is_advancing === true,
 );
 
+/** Same spinner/paused/status icon logic as the plans-page nav icon — kept
+ * in sync via the shared `runStatusVisual` util rather than duplicated. */
+const statusVisual = computed<RunStatusVisual>(() =>
+  runStatusVisual(
+    run.value ? { ...run.value, is_advancing: isAdvancing.value } : undefined,
+  ),
+);
+const wasCancelled = computed(() => run.value?.was_cancelled === true);
+
 /**
  * Done/running status coloring, derived purely from `run.current_step_index`
  * — no per-step status from the server needed. A step before the run's
@@ -235,7 +249,14 @@ requestNotificationPermission();
 
 const extraPrompt = ref("");
 
-function retry(options: { revert?: boolean; skip?: boolean } = {}) {
+/**
+ * The single "keep this run moving" action — a plain advance in most
+ * states, and what used to be a separate "Retry" button when `failed`
+ * (there's no meaningful difference at the API level: both are just a
+ * POST /advance, optionally carrying `revert`/`skip`/an extra prompt — see
+ * the ask to fold "retry" into one universal "continue"/Play action).
+ */
+function continueRun(options: { revert?: boolean; skip?: boolean } = {}) {
   unlockAudio();
   advanceMutation.mutate({
     runId: runId.value,
@@ -245,17 +266,12 @@ function retry(options: { revert?: boolean; skip?: boolean } = {}) {
   extraPrompt.value = "";
 }
 
-function advanceOnce() {
-  unlockAudio();
-  advanceMutation.mutate(runId.value);
-}
-
 /**
  * Whether a plain (no revert/skip/extraPrompt) advance makes sense right
- * now — same states the manual Advance button itself allows (see its
- * `v-else-if`/`:disabled` above). Auto-continue deliberately never fires
- * for a `failed` run: that state's Retry/Revert/Skip choice is the user's
- * to make, not something to loop past automatically.
+ * now — same states the Play button itself allows (see its `:disabled`
+ * above). Auto-continue deliberately never fires for a `failed` run: that
+ * state's Continue/Revert/Skip choice is the user's to make, not something
+ * to loop past automatically.
  */
 const canAutoAdvance = computed(
   () => run.value !== undefined && run.value.status !== "failed" && run.value.status !== "done",
@@ -273,7 +289,7 @@ const autoContinue = ref(false);
 function toggleAutoContinue() {
   autoContinue.value = !autoContinue.value;
   if (autoContinue.value && !isAdvancing.value && canAutoAdvance.value) {
-    advanceOnce();
+    continueRun();
   }
 }
 
@@ -312,7 +328,7 @@ watch(
     if (!autoContinue.value) return;
     const outcome = advanceMutation.data.value as { status?: string } | undefined;
     if (outcome?.status === "success") {
-      advanceOnce();
+      continueRun();
     }
   },
 );
@@ -423,20 +439,6 @@ const failureMessage = computed(() => {
   if (fromMutation) return fromMutation;
   const lastError = [...logs.value].reverse().find((l) => l.level === "error");
   return lastError?.content ?? "Failed — no error details available.";
-});
-
-const statusColor = computed(() => {
-  switch (run.value?.status) {
-    case "done":
-      return "success";
-    case "failed":
-      return "error";
-    case "awaiting_prompt":
-    case "awaiting_user":
-      return "warning";
-    default:
-      return undefined;
-  }
 });
 
 // Sound + desktop notification when a run stops *on its own* — worth

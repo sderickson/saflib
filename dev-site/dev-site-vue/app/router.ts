@@ -101,29 +101,24 @@ export function createDevSiteRouter(options: CreateDevSiteRouterOptions = {}) {
       {
         path: "/plans",
         component: PlansPage,
-        props: { hubPath: "/" },
       },
       // Extension-specific routes first (most specific to least), so a
       // `.md`/`.yaml` file matches its dedicated view; anything else falls
       // through to the plain-text catch-all. All three render the same
       // `PlansPage` — it reads `planName`/`fileName` off the route itself
       // (same `useRoute().params` pattern `RunView` uses for its `runId`)
-      // and picks a view
-      // based on the file's extension.
+      // and picks a view based on the file's extension.
       {
         path: "/plans/:planName/:fileName(.+\\.md)",
         component: PlansPage,
-        props: { hubPath: "/" },
       },
       {
         path: "/plans/:planName/:fileName(.+\\.ya?ml)",
         component: PlansPage,
-        props: { hubPath: "/" },
       },
       {
         path: "/plans/:planName/:fileName",
         component: PlansPage,
-        props: { hubPath: "/" },
       },
       // Merged into /plans — see PlansPage. A workflow file's run now
       // shows inline there (no more standalone run URLs at all).

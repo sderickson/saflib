@@ -43,6 +43,7 @@ export {
 } from "./describe-steps.ts";
 export { cancelActiveAgentProcess } from "./agents/registry.ts";
 export { cancelRunAndDescendants } from "./cancel-run.ts";
+export { CANCELLED_BY_USER_MESSAGE } from "./agents/claude-agent.ts";
 export {
   parseToolLogPayload,
   type ToolUseLogPayload,

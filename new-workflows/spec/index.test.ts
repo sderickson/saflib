@@ -52,6 +52,7 @@ describe("new-workflows-spec", () => {
       created_at: "2026-09-13T00:00:00.000Z",
       updated_at: "2026-09-13T00:00:00.000Z",
       is_advancing: false,
+      was_cancelled: false,
     };
     expect(run.workflow_ref).toBe(summary.id);
   });

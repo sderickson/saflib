@@ -23,6 +23,7 @@ function runFixture(overrides: Partial<Record<string, unknown>> = {}) {
     created_at: "2026-09-15T00:00:00.000Z",
     updated_at: "2026-09-15T00:00:00.000Z",
     is_advancing: false,
+    was_cancelled: false,
     ...overrides,
   };
 }
@@ -83,13 +84,26 @@ describe("PlanNavIcon", () => {
     expect(icon.attributes("class")).toContain("text-error");
   });
 
-  it("shows a progress icon while the run is actively advancing, even if status is stale", async () => {
+  it("shows a spinner (not the stale status icon) while the run is actively advancing", async () => {
     runsState = [runFixture({ status: "failed", is_advancing: true })];
     const wrapper = mountWithPlugins(PlanNavIcon, {
       props: { filePath: "test-product/plans/example/phase-1.yaml", kind: "workflow" },
     });
     await new Promise((r) => setTimeout(r, 10));
     await wrapper.vm.$nextTick();
-    expect(wrapper.find(".v-icon").attributes("class")).toContain("mdi-progress-clock");
+    expect(wrapper.find(".v-progress-circular").exists()).toBe(true);
+    expect(wrapper.find(".v-icon").exists()).toBe(false);
+  });
+
+  it("shows a light-blue pause icon when the run was stopped by the user, not a genuine failure", async () => {
+    runsState = [runFixture({ status: "failed", was_cancelled: true })];
+    const wrapper = mountWithPlugins(PlanNavIcon, {
+      props: { filePath: "test-product/plans/example/phase-1.yaml", kind: "workflow" },
+    });
+    await new Promise((r) => setTimeout(r, 10));
+    await wrapper.vm.$nextTick();
+    const icon = wrapper.find(".v-icon");
+    expect(icon.attributes("class")).toContain("mdi-pause-circle");
+    expect(icon.attributes("class")).toContain("text-light-blue");
   });
 });

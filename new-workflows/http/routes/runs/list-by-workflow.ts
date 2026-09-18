@@ -4,6 +4,7 @@ import { listByWorkflowRefWorkflowRun } from "@saflib/new-workflows-db";
 import { isRunAdvancing } from "@saflib/new-workflows";
 import { newWorkflowsHttpStorage } from "../../context.ts";
 import { mapRunToWire } from "../../map-run.ts";
+import { wasRunCancelled } from "../../run-cancellation.ts";
 
 export const listWorkflowRunsHandler = createHandler(async (req, res) => {
   const ctx = newWorkflowsHttpStorage.getStore()!;
@@ -15,7 +16,11 @@ export const listWorkflowRunsHandler = createHandler(async (req, res) => {
   if (error) throw error;
 
   const response: NewWorkflowsResponseBody["listWorkflowRuns"][200] = {
-    runs: runs.map((run) => mapRunToWire(run, isRunAdvancing(ctx.dbKey, run.id))),
+    runs: await Promise.all(
+      runs.map(async (run) =>
+        mapRunToWire(run, isRunAdvancing(ctx.dbKey, run.id), await wasRunCancelled(ctx.dbKey, run)),
+      ),
+    ),
   };
   res.status(200).json(response);
 });

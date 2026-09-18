@@ -86,6 +86,8 @@ export interface components {
             updated_at: string;
             /** @description True while this run (or a nested call-workflow descendant advancing on its behalf) is actively being advanced right now, server-side — independent of `status`, which only reflects the last *completed* step. Lets a client that reloaded mid-step (losing its own "request still pending" state) tell "actively running" apart from "idle". */
             is_advancing: boolean;
+            /** @description True when `status` is `failed` because a person stopped it (see the run's Stop button) rather than a genuine step error — there's no separate `WorkflowRunStatus` for this; cancelling just makes the in-flight step's own promise reject, landing as an ordinary `"failed"`. Always false for any other `status`. */
+            was_cancelled: boolean;
         };
         /**
          * @description Lifecycle state of a run. `pending` before the first step runs; `running` after a step succeeds with more steps left; `awaiting_prompt`/ `awaiting_user` after a step hands control back to the caller (an agent prompt or a human action is needed before advancing again); `done`/ `failed` are terminal.

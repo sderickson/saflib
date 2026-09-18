@@ -60,6 +60,8 @@ export interface components {
             updated_at: string;
             /** @description True while this run (or a nested call-workflow descendant advancing on its behalf) is actively being advanced right now, server-side — independent of `status`, which only reflects the last *completed* step. Lets a client that reloaded mid-step (losing its own "request still pending" state) tell "actively running" apart from "idle". */
             is_advancing: boolean;
+            /** @description True when `status` is `failed` because a person stopped it (see the run's Stop button) rather than a genuine step error — there's no separate `WorkflowRunStatus` for this; cancelling just makes the in-flight step's own promise reject, landing as an ordinary `"failed"`. Always false for any other `status`. */
+            was_cancelled: boolean;
         };
         /**
          * @description Execution mode for a run, set once at `createRun` and unchanged for its lifetime. Same modes as today's `@saflib/workflows`: `dry`/`checklist` never touch the filesystem or run commands; `script` runs mechanical steps (copy, command) but skips prompts, TODO checks, and validation commands (typecheck/test); `print` hands prompts to an external agent and halts between steps; `run` drives the agent itself.
