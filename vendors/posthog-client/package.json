@@ -14,11 +14,24 @@
   },
   "dependencies": {
     "@saflib/env": "*",
-    "posthog-js": "^1.257.0",
-    "@saflib/ory-kratos-sdk": "*"
+    "posthog-js": "^1.257.0"
+  },
+  "peerDependencies": {
+    "@saflib/ory-kratos-sdk": "*",
+    "vue": "*"
+  },
+  "peerDependenciesMeta": {
+    "@saflib/ory-kratos-sdk": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/ory-kratos-sdk": "*",
+    "@saflib/vitest": "*",
+    "vue": "*"
   },
   "scripts": {
     "typecheck": "tsc -b"

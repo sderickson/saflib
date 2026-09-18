@@ -17,6 +17,9 @@ export const makePosthogScriptTag = (): HtmlTagDescriptor => {
     document.location.host.endsWith("${typedEnv.DOMAIN}") && posthog.init('${typedEnv.POSTHOG_PROJECT_API_KEY}', {
         api_host: '${typedEnv.POSTHOG_PROJECT_HOST}',
         defaults: '2025-05-24',
+        cookieless_mode: 'always',
+        disable_session_recording: true,
+        person_profiles: 'never',
     })
     `,
     injectTo: "head",
