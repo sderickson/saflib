@@ -29,9 +29,6 @@
   "references": [
     {
       "path": "../../env"
-    },
-    {
-      "path": "../../ory-kratos/ory-kratos-sdk"
     }
   ]
 }

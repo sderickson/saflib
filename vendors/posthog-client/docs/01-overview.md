@@ -26,4 +26,6 @@ Environment (see `env.schema.json`):
 - **`VITE_POSTHOG_PROJECT_API_KEY`** — project API key at build time
 - **`VITE_POSTHOG_PROJECT_HOST`** — ingest host (defaults to `https://us.i.posthog.com`)
 
+`identifyToPostHog` / `usePostHogFeatureFlag` need optional peers `@saflib/ory-kratos-sdk` and `vue` (already present in SAF SPAs). `init` / `html` do not — so static sites can depend on this package without pulling Kratos/Vue into their Docker images.
+
 Server-side analytics lives in [`@saflib/vendors-posthog`](../../posthog/docs/01-overview.md).
