@@ -3,9 +3,8 @@ import { nextTick } from "vue";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse } from "msw";
-import RunPage from "./RunPage.vue";
+import RunView from "./RunView.vue";
 import { mountTestApp } from "../test-app.ts";
-import { router } from "./test_router.ts";
 import * as runAlerts from "../run-alerts.ts";
 
 const ORIGIN = "http://localhost:3000";
@@ -61,7 +60,11 @@ const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: stepsState })),
 ];
 
-describe("RunPage", () => {
+function mountRunView() {
+  return mountTestApp(RunView, { props: { runId: "run-1" } });
+}
+
+describe("RunView", () => {
   stubGlobals();
   const server = setupMockServer(handlers);
 
@@ -95,11 +98,9 @@ describe("RunPage", () => {
       }),
     );
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
 
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("Run run-1");
       expect(wrapper.text()).toContain("starting");
     });
 
@@ -130,11 +131,10 @@ describe("RunPage", () => {
       }),
     );
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
 
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("Run run-1");
+      expect(wrapper.text()).toContain("starting");
     });
     const advanceButton = wrapper.findAll("button").find((b) => b.text() === "Advance");
     await advanceButton!.trigger("click");
@@ -170,14 +170,13 @@ describe("RunPage", () => {
       }),
     );
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
 
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const el = wrapper.find(".run-page__logs").element as HTMLElement;
+    const el = wrapper.find(".run-view__logs").element as HTMLElement;
     // jsdom doesn't compute real layout — fake a tall, scrolled-up container.
     Object.defineProperty(el, "scrollHeight", { value: 1000, configurable: true });
     Object.defineProperty(el, "clientHeight", { value: 200, configurable: true });
@@ -216,8 +215,7 @@ describe("RunPage", () => {
       },
     ];
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
 
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("cd test-product/service/db");
@@ -225,8 +223,8 @@ describe("RunPage", () => {
     });
 
     // Only the most recent agent-input entry is sticky.
-    const items = wrapper.findAll(".run-page__log-item");
-    const stickyItems = items.filter((i) => i.classes().includes("run-page__log-item--sticky"));
+    const items = wrapper.findAll(".run-view__log-item");
+    const stickyItems = items.filter((i) => i.classes().includes("run-view__log-item--sticky"));
     expect(stickyItems).toHaveLength(1);
     expect(stickyItems[0].text()).toContain("Do the second thing");
 
@@ -243,14 +241,14 @@ describe("RunPage", () => {
       top: 490,
       bottom: 600,
     } as DOMRect);
-    const el = wrapper.find(".run-page__logs").element as HTMLElement;
+    const el = wrapper.find(".run-view__logs").element as HTMLElement;
     vi.spyOn(el, "getBoundingClientRect").mockReturnValue({ top: 0, bottom: 500 } as DOMRect);
     el.dispatchEvent(new Event("scroll"));
     await nextTick();
 
-    const sidebarSteps = wrapper.findAll(".run-page__sidebar-step");
-    expect(sidebarSteps[1].classes()).toContain("run-page__sidebar-step--active");
-    expect(sidebarSteps[0].classes()).not.toContain("run-page__sidebar-step--active");
+    const sidebarSteps = wrapper.findAll(".run-view__sidebar-step");
+    expect(sidebarSteps[1].classes()).toContain("run-view__sidebar-step--active");
+    expect(sidebarSteps[0].classes()).not.toContain("run-view__sidebar-step--active");
   });
 
   it("colors sidebar steps by the run's progress, and lists each step's params", async () => {
@@ -266,28 +264,27 @@ describe("RunPage", () => {
       { index: 2, kind: "command", label: "npm test" },
     ];
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
 
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("drizzle/update-schema");
     });
 
-    const sidebarSteps = wrapper.findAll(".run-page__sidebar-step");
+    const sidebarSteps = wrapper.findAll(".run-view__sidebar-step");
     // Step 0 already ran (current_step_index is 1) -> done.
-    expect(sidebarSteps[0].classes()).toContain("run-page__sidebar-step--done");
-    expect(sidebarSteps[0].classes()).not.toContain("run-page__sidebar-step--running");
+    expect(sidebarSteps[0].classes()).toContain("run-view__sidebar-step--done");
+    expect(sidebarSteps[0].classes()).not.toContain("run-view__sidebar-step--running");
     // Step 1 is the current one -> running.
-    expect(sidebarSteps[1].classes()).toContain("run-page__sidebar-step--running");
-    expect(sidebarSteps[1].classes()).not.toContain("run-page__sidebar-step--done");
+    expect(sidebarSteps[1].classes()).toContain("run-view__sidebar-step--running");
+    expect(sidebarSteps[1].classes()).not.toContain("run-view__sidebar-step--done");
     // Step 2 hasn't been reached -> neither.
-    expect(sidebarSteps[2].classes()).not.toContain("run-page__sidebar-step--done");
-    expect(sidebarSteps[2].classes()).not.toContain("run-page__sidebar-step--running");
+    expect(sidebarSteps[2].classes()).not.toContain("run-view__sidebar-step--done");
+    expect(sidebarSteps[2].classes()).not.toContain("run-view__sidebar-step--running");
 
     // No raw "call-workflow: ..." blob in the label — just the target id —
     // with its input broken out into its own list instead.
     expect(sidebarSteps[1].text()).not.toContain("call-workflow");
-    const params = sidebarSteps[1].findAll(".run-page__sidebar-step-param");
+    const params = sidebarSteps[1].findAll(".run-view__sidebar-step-param");
     expect(params.map((p) => p.text())).toEqual(["path: ./schemas/todo.ts", "prompt: Add a title column"]);
   });
 
@@ -301,8 +298,7 @@ describe("RunPage", () => {
       }),
     );
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
 
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("failed");
@@ -340,12 +336,8 @@ describe("RunPage", () => {
       }),
     );
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
-    // Depends on the run query having actually resolved — the header's
-    // "Run {{ runId }}" renders from the route param alone and would pass
-    // immediately regardless, which isn't enough to know `run.value` (and
-    // so `canAutoAdvance`) is populated yet.
+    const wrapper = mountRunView();
+    // Depends on the run query having actually resolved.
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("starting");
     });
@@ -378,8 +370,7 @@ describe("RunPage", () => {
       }),
     );
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("starting");
     });
@@ -408,8 +399,7 @@ describe("RunPage", () => {
       }),
     );
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("starting");
     });
@@ -434,8 +424,7 @@ describe("RunPage", () => {
       }),
     );
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("starting");
     });
@@ -455,8 +444,7 @@ describe("RunPage", () => {
     const quackSpy = vi.spyOn(runAlerts, "playFailureQuack").mockImplementation(() => {});
     runState = runFixture({ status: "done", current_step_index: 2 });
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("starting");
     });
@@ -471,8 +459,7 @@ describe("RunPage", () => {
     localStorage.clear();
     runAlerts.__resetRunAlertsStateForTests();
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("starting");
     });
@@ -493,8 +480,7 @@ describe("RunPage", () => {
     localStorage.clear();
     runAlerts.__resetRunAlertsStateForTests();
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("starting");
     });
@@ -507,7 +493,7 @@ describe("RunPage", () => {
     expect(runAlerts.getVolume()).toBeCloseTo(0.9);
   });
 
-  it("reflects a step actively in progress server-side even on a fresh page load (no local pending mutation)", async () => {
+  it("reflects a step actively in progress server-side even on a fresh mount (no local pending mutation)", async () => {
     // Regression: after a page reload (or the browser losing its own
     // "is my request still pending" state some other way), a step could
     // still be genuinely running server-side — `run.status` alone only
@@ -523,8 +509,7 @@ describe("RunPage", () => {
       }),
     );
 
-    await router.push({ path: "/workflows/runs/run-1" });
-    const wrapper = mountTestApp(RunPage);
+    const wrapper = mountRunView();
 
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("Agent is running");

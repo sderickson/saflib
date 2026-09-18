@@ -80,20 +80,43 @@
                 class="plans-nav__file"
                 :class="{ 'plans-nav__file--active': isActive(group.folder, file.name) }"
               >
-                {{ file.name }}
+                <PlanNavIcon :file-path="file.path" :kind="fileKindOf(file.name)" />
+                <span class="plans-nav__file-name">{{ file.name }}</span>
               </router-link>
             </div>
           </nav>
         </template>
         <template #right>
-          <div class="plans-page__content">
+          <div
+            class="plans-page__content"
+            :class="{ 'plans-page__content--run': fileKind === 'workflow' && !!mostRecentRun }"
+          >
             <p v-if="!fileName" class="text-body-2 text-medium-emphasis">
               Select a file on the left.
             </p>
+            <template v-else-if="fileKind === 'workflow'">
+              <h2 class="plans-page__run-heading text-h6">{{ fileName }}</h2>
+              <v-progress-linear v-if="runsQuery.isLoading.value" indeterminate class="ma-4" />
+              <RunView v-else-if="mostRecentRun" :run-id="mostRecentRun.id" class="plans-page__run-view" />
+              <div v-else class="plans-page__run-start">
+                <p class="text-body-2 text-medium-emphasis mb-3">
+                  This workflow hasn't been run yet.
+                </p>
+                <v-btn
+                  color="primary"
+                  :loading="createRunMutation.isPending.value"
+                  @click="startWorkflow"
+                >
+                  Start workflow
+                </v-btn>
+                <p v-if="createRunMutation.isError.value" class="text-error mt-2">
+                  {{ createRunMutation.error.value?.message }}
+                </p>
+              </div>
+            </template>
             <template v-else>
               <h2 class="text-h6 mb-3">{{ fileName }}</h2>
-              <PlanWorkflowPane v-if="fileKind === 'workflow'" :file-path="selectedFilePath!" />
-              <PlanFileContent v-else :file-path="selectedFilePath!" :kind="fileKind" />
+              <PlanFileContent :file-path="selectedFilePath!" :kind="fileKind" />
             </template>
           </div>
         </template>
@@ -106,11 +129,17 @@
 import { computed, reactive, ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import type { WorkflowInputSchema } from "@saflib/new-workflows";
-import { useWorkflowsQuery, useCreatePlanMutation } from "../requests/workflows-queries.ts";
+import {
+  useWorkflowsQuery,
+  useCreatePlanMutation,
+  useWorkflowRunsQuery,
+  useCreateWorkflowRunMutation,
+} from "../requests/workflows-queries.ts";
 import { useRepoFiles } from "../requests/queries.ts";
 import ResizableColumns from "../components/ResizableColumns.vue";
 import PlanFileContent from "../components/PlanFileContent.vue";
-import PlanWorkflowPane from "../components/PlanWorkflowPane.vue";
+import PlanNavIcon from "../components/PlanNavIcon.vue";
+import RunView from "../components/RunView.vue";
 
 withDefaults(defineProps<{ hubPath?: string }>(), { hubPath: "/" });
 
@@ -231,9 +260,9 @@ function planFileHref(folder: string, name: string): string {
   return `/plans/${encodeURIComponent(folder)}/${encodeURIComponent(name)}`;
 }
 
-// --- Selected file, read off the route itself (same pattern as
-// RunPage's runId) rather than via router `props`, so this works
-// regardless of whether a given router config wires props through. ---
+// --- Selected file, read off the route itself rather than via router
+// `props`, so this works regardless of whether a given router config
+// wires props through. ---
 const planName_ = computed(() => route.params.planName as string | undefined);
 const fileName = computed(() => route.params.fileName as string | undefined);
 
@@ -249,12 +278,32 @@ const selectedFilePath = computed(() => {
 });
 
 type FileKind = "markdown" | "workflow" | "text";
-const fileKind = computed<FileKind>(() => {
-  const name = fileName.value ?? "";
+function fileKindOf(name: string): FileKind {
   if (/\.md$/i.test(name)) return "markdown";
   if (/\.ya?ml$/i.test(name)) return "workflow";
   return "text";
-});
+}
+const fileKind = computed<FileKind>(() => fileKindOf(fileName.value ?? ""));
+
+// --- The selected workflow file's most recent run, shown inline (no
+// "Open run"/"Start another run" click needed — see the ask). Only
+// queried when a workflow file is actually selected. ---
+const runsQuery = useWorkflowRunsQuery(() =>
+  fileKind.value === "workflow" ? selectedFilePath.value : undefined,
+);
+const mostRecentRun = computed(() => runsQuery.data.value?.runs[0]);
+
+const createRunMutation = useCreateWorkflowRunMutation();
+function startWorkflow() {
+  if (!selectedFilePath.value) return;
+  createRunMutation.mutate({
+    id: selectedFilePath.value,
+    body: { input: {}, mode: "run", agentConfig: { cli: "claude-agent" } },
+  });
+  // No navigation needed — creating a run invalidates this same
+  // `workflow-runs` query, so `mostRecentRun` above picks it up and
+  // `RunView` renders automatically.
+}
 </script>
 
 <style scoped>
@@ -288,16 +337,15 @@ const fileKind = computed<FileKind>(() => {
   opacity: 0.7;
 }
 .plans-nav__file {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0.3rem 0.5rem 0.3rem 1rem;
   border-radius: 4px;
   font-size: 0.85rem;
   font-family: monospace;
   text-decoration: none;
   color: inherit;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .plans-nav__file:hover {
   background: rgba(128, 128, 128, 0.08);
@@ -306,9 +354,34 @@ const fileKind = computed<FileKind>(() => {
   background: rgba(var(--v-theme-primary), 0.1);
   font-weight: 600;
 }
+.plans-nav__file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .plans-page__content {
   height: 100%;
   overflow-y: auto;
+  padding: 0.5rem 1rem;
+}
+/* Unlike the scrollable-text case above, a workflow's RunView manages its
+   own internal scrolling (sidebar + log panes) and needs the full pane
+   height to do it — no padding/overflow of our own to get in the way. */
+.plans-page__content--run {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.plans-page__run-heading {
+  flex: 0 0 auto;
+  padding: 0.5rem 1rem 0;
+}
+.plans-page__run-view {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.plans-page__run-start {
   padding: 0.5rem 1rem;
 }
 </style>

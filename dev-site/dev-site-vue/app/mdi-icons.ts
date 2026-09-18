@@ -4,9 +4,11 @@
  */
 import {
   mdiApi,
+  mdiCheckCircle,
   mdiChevronDown,
   mdiChevronRight,
   mdiCircleSmall,
+  mdiCloseCircle,
   mdiConnection,
   mdiCube,
   mdiCubeOutline,
@@ -17,6 +19,9 @@ import {
   mdiHome,
   mdiLibraryShelves,
   mdiPackageVariantClosed,
+  mdiPauseCircle,
+  mdiPlayCircleOutline,
+  mdiProgressClock,
   mdiTable,
   mdiTestTube,
   mdiVolumeHigh,
@@ -27,9 +32,11 @@ import {
 
 export const mdiIconPaths: Record<string, string> = {
   "mdi-api": mdiApi,
+  "mdi-check-circle": mdiCheckCircle,
   "mdi-chevron-down": mdiChevronDown,
   "mdi-chevron-right": mdiChevronRight,
   "mdi-circle-small": mdiCircleSmall,
+  "mdi-close-circle": mdiCloseCircle,
   "mdi-connection": mdiConnection,
   "mdi-cube": mdiCube,
   "mdi-cube-outline": mdiCubeOutline,
@@ -40,6 +47,9 @@ export const mdiIconPaths: Record<string, string> = {
   "mdi-home": mdiHome,
   "mdi-library-shelves": mdiLibraryShelves,
   "mdi-package-variant-closed": mdiPackageVariantClosed,
+  "mdi-pause-circle": mdiPauseCircle,
+  "mdi-play-circle-outline": mdiPlayCircleOutline,
+  "mdi-progress-clock": mdiProgressClock,
   "mdi-table": mdiTable,
   "mdi-test-tube": mdiTestTube,
   "mdi-volume-high": mdiVolumeHigh,

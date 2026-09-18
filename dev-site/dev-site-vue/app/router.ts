@@ -6,7 +6,6 @@ import {
   ComparePage,
   CheckoutPage,
   PlansPage,
-  RunPage,
 } from "../index.ts";
 import { readDevSiteRuntimeConfig } from "./runtime-config.ts";
 
@@ -108,7 +107,8 @@ export function createDevSiteRouter(options: CreateDevSiteRouterOptions = {}) {
       // `.md`/`.yaml` file matches its dedicated view; anything else falls
       // through to the plain-text catch-all. All three render the same
       // `PlansPage` — it reads `planName`/`fileName` off the route itself
-      // (see `RunPage`'s `runId` for the same pattern) and picks a view
+      // (same `useRoute().params` pattern `RunView` uses for its `runId`)
+      // and picks a view
       // based on the file's extension.
       {
         path: "/plans/:planName/:fileName(.+\\.md)",
@@ -125,14 +125,11 @@ export function createDevSiteRouter(options: CreateDevSiteRouterOptions = {}) {
         component: PlansPage,
         props: { hubPath: "/" },
       },
-      {
-        path: "/workflows/runs/:runId",
-        component: RunPage,
-        props: { workflowsPath: "/plans" },
-      },
-      // Merged into /plans — see PlansPage.
+      // Merged into /plans — see PlansPage. A workflow file's run now
+      // shows inline there (no more standalone run URLs at all).
       { path: "/build", redirect: "/plans" },
       { path: "/workflows", redirect: "/plans" },
+      { path: "/workflows/runs/:runId", redirect: "/plans" },
       {
         path: "/commits/:hash",
         redirect: (to) => `/history/commits/${to.params.hash}`,

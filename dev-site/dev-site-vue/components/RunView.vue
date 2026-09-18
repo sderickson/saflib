@@ -1,49 +1,45 @@
 <template>
-  <div class="run-page">
-    <header class="run-page__head">
-      <v-btn variant="text" :to="workflowsPath" class="mr-2">&larr; Plans</v-btn>
-      <span class="run-page__title">Run {{ runId }}</span>
-      <v-chip class="ml-2" size="small" :color="statusColor">{{ run?.status ?? "…" }}</v-chip>
+  <div class="run-view">
+    <header class="run-view__head">
+      <v-chip size="small" :color="statusColor">{{ run?.status ?? "…" }}</v-chip>
       <v-spacer />
-      <span class="text-body-2 text-medium-emphasis">
-        {{ run?.workflow_ref }} · step {{ run?.current_step_index }}
-      </span>
+      <span class="text-body-2 text-medium-emphasis">step {{ run?.current_step_index }}</span>
     </header>
 
-    <div class="run-page__body">
-      <aside class="run-page__sidebar">
+    <div class="run-view__body">
+      <aside class="run-view__sidebar">
         <div
           v-for="step in steps"
           :key="step.index"
-          class="run-page__sidebar-step"
+          class="run-view__sidebar-step"
           :class="stepStatusClasses(step)"
           @click="scrollToStep(step.index)"
         >
-          <div class="run-page__sidebar-step-head">
-            <span class="run-page__sidebar-step-index">{{ step.index }}</span>
-            <span class="run-page__sidebar-step-label" :title="step.label ?? step.kind">{{
+          <div class="run-view__sidebar-step-head">
+            <span class="run-view__sidebar-step-index">{{ step.index }}</span>
+            <span class="run-view__sidebar-step-label" :title="step.label ?? step.kind">{{
               step.label ?? step.kind
             }}</span>
           </div>
-          <ul v-if="step.params" class="run-page__sidebar-step-params">
+          <ul v-if="step.params" class="run-view__sidebar-step-params">
             <li
               v-for="(value, key) in step.params"
               :key="key"
-              class="run-page__sidebar-step-param"
+              class="run-view__sidebar-step-param"
               :title="`${key}: ${value}`"
             >
-              <span class="run-page__sidebar-step-param-key">{{ key }}:</span> {{ value }}
+              <span class="run-view__sidebar-step-param-key">{{ key }}:</span> {{ value }}
             </li>
           </ul>
         </div>
       </aside>
 
-      <div ref="logContainer" class="run-page__logs" @scroll="onScroll">
+      <div ref="logContainer" class="run-view__logs" @scroll="onScroll">
         <template v-for="item in logItems" :key="itemKey(item)">
           <div
-            class="run-page__log-item"
+            class="run-view__log-item"
             :data-step-index="itemStepIndex(item)"
-            :class="{ 'run-page__log-item--sticky': isLastAgentInput(item) }"
+            :class="{ 'run-view__log-item--sticky': isLastAgentInput(item) }"
           >
             <ToolCallCard
               v-if="item.type === 'tool-call'"
@@ -58,7 +54,7 @@
       </div>
     </div>
 
-    <footer class="run-page__foot">
+    <footer class="run-view__foot">
       <div v-if="run?.status === 'awaiting_prompt'" class="mb-3">
         <em>Waiting on the agent.</em>
       </div>
@@ -87,7 +83,7 @@
           class="mb-3"
           hide-details
         />
-        <div class="run-page__recovery-actions">
+        <div class="run-view__recovery-actions">
           <v-btn color="primary" @click="retry()">Retry</v-btn>
           <v-btn color="warning" variant="tonal" @click="retry({ revert: true })">
             Revert &amp; Retry
@@ -103,8 +99,8 @@
         </div>
       </template>
 
-      <div class="run-page__foot-actions">
-        <div class="run-page__foot-actions-left">
+      <div class="run-view__foot-actions">
+        <div class="run-view__foot-actions-left">
           <v-btn
             v-if="isAdvancing"
             color="error"
@@ -133,7 +129,7 @@
             Agent is running…
           </span>
         </div>
-        <div class="run-page__foot-actions-right">
+        <div class="run-view__foot-actions-right">
           <v-btn
             icon
             variant="text"
@@ -152,7 +148,7 @@
             :step="0.05"
             hide-details
             density="compact"
-            class="run-page__volume-slider"
+            class="run-view__volume-slider"
             aria-label="Alert volume"
             @update:model-value="onVolumeChange"
           />
@@ -164,7 +160,6 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
-import { useRoute } from "vue-router";
 import {
   useWorkflowRunQuery,
   useWorkflowRunLogsQuery,
@@ -173,9 +168,9 @@ import {
   useCancelWorkflowRunMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
-import LogEntry from "../components/LogEntry.vue";
-import LogEntryGroup from "../components/LogEntryGroup.vue";
-import ToolCallCard from "../components/ToolCallCard.vue";
+import LogEntry from "./LogEntry.vue";
+import LogEntryGroup from "./LogEntryGroup.vue";
+import ToolCallCard from "./ToolCallCard.vue";
 import { groupLogs, type LogItem } from "../group-logs.ts";
 import {
   unlockAudio,
@@ -189,10 +184,8 @@ import {
   toggleMuted,
 } from "../run-alerts.ts";
 
-withDefaults(defineProps<{ workflowsPath?: string }>(), { workflowsPath: "/plans" });
-
-const route = useRoute();
-const runId = computed(() => route.params.runId as string);
+const props = defineProps<{ runId: string }>();
+const runId = computed(() => props.runId);
 
 const runQuery = useWorkflowRunQuery(runId);
 const run = computed(() => runQuery.data.value?.run);
@@ -232,9 +225,9 @@ const isAdvancing = computed(
 function stepStatusClasses(step: { index: number }): Record<string, boolean> {
   const currentIndex = run.value?.current_step_index;
   return {
-    "run-page__sidebar-step--done": currentIndex !== undefined && step.index < currentIndex,
-    "run-page__sidebar-step--running": currentIndex !== undefined && step.index === currentIndex,
-    "run-page__sidebar-step--active": step.index === currentStepIndex.value,
+    "run-view__sidebar-step--done": currentIndex !== undefined && step.index < currentIndex,
+    "run-view__sidebar-step--running": currentIndex !== undefined && step.index === currentIndex,
+    "run-view__sidebar-step--active": step.index === currentStepIndex.value,
   };
 }
 
@@ -468,13 +461,13 @@ watch(
 </script>
 
 <style scoped>
-.run-page {
+.run-view {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
 }
-.run-page__head {
+.run-view__head {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -482,71 +475,68 @@ watch(
   padding: 0.5rem 1rem;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
-.run-page__title {
-  font-weight: 600;
-}
-.run-page__body {
+.run-view__body {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
 }
-.run-page__sidebar {
+.run-view__sidebar {
   flex: 0 0 220px;
   overflow-y: auto;
   border-right: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   padding: 0.5rem 0;
 }
-.run-page__sidebar-step {
+.run-view__sidebar-step {
   padding: 0.4rem 0.75rem;
   font-size: 0.8rem;
   cursor: pointer;
   border-left: 3px solid transparent;
 }
-.run-page__sidebar-step:hover {
+.run-view__sidebar-step:hover {
   background: rgba(128, 128, 128, 0.08);
 }
 /* Done/running reflect the run's own progress (current_step_index) —
    unstarted steps keep the plain, uncolored background. */
-.run-page__sidebar-step--done {
+.run-view__sidebar-step--done {
   background: rgba(var(--v-theme-success), 0.12);
 }
-.run-page__sidebar-step--running {
+.run-view__sidebar-step--running {
   background: rgba(var(--v-theme-warning), 0.16);
 }
 /* The step currently scrolled to (bottom-of-viewport) — independent of
    done/running, so it layers a border + bold on top of either. */
-.run-page__sidebar-step--active {
+.run-view__sidebar-step--active {
   border-left-color: rgb(var(--v-theme-primary));
   font-weight: 600;
 }
-.run-page__sidebar-step-head {
+.run-view__sidebar-step-head {
   display: flex;
   gap: 0.5rem;
 }
-.run-page__sidebar-step-index {
+.run-view__sidebar-step-index {
   opacity: 0.5;
 }
-.run-page__sidebar-step-label {
+.run-view__sidebar-step-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.run-page__sidebar-step-params {
+.run-view__sidebar-step-params {
   margin: 0.2rem 0 0 1.25rem;
   padding: 0;
   list-style: disc;
   opacity: 0.7;
 }
-.run-page__sidebar-step-param {
+.run-view__sidebar-step-param {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.72rem;
 }
-.run-page__sidebar-step-param-key {
+.run-view__sidebar-step-param-key {
   opacity: 0.7;
 }
-.run-page__logs {
+.run-view__logs {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -554,36 +544,36 @@ watch(
   padding: 0.75rem 1rem;
   background: rgba(128, 128, 128, 0.05);
 }
-.run-page__log-item--sticky {
+.run-view__log-item--sticky {
   position: sticky;
   top: 0;
   z-index: 1;
   background: rgb(var(--v-theme-surface));
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
-.run-page__foot {
+.run-view__foot {
   flex: 0 0 auto;
   padding: 0.75rem 1rem;
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
-.run-page__recovery-actions {
+.run-view__recovery-actions {
   display: flex;
   gap: 0.5rem;
 }
-.run-page__foot-actions {
+.run-view__foot-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
-.run-page__foot-actions-left,
-.run-page__foot-actions-right {
+.run-view__foot-actions-left,
+.run-view__foot-actions-right {
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
-.run-page__volume-slider {
+.run-view__volume-slider {
   /* A flex child with no explicit width shrinks toward its own tiny
      intrinsic content width (just the thumb), which broke the slider's
      drag-to-value mapping — it only ever reported the two extremes. */
