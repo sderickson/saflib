@@ -33,6 +33,10 @@ const filesResponse = {
       path: "test-product/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml",
       blob_hash: "b",
     },
+    {
+      path: "test-product/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml",
+      blob_hash: "e",
+    },
     { path: "test-product/plans/2026-09-16-todo-app/todo-app.spec.md", blob_hash: "c" },
     // A stray file directly under plans/, not in its own dated folder.
     { path: "test-product/plans/add-list-users-query.yaml", blob_hash: "d" },
@@ -67,7 +71,8 @@ class EventSourceStub {
   close() {}
 }
 
-let runsState: unknown[] = [];
+/** Keyed by workflow id (file path) — lets sibling files have independent run lists. */
+let runsStateByFile: Record<string, unknown[]> = {};
 /** Keyed by run id — RunView fetches one run's own detail/logs/steps once it's shown inline. */
 let runsById: Record<string, unknown> = {};
 
@@ -78,7 +83,9 @@ const handlers = [
     const path = new URL(request.url).searchParams.get("path");
     return HttpResponse.json({ path, content: `# Spec\n\ncontent for ${path}` });
   }),
-  http.get(`${ORIGIN}/api/workflows/:id/runs`, () => HttpResponse.json({ runs: runsState })),
+  http.get(`${ORIGIN}/api/workflows/:id/runs`, ({ params }) =>
+    HttpResponse.json({ runs: runsStateByFile[decodeURIComponent(params.id as string)] ?? [] }),
+  ),
   http.get(`${ORIGIN}/api/runs/:runId`, ({ params }) =>
     HttpResponse.json({ run: runsById[params.runId as string] ?? runFixture() }),
   ),
@@ -86,12 +93,14 @@ const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: [] })),
 ];
 
+const PHASE_1_PATH = "test-product/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml";
+
 describe("PlansPage", () => {
   stubGlobals();
   const server = setupMockServer(handlers);
 
   beforeEach(() => {
-    runsState = [];
+    runsStateByFile = {};
     runsById = {};
     vi.stubGlobal("EventSource", EventSourceStub);
   });
@@ -138,10 +147,8 @@ describe("PlansPage", () => {
   it("a .yaml file with no runs offers to start the workflow, then shows it inline once created — no navigation needed", async () => {
     server.use(
       http.post(`${ORIGIN}/api/workflows/:id/runs`, ({ params }) => {
-        expect(decodeURIComponent(params.id as string)).toBe(
-          "test-product/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml",
-        );
-        runsState = [runFixture()];
+        expect(decodeURIComponent(params.id as string)).toBe(PHASE_1_PATH);
+        runsStateByFile[PHASE_1_PATH] = [runFixture()];
         runsById["run-1"] = runFixture();
         return HttpResponse.json({ run: runFixture() }, { status: 201 });
       }),
@@ -169,7 +176,7 @@ describe("PlansPage", () => {
   });
 
   it("a .yaml file with existing runs shows the most recent one inline, no click needed", async () => {
-    runsState = [
+    runsStateByFile[PHASE_1_PATH] = [
       { ...runFixture({ id: "run-2", status: "done" }), created_at: "2026-09-16T00:00:00.000Z" },
       runFixture(),
     ];
@@ -236,5 +243,52 @@ describe("PlansPage", () => {
     await vi.waitFor(() => {
       expect(router.currentRoute.value.path).toBe("/plans/2026-09-15-my-plan/my-plan.yaml");
     });
+  });
+
+  it("Preview changes on a later phase chains onto an earlier phase's most recent run", async () => {
+    const PHASE_2_PATH = "test-product/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml";
+    runsStateByFile[PHASE_1_PATH] = [runFixture({ id: "phase-1-run" })];
+    runsById["phase-1-run"] = runFixture({ id: "phase-1-run" });
+    runsStateByFile[PHASE_2_PATH] = [
+      runFixture({ id: "phase-2-run", workflow_ref: PHASE_2_PATH }),
+    ];
+    runsById["phase-2-run"] = runFixture({ id: "phase-2-run", workflow_ref: PHASE_2_PATH });
+
+    let requestedUrl: string | undefined;
+    server.use(
+      http.get(`${ORIGIN}/api/workflow-runs/:runId/preview-diff`, ({ request }) => {
+        requestedUrl = request.url;
+        return HttpResponse.json({
+          commit_diff: {
+            from_hash: "a",
+            to_hash: "b",
+            package_metrics: { added: [], removed: [], changed: [] },
+            exports: { added: [], removed: [] },
+            test_cases: { added: [], removed: [] },
+            db_schemas: {
+              tables: { added: [], removed: [] },
+              columns: { added: [], removed: [], changed: [] },
+            },
+          },
+          entries: [],
+        });
+      }),
+    );
+
+    await router.push({ path: "/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml" });
+    const wrapper = mountTestApp(PlansPage);
+
+    const previewButton = await vi.waitFor(() => {
+      const btn = wrapper.findAll("button").find((b) => b.text() === "Preview changes");
+      expect(btn).toBeTruthy();
+      return btn!;
+    });
+    await previewButton.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(requestedUrl).toBeDefined();
+    });
+    const url = new URL(requestedUrl!);
+    expect(url.searchParams.getAll("baseRunId")).toEqual(["phase-1-run"]);
   });
 });

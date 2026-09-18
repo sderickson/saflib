@@ -1,0 +1,49 @@
+reflectWorkflowRunDiff:
+  summary: A workflow run's actual effect as a commit diff
+  operationId: reflectWorkflowRunDiff
+  tags:
+    - no-auth
+  description: >
+    Diffs `base_commit_hash` (the repo's HEAD when the run started) against
+    `completion_hash` (HEAD the moment it finished) — both real commits, so
+    this stays correct regardless of what else has landed in the repo
+    since, unlike comparing against the repo's live current HEAD would.
+    For a run that hasn't finished yet, falls back to live HEAD instead —
+    `is_final: false` on the result marks that as a still-moving view.
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    "200":
+      description: The run's actual diff (or its so-far progress, if not done).
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - commit_diff
+              - is_final
+            properties:
+              commit_diff:
+                $ref: "../../schemas/commit-diff.yaml"
+              is_final:
+                type: boolean
+                description: >
+                  True when this reflects the run's fixed `completion_hash`;
+                  false when it fell back to a live (still-moving) HEAD
+                  because the run hasn't finished yet.
+    "404":
+      description: No workflow run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "409":
+      description: This run has no base_commit_hash to diff from.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

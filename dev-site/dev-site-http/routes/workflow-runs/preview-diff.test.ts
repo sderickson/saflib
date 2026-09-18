@@ -93,4 +93,30 @@ describe("GET /api/workflow-runs/:runId/preview-diff", () => {
     );
     expect(response.status).toBe(404);
   });
+
+  it("baseRunId chains this run's preview onto another run's own hypothetical result", async () => {
+    const secondRunId = await createRun(getWorkflowsDbKey(), HelloWorkflowDefinition, {
+      input: { name: "gadget" },
+      cwd: join(repo_root, "src"),
+      mode: "run",
+    });
+
+    const response = await request(lease.app).get(
+      `/api/workflow-runs/${secondRunId}/preview-diff?baseRunId=${runId}`,
+    );
+
+    expect(response.status).toBe(200);
+    // Chained onto the first run's own hypothetical result, not live HEAD.
+    expect(response.body.commit_diff.from_hash).not.toBe(baseHash);
+    const addedNames = response.body.commit_diff.exports.added.map(
+      (e: { name: string }) => e.name,
+    );
+    // Only this run's own export is "added" relative to its chained base —
+    // "widget" is already present on the `from` side.
+    expect(addedNames).toEqual(["gadget"]);
+
+    // Still never touches the real repo.
+    expect(git(repo_root, ["rev-parse", "HEAD"])).toBe(baseHash);
+    expect(git(repo_root, ["status", "--porcelain"])).toBe("");
+  });
 });

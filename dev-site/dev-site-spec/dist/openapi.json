@@ -729,6 +729,18 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "baseRunId",
+            "in": "query",
+            "required": false,
+            "description": "Zero or more other run ids, earliest first — each is previewed first, threading its result into the next as its starting point, so this run's own preview lands on top of them instead of the repo's live current state. See `previewRunDiff`'s doc comment.\n",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         ],
         "responses": {
@@ -759,6 +771,71 @@
           },
           "404": {
             "description": "No workflow run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workflow-runs/{runId}/reflect-diff": {
+      "get": {
+        "summary": "A workflow run's actual effect as a commit diff",
+        "operationId": "reflectWorkflowRunDiff",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Diffs `base_commit_hash` (the repo's HEAD when the run started) against `completion_hash` (HEAD the moment it finished) — both real commits, so this stays correct regardless of what else has landed in the repo since, unlike comparing against the repo's live current HEAD would. For a run that hasn't finished yet, falls back to live HEAD instead — `is_final: false` on the result marks that as a still-moving view.\n",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The run's actual diff (or its so-far progress, if not done).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "commit_diff",
+                    "is_final"
+                  ],
+                  "properties": {
+                    "commit_diff": {
+                      "$ref": "#/components/schemas/commit-diff"
+                    },
+                    "is_final": {
+                      "type": "boolean",
+                      "description": "True when this reflects the run's fixed `completion_hash`; false when it fell back to a live (still-moving) HEAD because the run hasn't finished yet.\n"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No workflow run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "This run has no base_commit_hash to diff from.",
             "content": {
               "application/json": {
                 "schema": {

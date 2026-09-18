@@ -47,6 +47,8 @@ describe("new-workflows-spec", () => {
       current_step_index: 0,
       cwd: "/tmp",
       agent_config: null,
+      base_commit_hash: null,
+      completion_hash: null,
       parent_run_id: null,
       parent_step_index: null,
       created_at: "2026-09-13T00:00:00.000Z",

@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/workflow-runs/{runId}/preview-diff": {
+    "/api/workflow-runs/{runId}/reflect-diff": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,10 +12,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Preview a workflow run's effect as a commit diff
-         * @description Computes what the run's workflow (walking `copy`/`transform-file`/`cd` steps, recursing into `call-workflow`) would change, as a real but never-persisted, never-referenced git commit — then diffs it against the repo's current commit the same way `diffCommits` diffs two real ones. Steps that genuinely need a real run (an agent turn, a shell command) are reported in `entries`, not silently skipped.
+         * A workflow run's actual effect as a commit diff
+         * @description Diffs `base_commit_hash` (the repo's HEAD when the run started) against `completion_hash` (HEAD the moment it finished) — both real commits, so this stays correct regardless of what else has landed in the repo since, unlike comparing against the repo's live current HEAD would. For a run that hasn't finished yet, falls back to live HEAD instead — `is_final: false` on the result marks that as a still-moving view.
          */
-        get: operations["previewWorkflowRunDiff"];
+        get: operations["reflectWorkflowRunDiff"];
         put?: never;
         post?: never;
         delete?: never;
@@ -209,28 +209,6 @@ export interface components {
             prop_name: string;
             docstring?: string | null;
         };
-        /** @description One step a workflow-run preview walked past — either applied (its file content folded into the preview's synthetic commit) or skipped, when its kind (`prompt`/`command`/`npm-script`/`update`, or anything else that isn't mechanical) genuinely needs a real run. */
-        "preview-step-entry": {
-            /**
-             * @description The root workflow's id, or a nested `call-workflow` target's id — lets the UI say *which* workflow a given step belongs to.
-             * @example drizzle/add-query
-             */
-            workflow_id: string;
-            /** @description Index within that workflow's own step list. */
-            step_index: number;
-            /**
-             * @description The step's kind (e.g. `copy`, `transform-file`, `cd`, `command`, `call-workflow`).
-             * @example copy
-             */
-            kind: string;
-            /** @description Whether this step's effect is reflected in the preview's diff. */
-            applied: boolean;
-            /**
-             * @description Why a step wasn't applied — its kind isn't previewable, or it threw while trying.
-             * @example needs a real run
-             */
-            reason?: string;
-        };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
             code?: string;
@@ -249,12 +227,9 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    previewWorkflowRunDiff: {
+    reflectWorkflowRunDiff: {
         parameters: {
-            query?: {
-                /** @description Zero or more other run ids, earliest first — each is previewed first, threading its result into the next as its starting point, so this run's own preview lands on top of them instead of the repo's live current state. See `previewRunDiff`'s doc comment. */
-                baseRunId?: string[];
-            };
+            query?: never;
             header?: never;
             path: {
                 runId: string;
@@ -263,7 +238,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The hypothetical diff, plus which steps it could and couldn't cover. */
+            /** @description The run's actual diff (or its so-far progress, if not done). */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -271,12 +246,22 @@ export interface operations {
                 content: {
                     "application/json": {
                         commit_diff: components["schemas"]["commit-diff"];
-                        entries: components["schemas"]["preview-step-entry"][];
+                        /** @description True when this reflects the run's fixed `completion_hash`; false when it fell back to a live (still-moving) HEAD because the run hasn't finished yet. */
+                        is_final: boolean;
                     };
                 };
             };
             /** @description No workflow run with that id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description This run has no base_commit_hash to diff from. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

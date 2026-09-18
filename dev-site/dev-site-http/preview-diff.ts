@@ -1,7 +1,7 @@
 import type { DbKey } from "@saflib/drizzle";
-import type { GitCommit } from "@saflib/git";
 import { resolveRef } from "@saflib/git";
 import { getByIdWorkflowRun, WorkflowRunNotFoundError } from "@saflib/new-workflows-db";
+import type { WorkflowRunEntity } from "@saflib/new-workflows-db";
 import {
   previewRun,
   loadWorkflowDefinition,
@@ -10,17 +10,9 @@ import {
 } from "@saflib/new-workflows";
 import type { ReturnsError } from "@saflib/utils";
 import type { GitCommandError } from "@saflib/git";
-import { analyzeCommit, type AnalyzeCommitOptions, type AnalyzedSnapshot } from "./analyze-commit.ts";
-import {
-  packageKey,
-  metricsEqual,
-  exportKey,
-  testCaseKey,
-  toApiTestCase,
-  diffLists,
-  toPackageMetrics,
-  type CommitDiff,
-} from "./diff-commits.ts";
+import type { AnalyzeCommitOptions } from "./analyze-commit.ts";
+import { diffHashesEphemeral } from "./ephemeral-diff.ts";
+import type { CommitDiff } from "./diff-commits.ts";
 
 export type PreviewDiffError = GitCommandError | WorkflowRunNotFoundError;
 export type PreviewDiffResult = ReturnsError<
@@ -28,29 +20,33 @@ export type PreviewDiffResult = ReturnsError<
   PreviewDiffError
 >;
 
-/** No `authored_at`/parents of its own — plumbing (`listTree`/`readBlobs`) never reads these fields. */
-function syntheticCommit(hash: string): GitCommit {
-  return { hash, parentHashes: [], authoredAt: new Date(0).toISOString(), subject: "" };
-}
-
-async function snapshotFor(
-  dbKey: DbKey,
-  hash: string,
-  options: AnalyzeCommitOptions,
-): Promise<AnalyzedSnapshot> {
-  const { result, error } = await analyzeCommit(dbKey, syntheticCommit(hash), options);
-  if (error) throw error;
-  return result;
+async function previewOneRun(
+  workflowsDbKey: DbKey,
+  run: WorkflowRunEntity,
+  registry: WorkflowDefinition<any, any>[],
+  repoRoot: string,
+  baseHash: string,
+) {
+  const definition = await loadWorkflowDefinition(run.workflow_ref, registry, { cwd: run.cwd });
+  return previewRun(workflowsDbKey, definition, run.input, {
+    repoRoot,
+    baseHash,
+    cwd: run.cwd,
+  });
 }
 
 /**
- * A `CommitDiff` between the repo's current commit and what a workflow run
- * would produce, without ever persisting the hypothetical side (or the
- * real side, for symmetry) to `analyzed_commits`/`package_metrics` — both
- * are computed fresh via `analyzeCommit`, same as `diffCommits` does for
- * package/export/test data, just skipping its DB-cached path entirely.
- * `db_schemas` is left empty for now — see `saflib/plans/
- * workflow-preview.md`'s "explicitly out of scope" for why.
+ * A `CommitDiff` between the repo's current commit (or, chained through
+ * `baseRunIds`, another run's own hypothetical result) and what a workflow
+ * run would produce.
+ *
+ * `baseRunIds`, when given, previews each of those runs *first*, in order,
+ * threading each one's resulting hash into the next as its starting point
+ * — e.g. previewing phase 3 with `baseRunIds: [phase1RunId, phase2RunId]`
+ * shows what phase 3 would do *on top of* phases 1 and 2's own hypothetical
+ * results, not against the repo's real (possibly not-yet-caught-up)
+ * current state. Without it, defaults to the repo's live `HEAD`, same as
+ * before chaining existed.
  */
 export async function previewRunDiff(
   /** Owns the `workflow_run` row being previewed (`new-workflows-db`'s connection). */
@@ -60,76 +56,37 @@ export async function previewRunDiff(
   runId: string,
   registry: WorkflowDefinition<any, any>[],
   repo: AnalyzeCommitOptions,
+  options?: { baseRunIds?: string[] },
 ): Promise<PreviewDiffResult> {
   const { result: run, error: getError } = await getByIdWorkflowRun(workflowsDbKey, { id: runId });
   if (getError) return { error: getError };
 
-  const { result: baseHash, error: refError } = resolveRef(repo.repo_root, "HEAD");
+  const { result: liveHead, error: refError } = resolveRef(repo.repo_root, "HEAD");
   if (refError) return { error: refError };
 
-  const definition = await loadWorkflowDefinition(run.workflow_ref, registry, { cwd: run.cwd });
-  const preview = await previewRun(workflowsDbKey, definition, run.input, {
-    repoRoot: repo.repo_root,
-    baseHash: baseHash!,
-    cwd: run.cwd,
-  });
-
-  const [fromSnapshot, toSnapshot] = await Promise.all([
-    snapshotFor(devSiteDbKey, preview.baseHash, repo),
-    snapshotFor(devSiteDbKey, preview.finalHash, repo),
-  ]);
-
-  const fromMetrics = fromSnapshot.package_metrics.map((m) => toPackageMetrics(m));
-  const toMetrics = toSnapshot.package_metrics.map((m) => toPackageMetrics(m));
-  const beforePkgs = new Map(fromMetrics.map((m) => [packageKey(m), m]));
-  const afterPkgs = new Map(toMetrics.map((m) => [packageKey(m), m]));
-
-  const added = [];
-  const removed = [];
-  const changed = [];
-  for (const [k, after] of afterPkgs) {
-    const before = beforePkgs.get(k);
-    if (!before) added.push(after);
-    else if (!metricsEqual(before, after)) changed.push({ before, after });
-  }
-  for (const [k, before] of beforePkgs) {
-    if (!afterPkgs.has(k)) removed.push(before);
+  let baseHash = liveHead!;
+  for (const baseRunId of options?.baseRunIds ?? []) {
+    const { result: baseRun, error: baseRunError } = await getByIdWorkflowRun(workflowsDbKey, {
+      id: baseRunId,
+    });
+    if (baseRunError) return { error: baseRunError };
+    const basePreview = await previewOneRun(
+      workflowsDbKey,
+      baseRun,
+      registry,
+      repo.repo_root,
+      baseHash,
+    );
+    baseHash = basePreview.finalHash;
   }
 
-  const exportDiff = diffLists(fromSnapshot.exports, toSnapshot.exports, exportKey);
-  const testDiff = diffLists(fromSnapshot.test_cases, toSnapshot.test_cases, testCaseKey);
-
-  const commit_diff: CommitDiff = {
-    from_hash: preview.baseHash,
-    to_hash: preview.finalHash,
-    package_metrics: { added, removed, changed },
-    exports: {
-      added: exportDiff.added.map((e) => ({
-        package_name: e.package_name,
-        file_path: e.file_path,
-        name: e.name,
-        kind: e.kind,
-        signature: e.signature,
-        docstring: e.docstring,
-      })),
-      removed: exportDiff.removed.map((e) => ({
-        package_name: e.package_name,
-        file_path: e.file_path,
-        name: e.name,
-        kind: e.kind,
-        signature: e.signature,
-        docstring: e.docstring,
-      })),
-    },
-    test_cases: {
-      added: testDiff.added.map(toApiTestCase),
-      removed: testDiff.removed.map(toApiTestCase),
-    },
-    db_schemas: {
-      tables: { added: [], removed: [] },
-      columns: { added: [], removed: [], changed: [] },
-    },
-  };
+  const preview = await previewOneRun(workflowsDbKey, run, registry, repo.repo_root, baseHash);
+  const commit_diff = await diffHashesEphemeral(
+    devSiteDbKey,
+    preview.baseHash,
+    preview.finalHash,
+    repo,
+  );
 
   return { result: { commit_diff, entries: preview.entries } };
 }

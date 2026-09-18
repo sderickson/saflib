@@ -47,6 +47,25 @@ export interface WorkflowRunEntity {
   current_step_index: number;
   cwd: string;
   agent_config: WorkflowRunAgentConfig | null;
+  /**
+   * The repo's `HEAD` commit hash at the moment this run was created, if
+   * `cwd` resolved inside a git repo (best-effort — null otherwise, e.g. a
+   * scratch/non-git cwd in tests). Bookends a run: the preview feature
+   * diffs from here forward hypothetically; a "reflection" of what a run
+   * actually did can diff from here to whatever `HEAD` is once it's done,
+   * the same way, as long as nothing else committed to the repo meanwhile.
+   */
+  base_commit_hash: string | null;
+  /**
+   * The repo's `HEAD` commit hash at the moment this run first reached
+   * `done`, if `cwd` resolved inside a git repo — captured once, right
+   * then, not re-derived later (unlike a live `HEAD` lookup, this doesn't
+   * drift as unrelated later work lands). Paired with `base_commit_hash`,
+   * this is the run's "reflection": what it actually changed, isolated
+   * from anything that happened before or after it. Null until the run is
+   * done (or forever, for one that fails/never finishes).
+   */
+  completion_hash: string | null;
   /** Set when this run was spawned by a `call-workflow` step in another run. */
   parent_run_id: string | null;
   parent_step_index: number | null;
@@ -77,6 +96,8 @@ export const workflowRunTable = sqliteTable(
     agent_config: text("agent_config", { mode: "json" }).$type<
       WorkflowRunAgentConfig | null
     >(),
+    base_commit_hash: text("base_commit_hash"),
+    completion_hash: text("completion_hash"),
     parent_run_id: text("parent_run_id"),
     parent_step_index: integer("parent_step_index"),
     created_at: integer("created_at", { mode: "timestamp" }).notNull(),

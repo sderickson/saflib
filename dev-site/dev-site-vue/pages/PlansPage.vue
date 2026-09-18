@@ -92,7 +92,12 @@
             <template v-else-if="fileKind === 'workflow'">
               <h2 class="plans-page__run-heading text-h6">{{ fileName }}</h2>
               <v-progress-linear v-if="runsQuery.isLoading.value" indeterminate class="ma-4" />
-              <RunView v-else-if="mostRecentRun" :run-id="mostRecentRun.id" class="plans-page__run-view" />
+              <RunView
+                v-else-if="mostRecentRun"
+                :run-id="mostRecentRun.id"
+                :base-run-ids="earlierPhaseRunIds"
+                class="plans-page__run-view"
+              />
               <div v-else class="plans-page__run-start">
                 <p class="text-body-2 text-medium-emphasis mb-3">
                   This workflow hasn't been run yet.
@@ -129,6 +134,7 @@ import {
   useCreatePlanMutation,
   useWorkflowRunsQuery,
   useCreateWorkflowRunMutation,
+  useSiblingMostRecentRunIds,
 } from "../requests/workflows-queries.ts";
 import { useRepoFiles } from "../requests/queries.ts";
 import ResizableColumns from "../components/ResizableColumns.vue";
@@ -285,6 +291,25 @@ const runsQuery = useWorkflowRunsQuery(() =>
   fileKind.value === "workflow" ? selectedFilePath.value : undefined,
 );
 const mostRecentRun = computed(() => runsQuery.data.value?.runs[0]);
+
+// --- Earlier workflow files in this same plan folder, sorted before the
+// selected one — e.g. phase-1/phase-2 before phase-3. Threaded into
+// RunView as `baseRunIds` so "Preview changes" on phase-3 chains onto
+// phase-1 and phase-2's own hypothetical results (their most recent run,
+// if any — a phase never run yet is skipped, not treated as a hard
+// requirement) instead of just the repo's current, possibly-behind state. ---
+const earlierPhaseFilePaths = computed(() => {
+  if (fileKind.value !== "workflow") return [];
+  const group = planGroups.value.find((g) => g.folder === planName_.value);
+  if (!group) return [];
+  return group.files
+    .filter((f) => f.name < (fileName.value ?? "") && fileKindOf(f.name) === "workflow")
+    .map((f) => f.path);
+});
+const earlierPhaseRunIdsMaybe = useSiblingMostRecentRunIds(() => earlierPhaseFilePaths.value);
+const earlierPhaseRunIds = computed(
+  () => earlierPhaseRunIdsMaybe.value.filter((id): id is string => Boolean(id)),
+);
 
 const createRunMutation = useCreateWorkflowRunMutation();
 function startWorkflow() {

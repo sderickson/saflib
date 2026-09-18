@@ -137,6 +137,14 @@
           >
             Preview changes
           </v-btn>
+          <v-btn
+            variant="tonal"
+            class="ml-2"
+            :loading="reflectMutation.isPending.value"
+            @click="openReflection()"
+          >
+            Reflection
+          </v-btn>
           <span v-if="isAdvancing" class="text-body-2 text-medium-emphasis ml-3">
             Agent is running…
           </span>
@@ -178,6 +186,16 @@
           </v-alert>
           <template v-if="previewMutation.data.value">
             <v-alert
+              v-if="baseRunIds.length > 0"
+              type="info"
+              variant="tonal"
+              density="compact"
+              class="mb-4"
+            >
+              Chained onto {{ baseRunIds.length }} earlier phase run(s) in this plan folder's own
+              hypothetical results, not the repo's current state.
+            </v-alert>
+            <v-alert
               v-if="skippedPreviewEntries.length > 0"
               type="warning"
               variant="tonal"
@@ -198,6 +216,35 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="reflectionDialogOpen" max-width="900">
+      <v-card>
+        <v-card-title>Reflection</v-card-title>
+        <v-card-text>
+          <v-progress-linear v-if="reflectMutation.isPending.value" indeterminate class="mb-4" />
+          <v-alert v-if="reflectMutation.isError.value" type="error" class="mb-4">
+            {{ reflectMutation.error.value?.message }}
+          </v-alert>
+          <template v-if="reflectMutation.data.value">
+            <v-alert
+              v-if="!reflectMutation.data.value.is_final"
+              type="info"
+              variant="tonal"
+              density="compact"
+              class="mb-4"
+            >
+              This run isn't done yet — showing progress so far (against the repo's current
+              state), not a settled reflection.
+            </v-alert>
+            <CommitDiffView :diff="reflectMutation.data.value.commit_diff" />
+          </template>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="reflectionDialogOpen = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -210,6 +257,7 @@ import {
   useAdvanceWorkflowRunMutation,
   useCancelWorkflowRunMutation,
   usePreviewWorkflowRunDiffMutation,
+  useReflectWorkflowRunDiffMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import { runStatusVisual, type RunStatusVisual } from "../run-status-visual.ts";
@@ -230,8 +278,18 @@ import {
   toggleMuted,
 } from "../run-alerts.ts";
 
-const props = defineProps<{ runId: string }>();
+const props = defineProps<{
+  runId: string;
+  /**
+   * Other runs (e.g. earlier phases in the same plan folder), earliest
+   * first, to chain a preview onto — see `usePreviewWorkflowRunDiffMutation`'s
+   * own doc comment. Optional: the caller (`PlansPage`) decides whether/how
+   * to compute this; `RunView` itself has no notion of "sibling plans".
+   */
+  baseRunIds?: string[];
+}>();
 const runId = computed(() => props.runId);
+const baseRunIds = computed(() => props.baseRunIds ?? []);
 
 const runQuery = useWorkflowRunQuery(runId);
 const run = computed(() => runQuery.data.value?.run);
@@ -252,12 +310,20 @@ const previewDialogOpen = ref(false);
 
 function openPreview() {
   previewDialogOpen.value = true;
-  previewMutation.mutate(runId.value);
+  previewMutation.mutate({ runId: runId.value, baseRunIds: baseRunIds.value });
 }
 
 const skippedPreviewEntries = computed(
   () => previewMutation.data.value?.entries.filter((e) => !e.applied) ?? [],
 );
+
+const reflectMutation = useReflectWorkflowRunDiffMutation();
+const reflectionDialogOpen = ref(false);
+
+function openReflection() {
+  reflectionDialogOpen.value = true;
+  reflectMutation.mutate(runId.value);
+}
 
 /**
  * Whether a step is genuinely in progress right now, combining this page's

@@ -695,6 +695,8 @@
           "current_step_index",
           "cwd",
           "agent_config",
+          "base_commit_hash",
+          "completion_hash",
           "parent_run_id",
           "parent_step_index",
           "created_at",
@@ -751,6 +753,22 @@
                 "type": "null"
               }
             ]
+          },
+          "base_commit_hash": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The repo's HEAD commit hash when this run was created, if `cwd` resolved inside a git repo (null otherwise). Bookends a run — pairs with a preview (hypothetical, from here forward) and, once the run is done, a reflection (actual, from here to the repo's current HEAD) — assuming nothing else committed to the repo meanwhile.\n",
+            "example": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+          },
+          "completion_hash": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The repo's HEAD commit hash the moment this run first reached `done` (captured once, then fixed — not a live lookup). Null until the run is done. Paired with `base_commit_hash` for the run's \"reflection\": what it actually changed, isolated from anything that happened before or after it.\n",
+            "example": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3"
           },
           "parent_run_id": {
             "type": [

@@ -1,18 +1,18 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "previewWorkflowRunDiff",
+    "title": "reflectWorkflowRunDiff",
     "version": "1.0.0"
   },
   "paths": {
-    "/api/workflow-runs/{runId}/preview-diff": {
+    "/api/workflow-runs/{runId}/reflect-diff": {
       "get": {
-        "summary": "Preview a workflow run's effect as a commit diff",
-        "operationId": "previewWorkflowRunDiff",
+        "summary": "A workflow run's actual effect as a commit diff",
+        "operationId": "reflectWorkflowRunDiff",
         "tags": [
           "no-auth"
         ],
-        "description": "Computes what the run's workflow (walking `copy`/`transform-file`/`cd` steps, recursing into `call-workflow`) would change, as a real but never-persisted, never-referenced git commit — then diffs it against the repo's current commit the same way `diffCommits` diffs two real ones. Steps that genuinely need a real run (an agent turn, a shell command) are reported in `entries`, not silently skipped.\n",
+        "description": "Diffs `base_commit_hash` (the repo's HEAD when the run started) against `completion_hash` (HEAD the moment it finished) — both real commits, so this stays correct regardless of what else has landed in the repo since, unlike comparing against the repo's live current HEAD would. For a run that hasn't finished yet, falls back to live HEAD instead — `is_final: false` on the result marks that as a still-moving view.\n",
         "parameters": [
           {
             "name": "runId",
@@ -21,40 +21,26 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "baseRunId",
-            "in": "query",
-            "required": false,
-            "description": "Zero or more other run ids, earliest first — each is previewed first, threading its result into the next as its starting point, so this run's own preview lands on top of them instead of the repo's live current state. See `previewRunDiff`'s doc comment.\n",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
           }
         ],
         "responses": {
           "200": {
-            "description": "The hypothetical diff, plus which steps it could and couldn't cover.",
+            "description": "The run's actual diff (or its so-far progress, if not done).",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "required": [
                     "commit_diff",
-                    "entries"
+                    "is_final"
                   ],
                   "properties": {
                     "commit_diff": {
                       "$ref": "#/components/schemas/commit-diff"
                     },
-                    "entries": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/preview-step-entry"
-                      }
+                    "is_final": {
+                      "type": "boolean",
+                      "description": "True when this reflects the run's fixed `completion_hash`; false when it fell back to a live (still-moving) HEAD because the run hasn't finished yet.\n"
                     }
                   }
                 }
@@ -63,6 +49,16 @@
           },
           "404": {
             "description": "No workflow run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "This run has no base_commit_hash to diff from.",
             "content": {
               "application/json": {
                 "schema": {
@@ -569,41 +565,6 @@
             ]
           }
         }
-      },
-      "preview-step-entry": {
-        "type": "object",
-        "description": "One step a workflow-run preview walked past — either applied (its file content folded into the preview's synthetic commit) or skipped, when its kind (`prompt`/`command`/`npm-script`/`update`, or anything else that isn't mechanical) genuinely needs a real run.\n",
-        "properties": {
-          "workflow_id": {
-            "type": "string",
-            "description": "The root workflow's id, or a nested `call-workflow` target's id — lets the UI say *which* workflow a given step belongs to.\n",
-            "example": "drizzle/add-query"
-          },
-          "step_index": {
-            "type": "integer",
-            "description": "Index within that workflow's own step list."
-          },
-          "kind": {
-            "type": "string",
-            "description": "The step's kind (e.g. `copy`, `transform-file`, `cd`, `command`, `call-workflow`).",
-            "example": "copy"
-          },
-          "applied": {
-            "type": "boolean",
-            "description": "Whether this step's effect is reflected in the preview's diff."
-          },
-          "reason": {
-            "type": "string",
-            "description": "Why a step wasn't applied — its kind isn't previewable, or it threw while trying.",
-            "example": "needs a real run"
-          }
-        },
-        "required": [
-          "workflow_id",
-          "step_index",
-          "kind",
-          "applied"
-        ]
       },
       "error": {
         "type": "object",

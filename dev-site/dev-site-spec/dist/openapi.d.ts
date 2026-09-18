@@ -185,6 +185,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workflow-runs/{runId}/reflect-diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A workflow run's actual effect as a commit diff
+         * @description Diffs `base_commit_hash` (the repo's HEAD when the run started) against `completion_hash` (HEAD the moment it finished) — both real commits, so this stays correct regardless of what else has landed in the repo since, unlike comparing against the repo's live current HEAD would. For a run that hasn't finished yet, falls back to live HEAD instead — `is_final: false` on the result marks that as a still-moving view.
+         */
+        get: operations["reflectWorkflowRunDiff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1101,7 +1121,10 @@ export interface operations {
     };
     previewWorkflowRunDiff: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Zero or more other run ids, earliest first — each is previewed first, threading its result into the next as its starting point, so this run's own preview lands on top of them instead of the repo's live current state. See `previewRunDiff`'s doc comment. */
+                baseRunId?: string[];
+            };
             header?: never;
             path: {
                 runId: string;
@@ -1124,6 +1147,50 @@ export interface operations {
             };
             /** @description No workflow run with that id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    reflectWorkflowRunDiff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The run's actual diff (or its so-far progress, if not done). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commit_diff: components["schemas"]["commit-diff"];
+                        /** @description True when this reflects the run's fixed `completion_hash`; false when it fell back to a live (still-moving) HEAD because the run hasn't finished yet. */
+                        is_final: boolean;
+                    };
+                };
+            };
+            /** @description No workflow run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description This run has no base_commit_hash to diff from. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

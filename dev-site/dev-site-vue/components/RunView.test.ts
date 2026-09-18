@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { nextTick } from "vue";
+import { enableAutoUnmount } from "@vue/test-utils";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse } from "msw";
@@ -82,6 +83,10 @@ function mountRunView() {
 describe("RunView", () => {
   stubGlobals();
   const server = setupMockServer(handlers);
+  // Vuetify's `v-dialog` teleports to the real `document.body`, which
+  // otherwise survives across tests (and files, under this suite's
+  // `isolate: false`) since nothing else unmounts a previous test's wrapper.
+  enableAutoUnmount(afterEach);
 
   beforeEach(() => {
     runState = runFixture();
@@ -596,5 +601,44 @@ describe("RunView", () => {
     });
     expect(document.body.textContent).toContain("1 step(s) need a real run to preview");
     expect(document.body.textContent).toContain("update (example/hello)");
+  });
+
+  it("Reflection fetches and shows the run's actual diff, noting when it's still in progress", async () => {
+    server.use(
+      http.get(`${ORIGIN}/api/workflow-runs/:runId/reflect-diff`, () =>
+        HttpResponse.json({
+          commit_diff: emptyCommitDiff({
+            exports: {
+              added: [
+                {
+                  package_name: "@fixture/widget",
+                  file_path: "src/widget.ts",
+                  name: "widget",
+                  kind: "const",
+                  signature: null,
+                  docstring: null,
+                },
+              ],
+              removed: [],
+            },
+          }),
+          is_final: false,
+        }),
+      ),
+    );
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    const reflectButton = wrapper.findAll("button").find((b) => b.text() === "Reflection");
+    expect(reflectButton).toBeTruthy();
+    await reflectButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(document.body.textContent).toContain("widget");
+    });
+    expect(document.body.textContent).toContain("isn't done yet");
   });
 });

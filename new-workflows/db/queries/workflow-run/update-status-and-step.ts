@@ -13,6 +13,8 @@ export type UpdateStatusAndStepWorkflowRunParams = {
   id: (typeof workflowRunTable.$inferSelect)["id"];
   status: WorkflowRunStatus;
   current_step_index: number;
+  /** Set only on the transition to `done` — see the column's own doc comment. */
+  completion_hash?: string | null;
   now: Date;
 };
 
@@ -36,6 +38,9 @@ export const updateStatusAndStepWorkflowRun = queryWrapper(
       .set({
         status: params.status,
         current_step_index: params.current_step_index,
+        ...(params.completion_hash !== undefined
+          ? { completion_hash: params.completion_hash }
+          : {}),
         updated_at: params.now,
       })
       .where(eq(workflowRunTable.id, params.id))

@@ -264,6 +264,16 @@ export interface components {
             /** @example /home/user/my-project */
             cwd: string;
             agent_config: components["schemas"]["workflow-run-agent-config"] | null;
+            /**
+             * @description The repo's HEAD commit hash when this run was created, if `cwd` resolved inside a git repo (null otherwise). Bookends a run — pairs with a preview (hypothetical, from here forward) and, once the run is done, a reflection (actual, from here to the repo's current HEAD) — assuming nothing else committed to the repo meanwhile.
+             * @example a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+             */
+            base_commit_hash: string | null;
+            /**
+             * @description The repo's HEAD commit hash the moment this run first reached `done` (captured once, then fixed — not a live lookup). Null until the run is done. Paired with `base_commit_hash` for the run's "reflection": what it actually changed, isolated from anything that happened before or after it.
+             * @example b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3
+             */
+            completion_hash: string | null;
             /** @description Set when this run was spawned by a `call-workflow` step in another run. */
             parent_run_id: string | null;
             parent_step_index: number | null;

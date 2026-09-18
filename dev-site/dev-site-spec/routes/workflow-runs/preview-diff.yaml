@@ -16,6 +16,18 @@ previewWorkflowRunDiff:
       required: true
       schema:
         type: string
+    - name: baseRunId
+      in: query
+      required: false
+      description: >
+        Zero or more other run ids, earliest first — each is previewed
+        first, threading its result into the next as its starting point,
+        so this run's own preview lands on top of them instead of the
+        repo's live current state. See `previewRunDiff`'s doc comment.
+      schema:
+        type: array
+        items:
+          type: string
   responses:
     "200":
       description: The hypothetical diff, plus which steps it could and couldn't cover.

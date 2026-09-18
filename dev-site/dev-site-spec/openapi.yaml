@@ -35,6 +35,9 @@ paths:
   /api/workflow-runs/{runId}/preview-diff:
     get:
       $ref: "./routes/workflow-runs/preview-diff.yaml#/previewWorkflowRunDiff"
+  /api/workflow-runs/{runId}/reflect-diff:
+    get:
+      $ref: "./routes/workflow-runs/reflect-diff.yaml#/reflectWorkflowRunDiff"
   # END WORKFLOW AREA
 
 components:

@@ -7,6 +7,7 @@ import {
   listByRunWorkflowStep,
 } from "@saflib/new-workflows-db";
 import type { DbKey, WorkflowRunStatus } from "@saflib/new-workflows-db";
+import { resolveRef } from "@saflib/git";
 import { createOutputStream } from "./output.ts";
 import { commitIfDirty, revertUncommittedChanges } from "./git.ts";
 import { summarizeStepInput } from "./describe-steps.ts";
@@ -56,6 +57,12 @@ export async function createRun(
     parentStepIndex?: number;
   },
 ): Promise<string> {
+  // Best-effort, not fatal: `cwd` might not be inside a git repo (a scratch
+  // dir in tests, say) — `resolveRef` just needs *any* path inside the
+  // repo, not necessarily its root, since git walks up to find `.git`
+  // itself. Bookends the run — see `base_commit_hash`'s own doc comment.
+  const { result: baseCommitHash } = resolveRef(opts.cwd, "HEAD");
+
   const { result, error } = await createWorkflowRun(dbKey, {
     workflow_source: "code",
     workflow_ref: def.id,
@@ -64,6 +71,7 @@ export async function createRun(
     skip_todos: opts.skipTodos ?? false,
     cwd: opts.cwd,
     agent_config: opts.agentConfig ?? null,
+    base_commit_hash: baseCommitHash ?? null,
     parent_run_id: opts.parentRunId ?? null,
     parent_step_index: opts.parentStepIndex ?? null,
     now: new Date(),
@@ -280,10 +288,17 @@ async function runStep(
       ? "done"
       : statusForStepResult(stepResult.status);
 
+  // Best-effort, not fatal, same as `createRun`'s `base_commit_hash` —
+  // captured right now, once, rather than left to a later live `HEAD`
+  // lookup that would drift as unrelated work lands afterward.
+  const completionHash =
+    nextStatus === "done" ? resolveRef(cwd, "HEAD").result ?? null : undefined;
+
   await updateStatusAndStepWorkflowRun(dbKey, {
     id: runId,
     status: nextStatus,
     current_step_index: nextStepIndex,
+    completion_hash: completionHash,
     now: finishedAt,
   });
 
