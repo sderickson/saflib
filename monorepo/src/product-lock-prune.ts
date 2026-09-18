@@ -537,7 +537,18 @@ export function findLockfileVersionSkew(
   for (const [key, entry] of Object.entries(packages)) {
     const parsed = parseNestedSaflibRegistryLockKey(key);
     if (!parsed || !entry?.version || entry.link) continue;
-    const platformVersion = platform.resolvedVersions.get(parsed.dependency);
+    // Prefer the platform's same nested path (e.g. monorepo/node_modules/eslint@10)
+    // over the root-hoisted version — intentional dual installs are not skew.
+    const platformNestedKey = key.startsWith("saflib/")
+      ? key.slice("saflib/".length)
+      : undefined;
+    const platformNestedVersion = platformNestedKey
+      ? platform.lockPackages[platformNestedKey]?.version
+      : undefined;
+    if (platformNestedVersion === entry.version) continue;
+    const platformVersion =
+      platformNestedVersion ??
+      platform.resolvedVersions.get(parsed.dependency);
     if (!platformVersion || platformVersion === entry.version) continue;
     if (seen.has(parsed.dependency)) continue;
     seen.add(parsed.dependency);
