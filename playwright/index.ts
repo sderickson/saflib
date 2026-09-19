@@ -61,7 +61,8 @@ export const getByString = (page: Page, stringThing: ElementString) => {
  * Matches when the option label contains `option`, or when `option` contains the visible label
  * (handles truncated dropdown text ending in `…`). Waits for options to appear after open
  * (async item sources like form pickers). Re-queries by accessible name before click so
- * virtualized Vuetify lists do not leave a detached node.
+ * virtualized Vuetify lists do not leave a detached node. Prefer an option that is already
+ * mounted in the virtual list (often near where the menu opens).
  */
 export const chooseVuetifySelectOption = async (
   page: Page,
@@ -111,5 +112,13 @@ export const chooseVuetifySelectOption = async (
     .toBe(true);
 
   // Fresh locator — virtualized menus recycle DOM nodes between poll and click.
-  await page.getByRole("option", { name: matchedName, exact: true }).click();
+  // Avoid force:true so Vuetify actually commits the selection to v-model.
+  const optionLocator = page.getByRole("option", {
+    name: matchedName,
+    exact: true,
+  });
+  await optionLocator.click();
+  await expect(
+    page.getByRole("combobox").filter({ hasText: label }),
+  ).toContainText(matchedName, { timeout: 3_000 });
 };
