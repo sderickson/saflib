@@ -13,6 +13,7 @@ import {
   findUnhoistedRegistryDependencies,
   hoistMisplacedLockfilePeers,
   hoistUnhoistedRegistryDependencies,
+  alignSkewedLockfileEntries,
   isEmbeddedProductMonorepo,
   pruneStaleLockfileEntries,
   readPlatformContract,
@@ -355,7 +356,9 @@ describe("findLockfileVersionSkew", () => {
     const platform = {
       overrides: {},
       resolvedVersions: new Map([["@tanstack/vue-query", "5.85.9"]]),
-      lockPackages: {},
+      lockPackages: {
+        "node_modules/@tanstack/vue-query": { version: "5.85.9" },
+      },
     };
 
     expect(findLockfileVersionSkew(lockfile, platform)).toEqual([
@@ -365,8 +368,82 @@ describe("findLockfileVersionSkew", () => {
         productLockfileKey: "saflib/sdk/node_modules/@tanstack/vue-query",
         productVersion: "5.102.8",
         platformVersion: "5.85.9",
+        platformLockfileKey: "node_modules/@tanstack/vue-query",
+        productAlignKey: "node_modules/@tanstack/vue-query",
+        rootLockfileKey: "node_modules/@tanstack/vue-query",
       },
     ]);
+  });
+});
+
+describe("alignSkewedLockfileEntries", () => {
+  it("copies the platform root package and removes nested skew (multer-style)", () => {
+    const lockfile = {
+      packages: {
+        "node_modules/@types/multer": {
+          version: "1.4.13",
+          resolved: "https://registry.npmjs.org/@types/multer/-/multer-1.4.13.tgz",
+        },
+        "saflib/node_modules/@types/multer": {
+          version: "2.2.0",
+          resolved: "https://registry.npmjs.org/@types/multer/-/multer-2.2.0.tgz",
+        },
+      },
+    };
+    const platform = {
+      overrides: {},
+      resolvedVersions: new Map([["@types/multer", "2.1.0"]]),
+      lockPackages: {
+        "node_modules/@types/multer": {
+          version: "2.1.0",
+          resolved: "https://registry.npmjs.org/@types/multer/-/multer-2.1.0.tgz",
+        },
+      },
+    };
+    const issues = findLockfileVersionSkew(lockfile, platform);
+
+    const aligned = alignSkewedLockfileEntries(lockfile, issues, platform);
+
+    expect(aligned).toEqual(["@types/multer"]);
+    expect(lockfile.packages["node_modules/@types/multer"]).toMatchObject({
+      version: "2.1.0",
+    });
+    expect(lockfile.packages["saflib/node_modules/@types/multer"]).toBeUndefined();
+  });
+
+  it("aligns intentional nested dual-install paths without clobbering root", () => {
+    const lockfile = {
+      packages: {
+        "node_modules/minimatch": { version: "9.0.9" },
+        "saflib/workflows/node_modules/minimatch": { version: "10.1.1" },
+        "saflib/workflows/node_modules/brace-expansion": { version: "5.0.0" },
+      },
+    };
+    const platform = {
+      overrides: {},
+      resolvedVersions: new Map([["minimatch", "9.0.9"]]),
+      lockPackages: {
+        "node_modules/minimatch": { version: "9.0.9" },
+        "workflows/node_modules/minimatch": {
+          version: "10.2.4",
+          dependencies: { "brace-expansion": "^5.0.2" },
+        },
+        "workflows/node_modules/brace-expansion": { version: "5.0.5" },
+      },
+    };
+    const issues = findLockfileVersionSkew(lockfile, platform);
+
+    alignSkewedLockfileEntries(lockfile, issues, platform);
+
+    expect(lockfile.packages["node_modules/minimatch"]).toMatchObject({
+      version: "9.0.9",
+    });
+    expect(
+      lockfile.packages["saflib/workflows/node_modules/minimatch"],
+    ).toMatchObject({ version: "10.2.4" });
+    expect(
+      lockfile.packages["saflib/workflows/node_modules/brace-expansion"],
+    ).toMatchObject({ version: "5.0.5" });
   });
 });
 
