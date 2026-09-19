@@ -58,8 +58,8 @@ export const makeCsrfMiddleware = (): Handler => {
 
     if (!ok) {
       if (!res.headersSent) {
+        // Shape must match shared OpenAPI error.yaml on routes that declare 403.
         res.status(403).json({
-          error: "Forbidden",
           message: "CSRF validation failed",
         });
       }

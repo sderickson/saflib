@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { assertNoRootResponseBodies } from "@saflib/openapi";
+import { assertNoRootResponseBodies } from "@saflib/openapi/no-root-response-bodies";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 

@@ -7,7 +7,9 @@ import envSchema from "./env.schema.combined.json" with { type: "json" };
 validateEnv(process.env, envSchema);
 
 /**
- * A PostHog loading script for use in vite.
+ * Legacy PostHog loading script for Vite `transformIndexHtml`.
+ * Prefer {@link initPostHogIfConfigured} — this inline snippet requires
+ * `script-src 'unsafe-inline'` and weakens XSS defenses.
  */
 export const makePosthogScriptTag = (): HtmlTagDescriptor => {
   return {

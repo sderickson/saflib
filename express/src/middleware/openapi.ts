@@ -120,7 +120,12 @@ const validatorCache = new WeakMap<
 >();
 
 function fileUploaderCacheKey(fileUploader?: multer.Options): string {
-  return fileUploader ? "multer" : "default";
+  if (!fileUploader) return "default";
+  // Distinguish storage backends so routers sharing one apiSpec don't steal
+  // each other's multer config (e.g. memoryStorage vs diskStorage).
+  const storageName = fileUploader.storage?.constructor?.name ?? "storage";
+  const limit = fileUploader.limits?.fileSize ?? "nolimit";
+  return `multer:${storageName}:${limit}`;
 }
 
 function buildOpenApiValidatorMiddleware(

@@ -30,12 +30,19 @@ if ! command -v unzip &> /dev/null; then
     apt-get update
     apt-get install -y unzip
 fi
+# rsync keeps existing directory inodes (critical for Docker bind mounts like
+# ./kratos). rm -rf + unzip recreates dirs and leaves running containers
+# mounted to deleted empty inodes.
+if ! command -v rsync &> /dev/null; then
+    echo "rsync not found, installing..."
+    apt-get update
+    apt-get install -y rsync
+fi
 mkdir -p "$REMOTE_ASSETS_FOLDER_PATH"
-echo "Removing existing files..."
-echo "Removing $REMOTE_ASSETS_FOLDER_PATH*"
-rm -rf $REMOTE_ASSETS_FOLDER_PATH* -v
-unzip -o "$ZIP_NAME" -d "$REMOTE_ASSETS_FOLDER_PATH"
-rm "$ZIP_NAME"
+EXTRACT_TMP=\$(mktemp -d)
+unzip -o "$ZIP_NAME" -d "\$EXTRACT_TMP"
+rsync -a --delete "\$EXTRACT_TMP"/ "$REMOTE_ASSETS_FOLDER_PATH"
+rm -rf "\$EXTRACT_TMP" "$ZIP_NAME"
 echo "Done!"
 EOF
 

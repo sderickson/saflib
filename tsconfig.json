@@ -5,13 +5,13 @@
   },
   "references": [
     {
-      "path": "./analytics/analytics-service"
-    },
-    {
       "path": "./analytics/analytics-http"
     },
     {
       "path": "./analytics/analytics-sdk"
+    },
+    {
+      "path": "./analytics/analytics-service"
     },
     {
       "path": "./analytics/analytics-spec"
@@ -143,10 +143,10 @@
       "path": "./commander"
     },
     {
-      "path": "./cron/cron-http"
+      "path": "./cron/cron-db"
     },
     {
-      "path": "./cron/cron-db"
+      "path": "./cron/cron-http"
     },
     {
       "path": "./cron/cron-spec"
@@ -200,13 +200,13 @@
       "path": "./env"
     },
     {
-      "path": "./errors/errors-service"
-    },
-    {
       "path": "./errors/errors-http"
     },
     {
       "path": "./errors/errors-sdk"
+    },
+    {
+      "path": "./errors/errors-service"
     },
     {
       "path": "./errors/errors-spec"
@@ -230,10 +230,10 @@
       "path": "./integrations"
     },
     {
-      "path": "./jobs/jobs-http"
+      "path": "./jobs/jobs-db"
     },
     {
-      "path": "./jobs/jobs-db"
+      "path": "./jobs/jobs-http"
     },
     {
       "path": "./jobs/jobs-spec"
@@ -351,6 +351,9 @@
     },
     {
       "path": "./vite"
+    },
+    {
+      "path": "./vitepress"
     },
     {
       "path": "./vitest"
