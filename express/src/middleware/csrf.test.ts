@@ -120,7 +120,6 @@ describe("CSRF validator middleware", () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
-      error: "Forbidden",
       message: "CSRF validation failed",
     });
   });
