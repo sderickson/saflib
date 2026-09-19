@@ -28,10 +28,10 @@ export const DEFAULT_INIT_OPTIONS = {
 /**
  * Optional PostHog init when an API key is available.
  *
- * Product events reach PostHog through {@link @saflib/vue}'s
- * {@link commonEventLogger}, which calls `globalThis.posthog.capture` when the
- * client is loaded. Call this once from your SPA `main.ts` (or use
- * {@link makePosthogScriptTag} in Vite HTML instead).
+ * Product events reach PostHog through `@saflib/vue`'s common event logger, which
+ * calls `globalThis.posthog.capture` when the client is loaded. Call this once
+ * from your SPA `main.ts`. Prefer this over {@link makePosthogScriptTag} so CSP
+ * can omit `script-src 'unsafe-inline'`.
  *
  * @param options - Merged over {@link DEFAULT_INIT_OPTIONS} (later keys win).
  *   Pass `apiKey` from the app entry so Vite inlines `VITE_POSTHOG_*`.
@@ -52,7 +52,11 @@ export function initPostHogIfConfigured(
     import.meta.env.VITE_POSTHOG_PROJECT_HOST ||
     "https://us.i.posthog.com";
 
-  if (!apiKey || typeof globalThis.window === "undefined") {
+  if (
+    !apiKey ||
+    apiKey === "mock" ||
+    typeof globalThis.window === "undefined"
+  ) {
     return;
   }
 
@@ -69,5 +73,4 @@ export function initPostHogIfConfigured(
     ...DEFAULT_INIT_OPTIONS,
     ...posthogOptions,
   });
-  console.log("PostHog initialized");
 }

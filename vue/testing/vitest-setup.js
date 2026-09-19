@@ -3,9 +3,19 @@
 
 import { addErrorCollector } from "@saflib/node";
 import { installLocalStorageStub } from "@saflib/vitest/local-storage-stub";
+import { Blob as NodeBlob, File as NodeFile } from "node:buffer";
 
 installLocalStorageStub();
 addErrorCollector(() => {});
+
+// jsdom's File/Blob lack undici's internal `_buffer`, so FormData uploads via
+// openapi-fetch/fetch throw. Prefer Node's implementations for multipart tests.
+if (typeof NodeFile === "function") {
+  globalThis.File = NodeFile;
+}
+if (typeof NodeBlob === "function") {
+  globalThis.Blob = NodeBlob;
+}
 
 const originalConsoleWarn = console.warn;
 console.warn = (...args) => {

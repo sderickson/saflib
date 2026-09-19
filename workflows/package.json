@@ -21,10 +21,10 @@
   },
   "dependencies": {
     "@saflib/templates": "*",
+    "@saflib/utils": "*",
     "commander": "^15.0.0",
     "minimatch": "^10.1.1",
-    "xstate": "^5.19.3",
-    "@saflib/utils": "*"
+    "xstate": "^5.19.3"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

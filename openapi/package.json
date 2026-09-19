@@ -10,6 +10,8 @@
     ".": "./index.ts",
     "./ajv-formats": "./ajv-formats.ts",
     "./error": "./error.ts",
+    "./no-root-response-bodies": "./no-root-response-bodies.ts",
+    "./operation-tags-files": "./operation-tags-files.ts",
     "./openapi.yaml": "./openapi.yaml",
     "./schemas/Error": "./schemas/Error.ts",
     "./schemas/error.yaml": "./schemas/error.yaml",
