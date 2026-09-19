@@ -60,7 +60,8 @@ export const getByString = (page: Page, stringThing: ElementString) => {
  * The Vuetify select component is a bit tricky with Playwright, so this is a convenience function for choosing an option.
  * Matches when the option label contains `option`, or when `option` contains the visible label
  * (handles truncated dropdown text ending in `…`). Waits for options to appear after open
- * (async item sources like form pickers).
+ * (async item sources like form pickers). Re-queries by accessible name before click so
+ * virtualized Vuetify lists do not leave a detached node.
  */
 export const chooseVuetifySelectOption = async (
   page: Page,
@@ -75,28 +76,40 @@ export const chooseVuetifySelectOption = async (
   // Items may still be loading when the menu first opens.
   await listboxOptions.first().waitFor({ state: "visible", timeout: 2_000 });
 
-  let matchedLocator = listboxOptions.first();
+  let matchedName = needle;
   await expect
     .poll(
       async () => {
         const optionLocators = await listboxOptions.all();
+        let fuzzy: string | undefined;
         for (const locator of optionLocators) {
           const text = (await locator.textContent()) ?? "";
           const visible = text.replace(/\u2026|\.\.\.$/g, "").trim();
           if (!visible) continue;
-          if (visible.includes(needle) || needle.includes(visible)) {
-            matchedLocator = locator;
+          if (visible === needle) {
+            matchedName = visible;
             return true;
           }
+          if (
+            !fuzzy &&
+            (visible.includes(needle) || needle.includes(visible))
+          ) {
+            fuzzy = visible;
+          }
+        }
+        if (fuzzy) {
+          matchedName = fuzzy;
+          return true;
         }
         return false;
       },
       {
-        timeout: 2_000,
+        timeout: 5_000,
         message: `Option not found: ${option}`,
       },
     )
     .toBe(true);
 
-  await matchedLocator.click();
+  // Fresh locator — virtualized menus recycle DOM nodes between poll and click.
+  await page.getByRole("option", { name: matchedName, exact: true }).click();
 };
