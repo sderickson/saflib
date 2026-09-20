@@ -124,7 +124,7 @@ COPY ./saflib ./saflib
       "utf-8",
     ) as string;
     expect(dockerfile).toMatch(
-      /COPY \.\/saflib \.\/saflib\nRUN apt-get update \\/,
+      /COPY \.\/saflib \.\/saflib\nRUN \(command -v git >\/dev\/null 2>&1 \|\| \(apt-get update \\/,
     );
     const copySrcIndex = dockerfile.indexOf("COPY --parents");
     const fullSaflibIndex = dockerfile.indexOf("COPY ./saflib ./saflib");

@@ -251,9 +251,16 @@ export function generateDockerfiles(
 
     const copySrcCommand = `COPY --parents ${packageRelativePaths.join(" ")} ./`;
     const gitHashesStep = [
-      "RUN apt-get update \\",
+      // This step's own layer is invalidated on essentially every rebuild
+      // (its cache key includes the just-copied source tree, so any edit
+      // anywhere busts it) — but a template that already installs git
+      // earlier (before its own first COPY, so genuinely cache-stable)
+      // shouldn't pay a fresh network `apt-get update` + reinstall on top
+      // of that every single time. `command -v git` is free; skip straight
+      // to the hashes command when it's already satisfied.
+      "RUN (command -v git >/dev/null 2>&1 || (apt-get update \\",
       "  && apt-get install -y --no-install-recommends git \\",
-      "  && rm -rf /var/lib/apt/lists/* \\",
+      "  && rm -rf /var/lib/apt/lists/*)) \\",
       `  && ${gitHashesCommand(ctx)}`,
     ].join("\n");
 

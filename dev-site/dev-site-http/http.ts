@@ -6,6 +6,7 @@ import express, { type Router } from "express";
 import type { DbKey } from "@saflib/drizzle";
 import path from "node:path";
 import fs from "node:fs";
+import { randomBytes } from "node:crypto";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import { devSiteHttpStorage } from "./context.ts";
 import type { JobTriggerMap } from "./annotate-spec-inventory-jobs.ts";
@@ -57,11 +58,14 @@ export type DevSiteHttpAppLease = {
   devSiteDbKey: DbKey;
 };
 
-function buildDevSiteRuntimeConfigScript(config: {
-  github_repo?: string;
-  githubRef?: string;
-  repo_root?: string;
-}): string | undefined {
+function buildDevSiteRuntimeConfigScript(
+  config: {
+    github_repo?: string;
+    githubRef?: string;
+    repo_root?: string;
+  },
+  nonce: string,
+): string | undefined {
   const payload: Record<string, string> = {};
   if (config.github_repo) {
     payload.github_repo = config.github_repo;
@@ -75,7 +79,7 @@ function buildDevSiteRuntimeConfigScript(config: {
   if (Object.keys(payload).length === 0) {
     return undefined;
   }
-  return `<script>window.__DEV_SITE_CONFIG__=${JSON.stringify(payload)}</script>`;
+  return `<script nonce="${nonce}">window.__DEV_SITE_CONFIG__=${JSON.stringify(payload)}</script>`;
 }
 
 export function injectDevSiteRuntimeConfig(
@@ -88,6 +92,23 @@ export function injectDevSiteRuntimeConfig(
   return `${script}${html}`;
 }
 
+/**
+ * Allows this one inline `<script nonce="...">` past helmet's default
+ * `script-src 'self'` CSP (which otherwise blocks any inline script,
+ * causing `window.__DEV_SITE_CONFIG__` to silently never be set) — amends
+ * whatever CSP header `createGlobalMiddleware`'s `helmet()` already put on
+ * this response, rather than replacing it, so its other directives
+ * (style-src, img-src, etc.) stay exactly as configured there.
+ */
+function allowNonceInResponseCsp(res: express.Response, nonce: string): void {
+  const current = res.getHeader("Content-Security-Policy");
+  if (typeof current !== "string") return;
+  const withNonce = /script-src(?!-)([^;]*)/.test(current)
+    ? current.replace(/script-src(?!-)([^;]*)/, (match) => `${match} 'nonce-${nonce}'`)
+    : `${current}; script-src 'self' 'nonce-${nonce}'`;
+  res.setHeader("Content-Security-Policy", withNonce);
+}
+
 function defaultRouterMounts(): HttpRouterMount[] {
   return [
     // BEGIN WORKFLOW AREA default-router-mounts FOR express/add-handler
@@ -95,8 +116,13 @@ function defaultRouterMounts(): HttpRouterMount[] {
     { kind: "router", createRouter: createScanRouter },
     { kind: "router", createRouter: createCheckoutRouter },
     { kind: "router", createRouter: createRepoRouter },
-    { kind: "router", createRouter: createWorkflowsRouter },
+    // Before `createWorkflowsRouter`: that one mounts the whole
+    // `new-workflows-http` router, which ends in its own catch-all
+    // `[notFoundHandler, errorHandler]` for any unmatched `/api/*` path —
+    // mounted first, it would 404 these routes itself before Express ever
+    // reaches this router's own (later, more specific) handlers.
     { kind: "router", createRouter: createWorkflowRunsRouter },
+    { kind: "router", createRouter: createWorkflowsRouter },
     // END WORKFLOW AREA
   ];
 }
@@ -149,15 +175,22 @@ export function createDevSiteHttpApp(
   if (options.staticDir) {
     const staticRoot = path.resolve(options.staticDir);
     const indexHtml = path.join(staticRoot, "index.html");
-    const runtimeConfigScript = buildDevSiteRuntimeConfigScript({
-      github_repo,
-      repo_root,
-    });
 
     const sendSpaIndex = (_req: express.Request, res: express.Response) => {
       let html = fs.readFileSync(indexHtml, "utf8");
-      if (runtimeConfigScript && !html.includes("__DEV_SITE_CONFIG__")) {
-        html = injectDevSiteRuntimeConfig(html, runtimeConfigScript);
+      if (!html.includes("__DEV_SITE_CONFIG__")) {
+        // Fresh per response — a CSP nonce reused across responses defeats
+        // its own purpose (an attacker who gets one inline script injected
+        // could reuse the same nonce for their own).
+        const nonce = randomBytes(16).toString("base64");
+        const runtimeConfigScript = buildDevSiteRuntimeConfigScript(
+          { github_repo, repo_root },
+          nonce,
+        );
+        if (runtimeConfigScript) {
+          html = injectDevSiteRuntimeConfig(html, runtimeConfigScript);
+          allowNonceInResponseCsp(res, nonce);
+        }
       }
       res.type("html").send(html);
     };
