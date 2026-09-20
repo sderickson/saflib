@@ -6,6 +6,7 @@ import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse } from "msw";
 import RunView from "./RunView.vue";
 import { mountTestApp } from "../test-app.ts";
+import { router } from "../pages/test_router.ts";
 import * as runAlerts from "../run-alerts.ts";
 
 const ORIGIN = "http://localhost:3000";
@@ -60,21 +61,6 @@ const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId/logs`, () => HttpResponse.json({ logs: logsState })),
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: stepsState })),
 ];
-
-function emptyCommitDiff(overrides: Partial<Record<string, unknown>> = {}) {
-  return {
-    from_hash: "base",
-    to_hash: "preview",
-    package_metrics: { added: [], removed: [], changed: [] },
-    exports: { added: [], removed: [] },
-    test_cases: { added: [], removed: [] },
-    db_schemas: {
-      tables: { added: [], removed: [] },
-      columns: { added: [], removed: [], changed: [] },
-    },
-    ...overrides,
-  };
-}
 
 function mountRunView() {
   return mountTestApp(RunView, { props: { runId: "run-1" } });
@@ -550,82 +536,8 @@ describe("RunView", () => {
     });
   });
 
-  it("Preview changes fetches and shows the diff, plus a note for any skipped steps", async () => {
-    server.use(
-      http.get(`${ORIGIN}/api/workflow-runs/:runId/preview-diff`, () =>
-        HttpResponse.json({
-          commit_diff: emptyCommitDiff({
-            exports: {
-              added: [
-                {
-                  package_name: "@fixture/widget",
-                  file_path: "src/widget.ts",
-                  name: "widget",
-                  kind: "const",
-                  signature: null,
-                  docstring: null,
-                },
-              ],
-              removed: [],
-            },
-          }),
-          entries: [
-            { workflow_id: "example/hello", step_index: 0, kind: "copy", applied: true },
-            {
-              workflow_id: "example/hello",
-              step_index: 1,
-              kind: "update",
-              applied: false,
-              reason: "needs a real run",
-            },
-          ],
-        }),
-      ),
-    );
-
-    const wrapper = mountRunView();
-    await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("starting");
-    });
-
-    const previewButton = wrapper
-      .findAll("button")
-      .find((b) => b.text() === "Preview changes");
-    expect(previewButton).toBeTruthy();
-    await previewButton!.trigger("click");
-
-    // Vuetify's `v-dialog` teleports its content to `document.body`, outside
-    // `wrapper`'s own root element — assert against the real DOM instead.
-    await vi.waitFor(() => {
-      expect(document.body.textContent).toContain("widget");
-    });
-    expect(document.body.textContent).toContain("1 step(s) need a real run to preview");
-    expect(document.body.textContent).toContain("update (example/hello)");
-  });
-
-  it("Reflection fetches and shows the run's actual diff, noting when it's still in progress", async () => {
-    server.use(
-      http.get(`${ORIGIN}/api/workflow-runs/:runId/reflect-diff`, () =>
-        HttpResponse.json({
-          commit_diff: emptyCommitDiff({
-            exports: {
-              added: [
-                {
-                  package_name: "@fixture/widget",
-                  file_path: "src/widget.ts",
-                  name: "widget",
-                  kind: "const",
-                  signature: null,
-                  docstring: null,
-                },
-              ],
-              removed: [],
-            },
-          }),
-          is_final: false,
-        }),
-      ),
-    );
+  it("Reflection navigates to the Checkout compare view for this run's base_commit_hash", async () => {
+    runState = runFixture({ base_commit_hash: "abc123base" });
 
     const wrapper = mountRunView();
     await vi.waitFor(() => {
@@ -637,8 +549,20 @@ describe("RunView", () => {
     await reflectButton!.trigger("click");
 
     await vi.waitFor(() => {
-      expect(document.body.textContent).toContain("widget");
+      expect(router.currentRoute.value.path).toBe("/checkout");
     });
-    expect(document.body.textContent).toContain("isn't done yet");
+    expect(router.currentRoute.value.query.compare).toBe("abc123base");
+    expect(router.currentRoute.value.query.reflection).toBe("run-1");
+  });
+
+  it("has no Reflection button when the run never captured a base_commit_hash", async () => {
+    runState = runFixture({ base_commit_hash: null });
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    expect(wrapper.findAll("button").find((b) => b.text() === "Reflection")).toBeUndefined();
   });
 });

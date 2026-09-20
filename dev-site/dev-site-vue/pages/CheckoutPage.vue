@@ -1,5 +1,13 @@
 <template>
-  <div class="checkout-page">
+  <div class="checkout-page" :class="{ 'checkout-page--reflection-sheet': isReflectionSheet }">
+    <div v-if="isReflectionSheet" class="reflection-banner">
+      <v-icon icon="mdi-history" size="18" class="mr-2" />
+      <span class="reflection-banner__text">Reflection — what this workflow run actually changed</span>
+      <v-spacer />
+      <v-btn variant="text" size="small" prepend-icon="mdi-close" @click="closeReflectionSheet">
+        Close
+      </v-btn>
+    </div>
     <v-progress-linear v-if="isLoading" indeterminate class="checkout-progress" />
     <v-alert v-if="error" type="error" density="compact" class="ma-2">
       {{ error.message }}
@@ -399,6 +407,19 @@ const props = withDefaults(
 const route = useRoute();
 const router = useRouter();
 
+/**
+ * Arrived here via a workflow run's "Reflection" button (see
+ * `RunView.vue`'s `openReflection`) rather than the normal Checkout nav —
+ * shown as a full-screen sheet (see this component's own
+ * `--reflection-sheet` styling) with a banner explaining what's being
+ * shown and a way back, instead of just looking like ordinary browsing.
+ */
+const isReflectionSheet = computed(() => Boolean(route.query.reflection));
+
+function closeReflectionSheet() {
+  router.back();
+}
+
 const docsPane = ref<{ openDoc: (path: string) => void } | null>(null);
 
 const compare_ref = computed(() => {
@@ -781,6 +802,39 @@ const formatDateTime = (dateTimeString: string): string => {
   height: 100%;
   min-height: 0;
   overflow: hidden;
+}
+/* Covers the whole viewport (app bar included) rather than just the
+   in-flow page area, and plays a one-time slide-up-from-bottom animation
+   on mount — a plain CSS `animation` rather than a Vue <Transition> (which
+   would need App.vue's own router-view restructured to key on this) —
+   good enough for "coming in"; closing is an ordinary back-navigation
+   with no matching exit animation. */
+.checkout-page--reflection-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgb(var(--v-theme-surface));
+  animation: reflection-sheet-slide-up 0.25s ease-out;
+}
+@keyframes reflection-sheet-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.reflection-banner {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(var(--v-theme-primary), 0.08);
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  font-size: 0.85rem;
+}
+.reflection-banner__text {
+  font-weight: 500;
 }
 .checkout-progress {
   flex: 0 0 auto;

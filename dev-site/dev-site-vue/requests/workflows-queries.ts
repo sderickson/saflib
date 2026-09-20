@@ -1,15 +1,13 @@
-import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import type { MaybeRefOrGetter } from "vue";
-import { computed, toValue } from "vue";
+import { toValue } from "vue";
 import createClient from "openapi-fetch";
 import type {
   paths,
   NewWorkflowsResponseBody,
   NewWorkflowsRequestBody,
 } from "@saflib/new-workflows-spec";
-import type { DevSiteResponseBody } from "@saflib/dev-site-spec";
 import { TanstackError, handleClientMethod } from "@saflib/sdk";
-import { createDevSiteClient } from "./queries.ts";
 
 /**
  * Same-origin — the workflows API is mounted into dev-site-http itself.
@@ -80,32 +78,6 @@ export function useWorkflowRunsQuery(id: MaybeRefOrGetter<string | undefined>) {
         client.GET("/api/workflows/{id}/runs", { params: { path: { id: toValue(id)! } } }),
       ),
   });
-}
-
-/**
- * Each file's most recent run id, in the same order as `filePaths()` —
- * for chaining a preview onto earlier phases (see `PlansPage.vue`, which
- * is the only thing that knows "sibling plan files in this folder").
- * `undefined` entries mean that file has never been run.
- */
-export function useSiblingMostRecentRunIds(filePaths: () => string[]) {
-  const client = createWorkflowsClient();
-  const results = useQueries({
-    queries: () =>
-      filePaths().map((id) => ({
-        queryKey: ["new-workflows", "workflow-runs", id],
-        queryFn: () =>
-          handleClientMethod(
-            client.GET("/api/workflows/{id}/runs", { params: { path: { id } } }),
-          ),
-      })),
-  });
-  return computed(() =>
-    results.value.map(
-      (r) => (r.data as NewWorkflowsResponseBody["listWorkflowRuns"][200] | undefined)?.runs[0]
-        ?.id,
-    ),
-  );
 }
 
 export function useWorkflowRunQuery(runId: MaybeRefOrGetter<string | undefined>) {
@@ -233,88 +205,3 @@ export function useCancelWorkflowRunMutation() {
   });
 }
 
-export interface PreviewWorkflowRunDiffVariables {
-  runId: string;
-  /** Other run ids, earliest first — see `previewRunDiff`'s doc comment (dev-site-http). */
-  baseRunIds?: string[];
-}
-
-/**
- * Computes what the run's workflow would change, as a diff against the
- * repo's current commit (or, via `baseRunIds`, chained onto other runs'
- * own hypothetical results) — see `preview-diff.ts` (dev-site-http). A
- * mutation, not a query: triggered on demand (a button click), and each
- * call does real (if cheap, dangling-object) git work server-side, so it
- * shouldn't run automatically or get silently refetched.
- */
-export function usePreviewWorkflowRunDiffMutation() {
-  const client = createDevSiteClient("");
-  return useMutation<
-    DevSiteResponseBody["previewWorkflowRunDiff"][200],
-    TanstackError,
-    PreviewWorkflowRunDiffVariables
-  >({
-    mutationFn: ({ runId, baseRunIds }) =>
-      handleClientMethod(
-        client.GET("/api/workflow-runs/{runId}/preview-diff", {
-          params: {
-            path: { runId },
-            query: baseRunIds?.length ? { baseRunId: baseRunIds } : undefined,
-          },
-        }),
-      ),
-  });
-}
-
-export interface PreviewWorkflowDiffVariables {
-  /** A registered workflow's id, or a plan file's path. */
-  id: string;
-  input?: Record<string, unknown>;
-  /** Defaults server-side to the repo root, same as a real run's would. */
-  cwd?: string;
-  /** Other run ids, earliest first — see `previewWorkflowDiff`'s doc comment (dev-site-http). */
-  baseRunIds?: string[];
-}
-
-/**
- * Same as {@link usePreviewWorkflowRunDiffMutation}, but for a workflow
- * that's never been run at all — no run needs to exist first. See
- * `preview-workflow-diff.ts` (dev-site-http).
- */
-export function usePreviewWorkflowDiffMutation() {
-  const client = createDevSiteClient("");
-  return useMutation<
-    DevSiteResponseBody["previewWorkflowDiff"][200],
-    TanstackError,
-    PreviewWorkflowDiffVariables
-  >({
-    mutationFn: ({ id, input, cwd, baseRunIds }) =>
-      handleClientMethod(
-        client.POST("/api/workflows/{id}/preview-diff", {
-          params: { path: { id } },
-          body: { input, cwd, baseRunIds },
-        }),
-      ),
-  });
-}
-
-/**
- * A run's actual diff (`base_commit_hash` → `completion_hash`, or live
- * HEAD if not done yet — see `is_final` on the result) — see
- * `reflect-diff.ts` (dev-site-http).
- */
-export function useReflectWorkflowRunDiffMutation() {
-  const client = createDevSiteClient("");
-  return useMutation<
-    DevSiteResponseBody["reflectWorkflowRunDiff"][200],
-    TanstackError,
-    string
-  >({
-    mutationFn: (runId) =>
-      handleClientMethod(
-        client.GET("/api/workflow-runs/{runId}/reflect-diff", {
-          params: { path: { runId } },
-        }),
-      ),
-  });
-}

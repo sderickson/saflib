@@ -17,7 +17,6 @@ import { createScanRouter } from "./routes/scan/index.ts";
 import { createCheckoutRouter } from "./routes/checkout/index.ts";
 import { createRepoRouter } from "./routes/repo/index.ts";
 import { createWorkflowsRouter } from "./routes/workflows/index.ts";
-import { createWorkflowRunsRouter } from "./routes/workflow-runs/index.ts";
 // END WORKFLOW AREA
 
 export type HttpRouterMount = {
@@ -116,12 +115,6 @@ function defaultRouterMounts(): HttpRouterMount[] {
     { kind: "router", createRouter: createScanRouter },
     { kind: "router", createRouter: createCheckoutRouter },
     { kind: "router", createRouter: createRepoRouter },
-    // Before `createWorkflowsRouter`: that one mounts the whole
-    // `new-workflows-http` router, which ends in its own catch-all
-    // `[notFoundHandler, errorHandler]` for any unmatched `/api/*` path —
-    // mounted first, it would 404 these routes itself before Express ever
-    // reaches this router's own (later, more specific) handlers.
-    { kind: "router", createRouter: createWorkflowRunsRouter },
     { kind: "router", createRouter: createWorkflowsRouter },
     // END WORKFLOW AREA
   ];

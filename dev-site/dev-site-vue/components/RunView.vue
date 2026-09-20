@@ -130,17 +130,9 @@
             />
           </v-btn-group>
           <v-btn
+            v-if="run?.base_commit_hash"
             variant="tonal"
             class="ml-3"
-            :loading="previewMutation.isPending.value"
-            @click="openPreview()"
-          >
-            Preview changes
-          </v-btn>
-          <v-btn
-            variant="tonal"
-            class="ml-2"
-            :loading="reflectMutation.isPending.value"
             @click="openReflection()"
           >
             Reflection
@@ -175,65 +167,24 @@
         </div>
       </div>
     </footer>
-
-    <PreviewDiffDialog
-      v-model="previewDialogOpen"
-      :is-pending="previewMutation.isPending.value"
-      :is-error="previewMutation.isError.value"
-      :error="previewMutation.error.value"
-      :data="previewMutation.data.value"
-      :base-run-ids="baseRunIds"
-    />
-
-    <v-dialog v-model="reflectionDialogOpen" max-width="900">
-      <v-card>
-        <v-card-title>Reflection</v-card-title>
-        <v-card-text>
-          <v-progress-linear v-if="reflectMutation.isPending.value" indeterminate class="mb-4" />
-          <v-alert v-if="reflectMutation.isError.value" type="error" class="mb-4">
-            {{ reflectMutation.error.value?.message }}
-          </v-alert>
-          <template v-if="reflectMutation.data.value">
-            <v-alert
-              v-if="!reflectMutation.data.value.is_final"
-              type="info"
-              variant="tonal"
-              density="compact"
-              class="mb-4"
-            >
-              This run isn't done yet — showing progress so far (against the repo's current
-              state), not a settled reflection.
-            </v-alert>
-            <CommitDiffView :diff="reflectMutation.data.value.commit_diff" />
-          </template>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="reflectionDialogOpen = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import {
   useWorkflowRunQuery,
   useWorkflowRunLogsQuery,
   useWorkflowRunStepsQuery,
   useAdvanceWorkflowRunMutation,
   useCancelWorkflowRunMutation,
-  usePreviewWorkflowRunDiffMutation,
-  useReflectWorkflowRunDiffMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import { runStatusVisual, type RunStatusVisual } from "../run-status-visual.ts";
 import LogEntry from "./LogEntry.vue";
 import LogEntryGroup from "./LogEntryGroup.vue";
 import ToolCallCard from "./ToolCallCard.vue";
-import CommitDiffView from "./CommitDiffView.vue";
-import PreviewDiffDialog from "./PreviewDiffDialog.vue";
 import { groupLogs, type LogItem } from "../group-logs.ts";
 import {
   unlockAudio,
@@ -247,18 +198,9 @@ import {
   toggleMuted,
 } from "../run-alerts.ts";
 
-const props = defineProps<{
-  runId: string;
-  /**
-   * Other runs (e.g. earlier phases in the same plan folder), earliest
-   * first, to chain a preview onto — see `usePreviewWorkflowRunDiffMutation`'s
-   * own doc comment. Optional: the caller (`PlansPage`) decides whether/how
-   * to compute this; `RunView` itself has no notion of "sibling plans".
-   */
-  baseRunIds?: string[];
-}>();
+const props = defineProps<{ runId: string }>();
 const runId = computed(() => props.runId);
-const baseRunIds = computed(() => props.baseRunIds ?? []);
+const router = useRouter();
 
 const runQuery = useWorkflowRunQuery(runId);
 const run = computed(() => runQuery.data.value?.run);
@@ -274,20 +216,28 @@ const advanceMutation = useAdvanceWorkflowRunMutation();
 const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
 
-const previewMutation = usePreviewWorkflowRunDiffMutation();
-const previewDialogOpen = ref(false);
-
-function openPreview() {
-  previewDialogOpen.value = true;
-  previewMutation.mutate({ runId: runId.value, baseRunIds: baseRunIds.value });
-}
-
-const reflectMutation = useReflectWorkflowRunDiffMutation();
-const reflectionDialogOpen = ref(false);
-
+/**
+ * A run's actual effect: navigates to the real Checkout/compare page
+ * (`CheckoutPage.vue`), comparing against `base_commit_hash` — the same
+ * "compare against a ref" feature already used to view a branch's changes
+ * against main, just given a raw commit hash instead of a branch name
+ * (`resolveCompare` accepts either). `reflection=` marks this as arriving
+ * from a run so the checkout page can show a "back to the run" banner and
+ * the app can animate it in like a sheet — see `App.vue`'s route
+ * transition and `CheckoutPage.vue`'s own banner.
+ *
+ * Relies on the same assumption `base_commit_hash`/`completion_hash`
+ * already do: nothing else has committed to the repo since this run
+ * started. `checkout.hash` is always the repo's *live* HEAD (there's no
+ * way to pin it to this run's own `completion_hash`), so if unrelated
+ * work landed afterward, this shows more than the run actually changed.
+ */
 function openReflection() {
-  reflectionDialogOpen.value = true;
-  reflectMutation.mutate(runId.value);
+  if (!run.value?.base_commit_hash) return;
+  router.push({
+    path: "/checkout",
+    query: { compare: run.value.base_commit_hash, reflection: runId.value },
+  });
 }
 
 /**

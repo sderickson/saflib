@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse, type PathParams } from "msw";
@@ -97,6 +97,10 @@ describe("CheckoutPage compare query param", () => {
     ...packageAndRepoHandlers,
   ]);
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("offers Scan fork point when the merge-base is unscanned", async () => {
     await router.push({ path: "/checkout", query: { compare: "main" } });
     const wrapper = mountTestApp(CheckoutPage, {
@@ -113,6 +117,39 @@ describe("CheckoutPage compare query param", () => {
       .find((b) => b.text() === "Scan fork point");
     expect(scanBtn).toBeDefined();
     await scanBtn!.trigger("click");
+  });
+
+  it("shows a reflection banner and closes back via router.back() when arriving with ?reflection=", async () => {
+    await router.push({
+      path: "/checkout",
+      query: { compare: BASE, reflection: "run-1" },
+    });
+    const backSpy = vi.spyOn(router, "back").mockImplementation(() => {});
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Reflection");
+    });
+    expect(wrapper.find(".checkout-page--reflection-sheet").exists()).toBe(true);
+
+    const closeBtn = wrapper
+      .findAllComponents({ name: "v-btn" })
+      .find((b) => b.text() === "Close");
+    expect(closeBtn).toBeDefined();
+    await closeBtn!.trigger("click");
+    expect(backSpy).toHaveBeenCalled();
+  });
+
+  it("has no reflection banner for an ordinary compare (no ?reflection=)", async () => {
+    await router.push({ path: "/checkout", query: { compare: "main" } });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Scan fork point");
+    });
+    expect(wrapper.find(".checkout-page--reflection-sheet").exists()).toBe(false);
   });
 });
 
