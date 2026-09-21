@@ -5,6 +5,9 @@
       "path": "../../env"
     },
     {
+      "path": "../../node"
+    },
+    {
       "path": "../../secret-store"
     },
     {
