@@ -110,7 +110,7 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const continueButton = wrapper.find('[aria-label="Continue"]');
+    const continueButton = wrapper.find('[aria-label="Play current step"]');
     expect(continueButton.exists()).toBe(true);
     await continueButton.trigger("click");
 
@@ -142,7 +142,7 @@ describe("RunView", () => {
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("starting");
     });
-    const continueButton = wrapper.find('[aria-label="Continue"]');
+    const continueButton = wrapper.find('[aria-label="Play current step"]');
     await continueButton.trigger("click");
 
     let stopButton;
@@ -189,7 +189,7 @@ describe("RunView", () => {
     Object.defineProperty(el, "scrollTop", { value: 100, writable: true, configurable: true });
     el.dispatchEvent(new Event("scroll"));
 
-    const continueButton = wrapper.find('[aria-label="Continue"]');
+    const continueButton = wrapper.find('[aria-label="Play current step"]');
     await continueButton.trigger("click");
 
     await vi.waitFor(() => {
@@ -313,7 +313,7 @@ describe("RunView", () => {
     // The universal Play/Continue button stays enabled even while failed —
     // it's the same "just retry as-is" action a dedicated Retry button used
     // to be.
-    const continueButton = wrapper.find('[aria-label="Continue"]');
+    const continueButton = wrapper.find('[aria-label="Play current step"]');
     expect(continueButton.exists()).toBe(true);
     expect(continueButton.attributes("disabled")).toBeFalsy();
     const revertButton = wrapper.findAll("button").find((b) => b.text().includes("Revert"));
@@ -333,7 +333,7 @@ describe("RunView", () => {
     });
   });
 
-  it("auto-continue: turning it on immediately advances, and keeps chaining while each step succeeds", async () => {
+  it("Play current workflow (FF) kicks off immediately and keeps chaining while each step succeeds", async () => {
     let advanceCount = 0;
     server.use(
       http.post(`${ORIGIN}/api/runs/:runId/advance`, () => {
@@ -350,17 +350,16 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const autoButton = wrapper.find('[aria-label="Turn on auto-continue"]');
-    expect(autoButton.exists()).toBe(true);
-    await autoButton.trigger("click");
+    const ffButton = wrapper.find('[aria-label="Play current workflow"]');
+    expect(ffButton.exists()).toBe(true);
+    await ffButton.trigger("click");
 
     await vi.waitFor(() => {
-      expect(wrapper.find('[aria-label="Turn off auto-continue"]').exists()).toBe(true);
       expect(advanceCount).toBe(3);
     });
   });
 
-  it("auto-continue: turning it off mid-turn lets the current step finish but doesn't chain another", async () => {
+  it("Stop force-cancels a chain in flight, and it doesn't resume afterward", async () => {
     let advanceCount = 0;
     let resolveFirst!: () => void;
     const firstCallStarted = new Promise<void>((resolve) => {
@@ -371,11 +370,12 @@ describe("RunView", () => {
         advanceCount++;
         if (advanceCount === 1) {
           resolveFirst();
-          // Hold the first call open until the test turns auto-continue off.
+          // Hold the first call open until the test cancels it.
           await new Promise((r) => setTimeout(r, 20));
         }
         return HttpResponse.json({ status: "success", result: {} });
       }),
+      http.post(`${ORIGIN}/api/runs/:runId/cancel`, () => HttpResponse.json({ cancelled: true })),
     );
 
     const wrapper = mountRunView();
@@ -383,14 +383,11 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    await wrapper.find('[aria-label="Turn on auto-continue"]').trigger("click");
+    await wrapper.find('[aria-label="Play current workflow"]').trigger("click");
     await firstCallStarted;
-    // Toggle off while the first call is still in flight.
-    await wrapper.find('[aria-label="Turn off auto-continue"]').trigger("click");
+    // Force-stop while the first call is still in flight.
+    await wrapper.find('[aria-label="Stop"]').trigger("click");
 
-    await vi.waitFor(() => {
-      expect(wrapper.find('[aria-label="Turn on auto-continue"]').exists()).toBe(true);
-    });
     // Give any (wrongly) chained call a chance to fire before asserting none did.
     await new Promise((r) => setTimeout(r, 50));
     expect(advanceCount).toBe(1);
@@ -411,7 +408,7 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const continueButton = wrapper.find('[aria-label="Continue"]');
+    const continueButton = wrapper.find('[aria-label="Play current step"]');
     await continueButton.trigger("click");
 
     await vi.waitFor(() => {
@@ -436,7 +433,7 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const continueButton = wrapper.find('[aria-label="Continue"]');
+    const continueButton = wrapper.find('[aria-label="Play current step"]');
     await continueButton.trigger("click");
 
     await vi.waitFor(() => {
@@ -525,7 +522,7 @@ describe("RunView", () => {
     // is actually in progress, and the Play/Continue button must be
     // disabled while it's genuinely running server-side.
     expect(wrapper.text()).not.toContain("Skip Step");
-    expect(wrapper.find('[aria-label="Continue"]').attributes("disabled")).not.toBeUndefined();
+    expect(wrapper.find('[aria-label="Play current step"]').attributes("disabled")).not.toBeUndefined();
 
     const stopButton = wrapper.find('[aria-label="Stop"]');
     expect(stopButton.exists()).toBe(true);

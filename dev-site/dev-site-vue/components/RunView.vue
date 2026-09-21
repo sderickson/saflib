@@ -108,25 +108,35 @@
           <v-btn-group density="comfortable" variant="tonal" divided>
             <v-btn
               icon="mdi-stop"
-              :disabled="!isAdvancing"
+              :color="autoMode === 'stop' ? 'primary' : undefined"
               :loading="cancelMutation.isPending.value"
-              :aria-label="'Stop'"
+              aria-label="Stop"
               title="Stop"
-              @click="cancelMutation.mutate(runId)"
+              @click="selectStop()"
             />
             <v-btn
               icon="mdi-play"
               :disabled="isAdvancing || run?.status === 'done'"
-              :aria-label="'Continue'"
-              title="Continue"
-              @click="continueRun()"
+              :color="autoMode === 'step' ? 'primary' : undefined"
+              aria-label="Play current step"
+              title="Play current step"
+              @click="selectStep()"
             />
             <v-btn
-              icon="mdi-repeat"
-              :color="autoContinue ? 'primary' : undefined"
-              :aria-label="autoContinue ? 'Turn off auto-continue' : 'Turn on auto-continue'"
-              :title="autoContinue ? 'Auto-continue: On' : 'Auto-continue: Off'"
-              @click="toggleAutoContinue()"
+              icon="mdi-fast-forward"
+              :disabled="isAdvancing || run?.status === 'done'"
+              :color="autoMode === 'workflow' ? 'primary' : undefined"
+              aria-label="Play current workflow"
+              title="Play current workflow"
+              @click="selectWorkflow()"
+            />
+            <v-btn
+              icon="mdi-chevron-triple-right"
+              :disabled="isAdvancing || run?.status === 'done'"
+              :color="autoMode === 'plan' ? 'primary' : undefined"
+              aria-label="Play current plan"
+              title="Play current plan"
+              @click="selectPlan()"
             />
           </v-btn-group>
           <v-btn
@@ -198,7 +208,21 @@ import {
   toggleMuted,
 } from "../run-alerts.ts";
 
-const props = defineProps<{ runId: string }>();
+const props = defineProps<{
+  runId: string;
+  /**
+   * Start already in "plan" mode and immediately begin advancing — set by
+   * `PlansPage.vue` when it navigates here as the next step of a
+   * plan-mode cascade (see `selectPlan`'s own doc comment). Read once, on
+   * mount; `PlansPage` keys this component by run id so a new cascade
+   * step is always a fresh instance, not a prop update on a reused one.
+   */
+  startInPlanMode?: boolean;
+}>();
+const emit = defineEmits<{
+  /** Fired when this run finishes on its own while in "plan" mode — see `selectPlan`. */
+  "plan-run-done": [];
+}>();
 const runId = computed(() => props.runId);
 const router = useRouter();
 
@@ -312,18 +336,67 @@ const canAutoAdvance = computed(
 );
 
 /**
- * On/off, flippable at any time — including mid-turn, per the ask. Turning
- * it off doesn't cancel anything in flight; the in-progress step (if any)
- * still runs to completion, and the chain below just doesn't get extended
- * after it. Turning it on kicks off a chain immediately if nothing's
- * currently running and the run's in an advance-able state.
+ * The VCR-style playback mode, one of four (radio-style — exactly one
+ * active), switched by clicking the corresponding button:
+ * - `stop`: idle; clicking Stop while a step is in flight also cancels it.
+ * - `step`: manual, one step per click (today's plain "Continue"/Play).
+ * - `workflow`: auto-continue through this run's own remaining steps
+ *   (stops on its own once the run reaches a terminal state).
+ * - `plan`: same auto-continue, plus once *this* run reaches `done`,
+ *   automatically starts the next plan file (alphabetically, in the same
+ *   folder) in `plan` mode too — see `selectPlan` and the `plan-run-done`
+ *   emit `PlansPage.vue` listens for.
+ *
+ * Not reset automatically when a chain stops (on failure, or naturally on
+ * `done`) — it stays as a record of what was last requested, same as a
+ * real VCR's mode indicator doesn't un-press itself when the tape runs out.
  */
-const autoContinue = ref(false);
+const autoMode = ref<"stop" | "step" | "workflow" | "plan">("stop");
 
-function toggleAutoContinue() {
-  autoContinue.value = !autoContinue.value;
-  if (autoContinue.value && !isAdvancing.value && canAutoAdvance.value) {
+function selectStop() {
+  autoMode.value = "stop";
+  if (isAdvancing.value) {
+    cancelMutation.mutate(runId.value);
+  }
+}
+
+function selectStep() {
+  autoMode.value = "step";
+  if (!isAdvancing.value && run.value?.status !== "done") {
     continueRun();
+  }
+}
+
+/** Auto-continue deliberately never *kicks off* from a `failed` run: see `canAutoAdvance`. */
+function selectWorkflow() {
+  autoMode.value = "workflow";
+  if (!isAdvancing.value && canAutoAdvance.value) {
+    continueRun();
+  }
+}
+
+/**
+ * Same kick-off as `selectWorkflow` — the plan-folder cascade itself
+ * happens later, in the status watcher below (once this run reaches
+ * `done`) and in `PlansPage.vue` (which owns "what's the next file").
+ */
+function selectPlan() {
+  autoMode.value = "plan";
+  if (!isAdvancing.value && canAutoAdvance.value) {
+    continueRun();
+  }
+}
+
+// `run` isn't loaded yet at setup time — `canAutoAdvance`/`selectPlan`'s
+// kick-off both depend on it, so wait for the first real value rather
+// than calling `selectPlan()` here directly (which would see `run.value
+// === undefined` and silently no-op).
+if (props.startInPlanMode) {
+  if (run.value) {
+    // Already cached (e.g. a query revisit) — no "change" would ever fire below.
+    selectPlan();
+  } else {
+    watch(run, (r) => { if (r) selectPlan(); }, { once: true });
   }
 }
 
@@ -359,7 +432,7 @@ watch(
   () => advanceMutation.isPending.value,
   (pending, wasPending) => {
     if (!wasPending || pending) return;
-    if (!autoContinue.value) return;
+    if (autoMode.value !== "workflow" && autoMode.value !== "plan") return;
     const outcome = advanceMutation.data.value as { status?: string } | undefined;
     if (outcome?.status === "success") {
       continueRun();
@@ -488,6 +561,9 @@ watch(
     if (status === "done") {
       playSuccessBell();
       notify("Workflow finished", `Run ${runId.value} completed successfully.`);
+      if (autoMode.value === "plan") {
+        emit("plan-run-done");
+      }
     } else if (status === "failed") {
       playFailureQuack();
       notify("Workflow failed", failureMessage.value);

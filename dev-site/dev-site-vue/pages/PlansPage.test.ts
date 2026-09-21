@@ -173,7 +173,7 @@ describe("PlansPage", () => {
     // inline via the same workflow-runs query, still on the same URL.
     await vi.waitFor(() => {
       expect(wrapper.text()).not.toContain("hasn't been run yet");
-      expect(wrapper.find('[aria-label="Continue"]').exists()).toBe(true);
+      expect(wrapper.find('[aria-label="Play current step"]').exists()).toBe(true);
     });
     expect(router.currentRoute.value.path).toBe(
       "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml",
@@ -196,6 +196,54 @@ describe("PlansPage", () => {
     expect(wrapper.text()).not.toContain("hasn't been run yet");
     // The most recent run (run-2, "done") is shown, not the older run-1.
     expect(wrapper.text()).not.toContain("Open run");
+  });
+
+  it("Play current plan cascades to the next phase file once this run finishes", async () => {
+    const PHASE_2_PATH = "test-product/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml";
+    runsStateByFile[PHASE_1_PATH] = [runFixture()];
+    runsById["run-1"] = runFixture();
+
+    server.use(
+      // Every run here is a single (mocked) step: the first advance call
+      // transitions it to "done" (a step "success"); like the real engine,
+      // any *further* advance on an already-done run reports "done"
+      // itself (no more steps) rather than "success" again — otherwise
+      // the chain watcher's "keep going while success" loop never stops.
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, ({ params }) => {
+        const id = params.runId as string;
+        const current = runsById[id] as { status?: string } | undefined;
+        if (current?.status === "done") {
+          return HttpResponse.json({ status: "done" });
+        }
+        runsById[id] = runFixture({ ...current, status: "done" });
+        return HttpResponse.json({ status: "success", result: {} });
+      }),
+      http.post(`${ORIGIN}/api/workflows/:id/runs`, ({ params }) => {
+        expect(decodeURIComponent(params.id as string)).toBe(PHASE_2_PATH);
+        const run2 = runFixture({ id: "run-2", workflow_ref: PHASE_2_PATH });
+        runsStateByFile[PHASE_2_PATH] = [run2];
+        runsById["run-2"] = run2;
+        return HttpResponse.json({ run: run2 }, { status: 201 });
+      }),
+    );
+
+    await router.push({ path: "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml" });
+    const wrapper = mountTestApp(PlansPage);
+
+    const superFfButton = await vi.waitFor(() => {
+      const btn = wrapper.find('[aria-label="Play current plan"]');
+      expect(btn.exists()).toBe(true);
+      return btn;
+    });
+    await superFfButton.trigger("click");
+
+    // Phase 1's run finishes on its own; the plan cascade should create
+    // and navigate to phase 2's run, without any further clicks.
+    await vi.waitFor(() => {
+      expect(router.currentRoute.value.path).toBe(
+        "/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml",
+      );
+    });
   });
 
   it("arriving with ?workflow=&cwd= switches to the Save-as-plan form", async () => {

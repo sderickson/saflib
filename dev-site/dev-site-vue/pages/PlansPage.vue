@@ -94,8 +94,11 @@
               <v-progress-linear v-if="runsQuery.isLoading.value" indeterminate class="ma-4" />
               <RunView
                 v-else-if="mostRecentRun"
+                :key="mostRecentRun.id"
                 :run-id="mostRecentRun.id"
+                :start-in-plan-mode="pendingPlanCascadeRunId === mostRecentRun.id"
                 class="plans-page__run-view"
+                @plan-run-done="onPlanRunDone"
               />
               <div v-else class="plans-page__run-start">
                 <p class="text-body-2 text-medium-emphasis mb-3">
@@ -125,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watchEffect } from "vue";
+import { computed, nextTick, reactive, ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import type { WorkflowInputSchema } from "@saflib/new-workflows";
 import {
@@ -300,6 +303,49 @@ function startWorkflow() {
   // No navigation needed — creating a run invalidates this same
   // `workflow-runs` query, so `mostRecentRun` above picks it up and
   // `RunView` renders automatically.
+}
+
+// --- "Play current plan" cascade (see RunView.vue's `selectPlan`): once a
+// plan-mode run finishes on its own, start the next workflow file
+// alphabetically in the same folder, fresh (not resuming some earlier
+// attempt) — matches "run the whole plan front to back" intent. Ends
+// silently when there's no next workflow file left. ---
+const nextPlanFile = computed<PlanFileEntry | undefined>(() => {
+  const group = planGroups.value.find((g) => g.folder === planName_.value);
+  if (!group) return undefined;
+  const currentName = fileName.value ?? "";
+  // `group.files` is already sorted ascending (see `planGroups`).
+  return group.files.find(
+    (f) => f.name > currentName && fileKindOf(f.name) === "workflow",
+  );
+});
+
+/** Set right after creating the cascade's next run, so its (freshly-mounted) RunView starts in plan mode. */
+const pendingPlanCascadeRunId = ref<string>();
+
+function onPlanRunDone() {
+  const next = nextPlanFile.value;
+  const folder = planName_.value;
+  if (!next || !folder) return;
+  createRunMutation.mutate(
+    {
+      id: next.path,
+      body: { input: {}, mode: "run", agentConfig: { cli: "claude-agent" } },
+    },
+    {
+      onSuccess: async (data) => {
+        pendingPlanCascadeRunId.value = data.run.id;
+        await router.push(planFileHref(folder, next.name));
+        // One-shot: the new file's RunView (keyed by run id, so this is a
+        // fresh mount) reads `startInPlanMode` right when it mounts —
+        // clearing this afterward means revisiting that same run later
+        // (once it's no longer "just cascaded to") won't silently
+        // re-enter plan mode on its own.
+        await nextTick();
+        pendingPlanCascadeRunId.value = undefined;
+      },
+    },
+  );
 }
 </script>
 

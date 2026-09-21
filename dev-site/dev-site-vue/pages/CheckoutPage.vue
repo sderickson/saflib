@@ -346,7 +346,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   useCheckout,
@@ -761,6 +761,36 @@ const scanForkPoint = () => {
   if (!hash) return;
   scan({ commit_hash: hash }, { onSuccess: () => refetch() });
 };
+
+// Arriving via a workflow run's "Reflection" button, there's no reason to
+// make the person hunt for (and click) two separate "Scan" buttons before
+// they can see anything — scan HEAD first, then (once that refetch lands
+// and `checkout.value` updates, re-running this effect) the fork point,
+// same two calls "Scan this commit"/"Scan fork point" already make
+// manually. Ordinary Checkout browsing is untouched — scanning stays an
+// explicit action there.
+//
+// Each side is attempted at most once (`attemptedHeadScan`/
+// `attemptedForkScan`): a scan can fail for real (a bad ref, a git error),
+// and without this guard a failed attempt would look identical to "just
+// hasn't happened yet" — `analyzed` still false, `isScanning` back to
+// false once it settles — and this effect would retry it forever.
+const attemptedHeadScan = ref(false);
+const attemptedForkScan = ref(false);
+watchEffect(() => {
+  if (!isReflectionSheet.value || isScanning.value) return;
+  const c = checkout.value;
+  if (!c) return;
+  if (!c.analyzed) {
+    if (attemptedHeadScan.value) return;
+    attemptedHeadScan.value = true;
+    scanThisCommit();
+  } else if (compareMode.value && c.compare && !c.compare.merge_base_analyzed) {
+    if (attemptedForkScan.value) return;
+    attemptedForkScan.value = true;
+    scanForkPoint();
+  }
+});
 
 const toggleCompare = (on: unknown) => {
   if (!on) {

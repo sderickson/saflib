@@ -153,6 +153,60 @@ describe("CheckoutPage compare query param", () => {
   });
 });
 
+describe("CheckoutPage reflection auto-scan", () => {
+  stubGlobals();
+  let mergeBaseAnalyzed = false;
+  let scannedHashes: string[] = [];
+
+  setupMockServer([
+    http.get<PathParams, never, CheckoutResponse>(
+      "http://test.localhost:3000/api/checkout",
+      () =>
+        HttpResponse.json(
+          checkoutFixture({
+            compare: {
+              against_ref: "main",
+              merge_base_hash: BASE,
+              merge_base_analyzed: mergeBaseAnalyzed,
+              merge_base_message: "fork parent",
+              merge_base_authored_at: "2026-01-01T00:00:00.000Z",
+              renames: [],
+            },
+          }),
+        ),
+    ),
+    http.post<PathParams, { commit_hash?: string }, ScanResponse>(
+      "http://test.localhost:3000/api/scan",
+      async ({ request }) => {
+        const body = (await request.json()) as { commit_hash?: string };
+        scannedHashes.push(body.commit_hash!);
+        if (body.commit_hash === BASE) mergeBaseAnalyzed = true;
+        return HttpResponse.json({ scanned: [body.commit_hash!], skipped: [], failed: [] });
+      },
+    ),
+    ...packageAndRepoHandlers,
+  ]);
+
+  it("scans the fork point automatically when arriving via ?reflection=, no manual click needed", async () => {
+    await router.push({
+      path: "/checkout",
+      query: { compare: BASE, reflection: "run-1" },
+    });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+
+    await vi.waitFor(() => {
+      expect(scannedHashes).toContain(BASE);
+    });
+    // Once the auto-scan's refetch lands, the merge base is analyzed and
+    // the manual "Scan fork point" prompt goes away on its own.
+    await vi.waitFor(() => {
+      expect(wrapper.text()).not.toContain("Scan fork point");
+    });
+  });
+});
+
 describe("CheckoutPage compare package tree", () => {
   stubGlobals();
   setupMockServer([
