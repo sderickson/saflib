@@ -71,4 +71,5 @@ export {
   type PreviewResult,
   type PreviewStepEntry,
   type PreviewRunOptions,
+  type PreviewFileChange,
 } from "./preview/preview-run.ts";

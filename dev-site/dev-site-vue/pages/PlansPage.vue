@@ -123,14 +123,23 @@
                 <p v-if="createRunMutation.isError.value" class="text-error mt-2">
                   {{ createRunMutation.error.value?.message }}
                 </p>
-                <PreviewDiffDialog
-                  v-model="unstartedPreviewDialogOpen"
-                  :is-pending="unstartedPreviewMutation.isPending.value"
-                  :is-error="unstartedPreviewMutation.isError.value"
-                  :error="unstartedPreviewMutation.error.value"
-                  :data="unstartedPreviewMutation.data.value"
-                  :base-run-ids="earlierPhaseRunIds"
-                />
+                <v-card v-if="unstartedPreviewShown" variant="outlined" class="mt-3">
+                  <v-card-title class="text-body-1">Preview changes</v-card-title>
+                  <v-card-text>
+                    <v-progress-linear
+                      v-if="unstartedPreviewMutation.isPending.value"
+                      indeterminate
+                      class="mb-4"
+                    />
+                    <v-alert v-if="unstartedPreviewMutation.isError.value" type="error" class="mb-4">
+                      {{ unstartedPreviewMutation.error.value?.message }}
+                    </v-alert>
+                    <PreviewFileTree
+                      v-if="unstartedPreviewMutation.data.value"
+                      :files="unstartedPreviewFiles"
+                    />
+                  </v-card-text>
+                </v-card>
               </div>
             </template>
             <template v-else>
@@ -161,7 +170,8 @@ import ResizableColumns from "../components/ResizableColumns.vue";
 import PlanFileContent from "../components/PlanFileContent.vue";
 import PlanNavIcon from "../components/PlanNavIcon.vue";
 import RunView from "../components/RunView.vue";
-import PreviewDiffDialog from "../components/PreviewDiffDialog.vue";
+import PreviewFileTree from "../components/PreviewFileTree.vue";
+import type { PreviewFile } from "../preview-file-tree.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -349,10 +359,13 @@ function startWorkflow() {
 // /workflows/{id}/preview-diff`) instead of an existing run, since one
 // doesn't exist yet here. ---
 const unstartedPreviewMutation = usePreviewWorkflowDiffMutation();
-const unstartedPreviewDialogOpen = ref(false);
+const unstartedPreviewShown = ref(false);
+const unstartedPreviewFiles = computed<PreviewFile[]>(() =>
+  (unstartedPreviewMutation.data.value?.entries ?? []).flatMap((e) => e.files ?? []),
+);
 function openUnstartedPreview() {
   if (!selectedFilePath.value) return;
-  unstartedPreviewDialogOpen.value = true;
+  unstartedPreviewShown.value = true;
   unstartedPreviewMutation.mutate({
     id: selectedFilePath.value,
     baseRunIds: earlierPhaseRunIds.value,

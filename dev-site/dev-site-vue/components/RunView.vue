@@ -38,7 +38,14 @@
         </div>
       </aside>
 
-      <div ref="logContainer" class="run-view__logs" @scroll="onScroll">
+      <div v-if="viewMode === 'preview'" class="run-view__logs">
+        <v-progress-linear v-if="previewMutation.isPending.value" indeterminate class="mb-4" />
+        <v-alert v-if="previewMutation.isError.value" type="error" class="mb-4">
+          {{ previewMutation.error.value?.message }}
+        </v-alert>
+        <PreviewFileTree v-if="previewMutation.data.value" :files="previewFiles" />
+      </div>
+      <div v-else ref="logContainer" class="run-view__logs" @scroll="onScroll">
         <template v-for="item in logItems" :key="itemKey(item)">
           <div
             class="run-view__log-item"
@@ -143,9 +150,9 @@
             variant="tonal"
             class="ml-3"
             :loading="previewMutation.isPending.value"
-            @click="openPreview()"
+            @click="togglePreview()"
           >
-            Preview changes
+            {{ viewMode === "preview" ? "Back to log" : "Preview changes" }}
           </v-btn>
           <v-btn
             v-if="run?.base_commit_hash"
@@ -185,15 +192,6 @@
         </div>
       </div>
     </footer>
-
-    <PreviewDiffDialog
-      v-model="previewDialogOpen"
-      :is-pending="previewMutation.isPending.value"
-      :is-error="previewMutation.isError.value"
-      :error="previewMutation.error.value"
-      :data="previewMutation.data.value"
-      :base-run-ids="baseRunIds"
-    />
   </div>
 </template>
 
@@ -213,7 +211,8 @@ import { runStatusVisual, type RunStatusVisual } from "../run-status-visual.ts";
 import LogEntry from "./LogEntry.vue";
 import LogEntryGroup from "./LogEntryGroup.vue";
 import ToolCallCard from "./ToolCallCard.vue";
-import PreviewDiffDialog from "./PreviewDiffDialog.vue";
+import PreviewFileTree from "./PreviewFileTree.vue";
+import type { PreviewFile } from "../preview-file-tree.ts";
 import { groupLogs, type LogItem } from "../group-logs.ts";
 import {
   unlockAudio,
@@ -268,10 +267,17 @@ const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
 
 const previewMutation = usePreviewWorkflowRunDiffMutation();
-const previewDialogOpen = ref(false);
+const viewMode = ref<"logs" | "preview">("logs");
+const previewFiles = computed<PreviewFile[]>(() =>
+  (previewMutation.data.value?.entries ?? []).flatMap((e) => e.files ?? []),
+);
 
-function openPreview() {
-  previewDialogOpen.value = true;
+function togglePreview() {
+  if (viewMode.value === "preview") {
+    viewMode.value = "logs";
+    return;
+  }
+  viewMode.value = "preview";
   previewMutation.mutate({ runId: runId.value, baseRunIds: baseRunIds.value });
 }
 

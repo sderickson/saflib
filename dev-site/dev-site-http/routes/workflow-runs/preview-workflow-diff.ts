@@ -69,6 +69,7 @@ export const previewWorkflowDiffHandler = createHandler(async (req, res) => {
       kind: e.kind,
       applied: e.applied,
       reason: e.reason,
+      files: e.files,
     })),
   };
   res.status(200).json(response);

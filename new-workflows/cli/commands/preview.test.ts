@@ -78,8 +78,7 @@ describe("preview CLI command", () => {
 
     expect(process.exitCode).toBeUndefined();
     const output = logSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-    expect(output).toContain("Files that would be added:");
-    expect(output).toContain("widget.ts");
+    expect(output).toContain("+ widget.ts");
     expect(output).toContain("step(s) need a real run to preview");
 
     const tmpAfter = readdirSync(tmpdir()).filter((f) => f.startsWith("saflib-preview-"));

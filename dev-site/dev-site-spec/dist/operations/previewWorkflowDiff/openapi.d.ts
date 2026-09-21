@@ -230,6 +230,16 @@ export interface components {
              * @example needs a real run
              */
             reason?: string;
+            /** @description Only set for applied `copy`/`transform-file` steps — the files it wrote. */
+            files?: {
+                /** @description Repo-relative path. */
+                path: string;
+                /**
+                 * @description Whether this path existed in the running preview commit before this step ran.
+                 * @enum {string}
+                 */
+                status: "added" | "modified";
+            }[];
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */

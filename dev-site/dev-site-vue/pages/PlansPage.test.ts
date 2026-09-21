@@ -196,26 +196,22 @@ describe("PlansPage", () => {
             from_hash: "a",
             to_hash: "b",
             package_metrics: { added: [], removed: [], changed: [] },
-            exports: {
-              added: [
-                {
-                  package_name: "@fixture/todo",
-                  file_path: "schemas/todo.yaml",
-                  name: "todo",
-                  kind: "const",
-                  signature: null,
-                  docstring: null,
-                },
-              ],
-              removed: [],
-            },
+            exports: { added: [], removed: [] },
             test_cases: { added: [], removed: [] },
             db_schemas: {
               tables: { added: [], removed: [] },
               columns: { added: [], removed: [], changed: [] },
             },
           },
-          entries: [],
+          entries: [
+            {
+              workflow_id: PHASE_1_PATH,
+              step_index: 0,
+              kind: "copy",
+              applied: true,
+              files: [{ path: "schemas/todo.yaml", status: "added" }],
+            },
+          ],
         });
       }),
     );
@@ -231,7 +227,7 @@ describe("PlansPage", () => {
     await previewButton!.trigger("click");
 
     await vi.waitFor(() => {
-      expect(document.body.textContent).toContain("todo");
+      expect(wrapper.text()).toContain("todo.yaml");
     });
     expect(requestBody).toEqual({ input: undefined, cwd: undefined, baseRunIds: [] });
     expect(createdRun).toBe(false);

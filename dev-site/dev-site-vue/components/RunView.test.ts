@@ -548,27 +548,22 @@ describe("RunView", () => {
     });
   });
 
-  it("Preview changes fetches and shows the diff, plus a note for any skipped steps", async () => {
+  it("Preview changes fetches and shows a file tree in place of the log, toggling back", async () => {
     server.use(
       http.get(`${ORIGIN}/api/workflow-runs/:runId/preview-diff`, () =>
         HttpResponse.json({
-          commit_diff: emptyCommitDiff({
-            exports: {
-              added: [
-                {
-                  package_name: "@fixture/widget",
-                  file_path: "src/widget.ts",
-                  name: "widget",
-                  kind: "const",
-                  signature: null,
-                  docstring: null,
-                },
-              ],
-              removed: [],
-            },
-          }),
+          commit_diff: emptyCommitDiff(),
           entries: [
-            { workflow_id: "example/hello", step_index: 0, kind: "copy", applied: true },
+            {
+              workflow_id: "example/hello",
+              step_index: 0,
+              kind: "copy",
+              applied: true,
+              files: [
+                { path: "src/widget.ts", status: "added" },
+                { path: "src/existing.ts", status: "modified" },
+              ],
+            },
             {
               workflow_id: "example/hello",
               step_index: 1,
@@ -592,13 +587,18 @@ describe("RunView", () => {
     expect(previewButton).toBeTruthy();
     await previewButton!.trigger("click");
 
-    // Vuetify's `v-dialog` teleports its content to `document.body`, outside
-    // `wrapper`'s own root element — assert against the real DOM instead.
     await vi.waitFor(() => {
-      expect(document.body.textContent).toContain("widget");
+      expect(wrapper.text()).toContain("widget.ts");
     });
-    expect(document.body.textContent).toContain("1 step(s) need a real run to preview");
-    expect(document.body.textContent).toContain("update (example/hello)");
+    expect(wrapper.text()).toContain("existing.ts");
+    expect(wrapper.text()).not.toContain("starting");
+    // No skipped-steps note or diff content shown alongside the tree.
+    expect(wrapper.text()).not.toContain("needs a real run");
+
+    const backButton = wrapper.findAll("button").find((b) => b.text() === "Back to log");
+    expect(backButton).toBeTruthy();
+    await backButton!.trigger("click");
+    expect(wrapper.text()).toContain("starting");
   });
 
   it("Reflection navigates to the Checkout compare view for this run's base_commit_hash", async () => {

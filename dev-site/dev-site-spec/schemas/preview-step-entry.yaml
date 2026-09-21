@@ -25,6 +25,22 @@ properties:
     type: string
     description: Why a step wasn't applied — its kind isn't previewable, or it threw while trying.
     example: "needs a real run"
+  files:
+    type: array
+    description: Only set for applied `copy`/`transform-file` steps — the files it wrote.
+    items:
+      type: object
+      properties:
+        path:
+          type: string
+          description: Repo-relative path.
+        status:
+          type: string
+          enum: [added, modified]
+          description: Whether this path existed in the running preview commit before this step ran.
+      required:
+        - path
+        - status
 required:
   - workflow_id
   - step_index
