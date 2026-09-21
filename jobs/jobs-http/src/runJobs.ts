@@ -425,7 +425,11 @@ export async function runJobs(
   }
 
   // Startup: recover stalled, sample depth, then begin polling.
-  await recoverStalled(new Date());
+  try {
+    await recoverStalled(new Date());
+  } catch (err) {
+    logError(err);
+  }
   await sampleQueueDepth();
   scheduleClaimPass();
 
