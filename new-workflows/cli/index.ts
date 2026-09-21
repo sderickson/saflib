@@ -9,6 +9,7 @@ import { addRunScriptsCommand } from "./commands/run-scripts.ts";
 import { addNextCommand } from "./commands/next.ts";
 import { addStatusCommand } from "./commands/status.ts";
 import { addGotoCommand } from "./commands/goto.ts";
+import { addPreviewCommand } from "./commands/preview.ts";
 
 export { parseNamedArgs } from "./args.ts";
 export { loadWorkflowDefinition } from "@saflib/new-workflows";
@@ -37,6 +38,7 @@ export async function runNewWorkflowCli(
   addNextCommand(ctx);
   addStatusCommand(ctx);
   addGotoCommand(ctx);
+  addPreviewCommand(ctx);
 
   await program.parseAsync(process.argv);
 }

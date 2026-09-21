@@ -96,6 +96,7 @@
                 v-else-if="mostRecentRun"
                 :key="mostRecentRun.id"
                 :run-id="mostRecentRun.id"
+                :base-run-ids="earlierPhaseRunIds"
                 :start-in-plan-mode="pendingPlanCascadeRunId === mostRecentRun.id"
                 class="plans-page__run-view"
                 @plan-run-done="onPlanRunDone"
@@ -111,9 +112,25 @@
                 >
                   Start workflow
                 </v-btn>
+                <v-btn
+                  variant="tonal"
+                  class="ml-2"
+                  :loading="unstartedPreviewMutation.isPending.value"
+                  @click="openUnstartedPreview"
+                >
+                  Preview changes
+                </v-btn>
                 <p v-if="createRunMutation.isError.value" class="text-error mt-2">
                   {{ createRunMutation.error.value?.message }}
                 </p>
+                <PreviewDiffDialog
+                  v-model="unstartedPreviewDialogOpen"
+                  :is-pending="unstartedPreviewMutation.isPending.value"
+                  :is-error="unstartedPreviewMutation.isError.value"
+                  :error="unstartedPreviewMutation.error.value"
+                  :data="unstartedPreviewMutation.data.value"
+                  :base-run-ids="earlierPhaseRunIds"
+                />
               </div>
             </template>
             <template v-else>
@@ -136,12 +153,15 @@ import {
   useCreatePlanMutation,
   useWorkflowRunsQuery,
   useCreateWorkflowRunMutation,
+  useSiblingMostRecentRunIds,
+  usePreviewWorkflowDiffMutation,
 } from "../requests/workflows-queries.ts";
 import { useRepoFiles } from "../requests/queries.ts";
 import ResizableColumns from "../components/ResizableColumns.vue";
 import PlanFileContent from "../components/PlanFileContent.vue";
 import PlanNavIcon from "../components/PlanNavIcon.vue";
 import RunView from "../components/RunView.vue";
+import PreviewDiffDialog from "../components/PreviewDiffDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -293,6 +313,25 @@ const runsQuery = useWorkflowRunsQuery(() =>
 );
 const mostRecentRun = computed(() => runsQuery.data.value?.runs[0]);
 
+// --- Earlier workflow files in this same plan folder, sorted before the
+// selected one — e.g. phase-1/phase-2 before phase-3. Threaded into
+// RunView as `baseRunIds` so "Preview changes" on phase-3 chains onto
+// phase-1 and phase-2's own hypothetical results (their most recent run,
+// if any — a phase never run yet is skipped, not treated as a hard
+// requirement) instead of just the repo's current, possibly-behind state. ---
+const earlierPhaseFilePaths = computed(() => {
+  if (fileKind.value !== "workflow") return [];
+  const group = planGroups.value.find((g) => g.folder === planName_.value);
+  if (!group) return [];
+  return group.files
+    .filter((f) => f.name < (fileName.value ?? "") && fileKindOf(f.name) === "workflow")
+    .map((f) => f.path);
+});
+const earlierPhaseRunIdsMaybe = useSiblingMostRecentRunIds(() => earlierPhaseFilePaths.value);
+const earlierPhaseRunIds = computed(
+  () => earlierPhaseRunIdsMaybe.value.filter((id): id is string => Boolean(id)),
+);
+
 const createRunMutation = useCreateWorkflowRunMutation();
 function startWorkflow() {
   if (!selectedFilePath.value) return;
@@ -303,6 +342,21 @@ function startWorkflow() {
   // No navigation needed — creating a run invalidates this same
   // `workflow-runs` query, so `mostRecentRun` above picks it up and
   // `RunView` renders automatically.
+}
+
+// --- Preview before ever starting the workflow — same diff as RunView's
+// own "Preview changes", just against the plan file directly (`POST
+// /workflows/{id}/preview-diff`) instead of an existing run, since one
+// doesn't exist yet here. ---
+const unstartedPreviewMutation = usePreviewWorkflowDiffMutation();
+const unstartedPreviewDialogOpen = ref(false);
+function openUnstartedPreview() {
+  if (!selectedFilePath.value) return;
+  unstartedPreviewDialogOpen.value = true;
+  unstartedPreviewMutation.mutate({
+    id: selectedFilePath.value,
+    baseRunIds: earlierPhaseRunIds.value,
+  });
 }
 
 // --- "Play current plan" cascade (see RunView.vue's `selectPlan`): once a

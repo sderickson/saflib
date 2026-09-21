@@ -123,6 +123,15 @@ describe("previewRun", () => {
     expect(result.entries.find((e) => e.kind === "copy")?.workflowId).toBe("test/preview-copy");
     expect(result.entries.find((e) => e.kind === "command")?.reason).toBe("needs a real run");
 
+    // Per-step file tracking: the copy step wrote a brand-new file; the
+    // transform-file step edited a file that already existed at baseHash.
+    expect(result.entries.find((e) => e.kind === "copy")?.files).toEqual([
+      { path: "packages/widget/widget.ts", status: "added" },
+    ]);
+    expect(result.entries.find((e) => e.kind === "transform-file")?.files).toEqual([
+      { path: "packages/widget/existing.ts", status: "modified" },
+    ]);
+
     const tree = listTree(repoRoot, result.finalHash).result!;
     const byPath = Object.fromEntries(tree.map((e) => [e.path, e.blobHash]));
 

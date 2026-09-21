@@ -62,6 +62,21 @@ const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: stepsState })),
 ];
 
+function emptyCommitDiff(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    from_hash: "base",
+    to_hash: "preview",
+    package_metrics: { added: [], removed: [], changed: [] },
+    exports: { added: [], removed: [] },
+    test_cases: { added: [], removed: [] },
+    db_schemas: {
+      tables: { added: [], removed: [] },
+      columns: { added: [], removed: [], changed: [] },
+    },
+    ...overrides,
+  };
+}
+
 function mountRunView() {
   return mountTestApp(RunView, { props: { runId: "run-1" } });
 }
@@ -531,6 +546,59 @@ describe("RunView", () => {
     await vi.waitFor(() => {
       expect(cancelled).toBe(true);
     });
+  });
+
+  it("Preview changes fetches and shows the diff, plus a note for any skipped steps", async () => {
+    server.use(
+      http.get(`${ORIGIN}/api/workflow-runs/:runId/preview-diff`, () =>
+        HttpResponse.json({
+          commit_diff: emptyCommitDiff({
+            exports: {
+              added: [
+                {
+                  package_name: "@fixture/widget",
+                  file_path: "src/widget.ts",
+                  name: "widget",
+                  kind: "const",
+                  signature: null,
+                  docstring: null,
+                },
+              ],
+              removed: [],
+            },
+          }),
+          entries: [
+            { workflow_id: "example/hello", step_index: 0, kind: "copy", applied: true },
+            {
+              workflow_id: "example/hello",
+              step_index: 1,
+              kind: "update",
+              applied: false,
+              reason: "needs a real run",
+            },
+          ],
+        }),
+      ),
+    );
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    const previewButton = wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Preview changes");
+    expect(previewButton).toBeTruthy();
+    await previewButton!.trigger("click");
+
+    // Vuetify's `v-dialog` teleports its content to `document.body`, outside
+    // `wrapper`'s own root element — assert against the real DOM instead.
+    await vi.waitFor(() => {
+      expect(document.body.textContent).toContain("widget");
+    });
+    expect(document.body.textContent).toContain("1 step(s) need a real run to preview");
+    expect(document.body.textContent).toContain("update (example/hello)");
   });
 
   it("Reflection navigates to the Checkout compare view for this run's base_commit_hash", async () => {

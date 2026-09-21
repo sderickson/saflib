@@ -140,9 +140,17 @@
             />
           </v-btn-group>
           <v-btn
-            v-if="run?.base_commit_hash"
             variant="tonal"
             class="ml-3"
+            :loading="previewMutation.isPending.value"
+            @click="openPreview()"
+          >
+            Preview changes
+          </v-btn>
+          <v-btn
+            v-if="run?.base_commit_hash"
+            variant="tonal"
+            class="ml-2"
             @click="openReflection()"
           >
             Reflection
@@ -177,6 +185,15 @@
         </div>
       </div>
     </footer>
+
+    <PreviewDiffDialog
+      v-model="previewDialogOpen"
+      :is-pending="previewMutation.isPending.value"
+      :is-error="previewMutation.isError.value"
+      :error="previewMutation.error.value"
+      :data="previewMutation.data.value"
+      :base-run-ids="baseRunIds"
+    />
   </div>
 </template>
 
@@ -189,12 +206,14 @@ import {
   useWorkflowRunStepsQuery,
   useAdvanceWorkflowRunMutation,
   useCancelWorkflowRunMutation,
+  usePreviewWorkflowRunDiffMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import { runStatusVisual, type RunStatusVisual } from "../run-status-visual.ts";
 import LogEntry from "./LogEntry.vue";
 import LogEntryGroup from "./LogEntryGroup.vue";
 import ToolCallCard from "./ToolCallCard.vue";
+import PreviewDiffDialog from "./PreviewDiffDialog.vue";
 import { groupLogs, type LogItem } from "../group-logs.ts";
 import {
   unlockAudio,
@@ -218,12 +237,20 @@ const props = defineProps<{
    * step is always a fresh instance, not a prop update on a reused one.
    */
   startInPlanMode?: boolean;
+  /**
+   * Other runs (e.g. earlier phases in the same plan folder), earliest
+   * first, to chain a preview onto — see `usePreviewWorkflowRunDiffMutation`'s
+   * own doc comment. Optional: the caller (`PlansPage`) decides whether/how
+   * to compute this; `RunView` itself has no notion of "sibling plans".
+   */
+  baseRunIds?: string[];
 }>();
 const emit = defineEmits<{
   /** Fired when this run finishes on its own while in "plan" mode — see `selectPlan`. */
   "plan-run-done": [];
 }>();
 const runId = computed(() => props.runId);
+const baseRunIds = computed(() => props.baseRunIds ?? []);
 const router = useRouter();
 
 const runQuery = useWorkflowRunQuery(runId);
@@ -239,6 +266,14 @@ const steps = computed(() => stepsQuery.data.value?.steps ?? []);
 const advanceMutation = useAdvanceWorkflowRunMutation();
 const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
+
+const previewMutation = usePreviewWorkflowRunDiffMutation();
+const previewDialogOpen = ref(false);
+
+function openPreview() {
+  previewDialogOpen.value = true;
+  previewMutation.mutate({ runId: runId.value, baseRunIds: baseRunIds.value });
+}
 
 /**
  * A run's actual effect: navigates to the real Checkout/compare page

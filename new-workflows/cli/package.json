@@ -25,7 +25,8 @@
     "@saflib/new-workflows-db": "*",
     "@saflib/new-workflows-spec": "*",
     "@saflib/drizzle": "*",
-    "@saflib/drizzle-workflows": "*"
+    "@saflib/drizzle-workflows": "*",
+    "@saflib/git": "*"
   },
   "devDependencies": {
     "@saflib/dev-tools": "*",

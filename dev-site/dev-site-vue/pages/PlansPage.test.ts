@@ -180,6 +180,64 @@ describe("PlansPage", () => {
     );
   });
 
+  it("Preview changes works on a .yaml file with no runs — no run gets created", async () => {
+    let createdRun = false;
+    let requestBody: unknown;
+    server.use(
+      http.post(`${ORIGIN}/api/workflows/:id/runs`, () => {
+        createdRun = true;
+        return HttpResponse.json({ run: runFixture() }, { status: 201 });
+      }),
+      http.post(`${ORIGIN}/api/workflows/:id/preview-diff`, async ({ params, request }) => {
+        expect(decodeURIComponent(params.id as string)).toBe(PHASE_1_PATH);
+        requestBody = await request.json();
+        return HttpResponse.json({
+          commit_diff: {
+            from_hash: "a",
+            to_hash: "b",
+            package_metrics: { added: [], removed: [], changed: [] },
+            exports: {
+              added: [
+                {
+                  package_name: "@fixture/todo",
+                  file_path: "schemas/todo.yaml",
+                  name: "todo",
+                  kind: "const",
+                  signature: null,
+                  docstring: null,
+                },
+              ],
+              removed: [],
+            },
+            test_cases: { added: [], removed: [] },
+            db_schemas: {
+              tables: { added: [], removed: [] },
+              columns: { added: [], removed: [], changed: [] },
+            },
+          },
+          entries: [],
+        });
+      }),
+    );
+
+    await router.push({ path: "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml" });
+    const wrapper = mountTestApp(PlansPage);
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("hasn't been run yet");
+    });
+    const previewButton = wrapper.findAll("button").find((b) => b.text() === "Preview changes");
+    expect(previewButton).toBeTruthy();
+    await previewButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(document.body.textContent).toContain("todo");
+    });
+    expect(requestBody).toEqual({ input: undefined, cwd: undefined, baseRunIds: [] });
+    expect(createdRun).toBe(false);
+    expect(wrapper.text()).toContain("hasn't been run yet");
+  });
+
   it("a .yaml file with existing runs shows the most recent one inline, no click needed", async () => {
     runsStateByFile[PHASE_1_PATH] = [
       { ...runFixture({ id: "run-2", status: "done" }), created_at: "2026-09-16T00:00:00.000Z" },
@@ -244,6 +302,53 @@ describe("PlansPage", () => {
         "/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml",
       );
     });
+  });
+
+  it("Preview changes on a later phase chains onto an earlier phase's most recent run", async () => {
+    const PHASE_2_PATH = "test-product/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml";
+    runsStateByFile[PHASE_1_PATH] = [runFixture({ id: "phase-1-run" })];
+    runsById["phase-1-run"] = runFixture({ id: "phase-1-run" });
+    runsStateByFile[PHASE_2_PATH] = [
+      runFixture({ id: "phase-2-run", workflow_ref: PHASE_2_PATH }),
+    ];
+    runsById["phase-2-run"] = runFixture({ id: "phase-2-run", workflow_ref: PHASE_2_PATH });
+
+    let requestedUrl: string | undefined;
+    server.use(
+      http.get(`${ORIGIN}/api/workflow-runs/:runId/preview-diff`, ({ request }) => {
+        requestedUrl = request.url;
+        return HttpResponse.json({
+          commit_diff: {
+            from_hash: "a",
+            to_hash: "b",
+            package_metrics: { added: [], removed: [], changed: [] },
+            exports: { added: [], removed: [] },
+            test_cases: { added: [], removed: [] },
+            db_schemas: {
+              tables: { added: [], removed: [] },
+              columns: { added: [], removed: [], changed: [] },
+            },
+          },
+          entries: [],
+        });
+      }),
+    );
+
+    await router.push({ path: "/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml" });
+    const wrapper = mountTestApp(PlansPage);
+
+    const previewButton = await vi.waitFor(() => {
+      const btn = wrapper.findAll("button").find((b) => b.text() === "Preview changes");
+      expect(btn).toBeTruthy();
+      return btn!;
+    });
+    await previewButton.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(requestedUrl).toBeDefined();
+    });
+    const url = new URL(requestedUrl!);
+    expect(url.searchParams.getAll("baseRunId")).toEqual(["phase-1-run"]);
   });
 
   it("arriving with ?workflow=&cwd= switches to the Save-as-plan form", async () => {

@@ -29,6 +29,13 @@ import type { CallWorkflowStepInput } from "../steps/call-workflow.ts";
 import type { DbKey } from "@saflib/new-workflows-db";
 import type { WorkflowContext, WorkflowDefinition } from "../types.ts";
 
+export interface PreviewFileChange {
+  /** Repo-relative path. */
+  path: string;
+  /** Whether this path existed in the running preview commit before this step ran. */
+  status: "added" | "modified";
+}
+
 export interface PreviewStepEntry {
   /** Which workflow this step belongs to — the root, or a nested `call-workflow` target. */
   workflowId: string;
@@ -37,6 +44,8 @@ export interface PreviewStepEntry {
   applied: boolean;
   /** Why a step wasn't applied — either its kind isn't previewable, or it threw. */
   reason?: string;
+  /** Only set for applied `copy`/`transform-file` steps — the files it wrote. */
+  files?: PreviewFileChange[];
 }
 
 export interface PreviewResult {
@@ -139,8 +148,8 @@ async function walkSteps(
     if (step.kind === "copy" || step.kind === "transform-file") {
       const stepInput = step.input({ context });
       try {
-        await applyFileStep(state, step.kind, stepInput, rollingCwd);
-        state.entries.push({ workflowId: def.id, stepIndex, kind: step.kind, applied: true });
+        const files = await applyFileStep(state, step.kind, stepInput, rollingCwd);
+        state.entries.push({ workflowId: def.id, stepIndex, kind: step.kind, applied: true, files });
       } catch (err) {
         state.entries.push({
           workflowId: def.id,
@@ -194,13 +203,13 @@ async function applyFileStep(
   kind: "copy" | "transform-file",
   stepInput: unknown,
   cwd: string,
-): Promise<void> {
+): Promise<PreviewFileChange[]> {
   const relRoot =
     kind === "copy"
       ? path.relative(state.scratchRoot, (stepInput as CopyStepInput).targetDir)
       : path.relative(state.scratchRoot, resolveTransformFilePath(stepInput as TransformFileStepInput, cwd));
 
-  materialize(state, relRoot);
+  const existingBlobHashes = materialize(state, relRoot);
   try {
     const ctx = fileStepContext(state, cwd);
     const outcome =
@@ -210,7 +219,7 @@ async function applyFileStep(
     if (outcome.status === "error") {
       throw new Error(outcome.message);
     }
-    await commitTouchedFiles(state, relRoot);
+    return await commitTouchedFiles(state, relRoot, existingBlobHashes);
   } finally {
     rmSync(path.join(state.scratchRoot, relRoot), { recursive: true, force: true });
   }
@@ -220,11 +229,17 @@ function resolveTransformFilePath(input: TransformFileStepInput, cwd: string): s
   return input.filePath.startsWith("/") ? input.filePath : path.join(cwd, input.filePath);
 }
 
-/** Pulls the current running commit's version of `relRoot` (file or directory) onto scratch disk. */
-function materialize(state: WalkState, relRoot: string): void {
+/**
+ * Pulls the current running commit's version of `relRoot` (file or
+ * directory) onto scratch disk, returning each pulled path's existing blob
+ * hash — used afterward to tell a genuinely new/changed file (worth
+ * reporting) apart from one the step merely left untouched (e.g. a sibling
+ * file that happened to sit inside a `copy` step's whole `targetDir`).
+ */
+function materialize(state: WalkState, relRoot: string): Map<string, string> {
   const { result: entries, error } = listTree(state.repoRoot, state.currentHash, relRoot);
   if (error) throw error;
-  if (!entries || entries.length === 0) return;
+  if (!entries || entries.length === 0) return new Map();
 
   const { result: blobs, error: blobsError } = readBlobs(
     state.repoRoot,
@@ -239,14 +254,21 @@ function materialize(state: WalkState, relRoot: string): void {
     mkdirSync(path.dirname(dest), { recursive: true });
     writeFileSync(dest, content, "utf-8");
   }
+
+  return new Map(entries.map((e) => [e.path, e.blobHash]));
 }
 
 /** Hashes and stages every file now present under `relRoot`, then advances the running commit. */
-async function commitTouchedFiles(state: WalkState, relRoot: string): Promise<void> {
+async function commitTouchedFiles(
+  state: WalkState,
+  relRoot: string,
+  existingBlobHashes: Map<string, string>,
+): Promise<PreviewFileChange[]> {
   const absRoot = path.join(state.scratchRoot, relRoot);
   const files = listFilesRecursive(absRoot);
-  if (files.length === 0) return;
+  if (files.length === 0) return [];
 
+  const changes: PreviewFileChange[] = [];
   for (const absFile of files) {
     const relPath = path.relative(state.scratchRoot, absFile).split(path.sep).join("/");
     const content = readFileSync(absFile, "utf-8");
@@ -254,6 +276,12 @@ async function commitTouchedFiles(state: WalkState, relRoot: string): Promise<vo
     if (error) throw error;
     const { error: setError } = setIndexEntry(state.scratch, relPath, blobHash!);
     if (setError) throw setError;
+    const existingBlobHash = existingBlobHashes.get(relPath);
+    if (existingBlobHash === undefined) {
+      changes.push({ path: relPath, status: "added" });
+    } else if (existingBlobHash !== blobHash) {
+      changes.push({ path: relPath, status: "modified" });
+    }
   }
 
   const { result: treeHash, error: treeError } = writeScratchTree(state.scratch);
@@ -266,6 +294,7 @@ async function commitTouchedFiles(state: WalkState, relRoot: string): Promise<vo
   );
   if (commitError) throw commitError;
   state.currentHash = newHash!;
+  return changes;
 }
 
 /** `root` may itself be a single file (transform-file's `relRoot`) or a directory (copy's). */
