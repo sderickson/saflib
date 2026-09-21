@@ -3,7 +3,7 @@
   "saf": {
     "kind": "lib"
   },
-  "description": "New-engine (sqlite-backed) workflows for scaffolding @saflib/integrations calls.",
+  "description": "New-engine (sqlite-backed) workflows for scaffolding product service integrations (init + add-call).",
   "private": true,
   "type": "module",
   "exports": {

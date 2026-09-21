@@ -33,7 +33,10 @@ import {
   AddExportWorkflowDefinition,
   AddTsPackageWorkflowDefinition,
 } from "@saflib/monorepo-workflows";
-import { AddCallWorkflowDefinition } from "@saflib/integrations-workflows";
+import {
+  AddCallWorkflowDefinition,
+  InitIntegrationWorkflowDefinition,
+} from "@saflib/integrations-workflows";
 import { AddEmailTemplateWorkflowDefinition } from "@saflib/email-service-workflows";
 import {
   JobsInitWorkflowDefinition,
@@ -69,6 +72,7 @@ const registry = [
   AddEnvVarWorkflowDefinition,
   AddExportWorkflowDefinition,
   AddTsPackageWorkflowDefinition,
+  InitIntegrationWorkflowDefinition,
   AddCallWorkflowDefinition,
   AddEmailTemplateWorkflowDefinition,
   JobsInitWorkflowDefinition,
