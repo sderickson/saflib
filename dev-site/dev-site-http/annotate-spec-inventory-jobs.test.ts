@@ -35,7 +35,7 @@ describe("annotateSpecInventoryJobEdges", () => {
           operations: [
             emptyOp("uploadResourceMatters"),
             emptyOp("autoClaimBacklogMatters"),
-            emptyOp("ocrMatterResource"),
+            emptyOp("extractFormDataMatterResource"),
           ],
         },
       ],
@@ -45,7 +45,7 @@ describe("annotateSpecInventoryJobEdges", () => {
       uploadResourceMatters: ["autoClaimBacklogMatters"],
       autoClaimBacklogMatters: [
         "autoClaimBacklogMatters",
-        "ocrMatterResource",
+        "extractFormDataMatterResource",
       ],
       "cron:recoverySweep": ["autoClaimBacklogMatters"],
     });
@@ -61,7 +61,7 @@ describe("annotateSpecInventoryJobEdges", () => {
 
     expect(byId.autoClaimBacklogMatters!.enqueues).toEqual([
       "autoClaimBacklogMatters",
-      "ocrMatterResource",
+      "extractFormDataMatterResource",
     ]);
     expect(byId.autoClaimBacklogMatters!.enqueued_by).toEqual([
       "autoClaimBacklogMatters",
@@ -69,8 +69,8 @@ describe("annotateSpecInventoryJobEdges", () => {
       "uploadResourceMatters",
     ]);
 
-    expect(byId.ocrMatterResource!.enqueues).toEqual([]);
-    expect(byId.ocrMatterResource!.enqueued_by).toEqual([
+    expect(byId.extractFormDataMatterResource!.enqueues).toEqual([]);
+    expect(byId.extractFormDataMatterResource!.enqueued_by).toEqual([
       "autoClaimBacklogMatters",
     ]);
   });
