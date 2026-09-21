@@ -63,7 +63,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
       name: {
         type: "string",
         description:
-          "Kebab-case integration name (e.g. 'stripe'). Creates service/integrations/{name} and weaves configure into common/dependencies.",
+          "Kebab-case integration name (e.g. 'stripe'). Run from `{product}/service/common` (or the product root). Creates service/integrations/{name} and weaves configure into common/dependencies.",
       },
     },
     required: ["name"],
@@ -71,8 +71,27 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
 
   context: ({ input, cwd }) => {
     const integrationName = input.name;
-    const parentDir = path.resolve(cwd, path.join("service", "common"));
-    const productRoot = path.dirname(path.dirname(parentDir));
+
+    // Prefer cwd = `{product}/service/common` (a real package — required for
+    // YAML `cd` steps). Fall back to product root when `service/common`
+    // exists underneath (CLI kickoff from the product directory).
+    const commonUnderCwd = path.join(cwd, "service", "common");
+    let parentDir: string;
+    let productRoot: string;
+    if (
+      existsSync(path.join(cwd, "package.json")) &&
+      getPackageName(cwd).endsWith("-service-common")
+    ) {
+      parentDir = cwd;
+      productRoot = path.dirname(path.dirname(cwd));
+    } else if (existsSync(path.join(commonUnderCwd, "package.json"))) {
+      parentDir = commonUnderCwd;
+      productRoot = cwd;
+    } else {
+      parentDir = cwd;
+      productRoot = path.dirname(path.dirname(cwd));
+    }
+
     const targetDir = path.join(
       productRoot,
       "service",

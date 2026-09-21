@@ -53,7 +53,7 @@ export async function initializeDependencies(): Promise<void> {
 
     const runId = await createRun(dbKey, InitIntegrationWorkflowDefinition, {
       input: { name: "mercury" },
-      cwd: root,
+      cwd: commonDir,
       mode: "script",
     });
 

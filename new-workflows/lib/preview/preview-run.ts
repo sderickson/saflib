@@ -23,6 +23,7 @@ import {
 import { runCopyStep, resolveCopyTargetPaths, type CopyStepInput } from "../steps/copy/copy-step.ts";
 import { runTransformFileStep, type TransformFileStepInput } from "../steps/transform-file.ts";
 import type { CdStepInput } from "../steps/cd.ts";
+import { validateCdTarget } from "../steps/cd-validation.ts";
 import type { CallWorkflowStepInput } from "../steps/call-workflow.ts";
 import { isWorkflowStepSkip } from "../conditional-step.ts";
 import type { DbKey } from "@saflib/new-workflows-db";
@@ -76,9 +77,10 @@ interface WalkState {
  * Computes what a workflow (and any `call-workflow` steps it calls) would
  * change, as a real-but-dangling git commit built entirely via plumbing —
  * no working tree or real index is ever touched, and nothing is persisted.
- * Only `copy`/`transform-file` (file content) and `cd` (bookkeeping only)
- * are actually applied; everything else is recorded as skipped, and the
- * walk continues to the next step in that same list rather than aborting.
+ * Only `copy`/`transform-file` (file content) and `cd` (cwd bookkeeping +
+ * package.json validation against the real repo) are actually applied;
+ * everything else is recorded as skipped, and the walk continues to the
+ * next step in that same list rather than aborting.
  * See `saflib/plans/workflow-preview.md` for the design.
  */
 export async function previewRun(
@@ -137,10 +139,27 @@ async function walkSteps(
 
     if (step.kind === "cd") {
       const stepInput = step.input({ context }) as CdStepInput;
-      rollingCwd = stepInput.path.startsWith("/")
+      const nextCwd = stepInput.path.startsWith("/")
         ? stepInput.path
         : path.join(originalCwd, stepInput.path);
-      state.entries.push({ workflowId: def.id, stepIndex, kind: step.kind, applied: true });
+      // Map scratch-relative cwd back to the real repo for package.json checks —
+      // the scratch tree only materializes copy/transform targets, not every
+      // package root a plan might cd into.
+      const repoRelative = path.relative(state.scratchRoot, nextCwd);
+      const realCdTarget = path.join(state.repoRoot, repoRelative);
+      try {
+        validateCdTarget(realCdTarget, "dry", {});
+        rollingCwd = nextCwd;
+        state.entries.push({ workflowId: def.id, stepIndex, kind: step.kind, applied: true });
+      } catch (err) {
+        state.entries.push({
+          workflowId: def.id,
+          stepIndex,
+          kind: step.kind,
+          applied: false,
+          reason: err instanceof Error ? err.message : String(err),
+        });
+      }
       continue;
     }
 

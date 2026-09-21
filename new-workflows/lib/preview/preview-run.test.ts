@@ -46,6 +46,10 @@ describe("previewRun", () => {
     git(repoRoot, ["checkout", "-b", "main"]);
 
     mkdirSync(path.join(repoRoot, "packages/widget"), { recursive: true });
+    writeFileSync(
+      path.join(repoRoot, "packages/widget/package.json"),
+      JSON.stringify({ name: "@test/widget", private: true }, null, 2) + "\n",
+    );
     writeFileSync(path.join(repoRoot, "packages/widget/existing.ts"), "export const x = 1;\n");
     git(repoRoot, ["add", "-A"]);
     git(repoRoot, ["commit", "-m", "base"]);
@@ -147,5 +151,27 @@ describe("previewRun", () => {
     // The real repo was never touched.
     expect(git(repoRoot, ["rev-parse", "HEAD"])).toBe(baseHash);
     expect(git(repoRoot, ["status", "--porcelain"])).toBe("");
+  });
+
+  it("marks cd as not applied when the target has no package.json", async () => {
+    const BadCdWorkflow = defineWorkflow<Record<string, never>, Ctx>({
+      id: "test/preview-bad-cd",
+      description: "test",
+      context: ({ cwd }) => ({ cwd }),
+      steps: [
+        step<CdStepInput, Ctx>("cd", runCdStep, () => ({ path: "packages" })),
+      ],
+    });
+
+    const result = await previewRun(dbKey, BadCdWorkflow, {}, { repoRoot, baseHash, cwd: repoRoot });
+    expect(result.entries).toEqual([
+      {
+        workflowId: "test/preview-bad-cd",
+        stepIndex: 0,
+        kind: "cd",
+        applied: false,
+        reason: expect.stringContaining("Package.json not found"),
+      },
+    ]);
   });
 });
