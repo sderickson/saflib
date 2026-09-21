@@ -89,20 +89,25 @@ Use `@saflib/vue`, `@saflib/sdk`, `@saflib/vite`, `@saflib/vitepress`, and simil
 
 ## lock-prune
 
-[`saf-monorepo lock-prune`](./cli/saf-monorepo/lock-prune.md) is the enforcement tool. It detects and fixes:
+[`saf-monorepo lock-prune`](./cli/saf-monorepo/lock-prune.md) is the enforcement tool. It **aligns** the product lock to the platform lock (or fails in `--check`):
 
 | Issue                                                          | Fix                                                     |
 | -------------------------------------------------------------- | ------------------------------------------------------- |
 | Redundant product dep                                          | Remove from product `package.json`                      |
 | Competing product dep (wrong semver vs platform)               | Remove from product `package.json`                      |
 | Hoisting hazard (peer only under `saflib/node_modules`)        | Move lockfile entry to root `node_modules/`             |
-| Unhoisted registry dep (locked under `saflib/*/node_modules/`) | Hoist lockfile entry to root `node_modules/`            |
-| Nested lockfile version skew vs `saflib/package-lock.json`     | Copy the platform lock package tree to the product align key (root or intentional nested path); remove leftover nested skew |
-| Root lockfile version skew (exact override pins only, advisory) | Warn only — do not rewrite the product lock; rely on overrides + `npm install`. Caret/tilde ranges are ignored. |
+| Unhoisted registry dep (not an intentional platform nest)      | Hoist lockfile entry to root `node_modules/`             |
+| Missing/wrong intentional nested install (e.g. `vitepress/node_modules/esbuild`) | Copy that package tree from `saflib/package-lock.json` into `saflib/<path>/` |
+| Exact override root pin drift (e.g. `vite@8.0.13`)             | Copy platform root package tree into product lock        |
+| Nested lockfile version skew vs platform                       | Copy platform tree to the align key; drop leftover skew  |
 | Platform override drift                                        | Merge `saflib/package.json` overrides into product root |
 | Stale lockfile workspace paths                                 | Remove dead entries from `package-lock.json`            |
 
+`--check` exits non-zero whenever any of the above issues are present (deploy-package redundant deps remain warnings only).
+
 After lock-prune modifies `package.json` or `package-lock.json`, run **`npm install` at the product root** to refresh `node_modules/`.
+
+Implementation lives under `saflib/monorepo/src/lock-prune/` (`analyze`, `align`, `apply`, …).
 
 ### Automatic runs
 
