@@ -564,7 +564,45 @@ describe("RunView", () => {
     expect(wrapper.findAll("button").find((b) => b.text() === "Init Workflow")).toBeTruthy();
     // No VCR buttons or Reflection button pre-run.
     expect(wrapper.find('[aria-label="Play current step"]').exists()).toBe(false);
+    expect(wrapper.find('[aria-label="Reset run"]').exists()).toBe(false);
     expect(wrapper.findAll("button").find((b) => b.text() === "Reflection")).toBeUndefined();
+  });
+
+  it("reset: confirms, then creates a fresh run for the same workflow", async () => {
+    let created = false;
+    server.use(
+      http.post(`${ORIGIN}/api/workflows/:id/runs`, async ({ params, request }) => {
+        expect(decodeURIComponent(params.id as string)).toBe("example/hello");
+        const body = (await request.json()) as { mode: string };
+        expect(body.mode).toBe("run");
+        created = true;
+        return HttpResponse.json(
+          { run: runFixture({ id: "run-2", status: "pending" }) },
+          { status: 201 },
+        );
+      }),
+    );
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.find('[aria-label="Reset run"]').exists()).toBe(true);
+    });
+
+    await wrapper.find('[aria-label="Reset run"]').trigger("click");
+    await nextTick();
+    // Dialog is teleported to document.body.
+    await vi.waitFor(() => {
+      expect(document.body.textContent).toContain("Reset this run?");
+    });
+    const resetBtn = [...document.body.querySelectorAll("button")].find(
+      (b) => b.textContent?.trim() === "Reset",
+    );
+    expect(resetBtn).toBeTruthy();
+    resetBtn!.click();
+
+    await vi.waitFor(() => {
+      expect(created).toBe(true);
+    });
   });
 
   it("pre-run: Preview changes fetches and shows a file tree, with no skipped-steps note, toggling back to the button", async () => {

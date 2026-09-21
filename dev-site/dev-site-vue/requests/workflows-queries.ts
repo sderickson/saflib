@@ -87,21 +87,29 @@ export function useWorkflowRunsQuery(id: MaybeRefOrGetter<string | undefined>) {
  * for chaining a preview onto earlier phases (see `PlansPage.vue`, which
  * is the only thing that knows "sibling plan files in this folder").
  * `undefined` entries mean that file has never been run.
+ *
+ * `queries` must be a `computed` (not a bare `() => …` getter):
+ * `@tanstack/vue-query` ≤5.85 only `unref`s the option, so a function
+ * becomes `function.map is not a function` at runtime (5.92+ accepts
+ * either form). The docker image currently resolves to 5.85.x.
  */
 export function useSiblingMostRecentRunIds(filePaths: () => string[]) {
   const client = createWorkflowsClient();
   const results = useQueries({
-    queries: () =>
-      filePaths().map((id) => ({
-        queryKey: ["new-workflows", "workflow-runs", id],
+    queries: computed(() => {
+      const paths = filePaths();
+      const list = Array.isArray(paths) ? paths : [];
+      return list.map((id) => ({
+        queryKey: ["new-workflows", "workflow-runs", id] as const,
         queryFn: () =>
           handleClientMethod(
             client.GET("/api/workflows/{id}/runs", { params: { path: { id } } }),
           ),
-      })),
+      }));
+    }),
   });
   return computed(() =>
-    results.value.map(
+    (Array.isArray(results.value) ? results.value : []).map(
       (r) => (r.data as NewWorkflowsResponseBody["listWorkflowRuns"][200] | undefined)?.runs[0]
         ?.id,
     ),

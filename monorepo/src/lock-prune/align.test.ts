@@ -5,6 +5,7 @@ import {
   findPlatformAlignmentGaps,
   findRootLockfileVersionSkew,
 } from "./align.ts";
+import type { PackageLock } from "./types.ts";
 
 describe("findLockfileVersionSkew", () => {
   it("flags product lock versions that differ from saflib", () => {
@@ -161,11 +162,10 @@ describe("alignSkewedLockfileEntries", () => {
 
 describe("findPlatformAlignmentGaps", () => {
   it("flags missing intentional nested dual-installs so they can be copied from the platform", () => {
-    const lockfile = {
-      packages: {
-        "node_modules/esbuild": { version: "0.28.2" },
-      },
+    const packages: NonNullable<PackageLock["packages"]> = {
+      "node_modules/esbuild": { version: "0.28.2" },
     };
+    const lockfile: PackageLock = { packages };
     const platform = {
       overrides: {},
       resolvedVersions: new Map([["esbuild", "0.28.2"]]),
@@ -200,11 +200,11 @@ describe("findPlatformAlignmentGaps", () => {
     ]);
 
     alignSkewedLockfileEntries(lockfile, gaps, platform);
+    expect(packages["saflib/vitepress/node_modules/esbuild"]).toMatchObject({
+      version: "0.27.7",
+    });
     expect(
-      lockfile.packages["saflib/vitepress/node_modules/esbuild"],
-    ).toMatchObject({ version: "0.27.7" });
-    expect(
-      lockfile.packages["saflib/vitepress/node_modules/@esbuild/darwin-arm64"],
+      packages["saflib/vitepress/node_modules/@esbuild/darwin-arm64"],
     ).toMatchObject({ version: "0.27.7" });
   });
 
