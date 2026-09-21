@@ -33,6 +33,7 @@
       >
         Build
       </v-btn>
+      <AgentSettingsMenu />
     </v-app-bar>
     <v-main class="dev-site-main">
       <router-view />
@@ -43,6 +44,7 @@
 <script setup lang="ts">
 import { inject } from "vue";
 import { useRoute } from "vue-router";
+import AgentSettingsMenu from "../components/AgentSettingsMenu.vue";
 
 const title = inject<string>("devSiteTitle", "Dev Site");
 const route = useRoute();

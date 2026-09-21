@@ -247,6 +247,7 @@ import {
   isMuted,
   toggleMuted,
 } from "../run-alerts.ts";
+import { getAgentCli } from "../agent-settings.ts";
 
 const props = defineProps<{
   /**
@@ -321,7 +322,7 @@ const createRunMutation = useCreateWorkflowRunMutation();
 function initWorkflow() {
   createRunMutation.mutate({
     id: props.workflowRef,
-    body: { input: {}, mode: "run", agentConfig: { cli: "claude-agent" } },
+    body: { input: {}, mode: "run", agentConfig: { cli: getAgentCli() } },
   });
 }
 

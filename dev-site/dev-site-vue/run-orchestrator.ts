@@ -21,6 +21,7 @@ import {
   requestNotificationPermission,
   notify,
 } from "./run-alerts.ts";
+import { getAgentCli } from "./agent-settings.ts";
 
 export type AutoMode = "stop" | "step" | "workflow" | "plan";
 
@@ -169,7 +170,7 @@ function createOrchestrator(): RunOrchestrator {
       return;
     }
     createRunMutation.mutate(
-      { id: next.path, body: { input: {}, mode: "run", agentConfig: { cli: "claude-agent" } } },
+      { id: next.path, body: { input: {}, mode: "run", agentConfig: { cli: getAgentCli() } } },
       {
         onSuccess: async (data) => {
           // Keep driving, uninterrupted — same "plan" mode, new run — and

@@ -7,6 +7,7 @@ cd "$DEV_DIR"
 
 "$DEV_DIR/scripts/resolve-dev-site-env.sh"
 "$DEV_DIR/scripts/resolve-claude-credentials.sh"
+"$DEV_DIR/scripts/resolve-cursor-credentials.sh"
 
 FILES=(-f docker-compose.dev-site.yaml)
 if grep -q '^DEV_SITE_GIT_DIR_MOUNT=' "$DEV_DIR/dev-site.env" 2>/dev/null; then

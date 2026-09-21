@@ -4,6 +4,7 @@
  */
 import {
   mdiApi,
+  mdiCheck,
   mdiCheckCircle,
   mdiChevronDown,
   mdiChevronRight,
@@ -11,6 +12,7 @@ import {
   mdiCircleSmall,
   mdiClose,
   mdiCloseCircle,
+  mdiCog,
   mdiConnection,
   mdiCube,
   mdiCubeOutline,
@@ -39,6 +41,7 @@ import {
 
 export const mdiIconPaths: Record<string, string> = {
   "mdi-api": mdiApi,
+  "mdi-check": mdiCheck,
   "mdi-check-circle": mdiCheckCircle,
   "mdi-chevron-down": mdiChevronDown,
   "mdi-chevron-right": mdiChevronRight,
@@ -46,6 +49,7 @@ export const mdiIconPaths: Record<string, string> = {
   "mdi-circle-small": mdiCircleSmall,
   "mdi-close": mdiClose,
   "mdi-close-circle": mdiCloseCircle,
+  "mdi-cog": mdiCog,
   "mdi-connection": mdiConnection,
   "mdi-cube": mdiCube,
   "mdi-cube-outline": mdiCubeOutline,

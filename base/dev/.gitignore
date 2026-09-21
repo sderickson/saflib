@@ -2,3 +2,4 @@ dev-site-data/*
 !dev-site-data/.gitkeep
 dev-site.env
 .claude-credentials.json
+.cursor-auth.json

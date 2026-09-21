@@ -5,15 +5,40 @@
 FROM node:24-slim
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends git python3 make g++ ca-certificates \
+  && apt-get install -y --no-install-recommends git python3 make g++ ca-certificates curl \
   && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g npm@11.14.1
 
-# For workflow "update" steps run with --run=claude (see @saflib/new-workflows):
-# the CLI reads its OAuth session from ~/.claude/.credentials.json, which
-# docker-compose.yaml bind-mounts in from the host (see resolve-claude-credentials.sh).
-RUN npm install -g @anthropic-ai/claude-code
+# Agent CLIs are installed in their own early layers (before any COPY of
+# product/saflib source) so everyday code changes keep hitting cache.
+# Each CLI is its own RUN + pinned version ARG so bumping one does not
+# invalidate the other. BuildKit cache mounts keep the npm/tarball
+# downloads across rebuilds even when the layer itself is intentionally
+# busted by a version bump.
+#
+# Claude Code — OAuth session is bind-mounted at runtime from the host
+# (see resolve-claude-credentials.sh → ~/.claude/.credentials.json).
+ARG CLAUDE_CODE_VERSION=2.1.278
+RUN --mount=type=cache,target=/root/.npm \
+  npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+
+# Cursor Agent — file-store auth inside the container
+# (AGENT_CLI_CREDENTIAL_STORE=file) fed by resolve-cursor-credentials.sh
+# → /home/node/.config/cursor/auth.json.
+ARG CURSOR_AGENT_VERSION=2026.09.18-9a7762b
+RUN --mount=type=cache,target=/var/cache/cursor-agent,sharing=locked \
+  ARCH="$(uname -m)" \
+  && case "$ARCH" in x86_64) ARCH=x64;; aarch64|arm64) ARCH=arm64;; *) echo "unsupported arch: $ARCH" >&2; exit 1;; esac \
+  && TARBALL="/var/cache/cursor-agent/${CURSOR_AGENT_VERSION}-linux-${ARCH}.tar.gz" \
+  && if [ ! -s "$TARBALL" ]; then \
+       curl -fsSL "https://downloads.cursor.com/lab/${CURSOR_AGENT_VERSION}/linux/${ARCH}/agent-cli-package.tar.gz" \
+         -o "$TARBALL"; \
+     fi \
+  && mkdir -p /usr/local/lib/cursor-agent \
+  && tar --strip-components=1 -xzf "$TARBALL" -C /usr/local/lib/cursor-agent \
+  && ln -sf /usr/local/lib/cursor-agent/cursor-agent /usr/local/bin/cursor-agent \
+  && ln -sf /usr/local/lib/cursor-agent/cursor-agent /usr/local/bin/agent
 
 WORKDIR /app
 
@@ -39,11 +64,11 @@ ENV NODE_ENV=production \
 # better hygiene generally. `chown /app`: some packages (e.g.
 # new-workflows-db) fall back to a local on-disk sqlite file under their
 # own package dir when no explicit path is configured; that tree is
-# root-owned from the COPY/npm ci steps above. Pre-create `.claude` too so
-# the CLI can write session state there alongside the bind-mounted
-# credentials file (see docker-compose.yaml).
-RUN mkdir -p /home/node/.claude \
-  && chown -R node:node /home/node/.claude /app
+# root-owned from the COPY/npm ci steps above. Pre-create `.claude` and
+# `.config/cursor` so the CLIs can write session state alongside the
+# bind-mounted credentials files (see docker-compose.yaml).
+RUN mkdir -p /home/node/.claude /home/node/.config/cursor \
+  && chown -R node:node /home/node/.claude /home/node/.config /app
 
 # Stays root here (unlike the old `USER node` at this point): the
 # entrypoint needs a moment as root to fix ownership on /repo/node_modules

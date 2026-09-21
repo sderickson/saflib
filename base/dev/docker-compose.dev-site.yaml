@@ -37,6 +37,7 @@ services:
       GIT_AUTHOR_EMAIL: ${GIT_AUTHOR_EMAIL:-}
       GIT_COMMITTER_NAME: ${GIT_COMMITTER_NAME:-}
       GIT_COMMITTER_EMAIL: ${GIT_COMMITTER_EMAIL:-}
+      AGENT_CLI_CREDENTIAL_STORE: file
     volumes:
       # Read-write: workflow "update" steps (see @saflib/new-workflows) edit
       # files here directly, same repo checkout the host sees.
@@ -53,6 +54,7 @@ services:
       # Host's Claude Code OAuth session (see resolve-claude-credentials.sh).
       # Read-write so the container's own token refresh writes back to it.
       - ./.claude-credentials.json:/home/node/.claude/.credentials.json
+      - ./.cursor-auth.json:/home/node/.config/cursor/auth.json
 
 volumes:
   repo_node_modules:
