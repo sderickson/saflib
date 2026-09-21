@@ -60,6 +60,7 @@ const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId`, () => HttpResponse.json({ run: runState })),
   http.get(`${ORIGIN}/api/runs/:runId/logs`, () => HttpResponse.json({ logs: logsState })),
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: stepsState })),
+  http.get(`${ORIGIN}/api/workflows/:id/steps`, () => HttpResponse.json({ steps: stepsState })),
 ];
 
 function emptyCommitDiff(overrides: Partial<Record<string, unknown>> = {}) {
@@ -77,8 +78,10 @@ function emptyCommitDiff(overrides: Partial<Record<string, unknown>> = {}) {
   };
 }
 
-function mountRunView() {
-  return mountTestApp(RunView, { props: { runId: "run-1" } });
+function mountRunView(props: { runId?: string; workflowRef?: string } = {}) {
+  return mountTestApp(RunView, {
+    props: { workflowRef: "example/hello", runId: "run-1", ...props },
+  });
 }
 
 describe("RunView", () => {
@@ -548,9 +551,23 @@ describe("RunView", () => {
     });
   });
 
-  it("Preview changes fetches and shows a file tree in place of the log, toggling back", async () => {
+  it("pre-run: shows the static step sidebar, a centered Preview button, and Init Workflow instead of VCR buttons", async () => {
+    const wrapper = mountRunView({ runId: undefined });
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("cd test-product/service/db");
+      expect(wrapper.text()).toContain("Say hello!");
+    });
+    expect(wrapper.findAll("button").find((b) => b.text() === "Preview changes")).toBeTruthy();
+    expect(wrapper.findAll("button").find((b) => b.text() === "Init Workflow")).toBeTruthy();
+    // No VCR buttons or Reflection button pre-run.
+    expect(wrapper.find('[aria-label="Play current step"]').exists()).toBe(false);
+    expect(wrapper.findAll("button").find((b) => b.text() === "Reflection")).toBeUndefined();
+  });
+
+  it("pre-run: Preview changes fetches and shows a file tree, with no skipped-steps note, toggling back to the button", async () => {
     server.use(
-      http.get(`${ORIGIN}/api/workflow-runs/:runId/preview-diff`, () =>
+      http.post(`${ORIGIN}/api/workflows/:id/preview-diff`, () =>
         HttpResponse.json({
           commit_diff: emptyCommitDiff(),
           entries: [
@@ -576,29 +593,49 @@ describe("RunView", () => {
       ),
     );
 
-    const wrapper = mountRunView();
+    const wrapper = mountRunView({ runId: undefined });
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("starting");
+      expect(wrapper.text()).toContain("Preview changes");
     });
 
     const previewButton = wrapper
       .findAll("button")
       .find((b) => b.text() === "Preview changes");
-    expect(previewButton).toBeTruthy();
     await previewButton!.trigger("click");
 
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("widget.ts");
     });
     expect(wrapper.text()).toContain("existing.ts");
-    expect(wrapper.text()).not.toContain("starting");
     // No skipped-steps note or diff content shown alongside the tree.
     expect(wrapper.text()).not.toContain("needs a real run");
 
-    const backButton = wrapper.findAll("button").find((b) => b.text() === "Back to log");
+    const backButton = wrapper.findAll("button").find((b) => b.text() === "Back");
     expect(backButton).toBeTruthy();
     await backButton!.trigger("click");
-    expect(wrapper.text()).toContain("starting");
+    expect(wrapper.findAll("button").find((b) => b.text() === "Preview changes")).toBeTruthy();
+  });
+
+  it("pre-run: Init Workflow creates the run", async () => {
+    let created: unknown;
+    server.use(
+      http.post(`${ORIGIN}/api/workflows/:id/runs`, async ({ request }) => {
+        created = await request.json();
+        return HttpResponse.json({ run: runFixture() }, { status: 201 });
+      }),
+    );
+
+    const wrapper = mountRunView({ runId: undefined });
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Init Workflow");
+    });
+
+    const initButton = wrapper.findAll("button").find((b) => b.text() === "Init Workflow");
+    await initButton!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(created).toBeTruthy();
+    });
   });
 
   it("Reflection navigates to the Checkout compare view for this run's base_commit_hash", async () => {

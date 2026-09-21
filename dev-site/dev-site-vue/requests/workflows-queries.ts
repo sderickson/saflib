@@ -144,6 +144,24 @@ export function useWorkflowRunStepsQuery(runId: MaybeRefOrGetter<string | undefi
   });
 }
 
+/**
+ * Same as `useWorkflowRunStepsQuery`, but for a workflow/plan file that's
+ * never been run — resolved straight from its definition instead of an
+ * existing run's `workflow_ref`, so a sidebar/outline can show before any
+ * run exists (see `RunView.vue`'s pre-run layout).
+ */
+export function useWorkflowStepsQuery(id: MaybeRefOrGetter<string | undefined>) {
+  const client = createWorkflowsClient();
+  return useQuery<NewWorkflowsResponseBody["getWorkflowSteps"][200], TanstackError>({
+    queryKey: ["new-workflows", "workflow-steps", id],
+    enabled: () => Boolean(toValue(id)),
+    queryFn: () =>
+      handleClientMethod(
+        client.GET("/api/workflows/{id}/steps", { params: { path: { id: toValue(id)! } } }),
+      ),
+  });
+}
+
 export function usePlansQuery() {
   const client = createWorkflowsClient();
   return useQuery<NewWorkflowsResponseBody["listPlans"][200], TanstackError>({

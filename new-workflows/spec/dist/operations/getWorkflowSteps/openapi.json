@@ -1,0 +1,113 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "getWorkflowSteps",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/workflows/{id}/steps": {
+      "get": {
+        "summary": "List a workflow's steps, without needing a run",
+        "description": "Same shape as `getWorkflowRunSteps`, but resolved straight from the workflow definition (a registered code id, or a plan file path) rather than an existing run's `workflow_ref` — for showing the sidebar/outline before a workflow has ever been started.\n",
+        "operationId": "getWorkflowSteps",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "A registered workflow's id, or a plan file's `path` (from GET /plans) — same value as POST /workflows/{id}/runs takes.\n",
+            "schema": {
+              "type": "string",
+              "example": "example/hello"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workflow's steps, in execution order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "steps"
+                  ],
+                  "properties": {
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-run-step"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No workflow or plan file with that id/path.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "workflow-run-step": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "kind"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "kind": {
+            "type": "string",
+            "example": "call-workflow"
+          },
+          "label": {
+            "type": "string",
+            "description": "Best-effort human-readable summary of the step's input.",
+            "example": "drizzle/add-query"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key/value breakdown of this step's own input fields (e.g. a call-workflow step's targetInput), for a detail list in the UI instead of cramming everything into `label`.\n",
+            "example": {
+              "path": "./schemas/todo.ts"
+            }
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

@@ -161,6 +161,59 @@
         }
       }
     },
+    "/api/workflows/{id}/steps": {
+      "get": {
+        "summary": "List a workflow's steps, without needing a run",
+        "description": "Same shape as `getWorkflowRunSteps`, but resolved straight from the workflow definition (a registered code id, or a plan file path) rather than an existing run's `workflow_ref` — for showing the sidebar/outline before a workflow has ever been started.\n",
+        "operationId": "getWorkflowSteps",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "A registered workflow's id, or a plan file's `path` (from GET /plans) — same value as POST /workflows/{id}/runs takes.\n",
+            "schema": {
+              "type": "string",
+              "example": "example/hello"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The workflow's steps, in execution order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "steps"
+                  ],
+                  "properties": {
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-run-step"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No workflow or plan file with that id/path.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/runs/{runId}": {
       "get": {
         "summary": "Get a run by id",
@@ -815,6 +868,39 @@
           }
         }
       },
+      "workflow-run-step": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "kind"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "kind": {
+            "type": "string",
+            "example": "call-workflow"
+          },
+          "label": {
+            "type": "string",
+            "description": "Best-effort human-readable summary of the step's input.",
+            "example": "drizzle/add-query"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key/value breakdown of this step's own input fields (e.g. a call-workflow step's targetInput), for a detail list in the UI instead of cramming everything into `label`.\n",
+            "example": {
+              "path": "./schemas/todo.ts"
+            }
+          }
+        }
+      },
       "step-result": {
         "description": "Result of advancing a run by one step (`POST /runs/{runId}/advance`) — the wire form of `new-workflows/lib`'s `StepResult`.\n",
         "discriminator": {
@@ -989,39 +1075,6 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
-          }
-        }
-      },
-      "workflow-run-step": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "index",
-          "kind"
-        ],
-        "properties": {
-          "index": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "kind": {
-            "type": "string",
-            "example": "call-workflow"
-          },
-          "label": {
-            "type": "string",
-            "description": "Best-effort human-readable summary of the step's input.",
-            "example": "drizzle/add-query"
-          },
-          "params": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "Key/value breakdown of this step's own input fields (e.g. a call-workflow step's targetInput), for a detail list in the UI instead of cramming everything into `label`.\n",
-            "example": {
-              "path": "./schemas/todo.ts"
-            }
           }
         }
       },

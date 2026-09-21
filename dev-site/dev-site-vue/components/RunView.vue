@@ -1,13 +1,14 @@
 <template>
   <div class="run-view">
     <header class="run-view__head">
-      <v-chip size="small" :color="statusVisual.color">
+      <v-chip v-if="runId" size="small" :color="statusVisual.color">
         <v-progress-circular v-if="statusVisual.spinner" size="12" width="2" indeterminate class="mr-1" />
         <v-icon v-else-if="statusVisual.icon" :icon="statusVisual.icon" size="14" class="mr-1" />
         {{ statusVisual.label }}
       </v-chip>
+      <v-chip v-else size="small">not started</v-chip>
       <v-spacer />
-      <span class="text-body-2 text-medium-emphasis">step {{ run?.current_step_index }}</span>
+      <span v-if="runId" class="text-body-2 text-medium-emphasis">step {{ run?.current_step_index }}</span>
     </header>
 
     <div class="run-view__body">
@@ -38,12 +39,24 @@
         </div>
       </aside>
 
-      <div v-if="viewMode === 'preview'" class="run-view__logs">
-        <v-progress-linear v-if="previewMutation.isPending.value" indeterminate class="mb-4" />
-        <v-alert v-if="previewMutation.isError.value" type="error" class="mb-4">
-          {{ previewMutation.error.value?.message }}
-        </v-alert>
-        <PreviewFileTree v-if="previewMutation.data.value" :files="previewFiles" />
+      <div v-if="!runId" class="run-view__logs run-view__logs--pre-run">
+        <div v-if="!previewShown" class="run-view__preview-cta">
+          <v-btn size="x-large" color="primary" variant="tonal" @click="openPreview()">
+            Preview changes
+          </v-btn>
+        </div>
+        <div v-else class="run-view__preview-result">
+          <div class="run-view__preview-result-head">
+            <span class="text-body-2 text-medium-emphasis">Preview changes</span>
+            <v-spacer />
+            <v-btn size="small" variant="text" @click="previewShown = false">Back</v-btn>
+          </div>
+          <v-progress-linear v-if="previewMutation.isPending.value" indeterminate class="mb-4" />
+          <v-alert v-if="previewMutation.isError.value" type="error" class="mb-4">
+            {{ previewMutation.error.value?.message }}
+          </v-alert>
+          <PreviewFileTree v-if="previewMutation.data.value" :files="previewFiles" />
+        </div>
       </div>
       <div v-else ref="logContainer" class="run-view__logs" @scroll="onScroll">
         <template v-for="item in logItems" :key="itemKey(item)">
@@ -112,56 +125,61 @@
 
       <div class="run-view__foot-actions">
         <div class="run-view__foot-actions-left">
-          <v-btn-group density="comfortable" variant="tonal" divided>
-            <v-btn
-              icon="mdi-stop"
-              :color="autoMode === 'stop' ? 'primary' : undefined"
-              :loading="cancelMutation.isPending.value"
-              aria-label="Stop"
-              title="Stop"
-              @click="selectStop()"
-            />
-            <v-btn
-              icon="mdi-play"
-              :disabled="isAdvancing || run?.status === 'done'"
-              :color="autoMode === 'step' ? 'primary' : undefined"
-              aria-label="Play current step"
-              title="Play current step"
-              @click="selectStep()"
-            />
-            <v-btn
-              icon="mdi-fast-forward"
-              :disabled="isAdvancing || run?.status === 'done'"
-              :color="autoMode === 'workflow' ? 'primary' : undefined"
-              aria-label="Play current workflow"
-              title="Play current workflow"
-              @click="selectWorkflow()"
-            />
-            <v-btn
-              icon="mdi-chevron-triple-right"
-              :disabled="isAdvancing || run?.status === 'done'"
-              :color="autoMode === 'plan' ? 'primary' : undefined"
-              aria-label="Play current plan"
-              title="Play current plan"
-              @click="selectPlan()"
-            />
-          </v-btn-group>
           <v-btn
-            variant="tonal"
-            class="ml-3"
-            :loading="previewMutation.isPending.value"
-            @click="togglePreview()"
+            v-if="!runId"
+            color="primary"
+            :loading="createRunMutation.isPending.value"
+            @click="initWorkflow()"
           >
-            {{ viewMode === "preview" ? "Back to log" : "Preview changes" }}
+            Init Workflow
           </v-btn>
-          <v-btn
-            v-if="run?.base_commit_hash"
-            variant="tonal"
-            class="ml-2"
-            @click="openReflection()"
-          >
-            Reflection
-          </v-btn>
+          <template v-else>
+            <v-btn-group density="comfortable" variant="tonal" divided>
+              <v-btn
+                icon="mdi-stop"
+                :color="autoMode === 'stop' ? 'primary' : undefined"
+                :loading="cancelMutation.isPending.value"
+                aria-label="Stop"
+                title="Stop"
+                @click="selectStop()"
+              />
+              <v-btn
+                icon="mdi-play"
+                :disabled="isAdvancing || run?.status === 'done'"
+                :color="autoMode === 'step' ? 'primary' : undefined"
+                aria-label="Play current step"
+                title="Play current step"
+                @click="selectStep()"
+              />
+              <v-btn
+                icon="mdi-fast-forward"
+                :disabled="isAdvancing || run?.status === 'done'"
+                :color="autoMode === 'workflow' ? 'primary' : undefined"
+                aria-label="Play current workflow"
+                title="Play current workflow"
+                @click="selectWorkflow()"
+              />
+              <v-btn
+                icon="mdi-chevron-triple-right"
+                :disabled="isAdvancing || run?.status === 'done'"
+                :color="autoMode === 'plan' ? 'primary' : undefined"
+                aria-label="Play current plan"
+                title="Play current plan"
+                @click="selectPlan()"
+              />
+            </v-btn-group>
+            <v-btn
+              v-if="run?.base_commit_hash"
+              variant="tonal"
+              class="ml-2"
+              @click="openReflection()"
+            >
+              Reflection
+            </v-btn>
+          </template>
+          <p v-if="createRunMutation.isError.value" class="text-error ml-2 mb-0">
+            {{ createRunMutation.error.value?.message }}
+          </p>
           <span v-if="isAdvancing" class="text-body-2 text-medium-emphasis ml-3">
             Agent is running…
           </span>
@@ -202,9 +220,11 @@ import {
   useWorkflowRunQuery,
   useWorkflowRunLogsQuery,
   useWorkflowRunStepsQuery,
+  useWorkflowStepsQuery,
   useAdvanceWorkflowRunMutation,
   useCancelWorkflowRunMutation,
-  usePreviewWorkflowRunDiffMutation,
+  useCreateWorkflowRunMutation,
+  usePreviewWorkflowDiffMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import { runStatusVisual, type RunStatusVisual } from "../run-status-visual.ts";
@@ -227,7 +247,17 @@ import {
 } from "../run-alerts.ts";
 
 const props = defineProps<{
-  runId: string;
+  /**
+   * A registered workflow's id, or a plan file's path — needed pre-run to
+   * fetch the static step list, preview changes, and create the run. Once
+   * `runId` is set, everything actually resolves through the run itself
+   * (which already knows its own `workflow_ref`); this stays required
+   * (rather than derived from the run) since the caller always has it
+   * on hand and it's what makes the pre-run layout possible at all.
+   */
+  workflowRef: string;
+  /** Present once a run exists — absent shows the pre-run layout (static steps, "Preview changes", "Init Workflow"). */
+  runId?: string;
   /**
    * Start already in "plan" mode and immediately begin advancing — set by
    * `PlansPage.vue` when it navigates here as the next step of a
@@ -238,7 +268,7 @@ const props = defineProps<{
   startInPlanMode?: boolean;
   /**
    * Other runs (e.g. earlier phases in the same plan folder), earliest
-   * first, to chain a preview onto — see `usePreviewWorkflowRunDiffMutation`'s
+   * first, to chain a preview onto — see `usePreviewWorkflowDiffMutation`'s
    * own doc comment. Optional: the caller (`PlansPage`) decides whether/how
    * to compute this; `RunView` itself has no notion of "sibling plans".
    */
@@ -257,28 +287,53 @@ const run = computed(() => runQuery.data.value?.run);
 const logsQuery = useWorkflowRunLogsQuery(runId);
 const logs = computed(() => logsQuery.data.value?.logs ?? []);
 const logItems = computed(() => groupLogs(logs.value));
-const stepsQuery = useWorkflowRunStepsQuery(runId);
+const runStepsQuery = useWorkflowRunStepsQuery(runId);
+// Pre-run: the same step list, resolved straight from the workflow/plan
+// definition instead of a run's own `workflow_ref` — see
+// `useWorkflowStepsQuery`'s doc comment.
+const workflowStepsQuery = useWorkflowStepsQuery(() => (runId.value ? undefined : props.workflowRef));
 // Config-defined (plan file) workflows are re-read from disk fresh on
 // every real `advance`/`GET .../steps` call server-side — reloading this
 // page is what picks up an on-disk edit; no client-side polling needed.
-const steps = computed(() => stepsQuery.data.value?.steps ?? []);
+const steps = computed(
+  () => (runId.value ? runStepsQuery.data.value?.steps : workflowStepsQuery.data.value?.steps) ?? [],
+);
 const advanceMutation = useAdvanceWorkflowRunMutation();
 const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
 
-const previewMutation = usePreviewWorkflowRunDiffMutation();
-const viewMode = ref<"logs" | "preview">("logs");
+/**
+ * Preview is a pre-run-only concept: once a real run exists, this pane
+ * always shows the live log — there's nothing left to preview that isn't
+ * either already committed or about to be shown as real progress. See the
+ * ask that removed the post-run preview toggle in favor of this simpler
+ * split.
+ */
+const previewMutation = usePreviewWorkflowDiffMutation();
+const previewShown = ref(false);
 const previewFiles = computed<PreviewFile[]>(() =>
   (previewMutation.data.value?.entries ?? []).flatMap((e) => e.files ?? []),
 );
 
-function togglePreview() {
-  if (viewMode.value === "preview") {
-    viewMode.value = "logs";
-    return;
-  }
-  viewMode.value = "preview";
-  previewMutation.mutate({ runId: runId.value, baseRunIds: baseRunIds.value });
+function openPreview() {
+  previewShown.value = true;
+  previewMutation.mutate({ id: props.workflowRef, baseRunIds: baseRunIds.value });
+}
+
+/**
+ * Creates the run — once it lands, the parent's own `workflow-runs` query
+ * (which is what feeds this component's `runId` prop, e.g. `PlansPage`'s
+ * `mostRecentRun`) refetches via this same invalidation and the prop
+ * updates on its own, flipping this view to the post-run layout. No local
+ * "just-created" fallback state needed: the same mechanism `PlansPage`
+ * already relied on for its old inline "Start workflow" button.
+ */
+const createRunMutation = useCreateWorkflowRunMutation();
+function initWorkflow() {
+  createRunMutation.mutate({
+    id: props.workflowRef,
+    body: { input: {}, mode: "run", agentConfig: { cli: "claude-agent" } },
+  });
 }
 
 /**
@@ -358,7 +413,8 @@ const extraPrompt = ref("");
 function continueRun(options: { revert?: boolean; skip?: boolean } = {}) {
   unlockAudio();
   advanceMutation.mutate({
-    runId: runId.value,
+    // Only ever called once a run exists — see the VCR buttons' `v-if="runId"`.
+    runId: runId.value!,
     ...options,
     extraPrompt: extraPrompt.value.trim() || undefined,
   });
@@ -397,7 +453,7 @@ const autoMode = ref<"stop" | "step" | "workflow" | "plan">("stop");
 function selectStop() {
   autoMode.value = "stop";
   if (isAdvancing.value) {
-    cancelMutation.mutate(runId.value);
+    cancelMutation.mutate(runId.value!);
   }
 }
 

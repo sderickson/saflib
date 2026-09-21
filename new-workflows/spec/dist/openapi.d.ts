@@ -46,6 +46,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workflows/{id}/steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a workflow's steps, without needing a run
+         * @description Same shape as `getWorkflowRunSteps`, but resolved straight from the workflow definition (a registered code id, or a plan file path) rather than an existing run's `workflow_ref` — for showing the sidebar/outline before a workflow has ever been started.
+         */
+        get: operations["getWorkflowSteps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs/{runId}": {
         parameters: {
             query?: never;
@@ -295,6 +315,25 @@ export interface components {
              */
             message?: string;
         };
+        "workflow-run-step": {
+            index: number;
+            /** @example call-workflow */
+            kind: string;
+            /**
+             * @description Best-effort human-readable summary of the step's input.
+             * @example drizzle/add-query
+             */
+            label?: string;
+            /**
+             * @description Key/value breakdown of this step's own input fields (e.g. a call-workflow step's targetInput), for a detail list in the UI instead of cramming everything into `label`.
+             * @example {
+             *       "path": "./schemas/todo.ts"
+             *     }
+             */
+            params?: {
+                [key: string]: string;
+            };
+        };
         /** @description Result of advancing a run by one step (`POST /runs/{runId}/advance`) — the wire form of `new-workflows/lib`'s `StepResult`. */
         "step-result": {
             /**
@@ -359,25 +398,6 @@ export interface components {
             content: string;
             /** Format: date-time */
             created_at: string;
-        };
-        "workflow-run-step": {
-            index: number;
-            /** @example call-workflow */
-            kind: string;
-            /**
-             * @description Best-effort human-readable summary of the step's input.
-             * @example drizzle/add-query
-             */
-            label?: string;
-            /**
-             * @description Key/value breakdown of this step's own input fields (e.g. a call-workflow step's targetInput), for a detail list in the UI instead of cramming everything into `label`.
-             * @example {
-             *       "path": "./schemas/todo.ts"
-             *     }
-             */
-            params?: {
-                [key: string]: string;
-            };
         };
         /** @description One workflow config file inside a plan folder. */
         "plan-file": {
@@ -598,6 +618,40 @@ export interface operations {
                 };
             };
             /** @description No registered workflow with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getWorkflowSteps: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A registered workflow's id, or a plan file's `path` (from GET /plans) — same value as POST /workflows/{id}/runs takes. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The workflow's steps, in execution order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        steps: components["schemas"]["workflow-run-step"][];
+                    };
+                };
+            };
+            /** @description No workflow or plan file with that id/path. */
             404: {
                 headers: {
                     [name: string]: unknown;

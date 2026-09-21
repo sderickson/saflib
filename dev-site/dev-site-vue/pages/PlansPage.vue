@@ -84,7 +84,7 @@
         <template #right>
           <div
             class="plans-page__content"
-            :class="{ 'plans-page__content--run': fileKind === 'workflow' && !!mostRecentRun }"
+            :class="{ 'plans-page__content--run': fileKind === 'workflow' }"
           >
             <p v-if="!fileName" class="text-body-2 text-medium-emphasis">
               Select a file on the left.
@@ -93,54 +93,15 @@
               <h2 class="plans-page__run-heading text-h6">{{ fileName }}</h2>
               <v-progress-linear v-if="runsQuery.isLoading.value" indeterminate class="ma-4" />
               <RunView
-                v-else-if="mostRecentRun"
-                :key="mostRecentRun.id"
-                :run-id="mostRecentRun.id"
+                v-else
+                :key="mostRecentRun?.id ?? selectedFilePath"
+                :workflow-ref="selectedFilePath!"
+                :run-id="mostRecentRun?.id"
                 :base-run-ids="earlierPhaseRunIds"
-                :start-in-plan-mode="pendingPlanCascadeRunId === mostRecentRun.id"
+                :start-in-plan-mode="!!mostRecentRun && pendingPlanCascadeRunId === mostRecentRun.id"
                 class="plans-page__run-view"
                 @plan-run-done="onPlanRunDone"
               />
-              <div v-else class="plans-page__run-start">
-                <p class="text-body-2 text-medium-emphasis mb-3">
-                  This workflow hasn't been run yet.
-                </p>
-                <v-btn
-                  color="primary"
-                  :loading="createRunMutation.isPending.value"
-                  @click="startWorkflow"
-                >
-                  Start workflow
-                </v-btn>
-                <v-btn
-                  variant="tonal"
-                  class="ml-2"
-                  :loading="unstartedPreviewMutation.isPending.value"
-                  @click="openUnstartedPreview"
-                >
-                  Preview changes
-                </v-btn>
-                <p v-if="createRunMutation.isError.value" class="text-error mt-2">
-                  {{ createRunMutation.error.value?.message }}
-                </p>
-                <v-card v-if="unstartedPreviewShown" variant="outlined" class="mt-3">
-                  <v-card-title class="text-body-1">Preview changes</v-card-title>
-                  <v-card-text>
-                    <v-progress-linear
-                      v-if="unstartedPreviewMutation.isPending.value"
-                      indeterminate
-                      class="mb-4"
-                    />
-                    <v-alert v-if="unstartedPreviewMutation.isError.value" type="error" class="mb-4">
-                      {{ unstartedPreviewMutation.error.value?.message }}
-                    </v-alert>
-                    <PreviewFileTree
-                      v-if="unstartedPreviewMutation.data.value"
-                      :files="unstartedPreviewFiles"
-                    />
-                  </v-card-text>
-                </v-card>
-              </div>
             </template>
             <template v-else>
               <h2 class="text-h6 mb-3">{{ fileName }}</h2>
@@ -163,15 +124,12 @@ import {
   useWorkflowRunsQuery,
   useCreateWorkflowRunMutation,
   useSiblingMostRecentRunIds,
-  usePreviewWorkflowDiffMutation,
 } from "../requests/workflows-queries.ts";
 import { useRepoFiles } from "../requests/queries.ts";
 import ResizableColumns from "../components/ResizableColumns.vue";
 import PlanFileContent from "../components/PlanFileContent.vue";
 import PlanNavIcon from "../components/PlanNavIcon.vue";
 import RunView from "../components/RunView.vue";
-import PreviewFileTree from "../components/PreviewFileTree.vue";
-import type { PreviewFile } from "../preview-file-tree.ts";
 
 const route = useRoute();
 const router = useRouter();
@@ -342,35 +300,11 @@ const earlierPhaseRunIds = computed(
   () => earlierPhaseRunIdsMaybe.value.filter((id): id is string => Boolean(id)),
 );
 
+// `createRunMutation` is also what `RunView`'s own "Init Workflow" button
+// uses to create a workflow's very first run — this instance here is only
+// for the plan-mode cascade below, which creates the *next* phase's run
+// itself (RunView has no notion of "what's the next file").
 const createRunMutation = useCreateWorkflowRunMutation();
-function startWorkflow() {
-  if (!selectedFilePath.value) return;
-  createRunMutation.mutate({
-    id: selectedFilePath.value,
-    body: { input: {}, mode: "run", agentConfig: { cli: "claude-agent" } },
-  });
-  // No navigation needed — creating a run invalidates this same
-  // `workflow-runs` query, so `mostRecentRun` above picks it up and
-  // `RunView` renders automatically.
-}
-
-// --- Preview before ever starting the workflow — same diff as RunView's
-// own "Preview changes", just against the plan file directly (`POST
-// /workflows/{id}/preview-diff`) instead of an existing run, since one
-// doesn't exist yet here. ---
-const unstartedPreviewMutation = usePreviewWorkflowDiffMutation();
-const unstartedPreviewShown = ref(false);
-const unstartedPreviewFiles = computed<PreviewFile[]>(() =>
-  (unstartedPreviewMutation.data.value?.entries ?? []).flatMap((e) => e.files ?? []),
-);
-function openUnstartedPreview() {
-  if (!selectedFilePath.value) return;
-  unstartedPreviewShown.value = true;
-  unstartedPreviewMutation.mutate({
-    id: selectedFilePath.value,
-    baseRunIds: earlierPhaseRunIds.value,
-  });
-}
 
 // --- "Play current plan" cascade (see RunView.vue's `selectPlan`): once a
 // plan-mode run finishes on its own, start the next workflow file
@@ -490,8 +424,5 @@ function onPlanRunDone() {
 .plans-page__run-view {
   flex: 1 1 auto;
   min-height: 0;
-}
-.plans-page__run-start {
-  padding: 0.5rem 1rem;
 }
 </style>

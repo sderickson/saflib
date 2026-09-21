@@ -20,6 +20,9 @@ paths:
       $ref: "./routes/runs/list-by-workflow.yaml#/listWorkflowRuns"
     post:
       $ref: "./routes/runs/create.yaml#/createWorkflowRun"
+  /api/workflows/{id}/steps:
+    get:
+      $ref: "./routes/workflows/steps.yaml#/getWorkflowSteps"
   /api/runs/{runId}:
     get:
       $ref: "./routes/runs/get.yaml#/getWorkflowRun"

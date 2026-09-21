@@ -122,6 +122,26 @@ describe("createNewWorkflowsRouter", () => {
     ]);
   });
 
+  it("GET /api/workflows/:id/steps lists the workflow's steps without needing a run", async () => {
+    const response = await request(app).get("/api/workflows/example%2Fhello/steps");
+    expect(response.status).toBe(200);
+    expect(response.body.steps).toEqual([
+      { index: 0, kind: "copy" },
+      {
+        index: 1,
+        kind: "update",
+        label: "update: file",
+        params: { fileId: "file", prompt: "Take a look at the generated file and confirm it looks right." },
+      },
+      { index: 2, kind: "command", label: "npm --version", params: { command: "npm", args: "--version" } },
+    ]);
+  });
+
+  it("GET /api/workflows/:id/steps 404s for an unknown workflow", async () => {
+    const response = await request(app).get("/api/workflows/does%2Fnot-exist/steps");
+    expect(response.status).toBe(404);
+  });
+
   it("GET /api/workflows/:id/runs lists runs for that workflow, newest first", async () => {
     const empty = await request(app).get("/api/workflows/example%2Fhello/runs");
     expect(empty.status).toBe(200);

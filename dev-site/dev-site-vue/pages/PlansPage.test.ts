@@ -92,6 +92,7 @@ const handlers = [
   ),
   http.get(`${ORIGIN}/api/runs/:runId/logs`, () => HttpResponse.json({ logs: [] })),
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: [] })),
+  http.get(`${ORIGIN}/api/workflows/:id/steps`, () => HttpResponse.json({ steps: [] })),
 ];
 
 const PHASE_1_PATH = "test-product/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml";
@@ -163,16 +164,14 @@ describe("PlansPage", () => {
     const wrapper = mountTestApp(PlansPage);
 
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("hasn't been run yet");
+      expect(wrapper.findAll("button").find((b) => b.text() === "Init Workflow")).toBeTruthy();
     });
-    const startButton = wrapper.findAll("button").find((b) => b.text() === "Start workflow");
-    expect(startButton).toBeTruthy();
+    const startButton = wrapper.findAll("button").find((b) => b.text() === "Init Workflow");
     await startButton!.trigger("click");
 
     // No route change at all — creating the run just makes it show up
     // inline via the same workflow-runs query, still on the same URL.
     await vi.waitFor(() => {
-      expect(wrapper.text()).not.toContain("hasn't been run yet");
       expect(wrapper.find('[aria-label="Play current step"]').exists()).toBe(true);
     });
     expect(router.currentRoute.value.path).toBe(
@@ -219,19 +218,20 @@ describe("PlansPage", () => {
     await router.push({ path: "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml" });
     const wrapper = mountTestApp(PlansPage);
 
-    await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("hasn't been run yet");
+    const previewButton = await vi.waitFor(() => {
+      const btn = wrapper.findAll("button").find((b) => b.text() === "Preview changes");
+      expect(btn).toBeTruthy();
+      return btn!;
     });
-    const previewButton = wrapper.findAll("button").find((b) => b.text() === "Preview changes");
-    expect(previewButton).toBeTruthy();
-    await previewButton!.trigger("click");
+    await previewButton.trigger("click");
 
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("todo.yaml");
     });
     expect(requestBody).toEqual({ input: undefined, cwd: undefined, baseRunIds: [] });
     expect(createdRun).toBe(false);
-    expect(wrapper.text()).toContain("hasn't been run yet");
+    // Still pre-run — Init Workflow, not the VCR buttons.
+    expect(wrapper.findAll("button").find((b) => b.text() === "Init Workflow")).toBeTruthy();
   });
 
   it("a .yaml file with existing runs shows the most recent one inline, no click needed", async () => {
@@ -300,19 +300,18 @@ describe("PlansPage", () => {
     });
   });
 
-  it("Preview changes on a later phase chains onto an earlier phase's most recent run", async () => {
+  it("Preview changes on a later phase (never run itself) chains onto an earlier phase's most recent run", async () => {
     const PHASE_2_PATH = "test-product/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml";
+    // Phase 1 has already been run; phase 2 hasn't — still in the pre-run
+    // layout, where "Preview changes" chains onto phase 1's own result.
     runsStateByFile[PHASE_1_PATH] = [runFixture({ id: "phase-1-run" })];
     runsById["phase-1-run"] = runFixture({ id: "phase-1-run" });
-    runsStateByFile[PHASE_2_PATH] = [
-      runFixture({ id: "phase-2-run", workflow_ref: PHASE_2_PATH }),
-    ];
-    runsById["phase-2-run"] = runFixture({ id: "phase-2-run", workflow_ref: PHASE_2_PATH });
 
-    let requestedUrl: string | undefined;
+    let requestBody: unknown;
     server.use(
-      http.get(`${ORIGIN}/api/workflow-runs/:runId/preview-diff`, ({ request }) => {
-        requestedUrl = request.url;
+      http.post(`${ORIGIN}/api/workflows/:id/preview-diff`, async ({ params, request }) => {
+        expect(decodeURIComponent(params.id as string)).toBe(PHASE_2_PATH);
+        requestBody = await request.json();
         return HttpResponse.json({
           commit_diff: {
             from_hash: "a",
@@ -341,10 +340,9 @@ describe("PlansPage", () => {
     await previewButton.trigger("click");
 
     await vi.waitFor(() => {
-      expect(requestedUrl).toBeDefined();
+      expect(requestBody).toBeDefined();
     });
-    const url = new URL(requestedUrl!);
-    expect(url.searchParams.getAll("baseRunId")).toEqual(["phase-1-run"]);
+    expect((requestBody as { baseRunIds?: string[] }).baseRunIds).toEqual(["phase-1-run"]);
   });
 
   it("arriving with ?workflow=&cwd= switches to the Save-as-plan form", async () => {
