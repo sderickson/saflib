@@ -93,7 +93,9 @@ export function createWorkflowsRouter(): IRouter {
     defaultCwd: () => devSiteHttpStorage.getStore()!.repo_root,
     plansRoot: () => {
       const store = devSiteHttpStorage.getStore()!;
-      return path.join(store.repo_root, store.product_root, "plans");
+      // Same `plans/notes/<date>-<name>/` layout the SPA lists and the
+      // process templates document (see `plansPrefix` in plan-files.ts).
+      return path.join(store.repo_root, store.product_root, "plans", "notes");
     },
   });
 }

@@ -10,7 +10,7 @@ function runFixture(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     id: "run-1",
     workflow_source: "code",
-    workflow_ref: "test-product/plans/example/phase-1.yaml",
+    workflow_ref: "test-product/plans/notes/example/phase-1.yaml",
     input: {},
     mode: "run",
     skip_todos: false,
@@ -38,14 +38,14 @@ describe("PlanNavIcon", () => {
 
   it("shows a fixed doc icon for markdown files, never querying runs", () => {
     const wrapper = mountWithPlugins(PlanNavIcon, {
-      props: { filePath: "test-product/plans/example/spec.md", kind: "markdown" },
+      props: { filePath: "test-product/plans/notes/example/spec.md", kind: "markdown" },
     });
     expect(wrapper.find(".v-icon").attributes("class")).toContain("mdi-file-document-outline");
   });
 
   it("shows a fixed generic-file icon for other file kinds", () => {
     const wrapper = mountWithPlugins(PlanNavIcon, {
-      props: { filePath: "test-product/plans/example/notes.txt", kind: "text" },
+      props: { filePath: "test-product/plans/notes/example/notes.txt", kind: "text" },
     });
     expect(wrapper.find(".v-icon").attributes("class")).toContain("mdi-file-outline");
   });
@@ -53,7 +53,7 @@ describe("PlanNavIcon", () => {
   it("shows a neutral play icon for a workflow file that's never been run", async () => {
     runsState = [];
     const wrapper = mountWithPlugins(PlanNavIcon, {
-      props: { filePath: "test-product/plans/example/phase-1.yaml", kind: "workflow" },
+      props: { filePath: "test-product/plans/notes/example/phase-1.yaml", kind: "workflow" },
     });
     await new Promise((r) => setTimeout(r, 10));
     await wrapper.vm.$nextTick();
@@ -63,7 +63,7 @@ describe("PlanNavIcon", () => {
   it("shows a green check for a workflow whose most recent run is done", async () => {
     runsState = [runFixture({ status: "done" })];
     const wrapper = mountWithPlugins(PlanNavIcon, {
-      props: { filePath: "test-product/plans/example/phase-1.yaml", kind: "workflow" },
+      props: { filePath: "test-product/plans/notes/example/phase-1.yaml", kind: "workflow" },
     });
     await new Promise((r) => setTimeout(r, 10));
     await wrapper.vm.$nextTick();
@@ -75,7 +75,7 @@ describe("PlanNavIcon", () => {
   it("shows a red x for a workflow whose most recent run failed", async () => {
     runsState = [runFixture({ status: "failed" })];
     const wrapper = mountWithPlugins(PlanNavIcon, {
-      props: { filePath: "test-product/plans/example/phase-1.yaml", kind: "workflow" },
+      props: { filePath: "test-product/plans/notes/example/phase-1.yaml", kind: "workflow" },
     });
     await new Promise((r) => setTimeout(r, 10));
     await wrapper.vm.$nextTick();
@@ -87,7 +87,7 @@ describe("PlanNavIcon", () => {
   it("shows a spinner (not the stale status icon) while the run is actively advancing", async () => {
     runsState = [runFixture({ status: "failed", is_advancing: true })];
     const wrapper = mountWithPlugins(PlanNavIcon, {
-      props: { filePath: "test-product/plans/example/phase-1.yaml", kind: "workflow" },
+      props: { filePath: "test-product/plans/notes/example/phase-1.yaml", kind: "workflow" },
     });
     await new Promise((r) => setTimeout(r, 10));
     await wrapper.vm.$nextTick();
@@ -98,7 +98,7 @@ describe("PlanNavIcon", () => {
   it("shows a light-blue pause icon when the run was stopped by the user, not a genuine failure", async () => {
     runsState = [runFixture({ status: "failed", was_cancelled: true })];
     const wrapper = mountWithPlugins(PlanNavIcon, {
-      props: { filePath: "test-product/plans/example/phase-1.yaml", kind: "workflow" },
+      props: { filePath: "test-product/plans/notes/example/phase-1.yaml", kind: "workflow" },
     });
     await new Promise((r) => setTimeout(r, 10));
     await wrapper.vm.$nextTick();

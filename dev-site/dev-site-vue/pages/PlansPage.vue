@@ -122,8 +122,8 @@ import {
   useWorkflowRunsQuery,
   useSiblingMostRecentRunIds,
 } from "../requests/workflows-queries.ts";
-import { useRepoFiles } from "../requests/queries.ts";
-import { PLANS_PREFIX, fileKindOf, groupPlanFiles, planFileHref } from "../plan-files.ts";
+import { useCheckout, useRepoFiles } from "../requests/queries.ts";
+import { plansPrefix, fileKindOf, groupPlanFiles, planFileHref } from "../plan-files.ts";
 import ResizableColumns from "../components/ResizableColumns.vue";
 import PlanFileContent from "../components/PlanFileContent.vue";
 import PlanNavIcon from "../components/PlanNavIcon.vue";
@@ -131,6 +131,9 @@ import RunView from "../components/RunView.vue";
 
 const route = useRoute();
 const router = useRouter();
+
+const { data: checkout } = useCheckout("");
+const plansRootPrefix = computed(() => plansPrefix(checkout.value?.product_root));
 
 // --- "Save as plan" — arriving from a package's Checkout page with
 // ?workflow=&cwd=. Unchanged from the old WorkflowsPage: this is the only
@@ -200,10 +203,14 @@ function savePlan() {
 // else, e.g. a plan's own spec.md). `ref: "HEAD"` still picks up
 // uncommitted working-tree files (see PackageDocsPane.vue's identical
 // use), so a freshly-written plan shows up without a commit. ---
-const filesQuery = useRepoFiles("", () => ({ ref: "HEAD", prefix: PLANS_PREFIX }));
+const filesQuery = useRepoFiles("", () => ({
+  ref: "HEAD",
+  prefix: plansRootPrefix.value,
+}));
 
-const planGroups = computed(() => groupPlanFiles(filesQuery.data.value?.files ?? []));
-
+const planGroups = computed(() =>
+  groupPlanFiles(filesQuery.data.value?.files ?? [], plansRootPrefix.value),
+);
 // --- Selected file, read off the route itself rather than via router
 // `props`, so this works regardless of whether a given router config
 // wires props through. ---
@@ -217,8 +224,8 @@ function isActive(folder: string, name: string): boolean {
 const selectedFilePath = computed(() => {
   if (!planName_.value || !fileName.value) return undefined;
   return planName_.value === "_"
-    ? `${PLANS_PREFIX}/${fileName.value}`
-    : `${PLANS_PREFIX}/${planName_.value}/${fileName.value}`;
+    ? `${plansRootPrefix.value}/${fileName.value}`
+    : `${plansRootPrefix.value}/${planName_.value}/${fileName.value}`;
 });
 
 const fileKind = computed(() => fileKindOf(fileName.value ?? ""));

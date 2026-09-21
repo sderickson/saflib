@@ -6,8 +6,14 @@ import {
   useCreateWorkflowRunMutation,
   useWorkflowRunLogsQuery,
 } from "./requests/workflows-queries.ts";
-import { useRepoFiles } from "./requests/queries.ts";
-import { PLANS_PREFIX, groupPlanFiles, findNextPlanFile, parsePlanFilePath, planFileHref } from "./plan-files.ts";
+import { useRepoFiles, useCheckout } from "./requests/queries.ts";
+import {
+  plansPrefix,
+  groupPlanFiles,
+  findNextPlanFile,
+  parsePlanFilePath,
+  planFileHref,
+} from "./plan-files.ts";
 import {
   unlockAudio,
   playSuccessBell,
@@ -89,7 +95,11 @@ function createOrchestrator(): RunOrchestrator {
   // Kept live for the whole app's lifetime so the plan-cascade can look up
   // "what's the next phase file" without depending on `PlansPage` being
   // mounted at the moment a run finishes.
-  const filesQuery = useRepoFiles("", () => ({ ref: "HEAD", prefix: PLANS_PREFIX }));
+  const { data: checkout } = useCheckout("");
+  const filesQuery = useRepoFiles("", () => ({
+    ref: "HEAD",
+    prefix: plansPrefix(checkout.value?.product_root),
+  }));
 
   function continueRun(
     runId: string,
@@ -148,9 +158,10 @@ function createOrchestrator(): RunOrchestrator {
   }
 
   async function cascadeToNextPhase(finishedRunId: string, workflowRef: string): Promise<void> {
-    const parsed = parsePlanFilePath(workflowRef);
+    const prefix = plansPrefix(checkout.value?.product_root);
+    const parsed = parsePlanFilePath(workflowRef, prefix);
     const files = filesQuery.data.value?.files ?? [];
-    const groups = groupPlanFiles(files);
+    const groups = groupPlanFiles(files, prefix);
     const next = parsed ? findNextPlanFile(groups, parsed.folder, parsed.fileName) : undefined;
     if (!parsed || !next) {
       // Nothing left to cascade to — release the run so other workflows can run.

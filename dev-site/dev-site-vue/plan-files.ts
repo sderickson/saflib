@@ -5,8 +5,16 @@
  * depending on any specific mounted page component).
  */
 
-/** Same assumption throughout this feature: plans and their files live directly under this one folder, not nested. */
-export const PLANS_PREFIX = "test-product/plans";
+/**
+ * Repo-relative directory that holds dated plan folders.
+ * Matches the on-disk convention (`product/plans/notes/<date>-<name>/`)
+ * used by pathclerk, vendata, and the SAF process templates — not a
+ * hardcoded product name.
+ */
+export function plansPrefix(productRoot: string | undefined): string {
+  const root = (productRoot ?? "").replace(/^\/+|\/+$/g, "");
+  return root ? `${root}/plans/notes` : "plans/notes";
+}
 
 export type PlanFileKind = "markdown" | "workflow" | "text";
 
@@ -28,12 +36,17 @@ export interface PlanGroup {
 }
 
 /** Groups a flat file list (as returned by `GET /repo/files`) by immediate plan subfolder. */
-export function groupPlanFiles(files: { path: string }[]): PlanGroup[] {
+export function groupPlanFiles(
+  files: { path: string }[],
+  prefix: string,
+): PlanGroup[] {
   const groups = new Map<string, PlanFileEntry[]>();
+  const prefixSlash = `${prefix}/`;
   for (const f of files) {
-    const rel = f.path.slice(PLANS_PREFIX.length + 1);
+    if (!f.path.startsWith(prefixSlash) && f.path !== prefix) continue;
+    const rel = f.path.slice(prefix.length + 1);
     const slashIndex = rel.indexOf("/");
-    // A file sitting directly under plans/, not inside its own dated
+    // A file sitting directly under plans/notes/, not inside its own dated
     // folder — grouped under a synthetic "_" folder rather than dropped.
     const folder = slashIndex === -1 ? "_" : rel.slice(0, slashIndex);
     const name = slashIndex === -1 ? rel : rel.slice(slashIndex + 1);
@@ -63,9 +76,12 @@ export function findNextPlanFile(
 }
 
 /** Splits a plan file's repo-relative path into its folder + file name, per `groupPlanFiles`' own grouping convention. */
-export function parsePlanFilePath(path: string): { folder: string; fileName: string } | undefined {
-  if (!path.startsWith(`${PLANS_PREFIX}/`)) return undefined;
-  const rel = path.slice(PLANS_PREFIX.length + 1);
+export function parsePlanFilePath(
+  path: string,
+  prefix: string,
+): { folder: string; fileName: string } | undefined {
+  if (!path.startsWith(`${prefix}/`)) return undefined;
+  const rel = path.slice(prefix.length + 1);
   const slashIndex = rel.indexOf("/");
   const folder = slashIndex === -1 ? "_" : rel.slice(0, slashIndex);
   const fileName = slashIndex === -1 ? rel : rel.slice(slashIndex + 1);

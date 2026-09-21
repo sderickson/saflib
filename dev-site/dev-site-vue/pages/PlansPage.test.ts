@@ -28,20 +28,20 @@ const workflowsResponse = {
 const filesResponse = {
   files: [
     {
-      path: "test-product/plans/2026-09-15-test-this-thing/test-this-thing.yaml",
+      path: "test-product/plans/notes/2026-09-15-test-this-thing/test-this-thing.yaml",
       blob_hash: "a",
     },
     {
-      path: "test-product/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml",
+      path: "test-product/plans/notes/2026-09-16-todo-app/phase-1-backend-schema.yaml",
       blob_hash: "b",
     },
     {
-      path: "test-product/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml",
+      path: "test-product/plans/notes/2026-09-16-todo-app/phase-2-backend-routes.yaml",
       blob_hash: "e",
     },
-    { path: "test-product/plans/2026-09-16-todo-app/todo-app.spec.md", blob_hash: "c" },
+    { path: "test-product/plans/notes/2026-09-16-todo-app/todo-app.spec.md", blob_hash: "c" },
     // A stray file directly under plans/, not in its own dated folder.
-    { path: "test-product/plans/add-list-users-query.yaml", blob_hash: "d" },
+    { path: "test-product/plans/notes/add-list-users-query.yaml", blob_hash: "d" },
   ],
 };
 
@@ -49,7 +49,7 @@ function runFixture(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     id: "run-1",
     workflow_source: "code",
-    workflow_ref: "test-product/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml",
+    workflow_ref: "test-product/plans/notes/2026-09-16-todo-app/phase-1-backend-schema.yaml",
     input: {},
     mode: "run",
     skip_todos: false,
@@ -79,6 +79,18 @@ let runsStateByFile: Record<string, unknown[]> = {};
 let runsById: Record<string, unknown> = {};
 
 const handlers = [
+  http.get(`${ORIGIN}/api/checkout`, () =>
+    HttpResponse.json({
+      hash: "abc",
+      message: "test",
+      authored_at: "2026-09-15T00:00:00.000Z",
+      analyzed: true,
+      product_root: "test-product",
+      branch: "main",
+      compare_candidates: [],
+      packages: [],
+    }),
+  ),
   http.get(`${ORIGIN}/api/workflows`, () => HttpResponse.json(workflowsResponse)),
   http.get(`${ORIGIN}/api/repo/files`, () => HttpResponse.json(filesResponse)),
   http.get(`${ORIGIN}/api/repo/file`, ({ request }) => {
@@ -96,7 +108,7 @@ const handlers = [
   http.get(`${ORIGIN}/api/workflows/:id/steps`, () => HttpResponse.json({ steps: [] })),
 ];
 
-const PHASE_1_PATH = "test-product/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml";
+const PHASE_1_PATH = "test-product/plans/notes/2026-09-16-todo-app/phase-1-backend-schema.yaml";
 
 describe("PlansPage", () => {
   stubGlobals();
@@ -137,7 +149,7 @@ describe("PlansPage", () => {
       expect(wrapper.find(".plan-file-content__markdown h1").text()).toBe("Spec");
     });
     expect(wrapper.text()).toContain(
-      "content for test-product/plans/2026-09-16-todo-app/todo-app.spec.md",
+      "content for test-product/plans/notes/2026-09-16-todo-app/todo-app.spec.md",
     );
   });
 
@@ -255,7 +267,7 @@ describe("PlansPage", () => {
   });
 
   it("Play current plan cascades to the next phase file once this run finishes", async () => {
-    const PHASE_2_PATH = "test-product/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml";
+    const PHASE_2_PATH = "test-product/plans/notes/2026-09-16-todo-app/phase-2-backend-routes.yaml";
     runsStateByFile[PHASE_1_PATH] = [runFixture()];
     runsById["run-1"] = runFixture();
 
@@ -303,7 +315,7 @@ describe("PlansPage", () => {
   });
 
   it("Preview changes on a later phase (never run itself) chains onto an earlier phase's most recent run", async () => {
-    const PHASE_2_PATH = "test-product/plans/2026-09-16-todo-app/phase-2-backend-routes.yaml";
+    const PHASE_2_PATH = "test-product/plans/notes/2026-09-16-todo-app/phase-2-backend-routes.yaml";
     // Phase 1 has already been run; phase 2 hasn't — still in the pre-run
     // layout, where "Preview changes" chains onto phase 1's own result.
     runsStateByFile[PHASE_1_PATH] = [runFixture({ id: "phase-1-run" })];
@@ -370,7 +382,7 @@ describe("PlansPage", () => {
               folder: "2026-09-15-my-plan",
               name: "my-plan",
               files: [
-                { name: "my-plan.yaml", path: "test-product/plans/2026-09-15-my-plan/my-plan.yaml" },
+                { name: "my-plan.yaml", path: "test-product/plans/notes/2026-09-15-my-plan/my-plan.yaml" },
               ],
             },
           },
