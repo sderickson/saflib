@@ -28,8 +28,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { parseToolLogPayload } from "@saflib/new-workflows";
-import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
+import {
+  parseToolLogPayload,
+  type WorkflowLogEntry,
+} from "@saflib/new-workflows-spec";
 
 const props = defineProps<{
   name: string;

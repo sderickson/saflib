@@ -25,6 +25,13 @@ export type StepResult = components["schemas"]["StepResult"];
 export type PlanFile = components["schemas"]["PlanFile"];
 export type PlanSummary = components["schemas"]["PlanSummary"];
 
+export {
+  parseToolLogPayload,
+  type ToolUseLogPayload,
+  type ToolResultLogPayload,
+  type ToolLogPayload,
+} from "./tool-log-payload.ts";
+
 import * as json from "./dist/openapi.json" with { type: "json" };
 
 /**

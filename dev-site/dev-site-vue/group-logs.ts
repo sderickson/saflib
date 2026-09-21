@@ -1,5 +1,7 @@
-import { parseToolLogPayload } from "@saflib/new-workflows";
-import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
+import {
+  parseToolLogPayload,
+  type WorkflowLogEntry,
+} from "@saflib/new-workflows-spec";
 
 export interface ToolCallGroup {
   type: "tool-call";

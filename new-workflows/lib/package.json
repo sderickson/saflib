@@ -20,14 +20,14 @@
     "@saflib/new-workflows-db": "*",
     "@saflib/new-workflows-spec": "*",
     "@saflib/utils": "*",
-    "minimatch": "^10.1.1",
     "ajv": "^8.17.1",
+    "minimatch": "^10.2.6",
     "yaml": "^2.6.1"
   },
   "devDependencies": {
     "@saflib/dev-tools": "*",
-    "@saflib/vitest": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
   },
   "sideEffects": false
 }
