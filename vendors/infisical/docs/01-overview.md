@@ -18,4 +18,6 @@ Environment (see `env.schema.json`):
 - **`INFISICAL_PROJECT_ID`** — project id (optional when token is `mock`)
 - **`INFISICAL_ENVIRONMENT`** — environment slug (e.g. `dev`, `staging`, `prod`)
 
+On startup, `configureSecretStore()` logs whether the store came up in **live** or **mock** mode (token length / project prefix / environment — never the raw token). If live mode is missing project id or environment, it logs an error. Ensure secret env files end with a trailing newline so Docker Compose does not drop the last variable.
+
 Vendor packages such as [`@saflib/vendors-brevo`](../../brevo/docs/01-overview.md) fetch API keys through the configured store.
