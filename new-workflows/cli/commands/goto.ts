@@ -1,6 +1,7 @@
 import { getByIdWorkflowRun, updateStatusAndStepWorkflowRun } from "@saflib/new-workflows-db";
 import type { CliContext } from "../types.ts";
 import { readRunPointer } from "../run-pointer.ts";
+import { cliCwd } from "../cli-cwd.ts";
 
 /** Debugging aid: jump `current_step_index` directly. No XState snapshot surgery needed. */
 export function addGotoCommand(ctx: CliContext): void {
@@ -9,7 +10,7 @@ export function addGotoCommand(ctx: CliContext): void {
     .description("Jump the current run to a specific step index.")
     .argument("<stepIndex>", "Step index to jump to")
     .action(async (stepIndexArg: string) => {
-      const pointer = readRunPointer(process.cwd());
+      const pointer = readRunPointer(cliCwd());
       if (!pointer) {
         console.error("No run found for this directory.");
         process.exitCode = 1;

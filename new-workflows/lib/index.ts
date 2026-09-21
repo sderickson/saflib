@@ -8,13 +8,15 @@ export {
   isRunAdvancing,
   type AdvanceRunOptions,
 } from "./engine.ts";
-export { stepSkipIf } from "./conditional-step.ts";
+export { stepSkipIf, isWorkflowStepSkip } from "./conditional-step.ts";
 export { commitIfDirty, revertUncommittedChanges } from "./git.ts";
 export { RUN_LOCK_MESSAGE } from "./run-lock.ts";
 
 export {
   runCopyStep,
   repairJsonAfterDroppedLines,
+  resolveCopyTargetPaths,
+  resolveCopyTargetPath,
   type CopyStepInput,
 } from "./steps/copy/copy-step.ts";
 export { runUpdateStep, type UpdateStepInput } from "./steps/update.ts";

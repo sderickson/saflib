@@ -5,9 +5,7 @@ import {
   readFileSync,
   writeFileSync,
   rmSync,
-  readdirSync,
   statSync,
-  type Dirent,
   type Stats,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -22,10 +20,11 @@ import {
   closeScratchIndex,
   type ScratchIndex,
 } from "@saflib/git";
-import { runCopyStep, type CopyStepInput } from "../steps/copy/copy-step.ts";
+import { runCopyStep, resolveCopyTargetPaths, type CopyStepInput } from "../steps/copy/copy-step.ts";
 import { runTransformFileStep, type TransformFileStepInput } from "../steps/transform-file.ts";
 import type { CdStepInput } from "../steps/cd.ts";
 import type { CallWorkflowStepInput } from "../steps/call-workflow.ts";
+import { isWorkflowStepSkip } from "../conditional-step.ts";
 import type { DbKey } from "@saflib/new-workflows-db";
 import type { WorkflowContext, WorkflowDefinition } from "../types.ts";
 
@@ -147,6 +146,16 @@ async function walkSteps(
 
     if (step.kind === "copy" || step.kind === "transform-file") {
       const stepInput = step.input({ context });
+      if (isWorkflowStepSkip(stepInput)) {
+        state.entries.push({
+          workflowId: def.id,
+          stepIndex,
+          kind: step.kind,
+          applied: false,
+          reason: "skipped (stepSkipIf)",
+        });
+        continue;
+      }
       try {
         const files = await applyFileStep(state, step.kind, stepInput, rollingCwd);
         state.entries.push({ workflowId: def.id, stepIndex, kind: step.kind, applied: true, files });
@@ -163,9 +172,33 @@ async function walkSteps(
     }
 
     if (step.kind === "call-workflow") {
-      const stepInput = step.input({ context }) as CallWorkflowStepInput;
+      const stepInput = step.input({ context });
+      if (isWorkflowStepSkip(stepInput)) {
+        state.entries.push({
+          workflowId: def.id,
+          stepIndex,
+          kind: step.kind,
+          applied: false,
+          reason: "skipped (stepSkipIf)",
+        });
+        continue;
+      }
+      const callInput = stepInput as CallWorkflowStepInput;
       state.entries.push({ workflowId: def.id, stepIndex, kind: step.kind, applied: true });
-      await walkSteps(state, stepInput.targetDefinition, stepInput.targetInput, rollingCwd, rollingCwd);
+      await walkSteps(state, callInput.targetDefinition, callInput.targetInput, rollingCwd, rollingCwd);
+      continue;
+    }
+
+    // Evaluate input so stepSkipIf still short-circuits non-file kinds.
+    const maybeSkipped = step.input({ context });
+    if (isWorkflowStepSkip(maybeSkipped)) {
+      state.entries.push({
+        workflowId: def.id,
+        stepIndex,
+        kind: step.kind,
+        applied: false,
+        reason: "skipped (stepSkipIf)",
+      });
       continue;
     }
 
@@ -204,12 +237,15 @@ async function applyFileStep(
   stepInput: unknown,
   cwd: string,
 ): Promise<PreviewFileChange[]> {
-  const relRoot =
+  // Only the destinations this step will write — never the whole package
+  // `targetDir` (vue/add-view's targetDir is the clients/ parent; materializing
+  // that pulled fonts/images and made SPA previews take tens of seconds).
+  const absTargets =
     kind === "copy"
-      ? path.relative(state.scratchRoot, (stepInput as CopyStepInput).targetDir)
-      : path.relative(state.scratchRoot, resolveTransformFilePath(stepInput as TransformFileStepInput, cwd));
+      ? resolveCopyTargetPaths(stepInput as CopyStepInput)
+      : [resolveTransformFilePath(stepInput as TransformFileStepInput, cwd)];
 
-  const existingBlobHashes = materialize(state, relRoot);
+  const existingBlobHashes = materializePaths(state, absTargets);
   try {
     const ctx = fileStepContext(state, cwd);
     const outcome =
@@ -219,9 +255,20 @@ async function applyFileStep(
     if (outcome.status === "error") {
       throw new Error(outcome.message);
     }
-    return await commitTouchedFiles(state, relRoot, existingBlobHashes);
+
+    const writtenAbs =
+      kind === "copy"
+        ? Object.values(
+            (outcome.result as { copiedFiles?: Record<string, string> } | undefined)
+              ?.copiedFiles ?? {},
+          )
+        : absTargets;
+
+    return await commitPaths(state, writtenAbs, existingBlobHashes);
   } finally {
-    rmSync(path.join(state.scratchRoot, relRoot), { recursive: true, force: true });
+    for (const abs of absTargets) {
+      rmSync(abs, { force: true });
+    }
   }
 }
 
@@ -229,15 +276,25 @@ function resolveTransformFilePath(input: TransformFileStepInput, cwd: string): s
   return input.filePath.startsWith("/") ? input.filePath : path.join(cwd, input.filePath);
 }
 
+function toRepoRelative(state: WalkState, absPath: string): string {
+  return path.relative(state.scratchRoot, absPath).split(path.sep).join("/");
+}
+
 /**
- * Pulls the current running commit's version of `relRoot` (file or
- * directory) onto scratch disk, returning each pulled path's existing blob
- * hash — used afterward to tell a genuinely new/changed file (worth
- * reporting) apart from one the step merely left untouched (e.g. a sibling
- * file that happened to sit inside a `copy` step's whole `targetDir`).
+ * Pulls only the given absolute scratch paths (that already exist in the
+ * running commit) onto disk, returning each path's current blob hash.
  */
-function materialize(state: WalkState, relRoot: string): Map<string, string> {
-  const { result: entries, error } = listTree(state.repoRoot, state.currentHash, relRoot);
+function materializePaths(state: WalkState, absPaths: string[]): Map<string, string> {
+  const relPaths = [
+    ...new Set(
+      absPaths
+        .map((abs) => toRepoRelative(state, abs))
+        .filter((rel) => rel && !rel.startsWith("..") && !path.isAbsolute(rel)),
+    ),
+  ];
+  if (relPaths.length === 0) return new Map();
+
+  const { result: entries, error } = listTree(state.repoRoot, state.currentHash, relPaths);
   if (error) throw error;
   if (!entries || entries.length === 0) return new Map();
 
@@ -252,30 +309,42 @@ function materialize(state: WalkState, relRoot: string): Map<string, string> {
     if (content === undefined) continue;
     const dest = path.join(state.scratchRoot, entry.path);
     mkdirSync(path.dirname(dest), { recursive: true });
+    // Preview only materializes text merge targets (routers, strings, …).
+    // Binary untouched siblings are never listed here after the path filter.
     writeFileSync(dest, content, "utf-8");
   }
 
   return new Map(entries.map((e) => [e.path, e.blobHash]));
 }
 
-/** Hashes and stages every file now present under `relRoot`, then advances the running commit. */
-async function commitTouchedFiles(
+/** Hashes and stages only the written paths, then advances the running commit. */
+async function commitPaths(
   state: WalkState,
-  relRoot: string,
+  absPaths: string[],
   existingBlobHashes: Map<string, string>,
 ): Promise<PreviewFileChange[]> {
-  const absRoot = path.join(state.scratchRoot, relRoot);
-  const files = listFilesRecursive(absRoot);
-  if (files.length === 0) return [];
-
+  const unique = [...new Set(absPaths)];
   const changes: PreviewFileChange[] = [];
-  for (const absFile of files) {
-    const relPath = path.relative(state.scratchRoot, absFile).split(path.sep).join("/");
-    const content = readFileSync(absFile, "utf-8");
+  let staged = 0;
+
+  for (const absFile of unique) {
+    let stats: Stats;
+    try {
+      stats = statSync(absFile);
+    } catch {
+      continue;
+    }
+    if (!stats.isFile()) continue;
+
+    const relPath = toRepoRelative(state, absFile);
+    // Raw bytes — copy may write binaries via copyFile without transforming.
+    const content = readFileSync(absFile);
     const { result: blobHash, error } = writeBlob(state.repoRoot, content);
     if (error) throw error;
     const { error: setError } = setIndexEntry(state.scratch, relPath, blobHash!);
     if (setError) throw setError;
+    staged += 1;
+
     const existingBlobHash = existingBlobHashes.get(relPath);
     if (existingBlobHash === undefined) {
       changes.push({ path: relPath, status: "added" });
@@ -283,6 +352,8 @@ async function commitTouchedFiles(
       changes.push({ path: relPath, status: "modified" });
     }
   }
+
+  if (staged === 0) return changes;
 
   const { result: treeHash, error: treeError } = writeScratchTree(state.scratch);
   if (treeError) throw treeError;
@@ -295,20 +366,4 @@ async function commitTouchedFiles(
   if (commitError) throw commitError;
   state.currentHash = newHash!;
   return changes;
-}
-
-/** `root` may itself be a single file (transform-file's `relRoot`) or a directory (copy's). */
-function listFilesRecursive(root: string): string[] {
-  let stats: Stats;
-  try {
-    stats = statSync(root);
-  } catch {
-    return [];
-  }
-  if (stats.isFile()) return [root];
-
-  const entries: Dirent[] = readdirSync(root, { recursive: true, withFileTypes: true });
-  return entries
-    .filter((e) => e.isFile())
-    .map((e) => path.join(e.parentPath, e.name));
 }

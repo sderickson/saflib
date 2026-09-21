@@ -3,6 +3,11 @@ import type { StepFn, WorkflowStep } from "./types.ts";
 
 const SKIP_MARKER = Symbol("workflow-step-skip");
 
+/** True when `stepSkipIf` decided the step should be a no-op. */
+export function isWorkflowStepSkip(input: unknown): boolean {
+  return input === SKIP_MARKER;
+}
+
 /**
  * Wraps a step so it's a no-op success when `skipIf` is true, evaluated
  * against the same built `context: C` a step's `input()` builder already
@@ -27,7 +32,7 @@ export function stepSkipIf<Input, C>(
     kind: inner.kind,
     input: (arg) => (skipIf(arg as { context: C }) ? SKIP_MARKER : inner.input(arg)),
     run: async (rawInput, ctx) => {
-      if (rawInput === SKIP_MARKER) return { status: "success" };
+      if (isWorkflowStepSkip(rawInput)) return { status: "success" };
       return inner.run(rawInput, ctx);
     },
   };

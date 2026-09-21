@@ -2,13 +2,14 @@ import type { DbKey } from "@saflib/drizzle";
 import { getByIdWorkflowRun, getChildByParentStepWorkflowRun } from "@saflib/new-workflows-db";
 import type { CliContext } from "../types.ts";
 import { readRunPointer } from "../run-pointer.ts";
+import { cliCwd } from "../cli-cwd.ts";
 
 export function addStatusCommand(ctx: CliContext): void {
   ctx.program
     .command("status")
     .description("Show the status of the current run (from .new-workflow-run.json).")
     .action(async () => {
-      const pointer = readRunPointer(process.cwd());
+      const pointer = readRunPointer(cliCwd());
       if (!pointer) {
         console.error("No run found for this directory.");
         process.exitCode = 1;

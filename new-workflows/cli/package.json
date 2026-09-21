@@ -26,6 +26,18 @@
     "@saflib/new-workflows-spec": "*",
     "@saflib/drizzle": "*",
     "@saflib/drizzle-workflows": "*",
+    "@saflib/openapi-workflows": "*",
+    "@saflib/express-workflows": "*",
+    "@saflib/sdk-workflows": "*",
+    "@saflib/vue-workflows": "*",
+    "@saflib/cron-http-workflows": "*",
+    "@saflib/env-workflows": "*",
+    "@saflib/monorepo-workflows": "*",
+    "@saflib/integrations-workflows": "*",
+    "@saflib/email-service-workflows": "*",
+    "@saflib/jobs-http-workflows": "*",
+    "@saflib/service-workflows": "*",
+    "@saflib/processes-workflows": "*",
     "@saflib/git": "*"
   },
   "devDependencies": {

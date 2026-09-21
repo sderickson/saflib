@@ -8,6 +8,7 @@ import {
 } from "@saflib/new-workflows";
 import type { CliContext } from "../types.ts";
 import { parseNamedArgs } from "../args.ts";
+import { cliCwd } from "../cli-cwd.ts";
 
 /**
  * A file can appear in more than one step's `files` list (e.g. added by one
@@ -81,6 +82,7 @@ function findRepoRoot(cwd: string): string {
  * conflict), never as a plain skip.
  */
 function isExpectedSkip(entry: PreviewStepEntry): boolean {
+  if (entry.reason === "skipped (stepSkipIf)") return true;
   return entry.kind !== "copy" && entry.kind !== "transform-file";
 }
 
@@ -95,7 +97,7 @@ export function addPreviewCommand(ctx: CliContext): void {
     .argument("<id-or-path>", "Workflow id, or path to a workflow file")
     .argument("[args...]", "Named args for the workflow (--key=value)")
     .action(async (idOrPath: string, args: string[]) => {
-      const cwd = process.cwd();
+      const cwd = cliCwd();
       const repoRoot = findRepoRoot(cwd);
       const definition = await loadWorkflowDefinition(idOrPath, ctx.registry, { cwd });
       const input = parseNamedArgs(args, definition.inputSchema);

@@ -7,7 +7,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./add-route": "./add-route.ts",
+    "./add-schema": "./add-schema.ts",
+    "./add-event": "./add-event.ts"
   },
   "scripts": {
     "test": "vitest run",

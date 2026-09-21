@@ -208,6 +208,35 @@ function sharedPrefixOf(paths: string[]): string {
   return prefix;
 }
 
+/**
+ * Absolute destination path a template source would be written to under
+ * `targetDir` — same naming rules as {@link runCopyStep}, without I/O.
+ * Used by workflow preview to materialize/stage only the handful of files
+ * a copy touches, not the entire `targetDir` package tree.
+ */
+export function resolveCopyTargetPath(
+  sourcePath: string,
+  sharedPrefix: string,
+  targetDir: string,
+  name: string | undefined,
+  lineReplace: ((line: string) => string) | undefined,
+): string {
+  const relativePath = path.relative(sharedPrefix, sourcePath);
+  let intermediaryDir = relativePath.includes("/") ? path.dirname(relativePath) : "";
+  if (lineReplace) intermediaryDir = lineReplace(intermediaryDir);
+  const targetFileName = transformName(path.basename(sourcePath), name, lineReplace);
+  return path.join(targetDir, intermediaryDir, targetFileName);
+}
+
+/** Absolute destination paths for every file {@link runCopyStep} would write. */
+export function resolveCopyTargetPaths(input: CopyStepInput): string[] {
+  const templateFiles = flattenTemplateFiles(input);
+  const sharedPrefix = input.templateRoot ?? sharedPrefixOf(Object.values(templateFiles));
+  return Object.values(templateFiles).map((sourcePath) =>
+    resolveCopyTargetPath(sourcePath, sharedPrefix, input.targetDir, input.name, input.lineReplace),
+  );
+}
+
 async function copyAndRenameOneFile(params: {
   fileId: string;
   sourcePath: string;
@@ -220,11 +249,14 @@ async function copyAndRenameOneFile(params: {
 }): Promise<{ fileName: string; filePath: string; fileExisted: boolean }> {
   const { sourcePath, sharedPrefix, targetDir, name, lineReplace, workflowId, flags } =
     params;
-  const relativePath = path.relative(sharedPrefix, sourcePath);
-  let intermediaryDir = relativePath.includes("/") ? path.dirname(relativePath) : "";
-  if (lineReplace) intermediaryDir = lineReplace(intermediaryDir);
-  const targetFileName = transformName(path.basename(sourcePath), name, lineReplace);
-  const targetPath = path.join(targetDir, intermediaryDir, targetFileName);
+  const targetPath = resolveCopyTargetPath(
+    sourcePath,
+    sharedPrefix,
+    targetDir,
+    name,
+    lineReplace,
+  );
+  const targetFileName = path.basename(targetPath);
 
   const fileExisted = fs.existsSync(targetPath);
   if (fileExisted) {

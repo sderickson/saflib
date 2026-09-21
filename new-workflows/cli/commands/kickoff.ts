@@ -6,6 +6,7 @@ import { loadWorkflowDefinition } from "@saflib/new-workflows";
 import { runAdvanceLoop } from "../advance-loop.ts";
 import { reportOutcome } from "../report-outcome.ts";
 import { writeRunPointer } from "../run-pointer.ts";
+import { cliCwd } from "../cli-cwd.ts";
 
 const RUN_VALUE_TO_CLI: Record<string, AgentCli> = {
   cursor: "cursor-agent",
@@ -40,18 +41,19 @@ export function addKickoffCommand(ctx: CliContext): void {
     .addOption(runOption)
     .addOption(skipTodosOption)
     .action(async (idOrPath: string, args: string[], options: { run?: string; skipTodos?: boolean }) => {
-      const definition = await loadWorkflowDefinition(idOrPath, ctx.registry);
+      const cwd = cliCwd();
+      const definition = await loadWorkflowDefinition(idOrPath, ctx.registry, { cwd });
       const input = parseNamedArgs(args, definition.inputSchema);
       const agentConfig = parseAgent(options.run);
 
       const runId = await createRun(ctx.dbKey, definition, {
         input,
-        cwd: process.cwd(),
+        cwd,
         mode: agentConfig ? "run" : "print",
         agentConfig,
         skipTodos: options.skipTodos,
       });
-      writeRunPointer(process.cwd(), { runId, idOrPath });
+      writeRunPointer(cwd, { runId, idOrPath });
       console.log(`Started run ${runId} for ${definition.id}`);
 
       const outcome = await runAdvanceLoop(ctx.dbKey, definition, runId);
