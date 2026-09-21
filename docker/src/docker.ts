@@ -107,6 +107,18 @@ function readLockRootManifest(rootDir: string): {
   return lock.packages?.[""];
 }
 
+/**
+ * Production images run `npm ci --omit=dev`. Dropping `devDependencies` from
+ * staged manifests keeps `npm ci` from requiring lock entries for tooling that
+ * never installs into the image (eslint trees, @types/*, vitest, …).
+ */
+function stripDevDependencies(
+  pj: Record<string, unknown>,
+): Record<string, unknown> {
+  const { devDependencies: _devDependencies, ...rest } = pj;
+  return rest;
+}
+
 function stagePackageJsonsForInstall(
   ctx: MonorepoContext,
   imageName: string,
@@ -119,7 +131,9 @@ function stagePackageJsonsForInstall(
   const rootPackageJson = JSON.parse(
     readFileSync(path.join(ctx.rootDir, "package.json"), "utf-8"),
   ) as Record<string, unknown>;
-  const stagedRootPackageJson = stripPackageJsonForInstall(rootPackageJson);
+  const stagedRootPackageJson = stripDevDependencies(
+    stripPackageJsonForInstall(rootPackageJson),
+  );
   stagedRootPackageJson.name = stageRootPackageName(
     typeof stagedRootPackageJson.name === "string"
       ? stagedRootPackageJson.name
@@ -127,14 +141,11 @@ function stagePackageJsonsForInstall(
     imageName,
   );
   stagedRootPackageJson.private = true;
+  // Lock root omits override metadata; restating overrides in the staged
+  // root makes `npm ci` reject the copied lock (EUSAGE / Missing: …).
+  delete stagedRootPackageJson.overrides;
   if (isSaflibMonorepoRoot(ctx.rootDir, stagedRootPackageJson.name)) {
-    // Saflib lock root omits override metadata; restating overrides in the staged
-    // root makes `npm ci` reject the copied lock (EUSAGE / Missing: …).
-    delete stagedRootPackageJson.overrides;
     const lockRoot = readLockRootManifest(ctx.rootDir);
-    if (lockRoot?.devDependencies) {
-      stagedRootPackageJson.devDependencies = lockRoot.devDependencies;
-    }
     if (lockRoot?.dependencies) {
       stagedRootPackageJson.dependencies = lockRoot.dependencies;
     }
@@ -144,9 +155,19 @@ function stagePackageJsonsForInstall(
     JSON.stringify(stagedRootPackageJson, null, 2) + "\n",
   );
 
+  const lockfile = JSON.parse(
+    readFileSync(path.join(ctx.rootDir, "package-lock.json"), "utf-8"),
+  ) as {
+    packages?: Record<string, Record<string, unknown> | undefined>;
+  };
+  for (const entry of Object.values(lockfile.packages ?? {})) {
+    if (entry && "devDependencies" in entry) {
+      delete entry.devDependencies;
+    }
+  }
   writeFileSync(
     path.join(stageDir, "package-lock.json"),
-    readFileSync(path.join(ctx.rootDir, "package-lock.json")),
+    JSON.stringify(lockfile, null, 2) + "\n",
   );
 
   for (const script of [
@@ -176,7 +197,11 @@ function stagePackageJsonsForInstall(
     mkdirSync(path.dirname(dest), { recursive: true });
     writeFileSync(
       dest,
-      JSON.stringify(stripPackageJsonForInstall(packageJson), null, 2) + "\n",
+      JSON.stringify(
+        stripDevDependencies(stripPackageJsonForInstall(packageJson)),
+        null,
+        2,
+      ) + "\n",
     );
   }
 }

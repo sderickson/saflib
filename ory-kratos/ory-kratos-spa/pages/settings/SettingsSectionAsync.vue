@@ -24,7 +24,8 @@ import type { SettingsTabQueryValue } from "./Settings.logic.ts";
 const props = defineProps<{
   /**
    * Account (or host) settings section to show. Maps to former settings `tab=` values
-   * (`email` | `password` | `totp` | `sessions`).
+   * (`profile` | `email` | `password` | `totp` | `sessions`).
+   * Profile and email both use the Kratos `profile` group with trait filtering.
    */
   section: SettingsTabQueryValue;
 }>();

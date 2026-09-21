@@ -1,12 +1,5 @@
 export * from "./helpers.ts";
 export {
-  assertNoRootResponseBodies,
-  findRootResponseBodyViolations,
-  type AssertNoRootResponseBodiesOptions,
-  type RootResponseAllowKey,
-  type RootResponseBodyViolation,
-} from "./no-root-response-bodies.ts";
-export {
   OPENAPI_ENFORCED_TAGS,
   OPENAPI_ENFORCED_TAG_CATALOG,
   OPENAPI_ENFORCED_TAG_SET,
@@ -17,9 +10,7 @@ export {
   OPENAPI_TAG_NO_AUTH,
   OPENAPI_TAG_SITE_ADMIN_ONLY,
   assertOpenApiOperationTags,
-  assertOpenApiRouteFileTags,
   findUnknownOpenApiOperationTags,
-  findUnknownOpenApiRouteFileTags,
   type OpenApiEnforcedTag,
   type OpenApiEnforcedTagMeta,
   type OpenApiTagViolation,

@@ -94,7 +94,7 @@ export function existingSaflibMessage(
     "",
     `  npm exec saf-workflow kickoff product/init ${productName} ${domain}`,
     "",
-    "See saflib/product/docs/workflows/create.md for details.",
+    "See saflib/getting-started.md and saflib/product/docs/workflows/init.md for details.",
   ].join("\n");
 }
 

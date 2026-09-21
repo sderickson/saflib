@@ -81,9 +81,15 @@ export interface UnhoistedRegistryDependencyIssue {
 export interface LockfileVersionSkewIssue {
   kind: "lockfile-version-skew";
   dependency: string;
+  /** Nested product lock key that differs from the platform. */
   productLockfileKey: string;
   productVersion: string;
   platformVersion: string;
+  /** Platform lock key to copy from (`node_modules/…` or e.g. `workflows/node_modules/…`). */
+  platformLockfileKey: string;
+  /** Product lock key to write (`node_modules/…` or `saflib/workflows/node_modules/…`). */
+  productAlignKey: string;
+  rootLockfileKey: string;
 }
 
 /**
@@ -537,16 +543,42 @@ export function findLockfileVersionSkew(
   for (const [key, entry] of Object.entries(packages)) {
     const parsed = parseNestedSaflibRegistryLockKey(key);
     if (!parsed || !entry?.version || entry.link) continue;
-    const platformVersion = platform.resolvedVersions.get(parsed.dependency);
+    // Prefer the platform's same nested path (e.g. monorepo/node_modules/eslint@10)
+    // over the root-hoisted version — intentional dual installs are not skew.
+    const platformNestedKey = key.startsWith("saflib/")
+      ? key.slice("saflib/".length)
+      : undefined;
+    const platformNestedEntry = platformNestedKey
+      ? platform.lockPackages[platformNestedKey]
+      : undefined;
+    const platformRootEntry = platform.lockPackages[parsed.rootLockfileKey];
+    const platformLockfileKey = platformNestedEntry?.version
+      ? platformNestedKey!
+      : platformRootEntry?.version
+        ? parsed.rootLockfileKey
+        : undefined;
+    if (!platformLockfileKey) continue;
+
+    const platformVersion =
+      platform.lockPackages[platformLockfileKey]?.version ??
+      platform.resolvedVersions.get(parsed.dependency);
     if (!platformVersion || platformVersion === entry.version) continue;
     if (seen.has(parsed.dependency)) continue;
     seen.add(parsed.dependency);
+
+    const productAlignKey = platformLockfileKey.startsWith("node_modules/")
+      ? platformLockfileKey
+      : `saflib/${platformLockfileKey}`;
+
     issues.push({
       kind: "lockfile-version-skew",
       dependency: parsed.dependency,
       productLockfileKey: key,
       productVersion: entry.version,
       platformVersion,
+      platformLockfileKey,
+      productAlignKey,
+      rootLockfileKey: parsed.rootLockfileKey,
     });
   }
 
@@ -594,8 +626,9 @@ export function findRootLockfileVersionSkew(
   return issues;
 }
 
-/** True for exact versions like `8.0.13`; false for `^5.0.0`, `~6.0.0`, `*`. */
-export function isExactOverrideVersion(spec: string): boolean {
+/** True for exact versions like `8.0.13`; false for `^5.0.0`, `~6.0.0`, `*`, or nested override objects. */
+export function isExactOverrideVersion(spec: unknown): boolean {
+  if (typeof spec !== "string") return false;
   return /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(spec.trim());
 }
 
@@ -726,27 +759,106 @@ function hoistLockfileEntries(
   return hoisted;
 }
 
+/**
+ * Align skewed nested lock entries with the platform lock.
+ *
+ * Copies the platform package tree to the product align key (root `node_modules/…`
+ * or an intentional nested path like `saflib/workflows/node_modules/…`), then
+ * removes leftover nested saflib copies. This avoids the delete-and-hope cycle
+ * where npm re-resolves latest and `npm ci` fails on a missing version.
+ */
+export function alignSkewedLockfileEntries(
+  lockfile: PackageLock,
+  issues: LockfileVersionSkewIssue[],
+  platform: PlatformContract,
+): string[] {
+  const packages = lockfile.packages ?? (lockfile.packages = {});
+  const aligned: string[] = [];
+
+  for (const issue of issues) {
+    const platformEntry = platform.lockPackages[issue.platformLockfileKey];
+    if (!platformEntry?.version) {
+      // No platform package to copy — fall back to deleting the nested skew only.
+      deleteLockfileTree(packages, issue.productLockfileKey);
+      aligned.push(issue.dependency);
+      continue;
+    }
+
+    copyLockfileTree(
+      packages,
+      platform.lockPackages,
+      issue.platformLockfileKey,
+      issue.productAlignKey,
+    );
+
+    if (issue.productAlignKey === issue.rootLockfileKey) {
+      // Root is now platform-aligned — drop every nested saflib copy of this dep.
+      deleteNestedSaflibCopies(packages, issue.dependency);
+    } else if (issue.productLockfileKey !== issue.productAlignKey) {
+      deleteLockfileTree(packages, issue.productLockfileKey);
+    }
+
+    aligned.push(issue.dependency);
+  }
+
+  return aligned;
+}
+
+/** @deprecated Use {@link alignSkewedLockfileEntries}. */
 export function removeNestedLockfileEntries(
   lockfile: PackageLock,
   issues: LockfileVersionSkewIssue[],
+  platform?: PlatformContract,
 ): string[] {
+  if (platform) {
+    return alignSkewedLockfileEntries(lockfile, issues, platform);
+  }
   const packages = lockfile.packages ?? {};
   const removed: string[] = [];
-
   for (const issue of issues) {
-    const keysToDelete = Object.keys(packages).filter(
-      (key) =>
-        key === issue.productLockfileKey ||
-        key.startsWith(`${issue.productLockfileKey}/`),
-    );
-    if (keysToDelete.length === 0) continue;
-    for (const key of keysToDelete) {
-      delete packages[key];
-    }
+    deleteLockfileTree(packages, issue.productLockfileKey);
     removed.push(issue.dependency);
   }
-
   return removed;
+}
+
+function copyLockfileTree(
+  productPackages: Record<string, LockPackageEntry | undefined>,
+  platformPackages: Record<string, LockPackageEntry | undefined>,
+  platformSourceKey: string,
+  productDestKey: string,
+): void {
+  deleteLockfileTree(productPackages, productDestKey);
+  for (const [key, entry] of Object.entries(platformPackages)) {
+    if (!entry) continue;
+    if (key !== platformSourceKey && !key.startsWith(`${platformSourceKey}/`)) {
+      continue;
+    }
+    const suffix = key.slice(platformSourceKey.length);
+    productPackages[`${productDestKey}${suffix}`] = { ...entry };
+  }
+}
+
+function deleteLockfileTree(
+  packages: Record<string, LockPackageEntry | undefined>,
+  rootKey: string,
+): void {
+  for (const key of Object.keys(packages)) {
+    if (key === rootKey || key.startsWith(`${rootKey}/`)) {
+      delete packages[key];
+    }
+  }
+}
+
+function deleteNestedSaflibCopies(
+  packages: Record<string, LockPackageEntry | undefined>,
+  dependency: string,
+): void {
+  for (const key of Object.keys(packages)) {
+    const parsed = parseNestedSaflibRegistryLockKey(key);
+    if (parsed?.dependency !== dependency) continue;
+    deleteLockfileTree(packages, key);
+  }
 }
 
 export function syncPlatformOverrides(
@@ -876,6 +988,7 @@ function formatIssue(issue: LockPruneIssue): string[] {
     case "lockfile-version-skew":
       return [
         `${issue.dependency} resolves to ${issue.productVersion} in the product lockfile but ${issue.platformVersion} in saflib/package-lock.json.`,
+        `  align lock entry: ${issue.productAlignKey} -> ${issue.platformVersion} (from ${issue.platformLockfileKey})`,
         `  remove nested lock entry: ${issue.productLockfileKey}`,
       ];
     case "platform-override-sync":
@@ -984,6 +1097,7 @@ export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
     unhoistedRegistry.length > 0 ||
     versionSkew.length > 0
   ) {
+    const platform = readPlatformContract(analysis.rootDir);
     writePrunedLockfile(analysis.lockfilePath, (lockfile) => {
       if (hoistingHazards.length > 0) {
         for (const peer of hoistMisplacedLockfilePeers(lockfile, hoistingHazards)) {
@@ -1001,9 +1115,13 @@ export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
         }
       }
       if (versionSkew.length > 0) {
-        for (const dep of removeNestedLockfileEntries(lockfile, versionSkew)) {
+        for (const dep of alignSkewedLockfileEntries(
+          lockfile,
+          versionSkew,
+          platform,
+        )) {
           applied.push(
-            `removed skewed lock entry for ${dep}; rerun npm install to align with saflib`,
+            `aligned ${dep} to saflib lock version and removed nested skew`,
           );
         }
       }

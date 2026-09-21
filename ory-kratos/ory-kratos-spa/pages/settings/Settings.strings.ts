@@ -1,5 +1,8 @@
 export const settings_tabs = {
-  general: "General",
+  profile: "Profile",
+  email: "Email",
+  /** @deprecated Use {@link settings_tabs.profile}; kept for older string lookups. */
+  general: "Profile",
   password: "Password",
   totp: "Authenticator app (TOTP)",
   passkey: "Passkeys",
@@ -32,6 +35,7 @@ export const settings_password_recovery = {
 
 export const settings_group_empty = {
   no_profile_fields: "No profile fields are available for this account.",
+  no_email_fields: "Email update is not available for this account.",
   no_password_fields: "Password update is not available for this account.",
   no_totp_fields: "Authenticator app setup is not available for this account.",
   no_passkey_fields: "Passkey management is not available for this account.",

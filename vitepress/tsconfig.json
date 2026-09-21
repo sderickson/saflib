@@ -1,9 +1,5 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "include": [
-    "**/*.ts",
-    "**/*.json"
-  ],
   "exclude": [
     "node_modules",
     "dist/types",
@@ -15,20 +11,15 @@
     "**/workflows/template/**",
     "**/workflows/templates/**"
   ],
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ],
   "compilerOptions": {
     "rootDir": ".",
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "outDir": "./dist/types",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "noEmit": false,
-    "emitDeclarationOnly": true,
-    "types": [
-      "vite/client",
-      "node"
-    ]
-  },
-  "references": [
-    {
-      "path": "../../env"
-    }
-  ]
+    "emitDeclarationOnly": true
+  }
 }

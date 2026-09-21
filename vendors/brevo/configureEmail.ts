@@ -12,20 +12,25 @@ export const BREVO_API_KEY_NAME = "BREVO_API_KEY";
  */
 export async function configureEmail(store: SecretStore): Promise<EmailService> {
   const out = await store.getSecretByName(BREVO_API_KEY_NAME, packageSecrets);
+  const { log } = getSafReporters();
   let apiKey: string | "mock";
   if (out.result !== undefined && out.result.trim() !== "") {
     apiKey = out.result.trim();
   } else {
-    const { log } = getSafReporters();
+    // Put details in the message — console printf omits winston metadata.
+    const detail = out.error
+      ? `${out.error.name}: ${out.error.message}`
+      : "empty result";
     log.warn(
-      "[email] BREVO_API_KEY not found in secret store, using mock",
-      out.error?.message ? { err: out.error.message } : undefined,
+      `[email] BREVO_API_KEY not found in secret store, using mock (${detail})`,
     );
     apiKey = "mock";
   }
 
   const client = createEmailService(apiKey);
-  const { log } = getSafReporters();
-  log.info(`emailClient made with apiKey: ${apiKey.slice(0, 16) + "..."}`);
+  const mode = apiKey === "mock" ? "mock" : "live";
+  log.info(
+    `emailClient made with apiKey: ${apiKey.slice(0, 16) + "..."} (${mode})`,
+  );
   return client;
 }
