@@ -8,6 +8,7 @@ import RunView from "./RunView.vue";
 import { mountTestApp } from "../test-app.ts";
 import { router } from "../pages/test_router.ts";
 import * as runAlerts from "../run-alerts.ts";
+import { __resetRunOrchestratorForTests } from "../run-orchestrator.ts";
 
 const ORIGIN = "http://localhost:3000";
 
@@ -93,6 +94,7 @@ describe("RunView", () => {
   enableAutoUnmount(afterEach);
 
   beforeEach(() => {
+    __resetRunOrchestratorForTests();
     runState = runFixture();
     logsState = [
       {
@@ -666,5 +668,103 @@ describe("RunView", () => {
     });
 
     expect(wrapper.findAll("button").find((b) => b.text() === "Reflection")).toBeUndefined();
+  });
+
+  it("mode buttons stay clickable while this run's own advance is in flight, and switching mode doesn't re-fire a call immediately", async () => {
+    let advanceCalls = 0;
+    let resolveAdvance!: (value: unknown) => void;
+    const advancePromise = new Promise((resolve) => {
+      resolveAdvance = resolve;
+    });
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, async () => {
+        advanceCalls++;
+        await advancePromise;
+        return HttpResponse.json({ status: "success", result: {} });
+      }),
+    );
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    await wrapper.find('[aria-label="Play current workflow"]').trigger("click");
+    await vi.waitFor(() => {
+      expect(wrapper.find('[aria-label="Stop"]').attributes("disabled")).toBeFalsy();
+    });
+    expect(advanceCalls).toBe(1);
+
+    // Switching to "step" mode mid-flight is allowed (not disabled) — it
+    // just changes what happens on the *next* continuation, it doesn't
+    // re-fire immediately while this run's own advance is still pending.
+    const stepButton = wrapper.find('[aria-label="Play current step"]');
+    expect(stepButton.attributes("disabled")).toBeFalsy();
+    await stepButton.trigger("click");
+    expect(advanceCalls).toBe(1);
+
+    resolveAdvance({});
+  });
+
+  it("survives navigating away and back: the auto-continue chain keeps advancing across an unmount/remount of RunView", async () => {
+    let advanceCount = 0;
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, () => {
+        advanceCount++;
+        if (advanceCount >= 3) return HttpResponse.json({ status: "done" });
+        return HttpResponse.json({ status: "success", result: {} });
+      }),
+    );
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+    await wrapper.find('[aria-label="Play current workflow"]').trigger("click");
+    await vi.waitFor(() => {
+      expect(advanceCount).toBeGreaterThanOrEqual(1);
+    });
+
+    // Simulate navigating away: unmount this instance entirely.
+    wrapper.unmount();
+
+    // The chain — owned by the orchestrator singleton, not the unmounted
+    // component — keeps going on its own, with nothing mounted at all.
+    await vi.waitFor(() => {
+      expect(advanceCount).toBe(3);
+    });
+
+    // Simulate navigating back: a fresh instance for the same run reflects
+    // that it's still the orchestrator's active run, without re-kicking off
+    // a redundant advance of its own.
+    const wrapper2 = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper2.text()).toContain("starting");
+    });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(advanceCount).toBe(3);
+  });
+
+  it("disables the VCR group for a run that isn't the orchestrator's active run", async () => {
+    server.use(
+      http.get(`${ORIGIN}/api/runs/:runId`, ({ params }) =>
+        HttpResponse.json({ run: runFixture({ id: params.runId }) }),
+      ),
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, async () => {
+        await new Promise((r) => setTimeout(r, 50));
+        return HttpResponse.json({ status: "success", result: {} });
+      }),
+    );
+
+    const activeWrapper = mountRunView({ runId: "run-1" });
+    await vi.waitFor(() => expect(activeWrapper.text()).toContain("starting"));
+    await activeWrapper.find('[aria-label="Play current workflow"]').trigger("click");
+
+    const otherWrapper = mountRunView({ runId: "run-2" });
+    await vi.waitFor(() => {
+      expect(otherWrapper.find('[aria-label="Play current step"]').attributes("disabled")).not.toBeUndefined();
+    });
+    expect(otherWrapper.find('[aria-label="Play current workflow"]').attributes("disabled")).not.toBeUndefined();
+    expect(otherWrapper.find('[aria-label="Play current plan"]').attributes("disabled")).not.toBeUndefined();
   });
 });

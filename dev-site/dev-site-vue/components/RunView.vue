@@ -83,7 +83,7 @@
         <em>Waiting on the agent.</em>
       </div>
       <div v-if="run?.status === 'awaiting_user'" class="mb-3">
-        <em>{{ (advanceMutation.data.value as { message?: string } | undefined)?.message }}</em>
+        <em>{{ (orchestrator.advanceMutation.data.value as { message?: string } | undefined)?.message }}</em>
       </div>
       <v-alert
         v-if="run?.status === 'failed' && !isAdvancing"
@@ -134,35 +134,40 @@
             Init Workflow
           </v-btn>
           <template v-else>
-            <v-btn-group density="comfortable" variant="tonal" divided>
+            <v-btn-group
+              density="comfortable"
+              variant="tonal"
+              divided
+              :title="isOtherRunActive ? 'Another workflow is currently running' : undefined"
+            >
               <v-btn
                 icon="mdi-stop"
-                :color="autoMode === 'stop' ? 'primary' : undefined"
-                :loading="cancelMutation.isPending.value"
+                :color="isActiveRun && autoMode === 'stop' ? 'primary' : undefined"
+                :loading="isActiveRun && orchestrator.cancelMutation.isPending.value"
                 aria-label="Stop"
                 title="Stop"
                 @click="selectStop()"
               />
               <v-btn
                 icon="mdi-play"
-                :disabled="isAdvancing || run?.status === 'done'"
-                :color="autoMode === 'step' ? 'primary' : undefined"
+                :disabled="run?.status === 'done' || isOtherRunActive || (isAdvancing && !isActiveRun)"
+                :color="isActiveRun && autoMode === 'step' ? 'primary' : undefined"
                 aria-label="Play current step"
                 title="Play current step"
                 @click="selectStep()"
               />
               <v-btn
                 icon="mdi-fast-forward"
-                :disabled="isAdvancing || run?.status === 'done'"
-                :color="autoMode === 'workflow' ? 'primary' : undefined"
+                :disabled="run?.status === 'done' || isOtherRunActive || (isAdvancing && !isActiveRun)"
+                :color="isActiveRun && autoMode === 'workflow' ? 'primary' : undefined"
                 aria-label="Play current workflow"
                 title="Play current workflow"
                 @click="selectWorkflow()"
               />
               <v-btn
                 icon="mdi-chevron-triple-right"
-                :disabled="isAdvancing || run?.status === 'done'"
-                :color="autoMode === 'plan' ? 'primary' : undefined"
+                :disabled="run?.status === 'done' || isOtherRunActive || (isAdvancing && !isActiveRun)"
+                :color="isActiveRun && autoMode === 'plan' ? 'primary' : undefined"
                 aria-label="Play current plan"
                 title="Play current plan"
                 @click="selectPlan()"
@@ -176,6 +181,9 @@
             >
               Reflection
             </v-btn>
+            <span v-if="isOtherRunActive" class="text-body-2 text-medium-emphasis ml-3">
+              Another workflow is currently running.
+            </span>
           </template>
           <p v-if="createRunMutation.isError.value" class="text-error ml-2 mb-0">
             {{ createRunMutation.error.value?.message }}
@@ -221,12 +229,11 @@ import {
   useWorkflowRunLogsQuery,
   useWorkflowRunStepsQuery,
   useWorkflowStepsQuery,
-  useAdvanceWorkflowRunMutation,
-  useCancelWorkflowRunMutation,
   useCreateWorkflowRunMutation,
   usePreviewWorkflowDiffMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
+import { useRunOrchestrator } from "../run-orchestrator.ts";
 import { runStatusVisual, type RunStatusVisual } from "../run-status-visual.ts";
 import LogEntry from "./LogEntry.vue";
 import LogEntryGroup from "./LogEntryGroup.vue";
@@ -235,11 +242,6 @@ import PreviewFileTree from "./PreviewFileTree.vue";
 import type { PreviewFile } from "../preview-file-tree.ts";
 import { groupLogs, type LogItem } from "../group-logs.ts";
 import {
-  unlockAudio,
-  playSuccessBell,
-  playFailureQuack,
-  requestNotificationPermission,
-  notify,
   getVolume,
   setVolume,
   isMuted,
@@ -259,14 +261,6 @@ const props = defineProps<{
   /** Present once a run exists — absent shows the pre-run layout (static steps, "Preview changes", "Init Workflow"). */
   runId?: string;
   /**
-   * Start already in "plan" mode and immediately begin advancing — set by
-   * `PlansPage.vue` when it navigates here as the next step of a
-   * plan-mode cascade (see `selectPlan`'s own doc comment). Read once, on
-   * mount; `PlansPage` keys this component by run id so a new cascade
-   * step is always a fresh instance, not a prop update on a reused one.
-   */
-  startInPlanMode?: boolean;
-  /**
    * Other runs (e.g. earlier phases in the same plan folder), earliest
    * first, to chain a preview onto — see `usePreviewWorkflowDiffMutation`'s
    * own doc comment. Optional: the caller (`PlansPage`) decides whether/how
@@ -274,13 +268,10 @@ const props = defineProps<{
    */
   baseRunIds?: string[];
 }>();
-const emit = defineEmits<{
-  /** Fired when this run finishes on its own while in "plan" mode — see `selectPlan`. */
-  "plan-run-done": [];
-}>();
 const runId = computed(() => props.runId);
 const baseRunIds = computed(() => props.baseRunIds ?? []);
 const router = useRouter();
+const orchestrator = useRunOrchestrator();
 
 const runQuery = useWorkflowRunQuery(runId);
 const run = computed(() => runQuery.data.value?.run);
@@ -298,8 +289,6 @@ const workflowStepsQuery = useWorkflowStepsQuery(() => (runId.value ? undefined 
 const steps = computed(
   () => (runId.value ? runStepsQuery.data.value?.steps : workflowStepsQuery.data.value?.steps) ?? [],
 );
-const advanceMutation = useAdvanceWorkflowRunMutation();
-const cancelMutation = useCancelWorkflowRunMutation();
 useRunEvents(runId);
 
 /**
@@ -371,8 +360,17 @@ function openReflection() {
  * is happening", and no way to Stop it either.
  */
 const isAdvancing = computed(
-  () => advanceMutation.isPending.value || run.value?.is_advancing === true,
+  () =>
+    (orchestrator.activeRunId.value === runId.value && orchestrator.advanceMutation.isPending.value) ||
+    run.value?.is_advancing === true,
 );
+
+/** Some *other* run is currently being driven — only one workflow can run at a time. */
+const isOtherRunActive = computed(
+  () => orchestrator.activeRunId.value !== undefined && orchestrator.activeRunId.value !== runId.value,
+);
+/** This run is the one the orchestrator is (or most recently was) driving — gates showing its mode color/spinner. */
+const isActiveRun = computed(() => orchestrator.activeRunId.value === runId.value);
 
 /** Same spinner/paused/status icon logic as the plans-page nav icon — kept
  * in sync via the shared `runStatusVisual` util rather than duplicated. */
@@ -399,8 +397,6 @@ function stepStatusClasses(step: { index: number }): Record<string, boolean> {
   };
 }
 
-requestNotificationPermission();
-
 const extraPrompt = ref("");
 
 /**
@@ -409,12 +405,11 @@ const extraPrompt = ref("");
  * (there's no meaningful difference at the API level: both are just a
  * POST /advance, optionally carrying `revert`/`skip`/an extra prompt — see
  * the ask to fold "retry" into one universal "continue"/Play action).
+ * Routes through the shared orchestrator so it participates in the same
+ * in-flight/active-run bookkeeping as the VCR buttons below.
  */
 function continueRun(options: { revert?: boolean; skip?: boolean } = {}) {
-  unlockAudio();
-  advanceMutation.mutate({
-    // Only ever called once a run exists — see the VCR buttons' `v-if="runId"`.
-    runId: runId.value!,
+  orchestrator.continueRun(runId.value!, props.workflowRef, {
     ...options,
     extraPrompt: extraPrompt.value.trim() || undefined,
   });
@@ -422,79 +417,26 @@ function continueRun(options: { revert?: boolean; skip?: boolean } = {}) {
 }
 
 /**
- * Whether a plain (no revert/skip/extraPrompt) advance makes sense right
- * now — same states the Play button itself allows (see its `:disabled`
- * above). Auto-continue deliberately never fires for a `failed` run: that
- * state's Continue/Revert/Skip choice is the user's to make, not something
- * to loop past automatically.
- */
-const canAutoAdvance = computed(
-  () => run.value !== undefined && run.value.status !== "failed" && run.value.status !== "done",
-);
-
-/**
  * The VCR-style playback mode, one of four (radio-style — exactly one
- * active), switched by clicking the corresponding button:
- * - `stop`: idle; clicking Stop while a step is in flight also cancels it.
- * - `step`: manual, one step per click (today's plain "Continue"/Play).
- * - `workflow`: auto-continue through this run's own remaining steps
- *   (stops on its own once the run reaches a terminal state).
- * - `plan`: same auto-continue, plus once *this* run reaches `done`,
- *   automatically starts the next plan file (alphabetically, in the same
- *   folder) in `plan` mode too — see `selectPlan` and the `plan-run-done`
- *   emit `PlansPage.vue` listens for.
- *
- * Not reset automatically when a chain stops (on failure, or naturally on
- * `done`) — it stays as a record of what was last requested, same as a
- * real VCR's mode indicator doesn't un-press itself when the tape runs out.
+ * active) — see `run-orchestrator.ts`'s own doc comment for what each
+ * means. Lives in the shared orchestrator (not local state) so it — and
+ * the auto-continue chain and plan-cascade it drives — survives navigating
+ * away from this run entirely, rather than dying when this component
+ * unmounts.
  */
-const autoMode = ref<"stop" | "step" | "workflow" | "plan">("stop");
+const autoMode = computed(() => orchestrator.autoMode.value);
 
 function selectStop() {
-  autoMode.value = "stop";
-  if (isAdvancing.value) {
-    cancelMutation.mutate(runId.value!);
-  }
+  orchestrator.selectStop(runId.value!, isAdvancing.value);
 }
-
 function selectStep() {
-  autoMode.value = "step";
-  if (!isAdvancing.value && run.value?.status !== "done") {
-    continueRun();
-  }
+  orchestrator.selectStep(runId.value!, props.workflowRef);
 }
-
-/** Auto-continue deliberately never *kicks off* from a `failed` run: see `canAutoAdvance`. */
 function selectWorkflow() {
-  autoMode.value = "workflow";
-  if (!isAdvancing.value && canAutoAdvance.value) {
-    continueRun();
-  }
+  orchestrator.selectWorkflow(runId.value!, props.workflowRef);
 }
-
-/**
- * Same kick-off as `selectWorkflow` — the plan-folder cascade itself
- * happens later, in the status watcher below (once this run reaches
- * `done`) and in `PlansPage.vue` (which owns "what's the next file").
- */
 function selectPlan() {
-  autoMode.value = "plan";
-  if (!isAdvancing.value && canAutoAdvance.value) {
-    continueRun();
-  }
-}
-
-// `run` isn't loaded yet at setup time — `canAutoAdvance`/`selectPlan`'s
-// kick-off both depend on it, so wait for the first real value rather
-// than calling `selectPlan()` here directly (which would see `run.value
-// === undefined` and silently no-op).
-if (props.startInPlanMode) {
-  if (run.value) {
-    // Already cached (e.g. a query revisit) — no "change" would ever fire below.
-    selectPlan();
-  } else {
-    watch(run, (r) => { if (r) selectPlan(); }, { once: true });
-  }
+  orchestrator.selectPlan(runId.value!, props.workflowRef);
 }
 
 // Volume/mute — local reactive mirror of run-alerts.ts's own
@@ -517,25 +459,6 @@ const volumeIcon = computed(() => {
   if (volume.value < 0.5) return "mdi-volume-medium";
   return "mdi-volume-high";
 });
-
-// Chains further plain advances for as long as each one succeeds — same
-// "keep going while success" contract as the CLI's own advance loop (see
-// `new-workflows/cli/advance-loop.ts`): `lib` never decides to continue on
-// its own, so something has to. Watches the mutation's pending/settled
-// transition (rather than a per-call `onSuccess`) so this covers *every*
-// advance that finishes — a manual click, a Retry, or a previous link in
-// this same chain — not just calls this function itself made.
-watch(
-  () => advanceMutation.isPending.value,
-  (pending, wasPending) => {
-    if (!wasPending || pending) return;
-    if (autoMode.value !== "workflow" && autoMode.value !== "plan") return;
-    const outcome = advanceMutation.data.value as { status?: string } | undefined;
-    if (outcome?.status === "success") {
-      continueRun();
-    }
-  },
-);
 
 const logContainer = ref<HTMLElement | null>(null);
 const SCROLL_BOTTOM_THRESHOLD_PX = 32;
@@ -639,34 +562,18 @@ watch(logItems, async () => {
 });
 
 const failureMessage = computed(() => {
-  const fromMutation = (advanceMutation.data.value as { message?: string } | undefined)?.message;
+  const fromMutation = (orchestrator.advanceMutation.data.value as { message?: string } | undefined)
+    ?.message;
   if (fromMutation) return fromMutation;
   const lastError = [...logs.value].reverse().find((l) => l.level === "error");
   return lastError?.content ?? "Failed — no error details available.";
 });
 
-// Sound + desktop notification when a run stops *on its own* — worth
-// knowing about without keeping the tab in view, especially with
-// auto-continue running unattended. Only reacts to a live transition
-// witnessed while on this page (guarded by `previousStatus === undefined`
-// below) — opening an already-finished run's history page shouldn't
-// replay its outcome.
-watch(
-  () => run.value?.status,
-  (status, previousStatus) => {
-    if (!status || status === previousStatus || previousStatus === undefined) return;
-    if (status === "done") {
-      playSuccessBell();
-      notify("Workflow finished", `Run ${runId.value} completed successfully.`);
-      if (autoMode.value === "plan") {
-        emit("plan-run-done");
-      }
-    } else if (status === "failed") {
-      playFailureQuack();
-      notify("Workflow failed", failureMessage.value);
-    }
-  },
-);
+// Sound/notification/plan-cascade on a run finishing on its own now lives
+// in `run-orchestrator.ts`, not here — see its own doc comment for why:
+// this component (and its local watchers) would otherwise die the moment
+// you navigated away from this run, silently stopping the auto-continue
+// chain and the plan cascade along with it.
 </script>
 
 <style scoped>

@@ -98,9 +98,7 @@
                 :workflow-ref="selectedFilePath!"
                 :run-id="mostRecentRun?.id"
                 :base-run-ids="earlierPhaseRunIds"
-                :start-in-plan-mode="!!mostRecentRun && pendingPlanCascadeRunId === mostRecentRun.id"
                 class="plans-page__run-view"
-                @plan-run-done="onPlanRunDone"
               />
             </template>
             <template v-else>
@@ -115,17 +113,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watchEffect } from "vue";
+import { computed, reactive, ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import type { WorkflowInputSchema } from "@saflib/new-workflows";
 import {
   useWorkflowsQuery,
   useCreatePlanMutation,
   useWorkflowRunsQuery,
-  useCreateWorkflowRunMutation,
   useSiblingMostRecentRunIds,
 } from "../requests/workflows-queries.ts";
 import { useRepoFiles } from "../requests/queries.ts";
+import { PLANS_PREFIX, fileKindOf, groupPlanFiles, planFileHref } from "../plan-files.ts";
 import ResizableColumns from "../components/ResizableColumns.vue";
 import PlanFileContent from "../components/PlanFileContent.vue";
 import PlanNavIcon from "../components/PlanNavIcon.vue";
@@ -133,9 +131,6 @@ import RunView from "../components/RunView.vue";
 
 const route = useRoute();
 const router = useRouter();
-
-/** Same assumption as the rest of this page: plans and their files live directly under this one folder, not nested. */
-const PLANS_PREFIX = "test-product/plans";
 
 // --- "Save as plan" — arriving from a package's Checkout page with
 // ?workflow=&cwd=. Unchanged from the old WorkflowsPage: this is the only
@@ -207,46 +202,7 @@ function savePlan() {
 // use), so a freshly-written plan shows up without a commit. ---
 const filesQuery = useRepoFiles("", () => ({ ref: "HEAD", prefix: PLANS_PREFIX }));
 
-interface PlanFileEntry {
-  name: string;
-  path: string;
-}
-interface PlanGroup {
-  folder: string;
-  name: string;
-  files: PlanFileEntry[];
-}
-
-const planGroups = computed<PlanGroup[]>(() => {
-  const files = filesQuery.data.value?.files ?? [];
-  const groups = new Map<string, PlanFileEntry[]>();
-  for (const f of files) {
-    const rel = f.path.slice(PLANS_PREFIX.length + 1);
-    const slashIndex = rel.indexOf("/");
-    // A file sitting directly under plans/, not inside its own dated
-    // folder — not the shape this page otherwise assumes (see the spec:
-    // "assume ... neither are nested"), but grouped under a synthetic "_"
-    // folder rather than dropped, so it's still reachable at a normal
-    // /plans/:planName/:fileName URL.
-    const folder = slashIndex === -1 ? "_" : rel.slice(0, slashIndex);
-    const name = slashIndex === -1 ? rel : rel.slice(slashIndex + 1);
-    const arr = groups.get(folder) ?? [];
-    arr.push({ name, path: f.path });
-    groups.set(folder, arr);
-  }
-  return Array.from(groups.entries())
-    .map(([folder, groupFiles]) => ({
-      folder,
-      name: folder === "_" ? "(ungrouped)" : folder.replace(/^\d{4}-\d{2}-\d{2}-/, ""),
-      files: groupFiles.sort((a, b) => a.name.localeCompare(b.name)),
-    }))
-    // Folder names are date-prefixed — descending sort puts the newest first.
-    .sort((a, b) => b.folder.localeCompare(a.folder));
-});
-
-function planFileHref(folder: string, name: string): string {
-  return `/plans/${encodeURIComponent(folder)}/${encodeURIComponent(name)}`;
-}
+const planGroups = computed(() => groupPlanFiles(filesQuery.data.value?.files ?? []));
 
 // --- Selected file, read off the route itself rather than via router
 // `props`, so this works regardless of whether a given router config
@@ -265,13 +221,7 @@ const selectedFilePath = computed(() => {
     : `${PLANS_PREFIX}/${planName_.value}/${fileName.value}`;
 });
 
-type FileKind = "markdown" | "workflow" | "text";
-function fileKindOf(name: string): FileKind {
-  if (/\.md$/i.test(name)) return "markdown";
-  if (/\.ya?ml$/i.test(name)) return "workflow";
-  return "text";
-}
-const fileKind = computed<FileKind>(() => fileKindOf(fileName.value ?? ""));
+const fileKind = computed(() => fileKindOf(fileName.value ?? ""));
 
 // --- The selected workflow file's most recent run, shown inline (no
 // "Open run"/"Start another run" click needed — see the ask). Only
@@ -300,54 +250,13 @@ const earlierPhaseRunIds = computed(
   () => earlierPhaseRunIdsMaybe.value.filter((id): id is string => Boolean(id)),
 );
 
-// `createRunMutation` is also what `RunView`'s own "Init Workflow" button
-// uses to create a workflow's very first run — this instance here is only
-// for the plan-mode cascade below, which creates the *next* phase's run
-// itself (RunView has no notion of "what's the next file").
-const createRunMutation = useCreateWorkflowRunMutation();
-
-// --- "Play current plan" cascade (see RunView.vue's `selectPlan`): once a
-// plan-mode run finishes on its own, start the next workflow file
-// alphabetically in the same folder, fresh (not resuming some earlier
-// attempt) — matches "run the whole plan front to back" intent. Ends
-// silently when there's no next workflow file left. ---
-const nextPlanFile = computed<PlanFileEntry | undefined>(() => {
-  const group = planGroups.value.find((g) => g.folder === planName_.value);
-  if (!group) return undefined;
-  const currentName = fileName.value ?? "";
-  // `group.files` is already sorted ascending (see `planGroups`).
-  return group.files.find(
-    (f) => f.name > currentName && fileKindOf(f.name) === "workflow",
-  );
-});
-
-/** Set right after creating the cascade's next run, so its (freshly-mounted) RunView starts in plan mode. */
-const pendingPlanCascadeRunId = ref<string>();
-
-function onPlanRunDone() {
-  const next = nextPlanFile.value;
-  const folder = planName_.value;
-  if (!next || !folder) return;
-  createRunMutation.mutate(
-    {
-      id: next.path,
-      body: { input: {}, mode: "run", agentConfig: { cli: "claude-agent" } },
-    },
-    {
-      onSuccess: async (data) => {
-        pendingPlanCascadeRunId.value = data.run.id;
-        await router.push(planFileHref(folder, next.name));
-        // One-shot: the new file's RunView (keyed by run id, so this is a
-        // fresh mount) reads `startInPlanMode` right when it mounts —
-        // clearing this afterward means revisiting that same run later
-        // (once it's no longer "just cascaded to") won't silently
-        // re-enter plan mode on its own.
-        await nextTick();
-        pendingPlanCascadeRunId.value = undefined;
-      },
-    },
-  );
-}
+// "Play current plan"'s cascade to the next phase file, once a run
+// finishes on its own, now lives entirely in `run-orchestrator.ts` (a
+// module-level singleton, not this page) — see its own doc comment for
+// why: this page would otherwise need to stay mounted for the whole
+// cascade to keep happening, and the previous approach of keying `RunView`
+// by run id plus a one-shot `startInPlanMode` prop broke the moment you
+// navigated away and back (see the bug report that prompted this).
 </script>
 
 <style scoped>

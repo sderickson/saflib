@@ -6,6 +6,7 @@ import { http, HttpResponse } from "msw";
 import PlansPage from "./PlansPage.vue";
 import { mountTestApp } from "../test-app.ts";
 import { router } from "./test_router.ts";
+import { __resetRunOrchestratorForTests } from "../run-orchestrator.ts";
 
 const ORIGIN = "http://localhost:3000";
 
@@ -106,6 +107,7 @@ describe("PlansPage", () => {
   enableAutoUnmount(afterEach);
 
   beforeEach(() => {
+    __resetRunOrchestratorForTests();
     runsStateByFile = {};
     runsById = {};
     vi.stubGlobal("EventSource", EventSourceStub);
