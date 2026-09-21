@@ -30,9 +30,16 @@ const dependenciesLive = path.join(
 );
 const overviewDoc = path.join(templatesSaflibRoot, "integrations", "docs", "01-overview.md");
 
+/** Expected shape: `{product}/service/integrations/{name}` (relative to cwd / monorepo root). */
+const INTEGRATION_PATH_RE =
+  /^(?<product>.+)\/service\/integrations\/(?<name>[^/]+)\/?$/;
+
 interface InitIntegrationInput {
-  /** Kebab-case integration name (e.g. 'stripe'). */
-  name: string;
+  /**
+   * Path of the new integration package from the monorepo root, e.g.
+   * `power-up/service/integrations/mercury`.
+   */
+  path: string;
 }
 
 interface InitIntegrationContext extends ParsePackageNameOutput {
@@ -40,13 +47,39 @@ interface InitIntegrationContext extends ParsePackageNameOutput {
   targetDir: string;
   parentDir: string;
   productRoot: string;
+  /** Repo-relative path of the integration package. */
+  path: string;
   cwd: string;
+}
+
+function resolveIntegrationPath(
+  rawPath: string,
+  cwd: string,
+): { integrationName: string; productRoot: string; targetDir: string; parentDir: string } {
+  const normalized = rawPath.replace(/^\.\//, "").replace(/\/$/, "");
+  const match = INTEGRATION_PATH_RE.exec(normalized);
+  if (!match?.groups) {
+    throw new Error(
+      `integrations/init path must look like "{product}/service/integrations/{name}" (got "${rawPath}")`,
+    );
+  }
+  const productRoot = path.resolve(cwd, match.groups.product);
+  const integrationName = match.groups.name;
+  return {
+    integrationName,
+    productRoot,
+    targetDir: path.join(productRoot, "service", "integrations", integrationName),
+    parentDir: path.join(productRoot, "service", "common"),
+  };
 }
 
 /**
  * Ported from `integrations/workflows/init-integration.ts` — scaffolds
  * `{product}/service/integrations/{name}` from the base stub and weaves
  * `configure{Name}()` into `service/common/dependencies.ts`.
+ *
+ * Call from the monorepo root with a full product-relative path (do not
+ * `cd` into `service/common` first).
  */
 export const InitIntegrationWorkflowDefinition = defineWorkflow<
   InitIntegrationInput,
@@ -60,44 +93,18 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
   inputSchema: {
     type: "object",
     properties: {
-      name: {
+      path: {
         type: "string",
         description:
-          "Kebab-case integration name (e.g. 'stripe'). Run from `{product}/service/common` (or the product root). Creates service/integrations/{name} and weaves configure into common/dependencies.",
+          "Path of the new integration from the monorepo root, e.g. 'power-up/service/integrations/mercury'.",
       },
     },
-    required: ["name"],
+    required: ["path"],
   },
 
   context: ({ input, cwd }) => {
-    const integrationName = input.name;
-
-    // Prefer cwd = `{product}/service/common` (a real package — required for
-    // YAML `cd` steps). Fall back to product root when `service/common`
-    // exists underneath (CLI kickoff from the product directory).
-    const commonUnderCwd = path.join(cwd, "service", "common");
-    let parentDir: string;
-    let productRoot: string;
-    if (
-      existsSync(path.join(cwd, "package.json")) &&
-      getPackageName(cwd).endsWith("-service-common")
-    ) {
-      parentDir = cwd;
-      productRoot = path.dirname(path.dirname(cwd));
-    } else if (existsSync(path.join(commonUnderCwd, "package.json"))) {
-      parentDir = commonUnderCwd;
-      productRoot = cwd;
-    } else {
-      parentDir = cwd;
-      productRoot = path.dirname(path.dirname(cwd));
-    }
-
-    const targetDir = path.join(
-      productRoot,
-      "service",
-      "integrations",
-      integrationName,
-    );
+    const { integrationName, productRoot, targetDir, parentDir } =
+      resolveIntegrationPath(input.path, cwd);
 
     let org = "saflib";
     let productName = path.basename(productRoot);
@@ -118,6 +125,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
       targetDir,
       parentDir,
       productRoot,
+      path: input.path.replace(/^\.\//, "").replace(/\/$/, ""),
       serviceName: productName,
       cwd,
     };
