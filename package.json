@@ -46,7 +46,8 @@
     "@types/node": "^24.3.0",
     "typescript": "~6.0.0",
     "msw": "2.12.7",
-    "drizzle-kit": "^0.31.10"
+    "drizzle-kit": "^0.31.10",
+    "eslint": "10.11.0"
   },
   "sideEffects": [
     "./../backup/backup-sdk/client.ts",
