@@ -8,7 +8,10 @@ import ignore from "rollup-plugin-ignore";
 // import { htmlHeaderPlugin } from "../../clients/spas/html-header-plugin.ts";
 import { typedEnv } from "./env.ts";
 import fs from "fs";
-import { getSubdomainProxyRewrite } from "./subdomain-proxy.ts";
+import {
+  getSubdomainProxyRewrite,
+  hostnameFromHostHeader,
+} from "./subdomain-proxy.ts";
 import { workspacePackageExportsPlugin } from "./workspace-package-exports-plugin.ts";
 
 export { getSubdomainProxyRewrite } from "./subdomain-proxy.ts";
@@ -19,9 +22,17 @@ const hosts = subdomains.map((subdomain) =>
   subdomain === "" ? domain : `${subdomain}.${domain}`,
 );
 
+/** Non-default public HTTP port (e.g. host-mapped Caddy on :8080). */
+function publicHttpPortSuffix(): string {
+  const port = process.env.PUBLIC_HTTP_PORT?.trim();
+  if (!port || port === "80" || port === "443") return "";
+  return `:${port}`;
+}
+
 /** SPA origins for local docker/Caddy (skip ops UIs that aren't Vite apps). */
 function clientAccessUrls(): string[] {
   const protocol = typedEnv.PROTOCOL ?? "http";
+  const port = publicHttpPortSuffix();
   const skip = new Set(["grafana"]);
   if (!domain || !typedEnv.CLIENT_SUBDOMAINS) return [];
   return typedEnv.CLIENT_SUBDOMAINS.split(",")
@@ -29,8 +40,8 @@ function clientAccessUrls(): string[] {
     .filter((s) => !skip.has(s))
     .map((sub) =>
       sub === ""
-        ? `${protocol}://${domain}/`
-        : `${protocol}://${sub}.${domain}/`,
+        ? `${protocol}://${domain}${port}/`
+        : `${protocol}://${sub}.${domain}${port}/`,
     );
 }
 
@@ -68,13 +79,15 @@ const subDomainProxyPlugin: Plugin = {
         return;
       }
       const host = req.headers.host;
+      const hostname = hostnameFromHostHeader(host);
       if (
         req.url &&
         !req.url.split("?")[0].includes(".") &&
         !req.url.split("?")[0].includes("@") &&
-        host &&
-        !host.startsWith("localhost") &&
-        !hosts.includes(host)
+        hostname &&
+        !hostname.startsWith("localhost") &&
+        hostname !== "[::1]" &&
+        !hosts.includes(hostname)
       ) {
         console.warn("Unhandled request", {
           "req.url": req.url,

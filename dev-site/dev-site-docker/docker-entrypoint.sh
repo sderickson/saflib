@@ -14,8 +14,13 @@ set -e
 # — see Dockerfile.template) can't write into it otherwise.
 if [ -d /repo ]; then
   mkdir -p /repo/node_modules
-  chown -R node:node /repo/node_modules
-  su node -c 'cd /repo && npm install --include=dev'
+  if touch /repo/node_modules/.writecheck 2>/dev/null; then
+    rm -f /repo/node_modules/.writecheck
+    chown -R node:node /repo/node_modules
+    su node -c 'cd /repo && npm install --include=dev'
+  else
+    echo "dev-site: /repo/node_modules is not writable (mount repo_node_modules volume); skipping chown/npm install" >&2
+  fi
 fi
 
 # Same story for /data/new-workflows (see docker-compose.yaml's
