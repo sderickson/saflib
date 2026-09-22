@@ -1,4 +1,11 @@
-import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/vue-query";
+import {
+  useQuery,
+  useQueries,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/vue-query";
+import type { InfiniteData, QueryClient } from "@tanstack/vue-query";
 import type { MaybeRefOrGetter } from "vue";
 import { computed, toValue } from "vue";
 import createClient from "openapi-fetch";
@@ -10,6 +17,62 @@ import type {
 import type { DevSiteResponseBody } from "@saflib/dev-site-spec";
 import { TanstackError, handleClientMethod } from "@saflib/sdk";
 import { createDevSiteClient } from "./queries.ts";
+
+export type WorkflowRunLogsPage = NewWorkflowsResponseBody["listWorkflowRunLogs"][200];
+export type WorkflowLogEntry = WorkflowRunLogsPage["logs"][number];
+
+const RUN_LOGS_PAGE_SIZE = 100;
+
+/**
+ * API pages are newest-first; reverse each page then reverse page order so
+ * the UI can render chronologically (oldest → newest, top → bottom).
+ */
+export function flattenRunLogPages(
+  pages: WorkflowRunLogsPage[] | undefined,
+): WorkflowLogEntry[] {
+  if (!pages?.length) return [];
+  return [...pages].reverse().flatMap((p) => [...p.logs].reverse());
+}
+
+/**
+ * Pull rows newer than the current tip and prepend them onto page 0.
+ * Prefer this over `invalidateQueries` once older pages are loaded —
+ * a full refetch of page 0 with a sliding window would leave a gap
+ * between the new tip and the still-cached older pages.
+ */
+export async function prependNewerRunLogs(
+  queryClient: QueryClient,
+  runId: string,
+): Promise<void> {
+  const key = ["new-workflows", "run-logs", runId] as const;
+  const existing =
+    queryClient.getQueryData<InfiniteData<WorkflowRunLogsPage, string | undefined>>(key);
+  const tip = existing?.pages[0]?.logs[0]?.created_at;
+  if (!tip) {
+    await queryClient.invalidateQueries({ queryKey: key });
+    return;
+  }
+  const client = createWorkflowsClient();
+  const fresh = await handleClientMethod(
+    client.GET("/api/runs/{runId}/logs", {
+      params: { path: { runId }, query: { since: tip, limit: 200 } },
+    }),
+  );
+  if (fresh.logs.length === 0) return;
+  queryClient.setQueryData<InfiniteData<WorkflowRunLogsPage, string | undefined>>(
+    key,
+    (old) => {
+      if (!old?.pages.length) return old;
+      const seen = new Set(old.pages.flatMap((p) => p.logs.map((l) => l.id)));
+      const additions = fresh.logs.filter((l: WorkflowLogEntry) => !seen.has(l.id));
+      if (additions.length === 0) return old;
+      const pages = old.pages.map((p, i) =>
+        i === 0 ? { ...p, logs: [...additions, ...p.logs] } : p,
+      );
+      return { ...old, pages };
+    },
+  );
+}
 
 /**
  * Same-origin — the workflows API is mounted into dev-site-http itself.
@@ -130,13 +193,33 @@ export function useWorkflowRunQuery(runId: MaybeRefOrGetter<string | undefined>)
 
 export function useWorkflowRunLogsQuery(runId: MaybeRefOrGetter<string | undefined>) {
   const client = createWorkflowsClient();
-  return useQuery<NewWorkflowsResponseBody["listWorkflowRunLogs"][200], TanstackError>({
+  return useInfiniteQuery<
+    WorkflowRunLogsPage,
+    TanstackError,
+    InfiniteData<WorkflowRunLogsPage, string | undefined>,
+    readonly ["new-workflows", "run-logs", MaybeRefOrGetter<string | undefined>],
+    string | undefined
+  >({
     queryKey: ["new-workflows", "run-logs", runId],
     enabled: () => Boolean(toValue(runId)),
-    queryFn: () =>
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
       handleClientMethod(
-        client.GET("/api/runs/{runId}/logs", { params: { path: { runId: toValue(runId)! } } }),
+        client.GET("/api/runs/{runId}/logs", {
+          params: {
+            path: { runId: toValue(runId)! },
+            query: {
+              limit: RUN_LOGS_PAGE_SIZE,
+              ...(pageParam ? { before: pageParam } : {}),
+            },
+          },
+        }),
       ),
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.has_more || lastPage.logs.length === 0) return undefined;
+      // Newest-first page → last row is the oldest cursor for the next older page.
+      return lastPage.logs[lastPage.logs.length - 1]!.created_at;
+    },
   });
 }
 
@@ -229,7 +312,9 @@ export function useAdvanceWorkflowRunMutation() {
     onSuccess: (_data, vars) => {
       const runId = typeof vars === "string" ? vars : vars.runId;
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
-      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-logs", runId] });
+      // Merge tip-only (don't invalidate all infinite pages — that gaps
+      // older cached pages). SSE does the same during the turn.
+      void prependNewerRunLogs(queryClient, runId);
       // Also every open `workflow-runs` (list-by-file) query — e.g.
       // `PlanNavIcon`'s and `PlansPage`'s own "most recent run" — not just
       // this run's own detail. Without this, retrying a failed run left

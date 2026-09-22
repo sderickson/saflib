@@ -3,6 +3,7 @@ import type { LockPackageEntry, PackageLock, PlatformContract } from "./types.ts
 import {
   isIntentionalNestedInstallKey,
   lockfileKeyForPackage,
+  packageNameFromNodeModulesSuffix,
   parseNestedSaflibRegistryLockKey,
   platformKeyForProductSaflibKey,
 } from "./paths.ts";
@@ -75,7 +76,8 @@ export function copyLockfileTree(
 
 /**
  * Remove nested `saflib/…/node_modules/<dep>` copies, preserving installs that
- * match an intentional platform nested path (e.g. vitepress/node_modules/esbuild).
+ * match an intentional platform dual-install (same relative nest *and* a
+ * different version at the platform root, e.g. vitepress/node_modules/esbuild).
  */
 export function deleteNestedSaflibCopies(
   packages: Record<string, LockPackageEntry | undefined>,
@@ -89,15 +91,34 @@ export function deleteNestedSaflibCopies(
     // (`vitepress/node_modules/esbuild`), not `saflib/node_modules/<pkg>` which
     // maps to the root `node_modules/<pkg>` and should be cleaned when aligning.
     const platformKey = platformKeyForProductSaflibKey(key);
-    if (
-      platformKey &&
-      isIntentionalNestedInstallKey(platformKey) &&
-      platform?.lockPackages[platformKey]?.version
-    ) {
+    if (platformKey && platform && isTruePlatformDualInstall(platform, platformKey)) {
       continue;
     }
     deleteLockfileTree(packages, key);
   }
+}
+
+/**
+ * Platform has this nest *and* a different version at the root — a real
+ * dual-install worth preserving. Nested-only platform installs are not.
+ */
+export function isTruePlatformDualInstall(
+  platform: PlatformContract,
+  platformNestedKey: string,
+): boolean {
+  if (!isIntentionalNestedInstallKey(platformNestedKey)) return false;
+  const nestedVersion = platform.lockPackages[platformNestedKey]?.version;
+  if (!nestedVersion) return false;
+  const dependency = packageNameFromNodeModulesSuffix(
+    platformNestedKey.slice(
+      platformNestedKey.lastIndexOf("/node_modules/") + "/node_modules/".length,
+    ),
+  );
+  if (!dependency) return false;
+  const rootVersion =
+    platform.lockPackages[lockfileKeyForPackage("node_modules", dependency)]
+      ?.version;
+  return Boolean(rootVersion && rootVersion !== nestedVersion);
 }
 
 export function readPackageLock(lockfilePath: string): PackageLock {

@@ -59,7 +59,20 @@ let stepsState: unknown[] = [
 
 const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId`, () => HttpResponse.json({ run: runState })),
-  http.get(`${ORIGIN}/api/runs/:runId/logs`, () => HttpResponse.json({ logs: logsState })),
+  http.get(`${ORIGIN}/api/runs/:runId/logs`, ({ request }) => {
+    const url = new URL(request.url);
+    const before = url.searchParams.get("before");
+    const since = url.searchParams.get("since");
+    const limit = Number(url.searchParams.get("limit") ?? 100);
+    type LogRow = { id: string; created_at: string };
+    let rows = [...(logsState as LogRow[])];
+    if (since) rows = rows.filter((l) => l.created_at > since);
+    if (before) rows = rows.filter((l) => l.created_at < before);
+    // API contract: newest first.
+    rows.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
+    const page = rows.slice(0, limit);
+    return HttpResponse.json({ logs: page, has_more: rows.length > limit });
+  }),
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: stepsState })),
   http.get(`${ORIGIN}/api/workflows/:id/steps`, () => HttpResponse.json({ steps: stepsState })),
 ];
@@ -869,5 +882,70 @@ describe("RunView", () => {
     });
     expect(otherWrapper.find('[aria-label="Play current workflow"]').attributes("disabled")).not.toBeUndefined();
     expect(otherWrapper.find('[aria-label="Play current plan"]').attributes("disabled")).not.toBeUndefined();
+  });
+
+  it("loads an older page of logs when scrolled near the top", async () => {
+    logsState = [
+      {
+        id: "old",
+        run_id: "run-1",
+        step_index: 0,
+        channel: "tool",
+        level: "info",
+        content: "oldest line",
+        created_at: "2026-09-15T00:00:00.000Z",
+      },
+      {
+        id: "mid",
+        run_id: "run-1",
+        step_index: 0,
+        channel: "tool",
+        level: "info",
+        content: "middle line",
+        created_at: "2026-09-15T00:00:01.000Z",
+      },
+      {
+        id: "new",
+        run_id: "run-1",
+        step_index: 0,
+        channel: "tool",
+        level: "info",
+        content: "newest line",
+        created_at: "2026-09-15T00:00:02.000Z",
+      },
+    ];
+    server.use(
+      http.get(`${ORIGIN}/api/runs/:runId/logs`, ({ request }) => {
+        const url = new URL(request.url);
+        const before = url.searchParams.get("before");
+        const since = url.searchParams.get("since");
+        // Force a 2-row page so three fixtures need a second fetch.
+        const limit = 2;
+        type LogRow = { id: string; created_at: string };
+        let rows = [...(logsState as LogRow[])];
+        if (since) rows = rows.filter((l) => l.created_at > since);
+        if (before) rows = rows.filter((l) => l.created_at < before);
+        rows.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
+        const page = rows.slice(0, limit);
+        return HttpResponse.json({ logs: page, has_more: rows.length > limit });
+      }),
+    );
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("newest line");
+      expect(wrapper.text()).toContain("middle line");
+    });
+    expect(wrapper.text()).not.toContain("oldest line");
+
+    const el = wrapper.find(".run-view__logs").element as HTMLElement;
+    Object.defineProperty(el, "scrollHeight", { value: 1000, configurable: true, writable: true });
+    Object.defineProperty(el, "clientHeight", { value: 200, configurable: true });
+    Object.defineProperty(el, "scrollTop", { value: 10, writable: true, configurable: true });
+    el.dispatchEvent(new Event("scroll"));
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("oldest line");
+    });
   });
 });

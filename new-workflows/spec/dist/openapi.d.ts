@@ -132,7 +132,7 @@ export interface paths {
         };
         /**
          * List a run's logs
-         * @description Cursor-paginated by `since` (an ISO timestamp) — the client re-fetches this after an SSE change hint rather than getting log content pushed over the wire.
+         * @description Newest-first, cursor-paginated. Pass `before` (an ISO timestamp) to page older history for infinite scroll; pass `since` for rows newer than a known tip (e.g. after an SSE change hint). The client re-fetches rather than getting log content pushed over the wire.
          */
         get: operations["listWorkflowRunLogs"];
         put?: never;
@@ -773,8 +773,12 @@ export interface operations {
     listWorkflowRunLogs: {
         parameters: {
             query?: {
-                /** @description Only rows created strictly after this timestamp. */
+                /** @description Only rows created strictly after this timestamp (newer than tip). */
                 since?: string;
+                /** @description Only rows created strictly before this timestamp (older page). */
+                before?: string;
+                /** @description Page size (default 100). */
+                limit?: number;
             };
             header?: never;
             path: {
@@ -784,7 +788,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Log rows, oldest first. */
+            /** @description Log rows, newest first, plus whether another older/newer page may exist. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -792,6 +796,8 @@ export interface operations {
                 content: {
                     "application/json": {
                         logs: components["schemas"]["workflow-log-entry"][];
+                        /** @description True when the page was full — another `before`/`since` page may return more rows. */
+                        has_more: boolean;
                     };
                 };
             };

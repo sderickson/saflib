@@ -38,7 +38,10 @@ function workspaceDirectDepNames(entry: LockPackageEntry): string[] {
  * Align targets from the platform lock:
  * - exact override pins at root `node_modules/<pkg>`
  * - intentional nested dual-installs: a workspace package's direct dep that
- *   resolves under `<workspace>/node_modules/<pkg>` (e.g. vitepress → esbuild)
+ *   resolves under `<workspace>/node_modules/<pkg>` *and* a different version
+ *   also exists at the platform root (e.g. vitepress → esbuild). Nested-only
+ *   installs (no root counterpart) are not dual-installs — products should
+ *   hoist those to the root, not copy a phantom nest that npm never extracts.
  */
 export function listPlatformAlignTargets(
   platform: PlatformContract,
@@ -57,9 +60,13 @@ export function listPlatformAlignTargets(
     if (!entry || !isWorkspaceLockEntry(key)) continue;
     for (const depName of workspaceDirectDepNames(entry)) {
       const nestedKey = lockfileKeyForPackage(`${key}/node_modules`, depName);
-      if (platform.lockPackages[nestedKey]?.version) {
-        targets.add(nestedKey);
-      }
+      const nestedVersion = platform.lockPackages[nestedKey]?.version;
+      if (!nestedVersion) continue;
+      const rootKey = lockfileKeyForPackage("node_modules", depName);
+      const rootVersion = platform.lockPackages[rootKey]?.version;
+      // True dual-install only: root + nested, different versions.
+      if (!rootVersion || rootVersion === nestedVersion) continue;
+      targets.add(nestedKey);
     }
   }
 

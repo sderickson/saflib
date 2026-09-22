@@ -8,7 +8,7 @@
     "/api/runs/{runId}/logs": {
       "get": {
         "summary": "List a run's logs",
-        "description": "Cursor-paginated by `since` (an ISO timestamp) — the client re-fetches this after an SSE change hint rather than getting log content pushed over the wire.\n",
+        "description": "Newest-first, cursor-paginated. Pass `before` (an ISO timestamp) to page older history for infinite scroll; pass `since` for rows newer than a known tip (e.g. after an SSE change hint). The client re-fetches rather than getting log content pushed over the wire.\n",
         "operationId": "listWorkflowRunLogs",
         "parameters": [
           {
@@ -24,23 +24,46 @@
             "name": "since",
             "in": "query",
             "required": false,
-            "description": "Only rows created strictly after this timestamp.",
+            "description": "Only rows created strictly after this timestamp (newer than tip).",
             "schema": {
               "type": "string",
               "format": "date-time"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "Only rows created strictly before this timestamp (older page).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size (default 100).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "example": 100
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Log rows, oldest first.",
+            "description": "Log rows, newest first, plus whether another older/newer page may exist.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "additionalProperties": false,
                   "required": [
-                    "logs"
+                    "logs",
+                    "has_more"
                   ],
                   "properties": {
                     "logs": {
@@ -48,6 +71,10 @@
                       "items": {
                         "$ref": "#/components/schemas/workflow-log-entry"
                       }
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when the page was full — another `before`/`since` page may return more rows.\n"
                     }
                   }
                 }

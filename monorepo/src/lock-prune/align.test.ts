@@ -208,6 +208,24 @@ describe("findPlatformAlignmentGaps", () => {
     ).toMatchObject({ version: "0.27.7" });
   });
 
+  it("does not treat nested-only platform installs as dual-install align targets", () => {
+    const lockfile: PackageLock = { packages: {} };
+    const platform = {
+      overrides: {},
+      resolvedVersions: new Map(),
+      lockPackages: {
+        openapi: {
+          name: "@saflib/openapi",
+          dependencies: { "openapi-typescript": "^7.13.0" },
+        },
+        // Nested with no root counterpart — not a dual-install.
+        "openapi/node_modules/openapi-typescript": { version: "7.13.0" },
+      },
+    };
+
+    expect(findPlatformAlignmentGaps(lockfile, platform)).toEqual([]);
+  });
+
   it("flags exact override root pins that drift from the platform lock", () => {
     const lockfile = {
       packages: {

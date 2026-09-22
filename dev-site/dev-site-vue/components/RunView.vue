@@ -59,6 +59,9 @@
         </div>
       </div>
       <div v-else ref="logContainer" class="run-view__logs" @scroll="onScroll">
+        <div v-if="logsQuery.isFetchingNextPage.value" class="run-view__logs-loading">
+          Loading earlier logs…
+        </div>
         <template v-for="item in logItems" :key="itemKey(item)">
           <div
             class="run-view__log-item"
@@ -259,6 +262,7 @@ import {
   useCreateWorkflowRunMutation,
   usePreviewWorkflowDiffMutation,
   usePreviewWorkflowRunDiffMutation,
+  flattenRunLogPages,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import { useRunOrchestrator } from "../run-orchestrator.ts";
@@ -309,7 +313,7 @@ const orchestrator = useRunOrchestrator();
 const runQuery = useWorkflowRunQuery(runId);
 const run = computed(() => runQuery.data.value?.run);
 const logsQuery = useWorkflowRunLogsQuery(runId);
-const logs = computed(() => logsQuery.data.value?.logs ?? []);
+const logs = computed(() => flattenRunLogPages(logsQuery.data.value?.pages));
 const logItems = computed(() => groupLogs(logs.value));
 const runStepsQuery = useWorkflowRunStepsQuery(runId);
 // Pre-run: the same step list, resolved straight from the workflow/plan
@@ -539,6 +543,7 @@ const volumeIcon = computed(() => {
 
 const logContainer = ref<HTMLElement | null>(null);
 const SCROLL_BOTTOM_THRESHOLD_PX = 32;
+const SCROLL_TOP_THRESHOLD_PX = 80;
 
 /**
  * Whether to keep following new logs to the bottom. Tracked as its own
@@ -552,9 +557,33 @@ const SCROLL_BOTTOM_THRESHOLD_PX = 32;
  * by itself — only the user (or our own scroll-to-bottom) does.
  */
 const isFollowing = ref(true);
+/** Guard so overlapping scroll events don't fire duplicate older-page fetches. */
+let loadingOlder = false;
 
 function isNearBottom(el: HTMLElement): boolean {
   return el.scrollHeight - el.scrollTop - el.clientHeight <= SCROLL_BOTTOM_THRESHOLD_PX;
+}
+
+async function loadOlderLogsIfNeeded(el: HTMLElement) {
+  if (
+    loadingOlder ||
+    el.scrollTop > SCROLL_TOP_THRESHOLD_PX ||
+    !logsQuery.hasNextPage.value ||
+    logsQuery.isFetchingNextPage.value
+  ) {
+    return;
+  }
+  loadingOlder = true;
+  const prevHeight = el.scrollHeight;
+  const prevTop = el.scrollTop;
+  try {
+    await logsQuery.fetchNextPage();
+    await nextTick();
+    // Keep the same rows under the viewport after prepending older history.
+    el.scrollTop = prevTop + (el.scrollHeight - prevHeight);
+  } finally {
+    loadingOlder = false;
+  }
 }
 
 function itemStepIndex(item: LogItem): number | null {
@@ -625,7 +654,10 @@ function scrollToStep(index: number) {
 
 function onScroll() {
   const el = logContainer.value;
-  if (el) isFollowing.value = isNearBottom(el);
+  if (el) {
+    isFollowing.value = isNearBottom(el);
+    void loadOlderLogsIfNeeded(el);
+  }
   updateCurrentStepIndex();
 }
 
@@ -736,6 +768,11 @@ const failureMessage = computed(() => {
   font-size: 0.85rem;
   padding: 0.75rem 1rem;
   background: rgba(128, 128, 128, 0.05);
+}
+.run-view__logs-loading {
+  opacity: 0.6;
+  font-size: 0.8rem;
+  padding-bottom: 0.5rem;
 }
 .run-view__log-item--sticky {
   position: sticky;

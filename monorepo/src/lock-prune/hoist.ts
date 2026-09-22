@@ -52,7 +52,9 @@ export function findHoistingHazards(rootDir: string): HoistingHazardIssue[] {
 
 /**
  * Nested saflib registry installs missing from the product root — except
- * intentional dual-installs that exist on the platform at the same relative path.
+ * intentional dual-installs (platform has the same relative nest *and* a
+ * different version at the platform root). Nested-only platform installs
+ * are not dual-installs and should be hoisted.
  */
 export function findUnhoistedRegistryDependencies(
   lockfile: PackageLock,
@@ -69,7 +71,17 @@ export function findUnhoistedRegistryDependencies(
 
     if (platform && key.startsWith("saflib/")) {
       const platformKey = key.slice("saflib/".length);
-      if (platform.lockPackages[platformKey]?.version) continue;
+      const platformNested = platform.lockPackages[platformKey];
+      if (platformNested?.version) {
+        const platformRoot = platform.lockPackages[parsed.rootLockfileKey];
+        // Preserve only true dual-installs (root + different nested version).
+        if (
+          platformRoot?.version &&
+          platformRoot.version !== platformNested.version
+        ) {
+          continue;
+        }
+      }
     }
 
     if (seen.has(parsed.dependency)) continue;

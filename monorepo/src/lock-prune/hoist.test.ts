@@ -121,7 +121,7 @@ describe("findUnhoistedRegistryDependencies", () => {
     ]);
   });
 
-  it("skips intentional dual-installs that exist on the platform at the same path", () => {
+  it("skips true dual-installs (platform root + different nested version)", () => {
     const lockfile = {
       packages: {
         "saflib/vitepress/node_modules/esbuild": { version: "0.27.7" },
@@ -131,11 +131,40 @@ describe("findUnhoistedRegistryDependencies", () => {
       overrides: {},
       resolvedVersions: new Map(),
       lockPackages: {
+        "node_modules/esbuild": { version: "0.28.2" },
         "vitepress/node_modules/esbuild": { version: "0.27.7" },
       },
     };
 
     expect(findUnhoistedRegistryDependencies(lockfile, platform)).toEqual([]);
+  });
+
+  it("flags nested-only platform installs (not dual-installs) so they hoist to root", () => {
+    const lockfile = {
+      packages: {
+        "saflib/openapi/node_modules/openapi-typescript": {
+          version: "7.13.0",
+        },
+      },
+    };
+    const platform = {
+      overrides: {},
+      resolvedVersions: new Map(),
+      lockPackages: {
+        // Nested on platform with no root counterpart — phantom dual-install.
+        "openapi/node_modules/openapi-typescript": { version: "7.13.0" },
+      },
+    };
+
+    expect(findUnhoistedRegistryDependencies(lockfile, platform)).toEqual([
+      {
+        kind: "unhoisted-registry-dependency",
+        dependency: "openapi-typescript",
+        nestedLockfileKey: "saflib/openapi/node_modules/openapi-typescript",
+        rootLockfileKey: "node_modules/openapi-typescript",
+        version: "7.13.0",
+      },
+    ]);
   });
 });
 
