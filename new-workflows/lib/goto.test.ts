@@ -77,7 +77,7 @@ describe("gotoRunStep", () => {
 
     const { result: run } = await getByIdWorkflowRun(dbKey, { id: runId });
     expect(run?.current_step_index).toBe(0);
-    expect(run?.status).toBe("pending");
+    expect(run?.status).toBe("running");
 
     const after = await listByRunWorkflowStep(dbKey, { run_id: runId });
     expect(after.result).toEqual([]);
@@ -160,7 +160,7 @@ describe("gotoRunStep", () => {
 
     const { result: parent } = await getByIdWorkflowRun(dbKey, { id: parentRunId });
     expect(parent?.current_step_index).toBe(1);
-    expect(parent?.status).toBe("pending");
+    expect(parent?.status).toBe("running");
 
     const treeAfter = await buildStepTree(dbKey, parentRunId, [parentDef, childDef]);
     const childNode = treeAfter[1]!.children![1]!;

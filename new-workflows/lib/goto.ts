@@ -176,11 +176,14 @@ export async function gotoRunStep(
   }
 
   // Park every ancestor on the segment that leads toward the leaf.
+  // Use `running` (not `pending`) — `pending` means "never started" in the
+  // UI (RunView shows the preview pane instead of logs), and a go-to mid-
+  // workflow is very much started.
   for (let i = 0; i < chain.length - 1; i++) {
     const entry = chain[i]!;
     const { error: parkError } = await updateStatusAndStepWorkflowRun(dbKey, {
       id: entry.runId,
-      status: "pending",
+      status: "running",
       current_step_index: entry.stepIndex,
       completion_hash: null,
       now,
@@ -192,7 +195,7 @@ export async function gotoRunStep(
   const leaf = chain[chain.length - 1]!;
   const { error: seekError } = await updateStatusAndStepWorkflowRun(dbKey, {
     id: leaf.runId,
-    status: "pending",
+    status: "running",
     current_step_index: leaf.stepIndex,
     completion_hash: null,
     now,

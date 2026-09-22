@@ -382,18 +382,6 @@ const steps = computed(
 );
 useRunEvents(runId);
 
-/**
- * Preview while there's no run yet, or the run exists but hasn't started
- * (`pending` — Init Workflow / Reset, never advanced). Once any step has
- * run, the pane switches to the live log.
- */
-const showPreviewPane = computed(() => {
-  if (!runId.value) return true;
-  // Avoid a blank flash while the run row loads after Init/Reset.
-  if (!run.value) return true;
-  return run.value.status === "pending";
-});
-
 const workflowPreviewMutation = usePreviewWorkflowDiffMutation();
 const runPreviewMutation = usePreviewWorkflowRunDiffMutation();
 const previewShown = ref(false);
@@ -566,6 +554,22 @@ const isAdvancing = computed(
     (orchestrator.activeRunId.value === runId.value && orchestrator.advanceMutation.isPending.value) ||
     run.value?.is_advancing === true,
 );
+
+/**
+ * Preview only before anything has actually started — no run yet, or a
+ * fresh Init/Reset (`pending`, idle). Go-to used to leave runs `pending`
+ * mid-workflow, which hid the live log pane behind this preview while the
+ * agent was already writing logs; also the first advance of a brand-new
+ * run stays `pending` until the step finishes, so `isAdvancing` must
+ * force the log pane on.
+ */
+const showPreviewPane = computed(() => {
+  if (!runId.value) return true;
+  // Avoid a blank flash while the run row loads after Init/Reset.
+  if (!run.value) return true;
+  if (isAdvancing.value) return false;
+  return run.value.status === "pending";
+});
 
 /** Some *other* run is currently being driven — only one workflow can run at a time. */
 const isOtherRunActive = computed(
