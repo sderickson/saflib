@@ -1,0 +1,37 @@
+getWorkflowRunStepTree:
+  summary: Step tree for a run (including nested call-workflow children)
+  description: >
+    Indented outline of every step under this run, with slash-separated
+    path addresses suitable for `gotoWorkflowRun`. Nested definitions
+    appear even before a child run has been created.
+  operationId: getWorkflowRunStepTree
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+
+  responses:
+    "200":
+      description: Step tree rooted at this run.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - steps
+            properties:
+              steps:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/WorkflowStepTreeNode"
+    "404":
+      description: No run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

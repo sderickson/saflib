@@ -29,6 +29,9 @@ paths:
   /api/runs/{runId}/advance:
     post:
       $ref: "./routes/runs/advance.yaml#/advanceWorkflowRun"
+  /api/runs/{runId}/goto:
+    post:
+      $ref: "./routes/runs/goto.yaml#/gotoWorkflowRun"
   /api/runs/{runId}/cancel:
     post:
       $ref: "./routes/runs/cancel.yaml#/cancelWorkflowRun"
@@ -38,6 +41,9 @@ paths:
   /api/runs/{runId}/steps:
     get:
       $ref: "./routes/runs/steps.yaml#/getWorkflowRunSteps"
+  /api/runs/{runId}/step-tree:
+    get:
+      $ref: "./routes/runs/step-tree.yaml#/getWorkflowRunStepTree"
   /api/plans:
     get:
       $ref: "./routes/plans/list.yaml#/listPlans"
@@ -70,6 +76,8 @@ components:
       $ref: "./schemas/workflow-log-entry.yaml"
     WorkflowRunStep:
       $ref: "./schemas/workflow-run-step.yaml"
+    WorkflowStepTreeNode:
+      $ref: "./schemas/workflow-step-tree-node.yaml"
     StepResult:
       $ref: "./schemas/step-result.yaml"
     PlanFile:

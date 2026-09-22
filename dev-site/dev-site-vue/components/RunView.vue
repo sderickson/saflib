@@ -211,6 +211,58 @@
             >
               Reflection
             </v-btn>
+            <v-btn
+              variant="tonal"
+              class="ml-2"
+              :disabled="isAdvancing || isOtherRunActive || gotoMutation.isPending.value"
+              :loading="gotoMutation.isPending.value"
+              @click="openGotoModal()"
+            >
+              Go to Step
+            </v-btn>
+            <v-dialog v-model="gotoModalOpen" max-width="560">
+              <v-card>
+                <v-card-title class="text-body-1">Go to step</v-card-title>
+                <v-card-text class="text-body-2">
+                  <p class="mb-3 text-medium-emphasis">
+                    Click any step to seek there. Nested paths need a child
+                    run already created (advance into the call-workflow first).
+                  </p>
+                  <p v-if="stepTreeQuery.isPending.value" class="text-medium-emphasis mb-0">
+                    Loading step tree…
+                  </p>
+                  <p v-else-if="stepTreeQuery.isError.value" class="text-error mb-0">
+                    {{ stepTreeQuery.error.value?.message }}
+                  </p>
+                  <p v-else-if="gotoMutation.isError.value" class="text-error mb-2">
+                    {{ gotoMutation.error.value?.message }}
+                  </p>
+                  <ul v-else class="run-view__goto-tree">
+                    <li
+                      v-for="node in flatStepTree"
+                      :key="node.path"
+                      class="run-view__goto-tree-row"
+                      :class="{
+                        'run-view__goto-tree-row--current': node.isCurrent,
+                        'run-view__goto-tree-row--disabled': !node.runId,
+                      }"
+                      :style="{ paddingLeft: `${0.75 + node.depth * 1.1}rem` }"
+                      :title="node.runId ? `Go to ${node.path}` : 'No nested run yet — advance into the parent call-workflow first'"
+                      @click="node.runId && selectGotoPath(node.path)"
+                    >
+                      <span class="run-view__goto-tree-path">{{ node.path }}</span>
+                      <span class="run-view__goto-tree-kind">{{ node.kind }}</span>
+                      <span v-if="node.label" class="run-view__goto-tree-label">{{ node.label }}</span>
+                      <span v-if="node.isCurrent" class="run-view__goto-tree-marker">current</span>
+                    </li>
+                  </ul>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer />
+                  <v-btn variant="text" @click="gotoModalOpen = false">Close</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
             <span v-if="isOtherRunActive" class="text-body-2 text-medium-emphasis ml-3">
               Another workflow is currently running.
             </span>
@@ -258,8 +310,10 @@ import {
   useWorkflowRunQuery,
   useWorkflowRunLogsQuery,
   useWorkflowRunStepsQuery,
+  useWorkflowRunStepTreeQuery,
   useWorkflowStepsQuery,
   useCreateWorkflowRunMutation,
+  useGotoWorkflowRunMutation,
   usePreviewWorkflowDiffMutation,
   usePreviewWorkflowRunDiffMutation,
   flattenRunLogPages,
@@ -391,6 +445,73 @@ function initWorkflow() {
 
 /** Confirm dialog for the VCR rewind / reset control. */
 const resetConfirmOpen = ref(false);
+const gotoModalOpen = ref(false);
+const gotoMutation = useGotoWorkflowRunMutation();
+const stepTreeQuery = useWorkflowRunStepTreeQuery(runId, gotoModalOpen);
+
+type FlatStepTreeNode = {
+  path: string;
+  kind: string;
+  label?: string;
+  isCurrent: boolean;
+  runId?: string;
+  depth: number;
+};
+
+function flattenStepTree(
+  nodes:
+    | {
+        path: string;
+        kind: string;
+        label?: string;
+        isCurrent: boolean;
+        runId?: string;
+        children?: FlatStepTreeNodeSource[];
+      }[]
+    | undefined,
+  depth = 0,
+): FlatStepTreeNode[] {
+  if (!nodes?.length) return [];
+  return nodes.flatMap((node) => [
+    {
+      path: node.path,
+      kind: node.kind,
+      label: node.label,
+      isCurrent: node.isCurrent,
+      runId: node.runId,
+      depth,
+    },
+    ...flattenStepTree(node.children, depth + 1),
+  ]);
+}
+
+type FlatStepTreeNodeSource = {
+  path: string;
+  kind: string;
+  label?: string;
+  isCurrent: boolean;
+  runId?: string;
+  children?: FlatStepTreeNodeSource[];
+};
+
+const flatStepTree = computed(() => flattenStepTree(stepTreeQuery.data.value?.steps));
+
+function openGotoModal() {
+  gotoMutation.reset();
+  gotoModalOpen.value = true;
+}
+
+function selectGotoPath(path: string) {
+  if (!runId.value) return;
+  gotoMutation.mutate(
+    { runId: runId.value, path },
+    {
+      onSuccess: () => {
+        gotoModalOpen.value = false;
+      },
+    },
+  );
+}
 
 /**
  * Stops auto-continue (and cancels an in-flight step on this run), then
@@ -810,5 +931,59 @@ const failureMessage = computed(() => {
   flex: 0 0 120px;
   width: 120px;
   margin-right: 0.5rem;
+}
+.run-view__goto-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 4px;
+}
+.run-view__goto-tree-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+}
+.run-view__goto-tree-row:last-child {
+  border-bottom: none;
+}
+.run-view__goto-tree-row:hover:not(.run-view__goto-tree-row--disabled) {
+  background: rgba(var(--v-theme-primary), 0.08);
+}
+.run-view__goto-tree-row--current {
+  background: rgba(var(--v-theme-warning), 0.14);
+  font-weight: 600;
+}
+.run-view__goto-tree-row--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.run-view__goto-tree-path {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  opacity: 0.7;
+  min-width: 2.5rem;
+}
+.run-view__goto-tree-kind {
+  flex: 0 0 auto;
+}
+.run-view__goto-tree-label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+.run-view__goto-tree-marker {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
 }
 </style>

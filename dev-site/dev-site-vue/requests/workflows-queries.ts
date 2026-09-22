@@ -235,6 +235,23 @@ export function useWorkflowRunStepsQuery(runId: MaybeRefOrGetter<string | undefi
   });
 }
 
+export function useWorkflowRunStepTreeQuery(
+  runId: MaybeRefOrGetter<string | undefined>,
+  enabled: MaybeRefOrGetter<boolean> = true,
+) {
+  const client = createWorkflowsClient();
+  return useQuery<NewWorkflowsResponseBody["getWorkflowRunStepTree"][200], TanstackError>({
+    queryKey: ["new-workflows", "run-step-tree", runId],
+    enabled: () => Boolean(toValue(runId)) && toValue(enabled),
+    queryFn: () =>
+      handleClientMethod(
+        client.GET("/api/runs/{runId}/step-tree", {
+          params: { path: { runId: toValue(runId)! } },
+        }),
+      ),
+  });
+}
+
 /**
  * Same as `useWorkflowRunStepsQuery`, but for a workflow/plan file that's
  * never been run — resolved straight from its definition instead of an
@@ -341,6 +358,36 @@ export function useCancelWorkflowRunMutation() {
       handleClientMethod(
         client.POST("/api/runs/{runId}/cancel", { params: { path: { runId } } }),
       ),
+  });
+}
+
+export interface GotoWorkflowRunVariables {
+  runId: string;
+  /** Slash-separated step indices from the root (e.g. `2/4`). */
+  path: string;
+}
+
+export function useGotoWorkflowRunMutation() {
+  const client = createWorkflowsClient();
+  const queryClient = useQueryClient();
+  return useMutation<
+    NewWorkflowsResponseBody["gotoWorkflowRun"][200],
+    TanstackError,
+    GotoWorkflowRunVariables
+  >({
+    mutationFn: ({ runId, path }) =>
+      handleClientMethod(
+        client.POST("/api/runs/{runId}/goto", {
+          params: { path: { runId } },
+          body: { path },
+        }),
+      ),
+    onSuccess: (_data, { runId }) => {
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-steps", runId] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-step-tree", runId] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+    },
   });
 }
 

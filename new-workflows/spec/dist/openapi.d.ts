@@ -103,6 +103,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{runId}/goto": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Seek a run to a step path
+         * @description Jump the run (and nested `call-workflow` children along the path) so the next advance resumes at that step. Path uses slash-separated indices (e.g. `2/4`). Invalidates leaf step attempts from the target index onward. The same semantics as `new-workflow goto`.
+         */
+        post: operations["gotoWorkflowRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs/{runId}/cancel": {
         parameters: {
             query?: never;
@@ -163,6 +183,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{runId}/step-tree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Step tree for a run (including nested call-workflow children)
+         * @description Indented outline of every step under this run, with slash-separated path addresses suitable for `gotoWorkflowRun`. Nested definitions appear even before a child run has been created.
+         */
+        get: operations["getWorkflowRunStepTree"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/plans": {
         parameters: {
             query?: never;
@@ -203,6 +243,7 @@ export interface components {
         WorkflowRun: components["schemas"]["workflow-run"];
         WorkflowLogEntry: components["schemas"]["workflow-log-entry"];
         WorkflowRunStep: components["schemas"]["workflow-run-step"];
+        WorkflowStepTreeNode: components["schemas"]["workflow-step-tree-node"];
         StepResult: components["schemas"]["step-result"];
         PlanFile: components["schemas"]["plan-file"];
         PlanSummary: components["schemas"]["plan-summary"];
@@ -398,6 +439,24 @@ export interface components {
             content: string;
             /** Format: date-time */
             created_at: string;
+        };
+        "workflow-step-tree-node": {
+            /**
+             * @description Slash-separated indices from the root (e.g. `2/4`).
+             * @example 2/4
+             */
+            path: string;
+            /** @description Step index within this node's own workflow definition. */
+            index: number;
+            /** @example call-workflow */
+            kind: string;
+            /** @description Best-effort human label for the step. */
+            label?: string;
+            /** @description True when this node is on the active breadcrumb. */
+            isCurrent: boolean;
+            /** @description Owning run id when one exists. Absent for nested outline rows under a `call-workflow` that has not created a child yet. */
+            runId?: string;
+            children?: components["schemas"]["workflow-step-tree-node"][];
         };
         /** @description One workflow config file inside a plan folder. */
         "plan-file": {
@@ -746,6 +805,60 @@ export interface operations {
             };
         };
     };
+    gotoWorkflowRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Slash-separated step indices from the root run (e.g. `3` or `2/4`).
+                     * @example 2/4
+                     */
+                    path: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Updated root run after the seek. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        run: components["schemas"]["workflow-run"];
+                        /** @description Echo of the path that was sought. */
+                        path: string;
+                    };
+                };
+            };
+            /** @description Invalid or unreachable path. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description No run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
     cancelWorkflowRun: {
         parameters: {
             query?: never;
@@ -831,6 +944,39 @@ export interface operations {
                 content: {
                     "application/json": {
                         steps: components["schemas"]["workflow-run-step"][];
+                    };
+                };
+            };
+            /** @description No run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getWorkflowRunStepTree: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Step tree rooted at this run. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        steps: components["schemas"]["workflow-step-tree-node"][];
                     };
                 };
             };

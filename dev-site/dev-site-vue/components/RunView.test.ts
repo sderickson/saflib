@@ -74,6 +74,18 @@ const handlers = [
     return HttpResponse.json({ logs: page, has_more: rows.length > limit });
   }),
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: stepsState })),
+  http.get(`${ORIGIN}/api/runs/:runId/step-tree`, () =>
+    HttpResponse.json({
+      steps: (stepsState as { index: number; kind: string; label?: string }[]).map((s) => ({
+        path: String(s.index),
+        index: s.index,
+        kind: s.kind,
+        label: s.label,
+        isCurrent: s.index === (runState.current_step_index as number),
+        runId: runState.id,
+      })),
+    }),
+  ),
   http.get(`${ORIGIN}/api/workflows/:id/steps`, () => HttpResponse.json({ steps: stepsState })),
 ];
 
@@ -363,6 +375,44 @@ describe("RunView", () => {
         revert: true,
         extraPrompt: "Use ignorePlural, it's already singular.",
       });
+    });
+  });
+
+  it("Go to Step opens a modal and posts the clicked path", async () => {
+    runState = runFixture({ status: "failed", current_step_index: 1 });
+    let gotoBody: unknown;
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/goto`, async ({ request }) => {
+        gotoBody = await request.json();
+        return HttpResponse.json({
+          run: { ...runState, current_step_index: 0, status: "pending" },
+          path: (gotoBody as { path: string }).path,
+        });
+      }),
+    );
+
+    const wrapper = mountRunView();
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Go to Step");
+    });
+
+    const gotoButton = wrapper.findAll("button").find((b) => b.text() === "Go to Step");
+    expect(gotoButton).toBeTruthy();
+    await gotoButton!.trigger("click");
+    await nextTick();
+
+    // Dialog is teleported to document.body (same as the Reset confirm).
+    await vi.waitFor(() => {
+      expect(document.body.textContent).toContain("Go to step");
+      expect(document.body.querySelectorAll(".run-view__goto-tree-row").length).toBeGreaterThan(0);
+    });
+
+    const firstRow = document.body.querySelector(".run-view__goto-tree-row") as HTMLElement;
+    firstRow.click();
+
+    await vi.waitFor(() => {
+      expect(gotoBody).toEqual({ path: "0" });
     });
   });
 

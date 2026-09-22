@@ -21,6 +21,7 @@ export type WorkflowConfigBody = components["schemas"]["WorkflowConfigBody"];
 export type WorkflowSummary = components["schemas"]["WorkflowSummary"];
 export type WorkflowRun = components["schemas"]["WorkflowRun"];
 export type WorkflowLogEntry = components["schemas"]["WorkflowLogEntry"];
+export type WorkflowStepTreeNode = components["schemas"]["WorkflowStepTreeNode"];
 export type StepResult = components["schemas"]["StepResult"];
 export type PlanFile = components["schemas"]["PlanFile"];
 export type PlanSummary = components["schemas"]["PlanSummary"];

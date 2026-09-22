@@ -331,6 +331,91 @@
         }
       }
     },
+    "/api/runs/{runId}/goto": {
+      "post": {
+        "summary": "Seek a run to a step path",
+        "description": "Jump the run (and nested `call-workflow` children along the path) so the next advance resumes at that step. Path uses slash-separated indices (e.g. `2/4`). Invalidates leaf step attempts from the target index onward. The same semantics as `new-workflow goto`.\n",
+        "operationId": "gotoWorkflowRun",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "path"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Slash-separated step indices from the root run (e.g. `3` or `2/4`).\n",
+                    "example": "2/4"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated root run after the seek.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "run",
+                    "path"
+                  ],
+                  "properties": {
+                    "run": {
+                      "$ref": "#/components/schemas/workflow-run"
+                    },
+                    "path": {
+                      "type": "string",
+                      "description": "Echo of the path that was sought."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or unreachable path.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/runs/{runId}/cancel": {
       "post": {
         "summary": "Stop the agent turn currently running for a run, if any",
@@ -511,6 +596,58 @@
         }
       }
     },
+    "/api/runs/{runId}/step-tree": {
+      "get": {
+        "summary": "Step tree for a run (including nested call-workflow children)",
+        "description": "Indented outline of every step under this run, with slash-separated path addresses suitable for `gotoWorkflowRun`. Nested definitions appear even before a child run has been created.\n",
+        "operationId": "getWorkflowRunStepTree",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Step tree rooted at this run.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "steps"
+                  ],
+                  "properties": {
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-step-tree-node"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/plans": {
       "get": {
         "summary": "List saved plans (config-defined workflow folders)",
@@ -661,6 +798,9 @@
       },
       "WorkflowRunStep": {
         "$ref": "#/components/schemas/workflow-run-step"
+      },
+      "WorkflowStepTreeNode": {
+        "$ref": "#/components/schemas/workflow-step-tree-node"
       },
       "StepResult": {
         "$ref": "#/components/schemas/step-result"
@@ -1102,6 +1242,50 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "workflow-step-tree-node": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "index",
+          "kind",
+          "isCurrent"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Slash-separated indices from the root (e.g. `2/4`).",
+            "example": "2/4"
+          },
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Step index within this node's own workflow definition."
+          },
+          "kind": {
+            "type": "string",
+            "example": "call-workflow"
+          },
+          "label": {
+            "type": "string",
+            "description": "Best-effort human label for the step."
+          },
+          "isCurrent": {
+            "type": "boolean",
+            "description": "True when this node is on the active breadcrumb."
+          },
+          "runId": {
+            "type": "string",
+            "description": "Owning run id when one exists. Absent for nested outline rows under a `call-workflow` that has not created a child yet.\n"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/workflow-step-tree-node"
+            }
           }
         }
       },

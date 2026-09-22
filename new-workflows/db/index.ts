@@ -20,6 +20,7 @@ export { listByWorkflowRefWorkflowRun } from "./queries/workflow-run/list-by-wor
 export { createWorkflowStep } from "./queries/workflow-step/create.ts";
 export { updateResultWorkflowStep } from "./queries/workflow-step/update-result.ts";
 export { listByRunWorkflowStep } from "./queries/workflow-step/list-by-run.ts";
+export { deleteFromStepWorkflowStep } from "./queries/workflow-step/delete-from-step.ts";
 export { appendWorkflowLog } from "./queries/workflow-log/append.ts";
 export { listByRunWorkflowLog } from "./queries/workflow-log/list-by-run.ts";
 export { createWorkflowConfig } from "./queries/workflow-config/create.ts";
