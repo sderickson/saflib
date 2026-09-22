@@ -3,6 +3,14 @@ export function workflowMarkerLinesEqual(a: string, b: string): boolean {
   return a.trimStart() === b.trimStart();
 }
 
+export interface FindTargetAreaIndicesOptions {
+  /**
+   * When true (default), log a console.warn if the area is missing.
+   * Callers that expect absence (e.g. already-resolved ONCE areas) pass false.
+   */
+  warn?: boolean;
+}
+
 /**
  * Finds the start and end indices of a workflow area in the target file.
  * @returns Object with start and end indices, or null if not found
@@ -13,13 +21,17 @@ export function findTargetAreaIndices(
   areaEndLine: string,
   areaName: string,
   targetPath: string,
+  options?: FindTargetAreaIndicesOptions,
 ): { start: number; end: number } | null {
+  const warn = options?.warn ?? true;
   const targetAreaStart = result.findIndex((line) =>
     workflowMarkerLinesEqual(line, areaStartLine),
   );
 
   if (targetAreaStart === -1) {
-    console.warn(`Could not find target area ${areaName} in ${targetPath}`);
+    if (warn) {
+      console.warn(`Could not find target area ${areaName} in ${targetPath}`);
+    }
     return null;
   }
 
@@ -29,7 +41,9 @@ export function findTargetAreaIndices(
   );
 
   if (targetAreaEnd === -1) {
-    console.warn(`Target area ${areaName} does not end in ${targetPath}`);
+    if (warn) {
+      console.warn(`Target area ${areaName} does not end in ${targetPath}`);
+    }
     return null;
   }
 

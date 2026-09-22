@@ -56,6 +56,22 @@ describe("findTargetAreaIndices", () => {
     consoleSpy.mockRestore();
   });
 
+  it("returns null without warning when warn: false and BEGIN missing", () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const result = ["  content", "// END WORKFLOW AREA"];
+    const indices = findTargetAreaIndices(
+      result,
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      result[1],
+      "myArea",
+      "test.ts",
+      { warn: false },
+    );
+    expect(indices).toBeNull();
+    expect(consoleSpy).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
   it("returns null when END line not found after BEGIN", () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const result = [
