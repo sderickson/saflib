@@ -1,9 +1,7 @@
 import path from "node:path";
-import { existsSync } from "node:fs";
 import {
   defineWorkflow,
   step,
-  stepSkipIf,
   parsePath,
   parsePackageName,
   getPackageName,
@@ -22,7 +20,6 @@ import {
 import { templatesProductRoot, templatesSaflibRoot } from "@saflib/templates";
 
 const cronRoot = path.join(templatesProductRoot, "service/cron");
-const jobsRoot = path.join(templatesProductRoot, "service/jobs");
 const overviewDoc = path.join(templatesSaflibRoot, "cron", "docs", "01-overview.md");
 
 interface CronAddJobInput {
@@ -40,6 +37,11 @@ interface CronAddJobContext extends ParsePathOutput, ParsePackageNameOutput {
  * Ported from `cron/cron-http/workflows/add-job.ts` — same templates, same
  * prompts, same step order, running on the new sqlite-backed engine
  * instead of XState.
+ *
+ * The sibling `service/jobs/jobs.ts` trigger map is wired by the agent in
+ * the prompt step (not a skipIf'd copy/update): that package may not exist
+ * yet when this workflow starts, and tying an update step to a conditional
+ * copy races with the agent creating it mid-run.
  */
 export const CronAddJobWorkflowDefinition = defineWorkflow<
   CronAddJobInput,
@@ -100,21 +102,6 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    // Upsert `cron:{jobName}` → background operation into the jobs trigger map.
-    stepSkipIf<CopyStepInput, CronAddJobContext>(
-      ({ context }) => !existsSync(path.join(context.jobsDir, "jobs.ts")),
-      "copy",
-      runCopyStep,
-      ({ context }) => ({
-        templateFiles: {
-          jobs: path.join(jobsRoot, "jobs.ts"),
-        },
-        name: "cron-trigger-map",
-        targetDir: context.jobsDir,
-        lineReplace: makeLineReplace(context),
-      }),
-    ),
-
     step<UpdateStepInput, CronAddJobContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "job",
       prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Finalize the ${context.targetName} declarative JobConfig. Make sure to:
@@ -122,7 +109,6 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
         2. Set \`enqueue.operationId\` to an existing (or newly added) background API operation
         3. Optionally set \`enqueue.request\`, \`enqueue.dedupeKey\` (default \`cron:{jobName}\`), and \`enqueue.priority\`
         4. Do **not** add a \`handler\` — cron only enqueues; work lives in the HTTP operation
-        5. Mirror the same operationId in \`service/jobs/jobs.ts\` workflow area \`cron-trigger-map\` (\`cron:${context.targetName}\` → [operationId])
         
         Please review documentation here first: ${overviewDoc}`,
     })),
@@ -133,7 +119,7 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       * Make sure it's included in the adjacent index.ts file.
       * Make sure those jobs are included in the root cron.ts file (workflow areas should already upsert imports/map spreads).
       * Ensure \`runCron\` / \`createCronRouter\` receive a required \`enqueueJob\` (e.g. \`makeCronEnqueuer\` from \`@saflib/jobs-http\`).
-      * Confirm \`service/jobs/jobs.ts\` has \`cron:${context.targetName}\` pointing at the chosen background operationId (CopyStep should have upserted the edge; update the target if still on the demo stub).`,
+      * Wire \`cron:${context.targetName}\` → the chosen background \`operationId\` in \`${context.jobsDir}/jobs.ts\` (workflow area \`cron-trigger-map\` FOR cron/add-job). Create or scaffold the sibling jobs package if it doesn't exist yet; the target must match \`enqueue.operationId\` on the JobConfig.`,
     })),
 
     step<UpdateStepInput, CronAddJobContext>("update", runUpdateStep, ({ context }) => ({
@@ -144,16 +130,6 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
         * Assert there is no \`handler\` property
         * Keep the test free of mocks — it only checks config shape`,
     })),
-
-    stepSkipIf<UpdateStepInput, CronAddJobContext>(
-      ({ context }) => !existsSync(path.join(context.jobsDir, "jobs.ts")),
-      "update",
-      runUpdateStep,
-      ({ context }) => ({
-        fileId: "jobs",
-        prompt: `${context.prompt ? `The job implements: ${context.prompt}\n\n` : ""}Finalize the \`cron:${context.targetName}\` edge in service/jobs/jobs.ts (\`cron-trigger-map\` area). The target must be a background-tagged operationId matching enqueue.operationId.`,
-      }),
-    ),
 
     step<CommandStepInput, CronAddJobContext>("command", runCommandStep, () => ({
       command: "npm",

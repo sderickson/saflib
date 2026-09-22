@@ -50,55 +50,32 @@ describe("cron/add-job (ported to the new engine)", () => {
     expect(readFileSync(testPath, "utf-8")).toContain("sendReminders");
   });
 
-  it("skips upserting the sibling jobs trigger map when it doesn't exist yet", async () => {
-    const cwd = mkdtempSync(path.join(tmpdir(), "cron-add-job-"));
-    writeFileSync(
-      path.join(cwd, "package.json"),
-      JSON.stringify({ name: "@example/widgets-cron" }, null, 2),
-    );
-    mkdirSync(path.join(cwd, "jobs", "notifications"), { recursive: true });
-    // No sibling "../jobs" directory exists at all.
-
-    const runId = await createRun(dbKey, CronAddJobWorkflowDefinition, {
-      input: { path: "./jobs/notifications/send-reminders.ts" },
-      cwd,
-      mode: "script",
-    });
-
-    // First step (copy job/test files).
-    {
-      const { output, result } = advanceRun(dbKey, CronAddJobWorkflowDefinition, runId);
-      await collectOutput(output);
-      expect((await result).status).toBe("success");
-    }
-    // Second step: the skipIf-guarded upsert into the (nonexistent) jobs.ts — should
-    // no-op successfully rather than erroring on the missing directory/file.
-    {
-      const { output, result } = advanceRun(dbKey, CronAddJobWorkflowDefinition, runId);
-      await collectOutput(output);
-      expect((await result).status).toBe("success");
-    }
-  });
-
   it("threads the input prompt into the job and test update-step prompts", () => {
     const context = {
       groupName: "notifications",
       targetName: "send-reminders",
       targetDir: "/repo",
-      jobsDir: "/repo/../jobs",
+      jobsDir: "/repo/service/jobs",
       packageName: "@example/widgets-cron",
       serviceName: "widgets",
       organizationName: "example",
       sharedPackagePrefix: "@example/widgets",
       prompt: "enqueue the weekly digest email every Monday at 9am",
     };
-    const jobStep = CronAddJobWorkflowDefinition.steps[2];
+    // Step order: copy → update job → prompt → update test → typecheck → test
+    const jobStep = CronAddJobWorkflowDefinition.steps[1];
     const jobInput = jobStep.input({ context }) as { prompt: string };
     expect(jobInput.prompt).toContain(
       "Task: enqueue the weekly digest email every Monday at 9am",
     );
 
-    const testStep = CronAddJobWorkflowDefinition.steps[4];
+    const packagePrompt = CronAddJobWorkflowDefinition.steps[2].input({ context }) as {
+      prompt: string;
+    };
+    expect(packagePrompt.prompt).toContain("cron:send-reminders");
+    expect(packagePrompt.prompt).toContain("/repo/service/jobs/jobs.ts");
+
+    const testStep = CronAddJobWorkflowDefinition.steps[3];
     const testInput = testStep.input({ context }) as { prompt: string };
     expect(testInput.prompt).toContain(
       "The job implements: enqueue the weekly digest email every Monday at 9am",
