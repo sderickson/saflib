@@ -39,7 +39,7 @@
         </div>
       </aside>
 
-      <div v-if="!runId" class="run-view__logs run-view__logs--pre-run">
+      <div v-if="showPreviewPane" class="run-view__logs run-view__logs--pre-run">
         <div v-if="!previewShown" class="run-view__preview-cta">
           <v-btn size="x-large" color="primary" variant="tonal" @click="openPreview()">
             Preview changes
@@ -51,11 +51,11 @@
             <v-spacer />
             <v-btn size="small" variant="text" @click="previewShown = false">Back</v-btn>
           </div>
-          <v-progress-linear v-if="previewMutation.isPending.value" indeterminate class="mb-4" />
-          <v-alert v-if="previewMutation.isError.value" type="error" class="mb-4">
-            {{ previewMutation.error.value?.message }}
+          <v-progress-linear v-if="previewPending" indeterminate class="mb-4" />
+          <v-alert v-if="previewError" type="error" class="mb-4">
+            {{ previewError }}
           </v-alert>
-          <PreviewFileTree v-if="previewMutation.data.value" :files="previewFiles" />
+          <PreviewFileTree v-if="previewDataReady" :files="previewFiles" />
         </div>
       </div>
       <div v-else ref="logContainer" class="run-view__logs" @scroll="onScroll">
@@ -258,6 +258,7 @@ import {
   useWorkflowStepsQuery,
   useCreateWorkflowRunMutation,
   usePreviewWorkflowDiffMutation,
+  usePreviewWorkflowRunDiffMutation,
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import { useRunOrchestrator } from "../run-orchestrator.ts";
@@ -286,7 +287,11 @@ const props = defineProps<{
    * on hand and it's what makes the pre-run layout possible at all.
    */
   workflowRef: string;
-  /** Present once a run exists — absent shows the pre-run layout (static steps, "Preview changes", "Init Workflow"). */
+  /**
+   * Present once a run exists. Footer flips to VCR controls; the main pane
+   * still shows Preview while the run is `pending` (initialized / reset,
+   * never advanced) — only a started run swaps in the live log.
+   */
   runId?: string;
   /**
    * Other runs (e.g. earlier phases in the same plan folder), earliest
@@ -320,21 +325,48 @@ const steps = computed(
 useRunEvents(runId);
 
 /**
- * Preview is a pre-run-only concept: once a real run exists, this pane
- * always shows the live log — there's nothing left to preview that isn't
- * either already committed or about to be shown as real progress. See the
- * ask that removed the post-run preview toggle in favor of this simpler
- * split.
+ * Preview while there's no run yet, or the run exists but hasn't started
+ * (`pending` — Init Workflow / Reset, never advanced). Once any step has
+ * run, the pane switches to the live log.
  */
-const previewMutation = usePreviewWorkflowDiffMutation();
+const showPreviewPane = computed(() => {
+  if (!runId.value) return true;
+  // Avoid a blank flash while the run row loads after Init/Reset.
+  if (!run.value) return true;
+  return run.value.status === "pending";
+});
+
+const workflowPreviewMutation = usePreviewWorkflowDiffMutation();
+const runPreviewMutation = usePreviewWorkflowRunDiffMutation();
 const previewShown = ref(false);
-const previewFiles = computed<PreviewFile[]>(() =>
-  (previewMutation.data.value?.entries ?? []).flatMap((e) => e.files ?? []),
+const previewPending = computed(() =>
+  runId.value ? runPreviewMutation.isPending.value : workflowPreviewMutation.isPending.value,
 );
+const previewError = computed(() => {
+  const err = runId.value
+    ? runPreviewMutation.error.value
+    : workflowPreviewMutation.error.value;
+  return err?.message;
+});
+const previewDataReady = computed(() =>
+  runId.value
+    ? runPreviewMutation.data.value !== undefined
+    : workflowPreviewMutation.data.value !== undefined,
+);
+const previewFiles = computed<PreviewFile[]>(() => {
+  const entries = runId.value
+    ? runPreviewMutation.data.value?.entries
+    : workflowPreviewMutation.data.value?.entries;
+  return (entries ?? []).flatMap((e) => e.files ?? []);
+});
 
 function openPreview() {
   previewShown.value = true;
-  previewMutation.mutate({ id: props.workflowRef, baseRunIds: baseRunIds.value });
+  if (runId.value) {
+    runPreviewMutation.mutate({ runId: runId.value, baseRunIds: baseRunIds.value });
+  } else {
+    workflowPreviewMutation.mutate({ id: props.workflowRef, baseRunIds: baseRunIds.value });
+  }
 }
 
 /**

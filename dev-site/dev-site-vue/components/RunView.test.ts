@@ -95,7 +95,7 @@ describe("RunView", () => {
 
   beforeEach(() => {
     __resetRunOrchestratorForTests();
-    runState = runFixture();
+    runState = runFixture({ status: "running" });
     logsState = [
       {
         id: "l1",
@@ -568,6 +568,71 @@ describe("RunView", () => {
     expect(wrapper.findAll("button").find((b) => b.text() === "Reflection")).toBeUndefined();
   });
 
+  it("pending run: shows Preview changes (not a blank log pane) alongside VCR controls", async () => {
+    runState = runFixture({ status: "pending" });
+    const wrapper = mountRunView({ runId: "run-1" });
+
+    await vi.waitFor(() => {
+      expect(wrapper.findAll("button").find((b) => b.text() === "Preview changes")).toBeTruthy();
+    });
+    expect(wrapper.find('[aria-label="Play current step"]').exists()).toBe(true);
+    expect(wrapper.findAll("button").find((b) => b.text() === "Init Workflow")).toBeUndefined();
+  });
+
+  it("started run: shows the log pane instead of Preview", async () => {
+    runState = runFixture({ status: "running", current_step_index: 0 });
+    logsState = [
+      {
+        id: "l1",
+        run_id: "run-1",
+        step_index: 0,
+        channel: "tool",
+        level: "info",
+        content: "copy started",
+        created_at: "2026-09-15T00:00:01.000Z",
+      },
+    ];
+    const wrapper = mountRunView({ runId: "run-1" });
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("copy started");
+    });
+    expect(wrapper.findAll("button").find((b) => b.text() === "Preview changes")).toBeUndefined();
+  });
+
+  it("pending run: Preview changes uses the run-scoped preview-diff endpoint", async () => {
+    runState = runFixture({ status: "pending" });
+    let hitRunPreview = false;
+    server.use(
+      http.get(`${ORIGIN}/api/workflow-runs/:runId/preview-diff`, ({ params }) => {
+        expect(params.runId).toBe("run-1");
+        hitRunPreview = true;
+        return HttpResponse.json({
+          commit_diff: emptyCommitDiff(),
+          entries: [
+            {
+              workflow_id: "example/hello",
+              step_index: 0,
+              kind: "copy",
+              applied: true,
+              files: [{ path: "src/widget.ts", status: "added" }],
+            },
+          ],
+        });
+      }),
+    );
+
+    const wrapper = mountRunView({ runId: "run-1" });
+    await vi.waitFor(() => {
+      expect(wrapper.findAll("button").find((b) => b.text() === "Preview changes")).toBeTruthy();
+    });
+    await wrapper.findAll("button").find((b) => b.text() === "Preview changes")!.trigger("click");
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("widget.ts");
+    });
+    expect(hitRunPreview).toBe(true);
+  });
+
   it("reset: confirms, then creates a fresh run for the same workflow", async () => {
     let created = false;
     server.use(
@@ -679,7 +744,7 @@ describe("RunView", () => {
   });
 
   it("Reflection navigates to the Checkout compare view for this run's base_commit_hash", async () => {
-    runState = runFixture({ base_commit_hash: "abc123base" });
+    runState = runFixture({ status: "running", base_commit_hash: "abc123base" });
 
     const wrapper = mountRunView();
     await vi.waitFor(() => {
@@ -698,7 +763,7 @@ describe("RunView", () => {
   });
 
   it("has no Reflection button when the run never captured a base_commit_hash", async () => {
-    runState = runFixture({ base_commit_hash: null });
+    runState = runFixture({ status: "running", base_commit_hash: null });
 
     const wrapper = mountRunView();
     await vi.waitFor(() => {
@@ -786,7 +851,7 @@ describe("RunView", () => {
   it("disables the VCR group for a run that isn't the orchestrator's active run", async () => {
     server.use(
       http.get(`${ORIGIN}/api/runs/:runId`, ({ params }) =>
-        HttpResponse.json({ run: runFixture({ id: params.runId }) }),
+        HttpResponse.json({ run: runFixture({ id: params.runId, status: "running" }) }),
       ),
       http.post(`${ORIGIN}/api/runs/:runId/advance`, async () => {
         await new Promise((r) => setTimeout(r, 50));

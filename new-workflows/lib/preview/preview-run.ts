@@ -176,7 +176,7 @@ async function walkSteps(
         continue;
       }
       try {
-        const files = await applyFileStep(state, step.kind, stepInput, rollingCwd);
+        const files = await applyFileStep(state, def.id, stepIndex, step.kind, stepInput, rollingCwd);
         state.entries.push({ workflowId: def.id, stepIndex, kind: step.kind, applied: true, files });
       } catch (err) {
         state.entries.push({
@@ -231,12 +231,23 @@ async function walkSteps(
   }
 }
 
-/** Minimal `WorkflowContext` for a mechanical step — nothing else reads `dbKey`/`log`/agent fields. */
-function fileStepContext(state: WalkState, cwd: string): WorkflowContext {
+/**
+ * Minimal `WorkflowContext` for a mechanical step — nothing else reads
+ * `dbKey`/`log`/agent fields. `workflowId` must be the real definition id
+ * (not a preview placeholder): `runCopyStep` passes it into
+ * `validateWorkflowAreas` / `updateWorkflowAreas`, which only touch areas
+ * whose `FOR` list includes that id.
+ */
+function fileStepContext(
+  state: WalkState,
+  workflowId: string,
+  stepIndex: number,
+  cwd: string,
+): WorkflowContext {
   return {
     runId: "preview",
-    workflowId: "preview",
-    stepIndex: 0,
+    workflowId,
+    stepIndex,
     dbKey: state.dbKey,
     // Never "dry"/"checklist" — those modes skip the real work entirely,
     // which is the opposite of what a preview needs. `copy`/`transform-file`
@@ -252,6 +263,8 @@ function fileStepContext(state: WalkState, cwd: string): WorkflowContext {
 
 async function applyFileStep(
   state: WalkState,
+  workflowId: string,
+  stepIndex: number,
   kind: "copy" | "transform-file",
   stepInput: unknown,
   cwd: string,
@@ -266,7 +279,7 @@ async function applyFileStep(
 
   const existingBlobHashes = materializePaths(state, absTargets);
   try {
-    const ctx = fileStepContext(state, cwd);
+    const ctx = fileStepContext(state, workflowId, stepIndex, cwd);
     const outcome =
       kind === "copy"
         ? await runCopyStep(stepInput as CopyStepInput, ctx)

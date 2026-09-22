@@ -174,4 +174,63 @@ describe("previewRun", () => {
       },
     ]);
   });
+
+  it("surfaces validateWorkflowAreas failures using the real workflow id (not a preview placeholder)", async () => {
+    // Target already has a SORTED area; template has a non-SORTED one for the
+    // same name — getAreaKey treats those as different. Preview must pass
+    // def.id into runCopyStep so FOR-filtered validation actually runs.
+    const targetDir = path.join(repoRoot, "packages/widget");
+    writeFileSync(
+      path.join(targetDir, "schema.ts"),
+      [
+        "// BEGIN SORTED WORKFLOW AREA schema-exports FOR test/area-mismatch",
+        'export * from "./existing.ts";',
+        "// END WORKFLOW AREA",
+        "",
+      ].join("\n"),
+    );
+    git(repoRoot, ["add", "-A"]);
+    git(repoRoot, ["commit", "-m", "schema with sorted area"]);
+    const mismatchBase = git(repoRoot, ["rev-parse", "HEAD"]);
+
+    const templateSchema = path.join(templateDir, "schema.ts");
+    writeFileSync(
+      templateSchema,
+      [
+        "// BEGIN WORKFLOW AREA schema-exports FOR test/area-mismatch",
+        'export * from "./template-file.ts";',
+        "// END WORKFLOW AREA",
+        "",
+      ].join("\n"),
+    );
+
+    const MismatchWorkflow = defineWorkflow<Record<string, never>, Ctx>({
+      id: "test/area-mismatch",
+      description: "test",
+      context: ({ cwd }) => ({ cwd }),
+      steps: [
+        step<CopyStepInput, Ctx>("copy", runCopyStep, () => ({
+          templateFiles: { schemaIndex: templateSchema },
+          targetDir,
+        })),
+      ],
+    });
+
+    const result = await previewRun(
+      dbKey,
+      MismatchWorkflow,
+      {},
+      { repoRoot, baseHash: mismatchBase, cwd: repoRoot },
+    );
+
+    expect(result.entries).toEqual([
+      {
+        workflowId: "test/area-mismatch",
+        stepIndex: 0,
+        kind: "copy",
+        applied: false,
+        reason: expect.stringContaining('Source has workflow area "schema-exports"'),
+      },
+    ]);
+  });
 });
