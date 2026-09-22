@@ -85,3 +85,7 @@ export {
   type PreviewRunOptions,
   type PreviewFileChange,
 } from "./preview/preview-run.ts";
+export {
+  isExpectedPreviewSkip,
+  isMechanicalPreviewFailure,
+} from "./preview/preview-failures.ts";

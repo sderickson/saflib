@@ -10,6 +10,7 @@ import { addNextCommand } from "./commands/next.ts";
 import { addStatusCommand } from "./commands/status.ts";
 import { addGotoCommand } from "./commands/goto.ts";
 import { addPreviewCommand } from "./commands/preview.ts";
+import { addValidateCommand } from "./commands/validate.ts";
 
 export { parseNamedArgs } from "./args.ts";
 export { loadWorkflowDefinition } from "@saflib/new-workflows";
@@ -39,6 +40,7 @@ export async function runNewWorkflowCli(
   addStatusCommand(ctx);
   addGotoCommand(ctx);
   addPreviewCommand(ctx);
+  addValidateCommand(ctx);
 
   await program.parseAsync(process.argv);
 }

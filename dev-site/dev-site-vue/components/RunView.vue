@@ -55,6 +55,26 @@
           <v-alert v-if="previewError" type="error" class="mb-4">
             {{ previewError }}
           </v-alert>
+          <v-alert
+            v-if="previewDataReady && previewMechanicalFailures.length > 0"
+            type="error"
+            class="mb-4"
+            density="compact"
+            variant="tonal"
+          >
+            <div class="text-body-2 font-weight-medium mb-1">
+              Preview found {{ previewMechanicalFailures.length }} mechanical failure{{
+                previewMechanicalFailures.length === 1 ? "" : "s"
+              }}:
+            </div>
+            <ul class="run-view__preview-failures">
+              <li v-for="(e, i) in previewMechanicalFailures" :key="i">
+                <strong>{{ e.kind }}</strong>
+                ({{ e.workflow_id }}, step {{ e.step_index }}):
+                {{ e.reason }}
+              </li>
+            </ul>
+          </v-alert>
           <PreviewFileTree v-if="previewDataReady" :files="previewFiles" />
         </div>
       </div>
@@ -334,6 +354,7 @@ import {
   toggleMuted,
 } from "../run-alerts.ts";
 import { getAgentCli } from "../agent-settings.ts";
+import { isMechanicalPreviewFailure } from "@saflib/new-workflows";
 
 const props = defineProps<{
   /**
@@ -399,12 +420,18 @@ const previewDataReady = computed(() =>
     ? runPreviewMutation.data.value !== undefined
     : workflowPreviewMutation.data.value !== undefined,
 );
-const previewFiles = computed<PreviewFile[]>(() => {
-  const entries = runId.value
-    ? runPreviewMutation.data.value?.entries
-    : workflowPreviewMutation.data.value?.entries;
-  return (entries ?? []).flatMap((e) => e.files ?? []);
-});
+const previewEntries = computed(
+  () =>
+    (runId.value
+      ? runPreviewMutation.data.value?.entries
+      : workflowPreviewMutation.data.value?.entries) ?? [],
+);
+const previewFiles = computed<PreviewFile[]>(() =>
+  previewEntries.value.flatMap((e) => e.files ?? []),
+);
+const previewMechanicalFailures = computed(() =>
+  previewEntries.value.filter(isMechanicalPreviewFailure),
+);
 
 function openPreview() {
   previewShown.value = true;
@@ -893,6 +920,13 @@ const failureMessage = computed(() => {
   font-size: 0.85rem;
   padding: 0.75rem 1rem;
   background: rgba(128, 128, 128, 0.05);
+}
+.run-view__preview-failures {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .run-view__logs-loading {
   opacity: 0.6;

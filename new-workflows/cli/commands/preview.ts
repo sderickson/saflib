@@ -3,7 +3,8 @@ import { resolveRef } from "@saflib/git";
 import {
   previewRun,
   loadWorkflowDefinition,
-  type PreviewStepEntry,
+  isExpectedPreviewSkip,
+  isMechanicalPreviewFailure,
   type PreviewFileChange,
 } from "@saflib/new-workflows";
 import type { CliContext } from "../types.ts";
@@ -74,18 +75,6 @@ function findRepoRoot(cwd: string): string {
   }).trim();
 }
 
-/**
- * Steps whose `applied: false` is expected (their kind just isn't
- * mechanically previewable) rather than a genuine failure — see
- * `previewRun`'s own walk, which only ever marks `copy`/`transform-file`
- * `applied: false` when the step itself threw (e.g. a `validateWorkflowAreas`
- * conflict), never as a plain skip.
- */
-function isExpectedSkip(entry: PreviewStepEntry): boolean {
-  if (entry.reason === "skipped (stepSkipIf)") return true;
-  return entry.kind !== "copy" && entry.kind !== "transform-file";
-}
-
 export function addPreviewCommand(ctx: CliContext): void {
   ctx.program
     .command("preview")
@@ -115,8 +104,8 @@ export function addPreviewCommand(ctx: CliContext): void {
         cwd,
       });
 
-      const errors = result.entries.filter((e) => !e.applied && !isExpectedSkip(e));
-      const skipped = result.entries.filter((e) => !e.applied && isExpectedSkip(e));
+      const errors = result.entries.filter(isMechanicalPreviewFailure);
+      const skipped = result.entries.filter((e) => !e.applied && isExpectedPreviewSkip(e));
       const applied = result.entries.filter((e) => e.applied && e.files);
 
       const allFiles = applied.flatMap((e) => e.files!);

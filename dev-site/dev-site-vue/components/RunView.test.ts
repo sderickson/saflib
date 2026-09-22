@@ -784,6 +784,47 @@ describe("RunView", () => {
     expect(wrapper.findAll("button").find((b) => b.text() === "Preview changes")).toBeTruthy();
   });
 
+  it("pre-run: Preview surfaces mechanical copy failures (area mismatches), not only the file tree", async () => {
+    server.use(
+      http.post(`${ORIGIN}/api/workflows/:id/preview-diff`, () =>
+        HttpResponse.json({
+          commit_diff: emptyCommitDiff(),
+          entries: [
+            {
+              workflow_id: "sdk/add-query",
+              step_index: 0,
+              kind: "copy",
+              applied: false,
+              reason:
+                'Source has workflow area "fake-handler-imports" (FOR sdk/add-query) that target does not have',
+            },
+            {
+              workflow_id: "example/hello",
+              step_index: 1,
+              kind: "update",
+              applied: false,
+              reason: "needs a real run",
+            },
+          ],
+        }),
+      ),
+    );
+
+    const wrapper = mountRunView({ runId: undefined });
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Preview changes");
+    });
+
+    await wrapper.findAll("button").find((b) => b.text() === "Preview changes")!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("mechanical failure");
+      expect(wrapper.text()).toContain("fake-handler-imports");
+    });
+    // Expected skips stay quiet.
+    expect(wrapper.text()).not.toContain("needs a real run");
+  });
+
   it("pre-run: Init Workflow creates the run", async () => {
     let created: unknown;
     server.use(
