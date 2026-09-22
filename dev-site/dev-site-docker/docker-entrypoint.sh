@@ -1,17 +1,15 @@
 #!/bin/sh
 set -e
 
-# /repo/node_modules is a container-local named volume (see
-# docker-compose.yaml's `repo_node_modules`), not the host's own tree — an
-# agent's `npm install` (e.g. fixing a missing package) or any other
-# workflow step touching it must never corrupt the host's (Darwin) native
-# bindings, and a Linux install here would do exactly that if it shared
-# the host's copy. Runs once per container start; a fast no-op once
-# package-lock.json is already satisfied.
+# /repo is normally a read-only bind of the host checkout (see compose). The
+# site process itself runs from /app in the image and does not need a writable
+# /repo/node_modules to start. If /repo/node_modules happens to be writable
+# (e.g. an optional named-volume overlay), install Linux deps for agent
+# workflows; otherwise skip — that is the expected path for :ro mounts.
 #
-# Needs a moment as root: a fresh named volume is root-owned, and the
-# `node` user (which the rest of this image, and the app itself, runs as
-# — see Dockerfile.template) can't write into it otherwise.
+# Needs a moment as root when the overlay is present: a fresh named volume is
+# root-owned, and the `node` user (which the rest of this image, and the app
+# itself, runs as — see Dockerfile.template) can't write into it otherwise.
 if [ -d /repo ]; then
   mkdir -p /repo/node_modules
   if touch /repo/node_modules/.writecheck 2>/dev/null; then
@@ -19,7 +17,7 @@ if [ -d /repo ]; then
     chown -R node:node /repo/node_modules
     su node -c 'cd /repo && npm install --include=dev'
   else
-    echo "dev-site: /repo/node_modules is not writable (mount repo_node_modules volume); skipping chown/npm install" >&2
+    echo "dev-site: /repo/node_modules is not writable (read-only /repo mount); skipping chown/npm install" >&2
   fi
 fi
 
