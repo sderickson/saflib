@@ -5,6 +5,7 @@ import { setupContext } from "@saflib/commander";
 // BEGIN WORKFLOW AREA cli-imports FOR commander/add-command
 import { addPruneCommand } from "./prune.ts";
 import { addGenerateCommand } from "./generate.ts";
+import { addSyncNodeModulesCommand } from "./sync-node-modules.ts";
 // END WORKFLOW AREA
 
 const program = new Command()
@@ -14,6 +15,7 @@ const program = new Command()
 // BEGIN WORKFLOW AREA cli-commands FOR commander/add-command
 addPruneCommand(program);
 addGenerateCommand(program);
+addSyncNodeModulesCommand(program);
 // END WORKFLOW AREA
 
 setupContext({ serviceName: "saf-docker" }, () => {
