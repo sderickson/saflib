@@ -7,6 +7,7 @@
     <div class="log-entry__head">
       <span class="log-entry__channel">[{{ log.channel }}]</span>
       <span v-if="label" class="log-entry__label">{{ label }}</span>
+      <span v-if="timeLabel" class="log-entry__time">{{ timeLabel }}</span>
     </div>
     <div v-if="isMarkdown" class="log-entry__body log-entry__body--markdown">
       <div v-if="isAgentInput && !expanded" class="log-entry__markdown-preview">
@@ -32,12 +33,15 @@
 import { computed, ref } from "vue";
 import { marked } from "marked";
 import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
+import { formatLogTime } from "../format-log-time.ts";
 
 const props = defineProps<{ log: WorkflowLogEntry }>();
 // Also doubles as "expanded" for the plain-text show-more toggle below —
 // `false` means "collapsed" in both cases, so a single flag covers both
 // without needing per-channel default wiring.
 const expanded = ref(false);
+
+const timeLabel = computed(() => formatLogTime(props.log.created_at));
 
 const PREVIEW_LINE_COUNT = 4;
 const MARKDOWN_PREVIEW_CHAR_LIMIT = 100;
@@ -127,6 +131,12 @@ const moreLabel = computed(
 .log-entry__label {
   font-weight: 600;
   opacity: 0.85;
+}
+.log-entry__time {
+  margin-left: auto;
+  opacity: 0.45;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
 }
 .log-entry__body {
   white-space: pre-wrap;

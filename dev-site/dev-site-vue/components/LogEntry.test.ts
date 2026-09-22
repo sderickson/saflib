@@ -27,6 +27,16 @@ describe("LogEntry", () => {
     expect(wrapper.find(".log-entry__toggle").exists()).toBe(false);
   });
 
+  it("shows created_at right-aligned on the channel header row", () => {
+    const wrapper = mountLogEntry(
+      logFixture({ created_at: "2026-09-15T15:04:05.000Z", content: "hi" }),
+    );
+    const time = wrapper.find(".log-entry__time");
+    expect(time.exists()).toBe(true);
+    expect(time.text()).toMatch(/04/);
+    expect(time.text()).toMatch(/05/);
+  });
+
   it("strips the ---------- LABEL ---------- header into a badge", () => {
     const wrapper = mountLogEntry(
       logFixture({

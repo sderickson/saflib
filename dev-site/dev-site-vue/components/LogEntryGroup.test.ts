@@ -26,6 +26,7 @@ describe("LogEntryGroup", () => {
 
     expect(wrapper.findAll(".log-entry__channel")).toHaveLength(1);
     expect(wrapper.text()).toContain("[tool]");
+    expect(wrapper.find(".log-entry__time").exists()).toBe(true);
     expect(wrapper.text()).toContain("Running command: npm run typecheck");
     expect(wrapper.text()).toContain("Successfully ran `npm run typecheck`");
     expect(wrapper.find(".log-entry__toggle").exists()).toBe(false);

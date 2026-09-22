@@ -6,6 +6,7 @@
   >
     <div class="log-entry__head">
       <span class="log-entry__channel">[{{ channel }}]</span>
+      <span v-if="timeLabel" class="log-entry__time">{{ timeLabel }}</span>
     </div>
     <div
       v-for="log in previewLogs"
@@ -34,6 +35,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
+import { formatLogTime } from "../format-log-time.ts";
 
 const props = defineProps<{ logs: WorkflowLogEntry[] }>();
 const expanded = ref(false);
@@ -44,6 +46,10 @@ const expanded = ref(false);
 const PREVIEW_LOG_COUNT = 4;
 
 const channel = computed(() => props.logs[0]?.channel);
+/** First line in the group — when the burst started. */
+const timeLabel = computed(() =>
+  props.logs[0]?.created_at ? formatLogTime(props.logs[0].created_at) : "",
+);
 const hasError = computed(() => props.logs.some((log) => log.level === "error"));
 const previewLogs = computed(() => props.logs.slice(0, PREVIEW_LOG_COUNT));
 const restLogs = computed(() => props.logs.slice(PREVIEW_LOG_COUNT));
@@ -89,6 +95,12 @@ const moreLabel = computed(
 }
 .log-entry__channel {
   opacity: 0.6;
+}
+.log-entry__time {
+  margin-left: auto;
+  opacity: 0.45;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
 }
 .log-entry__body {
   white-space: pre-wrap;
