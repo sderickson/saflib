@@ -85,8 +85,9 @@
         <div v-if="logsQuery.isFetchingNextPage.value" class="run-view__logs-loading">
           Loading earlier logs…
         </div>
-        <template v-for="item in logItems" :key="itemKey(item)">
+        <template v-for="item in logItems">
           <div
+            :key="itemKey(item)"
             class="run-view__log-item"
             :data-step-index="itemStepIndex(item)"
             :class="{ 'run-view__log-item--sticky': isLastAgentInput(item) }"

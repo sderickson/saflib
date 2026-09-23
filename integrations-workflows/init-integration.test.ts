@@ -99,6 +99,9 @@ export async function initializeDependencies(): Promise<void> {
     await collectOutput(output);
     const outcome = await result;
     expect(outcome.status).toBe("error");
+    if (outcome.status !== "error") {
+      return;
+    }
     expect(outcome.message).toMatch(/service\/integrations/);
   });
 });

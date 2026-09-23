@@ -1,6 +1,7 @@
 import { effectScope, ref, watch, type EffectScope, type Ref } from "vue";
 import { useRouter } from "vue-router";
 import {
+  flattenRunLogPages,
   useAdvanceWorkflowRunMutation,
   useCancelWorkflowRunMutation,
   useCreateWorkflowRunMutation,
@@ -153,7 +154,7 @@ function createOrchestrator(): RunOrchestrator {
 
   function failureMessage(outcomeMessage: string | undefined): string {
     if (outcomeMessage) return outcomeMessage;
-    const logs = activeLogsQuery.data.value?.logs ?? [];
+    const logs = flattenRunLogPages(activeLogsQuery.data.value?.pages);
     const lastError = [...logs].reverse().find((l) => l.level === "error");
     return lastError?.content ?? "Failed — no error details available.";
   }

@@ -211,7 +211,7 @@ Read the overview doc first: ${overviewDoc}
       args: ["install"],
     })),
 
-    step<UpdateStepInput, InitIntegrationContext>("update", runUpdateStep, ({ context }) => ({
+    step<UpdateStepInput, InitIntegrationContext>("update", runUpdateStep, () => ({
       fileId: "client",
       prompt: `Update **client.ts** to implement the integration client.
 

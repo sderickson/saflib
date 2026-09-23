@@ -14,15 +14,15 @@
               v-for="(prop, name) in stringProps"
               :key="name"
               v-model="formValues[name]"
-              :label="name"
+              :label="String(name)"
               :hint="prop.description"
-              :required="isRequired(name)"
+              :required="isRequired(String(name))"
             />
             <v-checkbox
               v-for="(prop, name) in booleanProps"
               :key="name"
               v-model="formValues[name]"
-              :label="name"
+              :label="String(name)"
               :hint="prop.description"
             />
           </template>
