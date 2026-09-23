@@ -44,24 +44,32 @@ export async function prependNewerRunLogs(
   queryClient: QueryClient,
   runId: string,
 ): Promise<void> {
-  const key = ["new-workflows", "run-logs", runId] as const;
-  const existing =
-    queryClient.getQueryData<InfiniteData<WorkflowRunLogsPage, string | undefined>>(key);
-  const tip = existing?.pages[0]?.logs[0]?.created_at;
-  if (!tip) {
-    await queryClient.invalidateQueries({ queryKey: key });
+  const prefix = ["new-workflows", "run-logs", runId] as const;
+  const matches = queryClient.getQueriesData<
+    InfiniteData<WorkflowRunLogsPage, LogPageParam>
+  >({ queryKey: prefix });
+  if (matches.length === 0) {
+    await queryClient.invalidateQueries({ queryKey: prefix });
     return;
   }
   const client = createWorkflowsClient();
-  const fresh = await handleClientMethod(
-    client.GET("/api/runs/{runId}/logs", {
-      params: { path: { runId }, query: { since: tip, limit: 200 } },
-    }),
-  );
-  if (fresh.logs.length === 0) return;
-  queryClient.setQueryData<InfiniteData<WorkflowRunLogsPage, string | undefined>>(
-    key,
-    (old) => {
+  for (const [key, existing] of matches) {
+    const first = existing?.pages[0];
+    // A sidebar jump leaves a gap above the loaded window. Filling it
+    // belongs to scroll-down (`contiguous`), not this tip merge.
+    if (!first || first.has_more_newer) continue;
+    const tip = first.logs[0]?.created_at;
+    if (!tip) {
+      await queryClient.invalidateQueries({ queryKey: key });
+      continue;
+    }
+    const fresh = await handleClientMethod(
+      client.GET("/api/runs/{runId}/logs", {
+        params: { path: { runId }, query: { since: tip, limit: 200 } },
+      }),
+    );
+    if (fresh.logs.length === 0) continue;
+    queryClient.setQueryData<InfiniteData<WorkflowRunLogsPage, LogPageParam>>(key, (old) => {
       if (!old?.pages.length) return old;
       const seen = new Set(old.pages.flatMap((p) => p.logs.map((l) => l.id)));
       const additions = fresh.logs.filter((l: WorkflowLogEntry) => !seen.has(l.id));
@@ -70,9 +78,15 @@ export async function prependNewerRunLogs(
         i === 0 ? { ...p, logs: [...additions, ...p.logs] } : p,
       );
       return { ...old, pages };
-    },
-  );
+    });
+  }
 }
+
+/** Cursor for one logs page. `undefined` is the live tip, or a step anchor when one is selected. */
+export type LogPageParam =
+  | undefined
+  | { before: string }
+  | { since: string; contiguous: true };
 
 /**
  * Same-origin — the workflows API is mounted into dev-site-http itself.
@@ -191,35 +205,85 @@ export function useWorkflowRunQuery(runId: MaybeRefOrGetter<string | undefined>)
   });
 }
 
-export function useWorkflowRunLogsQuery(runId: MaybeRefOrGetter<string | undefined>) {
+export function useWorkflowRunLogsQuery(
+  runId: MaybeRefOrGetter<string | undefined>,
+  /** When set, the first page is the window starting at this step instead of the live tip. */
+  anchorStep: MaybeRefOrGetter<number | undefined> = undefined,
+) {
   const client = createWorkflowsClient();
   return useInfiniteQuery<
     WorkflowRunLogsPage,
     TanstackError,
-    InfiniteData<WorkflowRunLogsPage, string | undefined>,
-    readonly ["new-workflows", "run-logs", MaybeRefOrGetter<string | undefined>],
-    string | undefined
+    InfiniteData<WorkflowRunLogsPage, LogPageParam>,
+    readonly unknown[],
+    LogPageParam
   >({
-    queryKey: ["new-workflows", "run-logs", runId],
+    queryKey: computed(() => {
+      const id = toValue(runId);
+      const step = toValue(anchorStep);
+      return step === undefined
+        ? ["new-workflows", "run-logs", id]
+        : ["new-workflows", "run-logs", id, step];
+    }),
     enabled: () => Boolean(toValue(runId)),
-    initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) =>
-      handleClientMethod(
+    initialPageParam: undefined as LogPageParam,
+    queryFn: ({ pageParam }) => {
+      const step = toValue(anchorStep);
+      const anchored = pageParam === undefined && step !== undefined;
+      return handleClientMethod(
         client.GET("/api/runs/{runId}/logs", {
           params: {
             path: { runId: toValue(runId)! },
             query: {
               limit: RUN_LOGS_PAGE_SIZE,
-              ...(pageParam ? { before: pageParam } : {}),
+              ...(pageParam && "before" in pageParam ? { before: pageParam.before } : {}),
+              ...(pageParam && "since" in pageParam
+                ? { since: pageParam.since, contiguous: true }
+                : {}),
+              ...(anchored ? { step_index: step } : {}),
             },
           },
         }),
-      ),
+      );
+    },
     getNextPageParam: (lastPage) => {
       if (!lastPage.has_more || lastPage.logs.length === 0) return undefined;
       // Newest-first page → last row is the oldest cursor for the next older page.
-      return lastPage.logs[lastPage.logs.length - 1]!.created_at;
+      return { before: lastPage.logs[lastPage.logs.length - 1]!.created_at };
     },
+    getPreviousPageParam: (firstPage) => {
+      if (!firstPage.has_more_newer || firstPage.logs.length === 0) return undefined;
+      return { since: firstPage.logs[0]!.created_at, contiguous: true as const };
+    },
+  });
+}
+
+export function useLatestWorkflowRuns(filePaths: () => string[]) {
+  const client = createWorkflowsClient();
+  const results = useQueries({
+    queries: computed(() => {
+      const paths = filePaths();
+      const list = Array.isArray(paths) ? paths : [];
+      return list.map((id) => ({
+        queryKey: ["new-workflows", "workflow-runs", id] as const,
+        queryFn: () =>
+          handleClientMethod(
+            client.GET("/api/workflows/{id}/runs", { params: { path: { id } } }),
+          ),
+      }));
+    }),
+  });
+  return computed(() => {
+    const paths = filePaths();
+    const list = Array.isArray(paths) ? paths : [];
+    const rows = Array.isArray(results.value) ? results.value : [];
+    const byPath = new Map<string, NewWorkflowsResponseBody["listWorkflowRuns"][200]["runs"][number]>();
+    list.forEach((path, i) => {
+      const run = (rows[i]?.data as NewWorkflowsResponseBody["listWorkflowRuns"][200] | undefined)
+        ?.runs[0];
+      if (run) byPath.set(path, run);
+    });
+    return byPath;
   });
 }
 

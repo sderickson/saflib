@@ -7,6 +7,9 @@
         {{ statusVisual.label }}
       </v-chip>
       <v-chip v-else size="small">not started</v-chip>
+      <span v-if="runClock" class="run-view__clock text-body-2 text-medium-emphasis">{{
+        runClock
+      }}</span>
       <v-spacer />
       <span v-if="runId" class="text-body-2 text-medium-emphasis">step {{ run?.current_step_index }}</span>
     </header>
@@ -98,6 +101,9 @@
             <LogEntry v-else :log="item.log" />
           </div>
         </template>
+        <div v-if="logsQuery.isFetchingPreviousPage.value" class="run-view__logs-loading">
+          Loading later logs…
+        </div>
       </div>
     </div>
 
@@ -324,7 +330,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import {
   useWorkflowRunQuery,
@@ -354,6 +360,7 @@ import {
   toggleMuted,
 } from "../run-alerts.ts";
 import { getAgentCli } from "../agent-settings.ts";
+import { formatClockSummary, summarizeRunTimings } from "../plan-run-stats.ts";
 import { isMechanicalPreviewFailure } from "@saflib/new-workflows";
 
 const props = defineProps<{
@@ -393,7 +400,24 @@ const pauseMessage = computed(() => {
 
 const runQuery = useWorkflowRunQuery(runId);
 const run = computed(() => runQuery.data.value?.run);
-const logsQuery = useWorkflowRunLogsQuery(runId);
+/** Sidebar jump target. Undefined keeps the log window on the live tip. */
+const logAnchor = ref<number | undefined>(undefined);
+const logsQuery = useWorkflowRunLogsQuery(runId, logAnchor);
+const now = ref(new Date());
+let nowTimer: ReturnType<typeof setInterval> | undefined;
+onMounted(() => {
+  nowTimer = setInterval(() => {
+    now.value = new Date();
+  }, 30_000);
+});
+onUnmounted(() => {
+  if (nowTimer) clearInterval(nowTimer);
+});
+const runClock = computed(() => {
+  if (!run.value) return undefined;
+  const summary = summarizeRunTimings([run.value], now.value);
+  return summary ? formatClockSummary(summary) : undefined;
+});
 const logs = computed(() => flattenRunLogPages(logsQuery.data.value?.pages));
 const logItems = computed(() => groupLogs(logs.value));
 const runStepsQuery = useWorkflowRunStepsQuery(runId);
@@ -715,8 +739,11 @@ const SCROLL_TOP_THRESHOLD_PX = 80;
  * by itself — only the user (or our own scroll-to-bottom) does.
  */
 const isFollowing = ref(true);
-/** Guard so overlapping scroll events don't fire duplicate older-page fetches. */
+/** Guard so overlapping scroll events don't fire duplicate page fetches. */
 let loadingOlder = false;
+let loadingNewer = false;
+/** Step index to scroll into view once its logs arrive. */
+const pendingScrollStep = ref<number | undefined>(undefined);
 
 function isNearBottom(el: HTMLElement): boolean {
   return el.scrollHeight - el.scrollTop - el.clientHeight <= SCROLL_BOTTOM_THRESHOLD_PX;
@@ -741,6 +768,23 @@ async function loadOlderLogsIfNeeded(el: HTMLElement) {
     el.scrollTop = prevTop + (el.scrollHeight - prevHeight);
   } finally {
     loadingOlder = false;
+  }
+}
+
+async function loadNewerLogsIfNeeded(el: HTMLElement) {
+  if (
+    loadingNewer ||
+    !isNearBottom(el) ||
+    !logsQuery.hasPreviousPage.value ||
+    logsQuery.isFetchingPreviousPage.value
+  ) {
+    return;
+  }
+  loadingNewer = true;
+  try {
+    await logsQuery.fetchPreviousPage();
+  } finally {
+    loadingNewer = false;
   }
 }
 
@@ -804,17 +848,41 @@ function updateCurrentStepIndex() {
   currentStepIndex.value = found;
 }
 
+function scrollLogTo(target: HTMLElement) {
+  const el = logContainer.value;
+  if (!el) return;
+  if (typeof target.scrollIntoView === "function") {
+    target.scrollIntoView({ block: "start" });
+    return;
+  }
+  el.scrollTop = target.offsetTop;
+}
+
 function scrollToStep(index: number) {
   const el = logContainer.value;
   const target = el?.querySelector<HTMLElement>(`[data-step-index="${index}"]`);
-  target?.scrollIntoView({ block: "start" });
+  if (target) {
+    isFollowing.value = false;
+    scrollLogTo(target);
+    return;
+  }
+  // Not in the loaded window — re-anchor the log query at this step, then
+  // scroll once those rows render. Scrolling up or down from there pages
+  // the gap in that direction.
+  isFollowing.value = false;
+  pendingScrollStep.value = index;
+  logAnchor.value = index;
 }
 
 function onScroll() {
   const el = logContainer.value;
   if (el) {
-    isFollowing.value = isNearBottom(el);
+    // Stick to the live tail only when this window already includes it.
+    // A mid-log jump still has newer pages below; treating "near the
+    // bottom of what's loaded" as following would yank the viewport.
+    isFollowing.value = !logsQuery.hasPreviousPage.value && isNearBottom(el);
     void loadOlderLogsIfNeeded(el);
+    void loadNewerLogsIfNeeded(el);
   }
   updateCurrentStepIndex();
 }
@@ -822,7 +890,16 @@ function onScroll() {
 watch(logItems, async () => {
   await nextTick();
   const el = logContainer.value;
-  if (isFollowing.value && el) {
+  const pending = pendingScrollStep.value;
+  if (pending !== undefined && el) {
+    const target = el.querySelector<HTMLElement>(`[data-step-index="${pending}"]`);
+    if (target) {
+      scrollLogTo(target);
+      pendingScrollStep.value = undefined;
+    } else if (!logsQuery.isFetching.value) {
+      pendingScrollStep.value = undefined;
+    }
+  } else if (isFollowing.value && el) {
     el.scrollTop = el.scrollHeight;
   }
   updateCurrentStepIndex();
@@ -857,6 +934,9 @@ const failureMessage = computed(() => {
   gap: 0.25rem;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+.run-view__clock {
+  margin-left: 0.5rem;
 }
 .run-view__body {
   flex: 1 1 auto;

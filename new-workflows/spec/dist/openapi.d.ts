@@ -152,7 +152,7 @@ export interface paths {
         };
         /**
          * List a run's logs
-         * @description Newest-first, cursor-paginated. Pass `before` (an ISO timestamp) to page older history for infinite scroll; pass `since` for rows newer than a known tip (e.g. after an SSE change hint). The client re-fetches rather than getting log content pushed over the wire.
+         * @description Newest-first, cursor-paginated. Pass `before` (an ISO timestamp) to page older history for infinite scroll; pass `since` for rows newer than a known tip (e.g. after an SSE change hint). Pass `step_index` to anchor the first page at that step so a sidebar jump can load a window that is not the live tip. The client re-fetches rather than getting log content pushed over the wire.
          */
         get: operations["listWorkflowRunLogs"];
         put?: never;
@@ -906,6 +906,10 @@ export interface operations {
                 since?: string;
                 /** @description Only rows created strictly before this timestamp (older page). */
                 before?: string;
+                /** @description Anchor this page at the earliest log for that step, then the following `limit` rows (still returned newest-first). */
+                step_index?: number;
+                /** @description With `since`, return the oldest `limit` rows after the cursor (the next page toward the present) instead of the newest ones. */
+                contiguous?: boolean;
                 /** @description Page size (default 100). */
                 limit?: number;
             };
@@ -925,8 +929,10 @@ export interface operations {
                 content: {
                     "application/json": {
                         logs: components["schemas"]["workflow-log-entry"][];
-                        /** @description True when the page was full — another `before`/`since` page may return more rows. */
+                        /** @description True when another older page (`before` the oldest row here) may return more rows. */
                         has_more: boolean;
+                        /** @description True when another newer page (`since` the newest row here, `contiguous`) may return more rows. False on the live tip. */
+                        has_more_newer: boolean;
                     };
                 };
             };

@@ -1072,4 +1072,119 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("oldest line");
     });
   });
+
+  it("jumps to an unloaded step and pages older and newer logs from there", async () => {
+    const requests: string[] = [];
+    stepsState = [
+      { index: 0, kind: "cd", label: "first step" },
+      { index: 5, kind: "prompt", label: "fifth step" },
+    ];
+    server.use(
+      http.get(`${ORIGIN}/api/runs/:runId/logs`, ({ request }) => {
+        const url = new URL(request.url);
+        requests.push(url.search);
+        const step = url.searchParams.get("step_index");
+        const before = url.searchParams.get("before");
+        const since = url.searchParams.get("since");
+        const contiguous = url.searchParams.get("contiguous");
+        if (step === "5") {
+          return HttpResponse.json({
+            logs: [
+              {
+                id: "s5",
+                run_id: "run-1",
+                step_index: 5,
+                channel: "tool",
+                level: "info",
+                content: "fifth step line",
+                created_at: "2026-09-15T00:00:05.000Z",
+              },
+            ],
+            has_more: true,
+            has_more_newer: true,
+          });
+        }
+        if (before) {
+          return HttpResponse.json({
+            logs: [
+              {
+                id: "older",
+                run_id: "run-1",
+                step_index: 4,
+                channel: "tool",
+                level: "info",
+                content: "older than the jump",
+                created_at: "2026-09-15T00:00:04.000Z",
+              },
+            ],
+            has_more: false,
+            has_more_newer: false,
+          });
+        }
+        if (since && contiguous === "true") {
+          return HttpResponse.json({
+            logs: [
+              {
+                id: "newer",
+                run_id: "run-1",
+                step_index: 6,
+                channel: "tool",
+                level: "info",
+                content: "newer than the jump",
+                created_at: "2026-09-15T00:00:06.000Z",
+              },
+            ],
+            has_more: false,
+            has_more_newer: false,
+          });
+        }
+        return HttpResponse.json({
+          logs: [
+            {
+              id: "tip",
+              run_id: "run-1",
+              step_index: 0,
+              channel: "tool",
+              level: "info",
+              content: "live tip",
+              created_at: "2026-09-15T00:00:09.000Z",
+            },
+          ],
+          has_more: true,
+          has_more_newer: false,
+        });
+      }),
+    );
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("live tip");
+    });
+    expect(wrapper.text()).not.toContain("fifth step line");
+
+    const fifth = wrapper.findAll(".run-view__sidebar-step").find((el) => el.text().includes("fifth step"));
+    expect(fifth).toBeTruthy();
+    await fifth!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("fifth step line");
+    });
+    expect(requests.some((q) => q.includes("step_index=5"))).toBe(true);
+
+    const el = wrapper.find(".run-view__logs").element as HTMLElement;
+    Object.defineProperty(el, "scrollHeight", { value: 1000, configurable: true, writable: true });
+    Object.defineProperty(el, "clientHeight", { value: 200, configurable: true });
+    Object.defineProperty(el, "scrollTop", { value: 10, writable: true, configurable: true });
+    el.dispatchEvent(new Event("scroll"));
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("older than the jump");
+    });
+
+    Object.defineProperty(el, "scrollTop", { value: 900, writable: true, configurable: true });
+    el.dispatchEvent(new Event("scroll"));
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("newer than the jump");
+    });
+    expect(requests.some((q) => q.includes("contiguous=true"))).toBe(true);
+  });
 });

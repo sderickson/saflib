@@ -125,6 +125,29 @@ describe("PlansPage", () => {
     vi.stubGlobal("EventSource", EventSourceStub);
   });
 
+  it("shows each plan's start, end, and duration from its latest runs", async () => {
+    const phase1 = "test-product/plans/notes/2026-09-16-todo-app/phase-1-backend-schema.yaml";
+    runsStateByFile[phase1] = [
+      runFixture({
+        id: "run-phase-1",
+        status: "done",
+        workflow_ref: phase1,
+        created_at: "2026-09-15T18:00:00.000Z",
+        updated_at: "2026-09-15T19:30:00.000Z",
+      }),
+    ];
+    await router.push({ path: "/plans" });
+    const wrapper = mountTestApp(PlansPage);
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("1h 30m");
+    });
+    const group = wrapper.findAll(".plans-nav__group").find((el) => el.text().includes("todo-app"));
+    expect(group?.find(".plans-nav__group-stats").text()).toContain("1h 30m");
+    expect(group?.find(".plans-nav__group-stats").text()).toContain("–");
+    expect(group?.text()).toContain("phase-1-backend-schema.yaml");
+    expect(group?.find(".plans-nav__file-stats").text()).toContain("1h 30m");
+  });
+
   it("lists plan folders newest-first, with no file selected by default", async () => {
     await router.push({ path: "/plans" });
     const wrapper = mountTestApp(PlansPage);

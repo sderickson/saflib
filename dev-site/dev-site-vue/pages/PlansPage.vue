@@ -77,6 +77,9 @@
             </p>
             <div v-for="group in planGroups" :key="group.folder" class="plans-nav__group">
               <div class="plans-nav__group-name">{{ group.name }}</div>
+              <div v-if="groupClock(group)" class="plans-nav__group-stats">
+                {{ groupClock(group) }}
+              </div>
               <router-link
                 v-for="file in group.files"
                 :key="file.path"
@@ -85,7 +88,10 @@
                 :class="{ 'plans-nav__file--active': isActive(group.folder, file.name) }"
               >
                 <PlanNavIcon :file-path="file.path" :kind="fileKindOf(file.name)" />
-                <span class="plans-nav__file-name">{{ file.name }}</span>
+                <span class="plans-nav__file-text">
+                  <span class="plans-nav__file-name">{{ file.name }}</span>
+                  <span v-if="fileClock(file)" class="plans-nav__file-stats">{{ fileClock(file) }}</span>
+                </span>
               </router-link>
             </div>
           </nav>
@@ -161,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watchEffect } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useQueryClient } from "@tanstack/vue-query";
 import type { WorkflowInputSchema } from "@saflib/new-workflows";
@@ -171,9 +177,11 @@ import {
   useCreateWorkflowRunMutation,
   useWorkflowRunsQuery,
   useSiblingMostRecentRunIds,
+  useLatestWorkflowRuns,
 } from "../requests/workflows-queries.ts";
 import { useCheckout, useRepoFiles } from "../requests/queries.ts";
-import { plansPrefix, fileKindOf, groupPlanFiles, planFileHref } from "../plan-files.ts";
+import { plansPrefix, fileKindOf, groupPlanFiles, planFileHref, type PlanGroup, type PlanFileEntry } from "../plan-files.ts";
+import { formatClockSummary, summarizeRunTimings, type RunTiming } from "../plan-run-stats.ts";
 import { useRunOrchestrator } from "../run-orchestrator.ts";
 import { getAgentCli } from "../agent-settings.ts";
 import ResizableColumns from "../components/ResizableColumns.vue";
@@ -327,6 +335,44 @@ const filesQuery = useRepoFiles("", () => ({
 const planGroups = computed(() =>
   groupPlanFiles(filesQuery.data.value?.files ?? [], plansRootPrefix.value),
 );
+const workflowPaths = computed(() =>
+  planGroups.value.flatMap((group) =>
+    group.files.filter((file) => fileKindOf(file.name) === "workflow").map((file) => file.path),
+  ),
+);
+const latestRuns = useLatestWorkflowRuns(() => workflowPaths.value);
+const now = ref(new Date());
+let nowTimer: ReturnType<typeof setInterval> | undefined;
+onMounted(() => {
+  nowTimer = setInterval(() => {
+    now.value = new Date();
+  }, 30_000);
+});
+onUnmounted(() => {
+  if (nowTimer) clearInterval(nowTimer);
+});
+
+function timingsFor(files: PlanFileEntry[]): RunTiming[] {
+  const runs = latestRuns.value;
+  return files.flatMap((file) => {
+    const run = runs.get(file.path);
+    return run ? [{ created_at: run.created_at, updated_at: run.updated_at, status: run.status }] : [];
+  });
+}
+
+function groupClock(group: PlanGroup): string | undefined {
+  const summary = summarizeRunTimings(
+    timingsFor(group.files.filter((file) => fileKindOf(file.name) === "workflow")),
+    now.value,
+  );
+  return summary ? formatClockSummary(summary) : undefined;
+}
+
+function fileClock(file: PlanFileEntry): string | undefined {
+  if (fileKindOf(file.name) !== "workflow") return undefined;
+  const summary = summarizeRunTimings(timingsFor([file]), now.value);
+  return summary ? formatClockSummary(summary) : undefined;
+}
 // --- Selected file, read off the route itself rather than via router
 // `props`, so this works regardless of whether a given router config
 // wires props through. ---
@@ -412,8 +458,25 @@ const earlierPhaseRunIds = computed(
 .plans-nav__group-name {
   font-weight: 600;
   font-size: 0.8rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.5rem 0;
   opacity: 0.7;
+}
+.plans-nav__group-stats {
+  font-size: 0.7rem;
+  line-height: 1.3;
+  padding: 0 0.5rem 0.25rem;
+  opacity: 0.65;
+}
+.plans-nav__file-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.plans-nav__file-stats {
+  font-family: inherit;
+  font-size: 0.68rem;
+  line-height: 1.3;
+  opacity: 0.65;
 }
 .plans-nav__file {
   display: flex;

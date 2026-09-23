@@ -84,5 +84,65 @@ describe("listByRunWorkflowLog", () => {
 
     expect(result?.logs.map((r) => r.content)).toEqual(["log-2", "log-1"]);
     expect(result?.has_more).toBe(false);
+    expect(result?.has_more_newer).toBe(false);
+  });
+
+  it("pages the next newer rows contiguously via afterContiguous", async () => {
+    await seedRun(dbKey, 5);
+
+    const { result } = await listByRunWorkflowLog(dbKey, {
+      run_id: "run-1",
+      after: t(0),
+      afterContiguous: true,
+      limit: 2,
+    });
+
+    expect(result?.logs.map((r) => r.content)).toEqual(["log-2", "log-1"]);
+    expect(result?.has_more_newer).toBe(true);
+  });
+
+  it("anchors a page at a step that is not in the newest page", async () => {
+    await appendWorkflowLog(dbKey, {
+      run_id: "run-1",
+      step_index: 0,
+      channel: "tool",
+      level: "info",
+      content: "step-0",
+      now: t(0),
+    });
+    await appendWorkflowLog(dbKey, {
+      run_id: "run-1",
+      step_index: 5,
+      channel: "tool",
+      level: "info",
+      content: "step-5-a",
+      now: t(1),
+    });
+    await appendWorkflowLog(dbKey, {
+      run_id: "run-1",
+      step_index: 5,
+      channel: "tool",
+      level: "info",
+      content: "step-5-b",
+      now: t(2),
+    });
+    await appendWorkflowLog(dbKey, {
+      run_id: "run-1",
+      step_index: 6,
+      channel: "tool",
+      level: "info",
+      content: "step-6",
+      now: t(3),
+    });
+
+    const { result } = await listByRunWorkflowLog(dbKey, {
+      run_id: "run-1",
+      step_index: 5,
+      limit: 2,
+    });
+
+    expect(result?.logs.map((r) => r.content)).toEqual(["step-5-b", "step-5-a"]);
+    expect(result?.has_more).toBe(true);
+    expect(result?.has_more_newer).toBe(true);
   });
 });
