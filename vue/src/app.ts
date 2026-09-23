@@ -11,6 +11,7 @@ import { type I18nMessages } from "./strings.ts";
 import { aliases, mdi } from "vuetify/iconsets/mdi-svg";
 import {
   asyncPageErrorKey,
+  mfaRequiredHrefKey,
   type AsyncPageErrorComponent,
 } from "../async-page-error.ts";
 
@@ -24,6 +25,11 @@ export interface CreateVueAppOptions {
   i18nMessages?: I18nMessages;
   /** Replaces the default {@link AsyncPageError} in AsyncPage. */
   asyncPageError?: AsyncPageErrorComponent;
+  /**
+   * Where to send someone when a page load fails with `MFA_REQUIRED`.
+   * The default error alert shows this as a "Set up MFA" link.
+   */
+  mfaRequiredHref?: string;
 }
 
 const defaultVuetifyConfig: VuetifyOptions = {
@@ -54,6 +60,7 @@ export const createVueApp = (
     callback,
     i18nMessages,
     asyncPageError,
+    mfaRequiredHref,
   }: CreateVueAppOptions = {},
 ) => {
   const vuetify = createVuetify(vuetifyConfig ?? defaultVuetifyConfig);
@@ -64,6 +71,9 @@ export const createVueApp = (
   }
   if (asyncPageError) {
     app.provide(asyncPageErrorKey, asyncPageError);
+  }
+  if (mfaRequiredHref) {
+    app.provide(mfaRequiredHrefKey, mfaRequiredHref);
   }
 
   const queryClient = createTanstackQueryClient();
