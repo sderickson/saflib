@@ -53,4 +53,24 @@ describe("compileConfigWorkflow", () => {
 
     expect(outcome).toEqual({ status: "done" });
   });
+
+  it("copies pauseAfter onto a compiled prompt step", async () => {
+    const cwd = mkdtempSync(path.join(tmpdir(), "config-pause-"));
+    const { result: body } = validateWorkflowConfigBody({
+      name: "Pause after the prompt",
+      steps: [
+        {
+          kind: "prompt",
+          prompt: "Write the spec.",
+          pauseAfter: true,
+          pauseMessage: "Review the spec.",
+        },
+      ],
+    });
+    const definition = compileConfigWorkflow("test/pause-config", body!, {});
+    const runId = await createRun(dbKey, definition, { input: {}, cwd, mode: "script" });
+    const { output, result } = advanceRun(dbKey, definition, runId);
+    await collectOutput(output);
+    expect(await result).toEqual({ status: "awaiting_user", message: "Review the spec." });
+  });
 });

@@ -228,6 +228,19 @@ function createOrchestrator(): RunOrchestrator {
         return;
       }
 
+      // A step asked to stop for a person (pauseAfter), including when that
+      // step is nested inside call-workflow. Do not treat it as a failure
+      // and do not keep auto-continuing — play-workflow and play-plan both
+      // wait until someone clicks play again.
+      if (outcome.status === "awaiting_user") {
+        notify(
+          "Paused for review",
+          outcome.message ?? "Review the result, then continue.",
+        );
+        activeRunId.value = undefined;
+        return;
+      }
+
       // Any other outcome ("error", or an unrecognized status) — the step failed.
       playFailureQuack();
       notify("Workflow failed", failureMessage(outcome.message));

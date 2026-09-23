@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { enableAutoUnmount } from "@vue/test-utils";
+import { DOMWrapper, enableAutoUnmount } from "@vue/test-utils";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse } from "msw";
@@ -408,6 +408,90 @@ describe("PlansPage", () => {
 
     await vi.waitFor(() => {
       expect(router.currentRoute.value.path).toBe("/plans/2026-09-15-my-plan/my-plan.yaml");
+    });
+  });
+
+  it("New project writes phase-0-plan and starts it in play-plan mode", async () => {
+    let planBody: unknown;
+    let advanceCount = 0;
+    server.use(
+      http.post(`${ORIGIN}/api/plans`, async ({ request }) => {
+        planBody = await request.json();
+        return HttpResponse.json(
+          {
+            plan: {
+              folder: "2026-09-23-widget-repairs",
+              name: "widget-repairs",
+              files: [
+                {
+                  name: "phase-0-plan.workflow.yaml",
+                  path: "test-product/plans/notes/2026-09-23-widget-repairs/phase-0-plan.workflow.yaml",
+                },
+              ],
+            },
+          },
+          { status: 201 },
+        );
+      }),
+      http.post(`${ORIGIN}/api/workflows/:id/runs`, () =>
+        HttpResponse.json({ run: runFixture({ id: "run-new", status: "pending" }) }, { status: 201 }),
+      ),
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, () => {
+        advanceCount++;
+        return HttpResponse.json({
+          status: "awaiting_user",
+          message: "Spec is written. Review it, then continue.",
+        });
+      }),
+    );
+
+    await router.push({ path: "/plans" });
+    const wrapper = mountTestApp(PlansPage);
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("todo-app");
+    });
+    await wrapper.findAll("button").find((b) => b.text() === "New project")!.trigger("click");
+
+    await vi.waitFor(() => {
+      expect(document.body.textContent).toContain("What should this project do?");
+    });
+    const nameInput = [...document.body.querySelectorAll("input")].find((el) =>
+      el.closest(".v-input")?.textContent?.includes("Project name"),
+    );
+    expect(nameInput).toBeTruthy();
+    await new DOMWrapper(nameInput!).setValue("widget-repairs");
+    const textarea = document.body.querySelector("textarea");
+    expect(textarea).toBeTruthy();
+    await new DOMWrapper(textarea!).setValue("Track repair requests.");
+
+    const start = [...document.body.querySelectorAll("button")].find(
+      (b) => b.textContent?.trim() === "Start",
+    );
+    expect(start).toBeTruthy();
+    expect(start!.hasAttribute("disabled")).toBe(false);
+    await new DOMWrapper(start!).trigger("click");
+
+    await vi.waitFor(() => {
+      expect(router.currentRoute.value.path).toBe(
+        "/plans/2026-09-23-widget-repairs/phase-0-plan.workflow.yaml",
+      );
+    });
+    const body = planBody as {
+      fileName: string;
+      body: { steps: { kind: string; path?: string; workflowId?: string; input?: { prompt?: string } }[] };
+    };
+    expect(body.fileName).toBe("phase-0-plan.workflow.yaml");
+    expect(body.body.steps[0]).toMatchObject({ kind: "cd" });
+    expect(body.body.steps[0].path).toMatch(
+      /^test-product\/plans\/notes\/\d{4}-\d{2}-\d{2}-widget-repairs$/,
+    );
+    expect(body.body.steps[1]).toMatchObject({
+      kind: "call-workflow",
+      workflowId: "processes/spec-project",
+      input: { name: "widget-repairs", prompt: "Track repair requests." },
+    });
+    await vi.waitFor(() => {
+      expect(advanceCount).toBe(1);
     });
   });
 

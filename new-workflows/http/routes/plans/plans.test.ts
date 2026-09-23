@@ -90,6 +90,22 @@ describe("plans routes", () => {
     expect(outcome).toEqual({ status: "done" });
   });
 
+  it("POST /api/plans honors fileName for a phase-0 kickoff", async () => {
+    const created = await request(app)
+      .post("/api/plans")
+      .send({
+        name: "widget-repairs",
+        fileName: "phase-0-plan.workflow.yaml",
+        body: {
+          name: "Spec widget repairs",
+          steps: [{ kind: "prompt", prompt: "Write the spec." }],
+        },
+      });
+    expect(created.status).toBe(201);
+    expect(created.body.plan.files[0].name).toBe("phase-0-plan.workflow.yaml");
+    expect(existsSync(path.join(cwd, created.body.plan.files[0].path))).toBe(true);
+  });
+
   it("POST /api/plans rejects a non-kebab-case name", async () => {
     const response = await request(app)
       .post("/api/plans")

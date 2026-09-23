@@ -103,6 +103,16 @@ export interface WorkflowStep<C> {
   /** Builds this step's input from the workflow's own context. */
   input: (ctx: { context: C }) => unknown;
   run: StepFn<unknown>;
+  /**
+   * After this step succeeds, hand control back as `awaiting_user` instead
+   * of letting an auto-continue loop start the next step. The step index
+   * still advances, so the next explicit continue runs whatever follows.
+   * Nested `call-workflow` bubbles the same status, so a parent plan
+   * paused here does not move on until someone continues.
+   */
+  pauseAfter?: boolean;
+  /** Shown by the CLI and dev site when `pauseAfter` fires. */
+  pauseMessage?: string;
 }
 
 /**

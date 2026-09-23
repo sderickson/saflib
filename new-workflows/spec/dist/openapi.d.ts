@@ -218,7 +218,7 @@ export interface paths {
         put?: never;
         /**
          * Save a new plan (a config-defined workflow) to the plans folder
-         * @description Writes `<plansRoot>/<date>-<name>/<name>.yaml` with the given config body. Doesn't run it — see POST /workflows/{id}/runs with the returned file's `path` as `id`.
+         * @description Writes `<plansRoot>/<date>-<name>/<fileName>` with the given config body (`fileName` defaults to `<name>.yaml`). Doesn't run it — see POST /workflows/{id}/runs with the returned file's `path` as `id`.
          */
         post: operations["createPlan"];
         delete?: never;
@@ -504,6 +504,10 @@ export interface components {
                 kind: "prompt";
                 /** @example Run the drizzle migration and confirm it applied cleanly. */
                 prompt: string;
+                /** @description After this step succeeds, return `awaiting_user` so auto-continue (CLI loop, play-workflow, play-plan) stops for a person to review. The step index still advances. */
+                pauseAfter?: boolean;
+                /** @description Message shown when `pauseAfter` fires. */
+                pauseMessage?: string;
             } | {
                 /**
                  * @example command
@@ -531,6 +535,9 @@ export interface components {
                  * @default false
                  */
                 forceInScript: boolean;
+                /** @description Stop auto-continue after this step succeeds. See the prompt step. */
+                pauseAfter?: boolean;
+                pauseMessage?: string;
             } | {
                 /**
                  * @example cd
@@ -542,6 +549,9 @@ export interface components {
                  * @example packages/my-lib
                  */
                 path: string;
+                /** @description Stop auto-continue after this step succeeds. See the prompt step. */
+                pauseAfter?: boolean;
+                pauseMessage?: string;
             } | {
                 /**
                  * @example npm-script
@@ -558,6 +568,9 @@ export interface components {
                 errorPrompt?: string;
                 /** @default false */
                 forceInScript: boolean;
+                /** @description Stop auto-continue after this step succeeds. See the prompt step. */
+                pauseAfter?: boolean;
+                pauseMessage?: string;
             } | {
                 /**
                  * @example call-workflow
@@ -573,6 +586,9 @@ export interface components {
                 input?: {
                     [key: string]: unknown;
                 };
+                /** @description Stop auto-continue after this step succeeds. See the prompt step. */
+                pauseAfter?: boolean;
+                pauseMessage?: string;
             })[];
         };
         /**
@@ -1037,6 +1053,11 @@ export interface operations {
                      * @example add-list-users-query
                      */
                     name: string;
+                    /**
+                     * @description File name inside the dated folder. Defaults to `<name>.yaml`. Use `phase-0-plan.workflow.yaml` for a project kickoff so it sorts before later phase files.
+                     * @example phase-0-plan.workflow.yaml
+                     */
+                    fileName?: string;
                     body: components["schemas"]["workflow-config-body"];
                 };
             };

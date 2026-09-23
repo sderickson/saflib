@@ -501,6 +501,39 @@ describe("RunView", () => {
     expect(notifySpy.mock.calls[0][0]).toContain("finished");
   });
 
+  it("Play current workflow stops on awaiting_user without a failure sound", async () => {
+    let advanceCount = 0;
+    const quackSpy = vi.spyOn(runAlerts, "playFailureQuack").mockImplementation(() => {});
+    const notifySpy = vi.spyOn(runAlerts, "notify").mockImplementation(() => {});
+    server.use(
+      http.post(`${ORIGIN}/api/runs/:runId/advance`, () => {
+        advanceCount++;
+        runState = runFixture({ status: "awaiting_user" });
+        return HttpResponse.json({
+          status: "awaiting_user",
+          message: "Spec is written. Review it, then continue.",
+        });
+      }),
+    );
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+
+    await wrapper.find('[aria-label="Play current workflow"]').trigger("click");
+
+    await vi.waitFor(() => {
+      expect(notifySpy).toHaveBeenCalled();
+    });
+    expect(advanceCount).toBe(1);
+    expect(quackSpy).not.toHaveBeenCalled();
+    expect(notifySpy.mock.calls[0][0]).toContain("Paused");
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Review it");
+    });
+  });
+
   it("plays a different sound and notification when the run fails on its own", async () => {
     const quackSpy = vi.spyOn(runAlerts, "playFailureQuack").mockImplementation(() => {});
     const notifySpy = vi.spyOn(runAlerts, "notify").mockImplementation(() => {});

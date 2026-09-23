@@ -284,8 +284,12 @@ async function applyFileStep(
       kind === "copy"
         ? await runCopyStep(stepInput as CopyStepInput, ctx)
         : await runTransformFileStep(stepInput as TransformFileStepInput, ctx);
-    if (outcome.status === "error") {
-      throw new Error(outcome.message);
+    if (outcome.status !== "success") {
+      throw new Error(
+        outcome.status === "error"
+          ? outcome.message
+          : `Stopped with status ${outcome.status}`,
+      );
     }
 
     const writtenAbs =

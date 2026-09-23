@@ -16,6 +16,16 @@ describe("runCdStep", () => {
     expect(result).toEqual({ status: "success", result: { newCwd: dir } });
   });
 
+  it("allows a plan folder that has phase-0-plan.workflow.yaml and no package.json", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "cd-step-"));
+    writeFileSync(path.join(dir, "phase-0-plan.workflow.yaml"), "name: plan\nsteps: []\n");
+    const { ctx } = makeTestContext({ mode: "run", originalWorkingDirectory: dir });
+
+    const result = await runCdStep({ path: dir }, ctx);
+
+    expect(result).toEqual({ status: "success", result: { newCwd: dir } });
+  });
+
   it("errors when the target directory has no package.json (mode: run)", async () => {
     const dir = mkdtempSync(path.join(tmpdir(), "cd-step-"));
     const { ctx } = makeTestContext({ mode: "run", originalWorkingDirectory: dir });

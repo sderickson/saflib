@@ -30,6 +30,8 @@ export function stepSkipIf<Input, C>(
   const inner = step<Input, C>(kind, fn, input);
   return {
     kind: inner.kind,
+    pauseAfter: inner.pauseAfter,
+    pauseMessage: inner.pauseMessage,
     input: (arg) => (skipIf(arg as { context: C }) ? SKIP_MARKER : inner.input(arg)),
     run: async (rawInput, ctx) => {
       if (isWorkflowStepSkip(rawInput)) return { status: "success" };

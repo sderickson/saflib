@@ -36,39 +36,62 @@ export function compileConfigWorkflow(
   });
 }
 
+function withPause(
+  compiled: WorkflowStep<Record<string, unknown>>,
+  configStep: { pauseAfter?: boolean; pauseMessage?: string },
+): WorkflowStep<Record<string, unknown>> {
+  return {
+    ...compiled,
+    pauseAfter: configStep.pauseAfter,
+    pauseMessage: configStep.pauseMessage,
+  };
+}
+
 function compileStep(
   configStep: ConfigStep,
   resolvedWorkflows: Record<string, WorkflowDefinition<any, any>>,
 ): WorkflowStep<Record<string, unknown>> {
   switch (configStep.kind) {
     case "prompt":
-      return step<PromptStepInput, Record<string, unknown>>("prompt", runPromptStep, () => ({
-        prompt: configStep.prompt,
-      }));
+      return withPause(
+        step<PromptStepInput, Record<string, unknown>>("prompt", runPromptStep, () => ({
+          prompt: configStep.prompt,
+        })),
+        configStep,
+      );
     case "command":
-      return step<CommandStepInput, Record<string, unknown>>("command", runCommandStep, () => ({
-        command: configStep.command,
-        args: configStep.args,
-        ignoreError: configStep.ignoreError,
-        errorPrompt: configStep.errorPrompt,
-        forceInScript: configStep.forceInScript,
-      }));
-    case "cd":
-      return step<CdStepInput, Record<string, unknown>>("cd", runCdStep, () => ({
-        path: configStep.path,
-      }));
-    case "npm-script":
-      return step<NpmScriptStepInput, Record<string, unknown>>(
-        "npm-script",
-        runNpmScriptStep,
-        () => ({
-          workspace: configStep.workspace,
-          script: configStep.script,
+      return withPause(
+        step<CommandStepInput, Record<string, unknown>>("command", runCommandStep, () => ({
+          command: configStep.command,
           args: configStep.args,
           ignoreError: configStep.ignoreError,
           errorPrompt: configStep.errorPrompt,
           forceInScript: configStep.forceInScript,
-        }),
+        })),
+        configStep,
+      );
+    case "cd":
+      return withPause(
+        step<CdStepInput, Record<string, unknown>>("cd", runCdStep, () => ({
+          path: configStep.path,
+        })),
+        configStep,
+      );
+    case "npm-script":
+      return withPause(
+        step<NpmScriptStepInput, Record<string, unknown>>(
+          "npm-script",
+          runNpmScriptStep,
+          () => ({
+            workspace: configStep.workspace,
+            script: configStep.script,
+            args: configStep.args,
+            ignoreError: configStep.ignoreError,
+            errorPrompt: configStep.errorPrompt,
+            forceInScript: configStep.forceInScript,
+          }),
+        ),
+        configStep,
       );
     case "call-workflow": {
       const targetDefinition = resolvedWorkflows[configStep.workflowId];
@@ -77,13 +100,16 @@ function compileStep(
           `No resolved workflow for "${configStep.workflowId}" — every call-workflow step's workflowId must be resolved before compiling.`,
         );
       }
-      return step<CallWorkflowStepInput, Record<string, unknown>>(
-        "call-workflow",
-        runCallWorkflowStep,
-        () => ({
-          targetDefinition,
-          targetInput: (configStep as { input?: Record<string, unknown> }).input ?? {},
-        }),
+      return withPause(
+        step<CallWorkflowStepInput, Record<string, unknown>>(
+          "call-workflow",
+          runCallWorkflowStep,
+          () => ({
+            targetDefinition,
+            targetInput: (configStep as { input?: Record<string, unknown> }).input ?? {},
+          }),
+        ),
+        configStep,
       );
     }
   }

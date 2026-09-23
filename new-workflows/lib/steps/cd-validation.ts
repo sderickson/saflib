@@ -55,6 +55,11 @@ export function validateCdTarget(
     if (pendingCopyRoot) {
       return;
     }
+    // phase-0-plan cds into the dated project folder under plans/notes,
+    // which is a workflow folder, not an npm package.
+    if (existsSync(path.join(newCwd, "phase-0-plan.workflow.yaml"))) {
+      return;
+    }
     throw new Error(
       `Package.json not found in ${newCwd}. You should only cd into packages.`,
     );

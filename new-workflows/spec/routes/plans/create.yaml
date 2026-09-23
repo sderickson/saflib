@@ -1,9 +1,9 @@
 createPlan:
   summary: Save a new plan (a config-defined workflow) to the plans folder
   description: >
-    Writes `<plansRoot>/<date>-<name>/<name>.yaml` with the given config
-    body. Doesn't run it — see POST /workflows/{id}/runs with the returned
-    file's `path` as `id`.
+    Writes `<plansRoot>/<date>-<name>/<fileName>` with the given config
+    body (`fileName` defaults to `<name>.yaml`). Doesn't run it — see
+    POST /workflows/{id}/runs with the returned file's `path` as `id`.
   operationId: createPlan
 
   requestBody:
@@ -21,6 +21,13 @@ createPlan:
               type: string
               description: kebab-case slug used for the folder and file name.
               example: "add-list-users-query"
+            fileName:
+              type: string
+              description: >
+                File name inside the dated folder. Defaults to `<name>.yaml`.
+                Use `phase-0-plan.workflow.yaml` for a project kickoff so it
+                sorts before later phase files.
+              example: "phase-0-plan.workflow.yaml"
             body:
               $ref: "../../openapi.yaml#/components/schemas/WorkflowConfigBody"
 

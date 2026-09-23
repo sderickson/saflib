@@ -59,6 +59,15 @@
       >
         <template #left>
           <nav class="plans-nav">
+            <v-btn
+              class="plans-nav__new"
+              size="small"
+              variant="tonal"
+              block
+              @click="newProjectOpen = true"
+            >
+              New project
+            </v-btn>
             <v-progress-linear v-if="filesQuery.isLoading.value" indeterminate class="mb-2" />
             <p
               v-else-if="!planGroups.length"
@@ -109,21 +118,64 @@
         </template>
       </ResizableColumns>
     </v-container>
+
+    <v-dialog v-model="newProjectOpen" max-width="520">
+      <v-card>
+        <v-card-title class="text-body-1">New project</v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="newProjectName"
+            label="Project name"
+            hint="kebab-case — used for the folder name"
+            persistent-hint
+            class="mb-3"
+          />
+          <v-textarea
+            v-model="newProjectPrompt"
+            label="What should this project do?"
+            rows="4"
+            auto-grow
+          />
+          <p v-if="createPlanMutation.isError.value" class="text-error mt-2">
+            {{ createPlanMutation.error.value?.message }}
+          </p>
+          <p v-if="createRunMutation.isError.value" class="text-error mt-2">
+            {{ createRunMutation.error.value?.message }}
+          </p>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="newProjectOpen = false">Cancel</v-btn>
+          <v-btn
+            color="primary"
+            :loading="createPlanMutation.isPending.value || createRunMutation.isPending.value"
+            :disabled="!canStartProject"
+            @click="startProject"
+          >
+            Start
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useQueryClient } from "@tanstack/vue-query";
 import type { WorkflowInputSchema } from "@saflib/new-workflows";
 import {
   useWorkflowsQuery,
   useCreatePlanMutation,
+  useCreateWorkflowRunMutation,
   useWorkflowRunsQuery,
   useSiblingMostRecentRunIds,
 } from "../requests/workflows-queries.ts";
 import { useCheckout, useRepoFiles } from "../requests/queries.ts";
 import { plansPrefix, fileKindOf, groupPlanFiles, planFileHref } from "../plan-files.ts";
+import { useRunOrchestrator } from "../run-orchestrator.ts";
+import { getAgentCli } from "../agent-settings.ts";
 import ResizableColumns from "../components/ResizableColumns.vue";
 import PlanFileContent from "../components/PlanFileContent.vue";
 import PlanNavIcon from "../components/PlanNavIcon.vue";
@@ -132,7 +184,8 @@ import RunView from "../components/RunView.vue";
 const route = useRoute();
 const router = useRouter();
 
-const { data: checkout } = useCheckout("");
+const checkoutQuery = useCheckout("");
+const checkout = checkoutQuery.data;
 const plansRootPrefix = computed(() => plansPrefix(checkout.value?.product_root));
 
 // --- "Save as plan" — arriving from a package's Checkout page with
@@ -171,7 +224,70 @@ function isRequired(name: string): boolean {
   return inputSchema.value?.required?.includes(name) ?? false;
 }
 
+const NAME_PATTERN = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
+
+const queryClient = useQueryClient();
+const orchestrator = useRunOrchestrator();
 const createPlanMutation = useCreatePlanMutation();
+const createRunMutation = useCreateWorkflowRunMutation();
+const newProjectOpen = ref(false);
+const newProjectName = ref("");
+const newProjectPrompt = ref("");
+const canStartProject = computed(
+  () =>
+    checkoutQuery.isSuccess.value &&
+    NAME_PATTERN.test(newProjectName.value.trim()) &&
+    newProjectPrompt.value.trim().length > 0,
+);
+
+function startProject() {
+  const name = newProjectName.value.trim();
+  const prompt = newProjectPrompt.value.trim();
+  if (!checkoutQuery.isSuccess.value || !NAME_PATTERN.test(name) || !prompt) return;
+  const date = new Date().toISOString().split("T")[0];
+  const folderRel = `${plansPrefix(checkout.value?.product_root)}/${date}-${name}`;
+  createPlanMutation.mutate(
+    {
+      name,
+      fileName: "phase-0-plan.workflow.yaml",
+      body: {
+        name: `Plan ${name}`,
+        description:
+          "Write the spec, pause for review, then write phase workflow files.",
+        steps: [
+          { kind: "cd", path: folderRel },
+          {
+            kind: "call-workflow",
+            workflowId: "processes/spec-project",
+            input: { name, prompt },
+          },
+        ],
+      },
+    },
+    {
+      onSuccess: (data) => {
+        const file = data.plan.files[0];
+        if (!file) return;
+        queryClient.invalidateQueries({ queryKey: ["dev-site", "repo-files"] });
+        createRunMutation.mutate(
+          {
+            id: file.path,
+            body: { input: {}, mode: "run", agentConfig: { cli: getAgentCli() } },
+          },
+          {
+            onSuccess: async (runData) => {
+              newProjectOpen.value = false;
+              newProjectName.value = "";
+              newProjectPrompt.value = "";
+              await router.push({ path: `/plans/${data.plan.folder}/${file.name}` });
+              orchestrator.selectPlan(runData.run.id, file.path);
+            },
+          },
+        );
+      },
+    },
+  );
+}
 function savePlan() {
   if (!workflowId.value || !planCwd.value || !planName.value) return;
   createPlanMutation.mutate(
@@ -286,6 +402,9 @@ const earlierPhaseRunIds = computed(
   height: 100%;
   overflow-y: auto;
   padding: 0.25rem 0.5rem;
+}
+.plans-nav__new {
+  margin-bottom: 0.5rem;
 }
 .plans-nav__group {
   margin-bottom: 0.75rem;

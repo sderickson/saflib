@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { mkdtempSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { DbKey } from "@saflib/new-workflows-db";
@@ -22,8 +22,41 @@ describe("processes/spec-project (ported to the new engine)", () => {
     newWorkflowsDbManager.clearAllTablesForTests(dbKey);
   });
 
-  it("copies spec/workflow/plan templates with name substitution applied", async () => {
+  it("copies the spec template into notes/<date>-<name> and pauses before phase workflows", async () => {
     const cwd = mkdtempSync(path.join(tmpdir(), "spec-project-"));
+
+    const runId = await createRun(dbKey, SpecProjectWorkflowDefinition, {
+      input: { name: "example-project", prompt: "Track widgets." },
+      cwd,
+      mode: "script",
+    });
+
+    // Copy succeeds. The update step is script-mode (no agent) and then
+    // pauseAfter hands back awaiting_user instead of running the phase-yaml step.
+    const first = advanceRun(dbKey, SpecProjectWorkflowDefinition, runId);
+    await collectOutput(first.output);
+    expect((await first.result).status).toBe("success");
+
+    const second = advanceRun(dbKey, SpecProjectWorkflowDefinition, runId);
+    await collectOutput(second.output);
+    const paused = await second.result;
+    expect(paused.status).toBe("awaiting_user");
+    if (paused.status === "awaiting_user") {
+      expect(paused.message).toMatch(/Review it/);
+    }
+
+    const dateStr = new Date().toISOString().split("T")[0];
+    const projectDir = path.join(cwd, "notes", `${dateStr}-example-project`);
+    expect(
+      readFileSync(path.join(projectDir, "example-project.spec.md"), "utf-8"),
+    ).toContain("Feature Specification Template");
+    expect(existsSync(path.join(projectDir, "example-project.plan.md"))).toBe(false);
+    expect(existsSync(path.join(projectDir, "example-project.workflow.ts"))).toBe(false);
+  });
+
+  it("writes the spec into the phase-0 folder when launched from there", async () => {
+    const cwd = mkdtempSync(path.join(tmpdir(), "spec-project-inplace-"));
+    writeFileSync(path.join(cwd, "phase-0-plan.workflow.yaml"), "name: placeholder\nsteps: []\n");
 
     const runId = await createRun(dbKey, SpecProjectWorkflowDefinition, {
       input: { name: "example-project" },
@@ -31,21 +64,13 @@ describe("processes/spec-project (ported to the new engine)", () => {
       mode: "script",
     });
 
-    // Just the first ("copy") step — the "update"/"prompt"/"command" steps
-    // that follow need a real agent.
     const { output, result } = advanceRun(dbKey, SpecProjectWorkflowDefinition, runId);
     await collectOutput(output);
-    const outcome = await result;
-    expect(outcome.status).toBe("success");
+    expect((await result).status).toBe("success");
 
-    const dateStr = new Date().toISOString().split("T")[0];
-    const projectDir = path.join(cwd, "notes", `${dateStr}-example-project`);
-    expect(
-      readFileSync(path.join(projectDir, "example-project.spec.md"), "utf-8"),
-    ).toContain("Feature Specification Template");
-    expect(readFileSync(path.join(projectDir, "example-project.plan.md"), "utf-8")).toBeTruthy();
-    expect(
-      readFileSync(path.join(projectDir, "example-project.workflow.ts"), "utf-8"),
-    ).toContain("ExampleProject");
+    expect(readFileSync(path.join(cwd, "example-project.spec.md"), "utf-8")).toContain(
+      "Feature Specification Template",
+    );
+    expect(existsSync(path.join(cwd, "notes"))).toBe(false);
   });
 });

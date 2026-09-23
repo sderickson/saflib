@@ -11,6 +11,7 @@ import { validateWorkflowConfigBody } from "@saflib/new-workflows";
 import { newWorkflowsHttpStorage } from "../../context.ts";
 
 const NAME_PATTERN = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
+const FILE_NAME_PATTERN = /^[a-z0-9][a-z0-9._-]*\.ya?ml$/;
 
 export const createPlanHandler = createHandler(async (req, res) => {
   const ctx = newWorkflowsHttpStorage.getStore()!;
@@ -26,9 +27,16 @@ export const createPlanHandler = createHandler(async (req, res) => {
   const { result: configBody, error } = validateWorkflowConfigBody(body.body);
   if (error) throw createError(400, error.message);
 
+  const fileName = body.fileName ?? `${body.name}.yaml`;
+  if (!FILE_NAME_PATTERN.test(fileName) || fileName.includes("..")) {
+    throw createError(
+      400,
+      `"fileName" must be a single yaml file name (e.g. "phase-0-plan.workflow.yaml"), got "${fileName}"`,
+    );
+  }
+
   const date = new Date().toISOString().split("T")[0];
   const folder = `${date}-${body.name}`;
-  const fileName = `${body.name}.yaml`;
   const folderPath = path.join(ctx.plansRoot, folder);
   mkdirSync(folderPath, { recursive: true });
   writeFileSync(path.join(folderPath, fileName), stringify(configBody));

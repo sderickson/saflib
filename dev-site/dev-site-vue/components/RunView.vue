@@ -106,7 +106,7 @@
         <em>Waiting on the agent.</em>
       </div>
       <div v-if="run?.status === 'awaiting_user'" class="mb-3">
-        <em>{{ (orchestrator.advanceMutation.data.value as { message?: string } | undefined)?.message }}</em>
+        <em>{{ pauseMessage }}</em>
       </div>
       <v-alert
         v-if="run?.status === 'failed' && !isAdvancing"
@@ -384,6 +384,12 @@ const runId = computed(() => props.runId);
 const baseRunIds = computed(() => props.baseRunIds ?? []);
 const router = useRouter();
 const orchestrator = useRunOrchestrator();
+const pauseMessage = computed(() => {
+  const fromAdvance = (
+    orchestrator.advanceMutation.data.value as { message?: string } | undefined
+  )?.message;
+  return fromAdvance || "Paused. Review the result, then continue.";
+});
 
 const runQuery = useWorkflowRunQuery(runId);
 const run = computed(() => runQuery.data.value?.run);

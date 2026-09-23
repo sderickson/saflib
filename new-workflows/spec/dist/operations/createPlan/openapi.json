@@ -8,7 +8,7 @@
     "/api/plans": {
       "post": {
         "summary": "Save a new plan (a config-defined workflow) to the plans folder",
-        "description": "Writes `<plansRoot>/<date>-<name>/<name>.yaml` with the given config body. Doesn't run it — see POST /workflows/{id}/runs with the returned file's `path` as `id`.\n",
+        "description": "Writes `<plansRoot>/<date>-<name>/<fileName>` with the given config body (`fileName` defaults to `<name>.yaml`). Doesn't run it — see POST /workflows/{id}/runs with the returned file's `path` as `id`.\n",
         "operationId": "createPlan",
         "requestBody": {
           "required": true,
@@ -26,6 +26,11 @@
                     "type": "string",
                     "description": "kebab-case slug used for the folder and file name.",
                     "example": "add-list-users-query"
+                  },
+                  "fileName": {
+                    "type": "string",
+                    "description": "File name inside the dated folder. Defaults to `<name>.yaml`. Use `phase-0-plan.workflow.yaml` for a project kickoff so it sorts before later phase files.\n",
+                    "example": "phase-0-plan.workflow.yaml"
                   },
                   "body": {
                     "$ref": "#/components/schemas/workflow-config-body"
@@ -127,6 +132,14 @@
                     "prompt": {
                       "type": "string",
                       "example": "Run the drizzle migration and confirm it applied cleanly."
+                    },
+                    "pauseAfter": {
+                      "type": "boolean",
+                      "description": "After this step succeeds, return `awaiting_user` so auto-continue (CLI loop, play-workflow, play-plan) stops for a person to review. The step index still advances.\n"
+                    },
+                    "pauseMessage": {
+                      "type": "string",
+                      "description": "Message shown when `pauseAfter` fires."
                     }
                   }
                 },
@@ -173,6 +186,13 @@
                       "type": "boolean",
                       "description": "Run even in `script` mode if it would otherwise be treated as a skipped validation command (typecheck/test).\n",
                       "default": false
+                    },
+                    "pauseAfter": {
+                      "type": "boolean",
+                      "description": "Stop auto-continue after this step succeeds. See the prompt step."
+                    },
+                    "pauseMessage": {
+                      "type": "string"
                     }
                   }
                 },
@@ -196,6 +216,13 @@
                       "type": "string",
                       "description": "Absolute, or relative to the run's original working directory.",
                       "example": "packages/my-lib"
+                    },
+                    "pauseAfter": {
+                      "type": "boolean",
+                      "description": "Stop auto-continue after this step succeeds. See the prompt step."
+                    },
+                    "pauseMessage": {
+                      "type": "string"
                     }
                   }
                 },
@@ -240,6 +267,13 @@
                     "forceInScript": {
                       "type": "boolean",
                       "default": false
+                    },
+                    "pauseAfter": {
+                      "type": "boolean",
+                      "description": "Stop auto-continue after this step succeeds. See the prompt step."
+                    },
+                    "pauseMessage": {
+                      "type": "string"
                     }
                   }
                 },
@@ -268,6 +302,13 @@
                       "type": "object",
                       "description": "Input for the target workflow.",
                       "additionalProperties": true
+                    },
+                    "pauseAfter": {
+                      "type": "boolean",
+                      "description": "Stop auto-continue after this step succeeds. See the prompt step."
+                    },
+                    "pauseMessage": {
+                      "type": "string"
                     }
                   }
                 }

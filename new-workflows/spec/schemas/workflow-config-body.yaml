@@ -48,6 +48,15 @@ properties:
             prompt:
               type: string
               example: "Run the drizzle migration and confirm it applied cleanly."
+            pauseAfter:
+              type: boolean
+              description: >
+                After this step succeeds, return `awaiting_user` so auto-continue
+                (CLI loop, play-workflow, play-plan) stops for a person to review.
+                The step index still advances.
+            pauseMessage:
+              type: string
+              description: Message shown when `pauseAfter` fires.
         - type: object
           description: Runs a shell command.
           additionalProperties: false
@@ -80,6 +89,11 @@ properties:
                 Run even in `script` mode if it would otherwise be treated as
                 a skipped validation command (typecheck/test).
               default: false
+            pauseAfter:
+              type: boolean
+              description: Stop auto-continue after this step succeeds. See the prompt step.
+            pauseMessage:
+              type: string
         - type: object
           description: Changes the working directory for subsequent steps.
           additionalProperties: false
@@ -95,6 +109,11 @@ properties:
               type: string
               description: Absolute, or relative to the run's original working directory.
               example: "packages/my-lib"
+            pauseAfter:
+              type: boolean
+              description: Stop auto-continue after this step succeeds. See the prompt step.
+            pauseMessage:
+              type: string
         - type: object
           description: Runs `npm run <script> -w <workspace>`, validating both exist first.
           additionalProperties: false
@@ -125,6 +144,11 @@ properties:
             forceInScript:
               type: boolean
               default: false
+            pauseAfter:
+              type: boolean
+              description: Stop auto-continue after this step succeeds. See the prompt step.
+            pauseMessage:
+              type: string
         - type: object
           description: >
             Calls another workflow — typically a reusable, code-defined
@@ -149,3 +173,8 @@ properties:
               type: object
               description: Input for the target workflow.
               additionalProperties: true
+            pauseAfter:
+              type: boolean
+              description: Stop auto-continue after this step succeeds. See the prompt step.
+            pauseMessage:
+              type: string

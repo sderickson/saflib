@@ -35,11 +35,14 @@ export function step<Input, C>(
   kind: string,
   fn: StepFn<Input>,
   input: (arg: { context: C }) => Input,
+  options?: { pauseAfter?: boolean; pauseMessage?: string },
 ): WorkflowStep<C> {
   return {
     kind,
     input: input as (arg: { context: unknown }) => unknown,
     run: fn as StepFn<unknown>,
+    pauseAfter: options?.pauseAfter,
+    pauseMessage: options?.pauseMessage,
   };
 }
 
@@ -281,10 +284,24 @@ async function runStep(
     now: finishedAt,
   });
 
+  // `pauseAfter` commits and advances like a normal success, but the
+  // outcome the caller sees is `awaiting_user` so CLI loops and the dev
+  // site's play-workflow / play-plan modes stop for a person to review.
+  // Skip does not pause — the person already chose to move on.
+  const pausedForReview =
+    step.pauseAfter === true && stepResult.status === "success" && !options?.skip;
+  const reported: StepResult = pausedForReview
+    ? {
+        status: "awaiting_user",
+        message: step.pauseMessage ?? "Paused. Review the result, then continue.",
+      }
+    : stepResult;
+
   const isLastStep = stepIndex + 1 >= def.steps.length;
   const nextStepIndex = stepResult.status === "success" ? stepIndex + 1 : stepIndex;
-  const nextStatus: WorkflowRunStatus =
-    stepResult.status === "success" && isLastStep
+  const nextStatus: WorkflowRunStatus = pausedForReview
+    ? "awaiting_user"
+    : stepResult.status === "success" && isLastStep
       ? "done"
       : statusForStepResult(stepResult.status);
 
@@ -302,5 +319,5 @@ async function runStep(
     now: finishedAt,
   });
 
-  return stepResult;
+  return reported;
 }
