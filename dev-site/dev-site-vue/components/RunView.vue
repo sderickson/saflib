@@ -85,23 +85,22 @@
         <div v-if="logsQuery.isFetchingNextPage.value" class="run-view__logs-loading">
           Loading earlier logs…
         </div>
-        <template v-for="item in logItems">
-          <div
-            :key="itemKey(item)"
-            class="run-view__log-item"
-            :data-step-index="itemStepIndex(item)"
-            :class="{ 'run-view__log-item--sticky': isLastAgentInput(item) }"
-          >
-            <ToolCallCard
-              v-if="item.type === 'tool-call'"
-              :name="item.name"
-              :input="item.input"
-              :result-log="item.resultLog"
-            />
-            <LogEntryGroup v-else-if="item.type === 'channel-group'" :logs="item.logs" />
-            <LogEntry v-else :log="item.log" />
-          </div>
-        </template>
+        <div
+          v-for="item in logItems"
+          :key="itemKey(item)"
+          class="run-view__log-item"
+          :data-step-index="itemStepIndex(item)"
+          :class="{ 'run-view__log-item--sticky': isLastAgentInput(item) }"
+        >
+          <ToolCallCard
+            v-if="item.type === 'tool-call'"
+            :name="item.name"
+            :input="item.input"
+            :result-log="item.resultLog"
+          />
+          <LogEntryGroup v-else-if="item.type === 'channel-group'" :logs="item.logs" />
+          <LogEntry v-else :log="item.log" />
+        </div>
         <div v-if="logsQuery.isFetchingPreviousPage.value" class="run-view__logs-loading">
           Loading later logs…
         </div>
