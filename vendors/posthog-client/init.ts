@@ -19,7 +19,6 @@ export type InitPostHogOptions = Partial<PostHogConfig> & {
  * otherwise cookieless events are dropped at ingest.
  */
 export const DEFAULT_INIT_OPTIONS = {
-  capture_pageview: false,
   cookieless_mode: "always",
   disable_session_recording: true,
   person_profiles: "never",
