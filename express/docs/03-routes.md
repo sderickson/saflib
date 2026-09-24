@@ -6,6 +6,8 @@ Use the [express/add-handler](./workflows/add-handler.md) workflow to add new ha
 
 **Route** (or **operation**) means the OpenAPI specification. **Handler** means the Express implementation.
 
+Group folders are the plural collection name (`handlers/recipes/create.ts`). Use that same folder under the spec `routes/` and the SDK `requests/`. See [API design](../../openapi/docs/02-api-design.md#resource-actions).
+
 ## Package structure and integration
 
 See [base](https://github.com/sderickson/saflib/tree/main/base/service/http) for file layout, router factories, and how handlers are mounted. Use the `express/add-handler` workflow to add new handlers.

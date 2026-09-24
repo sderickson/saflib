@@ -23,15 +23,15 @@ describe("add-query", () => {
 
     const context = AddSdkQueryWorkflowDefinition.context({
       input: {
-        path: "./requests/todo/list.ts",
+        path: "./requests/todos/list.ts",
         urlPath: "/todos",
         method: "get",
         cwd,
       },
     });
 
-    expect(context.targetDir).toBe(path.join(cwd, "requests", "todo"));
-    expect(context.groupName).toBe("todo");
+    expect(context.targetDir).toBe(path.join(cwd, "requests", "todos"));
+    expect(context.groupName).toBe("todos");
     expect(context.targetName).toBe("list");
   });
 });
