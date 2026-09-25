@@ -832,7 +832,7 @@ function updateCurrentStepIndex() {
   const containerBottom = el.getBoundingClientRect().bottom;
   const items = el.querySelectorAll<HTMLElement>("[data-step-index]");
   let found: number | undefined;
-  for (const itemEl of items) {
+  for (const itemEl of Array.from(items)) {
     // Keep advancing `found` through every item that's started above the
     // viewport's bottom edge; the last one is whichever item occupies (or
     // overlaps) that edge. Items entirely below it end the search.

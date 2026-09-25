@@ -478,7 +478,7 @@ describe("PlansPage", () => {
     await vi.waitFor(() => {
       expect(document.body.textContent).toContain("What should this project do?");
     });
-    const nameInput = [...document.body.querySelectorAll("input")].find((el) =>
+    const nameInput = Array.from(document.body.querySelectorAll("input")).find((el) =>
       el.closest(".v-input")?.textContent?.includes("Project name"),
     );
     expect(nameInput).toBeTruthy();
@@ -487,7 +487,7 @@ describe("PlansPage", () => {
     expect(textarea).toBeTruthy();
     await new DOMWrapper(textarea!).setValue("Track repair requests.");
 
-    const start = [...document.body.querySelectorAll("button")].find(
+    const start = Array.from(document.body.querySelectorAll("button")).find(
       (b) => b.textContent?.trim() === "Start",
     );
     expect(start).toBeTruthy();

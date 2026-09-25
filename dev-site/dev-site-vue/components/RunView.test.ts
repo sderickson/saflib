@@ -755,7 +755,7 @@ describe("RunView", () => {
     await vi.waitFor(() => {
       expect(document.body.textContent).toContain("Reset this run?");
     });
-    const resetBtn = [...document.body.querySelectorAll("button")].find(
+    const resetBtn = Array.from(document.body.querySelectorAll("button")).find(
       (b) => b.textContent?.trim() === "Reset",
     );
     expect(resetBtn).toBeTruthy();
