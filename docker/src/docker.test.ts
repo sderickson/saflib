@@ -97,6 +97,7 @@ describe("generateDockerfiles", () => {
       "@foo/foo--docker-foo-auth-web-client",
     );
     expect(stagedRootPackageJson.private).toBe(true);
+    expect(stagedRootPackageJson.overrides).toEqual({ esbuild: "^0.28.0" });
 
     expect(
       vol.existsSync(

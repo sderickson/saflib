@@ -12,6 +12,7 @@ export const monorepoPackageMock = {
   "/app/scripts/dedupe-vue-runtime.mjs": "// dedupe",
   "/app/package.json": JSON.stringify({
     name: "@foo/foo",
+    overrides: { esbuild: "^0.28.0" },
     workspaces: [
       "clients/*",
       "dbs",

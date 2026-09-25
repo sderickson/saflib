@@ -141,10 +141,13 @@ function stagePackageJsonsForInstall(
     imageName,
   );
   stagedRootPackageJson.private = true;
-  // Lock root omits override metadata; restating overrides in the staged
-  // root makes `npm ci` reject the copied lock (EUSAGE / Missing: …).
-  delete stagedRootPackageJson.overrides;
+  // Saflib's lock root omits override metadata; restating those overrides
+  // makes `npm ci` reject the copied lock. Product locks are generated with
+  // the root overrides applied (for example esbuild ^0.28.0 over a workspace
+  // that still asks for ^0.27.0), so the staged root must keep them or
+  // `npm ci` resolves the un-overridden range and reports it missing.
   if (isSaflibMonorepoRoot(ctx.rootDir, stagedRootPackageJson.name)) {
+    delete stagedRootPackageJson.overrides;
     const lockRoot = readLockRootManifest(ctx.rootDir);
     if (lockRoot?.dependencies) {
       stagedRootPackageJson.dependencies = lockRoot.dependencies;
