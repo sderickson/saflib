@@ -26,16 +26,52 @@
       "path": "../../commander"
     },
     {
+      "path": "../../cron-http-workflows"
+    },
+    {
       "path": "../../drizzle"
     },
     {
       "path": "../../drizzle-workflows"
     },
     {
+      "path": "../../email-service-workflows"
+    },
+    {
+      "path": "../../env-workflows"
+    },
+    {
+      "path": "../../express-workflows"
+    },
+    {
       "path": "../../git"
     },
     {
+      "path": "../../integrations-workflows"
+    },
+    {
+      "path": "../../jobs-http-workflows"
+    },
+    {
+      "path": "../../monorepo-workflows"
+    },
+    {
       "path": "../../node"
+    },
+    {
+      "path": "../../openapi-workflows"
+    },
+    {
+      "path": "../../processes-workflows"
+    },
+    {
+      "path": "../../sdk-workflows"
+    },
+    {
+      "path": "../../service-workflows"
+    },
+    {
+      "path": "../../vue-workflows"
     },
     {
       "path": "../db"
