@@ -9,11 +9,7 @@
     "dist/types",
     "playwright-report",
     "test-results",
-    "e2e",
-    "workflows/template/**",
-    "workflows/templates/**",
-    "**/workflows/template/**",
-    "**/workflows/templates/**"
+    "e2e"
   ],
   "compilerOptions": {
     "rootDir": ".",

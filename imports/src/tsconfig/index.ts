@@ -17,7 +17,6 @@ export {
   generateReferences,
   checkReferences,
   computeSolutions,
-  isWorkflowTemplatePackage,
   type GenerateReferencesPreview,
   type PackageReferencePreview,
   type SolutionReferencePreview,

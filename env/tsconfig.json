@@ -10,11 +10,7 @@
     "./workflows/query-template/**",
     "e2e",
     "playwright-report",
-    "test-results",
-    "workflows/template/**",
-    "workflows/templates/**",
-    "**/workflows/template/**",
-    "**/workflows/templates/**"
+    "test-results"
   ],
   "compilerOptions": {
     "rootDir": ".",

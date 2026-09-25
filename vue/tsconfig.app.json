@@ -46,10 +46,6 @@
     "playwright-report",
     "test-results",
     "workflows/**",
-    "workflows/**/*.test.ts",
-    "workflows/template/**",
-    "workflows/templates/**",
-    "**/workflows/template/**",
-    "**/workflows/templates/**"
+    "workflows/**/*.test.ts"
   ]
 }

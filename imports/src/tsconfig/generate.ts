@@ -70,25 +70,6 @@ function isUnderDir(dir: string, parentDir: string): boolean {
   return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
 }
 
-/**
- * Workflow scaffold packages are workspace members but should not appear in
- * solution roots (they're templates, not shipped compilation units).
- */
-export function isWorkflowTemplatePackage(
-  packageDir: string,
-  rootDir: string,
-): boolean {
-  const rel = path.relative(rootDir, packageDir);
-  if (rel.startsWith("..") || path.isAbsolute(rel)) return false;
-  const parts = rel.split(path.sep);
-  const workflowsIdx = parts.indexOf("workflows");
-  if (workflowsIdx < 0) return false;
-  // e.g. workflows/templates, workflows/client-templates, workflows/template/…
-  return parts
-    .slice(workflowsIdx + 1)
-    .some((part) => part.includes("template"));
-}
-
 function readRootPackageName(rootDir: string): string | undefined {
   const pjPath = path.join(rootDir, "package.json");
   if (!fs.existsSync(pjPath)) return undefined;
@@ -147,9 +128,7 @@ export function computeSolutions(
 ): SolutionReferencePreview[] {
   const { rootDir, graph } = built;
   const rootName = readRootPackageName(rootDir);
-  const nodes = [...graph.values()].filter(
-    (n) => !isWorkflowTemplatePackage(n.dir, rootDir),
-  );
+  const nodes = [...graph.values()];
 
   if (rootName === "@saflib/saflib") {
     return [
@@ -345,6 +324,20 @@ export function ensurePackageEmitOptions(tsconfigPath: string): boolean {
       changed = true;
     }
   }
+  const workflowTemplateExcludes = new Set([
+    "workflows/template/**",
+    "workflows/templates/**",
+    "**/workflows/template/**",
+    "**/workflows/templates/**",
+  ]);
+  const withoutWorkflowTemplateExcludes = exclude.filter(
+    (pattern) => !workflowTemplateExcludes.has(pattern),
+  );
+  if (withoutWorkflowTemplateExcludes.length !== exclude.length) {
+    exclude.length = 0;
+    exclude.push(...withoutWorkflowTemplateExcludes);
+    changed = true;
+  }
   if (changed) config.exclude = exclude;
 
   const base = path.basename(tsconfigPath);
@@ -354,21 +347,6 @@ export function ensurePackageEmitOptions(tsconfigPath: string): boolean {
   const extendsVue =
     base === "tsconfig.app.json" ||
     JSON.stringify(config.extends ?? "").includes("@saflib/vue/tsconfig.app");
-
-  if (!isSolutionConfig(config) && (extendsMonorepo || extendsVue)) {
-    for (const pattern of [
-      "workflows/template/**",
-      "workflows/templates/**",
-      "**/workflows/template/**",
-      "**/workflows/templates/**",
-    ]) {
-      if (!exclude.includes(pattern)) {
-        exclude.push(pattern);
-        changed = true;
-      }
-    }
-    if (changed) config.exclude = exclude;
-  }
 
   if (
     !isSolutionConfig(config) &&
@@ -501,9 +479,6 @@ export function previewReferencesGenerate(options: {
 
   if (options.write) {
     for (const pkg of packages) {
-      if (isWorkflowTemplatePackage(path.dirname(pkg.tsconfig), built.rootDir)) {
-        continue;
-      }
       const changed = patchPackageTsconfig(pkg.tsconfig, pkg.references);
       (changed ? written : unchanged).push(pkg.tsconfig);
     }
@@ -548,10 +523,6 @@ export function checkReferences(options: {
   const drifts: ReferenceDrift[] = [];
 
   for (const pkg of packages) {
-    const packageDir = path.dirname(pkg.tsconfig);
-    if (isWorkflowTemplatePackage(packageDir, built.rootDir)) {
-      continue;
-    }
     const expected = expectedPackageReferences(pkg.tsconfig, pkg.references);
     const actual = fs.existsSync(pkg.tsconfig)
       ? readReferences(pkg.tsconfig)

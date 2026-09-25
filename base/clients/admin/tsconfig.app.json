@@ -18,11 +18,7 @@
     "playwright.config.ts",
     "dist/types",
     "playwright-report",
-    "test-results",
-    "workflows/template/**",
-    "workflows/templates/**",
-    "**/workflows/template/**",
-    "**/workflows/templates/**"
+    "test-results"
   ],
   "references": [
     {

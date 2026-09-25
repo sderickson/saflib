@@ -15,11 +15,7 @@
     "e2e",
     "playwright.config.ts",
     "playwright-report",
-    "test-results",
-    "workflows/template/**",
-    "workflows/templates/**",
-    "**/workflows/template/**",
-    "**/workflows/templates/**"
+    "test-results"
   ],
   "references": [
     {

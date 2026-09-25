@@ -242,6 +242,15 @@
       "path": "./grpc/grpc"
     },
     {
+      "path": "./grpc/grpc/workflows/client-templates"
+    },
+    {
+      "path": "./grpc/grpc/workflows/proto-templates"
+    },
+    {
+      "path": "./grpc/grpc/workflows/server-templates"
+    },
+    {
       "path": "./imports"
     },
     {
