@@ -1,4 +1,3 @@
-/// <reference path="./template-shims.d.ts" />
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 // BEGIN WORKFLOW AREA workflow-cli-imports FOR workflows/add-workflow

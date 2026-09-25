@@ -15,7 +15,13 @@
     "outDir": "./dist/types",
     "noEmit": false,
     "emitDeclarationOnly": true,
-    "rootDir": "."
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "template-package/workflows": [
+        "./workflows/templates/template-package-workflows.ts"
+      ]
+    }
   },
   "references": [
     {
