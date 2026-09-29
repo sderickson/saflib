@@ -20,7 +20,8 @@ function gitHashesFromModules(
 const data = gitHashesFromModules(modules);
 
 /**
- * Returns git hashes baked in at build time by the `saf-git-hashes` CLI.
+ * Returns git hashes written by `saf-git-hashes` during client image Docker builds
+ * (see `@saflib/docker` `generateDockerfiles`).
  * Falls back to `"unknown"` when the generated JSON file is absent.
  */
 export function getGitHashes(): GitHashes {
