@@ -282,18 +282,15 @@ export function generateDockerfiles(
     }
 
     const copySrcCommand = `COPY --parents ${packageRelativePaths.join(" ")} ./`;
+    const hashCmd = gitHashesCommand(ctx);
     const gitHashesStep = [
-      // This step's own layer is invalidated on essentially every rebuild
-      // (its cache key includes the just-copied source tree, so any edit
-      // anywhere busts it) — but a template that already installs git
-      // earlier (before its own first COPY, so genuinely cache-stable)
-      // shouldn't pay a fresh network `apt-get update` + reinstall on top
-      // of that every single time. `command -v git` is free; skip straight
-      // to the hashes command when it's already satisfied.
+      // Client images COPY workspace paths, not `.git`. Host/CI should run
+      // `saf-git-hashes` before `docker build` so `saflib/vue/src/git-hashes.json`
+      // is in the context. When `.git` exists in the image, refresh hashes here.
       "RUN (command -v git >/dev/null 2>&1 || (apt-get update \\",
       "  && apt-get install -y --no-install-recommends git \\",
       "  && rm -rf /var/lib/apt/lists/*)) \\",
-      `  && ${gitHashesCommand(ctx)}`,
+      `  && (git -C /app rev-parse HEAD >/dev/null 2>&1 && ${hashCmd} || echo "Skipping saf-git-hashes: no .git in build context (using pre-generated git-hashes.json)")`,
     ].join("\n");
 
     // Templates that need hashes after extra COPY layers (e.g. full saflib)
