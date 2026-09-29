@@ -16,6 +16,7 @@
     "noEmit": false,
     "emitDeclarationOnly": true,
     "rootDir": ".",
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "template-package/workflows": [

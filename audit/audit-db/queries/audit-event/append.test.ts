@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { UnhandledDatabaseError } from "@saflib/drizzle";
-import { getGitHashes } from "@saflib/node";
+import { getGitHashes } from "@saflib/node/git-hashes";
 import { auditDb } from "../../instances.ts";
 import { appendAuditEvent } from "./append.ts";
 import { verifyAuditChain } from "./verify-chain.ts";

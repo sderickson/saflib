@@ -1,21 +1,13 @@
 // Stubs for browser APIs not available in jsdom.
 // This setup file is referenced by vitest-config.js and runs before each test file.
 
-import { addErrorCollector } from "@saflib/node";
 import { installLocalStorageStub } from "@saflib/vitest/local-storage-stub";
-import { Blob as NodeBlob, File as NodeFile } from "node:buffer";
 
 installLocalStorageStub();
-addErrorCollector(() => {});
-
-// jsdom's File/Blob lack undici's internal `_buffer`, so FormData uploads via
-// openapi-fetch/fetch throw. Prefer Node's implementations for multipart tests.
-if (typeof NodeFile === "function") {
-  globalThis.File = NodeFile;
-}
-if (typeof NodeBlob === "function") {
-  globalThis.Blob = NodeBlob;
-}
+// Do not import `@saflib/node` or `node:*` here — Vitest 5 runs setup through
+// Vite's client pipeline (jsdom), which breaks on Node built-ins. Multipart
+// upload tests that need Node File/Blob should use `environment: "node"` or a
+// dedicated setup file.
 
 const originalConsoleWarn = console.warn;
 console.warn = (...args) => {

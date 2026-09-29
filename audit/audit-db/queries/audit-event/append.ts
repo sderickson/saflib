@@ -7,7 +7,7 @@ import { generateShortId, queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/utils";
 import { desc, sql } from "drizzle-orm";
-import { getGitHashes } from "@saflib/node";
+import { getGitHashes } from "@saflib/node/git-hashes";
 import { typedEnv } from "@saflib/env";
 
 type AuditInsert = typeof auditEventTable.$inferInsert;
