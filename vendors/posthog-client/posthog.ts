@@ -1,7 +1,9 @@
 /**
- * Rather than using the posthog-js client, I'm going to stick with the one loaded
- * by the script tag, to ensure it loads consistently and quickly.
- * However, I'll use the type!
+ * Vue helpers that talk to the **global** PostHog client (`globalThis.posthog`).
+ *
+ * That global is set either by {@link makePosthogScriptTag} (snippet + array.js)
+ * or, in CSP-friendly SPAs, by {@link initPostHogIfConfigured} after bundling
+ * `posthog-js` (ESM init does not attach to `window` by itself).
  */
 
 import type { PostHog } from "posthog-js";
