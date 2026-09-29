@@ -226,18 +226,22 @@ function withDockerForGitHashes(
 }
 
 /**
- * Invoke the CLI by path. `npm install` runs against package.json stubs only, so
- * npm does not create `node_modules/.bin` links when the bin target files are
- * missing — `npm exec saf-git-hashes` would then hit the public registry (404).
+ * Invoke the CLI by path from `/app` (WORKDIR during the git-hashes RUN).
+ *
+ * `npm install` runs against package.json stubs only, so npm does not create
+ * `node_modules/.bin` links when the bin target files are missing — `npm exec
+ * saf-git-hashes` would then hit the public registry (404).
+ *
+ * Downstream prod Dockerfiles (e.g. Caddy) should not re-run this after changing
+ * WORKDIR to a client package — hashes are already in the base client image.
  */
 function gitHashesCommand(ctx: MonorepoContext): string {
   const dockerDir = ctx.monorepoPackageDirectories["@saflib/docker"];
   if (!dockerDir) {
     return "npm exec saf-git-hashes";
   }
-  const rel =
-    "./" + path.relative(ctx.rootDir, dockerDir).split(path.sep).join("/");
-  return `${rel}/bin/saf-git-hashes/index.ts`;
+  const rel = path.relative(ctx.rootDir, dockerDir).split(path.sep).join("/");
+  return `/app/${rel}/bin/saf-git-hashes/index.ts`;
 }
 
 export function generateDockerfiles(
