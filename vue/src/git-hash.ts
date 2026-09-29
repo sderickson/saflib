@@ -20,7 +20,7 @@ function gitHashesFromModules(
 const data = gitHashesFromModules(modules);
 
 /**
- * Returns git hashes baked in at build time by `saf-git-hashes`.
+ * Returns git hashes baked in at build time by the `saf-git-hashes` CLI.
  * Falls back to `"unknown"` when the generated JSON file is absent.
  */
 export function getGitHashes(): GitHashes {

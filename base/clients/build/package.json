@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm exec saf-git-hashes && vite build",
+    "build": "saf-git-hashes && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -12,6 +12,7 @@
     "@saflib/base-admin-spa": "*",
     "@saflib/base-app-spa": "*",
     "@saflib/base-auth-spa": "*",
+    "@saflib/docker": "*",
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
     "@saflib/vite": "*"
