@@ -175,7 +175,7 @@ dependency cycle):
 - New "Preview changes" button in `RunView.vue`'s footer, next to the VCR
   controls. On click, calls the new query/mutation and renders the result
   via `<CommitDiffView>` plus a small list of the `entries` that weren't
-  covered ("N step(s) need a real run: <label> (<workflowId>)").
+  covered ("N step(s) need a real run: `<label>` (`<workflowId>`)").
 - Tests: `RunView.test.ts` addition covering the button, a fixture
   `preview-diff` response, and the skipped-entries note rendering.
 
