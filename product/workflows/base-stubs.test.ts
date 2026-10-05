@@ -118,16 +118,9 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     ],
   },
   {
-    // Live areas filled so vue/add-static-site can upsert from golden base/dev.
-    rel: "dev/build-images.sh",
-    mustInclude: [
-      "BEGIN WORKFLOW AREA build-static-sites",
-      "__static-subdomain-name__",
-    ],
-  },
-  {
     rel: "dev/Dockerfile.template",
     mustInclude: [
+      "#{ image @saflib/base-__static-subdomain-name__-static }#",
       "BEGIN WORKFLOW AREA static-site-builders",
       "BEGIN WORKFLOW AREA static-site-assets",
       "__static-subdomain-name__",

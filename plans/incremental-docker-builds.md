@@ -6,22 +6,22 @@
 
 ## Status
 
-- **Phase:** Phases 1–2 and 2b (per-image lockfile pruning) implemented,
-  uncommitted in the working tree as of this update.
+- **Phase:** all phases implemented (Phases 3–6 uncommitted in the working
+  tree as of this update).
 - **Last updated:** 2026-10-05
-- **Next action:** owner decides the remaining **Open questions**: an explicit
-  go on Phases 3–6, and whether a shared SAF layer is in scope. Don't start
-  Phase 3 until then.
+- **Next action:** owner reviews and commits; then work through **Follow-ups**
+  (chiefly migrating existing products, which keep their own copies of the
+  dev/deploy scripts).
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
 | 1 | `@saflib/git` tree-hash helpers | done |
 | 2 | `saf-docker inputs` + skip-rate measurement | done |
 | 2b | Per-image lockfile pruning (decouple products) | done |
-| 3 | Build metadata (`/etc/saf/builds/`) + OCI labels | not started |
-| 4 | `builds/` convention + generator emits inputs manifest | not started |
-| 5 | `saf-docker build` orchestrator | not started |
-| 6 | Migrate dev + deploy scripts; retire `saf-git-hashes` | not started |
+| 3 | Build metadata (`/etc/saf/builds/`) + OCI labels | done |
+| 4 | `builds/` convention + upstream markers | done |
+| 5 | `saf-docker build` / `status` orchestrator | done |
+| 6 | Migrate dev + deploy scripts; deprecate `saf-git-hashes` | done |
 
 ## Context
 
@@ -462,53 +462,118 @@ builds only):
 The remaining gap to the ceiling is genuine dependency change: the image's
 own dependencies, saflib's dependencies, and root overrides.
 
-#### Phase 3: build metadata
+#### Phases 3–6: as built (2026-10-05)
 
-- Generator appends a final metadata step (`ARG SAF_BUILD_INFO` + write
-  `/etc/saf/builds/<id>.json`) and `LABEL`s. Multi-stage: copy
-  `/etc/saf/builds/` from `--from` stages.
-- `@saflib/node` `getBuildInfo()`; reimplement `getGitHashes()` on top of it
-  (fall back to the old JSON file, then `"unknown"`).
-- Vue: replace the `git-hashes.json` glob with a Vite `define` fed from the
-  build arg / env at build time.
-- Sentry: `vendors/sentry-node/vite-build.ts` release from build info.
+The user-facing reference is now `docker/docs/01-overview.md` (builds,
+markers, `saf-docker build`, runtime build info, migration guide). Notes for
+whoever continues:
 
-#### Phase 4: `builds/` convention
+**Phase 3, build metadata**
+- `docker/src/metadata.ts` `buildMetadataStep()`: appended to every generated
+  Dockerfile. It's the last layer, reached via `ARG SAF_BUILD_INFO`, and writes
+  `/etc/saf/build.json` (self) plus `/etc/saf/builds/<image>.json`. It copies
+  `/etc/saf/builds/` from stages built `FROM` (or `COPY --from`) another build,
+  and switches to `USER root` and back when the final stage sets a user (kratos
+  runs as 10000). The directory is created even without the arg, so downstream
+  copies never fail.
+- `saf-docker build` passes the info (`BuildInfo`: ref, image, input hash,
+  `commits {root, saflib}` with `-dirty` when the image's inputs were dirty,
+  platform, time, upstream refs) and OCI labels.
+- Readers: `@saflib/node/git-hashes` `getBuildInfo()`, `listBuildInfos()`,
+  `getGitHashes()` (build.json, then legacy `git-hashes.json`, then
+  `unknown`; `SAF_BUILD_INFO_DIR` overrides `/etc/saf` for tests).
+  `@saflib/vite` `makeConfig` defines `import.meta.env.SAF_GIT_HASHES` from
+  it, and `@saflib/vue` `getGitHashes()` prefers that over the legacy JSON.
+  Sentry and audit go through the node reader unchanged. Verified in real
+  images: runtime `getGitHashes()` returns the build's commits, and the prod
+  client bundle contains the commit hash.
+- Removed from generation: the `@saflib/docker` source injected into every
+  image, and the per-build `apt-get install git` + `saf-git-hashes` step.
+  `#{ git_hashes }#` is now stripped.
 
-- `monorepo`: `findBuilds()`; keep `packagesWithDockerfileTemplates` derived
-  for back-compat until callers migrate.
-- `docker`: `generateDockerfiles` iterates builds, writes each `Dockerfile`
-  next to its template, and writes manifests.
-- Migrate saflib's own templates (`base/dev`, `base/service/monolith`,
-  `base/clients/*`, `cron/*`, `dev-site/dev-site-docker`, `backup/backup-sdk`)
-  and the workflow templates that generate them (`service/workflows`,
-  `vue/workflows`, `product/workflows`, `sdk/workflows`,
-  `identity/identity/workflows`). Workflow template paths must move in
-  lockstep, so check each workflow's copy/update steps.
+**Phase 4, builds**
+- `docker/src/builds.ts` `listBuilds()`: package-root templates are `default`
+  builds; `builds/**/Dockerfile.template` are named builds. Optional
+  `build.json` `{ image?, tags? }`. Derived image names are sanitized
+  (`[^a-z0-9]+` → `-`), and duplicate image names are an error.
+- `#{ image <ref|package> }#` marker → `<image>:latest`. The pattern is
+  limited to package-name characters, so prose like `#{ image … }#` in
+  comments is left alone.
+- **Decision:** saflib's existing package-root templates were *not* moved into
+  `builds/` (that would churn compose files, workflows and product init for no
+  gain). `builds/` is used where a package has several builds (deploy).
+- `base/dev/Dockerfile.template` names its static-site upstreams with markers;
+  dev compose's caddy image is now the derived `saflib-base-dev`.
+  `dev-site/dev-site-docker/build.json` keeps the published `saflib-dev-site`.
 
-#### Phase 5: `saf-docker build`
+**Phase 5, `saf-docker build` / `status`**
+- `docker/src/build-images.ts`: dependency-ordered scheduler, bounded
+  concurrency, a failed upstream blocks its dependents. Per build: local
+  `in-<hash>` → up to date (retag `latest`); else registry hit → pull (or only
+  retag remotely when publishing with no downstream); else build. `--push`
+  pushes `in-<hash>`, `latest` and `build.json` tags. Logs go to
+  `.saf-docker/logs/<image>.log`.
+- `native` is resolved to the daemon's `os/arch` for the hash (otherwise a
+  Mac and a CI runner would share tags for different architectures).
+- `docker/src/executor.ts`: `DockerExecutor` interface plus the `docker`/buildx
+  CLI implementation; tests use a fake (`build-images.test.ts`).
+- CLI: `build [refs…] [--dir p]… [--platform] [--registry] [--push]
+  [--force] [--dry-run] [--concurrency]`; `status` = dry run. `--dir` is
+  repeatable rather than variadic, so it can't swallow the refs after it.
+- Verified for real in saflib: the first dev build of 6 images took ~61 s, the
+  second ~7 s with everything skipped; a client-only edit rebuilt only the
+  client/static images and `base-dev`. With a throwaway local registry, push
+  published every tag, a second push only retagged, and after deleting local
+  input tags the build **pulled** instead of rebuilding.
 
-- DAG + topological parallel scheduler (bounded concurrency).
-- Existence checks (local / registry), pull/retag, build, tag, push.
-- `--platform` handling mirroring `build.sh` (`native` | `amd64`).
-- Tests: scheduler and skip logic with a mocked docker executor (follow the
-  `__mocks__` pattern already in `docker/`).
+**Phase 6, scripts and workflows**
+- `base/dev/package.json`: `build`/`dev`/`up` run
+  `saf-docker build --dir .. @saflib/dev-site-docker` (in a product, `..` is
+  the product dir); `dev-site` builds before `compose up` instead of
+  `--build`. `build-images.sh` is deleted.
+- `deploy/Dockerfile.prod` → `deploy/builds/caddy/Dockerfile.template`
+  (`build.json` image `__organization-name__-caddy`); `Dockerfile.kratos` →
+  `deploy/builds/kratos/` (image `__organization-name__-kratos`, tag
+  `v26.2.0`). Published names are unchanged, so prod compose and remote
+  scripts are untouched. Client stages use markers and `/app/base/...`
+  paths; product init's renames (`@saflib/base`, `saflib-base`, `/base/`)
+  turn them into the product's. Stage names embed `__product-name__` between
+  letters (`clients__product-name__builder`) because Docker rejects `__`
+  next to `-`. **The prod caddy image now actually builds inside saflib** (it
+  never could before), which is how it was verified.
+- `deploy/local-scripts/build.sh`: `saf-docker build --dir ./deploy
+  <monolith refs> --platform … --registry …`, with monolith refs in a
+  `deploy-builds FOR product/init` area. `push.sh` runs it with `--push`.
+  `deploy` `status` script added. CI (`templates/scaffold/.github/workflows/push.yml`)
+  needs no change and now gets registry hits.
+- `vue/add-static-site` (both `vue/workflows` and `vue-workflows`): no longer
+  edits `build-images.sh` or `deploy/local-scripts/build.sh` (builds are
+  discovered); the deploy Caddy step targets `deploy/builds/caddy` and skips
+  when that template is missing (unmigrated products).
+- **Decision:** `saf-git-hashes` is **deprecated, not removed**. Existing
+  products' copied scripts still call it, and their images read its JSON. It
+  now prints a deprecation notice; nothing in saflib calls it.
+- Tests updated: `product/workflows/base-stubs.test.ts`;
+  `workflows-cli/live-test/sets.ts` now asserts the dev template's
+  `#{ image @saflib/tmp-docs-static }#` marker (**live test not run**).
 
-#### Phase 6: migrate scripts, retire old path
+### Follow-ups
 
-- `base/dev/build-images.sh` → `saf-docker build --all` (or the dev subset).
-  Remove its `BEGIN WORKFLOW AREA build-static-sites` block and update the
-  `vue/add-static-site` workflow so it no longer edits that file (the new build
-  dir gets discovered automatically).
-- `deploy/local-scripts/build.sh` + `push.sh` →
-  `saf-docker build --platform amd64 --push --registry $CONTAINER_REGISTRY`.
-  Same workflow-area cleanup for `product/init`.
-- Compose files keep referencing `:latest` for now. Optionally pin deploy
-  compose to `:in-<hash>` tags later.
-- Remove `saf-git-hashes`, the `withDockerForGitHashes` injection, and the
-  in-image `apt-get install git` step. Images get smaller and the `@saflib/docker`
-  source is no longer copied into every image.
-- Update `docker/docs/01-overview.md`.
+1. **Migrate existing products** (home-2026, vendata, pathclerk, saf-2025, …).
+   Their dev/deploy scripts are copies that still use the old flow, which keeps
+   working via the deprecated `saf-git-hashes`. Steps are in
+   `docker/docs/01-overview.md` → "Migrating an existing product". Their
+   hand-picked image names may differ from derived ones (e.g. vendata's
+   `…-clients-root`), so check with `saf-docker status`.
+2. Run the workflows live test (`workflows-cli/live-test`) to confirm
+   `vue/add-static-site` + `product/init` against the new templates.
+3. Remove `saf-git-hashes` and the legacy `git-hashes.json` fallbacks once
+   products have migrated.
+4. Garbage-collect old `in-*` tags locally and in the registry.
+5. Optional: pin prod compose to `in-<hash>` tags instead of `latest`.
+6. Open from Phase 2b: a shared SAF base image (see Open questions).
+7. `typedoc` isn't installed locally, so typedoc reference docs (`docs/ref`)
+   for `docker`, `git`, `node` and `vue` weren't regenerated (CLI docs were).
 
 ### Explicitly out of scope
 
@@ -537,10 +602,7 @@ own dependencies, saflib's dependencies, and root overrides.
 
 ## Open questions
 
-1. **Explicit go on Phases 3–6.** With pruning, product deploy/CI skips about
-   27–48% of image builds; the dev loop is probably much higher (not
-   measurable from history).
-2. **Shared SAF layer?** Each image currently holds its own copy of the saflib
+1. **Shared SAF layer?** Each image currently holds its own copy of the saflib
    packages it uses plus their installed dependencies. There is no shared SAF
    base image, so a product-only change rebuilds the whole image. A SAF layer
    (products `FROM` a saflib image) could reuse the dependency install, but:
@@ -588,3 +650,9 @@ own dependencies, saflib's dependencies, and root overrides.
   (`stageInstallManifests`) shared by the generator and `skip-rate`, so
   measurements always match real builds. The staged root `workspaces` lists
   the image's dirs explicitly instead of the repo's globs.
+- 2026-10-05 (owner): go on Phases 3–6. Shared SAF layer left open.
+- 2026-10-05 (Phases 3–6): see "Phases 3–6: as built" for the decisions:
+  package-root templates stay put (no mass move into `builds/`); upstreams
+  named with `#{ image … }#`; `native` platform resolved to `os/arch` for
+  hashing; `saf-git-hashes` deprecated rather than removed; deploy
+  caddy/kratos keep their published names via `build.json`.

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@saflib/env": "*",
+    "@saflib/node": "*",
     "@saflib/vue": "*",
     "@vitejs/plugin-vue": "^6.0.1",
     "rollup-plugin-ignore": "^1.0.10",

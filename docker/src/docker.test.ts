@@ -66,14 +66,15 @@ describe("generateDockerfiles", () => {
     expect(dockerfile).toContain(
       "COPY .saf-docker/stage/foo-auth-web-client/ ./",
     );
-    // Always includes @saflib/docker (+ deps) so the git-hashes CLI source is present.
-    // Paths follow package-name sort order from getPackageRelativePaths.
+    // Only the package and its workspace deps, in package-name sort order.
     expect(dockerfile).toContain(
-      "COPY --parents ./clients/web-auth ./saflib/auth-vue ./saflib/commander ./saflib/docker ./saflib/auth-spec ./saflib/monorepo ./saflib/openapi-specs ./saflib/vue-spa ./",
+      "COPY --parents ./clients/web-auth ./saflib/auth-vue ./saflib/auth-spec ./saflib/openapi-specs ./saflib/vue-spa ./",
     );
-    // Invoke by absolute path from WORKDIR — npm does not link bins when install runs against stubs only.
-    expect(dockerfile).toContain(
-      "/app/saflib/docker/bin/saf-git-hashes/index.ts",
+    // No in-image git / saf-git-hashes step anymore; metadata comes last.
+    expect(dockerfile).not.toContain("saf-git-hashes");
+    expect(dockerfile).not.toContain("apt-get");
+    expect(dockerfile).toMatch(
+      /ARG SAF_BUILD_INFO\nRUN mkdir -p \/etc\/saf\/builds && .*\/etc\/saf\/builds\/foo-auth-web-client\.json; fi\n$/,
     );
 
     const stagedPackageJson = JSON.parse(
@@ -103,41 +104,83 @@ describe("generateDockerfiles", () => {
       vol.existsSync(
         "/app/.saf-docker/stage/foo-auth-web-client/saflib/docker/package.json",
       ),
-    ).toBe(true);
+    ).toBe(false);
   });
 
-  it("places git hashes only at #{ git_hashes }# when the template sets it", () => {
+  it("drops the deprecated #{ git_hashes }# marker", () => {
     vol.writeFileSync(
       "/app/clients/web-auth/Dockerfile.template",
       `FROM node:20-alpine
 WORKDIR /app
 #{ copy_packages }#
-npm install --omit=dev
 #{ copy_src }#
 COPY ./saflib ./saflib
 #{ git_hashes }#
+CMD ["npm", "start"]
 `,
     );
-    const context = buildMonorepoContext("/app");
-    generateDockerfiles(context);
+    generateDockerfiles(buildMonorepoContext("/app"));
     const dockerfile = vol.readFileSync(
       "/app/clients/web-auth/Dockerfile",
       "utf-8",
     ) as string;
+    expect(dockerfile).not.toContain("git_hashes");
+    expect(dockerfile).toContain(
+      'COPY ./saflib ./saflib\nCMD ["npm", "start"]\n',
+    );
+  });
+
+  it("generates builds/ builds, resolves #{ image }# markers, and copies upstream metadata", () => {
+    vol.mkdirSync("/app/services/identity/builds/edge/arm", { recursive: true });
+    vol.writeFileSync(
+      "/app/services/identity/builds/edge/arm/Dockerfile.template",
+      `FROM #{ image @foo/api-service }# AS api
+FROM #{ image @foo/auth-service/builds/default }#
+COPY --from=api /app/out /srv
+USER 1000
+`,
+    );
+    vol.writeFileSync(
+      "/app/services/identity/builds/edge/arm/build.json",
+      JSON.stringify({ image: "foo-edge", tags: ["v1"] }),
+    );
+    const builds = generateDockerfiles(buildMonorepoContext("/app"));
+    const edge = builds.find((b) => b.ref === "@foo/auth-service/builds/edge/arm");
+    expect(edge).toMatchObject({ image: "foo-edge", extraTags: ["v1"] });
+
+    const dockerfile = vol.readFileSync(
+      "/app/services/identity/builds/edge/arm/Dockerfile",
+      "utf-8",
+    ) as string;
+    expect(dockerfile).toContain("FROM foo-api-service:latest AS api\n");
+    expect(dockerfile).toContain("FROM foo-auth-service:latest\n");
+    // Final stage already inherits the auth-service infos; only `api` is copied.
+    // The image's final USER is restored after the root-only metadata step.
     expect(dockerfile).toMatch(
-      /COPY \.\/saflib \.\/saflib\nRUN \(command -v git >\/dev\/null 2>&1 \|\| \(apt-get update \\/,
+      /USER root\nCOPY --from=api \/etc\/saf\/builds\/ \/etc\/saf\/builds\/\nARG SAF_BUILD_INFO\nRUN .*foo-edge\.json; fi\nUSER 1000\n$/,
     );
-    const copySrcIndex = dockerfile.indexOf("COPY --parents");
-    const fullSaflibIndex = dockerfile.indexOf("COPY ./saflib ./saflib");
-    const hashesIndex = dockerfile.indexOf(
-      "/app/saflib/docker/bin/saf-git-hashes/index.ts",
+    // No install markers, so nothing is staged for it.
+    expect(vol.existsSync("/app/.saf-docker/stage/foo-edge")).toBe(false);
+  });
+
+  it("leaves non-identifier text like `#{ image … }#` in comments alone", () => {
+    vol.writeFileSync(
+      "/app/clients/web-auth/Dockerfile.template",
+      "# use #{ image … }# to name upstreams\nFROM node:20-alpine\n",
     );
-    expect(copySrcIndex).toBeGreaterThan(-1);
-    expect(fullSaflibIndex).toBeGreaterThan(copySrcIndex);
-    expect(hashesIndex).toBeGreaterThan(fullSaflibIndex);
-    // Hashes step should appear once (not also appended to copy_src).
+    generateDockerfiles(buildMonorepoContext("/app"));
     expect(
-      dockerfile.split("/app/saflib/docker/bin/saf-git-hashes/index.ts").length - 1,
-    ).toBe(1);
+      vol.readFileSync("/app/clients/web-auth/Dockerfile", "utf-8"),
+    ).toContain("# use #{ image … }# to name upstreams\n");
+  });
+
+  it("rejects #{ image }# markers that name no build", () => {
+    vol.writeFileSync(
+      "/app/clients/web-auth/Dockerfile.template",
+      "FROM #{ image @foo/nope }#\n",
+    );
+    expect(() => generateDockerfiles(buildMonorepoContext("/app"))).toThrow(
+      /unknown build "@foo\/nope"/,
+    );
   });
 });

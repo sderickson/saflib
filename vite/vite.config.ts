@@ -13,6 +13,7 @@ import {
   hostnameFromHostHeader,
 } from "./subdomain-proxy.ts";
 import { workspacePackageExportsPlugin } from "./workspace-package-exports-plugin.ts";
+import { getGitHashes } from "@saflib/node/git-hashes";
 
 export { getSubdomainProxyRewrite } from "./subdomain-proxy.ts";
 
@@ -158,6 +159,10 @@ export function makeConfig(config: MakeConfigProps = {}) {
 
   return defineConfig({
     base: "/",
+    // Commits this client image was built from (`@saflib/vue` `getGitHashes`).
+    define: {
+      "import.meta.env.SAF_GIT_HASHES": JSON.stringify(getGitHashes()),
+    },
     appType: config.appType ?? "mpa",
     plugins: [
       vue(),

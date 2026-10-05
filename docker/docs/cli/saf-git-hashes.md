@@ -3,7 +3,9 @@
 ```
 Usage: saf-git-hashes [options]
 
-Generate git hash files for builds to access in node and vue.
+Deprecated: `saf-docker build` records commits in each image
+(/etc/saf/build.json). Still writes git-hashes.json for products whose scripts
+haven't migrated.
 
 Options:
   -h, --help  display help for command

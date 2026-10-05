@@ -67,7 +67,7 @@ export interface ComputeInputsOptions {
  */
 const AUDIT_EXEMPT_BASENAMES = new Set(["Dockerfile", "git-hashes.json"]);
 
-interface Instruction {
+export interface Instruction {
   keyword: string;
   args: string;
 }

@@ -27,10 +27,11 @@ import {
 } from "./shared.ts";
 
 const staticSubdomainDir = path.join(clientsRoot, "__static-subdomain-name__");
-const buildImages = path.join(devRoot, "build-images.sh");
 const devDockerfile = path.join(devRoot, "Dockerfile.template");
-const deployBuildSh = path.join(deployTemplatesRoot, "local-scripts", "build.sh");
-const deployProdDockerfile = path.join(deployTemplatesRoot, "Dockerfile.prod");
+// Image builds are discovered by `saf-docker build`; only the Caddy templates
+// that assemble static sites need the new site added.
+const deployCaddyBuild = ["builds", "caddy"];
+const deployCaddyDockerfile = path.join(deployTemplatesRoot, ...deployCaddyBuild, "Dockerfile.template");
 
 interface AddStaticSiteInput {
   productName: string;
@@ -140,7 +141,6 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
 
     step<CopyStepInput, AddStaticSiteWorkflowContext>("copy", runCopyStep, ({ context }) => ({
       templateFiles: {
-        buildImages,
         devDockerfile,
       },
       name: context.serviceName,
@@ -149,29 +149,15 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
     })),
 
     stepSkipIf<CopyStepInput, AddStaticSiteWorkflowContext>(
-      skipIfMissingDeploy("local-scripts"),
+      skipIfMissingDeploy(...deployCaddyBuild, "Dockerfile.template"),
       "copy",
       runCopyStep,
       ({ context }) => ({
         templateFiles: {
-          deployBuildSh,
+          deployCaddyDockerfile,
         },
         name: context.serviceName,
-        targetDir: path.join(resolveDeployDir(context.cwd), "local-scripts"),
-        lineReplace: makeBasePackageLineReplace(context),
-      }),
-    ),
-
-    stepSkipIf<CopyStepInput, AddStaticSiteWorkflowContext>(
-      skipIfMissingDeploy("Dockerfile.prod"),
-      "copy",
-      runCopyStep,
-      ({ context }) => ({
-        templateFiles: {
-          deployProdDockerfile,
-        },
-        name: context.serviceName,
-        targetDir: resolveDeployDir(context.cwd),
+        targetDir: path.join(resolveDeployDir(context.cwd), ...deployCaddyBuild),
         lineReplace: makeBasePackageLineReplace(context),
       }),
     ),

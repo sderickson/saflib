@@ -26,14 +26,15 @@ const staticSubdomainDir = path.join(
   clientsRoot,
   "__static-subdomain-name__",
 );
-const buildImages = path.join(devRoot, "build-images.sh");
 const devDockerfile = path.join(devRoot, "Dockerfile.template");
-const deployBuildSh = path.join(
+// Image builds are discovered by `saf-docker build`; only the Caddy templates
+// that assemble static sites need the new site added.
+const deployCaddyBuild = ["builds", "caddy"];
+const deployCaddyDockerfile = path.join(
   deployTemplatesRoot,
-  "local-scripts",
-  "build.sh",
+  ...deployCaddyBuild,
+  "Dockerfile.template",
 );
-const deployProdDockerfile = path.join(deployTemplatesRoot, "Dockerfile.prod");
 
 const input = [
   {
@@ -146,7 +147,6 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       name: context.serviceName,
       targetDir: path.join(context.cwd, context.productName, "dev"),
       templateFiles: {
-        buildImages,
         devDockerfile,
       },
       lineReplace: makeBasePackageLineReplace(context),
@@ -156,26 +156,15 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       CopyStepMachine,
       ({ context }) => ({
         name: context.serviceName,
-        targetDir: path.join(resolveDeployDir(context.cwd), "local-scripts"),
+        targetDir: path.join(resolveDeployDir(context.cwd), ...deployCaddyBuild),
         templateFiles: {
-          deployBuildSh,
+          deployCaddyDockerfile,
         },
         lineReplace: makeBasePackageLineReplace(context),
       }),
-      { skipIf: skipIfMissingDeploy("local-scripts") },
-    ),
-
-    step(
-      CopyStepMachine,
-      ({ context }) => ({
-        name: context.serviceName,
-        targetDir: resolveDeployDir(context.cwd),
-        templateFiles: {
-          deployProdDockerfile,
-        },
-        lineReplace: makeBasePackageLineReplace(context),
-      }),
-      { skipIf: skipIfMissingDeploy("Dockerfile.prod") },
+      {
+        skipIf: skipIfMissingDeploy(...deployCaddyBuild, "Dockerfile.template"),
+      },
     ),
 
     step(

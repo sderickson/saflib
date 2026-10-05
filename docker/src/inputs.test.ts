@@ -139,8 +139,10 @@ describe("computeBuildInputs", () => {
     packageName: pkg,
     buildName: "default",
     dir: path.join(root, dir),
+    templatePath: path.join(root, dir, "Dockerfile.template"),
     dockerfilePath: path.join(root, dir, "Dockerfile"),
     image,
+    extraTags: [],
   });
   const compute = (build: Build, platform?: string) =>
     computeBuildInputs(build, { contextDir: root, builds, platform });

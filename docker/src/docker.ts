@@ -11,6 +11,14 @@ import {
   type MonorepoContext,
 } from "@saflib/monorepo/workspace";
 import {
+  DEFAULT_BUILD_NAME,
+  deriveImageName,
+  findBuild,
+  listBuilds,
+  type Build,
+} from "./builds.ts";
+import { buildMetadataStep } from "./metadata.ts";
+import {
   narrowRootPackageJson,
   pruneLockfile,
   type Lockfile,
@@ -44,8 +52,9 @@ export function stripPackageJsonForInstall(
   return out;
 }
 
+/** Image name of a package's `default` build. */
 export function imageNameFromPackageName(packageName: string): string {
-  return packageName.replace(/^@/, "").replace(/\//g, "-");
+  return deriveImageName(packageName, DEFAULT_BUILD_NAME);
 }
 
 function getPackageRelativePaths(
@@ -63,19 +72,6 @@ function getPackageRelativePaths(
 
 function usesBun(dockerTemplate: string): boolean {
   return !!dockerTemplate.match(/^FROM\s+(.+)$/m)?.[1]?.includes("/bun:");
-}
-
-function readDockerfileTemplate(
-  packageName: string,
-  monorepoContext: MonorepoContext,
-): string {
-  return readFileSync(
-    path.join(
-      monorepoContext.monorepoPackageDirectories[packageName],
-      "Dockerfile.template",
-    ),
-    "utf-8",
-  );
 }
 
 function relativePathToFs(relativePath: string): string {
@@ -243,56 +239,37 @@ function stagePackageJsonsForInstall(
   }
 }
 
-/**
- * `saf-git-hashes` is a bin of `@saflib/docker`. Always stage/copy that package
- * (and its workspace deps) so the CLI source is present inside the image.
- */
-function withDockerForGitHashes(
-  packages: Set<string>,
-  ctx: MonorepoContext,
-): Set<string> {
-  if (!ctx.monorepoPackageDirectories["@saflib/docker"]) {
-    return packages;
-  }
-  return packages
-    .union(getAllPackageWorkspaceDependencies("@saflib/docker", ctx))
-    .union(new Set(["@saflib/docker"]));
-}
+/** `#{ image <build ref or package name> }#` in a template. */
+const IMAGE_MARKER = /#\{\s*image\s+([@\w./-]+)\s*\}#/g;
 
 /**
- * Invoke the CLI by path from `/app` (WORKDIR during the git-hashes RUN).
+ * Generates every build's `Dockerfile` from its `Dockerfile.template` (see
+ * {@link listBuilds}) and stages its install manifests. Template markers:
+ * - `#{ copy_packages }#`: copy the image's staged install manifests;
+ * - `#{ copy_src }#`: copy the image's workspace package dirs;
+ * - `#{ package_root }#`: `/app/<package dir>`;
+ * - `#{ image <ref> }#`: another build's image (`<image>:latest`), by build
+ *   ref or package name — how a template names an upstream build so
+ *   `saf-docker build` builds it first;
+ * - `#{ git_hashes }#`: deprecated, removed (see build metadata).
  *
- * `npm install` runs against package.json stubs only, so npm does not create
- * `node_modules/.bin` links when the bin target files are missing — `npm exec
- * saf-git-hashes` would then hit the public registry (404).
- *
- * Downstream prod Dockerfiles (e.g. Caddy) should not re-run this after changing
- * WORKDIR to a client package — hashes are already in the base client image.
+ * Every Dockerfile ends with the build metadata step (see
+ * {@link buildMetadataStep}).
  */
-function gitHashesCommand(ctx: MonorepoContext): string {
-  const dockerDir = ctx.monorepoPackageDirectories["@saflib/docker"];
-  if (!dockerDir) {
-    return "npm exec saf-git-hashes";
-  }
-  const rel = path.relative(ctx.rootDir, dockerDir).split(path.sep).join("/");
-  return `/app/${rel}/bin/saf-git-hashes/index.ts`;
-}
-
 export function generateDockerfiles(
   ctx: MonorepoContext,
   verbose: boolean = false,
-): void {
-  for (const packageName of ctx.packagesWithDockerfileTemplates) {
-    const packages = withDockerForGitHashes(
-      getAllPackageWorkspaceDependencies(packageName, ctx).union(
-        new Set([packageName]),
-      ),
+): Build[] {
+  const builds = listBuilds(ctx);
+  const images = new Set(builds.map((b) => b.image));
+  for (const build of builds) {
+    const packages = getAllPackageWorkspaceDependencies(
+      build.packageName,
       ctx,
-    );
-    const dockerTemplate = readDockerfileTemplate(packageName, ctx);
+    ).union(new Set([build.packageName]));
+    const dockerTemplate = readFileSync(build.templatePath, "utf-8");
     const packageRelativePaths = getPackageRelativePaths(packages, ctx);
     const isBun = usesBun(dockerTemplate);
-    const imageName = imageNameFromPackageName(packageName);
 
     const packageJsonRelativePaths = getPackageRelativePaths(
       // bun won't successfully install unless all the monorepo packages are present
@@ -301,58 +278,53 @@ export function generateDockerfiles(
       ctx,
     ).map((relativePath) => relativePath + "/package.json");
 
-    let copyPackageJsonCommand: string;
-    if (isBun) {
-      const postinstallScripts = [
-        "scripts/postinstall-tsconfig-refs.mjs",
-        "scripts/dedupe-vue-runtime.mjs",
-      ]
-        .filter((script) => existsSync(path.join(ctx.rootDir, script)))
-        .map((script) => `./${script}`);
-      copyPackageJsonCommand = `COPY --parents ./package.json ./package-lock.json ${packageJsonRelativePaths.join(" ")} ${postinstallScripts.join(" ")} ./`;
-    } else {
-      stagePackageJsonsForInstall(ctx, imageName, packages);
-      copyPackageJsonCommand = `COPY .saf-docker/stage/${imageName}/ ./`;
+    let copyPackageJsonCommand = "";
+    if (dockerTemplate.includes("#{ copy_packages }#")) {
+      if (isBun) {
+        const postinstallScripts = [
+          "scripts/postinstall-tsconfig-refs.mjs",
+          "scripts/dedupe-vue-runtime.mjs",
+        ]
+          .filter((script) => existsSync(path.join(ctx.rootDir, script)))
+          .map((script) => `./${script}`);
+        copyPackageJsonCommand = `COPY --parents ./package.json ./package-lock.json ${packageJsonRelativePaths.join(" ")} ${postinstallScripts.join(" ")} ./`;
+      } else {
+        stagePackageJsonsForInstall(ctx, build.image, packages);
+        copyPackageJsonCommand = `COPY .saf-docker/stage/${build.image}/ ./`;
+      }
     }
-
-    const copySrcCommand = `COPY --parents ${packageRelativePaths.join(" ")} ./`;
-    const hashCmd = gitHashesCommand(ctx);
-    const gitHashesStep = [
-      // Client images COPY workspace paths, not `.git`. Host/CI should run
-      // `saf-git-hashes` before `docker build` so `saflib/vue/src/git-hashes.json`
-      // is in the context. When `.git` exists in the image, refresh hashes here.
-      "RUN (command -v git >/dev/null 2>&1 || (apt-get update \\",
-      "  && apt-get install -y --no-install-recommends git \\",
-      "  && rm -rf /var/lib/apt/lists/*)) \\",
-      `  && (git -C /app rev-parse HEAD >/dev/null 2>&1 && ${hashCmd} || echo "Skipping saf-git-hashes: no .git in build context (using pre-generated git-hashes.json)")`,
-    ].join("\n");
-
-    // Templates that need hashes after extra COPY layers (e.g. full saflib)
-    // can place `#{ git_hashes }#` explicitly; otherwise append after copy_src.
-    const hasExplicitGitHashes = dockerTemplate.includes("#{ git_hashes }#");
-    const copySrcReplacement = hasExplicitGitHashes
-      ? copySrcCommand
-      : `${copySrcCommand}\n${gitHashesStep}`;
 
     const packageRel = path
-      .relative(ctx.rootDir, ctx.monorepoPackageDirectories[packageName])
+      .relative(ctx.rootDir, ctx.monorepoPackageDirectories[build.packageName])
       .split(path.sep)
       .join("/");
-    const packageRoot = `/app/${packageRel}`;
 
-    const dockerfileContents = dockerTemplate
+    const body = dockerTemplate
       .replace("#{ copy_packages }#", copyPackageJsonCommand)
-      .replace("#{ copy_src }#", copySrcReplacement)
-      .replace("#{ git_hashes }#", gitHashesStep)
-      .replace(/#\{ package_root \}#/g, packageRoot);
+      .replace(
+        "#{ copy_src }#",
+        `COPY --parents ${packageRelativePaths.join(" ")} ./`,
+      )
+      .replace(/^[ \t]*#\{ git_hashes \}#[ \t]*\r?\n?/m, "")
+      .replace(/#\{ package_root \}#/g, `/app/${packageRel}`)
+      .replace(IMAGE_MARKER, (_, identifier: string) => {
+        const upstream = findBuild(builds, identifier);
+        if (!upstream) {
+          throw new Error(
+            `${path.relative(ctx.rootDir, build.templatePath)}: unknown build "${identifier}" in #{ image }#`,
+          );
+        }
+        return `${upstream.image}:latest`;
+      });
+    const otherImages = new Set([...images].filter((i) => i !== build.image));
+    const dockerfileContents =
+      body.replace(/\s*$/, "\n") +
+      buildMetadataStep(body, build.image, otherImages);
 
-    const dockerfilePath = path.join(
-      ctx.monorepoPackageDirectories[packageName],
-      "Dockerfile",
-    );
-    writeFileSync(dockerfilePath, dockerfileContents);
+    writeFileSync(build.dockerfilePath, dockerfileContents);
     if (verbose) {
-      console.log("Wrote", path.relative(ctx.rootDir, dockerfilePath));
+      console.log("Wrote", path.relative(ctx.rootDir, build.dockerfilePath));
     }
   }
+  return builds;
 }
