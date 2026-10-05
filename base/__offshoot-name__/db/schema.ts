@@ -2,7 +2,7 @@
 export * from "./schemas/__offshoot-name__.ts";
 
 // Empty markers only — drizzle/update-schema upserts from service/db/schema.ts.
-// BEGIN WORKFLOW AREA schema-exports FOR drizzle/update-schema
+// BEGIN SORTED WORKFLOW AREA schema-exports FOR drizzle/update-schema
 // END WORKFLOW AREA
 
 // Empty: nested drizzle/init can re-export further offshoot schemas here.
