@@ -1,5 +1,5 @@
-import path from "node:path";
 import { createHash } from "node:crypto";
+import path from "node:path";
 import {
   log,
   objectHashesAt,
@@ -7,21 +7,27 @@ import {
   repoRootFor,
   type GitCommit,
 } from "@saflib/git";
-import { stripDevDependencies, stripPackageJsonForInstall } from "./docker.ts";
+import {
+  stageInstallManifests,
+  stripDevDependencies,
+  stripPackageJsonForInstall,
+} from "./docker.ts";
 import type { BuildInputs } from "./inputs.ts";
+import type { Lockfile } from "./lockfile.ts";
 
 /**
  * Historical estimate of how often each build's inputs change — i.e. how
  * often an input-hash-tagged image would actually need rebuilding.
  *
- * Approximations (this is a go/no-go measurement, not the real hash):
- * - Uses *today's* input paths for every historical commit (dependency sets
- *   that changed over time aren't reconstructed).
+ * Approximations (this is a measurement, not the real hash):
+ * - Uses *today's* input paths and workspace sets for every historical
+ *   commit (dependency sets that changed over time aren't reconstructed).
  * - Generated inputs are re-derived from committed sources: the staged
- *   install manifests from the root `package.json` + `package-lock.json` at
- *   each commit (stripped the way staging strips them), and the generated
- *   `Dockerfile` by its `Dockerfile.template`.
- * - Upstream builds contribute their (approximated) paths.
+ *   install manifests by running {@link stageInstallManifests} on each
+ *   commit's root `package.json` + `package-lock.json` (exactly as
+ *   `saf-docker generate` stages them), and the generated `Dockerfile` by its
+ *   `Dockerfile.template`.
+ * - Upstream builds contribute their paths and staged manifests.
  */
 export interface SkipRateOptions {
   contextDir: string;
@@ -29,6 +35,10 @@ export interface SkipRateOptions {
   commits: number;
   /** Ref to walk back from (first-parent). */
   rev?: string;
+  /** Every workspace in the monorepo: context-relative dir → package name. */
+  workspaces: ReadonlyMap<string, string>;
+  /** Whether the context is saflib itself (affects root manifest staging). */
+  isSaflibRoot: boolean;
 }
 
 export interface BuildSkipRate {
@@ -38,17 +48,11 @@ export interface BuildSkipRate {
   /** Of `rebuilds`, how many changed *only* in the staged install manifests. */
   lockfileOnlyRebuilds: number;
   /**
-   * Rebuilds if the staged lockfile also dropped dev-only (`"dev": true`)
-   * entries — a lower bound on what pruning would save is
-   * `rebuilds - rebuildsWithDevPrunedLock`.
+   * Rebuilds had staging not been pruned per image (the whole lockfile and
+   * root manifest staged for every image), for comparison.
    */
-  rebuildsWithDevPrunedLock: number;
-  /**
-   * Rebuilds if each image's staged lockfile were pruned to the production
-   * dependency closure of its own workspace packages.
-   */
-  rebuildsWithClosureLock: number;
-  /** Rebuilds from source changes alone (perfect lockfile pruning bound). */
+  rebuildsWithoutPruning: number;
+  /** Rebuilds from source changes alone (no lockfile churn at all). */
   sourceOnlyRebuilds: number;
   /** Generated inputs that had no committed source to stand in for them. */
   unapproximated: string[];
@@ -70,149 +74,44 @@ export interface SkipRateReport {
   unknownSubmoduleCommits: string[];
 }
 
-interface HistoricalPaths {
+/** One staged install (an image's `.saf-docker/stage/<image>/`). */
+interface Stage {
+  image: string;
+  workspaceDirs: string[];
+}
+
+interface HistoricalInputs {
   paths: Set<string>;
-  /** Context-relative package dirs whose dependency closure the image installs. */
-  workspaces: Set<string>;
-  /** Whether the build stages install manifests (non-bun builds). */
-  usesLock: boolean;
+  stages: Stage[];
   unapproximated: Set<string>;
-}
-
-interface LockVariants {
-  staged: string;
-  devPruned: string;
-  /** Staged root manifest + lock entries, for per-image closure hashing. */
-  root?: unknown;
-  packages?: LockEntries;
-  closures?: Map<string, string>;
-}
-
-/** Hash of the staged root manifest plus `workspaces`' lock closure. */
-function closureHash(variants: LockVariants, workspaces: Set<string>): string {
-  if (!variants.packages) return variants.staged;
-  variants.closures ??= new Map();
-  const cacheKey = [...workspaces].sort().join("\n");
-  let hash = variants.closures.get(cacheKey);
-  if (!hash) {
-    const packages = variants.packages;
-    hash = sha([
-      variants.root,
-      lockClosure(packages, workspaces).map((key) => [key, packages[key]]),
-    ]);
-    variants.closures.set(cacheKey, hash);
-  }
-  return hash;
 }
 
 const sha = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
-/**
- * Hashes of the staged install manifests as `saf-docker generate` derives
- * them (dep-relevant root `package.json` fields, lockfile without
- * `devDependencies` keys), plus a variant with dev-only entries dropped.
- */
-type LockEntries = Record<string, Record<string, unknown>>;
-
-/**
- * Lock entries reachable from `workspaces` through production dependencies
- * (`dependencies`, `optionalDependencies`, `peerDependencies`), resolved the
- * way node does: nearest `node_modules/<name>` walking up from the dependent,
- * following workspace links.
- */
-export function lockClosure(
-  packages: LockEntries,
-  workspaces: Iterable<string>,
-): string[] {
-  const seen = new Set<string>();
-  const queue = [...workspaces].filter((w) => packages[w]);
-  const resolve = (from: string, name: string): string | undefined => {
-    let base = from;
-    while (true) {
-      const candidate =
-        base === "" ? `node_modules/${name}` : `${base}/node_modules/${name}`;
-      if (packages[candidate]) return candidate;
-      if (base === "") return undefined;
-      const nm = base.lastIndexOf("/node_modules/");
-      base = nm === -1 ? "" : base.slice(0, nm);
-    }
-  };
-  while (queue.length > 0) {
-    const key = queue.pop()!;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    const entry = packages[key];
-    if (entry.link && typeof entry.resolved === "string") {
-      queue.push(entry.resolved);
-      continue;
-    }
-    for (const field of [
-      "dependencies",
-      "optionalDependencies",
-      "peerDependencies",
-    ]) {
-      for (const name of Object.keys(
-        (entry[field] as Record<string, string>) ?? {},
-      )) {
-        const dep = resolve(key, name);
-        if (dep) queue.push(dep);
-      }
-    }
-  }
-  return [...seen].sort();
-}
-
-export function lockVariants(
-  packageJson: string,
-  packageLock: string,
-): LockVariants {
-  const root = stripDevDependencies(
-    stripPackageJsonForInstall(
-      JSON.parse(packageJson) as Record<string, unknown>,
-    ),
-  );
-  const lock = JSON.parse(packageLock) as {
-    packages?: Record<string, Record<string, unknown>>;
-  };
-  const packages = lock.packages ?? {};
-  const staged: Record<string, unknown> = {};
-  const devPruned: Record<string, unknown> = {};
-  for (const [key, entry] of Object.entries(packages)) {
-    const { devDependencies: _dev, ...rest } = entry;
-    staged[key] = rest;
-    if (!entry.dev) devPruned[key] = rest;
-  }
-  return {
-    staged: sha([root, staged]),
-    devPruned: sha([root, devPruned]),
-    root,
-    packages: staged as LockEntries,
-  };
-}
-
-function historicalPaths(
+function historicalInputs(
   result: BuildInputs,
   byRef: Map<string, BuildInputs>,
-  contextDir: string,
-): HistoricalPaths {
-  const out: HistoricalPaths = {
+  options: SkipRateOptions,
+): HistoricalInputs {
+  const out: HistoricalInputs = {
     paths: new Set(),
-    workspaces: new Set(),
-    usesLock: false,
+    stages: [],
     unapproximated: new Set(),
   };
   const dockerfileKey = path
-    .relative(contextDir, result.build.dockerfilePath)
+    .relative(options.contextDir, result.build.dockerfilePath)
     .split(path.sep)
     .join("/");
+  const workspaceDirs: string[] = [];
+  let staged = false;
   for (const input of result.inputs) {
     if (input.kind === "git") {
       out.paths.add(input.key);
-      out.workspaces.add(input.key);
+      if (options.workspaces.has(input.key)) workspaceDirs.push(input.key);
     } else if (input.kind === "file") {
       if (input.key.startsWith(".saf-docker/stage/")) {
-        out.usesLock = true;
+        staged = true;
       } else if (input.key === dockerfileKey) {
         out.paths.add(`${dockerfileKey}.template`);
       } else {
@@ -221,13 +120,13 @@ function historicalPaths(
     } else if (input.kind === "upstream") {
       const upstream = byRef.get(input.key);
       if (!upstream) continue;
-      const nested = historicalPaths(upstream, byRef, contextDir);
+      const nested = historicalInputs(upstream, byRef, options);
       nested.paths.forEach((p) => out.paths.add(p));
-      nested.workspaces.forEach((p) => out.workspaces.add(p));
-      out.usesLock ||= nested.usesLock;
+      out.stages.push(...nested.stages);
       nested.unapproximated.forEach((p) => out.unapproximated.add(p));
     }
   }
+  if (staged) out.stages.push({ image: result.build.image, workspaceDirs });
   return out;
 }
 
@@ -236,7 +135,7 @@ function historicalPaths(
  * context's repo, following submodule gitlinks for paths in nested repos.
  */
 class HistoricalResolver {
-  private readonly nested = new Map<
+  private readonly located = new Map<
     string,
     { repoRoot: string; gitlinkPath: string; repoRelative: string }
   >();
@@ -271,10 +170,10 @@ class HistoricalResolver {
     >();
 
     for (const p of paths) {
-      let loc = this.nested.get(p);
+      let loc = this.located.get(p);
       if (!loc) {
         loc = this.locate(p);
-        this.nested.set(p, loc);
+        this.located.set(p, loc);
       }
       if (loc.gitlinkPath === "") {
         direct.push(loc.repoRelative);
@@ -302,8 +201,9 @@ class HistoricalResolver {
       const nested = gitlink
         ? objectHashesAt(group.repoRoot, gitlink, group.repoRelative)
         : undefined;
-      if (gitlink && !nested?.result)
+      if (gitlink && !nested?.result) {
         this.unknownCommits.add(`${gitlinkPath}@${gitlink}`);
+      }
       group.contextPaths.forEach((key, i) => {
         // An unknown submodule commit (not fetched) reads as "changed".
         const hash = nested?.result?.get(group.repoRelative[i]);
@@ -312,6 +212,67 @@ class HistoricalResolver {
     }
     return out;
   }
+}
+
+interface RootManifests {
+  /** Distinguishes commits whose root manifests are byte-identical. */
+  key: string;
+  packageJson?: Record<string, unknown>;
+  lockfile?: Lockfile;
+}
+
+/** The root `package.json` + `package-lock.json` at each commit. */
+function rootManifestHistory(
+  repoRoot: string,
+  contextRelative: string,
+  commits: GitCommit[],
+): RootManifests[] {
+  const prefix = contextRelative.split(path.sep).join("/");
+  const pjPath = path.posix.join(prefix, "package.json");
+  const lockPath = path.posix.join(prefix, "package-lock.json");
+  const blobPairs = commits.map((c) => {
+    const { result, error } = objectHashesAt(repoRoot, c.hash, [
+      pjPath,
+      lockPath,
+    ]);
+    if (error) throw error;
+    return [result.get(pjPath) ?? null, result.get(lockPath) ?? null] as const;
+  });
+  const { result: blobs, error } = readBlobs(
+    repoRoot,
+    blobPairs.flatMap((pair) => pair.filter((h): h is string => h !== null)),
+  );
+  if (error) throw error;
+  const parsed = new Map<string, RootManifests>();
+  return blobPairs.map(([pjHash, lockHash]) => {
+    const key = `${pjHash}:${lockHash}`;
+    let manifests = parsed.get(key);
+    if (!manifests) {
+      const pj = pjHash ? blobs.get(pjHash) : undefined;
+      const lock = lockHash ? blobs.get(lockHash) : undefined;
+      manifests =
+        pj && lock
+          ? { key, packageJson: JSON.parse(pj), lockfile: JSON.parse(lock) }
+          : { key };
+      parsed.set(key, manifests);
+    }
+    return manifests;
+  });
+}
+
+/** Hash of the unpruned staging (pre-pruning behavior), for comparison. */
+function unprunedStageHash(manifests: RootManifests): string {
+  if (!manifests.packageJson || !manifests.lockfile) return manifests.key;
+  const packages = Object.fromEntries(
+    Object.entries(manifests.lockfile.packages ?? {}).map(([key, entry]) => {
+      const { devDependencies: _devDependencies, ...rest } = entry;
+      return [key, rest];
+    }),
+  );
+  return sha([
+    stripDevDependencies(stripPackageJsonForInstall(manifests.packageJson)),
+    packages,
+  ]);
 }
 
 export function measureSkipRate(
@@ -332,7 +293,7 @@ export function measureSkipRate(
   const byRef = new Map(allResults.map((r) => [r.build.ref, r]));
   const perBuild = results.map((r) => ({
     ref: r.build.ref,
-    ...historicalPaths(r, byRef, contextDir),
+    ...historicalInputs(r, byRef, options),
   }));
   const allPaths = Array.from(
     new Set(perBuild.flatMap((b) => [...b.paths])),
@@ -342,18 +303,41 @@ export function measureSkipRate(
   // Oldest first.
   const ordered = commits.slice().reverse();
   const snapshots = ordered.map((c) => resolver.hashesAt(c.hash, allPaths));
-  const locks = lockHistory(
+  const roots = rootManifestHistory(
     contextRepo,
     path.relative(contextRepo, contextDir),
     ordered,
   );
+  const unpruned = roots.map(unprunedStageHash);
+
+  const allWorkspaceNames = new Set(options.workspaces.values());
+  const stageHashes = new Map<string, string>();
+  const stageHash = (manifests: RootManifests, stage: Stage): string => {
+    if (!manifests.packageJson || !manifests.lockfile) return manifests.key;
+    const cacheKey = `${manifests.key}\t${stage.image}`;
+    let hash = stageHashes.get(cacheKey);
+    if (!hash) {
+      hash = sha(
+        stageInstallManifests(manifests.packageJson, manifests.lockfile, {
+          imageName: stage.image,
+          workspaceDirs: stage.workspaceDirs,
+          imageWorkspaceNames: new Set(
+            stage.workspaceDirs.map((dir) => options.workspaces.get(dir)!),
+          ),
+          allWorkspaceNames,
+          isSaflibRoot: options.isSaflibRoot,
+        }),
+      );
+      stageHashes.set(cacheKey, hash);
+    }
+    return hash;
+  };
 
   const builds: BuildSkipRate[] = perBuild.map((b) => ({
     ref: b.ref,
     rebuilds: 0,
     lockfileOnlyRebuilds: 0,
-    rebuildsWithDevPrunedLock: 0,
-    rebuildsWithClosureLock: 0,
+    rebuildsWithoutPruning: 0,
     sourceOnlyRebuilds: 0,
     unapproximated: Array.from(b.unapproximated).sort(),
   }));
@@ -361,23 +345,21 @@ export function measureSkipRate(
   for (let i = 1; i < snapshots.length; i++) {
     const prev = snapshots[i - 1];
     const next = snapshots[i];
-    const changed = (p: string) => prev.get(p) !== next.get(p);
+    const unprunedChanged = unpruned[i] !== unpruned[i - 1];
     let any = false;
-    const stagedChanged = locks[i].staged !== locks[i - 1].staged;
-    const closureChanged = (b: (typeof perBuild)[number]) =>
-      closureHash(locks[i], b.workspaces) !==
-      closureHash(locks[i - 1], b.workspaces);
-    const devPrunedChanged = locks[i].devPruned !== locks[i - 1].devPruned;
     perBuild.forEach((b, j) => {
-      const sourceChanged = [...b.paths].some(changed);
+      const sourceChanged = [...b.paths].some(
+        (p) => prev.get(p) !== next.get(p),
+      );
+      const stageChanged = b.stages.some(
+        (stage) =>
+          stageHash(roots[i], stage) !== stageHash(roots[i - 1], stage),
+      );
       if (sourceChanged) builds[j].sourceOnlyRebuilds++;
-      if (sourceChanged || (b.usesLock && devPrunedChanged)) {
-        builds[j].rebuildsWithDevPrunedLock++;
+      if (sourceChanged || (b.stages.length > 0 && unprunedChanged)) {
+        builds[j].rebuildsWithoutPruning++;
       }
-      if (sourceChanged || (b.usesLock && closureChanged(b))) {
-        builds[j].rebuildsWithClosureLock++;
-      }
-      if (sourceChanged || (b.usesLock && stagedChanged)) {
+      if (sourceChanged || stageChanged) {
         builds[j].rebuilds++;
         any = true;
         if (!sourceChanged) builds[j].lockfileOnlyRebuilds++;
@@ -395,43 +377,4 @@ export function measureSkipRate(
     commitsWithAnyRebuild,
     unknownSubmoduleCommits: Array.from(resolver.unknownCommits),
   };
-}
-
-/** {@link lockVariants} at each commit, reading each distinct blob once. */
-function lockHistory(
-  repoRoot: string,
-  contextRelative: string,
-  commits: GitCommit[],
-): LockVariants[] {
-  const pj = path.posix.join(
-    contextRelative.split(path.sep).join("/"),
-    "package.json",
-  );
-  const lock = path.posix.join(
-    contextRelative.split(path.sep).join("/"),
-    "package-lock.json",
-  );
-  const blobPairs = commits.map((c) => {
-    const { result, error } = objectHashesAt(repoRoot, c.hash, [pj, lock]);
-    if (error) throw error;
-    return [result.get(pj) ?? null, result.get(lock) ?? null] as const;
-  });
-  const { result: blobs, error } = readBlobs(
-    repoRoot,
-    blobPairs.flatMap((pair) => pair.filter((h): h is string => h !== null)),
-  );
-  if (error) throw error;
-  const cache = new Map<string, LockVariants>();
-  return blobPairs.map(([pjHash, lockHash]) => {
-    const key = `${pjHash}:${lockHash}`;
-    let variants = cache.get(key);
-    if (!variants) {
-      variants =
-        pjHash && lockHash
-          ? lockVariants(blobs.get(pjHash) ?? "{}", blobs.get(lockHash) ?? "{}")
-          : { staged: key, devPruned: key };
-      cache.set(key, variants);
-    }
-    return variants;
-  });
 }

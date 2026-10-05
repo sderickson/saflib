@@ -10,6 +10,11 @@ import {
   getAllPackageWorkspaceDependencies,
   type MonorepoContext,
 } from "@saflib/monorepo/workspace";
+import {
+  narrowRootPackageJson,
+  pruneLockfile,
+  type Lockfile,
+} from "./lockfile.ts";
 
 const DEPS_PACKAGE_JSON_KEYS = [
   "name",
@@ -85,7 +90,7 @@ export function stageRootPackageName(
   return `${base}--docker-${imageName}`;
 }
 
-function isSaflibMonorepoRoot(
+export function isSaflibMonorepoRoot(
   rootDir: string,
   rootName: unknown,
 ): boolean {
@@ -93,18 +98,6 @@ function isSaflibMonorepoRoot(
     return true;
   }
   return path.basename(rootDir) === "saflib";
-}
-
-function readLockRootManifest(rootDir: string): {
-  devDependencies?: unknown;
-  dependencies?: unknown;
-} | undefined {
-  const lock = JSON.parse(
-    readFileSync(path.join(rootDir, "package-lock.json"), "utf-8"),
-  ) as {
-    packages?: Record<string, { devDependencies?: unknown; dependencies?: unknown }>;
-  };
-  return lock.packages?.[""];
 }
 
 /**
@@ -119,6 +112,65 @@ export function stripDevDependencies(
   return rest;
 }
 
+export interface StageInstallOptions {
+  imageName: string;
+  /** Root-relative posix dirs of the workspaces the image includes. */
+  workspaceDirs: readonly string[];
+  /** Names of the workspaces the image includes. */
+  imageWorkspaceNames: ReadonlySet<string>;
+  /** Names of every workspace in the monorepo. */
+  allWorkspaceNames: ReadonlySet<string>;
+  isSaflibRoot: boolean;
+}
+
+/**
+ * The root `package.json` and `package-lock.json` one image installs from,
+ * derived from the monorepo's. Pure, so history-based tooling
+ * (`saf-docker skip-rate`) can stage past commits exactly as builds do.
+ *
+ * Both are narrowed to the image: workspaces listed explicitly, root
+ * dependencies on other images' workspaces dropped, and the lockfile pruned
+ * to what the image can reach (see {@link pruneLockfile}). An image's staged
+ * install inputs therefore change only when its own dependencies do.
+ */
+export function stageInstallManifests(
+  rootPackageJson: Record<string, unknown>,
+  lockfile: Lockfile,
+  options: StageInstallOptions,
+): { packageJson: Record<string, unknown>; lockfile: Lockfile } {
+  const workspaceDirs = [...options.workspaceDirs].sort();
+  const excludedWorkspaceNames = new Set(
+    [...options.allWorkspaceNames].filter(
+      (name) => !options.imageWorkspaceNames.has(name),
+    ),
+  );
+  const stripped = stripDevDependencies(
+    stripPackageJsonForInstall(rootPackageJson),
+  );
+  // Saflib's lock root omits override metadata; restating those overrides
+  // makes `npm ci` reject the copied lock. Product locks are generated with
+  // the root overrides applied (for example esbuild ^0.28.0 over a workspace
+  // that still asks for ^0.27.0), so the staged root must keep them or
+  // `npm ci` resolves the un-overridden range and reports it missing.
+  if (options.isSaflibRoot) {
+    delete stripped.overrides;
+    const lockRootDependencies = lockfile.packages?.[""]?.dependencies;
+    if (lockRootDependencies) stripped.dependencies = lockRootDependencies;
+  }
+  const packageJson = narrowRootPackageJson(stripped, {
+    name: stageRootPackageName(
+      typeof stripped.name === "string" ? stripped.name : undefined,
+      options.imageName,
+    ),
+    workspaceDirs,
+    excludedWorkspaceNames,
+  });
+  return {
+    packageJson,
+    lockfile: pruneLockfile(lockfile, { workspaceDirs, excludedWorkspaceNames }),
+  };
+}
+
 function stagePackageJsonsForInstall(
   ctx: MonorepoContext,
   imageName: string,
@@ -131,46 +183,28 @@ function stagePackageJsonsForInstall(
   const rootPackageJson = JSON.parse(
     readFileSync(path.join(ctx.rootDir, "package.json"), "utf-8"),
   ) as Record<string, unknown>;
-  const stagedRootPackageJson = stripDevDependencies(
-    stripPackageJsonForInstall(rootPackageJson),
+  const staged = stageInstallManifests(
+    rootPackageJson,
+    JSON.parse(
+      readFileSync(path.join(ctx.rootDir, "package-lock.json"), "utf-8"),
+    ) as Lockfile,
+    {
+      imageName,
+      workspaceDirs: getPackageRelativePaths(packages, ctx).map(
+        relativePathToFs,
+      ),
+      imageWorkspaceNames: packages,
+      allWorkspaceNames: ctx.packages,
+      isSaflibRoot: isSaflibMonorepoRoot(ctx.rootDir, rootPackageJson.name),
+    },
   );
-  stagedRootPackageJson.name = stageRootPackageName(
-    typeof stagedRootPackageJson.name === "string"
-      ? stagedRootPackageJson.name
-      : undefined,
-    imageName,
-  );
-  stagedRootPackageJson.private = true;
-  // Saflib's lock root omits override metadata; restating those overrides
-  // makes `npm ci` reject the copied lock. Product locks are generated with
-  // the root overrides applied (for example esbuild ^0.28.0 over a workspace
-  // that still asks for ^0.27.0), so the staged root must keep them or
-  // `npm ci` resolves the un-overridden range and reports it missing.
-  if (isSaflibMonorepoRoot(ctx.rootDir, stagedRootPackageJson.name)) {
-    delete stagedRootPackageJson.overrides;
-    const lockRoot = readLockRootManifest(ctx.rootDir);
-    if (lockRoot?.dependencies) {
-      stagedRootPackageJson.dependencies = lockRoot.dependencies;
-    }
-  }
   writeFileSync(
     path.join(stageDir, "package.json"),
-    JSON.stringify(stagedRootPackageJson, null, 2) + "\n",
+    JSON.stringify(staged.packageJson, null, 2) + "\n",
   );
-
-  const lockfile = JSON.parse(
-    readFileSync(path.join(ctx.rootDir, "package-lock.json"), "utf-8"),
-  ) as {
-    packages?: Record<string, Record<string, unknown> | undefined>;
-  };
-  for (const entry of Object.values(lockfile.packages ?? {})) {
-    if (entry && "devDependencies" in entry) {
-      delete entry.devDependencies;
-    }
-  }
   writeFileSync(
     path.join(stageDir, "package-lock.json"),
-    JSON.stringify(lockfile, null, 2) + "\n",
+    JSON.stringify(staged.lockfile, null, 2) + "\n",
   );
 
   for (const script of [

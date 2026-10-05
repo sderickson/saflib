@@ -6,17 +6,18 @@
 
 ## Status
 
-- **Phase:** Phases 1–2 implemented (uncommitted in the working tree as of
-  this update). **Stopped at the Phase 2 go/no-go gate.**
+- **Phase:** Phases 1–2 and 2b (per-image lockfile pruning) implemented,
+  uncommitted in the working tree as of this update.
 - **Last updated:** 2026-10-05
-- **Next action:** owner reviews **Phase 2 results** (below) and decides
-  go/no-go, and whether per-image lockfile pruning comes into scope. Don't
-  start Phase 3 until then.
+- **Next action:** owner decides the remaining **Open questions**: an explicit
+  go on Phases 3–6, and whether a shared SAF layer is in scope. Don't start
+  Phase 3 until then.
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
 | 1 | `@saflib/git` tree-hash helpers | done |
-| 2 | `saf-docker inputs` + skip-rate measurement | done; awaiting go/no-go |
+| 2 | `saf-docker inputs` + skip-rate measurement | done |
+| 2b | Per-image lockfile pruning (decouple products) | done |
 | 3 | Build metadata (`/etc/saf/builds/`) + OCI labels | not started |
 | 4 | `builds/` convention + generator emits inputs manifest | not started |
 | 5 | `saf-docker build` orchestrator | not started |
@@ -114,10 +115,10 @@ For build ref `R` of package `P`:
 2. **Staged install inputs.** Content hash of `.saf-docker/stage/<image>/`
    (staged root `package.json`, per-image lockfile, postinstall scripts). Hash
    this, **not** the root `package-lock.json`, so an unrelated dependency bump
-   doesn't rebuild everything. Note: the staged lockfile is currently the
-   *whole* lockfile with `devDependencies` stripped. Pruning it to only this
-   image's dependency closure would improve skip rates further. Track as a
-   follow-up and measure first.
+   doesn't rebuild everything. Since Phase 2b, staging is **per image**: the
+   lockfile is pruned to the image's dependency closure, and the root manifest
+   is narrowed to the image's workspaces. So an image's staged inputs change
+   only when its own dependencies do (see Phase 2b).
 3. **The generated Dockerfile.** Gitignored, so hash the file on disk. This
    covers template changes and generator changes that affect output.
 4. **Extra `COPY` sources** outside the dependency set, e.g. monolith copies
@@ -391,6 +392,76 @@ builds; saflib's template builds inside products are unused and excluded.
   monolith and SDK images). The measurement also uses today's dependency sets
   for every historical commit.
 
+#### Phase 2b: per-image lockfile pruning (decouple products)
+
+Goal (owner, 2026-10-05): repos can hold many unrelated products, and one
+product's dependency or workspace changes must not rebuild another's images.
+
+**As built:**
+- `docker/src/lockfile.ts`:
+  - `lockClosure(packages, roots)`: lock entries reachable through production
+    dependencies (`dependencies`, `optionalDependencies` for every platform,
+    `peerDependencies`). Resolution follows node: `<dir>/node_modules/<name>`
+    for **every ancestor directory**, not only at `node_modules` boundaries.
+    That matters for products, e.g. `saflib/commander` resolving
+    `saflib/node_modules/commander@15` over the root's `commander@14`.
+  - `pruneLockfile`: keeps the closure from the root plus the image's
+    workspaces, **each workspace's `node_modules/<name>` link entry** (npm
+    requires these even when nothing depends on the workspace), and **every
+    ancestor entry of a kept entry** (npm places `saflib/node_modules/x` under
+    the `saflib` node, a workspace nothing depends on). It also strips
+    `devDependencies` and narrows the root entry's `workspaces` and root
+    dependencies.
+  - `narrowRootPackageJson`: the staged root `workspaces` becomes the image's
+    explicit workspace dirs (globs like `blog/**` would change whenever a
+    product is added), and root dependencies on workspaces the image doesn't
+    include are dropped. Root `overrides` stay, since they affect resolution
+    for everyone.
+- `docker/src/docker.ts`: `stageInstallManifests()` is the single pure staging
+  function, used by `saf-docker generate` and by `skip-rate` (which now stages
+  every historical commit exactly as builds do).
+- Tests: `docker/src/lockfile.test.ts` covers the closure, link and ancestor
+  retention, no input mutation, and the key property: **adding a product or
+  bumping another product's dependency leaves an image's staged manifests
+  byte-identical**.
+
+**Verification done (2026-10-05):**
+- Ran real `npm ci --omit=dev --ignore-scripts` on pruned stages for every
+  image in saflib, home-2026, vendata, pathclerk and saf-2025 (product stages
+  were written to a temp dir; product repos untouched). Compared against the
+  old unpruned staging: **no new `npm ls` problems in any image**. Installed
+  sets are identical, or the pruned set is the old set minus packages the image
+  can't reach. Example: the vendata monolith drops from 830 to 736 packages,
+  because the root's dependencies on `@saflib/vue` and `@vendata/deploy`
+  installed their trees into every image.
+- Real `docker build` of `base/service/monolith` and `base/clients/root`.
+  Inside the monolith, all 219 workspace production dependencies resolve
+  (only test fixtures don't, and they never did). Inside static-root,
+  `npm run build` (Vite, native Rollup binaries) succeeds.
+- Staged lockfiles shrink to about 12–45% of the full lock (saflib monolith:
+  361 of 1,858 entries).
+- Side effect: `saf-docker sync-node-modules` keys dev volume resets off the
+  stage hash, so dev `node_modules` volumes reset once after this change and
+  less often afterwards.
+- Pre-existing and not caused by this change: home-2026's
+  `@sderickson/recipes-dev` fails `npm ci` with both old and new staging,
+  because its lockfile predates the saflib commit its submodule checks out
+  (missing `@saflib/*-workflows` packages).
+
+**Measured effect** (`saf-docker skip-rate --no-generate -n 100`, product
+builds only):
+
+| Repo | images | skipped without pruning | **skipped with pruning** | ceiling (source only) |
+| ---- | -----: | ----------------------: | -----------------------: | --------------------: |
+| saflib | 7 | 36% | **39%** | ~37–47% per image |
+| home-2026 | 12 | 31% | **39%** | 50% |
+| vendata | 6 | 38% | **48%** | 50% |
+| saf-2025 | 2 | 39% | **48%** | 53% |
+| pathclerk | 4 | 24% | **27%** | 31% |
+
+The remaining gap to the ceiling is genuine dependency change: the image's
+own dependencies, saflib's dependencies, and root overrides.
+
 #### Phase 3: build metadata
 
 - Generator appends a final metadata step (`ARG SAF_BUILD_INFO` + write
@@ -444,8 +515,9 @@ builds; saflib's template builds inside products are unused and excluded.
 - Adopting Bazel/Nx/Turborepo. The repo already has its own dependency graph;
   this is a few hundred lines in `@saflib/docker`.
 - Dev hot-reload / watch mode (separate effort).
-- Pruning per-image lockfiles to the dependency closure (follow-up, after
-  Phase 2 measurement).
+- A shared SAF base image that product images build `FROM` (see Open
+  questions). Today each image holds its own copy of the saflib packages it
+  uses plus their dependencies.
 - Garbage-collecting old `:in-*` tags locally/in the registry (follow-up; note
   that local disk will grow).
 
@@ -465,18 +537,19 @@ builds; saflib's template builds inside products are unused and excluded.
 
 ## Open questions
 
-Pending owner decision at the Phase 2 gate (see **Phase 2 results**):
-
-1. **Go/no-go on Phases 3–6.** Product deploy/CI would skip about 25–40% of
-   image builds (about 30–50% with lockfile pruning), and the dev loop
-   probably much more (not measurable from history).
-2. **Lockfile closure pruning:** bring it into scope? It's worth 3–11 pts in
-   products and keeps unrelated dependency bumps from rebuilding everything.
-   `lockClosure()` in `docker/src/skip-rate.ts` already computes the closure
-   and could become the staging step.
-3. **Product/platform layering:** the saflib pointer moves in about half of
-   product commits. Earlier we agreed to revisit finer layers only if needed.
-   Is this data a reason to, or out of scope?
+1. **Explicit go on Phases 3–6.** With pruning, product deploy/CI skips about
+   27–48% of image builds; the dev loop is probably much higher (not
+   measurable from history).
+2. **Shared SAF layer?** Each image currently holds its own copy of the saflib
+   packages it uses plus their installed dependencies. There is no shared SAF
+   base image, so a product-only change rebuilds the whole image. A SAF layer
+   (products `FROM` a saflib image) could reuse the dependency install, but:
+   npm workspaces hoist into one `node_modules`, and `npm ci` wipes it, so a
+   second install on top needs a different approach (e.g. `npm install` over
+   a prepared tree, or separate install roots); Vite bundles saflib code into
+   client output, so only the install could be shared for clients; and the
+   saflib pointer moves in about half of product commits, which caps the
+   reuse. This would also reopen "only report root + saflib hashes".
 
 ## Decisions log
 
@@ -508,3 +581,10 @@ Pending owner decision at the Phase 2 gate (see **Phase 2 results**):
     tolerated. The audit runs as part of `saf-docker inputs`.
   - `skip-rate` stays in the CLI as a rerunnable diagnostic (useful for
     re-measuring in product repos after changes).
+- 2026-10-05 (owner): **Lockfile pruning is in scope**, motivated by wanting
+  large repos with many unrelated products, so product builds must be
+  decoupled from one another. Implemented as Phase 2b.
+- 2026-10-05 (Phase 2b): Staging is a single pure function
+  (`stageInstallManifests`) shared by the generator and `skip-rate`, so
+  measurements always match real builds. The staged root `workspaces` lists
+  the image's dirs explicitly instead of the repo's globs.

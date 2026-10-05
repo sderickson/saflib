@@ -1,7 +1,8 @@
 import type { Command } from "commander";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { buildMonorepoContext } from "@saflib/monorepo/workspace";
-import { generateDockerfiles } from "../../src/docker.ts";
+import path from "node:path";
+import { generateDockerfiles, isSaflibMonorepoRoot } from "../../src/docker.ts";
 import { listBuilds } from "../../src/builds.ts";
 import { computeBuildInputs, type BuildInputs } from "../../src/inputs.ts";
 import { measureSkipRate } from "../../src/skip-rate.ts";
@@ -60,10 +61,21 @@ export const addSkipRateCommand = (program: Command) => {
         const selected = resolveBuilds(all, identifiers)
           .filter((b) => identifiers.length > 0 || resolvable.has(b.ref))
           .map(compute);
+        const workspaces = new Map(
+          Object.entries(ctx.monorepoPackageDirectories).map(([name, dir]) => [
+            path.relative(ctx.rootDir, dir).split(path.sep).join("/"),
+            name,
+          ]),
+        );
         const report = measureSkipRate(selected, allResults, {
           contextDir: ctx.rootDir,
           commits: Number(options.commits),
           rev: options.rev,
+          workspaces,
+          isSaflibRoot: isSaflibMonorepoRoot(
+            ctx.rootDir,
+            readRootName(ctx.rootDir),
+          ),
         });
 
         if (options.json) {
@@ -76,20 +88,20 @@ export const addSkipRateCommand = (program: Command) => {
         );
         const width = Math.max(...report.builds.map((b) => b.ref.length), 5);
         console.log(
-          `${"build".padEnd(width)}  rebuilds  skipped  lockfile-only  w/ dev-pruned lock  w/ closure-pruned lock  w/ no lock churn`,
+          `${"build".padEnd(width)}  rebuilds  skipped  lockfile-only  skipped w/o pruning  skipped w/ no lock churn`,
         );
         let totalRebuilds = 0;
-        let totalClosure = 0;
+        let totalUnpruned = 0;
         for (const b of report.builds) {
           totalRebuilds += b.rebuilds;
-          totalClosure += b.rebuildsWithClosureLock;
+          totalUnpruned += b.rebuildsWithoutPruning;
           console.log(
-            `${b.ref.padEnd(width)}  ${String(b.rebuilds).padStart(8)}  ${pct(compared - b.rebuilds, compared).padStart(7)}  ${String(b.lockfileOnlyRebuilds).padStart(13)}  ${pct(compared - b.rebuildsWithDevPrunedLock, compared).padStart(18)}  ${pct(compared - b.rebuildsWithClosureLock, compared).padStart(22)}  ${pct(compared - b.sourceOnlyRebuilds, compared).padStart(16)}`,
+            `${b.ref.padEnd(width)}  ${String(b.rebuilds).padStart(8)}  ${pct(compared - b.rebuilds, compared).padStart(7)}  ${String(b.lockfileOnlyRebuilds).padStart(13)}  ${pct(compared - b.rebuildsWithoutPruning, compared).padStart(19)}  ${pct(compared - b.sourceOnlyRebuilds, compared).padStart(24)}`,
           );
         }
         const totalBuilds = compared * report.builds.length;
         console.log(
-          `\nImage builds: ${totalRebuilds} of ${totalBuilds} (${pct(totalBuilds - totalRebuilds, totalBuilds)} skipped; ${pct(totalBuilds - totalClosure, totalBuilds)} with closure-pruned locks). Commits with no rebuild at all: ${compared - report.commitsWithAnyRebuild}/${compared}.`,
+          `\nImage builds: ${totalRebuilds} of ${totalBuilds} (${pct(totalBuilds - totalRebuilds, totalBuilds)} skipped; ${pct(totalBuilds - totalUnpruned, totalBuilds)} without lockfile pruning). Commits with no rebuild at all: ${compared - report.commitsWithAnyRebuild}/${compared}.`,
         );
         if (report.unknownSubmoduleCommits.length > 0) {
           console.log(
@@ -108,3 +120,11 @@ export const addSkipRateCommand = (program: Command) => {
       },
     );
 };
+
+function readRootName(rootDir: string): unknown {
+  return (
+    JSON.parse(readFileSync(path.join(rootDir, "package.json"), "utf8")) as {
+      name?: unknown;
+    }
+  ).name;
+}
