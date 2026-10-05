@@ -219,29 +219,59 @@ describe("buildImages", () => {
     ]);
   });
 
-  it("pulls registry hits that downstream builds need, and only retags the rest remotely", async () => {
+  it("also tags local images with their registry names", async () => {
+    const [base] = await run({ registry: "reg.io", selected: [builds[0]] });
+    expect(docker.local).toContain(`reg.io/x-base:${base.tag}`);
+    expect(docker.local).toContain("reg.io/x-base:latest");
+    expect(docker.calls.some((c) => c.startsWith("push"))).toBe(false);
+  });
+
+  it("pulls registry hits when not pushing", async () => {
     await run({ registry: "reg.io", push: true });
     const pushed = new Set(docker.remote);
     docker = new FakeDocker();
     docker.remote = pushed; // fresh machine, warm registry
 
-    expect(await outcomes({ registry: "reg.io", push: true })).toEqual({
+    expect(await outcomes({ registry: "reg.io" })).toEqual({
       "x-base": "pulled",
       "x-app": "pulled",
       "x-web": "pulled",
     });
-    const pulls = docker.calls.filter((c) => c.startsWith("pull"));
-    // web has no downstream and we're only publishing, so it isn't pulled.
-    expect(pulls.map((c) => c.split("/")[1].split(":")[0])).toEqual([
-      "x-base",
-      "x-app",
-    ]);
+    expect(docker.calls.some((c) => c.startsWith("build"))).toBe(false);
+  });
+
+  it("when pushing, only retags registry hits remotely and pulls just what a build needs", async () => {
+    await run({ registry: "reg.io", push: true });
+    const pushed = new Set(docker.remote);
+    docker = new FakeDocker();
+    docker.remote = pushed;
+
+    // Nothing changed: nothing is pulled at all.
+    expect(await outcomes({ registry: "reg.io", push: true })).toEqual({
+      "x-base": "in-registry",
+      "x-app": "in-registry",
+      "x-web": "in-registry",
+    });
+    expect(docker.calls.filter((c) => c.startsWith("pull"))).toEqual([]);
     expect(docker.calls).toContainEqual(
       expect.stringMatching(
         /^remoteTag reg\.io\/x-web:in-\w+ reg\.io\/x-web:v1$/,
       ),
     );
-    expect(docker.calls.some((c) => c.startsWith("build"))).toBe(false);
+
+    // web changes: only its direct upstream (app) is pulled, not base.
+    write("web/src.ts", "web changed\n");
+    docker.calls = [];
+    expect(await outcomes({ registry: "reg.io", push: true })).toEqual({
+      "x-base": "in-registry",
+      "x-app": "in-registry",
+      "x-web": "built",
+    });
+    expect(
+      docker.calls
+        .filter((c) => c.startsWith("pull") || c.startsWith("build"))
+        .map((c) => c.replace(/:in-\w+/, "")),
+    ).toEqual(["pull reg.io/x-app", "build x-web"]);
   });
 
   it("blocks downstream builds when an upstream fails", async () => {

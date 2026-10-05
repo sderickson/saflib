@@ -7,8 +7,13 @@ import { BUILD_INFO_ARG, type BuildInfo } from "./metadata.ts";
 export type BuildOutcome =
   /** The input-tagged image was already local; `latest` retagged. */
   | "up-to-date"
-  /** Found in the registry and pulled (or retagged there). */
+  /** Found in the registry and pulled. */
   | "pulled"
+  /**
+   * Found in the registry; only retagged there (when pushing, an image is
+   * pulled only if a build that actually runs needs it).
+   */
+  | "in-registry"
   | "built"
   | "failed"
   /** Not attempted because an upstream build failed. */
@@ -152,14 +157,14 @@ export async function buildImages(
     inputsOf(build)
       .inputs.filter((i) => i.kind === "upstream")
       .map((i) => i.key);
-  const hasDownstream = (ref: string) =>
-    plan.some((b) => upstreamsOf(b).includes(ref));
 
   const registry = options.registry?.replace(/\/+$/, "");
   const remote = (image: string, tag: string) => `${registry}/${image}:${tag}`;
   const limit = semaphore(Math.max(1, options.concurrency ?? 4));
   const now = options.now ?? (() => new Date());
   const promises = new Map<string, Promise<BuildResult>>();
+  /** Pulls an `in-registry` image on first use by a build that runs. */
+  const pullers = new Map<string, () => Promise<void>>();
 
   const run = async (build: Build): Promise<BuildResult> => {
     const upstreamResults = await Promise.all(
@@ -192,16 +197,20 @@ export async function buildImages(
       });
     }
 
+    // With a registry, local images also carry their registry-qualified
+    // names, which compose files that reference the registry (e.g. a
+    // prod-local stack) run against.
     const tagLocally = async () => {
-      for (const t of tags.slice(1))
+      for (const t of tags.slice(1)) {
         await executor.tag(local, `${build.image}:${t}`);
+      }
+      if (registry) {
+        for (const t of tags) await executor.tag(local, remote(build.image, t));
+      }
     };
     const publish = async () => {
       if (!options.push) return;
-      for (const t of tags) {
-        await executor.tag(local, remote(build.image, t));
-        await executor.push(remote(build.image, t));
-      }
+      for (const t of tags) await executor.push(remote(build.image, t));
     };
 
     try {
@@ -238,16 +247,25 @@ export async function buildImages(
             );
           }
         }
-        // Downstream builds (and local runs) need it in the local daemon.
-        if (!options.push || hasDownstream(build.ref)) {
+        const pull = async () => {
           await limit(() => executor.pull(remote(build.image, tag), flag));
           await executor.tag(remote(build.image, tag), local);
           await tagLocally();
+        };
+        // Without --push the images are wanted locally (e.g. to run them).
+        if (!options.push) {
+          await pull();
+          return result("pulled");
         }
-        return result("pulled");
+        let pulled: Promise<void> | undefined;
+        pullers.set(build.ref, () => (pulled ??= pull()));
+        return result("in-registry");
       }
 
       if (options.dryRun) return result("would-build");
+
+      // Building needs its upstream images locally.
+      for (const ref of upstreamsOf(build)) await pullers.get(ref)?.();
 
       const suffix = inputs.dirty ? "-dirty" : "";
       const builtAt = now().toISOString();
@@ -290,6 +308,7 @@ export async function buildImages(
           logFile,
         });
       }
+      await tagLocally();
       await publish();
       return result("built", { logFile });
     } catch (error) {

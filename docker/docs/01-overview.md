@@ -37,12 +37,12 @@ For `#{ copy_packages }#`, each image gets its own `.saf-docker/stage/<image>/`:
 ## Building
 
 ```sh
-saf-docker build [refs…] [--dir <path>]… [--platform native|amd64|arm64|os/arch]
+saf-docker build [refs…] [--dir <path>]… [--compose <file>]… [--platform native|amd64|arm64|os/arch]
                  [--registry <prefix>] [--push] [--force] [--dry-run] [--concurrency n]
 saf-docker status …   # same selection; reports what build would do
 ```
 
-With no refs or `--dir`, every build is selected. Upstream builds are always included. For each build, in dependency order:
+Selectors combine: build refs, every build under a `--dir`, and every build whose image a `--compose` file's services use (the natural choice for dev stacks). With none, every build is selected. Upstream builds are always included. For each build, in dependency order:
 
 1. Compute its **input hash** from everything it's built from: the git tree hashes of every path its Dockerfile copies (working tree included, so uncommitted edits count), the staged install manifests, the generated Dockerfile, its upstream builds' input hashes, and the platform.
 2. If `<image>:in-<hash>` exists locally, it's **up to date**: just retag `latest`.
@@ -67,7 +67,7 @@ Output of each build goes to `.saf-docker/logs/<image>.log`.
 
 Products created before `saf-docker build` keep their own copies of the dev and deploy scripts. To migrate:
 
-1. **Dev** (`<product>/dev/package.json`): replace `saf-git-hashes && saf-docker generate && ./build-images.sh` with `saf-docker build --dir .. @saflib/dev-site-docker`, delete `build-images.sh`, and point the compose `caddy` service at the dev build's derived image name (`<org>-<product>-dev:latest`).
+1. **Dev** (`<product>/dev/package.json`): replace `saf-git-hashes && saf-docker generate && ./build-images.sh` with `saf-docker build --compose docker-compose.yaml`, delete `build-images.sh`, and point the compose `caddy` service at the dev build's derived image name (`<org>-<product>-dev:latest`).
 2. **Templates**: replace hand-written upstream image names in `FROM` lines with `#{ image <package> }#`, and remove any `#{ git_hashes }#`.
 3. **Deploy**: move `deploy/Dockerfile.prod` to `deploy/builds/caddy/Dockerfile.template` (with `build.json` `{ "image": "<org>-caddy" }`) and `deploy/Dockerfile.kratos` to `deploy/builds/kratos/` (with `{ "image": "<org>-kratos", "tags": ["<kratos version>"] }`), using `#{ image … }#` for client stages. Stage names may not put `__` next to `-`. Then replace `local-scripts/build.sh` / `push.sh` with `saf-docker build --dir ./deploy <monolith refs…> --platform … --registry "$CONTAINER_REGISTRY" [--push]`, as in saflib's `deploy/` template.
 4. Check derived image names against anything that references them (compose files, remote scripts) with `saf-docker status`.

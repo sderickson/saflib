@@ -9,9 +9,8 @@
 - **Phase:** all phases implemented (Phases 3–6 uncommitted in the working
   tree as of this update).
 - **Last updated:** 2026-10-05
-- **Next action:** owner reviews and commits; then work through **Follow-ups**
-  (chiefly migrating existing products, which keep their own copies of the
-  dev/deploy scripts).
+- **Next action:** owner reviews home-2026's migration (its own branch) and the
+  saflib fixes it surfaced; then the other products (see **Follow-ups**).
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
@@ -557,9 +556,46 @@ whoever continues:
   `workflows-cli/live-test/sets.ts` now asserts the dev template's
   `#{ image @saflib/tmp-docs-static }#` marker (**live test not run**).
 
+#### First product migration: home-2026 (2026-10-05)
+
+home-2026 (branch `2026-10-05-docker-rework`) was migrated as the test case:
+blog, recipes and hub, with notebook not yet a workspace or dockerized.
+- **Per-site production builds.** `deploy/builds/{blog,recipes-static-root,recipes-clients,hub-clients}`
+  each run one site's Vite/VitePress build `FROM` its client image and keep
+  only the output, in a small `busybox` image. `deploy/builds/caddy` (image
+  `sderickson-caddy`) only `COPY --from`s them. This is the pattern to use for
+  products: building in the caddy Dockerfile would re-run every site's build
+  whenever any one changes (and on fresh CI runners, with no layer cache).
+- **Verified:** a blog-only edit rebuilds exactly `blog-client` → built blog
+  site → caddy (assembly ~1 s); recipes client / recipes static site / hub
+  client edits likewise touch only their own chain; a recipes *service* edit
+  rebuilds only `hub-monolith` (which includes it). On a fresh machine with a
+  warm registry, a blog-only `push.sh` built 3 images and took the other 7
+  from the registry (~30 s).
+- Published names kept via `build.json` (`sderickson-hub-clients`,
+  `sderickson-recipes-clients`); `recipes/dev` caddy renamed to the derived
+  `sderickson-recipes-dev`; `hub/dev` compose names its caddy image.
+- Dev scripts use `saf-docker build --compose docker-compose.yaml`.
+
+saflib fixes found by this migration:
+- `--dir` without build refs selected **every** build (selection called
+  `resolveBuilds(all, [])`). Selection now lives in `docker/src/select.ts`
+  with tests.
+- New `--compose <file>` selector (builds whose image a compose file uses):
+  the right selection for dev. `--dir ..` also picked up unused standalone
+  service images (`recipes-service` no longer builds on `node:alpine3.19`).
+  saflib's `base/dev` scripts use it too.
+- When pushing, registry hits are no longer pulled just because a
+  downstream build exists; they're pulled lazily only when a build that
+  actually runs needs them (outcome `in-registry`).
+- With `--registry`, local images also carry registry-qualified tags (the old
+  `build.sh` did this), because `prod-local` compose runs against
+  `$CONTAINER_REGISTRY/<image>:latest`.
+
 ### Follow-ups
 
-1. **Migrate existing products** (home-2026, vendata, pathclerk, saf-2025, …).
+1. **Migrate the remaining products** (vendata, pathclerk, saf-2025, …); see
+   home-2026 above for the pattern.
    Their dev/deploy scripts are copies that still use the old flow, which keeps
    working via the deprecated `saf-git-hashes`. Steps are in
    `docker/docs/01-overview.md` → "Migrating an existing product". Their

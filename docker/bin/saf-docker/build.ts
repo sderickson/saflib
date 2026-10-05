@@ -4,14 +4,14 @@ import path from "node:path";
 import { repoRootFor, resolveRef } from "@saflib/git";
 import { buildMonorepoContext } from "@saflib/monorepo/workspace";
 import { generateDockerfiles } from "../../src/docker.ts";
-import type { Build } from "../../src/builds.ts";
 import { buildImages, type BuildResult } from "../../src/build-images.ts";
 import { dockerCli } from "../../src/executor.ts";
 import { findSaflibDir } from "../../src/git-hashes.ts";
-import { resolveBuilds } from "./inputs.ts";
+import { selectBuilds } from "../../src/select.ts";
 
 interface BuildCommandOptions {
   dir?: string[];
+  compose?: string[];
   platform: string;
   registry?: string;
   push?: boolean;
@@ -26,30 +26,10 @@ function headOf(dir: string): string {
   return resolveRef(repoRoot).result ?? "unknown";
 }
 
-/** Builds named on the command line, plus every build under each `--dir`. */
-function selectBuilds(
-  all: Build[],
-  identifiers: string[],
-  dirs: string[] | undefined,
-): Build[] {
-  if (identifiers.length === 0 && !dirs?.length) return all;
-  const selected = new Map(
-    resolveBuilds(all, identifiers).map((b) => [b.ref, b]),
-  );
-  for (const dir of dirs ?? []) {
-    const abs = path.resolve(dir);
-    const under = all.filter(
-      (b) => b.dir === abs || b.dir.startsWith(abs + path.sep),
-    );
-    if (under.length === 0) throw new Error(`No builds under ${dir}`);
-    under.forEach((b) => selected.set(b.ref, b));
-  }
-  return [...selected.values()];
-}
-
 const SYMBOLS: Record<BuildResult["outcome"], string> = {
   "up-to-date": "✓ up to date",
   pulled: "↓ pulled    ",
+  "in-registry": "☁ in registry",
   built: "● built     ",
   failed: "✗ FAILED    ",
   blocked: "✗ blocked   ",
@@ -81,7 +61,11 @@ async function runBuild(
 ): Promise<void> {
   const ctx = buildMonorepoContext();
   const all = generateDockerfiles(ctx);
-  const selected = selectBuilds(all, identifiers, options.dir);
+  const selected = selectBuilds(all, {
+    identifiers,
+    dirs: options.dir,
+    composeFiles: options.compose,
+  });
   const saflibDir = findSaflibDir();
   const results = await buildImages({
     contextDir: ctx.rootDir,
@@ -101,7 +85,7 @@ async function runBuild(
   const count = (o: BuildResult["outcome"]) =>
     results.filter((r) => r.outcome === o).length;
   console.log(
-    `\n${results.length} image(s): ${count("built")} built, ${count("up-to-date")} up to date, ${count("pulled")} pulled` +
+    `\n${results.length} image(s): ${count("built")} built, ${count("up-to-date")} up to date, ${count("pulled")} pulled, ${count("in-registry")} already in registry` +
       (dryRun
         ? `, ${count("would-build")} would build, ${count("would-pull")} would pull`
         : "") +
@@ -121,6 +105,12 @@ function addSharedOptions(command: Command): Command {
     .option(
       "--dir <path>",
       "also select every build under this directory (repeatable)",
+      (value: string, previous: string[]) => [...previous, value],
+      [] as string[],
+    )
+    .option(
+      "--compose <file>",
+      "also select every build whose image this compose file uses (repeatable)",
       (value: string, previous: string[]) => [...previous, value],
       [] as string[],
     )
