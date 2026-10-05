@@ -1,0 +1,28 @@
+type: object
+description: One entry in the registered-workflow list (`GET /workflows`).
+additionalProperties: false
+required:
+  - id
+  - description
+  - source
+properties:
+  id:
+    type: string
+    description: A code workflow's `defineWorkflow` id, or a `workflow_config` row id.
+    example: "example/hello"
+  description:
+    type: string
+    example: "Copies a template file, prompts about it, and runs a command."
+  source:
+    type: string
+    enum: ["code", "config"]
+    description: Whether this is a code-defined or config-defined workflow.
+    example: "code"
+  inputSchema:
+    type: object
+    additionalProperties: true
+    description: >
+      The workflow's declared input schema (`new-workflows/lib`'s
+      `WorkflowInputSchema`), if it has one — a generic passthrough here
+      rather than a fully modeled schema, since it's already well-typed
+      on the TypeScript side and a client only needs it to build a form.

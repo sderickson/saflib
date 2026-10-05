@@ -8,7 +8,13 @@
       "path": "../../drizzle"
     },
     {
+      "path": "../../drizzle-workflows"
+    },
+    {
       "path": "../../express"
+    },
+    {
+      "path": "../../express-workflows"
     },
     {
       "path": "../../git"
@@ -18,6 +24,51 @@
     },
     {
       "path": "../../monorepo"
+    },
+    {
+      "path": "../../monorepo-workflows"
+    },
+    {
+      "path": "../../commander-workflows"
+    },
+    {
+      "path": "../../sdk-workflows"
+    },
+    {
+      "path": "../../openapi-workflows"
+    },
+    {
+      "path": "../../env-workflows"
+    },
+    {
+      "path": "../../integrations-workflows"
+    },
+    {
+      "path": "../../email-service-workflows"
+    },
+    {
+      "path": "../../cron-http-workflows"
+    },
+    {
+      "path": "../../jobs-http-workflows"
+    },
+    {
+      "path": "../../service-workflows"
+    },
+    {
+      "path": "../../vue-workflows"
+    },
+    {
+      "path": "../../processes-workflows"
+    },
+    {
+      "path": "../../new-workflows/db"
+    },
+    {
+      "path": "../../new-workflows/http"
+    },
+    {
+      "path": "../../new-workflows/lib"
     },
     {
       "path": "../../node"
@@ -47,11 +98,7 @@
     "dist/types",
     "e2e",
     "playwright-report",
-    "test-results",
-    "workflows/template/**",
-    "workflows/templates/**",
-    "**/workflows/template/**",
-    "**/workflows/templates/**"
+    "test-results"
   ],
   "include": [
     "**/*.ts",

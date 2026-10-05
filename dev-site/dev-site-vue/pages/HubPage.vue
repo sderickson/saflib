@@ -57,7 +57,7 @@
             <div class="text-overline">Future</div>
             <div class="text-h6">Build</div>
             <div class="text-caption text-medium-emphasis">
-              Coming soon — gaps and next work
+              Browse plans and run project workflows
             </div>
           </div>
         </v-btn>
@@ -76,7 +76,7 @@ withDefaults(
   {
     historyPath: "/history",
     checkoutPath: "/checkout",
-    buildPath: "/build",
+    buildPath: "/plans",
   },
 );
 </script>

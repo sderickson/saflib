@@ -1,0 +1,93 @@
+listWorkflowRunLogs:
+  summary: List a run's logs
+  description: >
+    Newest-first, cursor-paginated. Pass `before` (an ISO timestamp) to
+    page older history for infinite scroll; pass `since` for rows newer
+    than a known tip (e.g. after an SSE change hint). Pass `step_index`
+    to anchor the first page at that step so a sidebar jump can load a
+    window that is not the live tip. The client re-fetches rather than
+    getting log content pushed over the wire.
+  operationId: listWorkflowRunLogs
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+    - name: since
+      in: query
+      required: false
+      description: Only rows created strictly after this timestamp (newer than tip).
+      schema:
+        type: string
+        format: date-time
+    - name: before
+      in: query
+      required: false
+      description: Only rows created strictly before this timestamp (older page).
+      schema:
+        type: string
+        format: date-time
+    - name: step_index
+      in: query
+      required: false
+      description: >
+        Anchor this page at the earliest log for that step, then the
+        following `limit` rows (still returned newest-first).
+      schema:
+        type: integer
+        minimum: 0
+    - name: contiguous
+      in: query
+      required: false
+      description: >
+        With `since`, return the oldest `limit` rows after the cursor
+        (the next page toward the present) instead of the newest ones.
+      schema:
+        type: boolean
+    - name: limit
+      in: query
+      required: false
+      description: Page size (default 100).
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+        example: 100
+
+  responses:
+    "200":
+      description: Log rows, newest first, plus whether another older/newer page may exist.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - logs
+              - has_more
+              - has_more_newer
+            properties:
+              logs:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/WorkflowLogEntry"
+              has_more:
+                type: boolean
+                description: >
+                  True when another older page (`before` the oldest row
+                  here) may return more rows.
+              has_more_newer:
+                type: boolean
+                description: >
+                  True when another newer page (`since` the newest row
+                  here, `contiguous`) may return more rows. False on the
+                  live tip.
+    "404":
+      description: No run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

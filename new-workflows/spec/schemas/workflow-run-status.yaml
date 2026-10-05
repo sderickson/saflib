@@ -1,0 +1,15 @@
+type: string
+description: >
+  Lifecycle state of a run. `pending` before the first step runs;
+  `running` after a step succeeds with more steps left; `awaiting_prompt`/
+  `awaiting_user` after a step hands control back to the caller (an agent
+  prompt or a human action is needed before advancing again); `done`/
+  `failed` are terminal.
+enum:
+  - pending
+  - running
+  - awaiting_prompt
+  - awaiting_user
+  - done
+  - failed
+example: "running"

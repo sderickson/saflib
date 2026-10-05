@@ -1,0 +1,205 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "listWorkflowRunLogs",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/runs/{runId}/logs": {
+      "get": {
+        "summary": "List a run's logs",
+        "description": "Newest-first, cursor-paginated. Pass `before` (an ISO timestamp) to page older history for infinite scroll; pass `since` for rows newer than a known tip (e.g. after an SSE change hint). Pass `step_index` to anchor the first page at that step so a sidebar jump can load a window that is not the live tip. The client re-fetches rather than getting log content pushed over the wire.\n",
+        "operationId": "listWorkflowRunLogs",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "Only rows created strictly after this timestamp (newer than tip).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "Only rows created strictly before this timestamp (older page).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "step_index",
+            "in": "query",
+            "required": false,
+            "description": "Anchor this page at the earliest log for that step, then the following `limit` rows (still returned newest-first).\n",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "contiguous",
+            "in": "query",
+            "required": false,
+            "description": "With `since`, return the oldest `limit` rows after the cursor (the next page toward the present) instead of the newest ones.\n",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size (default 100).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "example": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log rows, newest first, plus whether another older/newer page may exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "logs",
+                    "has_more",
+                    "has_more_newer"
+                  ],
+                  "properties": {
+                    "logs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-log-entry"
+                      }
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another older page (`before` the oldest row here) may return more rows.\n"
+                    },
+                    "has_more_newer": {
+                      "type": "boolean",
+                      "description": "True when another newer page (`since` the newest row here, `contiguous`) may return more rows. False on the live tip.\n"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "workflow-log-entry": {
+        "type": "object",
+        "description": "One log line for a run — the wire form of a `workflow_log` row (`new-workflows-db/schemas/workflow-log.ts`).\n",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "run_id",
+          "step_index",
+          "channel",
+          "level",
+          "content",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "aBcD1234"
+          },
+          "run_id": {
+            "type": "string",
+            "example": "0SG36FJe6m4W"
+          },
+          "step_index": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "channel": {
+            "$ref": "#/components/schemas/workflow-log-channel"
+          },
+          "level": {
+            "$ref": "#/components/schemas/workflow-log-level"
+          },
+          "content": {
+            "type": "string",
+            "example": "Generated \"example-thing.ts\" from template"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "workflow-log-channel": {
+        "type": "string",
+        "description": "Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. \"running step 3: copy\"). `agent-input`: the prompt text sent to the agent.\n",
+        "enum": [
+          "terminal",
+          "agent",
+          "tool",
+          "agent-input"
+        ],
+        "example": "tool"
+      },
+      "workflow-log-level": {
+        "type": "string",
+        "description": "Severity of a single log line, independent of its channel.",
+        "enum": [
+          "info",
+          "warn",
+          "error"
+        ],
+        "example": "info"
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

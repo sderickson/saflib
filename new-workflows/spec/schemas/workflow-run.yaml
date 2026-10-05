@@ -1,0 +1,101 @@
+type: object
+description: >
+  A single workflow run — the wire form of a `workflow_run` row
+  (`new-workflows-db/schemas/workflow-run.ts`).
+additionalProperties: false
+required:
+  - id
+  - workflow_source
+  - workflow_ref
+  - input
+  - mode
+  - skip_todos
+  - status
+  - current_step_index
+  - cwd
+  - agent_config
+  - base_commit_hash
+  - completion_hash
+  - parent_run_id
+  - parent_step_index
+  - created_at
+  - updated_at
+  - is_advancing
+  - was_cancelled
+properties:
+  id:
+    type: string
+    example: "0SG36FJe6m4W"
+  workflow_source:
+    type: string
+    enum: ["code", "config"]
+    example: "code"
+  workflow_ref:
+    type: string
+    description: A code workflow's `defineWorkflow` id, or a `workflow_config` row id.
+    example: "example/hello"
+  input:
+    type: object
+    description: The input this run was started with.
+    additionalProperties: true
+  mode:
+    $ref: "./workflow-run-mode.yaml"
+  skip_todos:
+    type: boolean
+  status:
+    $ref: "./workflow-run-status.yaml"
+  current_step_index:
+    type: integer
+    example: 1
+  cwd:
+    type: string
+    example: "/home/user/my-project"
+  agent_config:
+    oneOf:
+      - $ref: "./workflow-run-agent-config.yaml"
+      - type: "null"
+  base_commit_hash:
+    type: [string, "null"]
+    description: >
+      The repo's HEAD commit hash when this run was created, if `cwd`
+      resolved inside a git repo (null otherwise). Bookends a run — pairs
+      with a preview (hypothetical, from here forward) and, once the run
+      is done, a reflection (actual, from here to the repo's current
+      HEAD) — assuming nothing else committed to the repo meanwhile.
+    example: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+  completion_hash:
+    type: [string, "null"]
+    description: >
+      The repo's HEAD commit hash the moment this run first reached
+      `done` (captured once, then fixed — not a live lookup). Null until
+      the run is done. Paired with `base_commit_hash` for the run's
+      "reflection": what it actually changed, isolated from anything that
+      happened before or after it.
+    example: "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3"
+  parent_run_id:
+    type: [string, "null"]
+    description: Set when this run was spawned by a `call-workflow` step in another run.
+  parent_step_index:
+    type: [integer, "null"]
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time
+  is_advancing:
+    type: boolean
+    description: >
+      True while this run (or a nested call-workflow descendant advancing
+      on its behalf) is actively being advanced right now, server-side —
+      independent of `status`, which only reflects the last *completed*
+      step. Lets a client that reloaded mid-step (losing its own "request
+      still pending" state) tell "actively running" apart from "idle".
+  was_cancelled:
+    type: boolean
+    description: >
+      True when `status` is `failed` because a person stopped it (see the
+      run's Stop button) rather than a genuine step error — there's no
+      separate `WorkflowRunStatus` for this; cancelling just makes the
+      in-flight step's own promise reject, landing as an ordinary
+      `"failed"`. Always false for any other `status`.

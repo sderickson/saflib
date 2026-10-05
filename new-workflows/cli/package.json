@@ -1,0 +1,49 @@
+{
+  "name": "@saflib/new-workflows-cli",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "CLI wrapper (parity with @saflib/workflows-cli) for the sqlite-backed workflows engine rewrite.",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "new-workflow": "./bin/new-workflow/index.ts"
+  },
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/commander": "*",
+    "@saflib/node": "*",
+    "@saflib/new-workflows": "*",
+    "@saflib/new-workflows-db": "*",
+    "@saflib/new-workflows-spec": "*",
+    "@saflib/drizzle": "*",
+    "@saflib/drizzle-workflows": "*",
+    "@saflib/openapi-workflows": "*",
+    "@saflib/express-workflows": "*",
+    "@saflib/sdk-workflows": "*",
+    "@saflib/vue-workflows": "*",
+    "@saflib/cron-http-workflows": "*",
+    "@saflib/env-workflows": "*",
+    "@saflib/monorepo-workflows": "*",
+    "@saflib/integrations-workflows": "*",
+    "@saflib/email-service-workflows": "*",
+    "@saflib/jobs-http-workflows": "*",
+    "@saflib/service-workflows": "*",
+    "@saflib/processes-workflows": "*",
+    "@saflib/git": "*"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

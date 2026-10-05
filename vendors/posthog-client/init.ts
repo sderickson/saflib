@@ -59,9 +59,10 @@ export function initPostHogIfConfigured(
     return;
   }
 
+  // Snippet loader (`makePosthogScriptTag`) already owns `window.posthog`.
   if (
     "posthog" in globalThis &&
-    // @ts-expect-error - posthog is loaded from posthog-js at runtime
+    // @ts-expect-error - posthog global from snippet or prior init
     globalThis.posthog?.__loaded
   ) {
     return;
@@ -71,5 +72,14 @@ export function initPostHogIfConfigured(
     api_host: apiHost,
     ...DEFAULT_INIT_OPTIONS,
     ...posthogOptions,
+  });
+
+  // Bundled-only bridge: same global contract as the script tag so
+  // `@saflib/vue`'s event logger and identify helpers keep working.
+  Object.defineProperty(globalThis, "posthog", {
+    value: posthog,
+    configurable: true,
+    enumerable: true,
+    writable: true,
   });
 }

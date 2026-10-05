@@ -1,0 +1,53 @@
+previewWorkflowRunDiff:
+  summary: Preview a workflow run's effect as a commit diff
+  operationId: previewWorkflowRunDiff
+  tags:
+    - no-auth
+  description: >
+    Computes what the run's workflow (walking `copy`/`transform-file`/`cd`
+    steps, recursing into `call-workflow`) would change, as a real but
+    never-persisted, never-referenced git commit — then diffs it against
+    the repo's current commit the same way `diffCommits` diffs two real
+    ones. Steps that genuinely need a real run (an agent turn, a shell
+    command) are reported in `entries`, not silently skipped.
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: baseRunId
+      in: query
+      required: false
+      description: >
+        Zero or more other run ids, earliest first — each is previewed
+        first, threading its result into the next as its starting point,
+        so this run's own preview lands on top of them instead of the
+        repo's live current state. See `previewRunDiff`'s doc comment.
+      schema:
+        type: array
+        items:
+          type: string
+  responses:
+    "200":
+      description: The hypothetical diff, plus which steps it could and couldn't cover.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - commit_diff
+              - entries
+            properties:
+              commit_diff:
+                $ref: "../../schemas/commit-diff.yaml"
+              entries:
+                type: array
+                items:
+                  $ref: "../../schemas/preview-step-entry.yaml"
+    "404":
+      description: No workflow run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

@@ -1,0 +1,70 @@
+description: >
+  Result of advancing a run by one step (`POST /runs/{runId}/advance`) —
+  the wire form of `new-workflows/lib`'s `StepResult`.
+discriminator:
+  propertyName: status
+oneOf:
+  - type: object
+    description: The step succeeded; more steps remain.
+    additionalProperties: false
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        enum: ["success"]
+        example: "success"
+      result:
+        type: object
+        additionalProperties: true
+  - type: object
+    description: The step failed.
+    additionalProperties: false
+    required:
+      - status
+      - message
+    properties:
+      status:
+        type: string
+        enum: ["error"]
+        example: "error"
+      message:
+        type: string
+      errorPrompt:
+        type: string
+  - type: object
+    description: Waiting on the agent (mode `print`, or `run` after a timeout).
+    additionalProperties: false
+    required:
+      - status
+      - prompt
+    properties:
+      status:
+        type: string
+        enum: ["awaiting_prompt"]
+        example: "awaiting_prompt"
+      prompt:
+        type: string
+  - type: object
+    description: Waiting on a human action outside the agent loop.
+    additionalProperties: false
+    required:
+      - status
+      - message
+    properties:
+      status:
+        type: string
+        enum: ["awaiting_user"]
+        example: "awaiting_user"
+      message:
+        type: string
+  - type: object
+    description: No more steps to run.
+    additionalProperties: false
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        enum: ["done"]
+        example: "done"

@@ -1,0 +1,11 @@
+{
+  "name": "Delegate to example/hello",
+  "description": "Proves a config workflow can drive a real code-defined workflow end to end, as a nested run.",
+  "steps": [
+    {
+      "kind": "call-workflow",
+      "workflowId": "example/hello",
+      "input": { "name": "example-thing" }
+    }
+  ]
+}

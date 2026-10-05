@@ -9,11 +9,7 @@
     "dist/types",
     "e2e",
     "playwright-report",
-    "test-results",
-    "workflows/template/**",
-    "workflows/templates/**",
-    "**/workflows/template/**",
-    "**/workflows/templates/**"
+    "test-results"
   ],
   "compilerOptions": {
     "rootDir": ".",
@@ -50,6 +46,8 @@
     {
       "path": "../db"
     },
-    { "path": "../integrations/__integration-name__" }
+    {
+      "path": "../integrations/__integration-name__"
+    }
   ]
 }

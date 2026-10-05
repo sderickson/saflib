@@ -1,0 +1,180 @@
+type: object
+description: >
+  Body of a one-off, config-defined workflow (a `workflow_config` row) — a
+  name, an optional description, and a list of steps, so no TypeScript is
+  required to author one.
+
+
+  Config workflows get `prompt`/`command`/`cd`/`npm-script`, plus
+  `call-workflow` to invoke another workflow (typically a reusable,
+  code-defined one) as a nested run. `copy`/`update`/`transform-file` stay
+  code-only: templates are worth building and maintaining for reusable
+  workflows, but a one-off config workflow shouldn't need one — if it
+  needs templated scaffolding, it calls a code-defined workflow that
+  already does that instead of duplicating the logic.
+additionalProperties: false
+required:
+  - name
+  - steps
+properties:
+  name:
+    type: string
+    description: Human-readable name shown in the CLI/dev-site, not the run id.
+    example: "Add a demo feature flag"
+  description:
+    type: string
+    description: Longer explanation of what this workflow does and when to use it.
+    example: >
+      Scaffolds a new feature flag: adds the flag constant, wires it into
+      the admin toggle list, and runs typecheck.
+  steps:
+    type: array
+    description: Executed in order by `new-workflows/lib`'s `advanceRun`.
+    items:
+      discriminator:
+        propertyName: kind
+      oneOf:
+        - type: object
+          description: Prompts the agent (or, in `print` mode, the caller) to do an arbitrary task.
+          additionalProperties: false
+          required:
+            - kind
+            - prompt
+          properties:
+            kind:
+              type: string
+              enum: ["prompt"]
+              example: "prompt"
+            prompt:
+              type: string
+              example: "Run the drizzle migration and confirm it applied cleanly."
+            pauseAfter:
+              type: boolean
+              description: >
+                After this step succeeds, return `awaiting_user` so auto-continue
+                (CLI loop, play-workflow, play-plan) stops for a person to review.
+                The step index still advances.
+            pauseMessage:
+              type: string
+              description: Message shown when `pauseAfter` fires.
+        - type: object
+          description: Runs a shell command.
+          additionalProperties: false
+          required:
+            - kind
+            - command
+          properties:
+            kind:
+              type: string
+              enum: ["command"]
+              example: "command"
+            command:
+              type: string
+              example: "npm"
+            args:
+              type: array
+              items:
+                type: string
+              example: ["run", "typecheck"]
+            ignoreError:
+              type: boolean
+              description: Treat a non-zero exit as success.
+              default: false
+            errorPrompt:
+              type: string
+              description: Extra text shown to the agent alongside the failure, in `run` mode.
+            forceInScript:
+              type: boolean
+              description: >
+                Run even in `script` mode if it would otherwise be treated as
+                a skipped validation command (typecheck/test).
+              default: false
+            pauseAfter:
+              type: boolean
+              description: Stop auto-continue after this step succeeds. See the prompt step.
+            pauseMessage:
+              type: string
+        - type: object
+          description: Changes the working directory for subsequent steps.
+          additionalProperties: false
+          required:
+            - kind
+            - path
+          properties:
+            kind:
+              type: string
+              enum: ["cd"]
+              example: "cd"
+            path:
+              type: string
+              description: Absolute, or relative to the run's original working directory.
+              example: "packages/my-lib"
+            pauseAfter:
+              type: boolean
+              description: Stop auto-continue after this step succeeds. See the prompt step.
+            pauseMessage:
+              type: string
+        - type: object
+          description: Runs `npm run <script> -w <workspace>`, validating both exist first.
+          additionalProperties: false
+          required:
+            - kind
+            - workspace
+            - script
+          properties:
+            kind:
+              type: string
+              enum: ["npm-script"]
+              example: "npm-script"
+            workspace:
+              type: string
+              example: "@saflib/new-workflows"
+            script:
+              type: string
+              example: "test"
+            args:
+              type: array
+              items:
+                type: string
+            ignoreError:
+              type: boolean
+              default: false
+            errorPrompt:
+              type: string
+            forceInScript:
+              type: boolean
+              default: false
+            pauseAfter:
+              type: boolean
+              description: Stop auto-continue after this step succeeds. See the prompt step.
+            pauseMessage:
+              type: string
+        - type: object
+          description: >
+            Calls another workflow — typically a reusable, code-defined
+            one — as a nested run, blocking this step until it completes.
+          additionalProperties: false
+          required:
+            - kind
+            - workflowId
+          properties:
+            kind:
+              type: string
+              enum: ["call-workflow"]
+              example: "call-workflow"
+            workflowId:
+              type: string
+              description: >
+                A code-defined workflow's id, or a path to another
+                workflow file (.ts for code, .json/.yaml for another
+                config).
+              example: "vue/add-view"
+            input:
+              type: object
+              description: Input for the target workflow.
+              additionalProperties: true
+            pauseAfter:
+              type: boolean
+              description: Stop auto-continue after this step succeeds. See the prompt step.
+            pauseMessage:
+              type: string

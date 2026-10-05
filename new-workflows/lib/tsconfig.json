@@ -1,0 +1,34 @@
+{
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist/types",
+    "e2e",
+    "playwright-report",
+    "test-results"
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "outDir": "./dist/types",
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "rootDir": "."
+  },
+  "references": [
+    {
+      "path": "../../utils"
+    },
+    {
+      "path": "../../git"
+    },
+    {
+      "path": "../db"
+    },
+    {
+      "path": "../spec"
+    }
+  ]
+}

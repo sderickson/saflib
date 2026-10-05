@@ -1,0 +1,63 @@
+gotoWorkflowRun:
+  summary: Seek a run to a step path
+  description: >
+    Jump the run (and nested `call-workflow` children along the path) so
+    the next advance resumes at that step. Path uses slash-separated
+    indices (e.g. `2/4`). Invalidates leaf step attempts from the target
+    index onward. The same semantics as `new-workflow goto`.
+  operationId: gotoWorkflowRun
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required:
+            - path
+          properties:
+            path:
+              type: string
+              description: >
+                Slash-separated step indices from the root run
+                (e.g. `3` or `2/4`).
+              example: "2/4"
+
+  responses:
+    "200":
+      description: Updated root run after the seek.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - run
+              - path
+            properties:
+              run:
+                $ref: "../../openapi.yaml#/components/schemas/WorkflowRun"
+              path:
+                type: string
+                description: Echo of the path that was sought.
+    "400":
+      description: Invalid or unreachable path.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "404":
+      description: No run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

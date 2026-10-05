@@ -1,40 +1,33 @@
 <template>
   <v-alert type="error" class="my-4">
-    <div>{{ displayMessage }}</div>
+    <div>{{ description.message }}</div>
+    <v-btn
+      v-if="description.action"
+      class="mt-3"
+      variant="outlined"
+      :href="description.action.href"
+    >
+      {{ description.action.label }}
+    </v-btn>
   </v-alert>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { TanstackError } from "@saflib/sdk";
+import { computed, inject } from "vue";
+import { mfaRequiredHrefKey } from "../async-page-error.ts";
+import { describeAsyncPageError } from "../src/async-page-error-message.ts";
 
 const props = defineProps<{
   error?: unknown;
   message?: string;
 }>();
 
-const displayMessage = computed(() => {
-  if (props.message) return props.message;
-  const error = props.error;
-  if (!error) return "An unexpected error occurred.";
-  if (!(error instanceof TanstackError)) {
-    return "An unexpected error occurred.";
-  }
-  switch (error.status) {
-    case 401:
-      return "Not Logged In";
-    case 402:
-      return "Payment Required";
-    case 403:
-      return "Forbidden";
-    case 404:
-      return "Not Found";
-    case 500:
-      return "Server Error";
-    case 0:
-      return "Connection Error";
-    default:
-      return `Failed to load data (Error ${error.status})`;
-  }
-});
+const mfaRequiredHref = inject(mfaRequiredHrefKey, undefined);
+
+const description = computed(() =>
+  describeAsyncPageError(props.error, {
+    message: props.message,
+    mfaRequiredHref,
+  }),
+);
 </script>

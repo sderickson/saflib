@@ -7,6 +7,14 @@ services:
       dockerfile: dev-site/dev-site-docker/Dockerfile
     ports:
       - "3099:3099"
+    # env.dev is checked in with "mock" defaults (@saflib/secret-store
+    # convention); ./.env is gitignored and, if present, layers real
+    # values on top — e.g. ANTHROPIC_API_KEY / CURSOR_API_KEY for
+    # "run"-mode workflows (see new-workflows/lib/secrets.json).
+    env_file:
+      - ./env.dev
+      - path: ./.env
+        required: false
     environment:
       NODE_ENV: production
       TZ: UTC

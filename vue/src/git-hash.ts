@@ -8,10 +8,20 @@ const modules = import.meta.glob<GitHashes>("./git-hashes.json", {
   import: "default",
 });
 
-const data = modules["./git-hashes.json"];
+function gitHashesFromModules(
+  entries: Record<string, GitHashes | undefined>,
+): GitHashes | undefined {
+  const direct = entries["./git-hashes.json"];
+  if (direct) return direct;
+  const values = Object.values(entries);
+  return values.length > 0 ? values[0] : undefined;
+}
+
+const data = gitHashesFromModules(modules);
 
 /**
- * Returns git hashes baked in at build time by `saf-git-hashes`.
+ * Returns git hashes written by `saf-git-hashes` during client image Docker builds
+ * (see `@saflib/docker` `generateDockerfiles`).
  * Falls back to `"unknown"` when the generated JSON file is absent.
  */
 export function getGitHashes(): GitHashes {

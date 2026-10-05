@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse, type PathParams } from "msw";
@@ -97,6 +97,10 @@ describe("CheckoutPage compare query param", () => {
     ...packageAndRepoHandlers,
   ]);
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("offers Scan fork point when the merge-base is unscanned", async () => {
     await router.push({ path: "/checkout", query: { compare: "main" } });
     const wrapper = mountTestApp(CheckoutPage, {
@@ -113,6 +117,93 @@ describe("CheckoutPage compare query param", () => {
       .find((b) => b.text() === "Scan fork point");
     expect(scanBtn).toBeDefined();
     await scanBtn!.trigger("click");
+  });
+
+  it("shows a reflection banner and closes back via router.back() when arriving with ?reflection=", async () => {
+    await router.push({
+      path: "/checkout",
+      query: { compare: BASE, reflection: "run-1" },
+    });
+    const backSpy = vi.spyOn(router, "back").mockImplementation(() => {});
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Reflection");
+    });
+    expect(wrapper.find(".checkout-page--reflection-sheet").exists()).toBe(true);
+
+    const closeBtn = wrapper
+      .findAllComponents({ name: "v-btn" })
+      .find((b) => b.text() === "Close");
+    expect(closeBtn).toBeDefined();
+    await closeBtn!.trigger("click");
+    expect(backSpy).toHaveBeenCalled();
+  });
+
+  it("has no reflection banner for an ordinary compare (no ?reflection=)", async () => {
+    await router.push({ path: "/checkout", query: { compare: "main" } });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Scan fork point");
+    });
+    expect(wrapper.find(".checkout-page--reflection-sheet").exists()).toBe(false);
+  });
+});
+
+describe("CheckoutPage reflection auto-scan", () => {
+  stubGlobals();
+  let mergeBaseAnalyzed = false;
+  let scannedHashes: string[] = [];
+
+  setupMockServer([
+    http.get<PathParams, never, CheckoutResponse>(
+      "http://test.localhost:3000/api/checkout",
+      () =>
+        HttpResponse.json(
+          checkoutFixture({
+            compare: {
+              against_ref: "main",
+              merge_base_hash: BASE,
+              merge_base_analyzed: mergeBaseAnalyzed,
+              merge_base_message: "fork parent",
+              merge_base_authored_at: "2026-01-01T00:00:00.000Z",
+              renames: [],
+            },
+          }),
+        ),
+    ),
+    http.post<PathParams, { commit_hash?: string }, ScanResponse>(
+      "http://test.localhost:3000/api/scan",
+      async ({ request }) => {
+        const body = (await request.json()) as { commit_hash?: string };
+        scannedHashes.push(body.commit_hash!);
+        if (body.commit_hash === BASE) mergeBaseAnalyzed = true;
+        return HttpResponse.json({ scanned: [body.commit_hash!], skipped: [], failed: [] });
+      },
+    ),
+    ...packageAndRepoHandlers,
+  ]);
+
+  it("scans the fork point automatically when arriving via ?reflection=, no manual click needed", async () => {
+    await router.push({
+      path: "/checkout",
+      query: { compare: BASE, reflection: "run-1" },
+    });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+
+    await vi.waitFor(() => {
+      expect(scannedHashes).toContain(BASE);
+    });
+    // Once the auto-scan's refetch lands, the merge base is analyzed and
+    // the manual "Scan fork point" prompt goes away on its own.
+    await vi.waitFor(() => {
+      expect(wrapper.text()).not.toContain("Scan fork point");
+    });
   });
 });
 

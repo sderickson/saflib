@@ -37,6 +37,7 @@ export interface CheckoutPackage {
   test_files: number;
   issue_counts_by_kind: IssueCountsByKind;
   debt_count: number;
+  dependencies: string[];
 }
 
 export interface CheckoutPathRename {
@@ -218,7 +219,8 @@ export async function getCheckoutStatus(
           .map((p) => p.replace(/^\/+|\/+$/g, ""))
           .filter(Boolean)
           .join("/");
-        const kind = byDir.get(repoDir)?.kind ?? "other";
+        const manifest = byDir.get(repoDir);
+        const kind = manifest?.kind ?? "other";
         return {
           package_name: m.package_name,
           directory: m.directory,
@@ -230,6 +232,7 @@ export async function getCheckoutStatus(
           test_files: m.test_files,
           issue_counts_by_kind,
           debt_count: debtCountFromIssueCounts(issue_counts_by_kind),
+          dependencies: Object.keys(manifest?.json.dependencies ?? {}),
         };
       }),
     },

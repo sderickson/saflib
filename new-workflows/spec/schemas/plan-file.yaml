@@ -1,0 +1,16 @@
+type: object
+description: One workflow config file inside a plan folder.
+additionalProperties: false
+required:
+  - name
+  - path
+properties:
+  name:
+    type: string
+    example: "add-list-users-query.yaml"
+  path:
+    type: string
+    description: >
+      Path usable as the `id` in POST /workflows/{id}/runs — relative to
+      the repo root.
+    example: "test-product/plans/2026-09-15-add-list-users-query/add-list-users-query.yaml"

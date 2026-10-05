@@ -1,0 +1,8 @@
+{
+  "name": "Say hello and check npm",
+  "description": "Config-workflow sibling to example/hello — proves a one-off config runs the same way a code workflow does.",
+  "steps": [
+    { "kind": "prompt", "prompt": "Say hello!" },
+    { "kind": "command", "command": "npm", "args": ["--version"] }
+  ]
+}

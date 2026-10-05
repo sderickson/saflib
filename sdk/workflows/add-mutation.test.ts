@@ -23,15 +23,15 @@ describe("add-mutation", () => {
 
     const context = AddSdkMutationWorkflowDefinition.context({
       input: {
-        path: "./requests/todo/create.ts",
+        path: "./requests/todos/create.ts",
         urlPath: "/todos",
         method: "post",
         cwd,
       },
     });
 
-    expect(context.targetDir).toBe(path.join(cwd, "requests", "todo"));
-    expect(context.groupName).toBe("todo");
+    expect(context.targetDir).toBe(path.join(cwd, "requests", "todos"));
+    expect(context.groupName).toBe("todos");
     expect(context.targetName).toBe("create");
   });
 });

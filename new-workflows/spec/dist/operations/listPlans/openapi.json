@@ -1,0 +1,115 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "listPlans",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/plans": {
+      "get": {
+        "summary": "List saved plans (config-defined workflow folders)",
+        "description": "Scans the plans root (e.g. `test-product/plans/`) for folders holding workflow config files, newest-first.\n",
+        "operationId": "listPlans",
+        "responses": {
+          "200": {
+            "description": "Plans under the plans root.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "plans"
+                  ],
+                  "properties": {
+                    "plans": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/plan-summary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "This host hasn't configured a plans folder.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "plan-summary": {
+        "type": "object",
+        "description": "A folder under the plans root (e.g. `test-product/plans/`) holding one or more workflow config files — a one-off plan authored outside a code-defined workflow. Folder naming convention: `<date>-<name>`.\n",
+        "additionalProperties": false,
+        "required": [
+          "folder",
+          "name",
+          "files"
+        ],
+        "properties": {
+          "folder": {
+            "type": "string",
+            "example": "2026-09-15-add-list-users-query"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human name portion of the folder (after the date prefix).",
+            "example": "add-list-users-query"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/plan-file"
+            }
+          }
+        }
+      },
+      "plan-file": {
+        "type": "object",
+        "description": "One workflow config file inside a plan folder.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "path"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "add-list-users-query.yaml"
+          },
+          "path": {
+            "type": "string",
+            "description": "Path usable as the `id` in POST /workflows/{id}/runs — relative to the repo root.\n",
+            "example": "test-product/plans/2026-09-15-add-list-users-query/add-list-users-query.yaml"
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { updateWorkflowAreas } from "./update.ts";
 
 describe("updateWorkflowAreas", () => {
@@ -351,5 +351,41 @@ describe("updateWorkflowAreas", () => {
       "  more",
       "// END WORKFLOW AREA",
     ]);
+  });
+
+  it("ONCE missing from target is a silent no-op (already resolved)", () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const targetLines = ["export const x = 1;"];
+    const result = updateWorkflowAreas({
+      targetLines: [...targetLines],
+      targetPath: "hand-written.ts",
+      sourceLines: [
+        "// BEGIN ONCE WORKFLOW AREA drizzleImport FOR drizzle/update-schema IF file",
+        "import { fileMetadataColumns } from \"@saflib/drizzle\";",
+        "// END WORKFLOW AREA",
+      ],
+      workflowId: "drizzle/update-schema",
+      lineReplace: (line) => line,
+      flags: { file: false },
+    });
+    expect(result).toEqual(targetLines);
+    expect(consoleSpy).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it("throws when a non-ONCE area is missing from the target", () => {
+    expect(() =>
+      updateWorkflowAreas({
+        targetLines: ["export const x = 1;"],
+        targetPath: "broken.ts",
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA query-exports FOR drizzle/add-query",
+          "export * from \"./queries/foo.ts\";",
+          "// END WORKFLOW AREA",
+        ],
+        workflowId: "drizzle/add-query",
+        lineReplace: (line) => line,
+      }),
+    ).toThrow(/Could not find target area query-exports in broken\.ts/);
   });
 });

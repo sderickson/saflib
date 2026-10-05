@@ -2,7 +2,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const templatesPackageRoot = path.dirname(fileURLToPath(import.meta.url));
-const saflibRoot = path.resolve(templatesPackageRoot, "..");
+// Normally this package's own location tells you where saflib lives — true
+// for a real checkout, and for containers that bind-mount the whole repo
+// (e.g. the monolith). It's wrong for dev-site-docker's image specifically:
+// dev-site-http runs from a *baked* copy of saflib for its own code, but
+// workflows it runs need to write into the *bind-mounted* checkout at
+// $DEV_SITE_REPO_ROOT instead — see SAFLIB_ROOT in docker-compose.yaml.
+const saflibRoot = process.env.SAFLIB_ROOT?.trim() || path.resolve(templatesPackageRoot, "..");
 
 /** Root of the `@saflib/templates` package (path helpers only). */
 export { templatesPackageRoot };

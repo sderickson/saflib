@@ -1,0 +1,32 @@
+cancelWorkflowRun:
+  summary: Stop the agent turn currently running for a run, if any
+  description: >
+    Kills the in-process agent subprocess for this run (e.g. a `claude -p`
+    call in flight from a concurrent `advance` request), if one is
+    running. That `advance` call's own response then resolves on its own
+    with a `status: "error"` outcome — this endpoint doesn't wait for it.
+    A no-op (returns `cancelled: false`) if nothing was running, including
+    the common race where the agent had already finished.
+  operationId: cancelWorkflowRun
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+
+  responses:
+    "200":
+      description: Whether a running agent process was found and asked to stop.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - cancelled
+            properties:
+              cancelled:
+                type: boolean

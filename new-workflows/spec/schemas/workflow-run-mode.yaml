@@ -1,0 +1,15 @@
+type: string
+description: >
+  Execution mode for a run, set once at `createRun` and unchanged for its
+  lifetime. Same modes as today's `@saflib/workflows`: `dry`/`checklist`
+  never touch the filesystem or run commands; `script` runs mechanical
+  steps (copy, command) but skips prompts, TODO checks, and validation
+  commands (typecheck/test); `print` hands prompts to an external agent and
+  halts between steps; `run` drives the agent itself.
+enum:
+  - dry
+  - script
+  - print
+  - run
+  - checklist
+example: "run"

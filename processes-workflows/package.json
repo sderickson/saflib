@@ -1,0 +1,29 @@
+{
+  "name": "@saflib/processes-workflows",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "New-engine (sqlite-backed) workflows for saflib's own process/project scaffolding.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/new-workflows": "*",
+    "@saflib/new-workflows-db": "*",
+    "@saflib/templates": "*"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@saflib/vitest": "*",
+    "@saflib/monorepo": "*"
+  },
+  "sideEffects": false
+}

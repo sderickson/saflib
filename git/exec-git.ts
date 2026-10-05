@@ -5,6 +5,12 @@ import { GitCommandError } from "./errors.ts";
 export interface ExecGitOptions {
   /** Data written to the git process stdin (e.g. for `cat-file --batch`). */
   input?: string | Buffer;
+  /**
+   * Extra environment variables, merged over `process.env` — e.g.
+   * `GIT_INDEX_FILE` to point plumbing at a scratch index instead of the
+   * repo's real one (see `scratch-tree.ts`).
+   */
+  env?: Record<string, string>;
 }
 
 function toGitCommandError(
@@ -55,6 +61,7 @@ export function execGit(
       input: options.input,
       stdio: ["pipe", "pipe", "pipe"],
       maxBuffer: 64 * 1024 * 1024,
+      env: options.env ? { ...process.env, ...options.env } : undefined,
     });
     return { result: stdout };
   } catch (cause) {
@@ -78,6 +85,7 @@ export function execGitBuffer(
       input: options.input,
       stdio: ["pipe", "pipe", "pipe"],
       maxBuffer: 64 * 1024 * 1024,
+      env: options.env ? { ...process.env, ...options.env } : undefined,
     });
     return { result: stdout as Buffer };
   } catch (cause) {

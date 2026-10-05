@@ -20,6 +20,14 @@ PUT    /recipes/:id      → update
 DELETE /recipes/:id      → delete
 ```
 
+Use a **plural** collection name, and use that same name in all three trees:
+
+- the URL segment (`/recipes`, `/recipes/{id}`)
+- `routes/<group>/` in the spec package
+- `handlers/<group>/` and `requests/<group>/` in the http and sdk packages
+
+Those folders are matched by exact path, so `recipe/list` does not match `recipes/list`. Schema and table names stay singular (`Recipe`, `recipe`).
+
 When you need operations beyond basic CRUD, add **named action paths** under the resource namespace. Since resource IDs are opaque identifiers (UUIDs, numeric IDs, etc.), they never collide with action names in practice:
 
 ```

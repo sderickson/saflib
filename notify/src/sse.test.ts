@@ -27,12 +27,12 @@ describe("writeSseEvent", () => {
       data: {
         operation_id: "updateMatter",
         params: { matterId: "m1" },
-        org_id: "org-a",
+        channel_id: "org:a",
       },
     });
 
     expect(out.text).toBe(
-      'id: 42\nevent: change\ndata: {"operation_id":"updateMatter","params":{"matterId":"m1"},"org_id":"org-a"}\n\n',
+      'id: 42\nevent: change\ndata: {"operation_id":"updateMatter","params":{"matterId":"m1"},"channel_id":"org:a"}\n\n',
     );
   });
 

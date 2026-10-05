@@ -14,11 +14,7 @@
     "dist/types",
     "e2e",
     "playwright-report",
-    "test-results",
-    "workflows/template/**",
-    "workflows/templates/**",
-    "**/workflows/template/**",
-    "**/workflows/templates/**"
+    "test-results"
   ],
   "include": [
     "**/*.ts",
@@ -32,6 +28,12 @@
     },
     {
       "path": "../../links"
+    },
+    {
+      "path": "../../new-workflows/lib"
+    },
+    {
+      "path": "../../new-workflows/spec"
     },
     {
       "path": "../../sdk"

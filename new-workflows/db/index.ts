@@ -1,0 +1,29 @@
+export type * from "./types.ts";
+export * from "./errors.ts";
+// Re-exported so consumers (e.g. `@saflib/new-workflows`) don't need their
+// own direct dependency on `@saflib/drizzle` just for this opaque type —
+// avoids a real cycle for any platform package (like `@saflib/drizzle`
+// itself) that defines workflows using `@saflib/new-workflows`.
+export type { DbKey } from "@saflib/drizzle";
+
+import { newWorkflowsDbManager } from "./instances.ts";
+export const newWorkflowsDb = newWorkflowsDbManager.publicInterface();
+
+// BEGIN WORKFLOW AREA query-exports FOR drizzle/add-query
+
+export { createWorkflowRun } from "./queries/workflow-run/create.ts";
+export { getByIdWorkflowRun } from "./queries/workflow-run/get-by-id.ts";
+export { updateStatusAndStepWorkflowRun } from "./queries/workflow-run/update-status-and-step.ts";
+export { updateInputWorkflowRun } from "./queries/workflow-run/update-input.ts";
+export { getChildByParentStepWorkflowRun } from "./queries/workflow-run/get-child-by-parent-step.ts";
+export { listByWorkflowRefWorkflowRun } from "./queries/workflow-run/list-by-workflow-ref.ts";
+export { createWorkflowStep } from "./queries/workflow-step/create.ts";
+export { updateResultWorkflowStep } from "./queries/workflow-step/update-result.ts";
+export { listByRunWorkflowStep } from "./queries/workflow-step/list-by-run.ts";
+export { deleteFromStepWorkflowStep } from "./queries/workflow-step/delete-from-step.ts";
+export { appendWorkflowLog } from "./queries/workflow-log/append.ts";
+export { listByRunWorkflowLog } from "./queries/workflow-log/list-by-run.ts";
+export { createWorkflowConfig } from "./queries/workflow-config/create.ts";
+export { getByIdWorkflowConfig } from "./queries/workflow-config/get-by-id.ts";
+export { listWorkflowConfig } from "./queries/workflow-config/list.ts";
+// END WORKFLOW AREA

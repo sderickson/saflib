@@ -5,7 +5,7 @@ import {
   ComparePage,
   HubPage,
   CheckoutPage,
-  BuildPage,
+  PlansPage,
   commitHealth,
   classifyPackageKind,
   buildPackageTestTree,
@@ -19,7 +19,7 @@ describe("@saflib/dev-site-vue", () => {
     expect(ComparePage).toBeDefined();
     expect(HubPage).toBeDefined();
     expect(CheckoutPage).toBeDefined();
-    expect(BuildPage).toBeDefined();
+    expect(PlansPage).toBeDefined();
     expect(commitHealth).toBeDefined();
     expect(classifyPackageKind).toBeDefined();
     expect(buildPackageTestTree).toBeDefined();

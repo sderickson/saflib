@@ -1,5 +1,8 @@
 import { expect, test } from "vitest";
-import { getSubdomainProxyRewrite } from "./subdomain-proxy.ts";
+import {
+  getSubdomainProxyRewrite,
+  hostnameFromHostHeader,
+} from "./subdomain-proxy.ts";
 
 const domain = "docker.localhost";
 const hosts = [
@@ -102,6 +105,33 @@ test("app subdomain rewrites to app/index.html", () => {
       domain,
     ),
   ).toBe("/app/index.html");
+});
+
+test("host header with non-default port still rewrites", () => {
+  expect(
+    getSubdomainProxyRewrite(
+      "/",
+      "app.docker.localhost:8080",
+      hosts,
+      domain,
+    ),
+  ).toBe("/app/index.html");
+  expect(
+    getSubdomainProxyRewrite(
+      "/register",
+      "auth.docker.localhost:8080",
+      hosts,
+      domain,
+    ),
+  ).toBe("/auth/index.html");
+});
+
+test("hostnameFromHostHeader strips port", () => {
+  expect(hostnameFromHostHeader("app.docker.localhost:8080")).toBe(
+    "app.docker.localhost",
+  );
+  expect(hostnameFromHostHeader("[::1]:5173")).toBe("[::1]");
+  expect(hostnameFromHostHeader(undefined)).toBeUndefined();
 });
 
 test("unknown host passes through", () => {

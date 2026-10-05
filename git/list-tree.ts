@@ -7,12 +7,21 @@ import type { GitTreeEntry } from "./types.ts";
  * List every blob at `commitHash` (recursive) without checking anything out.
  * Directories / trees / commits / tags are skipped — only `blob` entries are
  * returned. Paths are relative to the repo root.
+ *
+ * `pathspec`, if given, scopes the listing to one or more files/directories
+ * (e.g. for a workflow preview materializing only the paths a step touches,
+ * without listing the whole repo).
  */
 export function listTree(
   repoRoot: string,
   commitHash: string,
+  pathspec?: string | readonly string[],
 ): ReturnsError<GitTreeEntry[], GitCommandError> {
   const args = ["ls-tree", "-r", commitHash];
+  if (pathspec !== undefined) {
+    const specs = typeof pathspec === "string" ? [pathspec] : [...pathspec];
+    if (specs.length > 0) args.push("--", ...specs);
+  }
   const { result: stdout, error } = execGit(repoRoot, args);
   if (error) {
     return { error };

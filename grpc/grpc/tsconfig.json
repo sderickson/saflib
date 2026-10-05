@@ -10,10 +10,6 @@
     "e2e",
     "playwright-report",
     "test-results",
-    "workflows/template/**",
-    "workflows/templates/**",
-    "**/workflows/template/**",
-    "**/workflows/templates/**",
     "workflows/client-templates/**",
     "workflows/proto-templates/**",
     "workflows/server-templates/**"

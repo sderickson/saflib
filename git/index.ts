@@ -8,5 +8,14 @@ export { mergeBase } from "./merge-base.ts";
 export { listRenames } from "./list-renames.ts";
 export { resolveRef } from "./resolve-ref.ts";
 export { currentBranch } from "./current-branch.ts";
+export { writeBlob } from "./write-blob.ts";
+export { commitTree } from "./commit-tree.ts";
+export {
+  openScratchIndex,
+  setIndexEntry,
+  writeScratchTree,
+  closeScratchIndex,
+} from "./scratch-tree.ts";
 export type { GitRef } from "./list-refs.ts";
 export type { GitCommit, GitTreeEntry, LogOptions } from "./types.ts";
+export type { ScratchIndex } from "./scratch-tree.ts";

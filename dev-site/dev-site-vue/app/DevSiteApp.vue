@@ -33,6 +33,7 @@
       >
         Build
       </v-btn>
+      <AgentSettingsMenu />
     </v-app-bar>
     <v-main class="dev-site-main">
       <router-view />
@@ -43,6 +44,7 @@
 <script setup lang="ts">
 import { inject } from "vue";
 import { useRoute } from "vue-router";
+import AgentSettingsMenu from "../components/AgentSettingsMenu.vue";
 
 const title = inject<string>("devSiteTitle", "Dev Site");
 const route = useRoute();
@@ -55,7 +57,14 @@ function navActive(section: "history" | "checkout" | "build"): boolean {
   if (section === "checkout") {
     return p === "/checkout" || p.startsWith("/checkout/");
   }
-  return p === "/build" || p.startsWith("/build/");
+  // "Build" links to /build, which redirects straight to /plans — match
+  // both so the nav item still highlights once that redirect lands.
+  return (
+    p === "/build" ||
+    p.startsWith("/build/") ||
+    p === "/plans" ||
+    p.startsWith("/plans/")
+  );
 }
 </script>
 

@@ -141,10 +141,13 @@ function stagePackageJsonsForInstall(
     imageName,
   );
   stagedRootPackageJson.private = true;
-  // Lock root omits override metadata; restating overrides in the staged
-  // root makes `npm ci` reject the copied lock (EUSAGE / Missing: …).
-  delete stagedRootPackageJson.overrides;
+  // Saflib's lock root omits override metadata; restating those overrides
+  // makes `npm ci` reject the copied lock. Product locks are generated with
+  // the root overrides applied (for example esbuild ^0.28.0 over a workspace
+  // that still asks for ^0.27.0), so the staged root must keep them or
+  // `npm ci` resolves the un-overridden range and reports it missing.
   if (isSaflibMonorepoRoot(ctx.rootDir, stagedRootPackageJson.name)) {
+    delete stagedRootPackageJson.overrides;
     const lockRoot = readLockRootManifest(ctx.rootDir);
     if (lockRoot?.dependencies) {
       stagedRootPackageJson.dependencies = lockRoot.dependencies;
@@ -223,18 +226,22 @@ function withDockerForGitHashes(
 }
 
 /**
- * Invoke the CLI by path. `npm install` runs against package.json stubs only, so
- * npm does not create `node_modules/.bin` links when the bin target files are
- * missing — `npm exec saf-git-hashes` would then hit the public registry (404).
+ * Invoke the CLI by path from `/app` (WORKDIR during the git-hashes RUN).
+ *
+ * `npm install` runs against package.json stubs only, so npm does not create
+ * `node_modules/.bin` links when the bin target files are missing — `npm exec
+ * saf-git-hashes` would then hit the public registry (404).
+ *
+ * Downstream prod Dockerfiles (e.g. Caddy) should not re-run this after changing
+ * WORKDIR to a client package — hashes are already in the base client image.
  */
 function gitHashesCommand(ctx: MonorepoContext): string {
   const dockerDir = ctx.monorepoPackageDirectories["@saflib/docker"];
   if (!dockerDir) {
     return "npm exec saf-git-hashes";
   }
-  const rel =
-    "./" + path.relative(ctx.rootDir, dockerDir).split(path.sep).join("/");
-  return `${rel}/bin/saf-git-hashes/index.ts`;
+  const rel = path.relative(ctx.rootDir, dockerDir).split(path.sep).join("/");
+  return `/app/${rel}/bin/saf-git-hashes/index.ts`;
 }
 
 export function generateDockerfiles(
@@ -275,11 +282,15 @@ export function generateDockerfiles(
     }
 
     const copySrcCommand = `COPY --parents ${packageRelativePaths.join(" ")} ./`;
+    const hashCmd = gitHashesCommand(ctx);
     const gitHashesStep = [
-      "RUN apt-get update \\",
+      // Client images COPY workspace paths, not `.git`. Host/CI should run
+      // `saf-git-hashes` before `docker build` so `saflib/vue/src/git-hashes.json`
+      // is in the context. When `.git` exists in the image, refresh hashes here.
+      "RUN (command -v git >/dev/null 2>&1 || (apt-get update \\",
       "  && apt-get install -y --no-install-recommends git \\",
-      "  && rm -rf /var/lib/apt/lists/* \\",
-      `  && ${gitHashesCommand(ctx)}`,
+      "  && rm -rf /var/lib/apt/lists/*)) \\",
+      `  && (git -C /app rev-parse HEAD >/dev/null 2>&1 && ${hashCmd} || echo "Skipping saf-git-hashes: no .git in build context (using pre-generated git-hashes.json)")`,
     ].join("\n");
 
     // Templates that need hashes after extra COPY layers (e.g. full saflib)

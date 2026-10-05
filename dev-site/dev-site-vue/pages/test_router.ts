@@ -4,7 +4,7 @@ import CommitDetailPage from "./CommitDetailPage.vue";
 import ComparePage from "./ComparePage.vue";
 import HubPage from "./HubPage.vue";
 import CheckoutPage from "./CheckoutPage.vue";
-import BuildPage from "./BuildPage.vue";
+import PlansPage from "./PlansPage.vue";
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -21,6 +21,9 @@ export const router = createRouter({
         query: { package: decodeURIComponent(to.params.package_name as string) },
       }),
     },
-    { path: "/build", component: BuildPage },
+    { path: "/plans", component: PlansPage },
+    { path: "/plans/:planName/:fileName(.+\\.md)", component: PlansPage },
+    { path: "/plans/:planName/:fileName(.+\\.ya?ml)", component: PlansPage },
+    { path: "/plans/:planName/:fileName", component: PlansPage },
   ],
 });

@@ -126,6 +126,12 @@ describe("@saflib/git", () => {
         "src/b.ts",
       ]);
     });
+
+    it("scopes to a pathspec when given", () => {
+      const { result, error } = listTree(repoRoot, commit2, "src");
+      expect(error).toBeUndefined();
+      expect(result!.map((e) => e.path)).toEqual(["src/b.ts"]);
+    });
   });
 
   describe("listRefs", () => {

@@ -4,13 +4,14 @@ import type { ChangeEmitter } from "@saflib/notify";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 export interface CreateChangeEventMiddlewareOptions {
-  /** Publishes change hints for org SSE subscribers. */
+  /** Publishes change hints for channel subscribers. */
   emitter: ChangeEmitter;
   /**
-   * Resolve the org channel for this request.
-   * Return undefined/null/empty to skip publishing.
+   * Resolve the channel to publish on for this request (the caller
+   * decides what a channel means and names it accordingly, e.g.
+   * `"org:<id>"`). Return undefined/null/empty to skip publishing.
    */
-  getOrgId: (req: Request) => string | undefined | null;
+  getChannelId: (req: Request) => string | undefined | null;
   /** operationIds that should never publish (e.g. noisy CSP reports). */
   skipOperationIds?: ReadonlySet<string> | readonly string[];
 }
@@ -29,14 +30,15 @@ function toStringParams(
 }
 
 /**
- * After a successful non-read response, publish a ChangeEvent for the org.
- * Mount after OpenAPI binding so `req.openapi.schema.operationId` is set.
- * Covers both foreground requests and internal job deliveries on the same app.
+ * After a successful non-read response, publish a ChangeEvent on the
+ * resolved channel. Mount after OpenAPI binding so
+ * `req.openapi.schema.operationId` is set. Covers both foreground requests
+ * and internal job deliveries on the same app.
  */
 export const createChangeEventMiddleware = (
   options: CreateChangeEventMiddlewareOptions,
 ): Handler => {
-  const { emitter, getOrgId } = options;
+  const { emitter, getChannelId } = options;
   const skipOperationIds = options.skipOperationIds
     ? new Set(options.skipOperationIds)
     : undefined;
@@ -57,15 +59,15 @@ export const createChangeEventMiddleware = (
         return;
       }
 
-      const orgId = getOrgId(req);
-      if (!orgId) {
+      const channelId = getChannelId(req);
+      if (!channelId) {
         return;
       }
 
       emitter.publish({
         operation_id: operationId,
         params: toStringParams(req.params),
-        org_id: orgId,
+        channel_id: channelId,
       });
     });
 

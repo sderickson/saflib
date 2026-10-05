@@ -104,8 +104,14 @@ export const typedCreateHandler = <Paths extends Record<string, any>>() => {
       const query = request.request.url.split("?")[1];
       let queryParams: query = {};
       if (query) {
+        // Join repeated keys (openapi-fetch default explode:true) so array
+        // query params arrive as a single comma-separated string.
+        const searchParams = new URLSearchParams(query);
         queryParams = Object.fromEntries(
-          new URLSearchParams(query).entries(),
+          [...new Set(searchParams.keys())].map((key) => [
+            key,
+            searchParams.getAll(key).join(","),
+          ]),
         ) as query;
       }
       const pathname = new URL(request.request.url).pathname;

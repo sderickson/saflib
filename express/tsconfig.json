@@ -9,11 +9,7 @@
     "playwright-report",
     "test-results",
     "**/*.test.ts",
-    "**/*.smoke.test.ts",
-    "workflows/template/**",
-    "workflows/templates/**",
-    "**/workflows/template/**",
-    "**/workflows/templates/**"
+    "**/*.smoke.test.ts"
   ],
   "references": [
     {

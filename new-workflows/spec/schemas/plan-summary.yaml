@@ -1,0 +1,22 @@
+type: object
+description: >
+  A folder under the plans root (e.g. `test-product/plans/`) holding one or
+  more workflow config files — a one-off plan authored outside a
+  code-defined workflow. Folder naming convention: `<date>-<name>`.
+additionalProperties: false
+required:
+  - folder
+  - name
+  - files
+properties:
+  folder:
+    type: string
+    example: "2026-09-15-add-list-users-query"
+  name:
+    type: string
+    description: Human name portion of the folder (after the date prefix).
+    example: "add-list-users-query"
+  files:
+    type: array
+    items:
+      $ref: "../openapi.yaml#/components/schemas/PlanFile"

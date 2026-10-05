@@ -1,0 +1,79 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "listWorkflows",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/workflows": {
+      "get": {
+        "summary": "List registered workflows",
+        "description": "Code-defined workflows from the server's registry. Config-defined (`workflow_configs`) workflows aren't included yet — nothing creates them via this API surface today.\n",
+        "operationId": "listWorkflows",
+        "responses": {
+          "200": {
+            "description": "Registered workflows.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "workflows"
+                  ],
+                  "properties": {
+                    "workflows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-summary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "workflow-summary": {
+        "type": "object",
+        "description": "One entry in the registered-workflow list (`GET /workflows`).",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "description",
+          "source"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "A code workflow's `defineWorkflow` id, or a `workflow_config` row id.",
+            "example": "example/hello"
+          },
+          "description": {
+            "type": "string",
+            "example": "Copies a template file, prompts about it, and runs a command."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "code",
+              "config"
+            ],
+            "description": "Whether this is a code-defined or config-defined workflow.",
+            "example": "code"
+          },
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The workflow's declared input schema (`new-workflows/lib`'s `WorkflowInputSchema`), if it has one — a generic passthrough here rather than a fully modeled schema, since it's already well-typed on the TypeScript side and a client only needs it to build a form.\n"
+          }
+        }
+      }
+    }
+  }
+}

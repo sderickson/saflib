@@ -1,0 +1,39 @@
+getWorkflowRunSteps:
+  summary: List a run's workflow steps
+  description: >
+    The full step list for the run's workflow definition (resolved the
+    same way `advance` resolves it — a registered code id or a plan file
+    path), for a sidebar/outline view. Best-effort `label` per step: the
+    step's own rendered input where that's safe to compute without
+    executing it, else just the step `kind`.
+  operationId: getWorkflowRunSteps
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+
+  responses:
+    "200":
+      description: The run's steps, in execution order.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - steps
+            properties:
+              steps:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/WorkflowRunStep"
+    "404":
+      description: No run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

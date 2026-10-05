@@ -1,0 +1,86 @@
+openapi: 3.1.0
+info:
+  title: new-workflows API
+  version: 1.0.0
+  description: >
+    HTTP surface + shared business-object schemas for the sqlite-backed
+    workflows engine rewrite (see new-workflows/plans/spec.md). Mounted
+    into dev-site-http as monolith chrome, not run as a standalone
+    service — see new-workflows-http's docs. The SSE run-events route
+    (GET /api/runs/{runId}/events) is intentionally not modeled here;
+    text/event-stream doesn't fit request/response validation and isn't
+    a validated operation, matching node-log-http's precedent.
+
+paths:
+  /api/workflows:
+    get:
+      $ref: "./routes/workflows/list.yaml#/listWorkflows"
+  /api/workflows/{id}/runs:
+    get:
+      $ref: "./routes/runs/list-by-workflow.yaml#/listWorkflowRuns"
+    post:
+      $ref: "./routes/runs/create.yaml#/createWorkflowRun"
+  /api/workflows/{id}/steps:
+    get:
+      $ref: "./routes/workflows/steps.yaml#/getWorkflowSteps"
+  /api/runs/{runId}:
+    get:
+      $ref: "./routes/runs/get.yaml#/getWorkflowRun"
+  /api/runs/{runId}/advance:
+    post:
+      $ref: "./routes/runs/advance.yaml#/advanceWorkflowRun"
+  /api/runs/{runId}/goto:
+    post:
+      $ref: "./routes/runs/goto.yaml#/gotoWorkflowRun"
+  /api/runs/{runId}/cancel:
+    post:
+      $ref: "./routes/runs/cancel.yaml#/cancelWorkflowRun"
+  /api/runs/{runId}/logs:
+    get:
+      $ref: "./routes/runs/logs.yaml#/listWorkflowRunLogs"
+  /api/runs/{runId}/steps:
+    get:
+      $ref: "./routes/runs/steps.yaml#/getWorkflowRunSteps"
+  /api/runs/{runId}/step-tree:
+    get:
+      $ref: "./routes/runs/step-tree.yaml#/getWorkflowRunStepTree"
+  /api/plans:
+    get:
+      $ref: "./routes/plans/list.yaml#/listPlans"
+    post:
+      $ref: "./routes/plans/create.yaml#/createPlan"
+
+components:
+  schemas:
+    Error:
+      $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    WorkflowRunMode:
+      $ref: "./schemas/workflow-run-mode.yaml"
+    WorkflowRunStatus:
+      $ref: "./schemas/workflow-run-status.yaml"
+    WorkflowStepStatus:
+      $ref: "./schemas/workflow-step-status.yaml"
+    WorkflowLogChannel:
+      $ref: "./schemas/workflow-log-channel.yaml"
+    WorkflowLogLevel:
+      $ref: "./schemas/workflow-log-level.yaml"
+    WorkflowRunAgentConfig:
+      $ref: "./schemas/workflow-run-agent-config.yaml"
+    WorkflowConfigBody:
+      $ref: "./schemas/workflow-config-body.yaml"
+    WorkflowSummary:
+      $ref: "./schemas/workflow-summary.yaml"
+    WorkflowRun:
+      $ref: "./schemas/workflow-run.yaml"
+    WorkflowLogEntry:
+      $ref: "./schemas/workflow-log-entry.yaml"
+    WorkflowRunStep:
+      $ref: "./schemas/workflow-run-step.yaml"
+    WorkflowStepTreeNode:
+      $ref: "./schemas/workflow-step-tree-node.yaml"
+    StepResult:
+      $ref: "./schemas/step-result.yaml"
+    PlanFile:
+      $ref: "./schemas/plan-file.yaml"
+    PlanSummary:
+      $ref: "./schemas/plan-summary.yaml"

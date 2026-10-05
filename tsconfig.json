@@ -143,6 +143,12 @@
       "path": "./commander"
     },
     {
+      "path": "./commander-workflows"
+    },
+    {
+      "path": "./cron-http-workflows"
+    },
+    {
       "path": "./cron/cron-db"
     },
     {
@@ -188,6 +194,12 @@
       "path": "./drizzle"
     },
     {
+      "path": "./drizzle-workflows"
+    },
+    {
+      "path": "./email-service-workflows"
+    },
+    {
       "path": "./email/email-service"
     },
     {
@@ -198,6 +210,9 @@
     },
     {
       "path": "./env"
+    },
+    {
+      "path": "./env-workflows"
     },
     {
       "path": "./errors/errors-http"
@@ -218,16 +233,34 @@
       "path": "./express"
     },
     {
+      "path": "./express-workflows"
+    },
+    {
       "path": "./git"
     },
     {
       "path": "./grpc/grpc"
     },
     {
+      "path": "./grpc/grpc/workflows/client-templates"
+    },
+    {
+      "path": "./grpc/grpc/workflows/proto-templates"
+    },
+    {
+      "path": "./grpc/grpc/workflows/server-templates"
+    },
+    {
       "path": "./imports"
     },
     {
       "path": "./integrations"
+    },
+    {
+      "path": "./integrations-workflows"
+    },
+    {
+      "path": "./jobs-http-workflows"
     },
     {
       "path": "./jobs/jobs-db"
@@ -246,6 +279,24 @@
     },
     {
       "path": "./monorepo"
+    },
+    {
+      "path": "./monorepo-workflows"
+    },
+    {
+      "path": "./new-workflows/cli"
+    },
+    {
+      "path": "./new-workflows/db"
+    },
+    {
+      "path": "./new-workflows/http"
+    },
+    {
+      "path": "./new-workflows/lib"
+    },
+    {
+      "path": "./new-workflows/spec"
     },
     {
       "path": "./node"
@@ -284,6 +335,9 @@
       "path": "./openapi"
     },
     {
+      "path": "./openapi-workflows"
+    },
+    {
       "path": "./ory-kratos/ory-kratos-http"
     },
     {
@@ -302,10 +356,16 @@
       "path": "./processes"
     },
     {
+      "path": "./processes-workflows"
+    },
+    {
       "path": "./product"
     },
     {
       "path": "./sdk"
+    },
+    {
+      "path": "./sdk-workflows"
     },
     {
       "path": "./secret-store"
@@ -315,6 +375,9 @@
     },
     {
       "path": "./service"
+    },
+    {
+      "path": "./service-workflows"
     },
     {
       "path": "./templates"
@@ -360,6 +423,9 @@
     },
     {
       "path": "./vue"
+    },
+    {
+      "path": "./vue-workflows"
     },
     {
       "path": "./workflows"

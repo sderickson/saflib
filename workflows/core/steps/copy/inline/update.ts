@@ -70,10 +70,22 @@ function processWorkflowArea(
     state.areaEndLine,
     state.areaName,
     targetPath,
+    // Callers decide how to surface misses — don't double-log here.
+    { warn: false },
   );
 
   if (!indices) {
-    return;
+    // ONCE areas are stripped after first apply (or never present on
+    // hand-written files). Missing is expected; validateWorkflowAreas
+    // already allows source ONCE without a target match.
+    if (state.isOnce) {
+      return;
+    }
+    // Non-ONCE: should have been caught by validateWorkflowAreas; throw so
+    // preview/validate cannot report a clean mechanical pass on a silent skip.
+    throw new Error(
+      `Could not find target area ${state.areaName} in ${targetPath}`,
+    );
   }
 
   const { start: targetAreaStart, end: targetAreaEnd } = indices;

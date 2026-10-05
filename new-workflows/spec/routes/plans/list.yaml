@@ -1,0 +1,28 @@
+listPlans:
+  summary: List saved plans (config-defined workflow folders)
+  description: >
+    Scans the plans root (e.g. `test-product/plans/`) for folders holding
+    workflow config files, newest-first.
+  operationId: listPlans
+
+  responses:
+    "200":
+      description: Plans under the plans root.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - plans
+            properties:
+              plans:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/PlanSummary"
+    "500":
+      description: This host hasn't configured a plans folder.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

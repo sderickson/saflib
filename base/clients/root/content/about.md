@@ -14,7 +14,7 @@ title: About Base
   header="Markdown pages, shared components."
   :content="[
     'Marketing sections live in base/clients/common/components/marketing and are registered for every static site through enhanceStaticSiteApp.',
-    'Individual pages are plain VitePress markdown files that compose Hero, Blurb, FeatureGrid, and CtaBand blocks — the same pattern used in product repos like Power Up.',
+    'Individual pages are plain VitePress markdown files that compose Hero, Blurb, FeatureGrid, and CtaBand blocks.',
   ]"
   theme="light"
 />

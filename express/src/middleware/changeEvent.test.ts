@@ -18,7 +18,7 @@ function mockEmitter() {
 
 function buildApp(options: {
   emitter: ChangeEmitter;
-  getOrgId?: (req: express.Request) => string | undefined | null;
+  getChannelId?: (req: express.Request) => string | undefined | null;
   skipOperationIds?: ReadonlySet<string> | readonly string[];
   method?: "get" | "post" | "patch" | "delete";
   status?: number;
@@ -30,7 +30,7 @@ function buildApp(options: {
   app.use(
     createChangeEventMiddleware({
       emitter: options.emitter,
-      getOrgId: options.getOrgId ?? (() => "org-1"),
+      getChannelId: options.getChannelId ?? (() => "org:1"),
       skipOperationIds: options.skipOperationIds,
     }),
   );
@@ -56,7 +56,7 @@ function buildApp(options: {
 }
 
 describe("createChangeEventMiddleware", () => {
-  it("publishes on 2xx POST with operation_id, params, and org_id", async () => {
+  it("publishes on 2xx POST with operation_id, params, and channel_id", async () => {
     const { emitter, published } = mockEmitter();
     const app = buildApp({
       emitter,
@@ -71,7 +71,7 @@ describe("createChangeEventMiddleware", () => {
     expect(published[0]).toEqual({
       operation_id: "updateMatter",
       params: { matterId: "m-42" },
-      org_id: "org-1",
+      channel_id: "org:1",
     });
   });
 
@@ -136,11 +136,11 @@ describe("createChangeEventMiddleware", () => {
     expect(emitter.publish).not.toHaveBeenCalled();
   });
 
-  it("skips when getOrgId returns empty", async () => {
+  it("skips when getChannelId returns empty", async () => {
     const { emitter } = mockEmitter();
     const app = buildApp({
       emitter,
-      getOrgId: () => undefined,
+      getChannelId: () => undefined,
     });
 
     await request(app).post("/matters/m-1").expect(200);

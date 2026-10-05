@@ -1,5 +1,13 @@
 <template>
-  <div class="checkout-page">
+  <div class="checkout-page" :class="{ 'checkout-page--reflection-sheet': isReflectionSheet }">
+    <div v-if="isReflectionSheet" class="reflection-banner">
+      <v-icon icon="mdi-history" size="18" class="mr-2" />
+      <span class="reflection-banner__text">Reflection — what this workflow run actually changed</span>
+      <v-spacer />
+      <v-btn variant="text" size="small" prepend-icon="mdi-close" @click="closeReflectionSheet">
+        Close
+      </v-btn>
+    </div>
     <v-progress-linear v-if="isLoading" indeterminate class="checkout-progress" />
     <v-alert v-if="error" type="error" density="compact" class="ma-2">
       {{ error.message }}
@@ -151,6 +159,17 @@
                     ·
                     <code>{{ selectedPkg.directory || "." }}</code>
                   </span>
+                  <v-spacer />
+                  <v-btn
+                    v-if="drizzleWorkflowHref"
+                    size="small"
+                    variant="tonal"
+                    color="primary"
+                    prepend-icon="mdi-database-plus"
+                    :to="drizzleWorkflowHref"
+                  >
+                    Add query
+                  </v-btn>
                 </header>
                 <p
                   v-if="packageDescription"
@@ -327,7 +346,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   useCheckout,
@@ -387,6 +406,19 @@ const props = withDefaults(
 
 const route = useRoute();
 const router = useRouter();
+
+/**
+ * Arrived here via a workflow run's "Reflection" button (see
+ * `RunView.vue`'s `openReflection`) rather than the normal Checkout nav —
+ * shown as a full-screen sheet (see this component's own
+ * `--reflection-sheet` styling) with a banner explaining what's being
+ * shown and a way back, instead of just looking like ordinary browsing.
+ */
+const isReflectionSheet = computed(() => Boolean(route.query.reflection));
+
+function closeReflectionSheet() {
+  router.back();
+}
 
 const docsPane = ref<{ openDoc: (path: string) => void } | null>(null);
 
@@ -491,6 +523,7 @@ const mapPackageRow = (
     };
     source_files?: number;
     prod_lines?: number;
+    dependencies?: string[];
   },
   change?: ChangeKind,
   locDelta?: { source: number; test: number },
@@ -559,6 +592,24 @@ const locDeltaText = computed(() => {
   const d = selectedPkg.value?.locDelta;
   if (!d || (d.source === 0 && d.test === 0)) return "";
   return `${formatLocChangePair(d.source, d.test)} LOC`;
+});
+
+/**
+ * Packages built on `@saflib/drizzle` can use `drizzle/add-query` (see
+ * `@saflib/drizzle-workflows`) to scaffold a new query — link to the
+ * Workflows page pre-filled with that workflow and this package's cwd, so
+ * saving the form there creates a `cd` + `call-workflow` plan for it.
+ */
+const drizzleWorkflowHref = computed(() => {
+  const pkg = selectedPkg.value;
+  if (!pkg?.dependencies?.includes("@saflib/drizzle")) return undefined;
+  return {
+    path: "/plans",
+    query: {
+      workflow: "drizzle/add-query",
+      cwd: repoPathPrefix(checkout.value?.product_root, pkg.directory),
+    },
+  };
 });
 
 const paneCommitHash = computed(() => {
@@ -711,6 +762,36 @@ const scanForkPoint = () => {
   scan({ commit_hash: hash }, { onSuccess: () => refetch() });
 };
 
+// Arriving via a workflow run's "Reflection" button, there's no reason to
+// make the person hunt for (and click) two separate "Scan" buttons before
+// they can see anything — scan HEAD first, then (once that refetch lands
+// and `checkout.value` updates, re-running this effect) the fork point,
+// same two calls "Scan this commit"/"Scan fork point" already make
+// manually. Ordinary Checkout browsing is untouched — scanning stays an
+// explicit action there.
+//
+// Each side is attempted at most once (`attemptedHeadScan`/
+// `attemptedForkScan`): a scan can fail for real (a bad ref, a git error),
+// and without this guard a failed attempt would look identical to "just
+// hasn't happened yet" — `analyzed` still false, `isScanning` back to
+// false once it settles — and this effect would retry it forever.
+const attemptedHeadScan = ref(false);
+const attemptedForkScan = ref(false);
+watchEffect(() => {
+  if (!isReflectionSheet.value || isScanning.value) return;
+  const c = checkout.value;
+  if (!c) return;
+  if (!c.analyzed) {
+    if (attemptedHeadScan.value) return;
+    attemptedHeadScan.value = true;
+    scanThisCommit();
+  } else if (compareMode.value && c.compare && !c.compare.merge_base_analyzed) {
+    if (attemptedForkScan.value) return;
+    attemptedForkScan.value = true;
+    scanForkPoint();
+  }
+});
+
 const toggleCompare = (on: unknown) => {
   if (!on) {
     replaceQuery({ compare: undefined });
@@ -751,6 +832,39 @@ const formatDateTime = (dateTimeString: string): string => {
   height: 100%;
   min-height: 0;
   overflow: hidden;
+}
+/* Covers the whole viewport (app bar included) rather than just the
+   in-flow page area, and plays a one-time slide-up-from-bottom animation
+   on mount — a plain CSS `animation` rather than a Vue <Transition> (which
+   would need App.vue's own router-view restructured to key on this) —
+   good enough for "coming in"; closing is an ordinary back-navigation
+   with no matching exit animation. */
+.checkout-page--reflection-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgb(var(--v-theme-surface));
+  animation: reflection-sheet-slide-up 0.25s ease-out;
+}
+@keyframes reflection-sheet-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.reflection-banner {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(var(--v-theme-primary), 0.08);
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  font-size: 0.85rem;
+}
+.reflection-banner__text {
+  font-weight: 500;
 }
 .checkout-progress {
   flex: 0 0 auto;
