@@ -112,7 +112,7 @@ function readLockRootManifest(rootDir: string): {
  * staged manifests keeps `npm ci` from requiring lock entries for tooling that
  * never installs into the image (eslint trees, @types/*, vitest, …).
  */
-function stripDevDependencies(
+export function stripDevDependencies(
   pj: Record<string, unknown>,
 ): Record<string, unknown> {
   const { devDependencies: _devDependencies, ...rest } = pj;

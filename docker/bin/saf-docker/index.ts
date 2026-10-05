@@ -6,6 +6,8 @@ import { setupContext } from "@saflib/commander";
 import { addPruneCommand } from "./prune.ts";
 import { addGenerateCommand } from "./generate.ts";
 import { addSyncNodeModulesCommand } from "./sync-node-modules.ts";
+import { addInputsCommand } from "./inputs.ts";
+import { addSkipRateCommand } from "./skip-rate.ts";
 // END WORKFLOW AREA
 
 const program = new Command()
@@ -16,6 +18,8 @@ const program = new Command()
 addPruneCommand(program);
 addGenerateCommand(program);
 addSyncNodeModulesCommand(program);
+addInputsCommand(program);
+addSkipRateCommand(program);
 // END WORKFLOW AREA
 
 setupContext({ serviceName: "saf-docker" }, () => {

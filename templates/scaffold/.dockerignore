@@ -2,6 +2,15 @@
 **/coverage
 **/data/*.sqlite
 
+# Gitignored artifacts that would otherwise reach the context unseen by
+# `saf-docker inputs` (images rebuild their own outputs).
+**/dist/types
+**/data/*.sqlite-shm
+**/data/*.sqlite-wal
+**/saf-workflow-status.json
+**/saf-workflow-status.error.json
+**/saf-workflow-prompt.log
+
 # Do not copy local env / credential files into images.
 **/.env
 **/.env.local

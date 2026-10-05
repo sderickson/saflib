@@ -6,16 +6,17 @@
 
 ## Status
 
-- **Phase:** design approved. No code written yet.
+- **Phase:** Phases 1–2 implemented (uncommitted in the working tree as of
+  this update). **Stopped at the Phase 2 go/no-go gate.**
 - **Last updated:** 2026-10-05
-- **Next action:** start Phase 1. Phase 2 ends with a **go/no-go gate**:
-  report the measured skip rates to the owner and stop for a decision before
-  starting Phase 3.
+- **Next action:** owner reviews **Phase 2 results** (below) and decides
+  go/no-go, and whether per-image lockfile pruning comes into scope. Don't
+  start Phase 3 until then.
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
-| 1 | `@saflib/git` tree-hash helpers | not started |
-| 2 | `saf-docker inputs` + skip-rate measurement | not started |
+| 1 | `@saflib/git` tree-hash helpers | done |
+| 2 | `saf-docker inputs` + skip-rate measurement | done; awaiting go/no-go |
 | 3 | Build metadata (`/etc/saf/builds/`) + OCI labels | not started |
 | 4 | `builds/` convention + generator emits inputs manifest | not started |
 | 5 | `saf-docker build` orchestrator | not started |
@@ -276,6 +277,24 @@ would make the file an input that changes every commit.
 - Tests: scratch-repo integration tests covering clean, modified, untracked,
   ignored (excluded), deleted file, and submodule.
 
+**As built** (`git/tree-hash.ts`, `git/list-ignored.ts`, tests in
+`git/tree-hash.test.ts`):
+- `treeHash`, `objectHashesAt` (batch, via `ls-tree`), `workingTreeHashes`,
+  `repoRootFor`, `listIgnored`, all exported from `git/index.ts`.
+- `workingTreeHashes` seeds its scratch index by **copying the real index**
+  (to keep git's stat cache; about 150 ms for 6 package dirs in saflib), falling
+  back to `read-tree HEAD`. Gotchas that cost time and now have tests:
+  - The copy must **keep the real index's mtime**. Otherwise git's racy-clean
+    check misses same-size edits made in the same second as the last index
+    write (deterministic regression test pins mtimes).
+  - Explicitly gitignored paths must be filtered out before `git add` (it
+    rejects them). `check-ignore` doesn't accept `GIT_LITERAL_PATHSPECS`; only
+    `add`/`rm` get it.
+  - `cat-file --batch-check` reports submodule gitlinks as *missing*, because
+    the commit isn't in the parent's object store. Use `ls-tree`. `ls-tree a
+    a/b` descends into `a` instead of listing it, so overlapping paths are
+    split into separate calls.
+
 #### Phase 2: `saf-docker inputs` + measure
 
 - `docker/src/inputs.ts`: given a `MonorepoContext` + build, compute the input
@@ -293,6 +312,84 @@ would make the file an input that changes every commit.
   `saf-docker inputs`) is useful as a diagnostic on its own either way. If the
   staged lockfile turns out to dominate the churn, flag it in the report.
   Lockfile pruning is decided at that point, not before.
+
+**As built:**
+- `docker/src/builds.ts`: `Build` type, `listBuilds` (package-root templates
+  become the `default` build, image name unchanged), `findBuild` (ref or bare
+  package name).
+- `docker/src/inputs.ts`: `computeBuildInputs`. Inputs come from **parsing the
+  generated Dockerfile's `COPY`/`ADD` sources**, which already contain the
+  package dirs, extra copies and the staged dir, so no separate dependency
+  walk is needed. Each source is hashed by git if git can see it, otherwise
+  from disk (sha256, honoring `.dockerignore`). Also hashed: the Dockerfile
+  itself, upstream builds (by image name, memoized, cycle-checked), platform,
+  and `HASH_SCHEMA_VERSION`. Tag is `in-<16 hex>`. Also reports
+  `externalImages` and `gitInvisibleContextFiles` (the audit).
+- `docker/src/dockerignore.ts`: a small `.dockerignore` matcher, used for the
+  audit and disk hashing.
+- `docker/src/skip-rate.ts` + `saf-docker skip-rate [-n N] [--no-generate]
+  [--json]`: the measurement, kept as a rerunnable tool. It re-derives the
+  staged manifests per commit from the committed `package.json` +
+  `package-lock.json`, reports several lockfile scenarios (see results),
+  follows submodule gitlinks, and notes submodule commits missing from the
+  local clone.
+- `saf-docker inputs [refs…] [-v] [--json] [--platform] [--no-generate]`.
+- **Audit fixes:** `.dockerignore` (saflib and
+  `templates/scaffold/.dockerignore`) listed `dist` only at the root, so every
+  package's `dist/types/` reached the context. Dev SQLite `-shm`/`-wal` files
+  were also getting **copied into the monolith image**, plus workflow
+  status/log files. All are now dockerignored, and the audit is clean for
+  every saflib build. Generated `Dockerfile`s and `git-hashes.json` are exempt
+  from the audit (the latter is expected until Phase 6).
+- **Known limitation, needed for Phase 4:** upstream detection by image name
+  doesn't work yet, because today's tags are hand-picked in bash
+  (`saflib-base-static-root` vs package `@saflib/base-root-static`), so
+  `base-dev` lists its upstreams as external images. Plan: templates name
+  upstreams explicitly (e.g. `FROM #{ build @saflib/base-root-static/builds/default }#`)
+  and the generator substitutes the tag. `deploy/Dockerfile.prod` isn't a
+  template yet and will need the same treatment in Phase 6.
+- saflib's own `base/*` templates resolve paths from saflib's root, so they
+  don't resolve inside a product context. `skip-rate` skips unresolvable
+  builds and lists them.
+- `typedoc` isn't installed locally, so `saf-docs generate` failed and
+  `docker/docs` and `git/docs` weren't regenerated. Do that with the next
+  commit that has typedoc available.
+
+#### Phase 2 results (2026-10-05)
+
+Measured with `saf-docker skip-rate --no-generate -n 100` over the last 100
+first-parent commits. Product repos (`~/src/*` with a saflib submodule) were
+measured read-only from this checkout. Totals count only the product's own
+builds; saflib's template builds inside products are unused and excluded.
+"Skipped" means the share of (image × commit) pairs that wouldn't need a build.
+
+| Repo | images | skipped today | + closure-pruned lockfile | ceiling (no lockfile churn) | saflib pointer bumped |
+| ---- | -----: | ------------: | ------------------------: | --------------------------: | --------------------: |
+| saflib (platform) | 7 | 36% | 38% | ~37% | n/a |
+| vendata | 6 | 38% | 47% | 50% | 63/100 commits |
+| home-2026 | 12 | 30% | 41% | 49% | 53/89 |
+| saf-2025 | 2 | 39% | 48% | 53% | 61/100 |
+| pathclerk | 4 | 24% | 27% | 31% | 45/100 |
+
+- **Lockfile:** dropping `"dev": true` entries gains almost nothing (≤1 pt).
+  Pruning each image's staged lockfile to the **production closure of its own
+  workspace packages** gains 3–11 pts in products. Without it, a dependency
+  bump anywhere rebuilds every image.
+- **What drives source rebuilds** (product images, across image × commit
+  pairs that rebuild for source reasons): saflib-only vs product-only vs both:
+  vendata 138/83/80, home-2026 155/172/213, saf-2025 32/28/40, pathclerk
+  15/104/90. **The saflib pointer moves in roughly half of all product
+  commits** and is the single largest cause in vendata. Product images
+  already depend only on the saflib packages they use, so the remaining saflib
+  churn is real dependency change.
+- **Platform repo:** saflib's images each depend on ~50 packages, so nearly
+  every platform commit rebuilds them (36% skipped).
+- **Caveats:** commits are squash-merged PRs on main, which fits deploy/CI. The
+  original pain is the dev loop: rebuilds between consecutive local restarts,
+  where each change is usually one package. History can't measure that, but
+  skip rates there should be much higher (e.g. a client-only edit skips the
+  monolith and SDK images). The measurement also uses today's dependency sets
+  for every historical commit.
 
 #### Phase 3: build metadata
 
@@ -368,8 +465,18 @@ would make the file an input that changes every commit.
 
 ## Open questions
 
-None open. The owner resolved the initial set on 2026-10-05 (see Decisions
-log). Add new questions here as they come up.
+Pending owner decision at the Phase 2 gate (see **Phase 2 results**):
+
+1. **Go/no-go on Phases 3–6.** Product deploy/CI would skip about 25–40% of
+   image builds (about 30–50% with lockfile pruning), and the dev loop
+   probably much more (not measurable from history).
+2. **Lockfile closure pruning:** bring it into scope? It's worth 3–11 pts in
+   products and keeps unrelated dependency bumps from rebuilding everything.
+   `lockClosure()` in `docker/src/skip-rate.ts` already computes the closure
+   and could become the staging step.
+3. **Product/platform layering:** the saflib pointer moves in about half of
+   product commits. Earlier we agreed to revisit finer layers only if needed.
+   Is this data a reason to, or out of scope?
 
 ## Decisions log
 
@@ -393,3 +500,11 @@ log). Add new questions here as they come up.
     an explicit decision before Phase 3.
   - **Lockfile pruning** stays out of scope. Revisit only if Phase 2
     measurement shows lockfile churn dominates.
+- 2026-10-05 (Phase 1–2 implementation):
+  - Inputs come from the generated Dockerfile's `COPY`/`ADD` sources rather
+    than a separate dependency walk. The Dockerfile already lists exactly
+    what enters the image.
+  - Git-invisible context content gets fixed in `.dockerignore`, not
+    tolerated. The audit runs as part of `saf-docker inputs`.
+  - `skip-rate` stays in the CLI as a rerunnable diagnostic (useful for
+    re-measuring in product repos after changes).

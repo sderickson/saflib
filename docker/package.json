@@ -8,7 +8,9 @@
   "type": "module",
   "exports": {
     ".": "./src/docker.ts",
-    "./git-hashes": "./src/git-hashes.ts"
+    "./git-hashes": "./src/git-hashes.ts",
+    "./builds": "./src/builds.ts",
+    "./inputs": "./src/inputs.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -22,6 +24,7 @@
   },
   "dependencies": {
     "@saflib/commander": "*",
+    "@saflib/git": "*",
     "@saflib/monorepo": "*"
   },
   "devDependencies": {

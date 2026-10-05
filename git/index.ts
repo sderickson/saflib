@@ -16,6 +16,14 @@ export {
   writeScratchTree,
   closeScratchIndex,
 } from "./scratch-tree.ts";
+export { listIgnored } from "./list-ignored.ts";
+export {
+  treeHash,
+  objectHashesAt,
+  workingTreeHashes,
+  repoRootFor,
+} from "./tree-hash.ts";
 export type { GitRef } from "./list-refs.ts";
+export type { WorkingTreeHashes } from "./tree-hash.ts";
 export type { GitCommit, GitTreeEntry, LogOptions } from "./types.ts";
 export type { ScratchIndex } from "./scratch-tree.ts";
