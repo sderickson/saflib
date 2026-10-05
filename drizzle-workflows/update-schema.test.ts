@@ -36,7 +36,12 @@ describe("drizzle/update-schema (ported to the new engine)", () => {
     // `context()` — where the plural check lives — only runs once
     // `advanceRun` builds the first step's input, not at `createRun` time.
     const { result } = advanceRun(dbKey, UpdateSchemaWorkflowDefinition, runId);
-    await expect(result).rejects.toThrow(/should not be plural/);
+    const outcome = await result;
+    expect(outcome.status).toBe("error");
+    if (outcome.status !== "error") {
+      return;
+    }
+    expect(outcome.message).toMatch(/should not be plural/);
   });
 
   it("copies the schema stub and upserts the live schema.ts with name substitution applied", async () => {
