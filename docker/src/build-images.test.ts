@@ -13,9 +13,15 @@ import type { Build } from "./builds.ts";
 import {
   buildImages,
   resolvePlatform,
+  type BuildEvent,
   type BuildImagesOptions,
 } from "./build-images.ts";
-import type { DockerBuildOptions, DockerExecutor } from "./executor.ts";
+import {
+  buildkitProgressTracker,
+  parseBuildkitStep,
+  type DockerBuildOptions,
+  type DockerExecutor,
+} from "./executor.ts";
 
 class FakeDocker implements DockerExecutor {
   local = new Set<string>();
@@ -274,6 +280,34 @@ describe("buildImages", () => {
     ).toEqual(["pull reg.io/x-app", "build x-web"]);
   });
 
+  it("reports the plan before building, then each build's start and finish", async () => {
+    await run({ selected: [builds[0]] }); // base is now local
+    write("web/src.ts", "web changed\n");
+    const events: BuildEvent[] = [];
+    await run({ onEvent: (e) => events.push(e) });
+
+    expect(events[0]).toMatchObject({
+      type: "checked",
+      plan: [
+        { image: "x-base", action: "up-to-date" },
+        { image: "x-app", action: "build" },
+        { image: "x-web", action: "build" },
+      ],
+    });
+    const lifecycle = events.slice(1).map((e) => {
+      if (e.type === "finish") return `finish ${e.result.image}`;
+      if (e.type === "checked") return "checked";
+      return `${e.type} ${e.image}`;
+    });
+    expect(lifecycle).toEqual([
+      "finish x-base",
+      "start x-app",
+      "finish x-app",
+      "start x-web",
+      "finish x-web",
+    ]);
+  });
+
   it("blocks downstream builds when an upstream fails", async () => {
     docker.failBuilds.add("x-app");
     expect(await outcomes()).toEqual({
@@ -326,5 +360,46 @@ describe("resolvePlatform", () => {
     expect(() => resolvePlatform("windows", "linux/arm64")).toThrow(
       /Unrecognized platform/,
     );
+  });
+});
+
+describe("BuildKit progress", () => {
+  it("parses step lines", () => {
+    expect(parseBuildkitStep("#7 [builder 3/6] RUN npm ci")).toEqual({
+      stage: "builder",
+      index: 3,
+      count: 6,
+      step: "RUN npm ci",
+    });
+    expect(parseBuildkitStep("#4 [2/2] COPY . /app")).toMatchObject({
+      stage: "",
+      index: 2,
+      count: 2,
+    });
+    expect(parseBuildkitStep("#7 DONE 1.2s")).toBeUndefined();
+    expect(
+      parseBuildkitStep("#1 [internal] load build definition"),
+    ).toBeUndefined();
+  });
+
+  it("counts each step once across stages", () => {
+    const seen: string[] = [];
+    const track = buildkitProgressTracker((p) =>
+      seen.push(`${p.done}/${p.total} ${p.step}`),
+    );
+    [
+      "#5 [deps 1/3] FROM node",
+      "#6 [deps 2/3] RUN npm ci",
+      "#6 0.5 added 10 packages",
+      "#6 [deps 2/3] RUN npm ci",
+      "#7 [stage-1 1/2] FROM caddy",
+      "#8 [deps 3/3] COPY . .",
+    ].forEach(track);
+    expect(seen).toEqual([
+      "1/3 FROM node",
+      "2/3 RUN npm ci",
+      "3/5 FROM caddy",
+      "4/5 COPY . .",
+    ]);
   });
 });

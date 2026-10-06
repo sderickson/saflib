@@ -1,6 +1,6 @@
 import path from "node:path";
 import type { Build } from "./builds.ts";
-import type { DockerExecutor } from "./executor.ts";
+import type { BuildProgress, DockerExecutor } from "./executor.ts";
 import { computeBuildInputs, inputTag, type BuildInputs } from "./inputs.ts";
 import { BUILD_INFO_ARG, type BuildInfo } from "./metadata.ts";
 
@@ -35,6 +35,32 @@ export interface BuildResult {
   logFile?: string;
 }
 
+/** What the check phase decided for an image. */
+export type PlannedAction =
+  /** `in-<hash>` is local. */
+  | "up-to-date"
+  /** `in-<hash>` is in the registry. */
+  | "in-registry"
+  | "build";
+
+export interface PlannedImage {
+  ref: string;
+  image: string;
+  tag: string;
+  action: PlannedAction;
+  dirty: boolean;
+}
+
+export type BuildEvent =
+  /** Every image's action is decided (before anything is built). */
+  | { type: "checked"; plan: PlannedImage[]; durationMs: number }
+  /** A build (or a pull) started. */
+  | { type: "start"; ref: string; image: string; action: "build" | "pull" }
+  | { type: "progress"; ref: string; image: string; progress: BuildProgress }
+  /** A pull finished (pulls of `in-registry` images happen on demand). */
+  | { type: "pulled"; ref: string; image: string; durationMs: number }
+  | { type: "finish"; result: BuildResult };
+
 export interface BuildImagesOptions {
   contextDir: string;
   /** Every build in the monorepo (for resolving upstreams). */
@@ -62,6 +88,7 @@ export interface BuildImagesOptions {
   logDir: string;
   now?: () => Date;
   onResult?: (result: BuildResult) => void;
+  onEvent?: (event: BuildEvent) => void;
 }
 
 const PLATFORM_ALIASES: Record<string, string> = {
@@ -161,6 +188,45 @@ export async function buildImages(
   const registry = options.registry?.replace(/\/+$/, "");
   const remote = (image: string, tag: string) => `${registry}/${image}:${tag}`;
   const limit = semaphore(Math.max(1, options.concurrency ?? 4));
+  const emit = (event: BuildEvent) => options.onEvent?.(event);
+
+  // Check phase: an image's input hash doesn't depend on whether its
+  // upstreams get rebuilt, so every image's action is known up front.
+  const checkStarted = Date.now();
+  const checks = semaphore(8);
+  const planned = await Promise.all(
+    plan.map(async (build): Promise<PlannedImage> => {
+      const inputs = inputsOf(build);
+      const tag = inputTag(inputs.inputHash);
+      const base = {
+        ref: build.ref,
+        image: build.image,
+        tag,
+        dirty: inputs.dirty,
+      };
+      if (options.force) return { ...base, action: "build" };
+      if (
+        await checks(() => executor.localImageExists(`${build.image}:${tag}`))
+      ) {
+        return { ...base, action: "up-to-date" };
+      }
+      if (
+        registry &&
+        (await checks(() =>
+          executor.remoteImageExists(remote(build.image, tag)),
+        ))
+      ) {
+        return { ...base, action: "in-registry" };
+      }
+      return { ...base, action: "build" };
+    }),
+  );
+  const actionOf = new Map(planned.map((p) => [p.ref, p.action]));
+  emit({
+    type: "checked",
+    plan: planned,
+    durationMs: Date.now() - checkStarted,
+  });
   const now = options.now ?? (() => new Date());
   const promises = new Map<string, Promise<BuildResult>>();
   /** Pulls an `in-registry` image on first use by a build that runs. */
@@ -213,8 +279,9 @@ export async function buildImages(
       for (const t of tags) await executor.push(remote(build.image, t));
     };
 
+    const action = actionOf.get(build.ref)!;
     try {
-      if (!options.force && (await executor.localImageExists(local))) {
+      if (action === "up-to-date") {
         if (options.dryRun) return result("up-to-date");
         await tagLocally();
         if (
@@ -233,11 +300,7 @@ export async function buildImages(
         return result("up-to-date");
       }
 
-      if (
-        !options.force &&
-        registry &&
-        (await executor.remoteImageExists(remote(build.image, tag)))
-      ) {
+      if (action === "in-registry") {
         if (options.dryRun) return result("would-pull");
         if (options.push) {
           for (const t of tags.slice(1)) {
@@ -248,9 +311,22 @@ export async function buildImages(
           }
         }
         const pull = async () => {
+          const pullStarted = Date.now();
+          emit({
+            type: "start",
+            ref: build.ref,
+            image: build.image,
+            action: "pull",
+          });
           await limit(() => executor.pull(remote(build.image, tag), flag));
           await executor.tag(remote(build.image, tag), local);
           await tagLocally();
+          emit({
+            type: "pulled",
+            ref: build.ref,
+            image: build.image,
+            durationMs: Date.now() - pullStarted,
+          });
         };
         // Without --push the images are wanted locally (e.g. to run them).
         if (!options.push) {
@@ -285,8 +361,14 @@ export async function buildImages(
       };
       const logFile = path.join(options.logDir, `${build.image}.log`);
       try {
-        await limit(() =>
-          executor.build({
+        await limit(() => {
+          emit({
+            type: "start",
+            ref: build.ref,
+            image: build.image,
+            action: "build",
+          });
+          return executor.build({
             contextDir,
             dockerfile: path.relative(contextDir, build.dockerfilePath),
             tags: tags.map((t) => `${build.image}:${t}`),
@@ -300,8 +382,15 @@ export async function buildImages(
               "dev.saflib.saflib-revision": info.commits.saflib,
             },
             logFile,
-          }),
-        );
+            onProgress: (progress) =>
+              emit({
+                type: "progress",
+                ref: build.ref,
+                image: build.image,
+                progress,
+              }),
+          });
+        });
       } catch (error) {
         return result("failed", {
           error: error instanceof Error ? error.message : String(error),
@@ -322,6 +411,7 @@ export async function buildImages(
   for (const build of plan) {
     const promise = run(build).then((r) => {
       options.onResult?.(r);
+      emit({ type: "finish", result: r });
       return r;
     });
     promises.set(build.ref, promise);

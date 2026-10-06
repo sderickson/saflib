@@ -1,5 +1,4 @@
 import type { Command } from "commander";
-import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { repoRootFor, resolveRef } from "@saflib/git";
 import { buildMonorepoContext } from "@saflib/monorepo/workspace";
@@ -7,6 +6,7 @@ import { generateDockerfiles } from "../../src/docker.ts";
 import { buildImages, type BuildResult } from "../../src/build-images.ts";
 import { dockerCli } from "../../src/executor.ts";
 import { findSaflibDir } from "../../src/git-hashes.ts";
+import { createReporter } from "./reporter.ts";
 import { selectBuilds } from "../../src/select.ts";
 
 interface BuildCommandOptions {
@@ -26,34 +26,6 @@ function headOf(dir: string): string {
   return resolveRef(repoRoot).result ?? "unknown";
 }
 
-const SYMBOLS: Record<BuildResult["outcome"], string> = {
-  "up-to-date": "✓ up to date",
-  pulled: "↓ pulled    ",
-  "in-registry": "☁ in registry",
-  built: "● built     ",
-  failed: "✗ FAILED    ",
-  blocked: "✗ blocked   ",
-  "would-build": "○ would build",
-  "would-pull": "↓ would pull",
-};
-
-function printResult(result: BuildResult): void {
-  const seconds = (result.durationMs / 1000).toFixed(1);
-  console.log(
-    `${SYMBOLS[result.outcome]}  ${result.image}:${result.tag}${result.dirty ? " (dirty)" : ""}  ${result.ref}  ${seconds}s`,
-  );
-  if (result.outcome === "failed") {
-    console.log(`    ${result.error}`);
-    if (result.logFile && existsSync(result.logFile)) {
-      const tail = readFileSync(result.logFile, "utf8")
-        .trimEnd()
-        .split("\n")
-        .slice(-25);
-      for (const line of tail) console.log(`    | ${line}`);
-    }
-  }
-}
-
 async function runBuild(
   identifiers: string[],
   options: BuildCommandOptions,
@@ -67,6 +39,7 @@ async function runBuild(
     composeFiles: options.compose,
   });
   const saflibDir = findSaflibDir();
+  const reporter = createReporter();
   const results = await buildImages({
     contextDir: ctx.rootDir,
     builds: all,
@@ -80,12 +53,12 @@ async function runBuild(
     executor: dockerCli,
     commits: { root: headOf(ctx.rootDir), saflib: headOf(saflibDir) },
     logDir: path.join(ctx.rootDir, ".saf-docker", "logs"),
-    onResult: printResult,
-  });
+    onEvent: (event) => reporter.onEvent(event),
+  }).finally(() => reporter.close());
   const count = (o: BuildResult["outcome"]) =>
     results.filter((r) => r.outcome === o).length;
   console.log(
-    `\n${results.length} image(s): ${count("built")} built, ${count("up-to-date")} up to date, ${count("pulled")} pulled, ${count("in-registry")} already in registry` +
+    `\nDone: ${results.length} image(s): ${count("built")} built, ${count("up-to-date")} up to date, ${count("pulled")} pulled, ${count("in-registry")} already in registry` +
       (dryRun
         ? `, ${count("would-build")} would build, ${count("would-pull")} would pull`
         : "") +

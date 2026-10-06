@@ -588,6 +588,11 @@ saflib fixes found by this migration:
 - When pushing, registry hits are no longer pulled just because a
   downstream build exists; they're pulled lazily only when a build that
   actually runs needs them (outcome `in-registry`).
+- Output (owner request): a check phase decides every image's action first
+  and prints the plan; builds log start/finish; in a TTY each running build
+  shows a live progress bar parsed from BuildKit `--progress=plain` step
+  lines (`buildkitProgressTracker` in `executor.ts`, rendering in
+  `bin/saf-docker/reporter.ts`).
 - With `--registry`, local images also carry registry-qualified tags (the old
   `build.sh` did this), because `prod-local` compose runs against
   `$CONTAINER_REGISTRY/<image>:latest`.

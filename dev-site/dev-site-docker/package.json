@@ -13,10 +13,10 @@
   },
   "dependencies": {
     "@saflib/dev-site-docker-app": "*",
-    "@saflib/dev-site-docker-http": "*",
-    "@saflib/docker": "*"
+    "@saflib/dev-site-docker-http": "*"
   },
   "devDependencies": {
+    "@saflib/docker": "*",
     "@saflib/vitest": "*"
   },
   "sideEffects": false

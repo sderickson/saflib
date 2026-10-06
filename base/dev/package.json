@@ -12,9 +12,9 @@
     "dev-site": "saf-docker build @saflib/dev-site-docker && ./scripts/dev-site-compose.sh up -V",
     "dev-site:down": "./scripts/dev-site-compose.sh down"
   },
-  "dependencies": {
+  "sideEffects": false,
+  "devDependencies": {
     "@saflib/dev-site-docker": "*",
     "@saflib/docker": "*"
-  },
-  "sideEffects": false
+  }
 }
