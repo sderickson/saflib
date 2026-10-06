@@ -97,6 +97,16 @@ describe("isSkippedStubRefLine", () => {
 describe("makeProductInitLineReplace", () => {
   const replace = makeProductInitLineReplace(testContext());
 
+  it("renames the deploy package but not packages that share its prefix", () => {
+    const acme = makeProductInitLineReplace(
+      testContext({ organizationName: "acme" }),
+    );
+    expect(acme('    "@saflib/deploy": "*",')).toBe('    "@acme/deploy": "*",');
+    expect(acme('    "@saflib/deploy-cli": "*",')).toBe(
+      '    "@saflib/deploy-cli": "*",',
+    );
+  });
+
   it("strips the SPA stub from CLIENT_SUBDOMAINS", () => {
     expect(replace("CLIENT_SUBDOMAINS=,auth,app,__subdomain-name__")).toBe(
       "CLIENT_SUBDOMAINS=,auth,app",

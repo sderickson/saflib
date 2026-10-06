@@ -1,13 +1,5 @@
 import type { Command } from "commander";
-import path from "node:path";
-import { repoRootFor, resolveRef } from "@saflib/git";
-import { buildMonorepoContext } from "@saflib/monorepo/workspace";
-import { generateDockerfiles } from "../../src/docker.ts";
-import { buildImages, type BuildResult } from "../../src/build-images.ts";
-import { dockerCli } from "../../src/executor.ts";
-import { findSaflibDir } from "../../src/git-hashes.ts";
-import { createReporter } from "./reporter.ts";
-import { selectBuilds } from "../../src/select.ts";
+import { runImageBuild } from "../../src/run-build.ts";
 
 interface BuildCommandOptions {
   dir?: string[];
@@ -20,53 +12,23 @@ interface BuildCommandOptions {
   concurrency: string;
 }
 
-function headOf(dir: string): string {
-  const { result: repoRoot } = repoRootFor(dir);
-  if (!repoRoot) return "unknown";
-  return resolveRef(repoRoot).result ?? "unknown";
-}
-
 async function runBuild(
   identifiers: string[],
   options: BuildCommandOptions,
   dryRun: boolean,
 ): Promise<void> {
-  const ctx = buildMonorepoContext();
-  const all = generateDockerfiles(ctx);
-  const selected = selectBuilds(all, {
+  const { ok } = await runImageBuild({
     identifiers,
     dirs: options.dir,
     composeFiles: options.compose,
-  });
-  const saflibDir = findSaflibDir();
-  const reporter = createReporter();
-  const results = await buildImages({
-    contextDir: ctx.rootDir,
-    builds: all,
-    selected,
     platform: options.platform,
     registry: options.registry,
     push: options.push,
     force: options.force,
     dryRun,
     concurrency: Number(options.concurrency),
-    executor: dockerCli,
-    commits: { root: headOf(ctx.rootDir), saflib: headOf(saflibDir) },
-    logDir: path.join(ctx.rootDir, ".saf-docker", "logs"),
-    onEvent: (event) => reporter.onEvent(event),
-  }).finally(() => reporter.close());
-  const count = (o: BuildResult["outcome"]) =>
-    results.filter((r) => r.outcome === o).length;
-  console.log(
-    `\nDone: ${results.length} image(s): ${count("built")} built, ${count("up-to-date")} up to date, ${count("pulled")} pulled, ${count("in-registry")} already in registry` +
-      (dryRun
-        ? `, ${count("would-build")} would build, ${count("would-pull")} would pull`
-        : "") +
-      (count("failed") + count("blocked") > 0
-        ? `, ${count("failed")} failed, ${count("blocked")} blocked`
-        : ""),
-  );
-  if (count("failed") + count("blocked") > 0) process.exitCode = 1;
+  });
+  if (!ok) process.exitCode = 1;
 }
 
 function addSharedOptions(command: Command): Command {

@@ -597,6 +597,47 @@ saflib fixes found by this migration:
   `build.sh` did this), because `prod-local` compose runs against
   `$CONTAINER_REGISTRY/<image>:latest`.
 
+#### `saf-deploy` (2026-10-05)
+
+Products' copied deploy scripts (`deploy/local-scripts/*`, `deploy/remote-scripts/*`)
+had drifted from saflib's: no rsync-based sync, no `--force-recreate`,
+hand-maintained image lists in build/push/pull. They now live in saflib as
+`@saflib/deploy-cli` → `saf-deploy` (`build`, `push`, `status`, `sync`,
+`setup`, `pull`, `up`, `down`, `logs`, `purge`, `exec`, `release`), following
+`@saflib/commander`'s bin conventions. See `deploy-cli/docs/01-overview.md`.
+- **No image lists:** `build`/`push` select the builds whose images
+  `remote-assets/docker-compose.prod.yaml` runs (`saf-docker build
+  --compose`); the server's `pull` pulls that file's `$CONTAINER_REGISTRY`
+  images.
+- `saf-docker build`'s logic moved into `@saflib/docker`'s
+  `src/run-build.ts` (`runImageBuild`) so both CLIs share it.
+- `env.remote` stays the config; new optional `REMOTE_SUDO=0` (pathclerk and
+  conaudio skip `sudo -i`). Remote scripts use `$SUDO` (empty when root).
+- saflib's golden `deploy/` template now has only npm scripts calling
+  `saf-deploy`. Fixed `product/init` renaming `@saflib/deploy-cli` (it
+  rewrote any `@saflib/deploy…` prefix).
+- Verified locally: payloads run in bash (export quoting, fail-fast),
+  `pull` selection with a stub docker, `extract-assets` unzip+rsync, and
+  home-2026's `status` / `build:native` through `saf-deploy`. **Not run
+  against a real server** (`sync`/`up`/`release`).
+
+**Rollout checklist per product** (home-2026 done):
+- vendata: saflib at the docker branch already. Migrate builds (Dockerfile.prod
+  → `deploy/builds/*`, dev `build-images.sh` → `--compose`, name alignment),
+  then switch deploy scripts to `saf-deploy`.
+- pathclerk: same, plus `REMOTE_SUDO=0` in env.remote and builds for its
+  custom `pathclerk-alloy` and `pathclerk-kratos` images (two products:
+  daemon, wfsmoke).
+- conaudio (`conaudio/conaudio2`): update its saflib submodule first (not on
+  the docker branch), `REMOTE_SUDO=0`, then as vendata.
+- saf-2025 (`deploy/prod`): older layout. Rename `.env.remote` → `env.remote`
+  with the standard keys (`CONTAINER_REGISTRY=ghcr.io/sderickson`, remote
+  paths), move compose's `--env-file .env.prod` into `env_file:` entries,
+  update saflib, then as vendata.
+- Dev scripts are the next standardization candidate (`dev-compose.sh`,
+  `sync-node-modules.sh`, `resolve-*.sh` vary per product, e.g. conaudio's
+  `--no-attach mongo`).
+
 ### Follow-ups
 
 1. **Migrate the remaining products** (vendata, pathclerk, saf-2025, …); see

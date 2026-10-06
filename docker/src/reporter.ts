@@ -1,10 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
-import type {
-  BuildEvent,
-  BuildResult,
-  PlannedImage,
-} from "../../src/build-images.ts";
-import type { BuildProgress } from "../../src/executor.ts";
+import type { BuildEvent, BuildResult, PlannedImage } from "./build-images.ts";
+import type { BuildProgress } from "./executor.ts";
 
 const OUTCOME_LABELS: Record<BuildResult["outcome"], string> = {
   "up-to-date": "✓ up to date",
@@ -104,7 +100,15 @@ export function createReporter(
 
   const printResult = (result: BuildResult) => {
     // Unchanged images were listed in the plan; pulls print when they finish.
-    if (["up-to-date", "in-registry", "pulled"].includes(result.outcome))
+    if (
+      [
+        "up-to-date",
+        "in-registry",
+        "pulled",
+        "would-build", // dry runs are fully described by the plan
+        "would-pull",
+      ].includes(result.outcome)
+    )
       return;
     print(
       `${OUTCOME_LABELS[result.outcome].padEnd(14)} ${result.image}:${result.tag}` +

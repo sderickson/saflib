@@ -10,7 +10,8 @@
     ".": "./src/docker.ts",
     "./git-hashes": "./src/git-hashes.ts",
     "./builds": "./src/builds.ts",
-    "./inputs": "./src/inputs.ts"
+    "./inputs": "./src/inputs.ts",
+    "./run-build": "./src/run-build.ts"
   },
   "scripts": {
     "test": "vitest run",

@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { findBuild, type Build } from "./builds.ts";
+import { findBuild, sanitizeImageName, type Build } from "./builds.ts";
 
 /**
- * Image names (no registry, no tag) of every `image:` in a compose file.
+ * Image names (no registry, no tag; sanitized like build image names) of
+ * every `image:` in a compose file.
  * A plain line scan rather than `docker compose config`, which needs every
  * `env_file` to exist.
  */
@@ -12,7 +13,7 @@ export function composeImageNames(composeYaml: string): string[] {
   for (const match of composeYaml.matchAll(/^\s*image:\s*["']?([^\s"'#]+)/gm)) {
     const ref = match[1].split("@")[0];
     const lastSegment = ref.slice(ref.lastIndexOf("/") + 1);
-    names.add(lastSegment.replace(/:[^:]*$/, ""));
+    names.add(sanitizeImageName(lastSegment.replace(/:[^:]*$/, "")));
   }
   return [...names];
 }
