@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { BuildResult } from "./build-images.ts";
 import { formatBuildReport } from "./build-report.ts";
-import { progressBar, stepSummary } from "./reporter.ts";
+import { hyperlink, progressBar, stepSummary } from "./reporter.ts";
 
 const result = (overrides: Partial<BuildResult>): BuildResult => ({
   ref: "@x/a/builds/default",
@@ -68,6 +68,12 @@ describe("progress display", () => {
     expect(
       progressBar({ done: 3, total: 3, cached: 3, executed: 0, step: "" }),
     ).toBe("▒".repeat(20));
+  });
+
+  it("wraps links in OSC 8 so custom schemes are clickable", () => {
+    expect(hyperlink("docker-desktop://dashboard/build/a/b/c")).toBe(
+      "\x1b]8;;docker-desktop://dashboard/build/a/b/c\x1b\\docker-desktop://dashboard/build/a/b/c\x1b]8;;\x1b\\",
+    );
   });
 
   it("summarizes a finished build's steps", () => {

@@ -37,6 +37,15 @@ export function progressBar(progress: BuildProgress | undefined): string {
   );
 }
 
+/**
+ * An OSC 8 terminal hyperlink, as `docker build` prints its build details
+ * link. Terminals only auto-link http(s)/file URLs, so a bare
+ * `docker-desktop://…` isn't clickable without this.
+ */
+export function hyperlink(url: string, text: string = url): string {
+  return `\x1b]8;;${url}\x1b\\${text}\x1b]8;;\x1b\\`;
+}
+
 /** `12 steps: 9 cached, 3 rebuilt` */
 export function stepSummary(result: BuildResult): string {
   if (!result.steps) return "";
@@ -147,7 +156,11 @@ export function createReporter(
       print(`    ${result.error}`);
     }
     if (result.logFile) print(`    log:    ${result.logFile}`);
-    if (result.detailsUrl) print(`    docker: ${result.detailsUrl}`);
+    if (result.detailsUrl) {
+      print(
+        `    docker: ${live ? hyperlink(result.detailsUrl) : result.detailsUrl}`,
+      );
+    }
     if (
       result.outcome === "failed" &&
       result.logFile &&
