@@ -2,6 +2,7 @@ import {
   copyFileSync,
   existsSync,
   mkdtempSync,
+  realpathSync,
   statSync,
   utimesSync,
 } from "node:fs";
@@ -250,7 +251,18 @@ export function repoRootFor(
     if (parent === dir) break;
     dir = parent;
   }
-  const { result, error } = execGit(dir, ["rev-parse", "--show-toplevel"]);
-  if (error) return { error };
-  return { result: result.trim() };
+  // Walk up to the nearest `.git` (a directory, or a file for submodules and
+  // worktrees) — what git itself does, without spawning it. This is called
+  // for every source of every build, so it needs to be cheap.
+  for (let current = dir; ; current = dirname(current)) {
+    if (existsSync(join(current, ".git"))) {
+      return { result: realpathSync(current) };
+    }
+    if (dirname(current) === current) break;
+  }
+  return {
+    error: new GitCommandError(`Not inside a git repository: ${path}`, {
+      args: ["rev-parse", "--show-toplevel"],
+    }),
+  };
 }

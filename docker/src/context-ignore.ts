@@ -15,53 +15,87 @@ const toPosix = (p: string) => p.split(path.sep).join("/");
 /** Escapes `.dockerignore` (Go filepath.Match) metacharacters. */
 const escapePattern = (p: string) => p.replace(/[*?[\]\\]/g, "\\$&");
 
+interface Source {
+  source: string;
+  repoRoot: string;
+  repoRelative: string;
+}
+
 /**
- * Context-relative paths of every gitignored file or directory under the
- * Dockerfile's `COPY`/`ADD` sources — local data, dev databases, logs and
- * other things that aren't part of the input hash and shouldn't ship.
+ * For each Dockerfile, the context-relative paths of every gitignored file or
+ * directory under its `COPY`/`ADD` sources — local data, dev databases, logs
+ * and other things that aren't part of the input hash and shouldn't ship.
  * Sources that are themselves gitignored (e.g. the staged install manifests)
- * are left alone. Empty when git isn't available.
+ * are left alone. Makes one `git ls-files` call per repo for all Dockerfiles.
+ * Empty when git isn't available.
  */
+export function gitignoredContextPathsForAll(
+  contextDir: string,
+  dockerfiles: string[],
+): string[][] {
+  const resolved = new Map<string, Source | undefined>();
+  const resolve = (source: string) => {
+    if (!resolved.has(source)) {
+      const abs = path.join(contextDir, source);
+      const { result: repoRoot } = repoRootFor(abs);
+      resolved.set(
+        source,
+        repoRoot
+          ? {
+              source,
+              repoRoot,
+              repoRelative: toPosix(path.relative(repoRoot, abs)),
+            }
+          : undefined,
+      );
+    }
+    return resolved.get(source);
+  };
+  const perBuild = dockerfiles.map((dockerfile) =>
+    parseContextSources(dockerfile)
+      .map(resolve)
+      .filter((s): s is Source => s !== undefined),
+  );
+
+  // Ignored entries per repo, for the union of every build's sources.
+  const ignoredByRepo = new Map<string, string[]>();
+  const sourcesByRepo = new Map<string, Set<string>>();
+  for (const s of perBuild.flat()) {
+    const set = sourcesByRepo.get(s.repoRoot) ?? new Set();
+    set.add(s.repoRelative);
+    sourcesByRepo.set(s.repoRoot, set);
+  }
+  for (const [repoRoot, sources] of sourcesByRepo) {
+    const { result } = listIgnored(repoRoot, [...sources]);
+    ignoredByRepo.set(
+      repoRoot,
+      (result ?? []).map((entry) => entry.replace(/\/$/, "")),
+    );
+  }
+
+  return perBuild.map((sources) => {
+    const paths = new Set<string>();
+    for (const { repoRoot, repoRelative } of sources) {
+      for (const entry of ignoredByRepo.get(repoRoot) ?? []) {
+        // Only what's inside this source; an entry covering the whole source
+        // means the source itself is ignored, so it's kept.
+        if (repoRelative !== "" && !entry.startsWith(`${repoRelative}/`))
+          continue;
+        paths.add(
+          toPosix(path.relative(contextDir, path.join(repoRoot, entry))),
+        );
+      }
+    }
+    return [...paths].sort();
+  });
+}
+
+/** {@link gitignoredContextPathsForAll} for one Dockerfile. */
 export function gitignoredContextPaths(
   contextDir: string,
   dockerfile: string,
 ): string[] {
-  const byRepo = new Map<string, { source: string; repoRelative: string }[]>();
-  for (const source of parseContextSources(dockerfile)) {
-    const { result: repoRoot, error } = repoRootFor(
-      path.join(contextDir, source),
-    );
-    if (error) continue;
-    const repoRelative = toPosix(
-      path.relative(repoRoot, path.join(contextDir, source)),
-    );
-    const group = byRepo.get(repoRoot) ?? [];
-    group.push({ source, repoRelative });
-    byRepo.set(repoRoot, group);
-  }
-  const paths = new Set<string>();
-  for (const [repoRoot, group] of byRepo) {
-    const { result: ignored, error } = listIgnored(
-      repoRoot,
-      group.map((g) => g.repoRelative),
-    );
-    if (error) continue;
-    for (const entry of ignored) {
-      const trimmed = entry.replace(/\/$/, "");
-      // An entry covering a whole source means the source itself is ignored.
-      const coversSource = group.some(
-        (g) =>
-          g.repoRelative === trimmed ||
-          g.repoRelative.startsWith(`${trimmed}/`) ||
-          trimmed === "",
-      );
-      if (coversSource) continue;
-      paths.add(
-        toPosix(path.relative(contextDir, path.join(repoRoot, trimmed))),
-      );
-    }
-  }
-  return [...paths].sort();
+  return gitignoredContextPathsForAll(contextDir, [dockerfile])[0];
 }
 
 /**
@@ -73,12 +107,12 @@ export function gitignoredContextPaths(
 export function generateContextIgnore(
   contextDir: string,
   dockerfile: string,
+  ignored: string[] = gitignoredContextPaths(contextDir, dockerfile),
 ): string {
   const rootFile = path.join(contextDir, ".dockerignore");
   const root = existsSync(rootFile)
     ? readFileSync(rootFile, "utf8").trimEnd()
     : "";
-  const ignored = gitignoredContextPaths(contextDir, dockerfile);
   return [
     "# Generated by `saf-docker generate`; do not edit.",
     "# Context .dockerignore:",

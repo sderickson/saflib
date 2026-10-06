@@ -58,6 +58,76 @@ export interface ComputeInputsOptions {
   platform?: string;
   /** Skip the (slower) git-invisible context file audit. */
   skipAudit?: boolean;
+  /**
+   * Reuse working-tree hashes across builds within one run: the first build
+   * touching a repo hashes every build's sources in it at once (one index
+   * copy + `git add` per repo instead of per build). Only share it while the
+   * working tree isn't changing.
+   */
+  hashCache?: WorkingTreeHashCache;
+}
+
+/** See {@link ComputeInputsOptions.hashCache}. */
+export type WorkingTreeHashCache = Map<
+  string,
+  { hashes: Record<string, string | null>; dirty: Set<string> }
+>;
+
+/** Repo-relative sources (in `repoRoot`) of every build's generated Dockerfile. */
+function allSourcesIn(
+  contextDir: string,
+  builds: Build[],
+  repoRoot: string,
+): string[] {
+  const paths = new Set<string>();
+  for (const build of builds) {
+    if (!existsSync(build.dockerfilePath)) continue;
+    for (const source of parseContextSources(
+      readFileSync(build.dockerfilePath, "utf8"),
+    )) {
+      const abs = path.join(contextDir, source);
+      const { result } = repoRootFor(abs);
+      if (result === repoRoot) {
+        paths.add(path.relative(repoRoot, abs).split(path.sep).join("/"));
+      }
+    }
+  }
+  return [...paths];
+}
+
+function hashWorkingTree(
+  repoRoot: string,
+  paths: string[],
+  options: ComputeInputsOptions,
+): { hashes: Record<string, string | null>; dirty: boolean } {
+  const cache = options.hashCache;
+  if (!cache) {
+    const { result, error } = workingTreeHashes(repoRoot, paths);
+    if (error) throw error;
+    return { hashes: result.hashes, dirty: result.dirty };
+  }
+  let entry = cache.get(repoRoot);
+  const missing = entry ? paths.filter((p) => !(p in entry!.hashes)) : paths;
+  if (!entry || missing.length > 0) {
+    const toHash = entry
+      ? missing
+      : [
+          ...new Set([
+            ...paths,
+            ...allSourcesIn(options.contextDir, options.builds, repoRoot),
+          ]),
+        ];
+    const { result, error } = workingTreeHashes(repoRoot, toHash);
+    if (error) throw error;
+    entry ??= { hashes: {}, dirty: new Set() };
+    Object.assign(entry.hashes, result.hashes);
+    result.dirtyPaths.forEach((p) => entry!.dirty.add(p));
+    cache.set(repoRoot, entry);
+  }
+  return {
+    hashes: entry.hashes,
+    dirty: paths.some((p) => entry!.dirty.has(p)),
+  };
 }
 
 /**
@@ -305,11 +375,11 @@ export function computeBuildInputs(
   let dirty = false;
   const gitInvisibleContextFiles: string[] = [];
   for (const [repoRoot, group] of byRepo) {
-    const { result, error } = workingTreeHashes(
+    const result = hashWorkingTree(
       repoRoot,
       group.map((g) => g.repoRelative),
+      options,
     );
-    if (error) throw error;
     dirty ||= result.dirty;
 
     const gitSourced: string[] = [];

@@ -18,7 +18,11 @@ import {
   type Build,
 } from "./builds.ts";
 import { buildMetadataStep } from "./metadata.ts";
-import { contextIgnorePath, generateContextIgnore } from "./context-ignore.ts";
+import {
+  contextIgnorePath,
+  generateContextIgnore,
+  gitignoredContextPathsForAll,
+} from "./context-ignore.ts";
 import {
   narrowRootPackageJson,
   pruneLockfile,
@@ -263,6 +267,7 @@ export function generateDockerfiles(
 ): Build[] {
   const builds = listBuilds(ctx);
   const images = new Set(builds.map((b) => b.image));
+  const generated: string[] = [];
   for (const build of builds) {
     const packages = getAllPackageWorkspaceDependencies(
       build.packageName,
@@ -323,13 +328,18 @@ export function generateDockerfiles(
       buildMetadataStep(body, build.image, otherImages);
 
     writeFileSync(build.dockerfilePath, dockerfileContents);
-    writeFileSync(
-      contextIgnorePath(build.dockerfilePath),
-      generateContextIgnore(ctx.rootDir, dockerfileContents),
-    );
+    generated.push(dockerfileContents);
     if (verbose) {
       console.log("Wrote", path.relative(ctx.rootDir, build.dockerfilePath));
     }
   }
+  // One gitignore listing per repo for every build's context ignore file.
+  const ignored = gitignoredContextPathsForAll(ctx.rootDir, generated);
+  builds.forEach((build, i) =>
+    writeFileSync(
+      contextIgnorePath(build.dockerfilePath),
+      generateContextIgnore(ctx.rootDir, generated[i], ignored[i]),
+    ),
+  );
   return builds;
 }

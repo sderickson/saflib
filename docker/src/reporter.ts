@@ -1,5 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
-import type { BuildEvent, BuildResult, PlannedImage } from "./build-images.ts";
+import type {
+  BuildEvent,
+  BuildResult,
+  CheckTimings,
+  PlannedImage,
+} from "./build-images.ts";
 import type { BuildProgress } from "./executor.ts";
 
 const OUTCOME_LABELS: Record<BuildResult["outcome"], string> = {
@@ -115,14 +120,20 @@ export function createReporter(
     drawLive();
   };
 
-  const printPlan = (plan: PlannedImage[], durationMs: number) => {
+  const printPlan = (
+    plan: PlannedImage[],
+    durationMs: number,
+    timings: CheckTimings,
+  ) => {
     const by = (action: PlannedImage["action"]) =>
       plan.filter((p) => p.action === action);
     const toBuild = by("build");
     const upToDate = by("up-to-date");
     const inRegistry = by("in-registry");
     print(
-      `Checked ${plan.length} image(s) in ${seconds(durationMs)}: ` +
+      `Checked ${plan.length} image(s) in ${seconds(durationMs)} ` +
+        `(generate ${seconds(timings.prepareMs)}, hash inputs ${seconds(timings.hashMs)}, ` +
+        `image lookup ${seconds(timings.lookupMs)}): ` +
         `${toBuild.length} to build, ${upToDate.length} up to date` +
         (inRegistry.length ? `, ${inRegistry.length} in registry` : ""),
     );
@@ -178,7 +189,7 @@ export function createReporter(
     onEvent(event) {
       switch (event.type) {
         case "checked":
-          printPlan(event.plan, event.durationMs);
+          printPlan(event.plan, event.durationMs, event.timings);
           if (live) timer = setInterval(redraw, 500);
           break;
         case "start":

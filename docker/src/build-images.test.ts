@@ -299,8 +299,16 @@ describe("buildImages", () => {
     const events: BuildEvent[] = [];
     await run({ onEvent: (e) => events.push(e) });
 
+    const checked = events[0];
+    expect(checked.type === "checked" && checked.durationMs).toBe(
+      checked.type === "checked" &&
+        checked.timings.prepareMs +
+          checked.timings.hashMs +
+          checked.timings.lookupMs,
+    );
     expect(events[0]).toMatchObject({
       type: "checked",
+      timings: { prepareMs: 0 },
       plan: [
         { image: "x-base", action: "up-to-date" },
         { image: "x-app", action: "build" },

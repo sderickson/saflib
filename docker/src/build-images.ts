@@ -7,7 +7,12 @@ import {
   type BuildStats,
   type DockerExecutor,
 } from "./executor.ts";
-import { computeBuildInputs, inputTag, type BuildInputs } from "./inputs.ts";
+import {
+  computeBuildInputs,
+  inputTag,
+  type BuildInputs,
+  type WorkingTreeHashCache,
+} from "./inputs.ts";
 import { BUILD_INFO_ARG, type BuildInfo } from "./metadata.ts";
 import { resolveBuildSecrets } from "./secrets.ts";
 
@@ -65,13 +70,29 @@ export interface PlannedImage {
 
 export type BuildEvent =
   /** Every image's action is decided (before anything is built). */
-  | { type: "checked"; plan: PlannedImage[]; durationMs: number }
+  | {
+      type: "checked";
+      plan: PlannedImage[];
+      /** Everything before the first build: the sum of `timings`. */
+      durationMs: number;
+      timings: CheckTimings;
+    }
   /** A build (or a pull) started. */
   | { type: "start"; ref: string; image: string; action: "build" | "pull" }
   | { type: "progress"; ref: string; image: string; progress: BuildProgress }
   /** A pull finished (pulls of `in-registry` images happen on demand). */
   | { type: "pulled"; ref: string; image: string; durationMs: number }
   | { type: "finish"; result: BuildResult };
+
+/** Where the time before the first build went. */
+export interface CheckTimings {
+  /** Caller's preparation, e.g. generating Dockerfiles (see `prepareMs`). */
+  prepareMs: number;
+  /** Computing every image's input hash (git + staged files). */
+  hashMs: number;
+  /** Docker/registry lookups: server platform and image existence. */
+  lookupMs: number;
+}
 
 export interface BuildImagesOptions {
   contextDir: string;
@@ -101,6 +122,8 @@ export interface BuildImagesOptions {
   now?: () => Date;
   onResult?: (result: BuildResult) => void;
   onEvent?: (event: BuildEvent) => void;
+  /** Time the caller already spent preparing (reported in `checked`). */
+  prepareMs?: number;
 }
 
 const PLATFORM_ALIASES: Record<string, string> = {
@@ -180,18 +203,37 @@ export async function buildImages(
   if (options.push && !options.registry) {
     throw new Error("--push requires a registry");
   }
-  const serverPlatform = await executor.serverPlatform();
+  let lookupMs = 0;
+  const timed = async <T>(task: () => Promise<T>): Promise<T> => {
+    const started = Date.now();
+    try {
+      return await task();
+    } finally {
+      lookupMs += Date.now() - started;
+    }
+  };
+  const serverPlatform = await timed(() => executor.serverPlatform());
   const { platform, flag } = resolvePlatform(options.platform, serverPlatform);
 
   const byRef = new Map(options.builds.map((b) => [b.ref, b]));
   const memo = new Map<string, BuildInputs>();
+  const hashCache: WorkingTreeHashCache = new Map();
   const inputsOf = (build: Build) =>
     computeBuildInputs(
       build,
-      { contextDir, builds: options.builds, platform, skipAudit: true },
+      {
+        contextDir,
+        builds: options.builds,
+        platform,
+        skipAudit: true,
+        hashCache,
+      },
       memo,
     );
+  const hashStarted = Date.now();
   const plan = withUpstreams(options.selected, byRef, inputsOf);
+  plan.forEach(inputsOf);
+  const hashMs = Date.now() - hashStarted;
   const upstreamsOf = (build: Build) =>
     inputsOf(build)
       .inputs.filter((i) => i.kind === "upstream")
@@ -204,40 +246,43 @@ export async function buildImages(
 
   // Check phase: an image's input hash doesn't depend on whether its
   // upstreams get rebuilt, so every image's action is known up front.
-  const checkStarted = Date.now();
   const checks = semaphore(8);
-  const planned = await Promise.all(
-    plan.map(async (build): Promise<PlannedImage> => {
-      const inputs = inputsOf(build);
-      const tag = inputTag(inputs.inputHash);
-      const base = {
-        ref: build.ref,
-        image: build.image,
-        tag,
-        dirty: inputs.dirty,
-      };
-      if (options.force) return { ...base, action: "build" };
-      if (
-        await checks(() => executor.localImageExists(`${build.image}:${tag}`))
-      ) {
-        return { ...base, action: "up-to-date" };
-      }
-      if (
-        registry &&
-        (await checks(() =>
-          executor.remoteImageExists(remote(build.image, tag)),
-        ))
-      ) {
-        return { ...base, action: "in-registry" };
-      }
-      return { ...base, action: "build" };
-    }),
+  const planned = await timed(() =>
+    Promise.all(
+      plan.map(async (build): Promise<PlannedImage> => {
+        const inputs = inputsOf(build);
+        const tag = inputTag(inputs.inputHash);
+        const base = {
+          ref: build.ref,
+          image: build.image,
+          tag,
+          dirty: inputs.dirty,
+        };
+        if (options.force) return { ...base, action: "build" };
+        if (
+          await checks(() => executor.localImageExists(`${build.image}:${tag}`))
+        ) {
+          return { ...base, action: "up-to-date" };
+        }
+        if (
+          registry &&
+          (await checks(() =>
+            executor.remoteImageExists(remote(build.image, tag)),
+          ))
+        ) {
+          return { ...base, action: "in-registry" };
+        }
+        return { ...base, action: "build" };
+      }),
+    ),
   );
   const actionOf = new Map(planned.map((p) => [p.ref, p.action]));
+  const timings = { prepareMs: options.prepareMs ?? 0, hashMs, lookupMs };
   emit({
     type: "checked",
     plan: planned,
-    durationMs: Date.now() - checkStarted,
+    durationMs: timings.prepareMs + timings.hashMs + timings.lookupMs,
+    timings,
   });
   const now = options.now ?? (() => new Date());
   const promises = new Map<string, Promise<BuildResult>>();

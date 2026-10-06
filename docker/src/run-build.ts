@@ -38,11 +38,13 @@ function headOf(dir: string): string {
 export async function runImageBuild(
   options: RunImageBuildOptions,
 ): Promise<{ ok: boolean; results: BuildResult[] }> {
+  const prepareStarted = Date.now();
   const ctx = buildMonorepoContext(
     findMonorepoRoot(options.cwd ?? process.cwd()),
   );
   const all = generateDockerfiles(ctx);
   const selected = selectBuilds(all, options);
+  const prepareMs = Date.now() - prepareStarted;
   const reporter = createReporter();
   const startedAt = new Date();
   const results = await buildImages({
@@ -62,6 +64,7 @@ export async function runImageBuild(
     },
     logDir: path.join(ctx.rootDir, ".saf-docker", "logs"),
     onEvent: (event) => reporter.onEvent(event),
+    prepareMs,
   }).finally(() => reporter.close());
 
   const count = (o: BuildResult["outcome"]) =>
