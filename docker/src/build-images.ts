@@ -1,6 +1,12 @@
 import path from "node:path";
 import type { Build } from "./builds.ts";
-import type { BuildProgress, DockerExecutor } from "./executor.ts";
+import { existsSync, readFileSync } from "node:fs";
+import {
+  findBuildDetailsUrl,
+  type BuildProgress,
+  type BuildStats,
+  type DockerExecutor,
+} from "./executor.ts";
 import { computeBuildInputs, inputTag, type BuildInputs } from "./inputs.ts";
 import { BUILD_INFO_ARG, type BuildInfo } from "./metadata.ts";
 
@@ -32,7 +38,12 @@ export interface BuildResult {
   /** Whether the image's inputs had uncommitted changes. */
   dirty: boolean;
   error?: string;
+  /** Full `docker build` output (built and failed builds). */
   logFile?: string;
+  /** Docker Desktop's build details link (built and failed builds). */
+  detailsUrl?: string;
+  /** Step counts of a finished build: cached vs actually rebuilt. */
+  steps?: { total: number; cached: number; executed: number };
 }
 
 /** What the check phase decided for an image. */
@@ -360,8 +371,9 @@ export async function buildImages(
         upstream: upstreamsOf(build),
       };
       const logFile = path.join(options.logDir, `${build.image}.log`);
+      let stats: BuildStats;
       try {
-        await limit(() => {
+        stats = await limit(() => {
           emit({
             type: "start",
             ref: build.ref,
@@ -392,14 +404,24 @@ export async function buildImages(
           });
         });
       } catch (error) {
+        const output = existsSync(logFile) ? readFileSync(logFile, "utf8") : "";
         return result("failed", {
           error: error instanceof Error ? error.message : String(error),
           logFile,
+          detailsUrl: findBuildDetailsUrl(output),
         });
       }
       await tagLocally();
       await publish();
-      return result("built", { logFile });
+      return result("built", {
+        logFile,
+        detailsUrl: stats.detailsUrl,
+        steps: {
+          total: stats.totalSteps,
+          cached: stats.cachedSteps,
+          executed: stats.executedSteps,
+        },
+      });
     } catch (error) {
       return result("failed", {
         error: error instanceof Error ? error.message : String(error),

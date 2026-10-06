@@ -1,3 +1,4 @@
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { repoRootFor, resolveRef } from "@saflib/git";
 import {
@@ -5,6 +6,7 @@ import {
   findMonorepoRoot,
 } from "@saflib/monorepo/workspace";
 import { buildImages, type BuildResult } from "./build-images.ts";
+import { formatBuildReport } from "./build-report.ts";
 import { generateDockerfiles } from "./docker.ts";
 import { dockerCli } from "./executor.ts";
 import { findSaflibDir } from "./git-hashes.ts";
@@ -42,6 +44,7 @@ export async function runImageBuild(
   const all = generateDockerfiles(ctx);
   const selected = selectBuilds(all, options);
   const reporter = createReporter();
+  const startedAt = new Date();
   const results = await buildImages({
     contextDir: ctx.rootDir,
     builds: all,
@@ -73,5 +76,19 @@ export async function runImageBuild(
         ? `, ${count("failed")} failed, ${count("blocked")} blocked`
         : ""),
   );
+  const reportFile = path.join(ctx.rootDir, ".saf-docker", "build-report.md");
+  mkdirSync(path.dirname(reportFile), { recursive: true });
+  writeFileSync(
+    reportFile,
+    formatBuildReport(results, {
+      startedAt,
+      contextDir: ctx.rootDir,
+      platform: options.platform,
+      registry: options.registry,
+      push: options.push,
+      dryRun: options.dryRun,
+    }),
+  );
+  console.log(`Report: ${reportFile}`);
   return { ok: failed === 0, results };
 }

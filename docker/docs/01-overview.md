@@ -50,7 +50,9 @@ Selectors combine: build refs, every build under a `--dir`, and every build whos
 4. Else **build** it, tagged `in-<hash>`, `latest` and any `build.json` tags, with build info and OCI labels (`org.opencontainers.image.revision`, `dev.saflib.input-hash`, …).
 5. With `--push`, push every tag.
 
-Before building anything it prints the plan: every image and whether it will be built, is up to date, or is in the registry. Then each build logs when it starts and finishes. In an interactive terminal, running builds show a live progress bar each (BuildKit steps done / seen so far, plus the current step); in CI or when piped, just the start/finish lines. Full output of each build goes to `.saf-docker/logs/<image>.log`.
+Before building anything it prints the plan: every image and whether it will be built, is up to date, or is in the registry. Then each build logs when it starts and finishes. In an interactive terminal, running builds show a live progress bar each: `▒` steps BuildKit took from cache, `█` steps that actually ran, `░` the rest (of the steps reported so far), plus the current step. In CI or when piped, just the start/finish lines. Each finished build reports its step counts (`12 steps: 9 cached, 3 rebuilt`), its full log (`.saf-docker/logs/<image>.log`) and, with Docker Desktop, its build details link (`docker-desktop://…`).
+
+Every run also writes `.saf-docker/build-report.md` (gitignored): each image's outcome, tag, time, cached/rebuilt step counts, log file and Docker Desktop link, plus any errors. The path is printed at the end. It's the place to look (or to point an agent at) after a run.
 
 `saf-docker inputs [refs…] [-v]` prints a build's inputs and hash, and warns about gitignored files that reach the build context without being hashed (fix those with `.dockerignore`). `saf-docker skip-rate` estimates from git history how often each build would be skipped.
 

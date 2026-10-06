@@ -15,6 +15,35 @@ const OUTCOME_LABELS: Record<BuildResult["outcome"], string> = {
 
 const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
 
+const BAR_WIDTH = 20;
+
+/**
+ * `▒` steps taken from cache, `█` steps that actually ran, `░` the rest
+ * (running or not started), out of the steps BuildKit has reported so far.
+ */
+export function progressBar(progress: BuildProgress | undefined): string {
+  if (!progress || progress.total === 0) return "░".repeat(BAR_WIDTH);
+  const cells = (n: number) =>
+    Math.round((Math.min(n, progress.total) / progress.total) * BAR_WIDTH);
+  const cached = cells(progress.cached);
+  const executed = Math.min(
+    BAR_WIDTH - cached,
+    cells(progress.cached + progress.executed) - cached,
+  );
+  return (
+    "▒".repeat(cached) +
+    "█".repeat(executed) +
+    "░".repeat(BAR_WIDTH - cached - executed)
+  );
+}
+
+/** `12 steps: 9 cached, 3 rebuilt` */
+export function stepSummary(result: BuildResult): string {
+  if (!result.steps) return "";
+  const { total, cached, executed } = result.steps;
+  return `${total} steps: ${cached} cached, ${executed} rebuilt`;
+}
+
 interface Active {
   image: string;
   action: "build" | "pull";
@@ -56,13 +85,11 @@ export function createReporter(
       if (a.action === "pull")
         return fit(`  ↓ pulling  ${a.image}  ${elapsed}`);
       const p = a.progress;
-      const fraction = p && p.total > 0 ? Math.min(1, p.done / p.total) : 0;
-      const barWidth = 20;
-      const filled = Math.round(fraction * barWidth);
-      const bar = "█".repeat(filled) + "░".repeat(barWidth - filled);
-      const steps = p ? `${p.done}/${p.total}` : "…";
+      const counts = p
+        ? `${p.cached} cached, ${p.executed} rebuilt / ${p.total}`
+        : "…";
       return fit(
-        `  ▶ ${a.image}  [${bar}] ${steps}  ${elapsed}  ${p?.step ?? "starting"}`,
+        `  ▶ ${a.image}  [${progressBar(p)}] ${counts}  ${elapsed}  ${p?.step ?? "starting"}`,
       );
     });
     for (const line of lines) out.write(line + "\n");
@@ -110,13 +137,17 @@ export function createReporter(
       ].includes(result.outcome)
     )
       return;
+    const steps = stepSummary(result);
     print(
       `${OUTCOME_LABELS[result.outcome].padEnd(14)} ${result.image}:${result.tag}` +
-        `${result.dirty ? " (dirty)" : ""}  ${seconds(result.durationMs)}`,
+        `${result.dirty ? " (dirty)" : ""}  ${seconds(result.durationMs)}` +
+        (steps ? `  (${steps})` : ""),
     );
     if (result.outcome === "failed" || result.outcome === "blocked") {
       print(`    ${result.error}`);
     }
+    if (result.logFile) print(`    log:    ${result.logFile}`);
+    if (result.detailsUrl) print(`    docker: ${result.detailsUrl}`);
     if (
       result.outcome === "failed" &&
       result.logFile &&

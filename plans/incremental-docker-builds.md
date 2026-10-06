@@ -593,6 +593,11 @@ saflib fixes found by this migration:
   shows a live progress bar parsed from BuildKit `--progress=plain` step
   lines (`buildkitProgressTracker` in `executor.ts`, rendering in
   `bin/saf-docker/reporter.ts`).
+- Output, round 2 (owner request): progress bars distinguish cached (`▒`)
+  from rebuilt (`█`) steps (BuildKit `#N CACHED` vs `#N DONE`); finished and
+  failed builds print step counts, log path and Docker Desktop link; every run
+  writes `.saf-docker/build-report.md`. Gotcha: BuildKit pads stage names
+  (`[stage-0  4/11]`), so the step pattern must allow multiple spaces.
 - With `--registry`, local images also carry registry-qualified tags (the old
   `build.sh` did this), because `prod-local` compose runs against
   `$CONTAINER_REGISTRY/<image>:latest`.

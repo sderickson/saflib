@@ -68,6 +68,12 @@ class FakeDocker implements DockerExecutor {
       throw new Error("boom");
     }
     options.tags.forEach((t) => this.local.add(t));
+    return {
+      totalSteps: 3,
+      cachedSteps: 2,
+      executedSteps: 1,
+      detailsUrl: `docker-desktop://dashboard/build/${options.tags[0]}`,
+    };
   }
 }
 
@@ -174,6 +180,11 @@ describe("buildImages", () => {
     });
     expect(web.labels["dev.saflib.build-ref"]).toBe("@x/web/builds/default");
     expect(web.dockerfile).toBe("web/Dockerfile");
+    expect(results[2]).toMatchObject({
+      steps: { total: 3, cached: 2, executed: 1 },
+      detailsUrl: `docker-desktop://dashboard/build/x-web:${results[2].tag}`,
+      logFile: expect.stringMatching(/x-web\.log$/),
+    });
   });
 
   it("skips everything on a second run, retagging latest", async () => {
@@ -376,10 +387,40 @@ describe("BuildKit progress", () => {
       index: 2,
       count: 2,
     });
+    // BuildKit pads stage names to align step counters.
+    expect(
+      parseBuildkitStep("#12 [stage-0  4/11] COPY --from=x /dist /srv"),
+    ).toMatchObject({ stage: "stage-0", index: 4, count: 11 });
     expect(parseBuildkitStep("#7 DONE 1.2s")).toBeUndefined();
     expect(
       parseBuildkitStep("#1 [internal] load build definition"),
     ).toBeUndefined();
+  });
+
+  it("tells cached steps from rebuilt ones and finds the build details link", () => {
+    const seen: string[] = [];
+    const track = buildkitProgressTracker((p) =>
+      seen.push(`${p.cached}c/${p.executed}e of ${p.total}`),
+    );
+    [
+      "#5 [deps 1/3] FROM node",
+      "#5 CACHED",
+      "#6 [deps 2/3] RUN npm ci",
+      "#6 CACHED",
+      "#7 [deps 3/3] COPY . .",
+      "#7 DONE 0.4s",
+      "#7 DONE 0.4s",
+      "#8 exporting to image",
+      "#8 DONE 1.0s",
+      "View build details: docker-desktop://dashboard/build/a/b/xyz",
+    ].forEach(track);
+    expect(seen.at(-1)).toBe("2c/1e of 3");
+    expect(track.stats()).toEqual({
+      totalSteps: 3,
+      cachedSteps: 2,
+      executedSteps: 1,
+      detailsUrl: "docker-desktop://dashboard/build/a/b/xyz",
+    });
   });
 
   it("counts each step once across stages", () => {
