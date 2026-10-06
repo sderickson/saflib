@@ -65,7 +65,11 @@ export interface ComputeInputsOptions {
  * (each build's own is a `file` input already), and `git-hashes.json`, which
  * `saf-git-hashes` writes before every build (retired by build metadata).
  */
-const AUDIT_EXEMPT_BASENAMES = new Set(["Dockerfile", "git-hashes.json"]);
+const AUDIT_EXEMPT_BASENAMES = new Set([
+  "Dockerfile",
+  "Dockerfile.dockerignore",
+  "git-hashes.json",
+]);
 
 export interface Instruction {
   keyword: string;
@@ -262,7 +266,7 @@ export function computeBuildInputs(
     );
   }
   const dockerfile = readFileSync(build.dockerfilePath, "utf8");
-  const dockerIgnore = DockerIgnore.fromContextDir(contextDir);
+  const dockerIgnore = DockerIgnore.forBuild(contextDir, build.dockerfilePath);
 
   const inputs: BuildInput[] = [
     { kind: "scalar", key: "schema", hash: String(HASH_SCHEMA_VERSION) },
@@ -276,6 +280,15 @@ export function computeBuildInputs(
       hash: createHash("sha256").update(dockerfile).digest("hex"),
     },
   ];
+  // The context's ignore rules decide what COPY sources contain.
+  const rootIgnore = path.join(contextDir, ".dockerignore");
+  if (existsSync(rootIgnore)) {
+    inputs.push({
+      kind: "file",
+      key: ".dockerignore",
+      hash: createHash("sha256").update(readFileSync(rootIgnore)).digest("hex"),
+    });
+  }
 
   // Group context sources by the (sub)repo that owns them.
   const byRepo = new Map<string, { source: string; repoRelative: string }[]>();

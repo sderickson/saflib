@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   realpathSync,
   rmSync,
   writeFileSync,
@@ -11,6 +12,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import type { Build } from "./builds.ts";
 import { DockerIgnore } from "./dockerignore.ts";
+import { generateContextIgnore } from "./context-ignore.ts";
 import {
   combineInputs,
   computeBuildInputs,
@@ -184,6 +186,7 @@ describe("computeBuildInputs", () => {
     const result = compute(builds[0]);
     expect(result.dirty).toBe(false);
     expect(result.inputs.map((i) => `${i.kind}:${i.key}`)).toEqual([
+      "file:.dockerignore",
       "file:.saf-docker/stage/app",
       "file:app/Dockerfile",
       "git:app",
@@ -254,6 +257,26 @@ describe("computeBuildInputs", () => {
     expect(compute(builds[0]).gitInvisibleContextFiles).toEqual([]);
     write("lib/dist/index.js", "built\n");
     expect(compute(builds[0]).gitInvisibleContextFiles).toEqual(["lib/dist/"]);
+  });
+
+  it("generates a per-build ignore file excluding gitignored paths under its sources", () => {
+    write("app/data/upload.pdf", "user data\n"); // gitignored via app/.gitignore
+    write("app/.gitignore", "data/\n*.log\n");
+    write("app/debug.log", "noise\n");
+    write("other/secret.txt", "not a source of this build\n");
+    const ignore = generateContextIgnore(
+      root,
+      readFileSync(path.join(root, "app/Dockerfile"), "utf8"),
+    );
+    expect(ignore).toContain("**/dist/types"); // the context's rules come first
+    expect(ignore).toContain("\napp/data\n");
+    expect(ignore).toContain("\napp/debug.log\n");
+    expect(ignore).not.toContain(".saf-docker"); // an ignored *source* is kept
+    expect(ignore).not.toContain("other/");
+
+    // With it in place, the audit finds nothing reaching the context.
+    write("app/Dockerfile.dockerignore", ignore);
+    expect(compute(builds[0]).gitInvisibleContextFiles).toEqual([]);
   });
 
   it("errors when the Dockerfile hasn't been generated", () => {

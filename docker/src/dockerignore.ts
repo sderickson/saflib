@@ -57,6 +57,17 @@ export class DockerIgnore {
       });
   }
 
+  /**
+   * The rules a build actually uses: its `<Dockerfile>.dockerignore` when
+   * present (it replaces the context's), else the context's `.dockerignore`.
+   */
+  static forBuild(contextDir: string, dockerfilePath: string): DockerIgnore {
+    const own = `${dockerfilePath}.dockerignore`;
+    return existsSync(own)
+      ? new DockerIgnore(readFileSync(own, "utf8"))
+      : DockerIgnore.fromContextDir(contextDir);
+  }
+
   static fromContextDir(contextDir: string): DockerIgnore {
     const file = path.join(contextDir, ".dockerignore");
     return new DockerIgnore(existsSync(file) ? readFileSync(file, "utf8") : "");

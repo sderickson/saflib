@@ -18,6 +18,7 @@ import {
   type Build,
 } from "./builds.ts";
 import { buildMetadataStep } from "./metadata.ts";
+import { contextIgnorePath, generateContextIgnore } from "./context-ignore.ts";
 import {
   narrowRootPackageJson,
   pruneLockfile,
@@ -322,6 +323,10 @@ export function generateDockerfiles(
       buildMetadataStep(body, build.image, otherImages);
 
     writeFileSync(build.dockerfilePath, dockerfileContents);
+    writeFileSync(
+      contextIgnorePath(build.dockerfilePath),
+      generateContextIgnore(ctx.rootDir, dockerfileContents),
+    );
     if (verbose) {
       console.log("Wrote", path.relative(ctx.rootDir, build.dockerfilePath));
     }

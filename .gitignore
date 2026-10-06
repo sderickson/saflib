@@ -5,6 +5,7 @@
 **/data/*.sqlite-wal
 **/saf-workflow-status.json
 Dockerfile
+Dockerfile.dockerignore
 .saf-docker/
 # Editor directories and files
 .vscode/*
