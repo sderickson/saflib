@@ -12,6 +12,8 @@ export interface DockerBuildOptions {
   platform?: string;
   buildArgs: Record<string, string>;
   labels: Record<string, string>;
+  /** BuildKit secret values by id (passed via the process env, not args). */
+  secrets?: Record<string, string>;
   /** Build output is written here rather than to the console. */
   logFile: string;
   /** Called as BuildKit starts each Dockerfile step. */
@@ -140,6 +142,8 @@ interface RunResult {
 
 interface RunOptions {
   cwd?: string;
+  /** Extra environment for the docker process. */
+  env?: Record<string, string>;
   logFile?: string;
   /** Receives each complete output line (when logging to a file). */
   onLine?: (line: string) => void;
@@ -149,7 +153,7 @@ function run(args: string[], options: RunOptions = {}): Promise<RunResult> {
   return new Promise((resolve, reject) => {
     const child = spawn("docker", args, {
       cwd: options.cwd,
-      env: { ...process.env, DOCKER_BUILDKIT: "1" },
+      env: { ...process.env, DOCKER_BUILDKIT: "1", ...options.env },
       stdio: ["ignore", "pipe", "pipe"],
     });
     let stdout = "";
@@ -198,6 +202,34 @@ async function runOrThrow(
   return result.stdout.trim();
 }
 
+/**
+ * `docker build` arguments for {@link DockerBuildOptions}. Secret values go
+ * in the returned env (`--secret id=…,env=SAF_BUILD_SECRET_n`), never in the
+ * arguments, which other processes can see.
+ */
+export function dockerBuildCommand(options: DockerBuildOptions): {
+  args: string[];
+  env: Record<string, string>;
+} {
+  const args = ["build", "--progress=plain", "-f", options.dockerfile];
+  if (options.platform) args.push("--platform", options.platform);
+  for (const tag of options.tags) args.push("-t", tag);
+  for (const [key, value] of Object.entries(options.buildArgs)) {
+    args.push("--build-arg", `${key}=${value}`);
+  }
+  for (const [key, value] of Object.entries(options.labels)) {
+    args.push("--label", `${key}=${value}`);
+  }
+  const env: Record<string, string> = {};
+  Object.entries(options.secrets ?? {}).forEach(([id, value], i) => {
+    const name = `SAF_BUILD_SECRET_${i}`;
+    env[name] = value;
+    args.push("--secret", `id=${id},env=${name}`);
+  });
+  args.push(".");
+  return { args, env };
+}
+
 /** {@link DockerExecutor} backed by the `docker` CLI (with buildx). */
 export const dockerCli: DockerExecutor = {
   serverPlatform: () =>
@@ -223,21 +255,13 @@ export const dockerCli: DockerExecutor = {
     await runOrThrow(["push", ref]);
   },
   build: async (options) => {
-    const args = ["build", "--progress=plain", "-f", options.dockerfile];
-    if (options.platform) args.push("--platform", options.platform);
-    for (const tag of options.tags) args.push("-t", tag);
-    for (const [key, value] of Object.entries(options.buildArgs)) {
-      args.push("--build-arg", `${key}=${value}`);
-    }
-    for (const [key, value] of Object.entries(options.labels)) {
-      args.push("--label", `${key}=${value}`);
-    }
-    args.push(".");
+    const { args, env } = dockerBuildCommand(options);
     const tracker = buildkitProgressTracker(options.onProgress);
     await runOrThrow(args, {
       cwd: options.contextDir,
       logFile: options.logFile,
       onLine: tracker,
+      env,
     });
     return tracker.stats();
   },

@@ -9,6 +9,7 @@ import {
 } from "./executor.ts";
 import { computeBuildInputs, inputTag, type BuildInputs } from "./inputs.ts";
 import { BUILD_INFO_ARG, type BuildInfo } from "./metadata.ts";
+import { resolveBuildSecrets } from "./secrets.ts";
 
 export type BuildOutcome =
   /** The input-tagged image was already local; `latest` retagged. */
@@ -372,6 +373,14 @@ export async function buildImages(
       };
       const logFile = path.join(options.logDir, `${build.image}.log`);
       let stats: BuildStats;
+      let secrets: Record<string, string>;
+      try {
+        secrets = resolveBuildSecrets(build.secrets, contextDir);
+      } catch (error) {
+        return result("failed", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
       try {
         stats = await limit(() => {
           emit({
@@ -386,6 +395,7 @@ export async function buildImages(
             tags: tags.map((t) => `${build.image}:${t}`),
             platform: flag,
             buildArgs: { [BUILD_INFO_ARG]: JSON.stringify(info) },
+            secrets,
             labels: {
               "org.opencontainers.image.revision": info.commits.root,
               "org.opencontainers.image.created": builtAt,

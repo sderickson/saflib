@@ -18,6 +18,7 @@ import {
 } from "./build-images.ts";
 import {
   buildkitProgressTracker,
+  dockerBuildCommand,
   parseBuildkitStep,
   type DockerBuildOptions,
   type DockerExecutor,
@@ -109,6 +110,7 @@ describe("buildImages", () => {
     dockerfilePath: path.join(root, name, "Dockerfile"),
     image: `x-${name}`,
     extraTags,
+    secrets: {},
   });
   const run = (overrides: Partial<BuildImagesOptions> = {}) =>
     buildImages({
@@ -319,6 +321,23 @@ describe("buildImages", () => {
     ]);
   });
 
+  it("passes build secrets from the env or an env file, and fails clearly when missing", async () => {
+    builds[0].secrets = {
+      token: { env: "SAF_TEST_TOKEN", envFile: "secrets.env" },
+    };
+    const missing = await run({ selected: [builds[0]] });
+    expect(missing[0]).toMatchObject({
+      outcome: "failed",
+      error: expect.stringContaining(
+        "token (set SAF_TEST_TOKEN or add it to secrets.env)",
+      ),
+    });
+
+    write("secrets.env", "# local token\nSAF_TEST_TOKEN='from-file'\n");
+    await run({ selected: [builds[0]] });
+    expect(docker.builds.at(-1)!.secrets).toEqual({ token: "from-file" });
+  });
+
   it("blocks downstream builds when an upstream fails", async () => {
     docker.failBuilds.add("x-app");
     expect(await outcomes()).toEqual({
@@ -371,6 +390,38 @@ describe("resolvePlatform", () => {
     expect(() => resolvePlatform("windows", "linux/arm64")).toThrow(
       /Unrecognized platform/,
     );
+  });
+});
+
+describe("dockerBuildCommand", () => {
+  it("passes secrets through the env, not the arguments", () => {
+    const { args, env } = dockerBuildCommand({
+      contextDir: "/repo",
+      dockerfile: "app/Dockerfile",
+      tags: ["x:latest"],
+      platform: "linux/amd64",
+      buildArgs: { A: "1" },
+      labels: {},
+      secrets: { sentry_auth_token: "s3cret" },
+      logFile: "/tmp/x.log",
+    });
+    expect(args).toEqual([
+      "build",
+      "--progress=plain",
+      "-f",
+      "app/Dockerfile",
+      "--platform",
+      "linux/amd64",
+      "-t",
+      "x:latest",
+      "--build-arg",
+      "A=1",
+      "--secret",
+      "id=sentry_auth_token,env=SAF_BUILD_SECRET_0",
+      ".",
+    ]);
+    expect(args.join(" ")).not.toContain("s3cret");
+    expect(env).toEqual({ SAF_BUILD_SECRET_0: "s3cret" });
   });
 });
 

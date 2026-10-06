@@ -18,6 +18,19 @@ export interface Build {
   image: string;
   /** Tags applied besides `latest` and the input tag (from `build.json`). */
   extraTags: string[];
+  /** BuildKit secrets this build mounts, by secret id (from `build.json`). */
+  secrets: Record<string, BuildSecretSource>;
+}
+
+/**
+ * Where a build secret's value comes from: the environment variable `env`,
+ * else that key in `envFile` (a `KEY=value` file relative to the monorepo
+ * root). Secrets are passed to BuildKit (`RUN --mount=type=secret,id=…`) and
+ * are never part of the input hash.
+ */
+export interface BuildSecretSource {
+  env: string;
+  envFile?: string;
 }
 
 /**
@@ -26,6 +39,8 @@ export interface Build {
 export interface BuildConfig {
   /** Overrides the derived image name (e.g. to keep a published name). */
   image?: string;
+  /** Secret id → env var name, or `{ env, envFile }`. */
+  secrets?: Record<string, string | BuildSecretSource>;
   /** Extra tags to apply and push alongside `latest` (e.g. a pinned version). */
   tags?: string[];
 }
@@ -84,6 +99,12 @@ function makeBuild(packageName: string, buildName: string, dir: string): Build {
       ? sanitizeImageName(config.image)
       : deriveImageName(packageName, buildName),
     extraTags: config.tags ?? [],
+    secrets: Object.fromEntries(
+      Object.entries(config.secrets ?? {}).map(([id, source]) => [
+        id,
+        typeof source === "string" ? { env: source } : source,
+      ]),
+    ),
   };
 }
 

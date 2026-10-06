@@ -630,9 +630,14 @@ hand-maintained image lists in build/push/pull. They now live in saflib as
 - vendata: saflib at the docker branch already. Migrate builds (Dockerfile.prod
   → `deploy/builds/*`, dev `build-images.sh` → `--compose`, name alignment),
   then switch deploy scripts to `saf-deploy`.
-- pathclerk: same, plus `REMOTE_SUDO=0` in env.remote and builds for its
-  custom `pathclerk-alloy` and `pathclerk-kratos` images (two products:
-  daemon, wfsmoke).
+- pathclerk: **done (2026-10-06)**. One product (`daemon`; `wfsmoke/` is
+  untracked leftovers). `deploy/builds/{daemon-root,daemon-clients,caddy,kratos,alloy}`
+  (published names kept via build.json; kratos tag `v26.2.0-alpine`); dev on
+  `--compose`; Playwright CI's dead `saf-docker-cli.ts generate` step removed.
+  Needed a saflib feature: **build secrets** (`build.json` `secrets`, env var
+  with optional env-file fallback, passed to BuildKit via the process env, not
+  hashed) for the Sentry token. Kept `sudo -i` (its exec-remote used it; only
+  its old sync.sh didn't, so `sync` now extracts as root).
 - conaudio (`conaudio/conaudio2`): update its saflib submodule first (not on
   the docker branch), `REMOTE_SUDO=0`, then as vendata.
 - saf-2025 (`deploy/prod`): older layout. Rename `.env.remote` → `env.remote`

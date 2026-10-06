@@ -143,6 +143,7 @@ describe("computeBuildInputs", () => {
     dockerfilePath: path.join(root, dir, "Dockerfile"),
     image,
     extraTags: [],
+    secrets: {},
   });
   const compute = (build: Build, platform?: string) =>
     computeBuildInputs(build, { contextDir: root, builds, platform });

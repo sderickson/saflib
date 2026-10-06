@@ -17,6 +17,18 @@ The image name is derived from the ref (`@acme/hub-monolith` → `acme-hub-monol
 { "image": "acme-kratos", "tags": ["v26.2.0"] }
 ```
 
+A build that mounts BuildKit secrets (`RUN --mount=type=secret,id=sentry_auth_token …`) declares where each comes from: an environment variable, optionally falling back to a `KEY=value` file relative to the repo root:
+
+```json
+{
+  "secrets": {
+    "sentry_auth_token": { "env": "SENTRY_AUTH_TOKEN", "envFile": "app/clients/.env.sentry-build-plugin" }
+  }
+}
+```
+
+(`"sentry_auth_token": "SENTRY_AUTH_TOKEN"` is shorthand for env-only.) Values reach BuildKit through the process environment, never command-line arguments, and aren't part of the input hash. A missing secret fails that build with a message naming where to set it.
+
 ### Template markers
 
 `saf-docker generate` (also run by `build`, `status` and `inputs`) writes each build's `Dockerfile` next to its template, replacing:

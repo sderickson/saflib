@@ -19,6 +19,7 @@ const build = (
   dockerfilePath: path.join(root, rel, "Dockerfile"),
   image,
   extraTags: [],
+  secrets: {},
 });
 
 describe("composeImageNames", () => {
