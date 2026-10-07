@@ -17,12 +17,24 @@ function gitHashesFromModules(
   return values.length > 0 ? values[0] : undefined;
 }
 
-const data = gitHashesFromModules(modules);
+declare global {
+  interface ImportMetaEnv {
+    /** Defined by `@saflib/vite` `makeConfig` from the image's build info. */
+    readonly SAF_GIT_HASHES?: GitHashes;
+  }
+}
+
+// Must stay a literal `import.meta.env.SAF_GIT_HASHES` — Vite's `define`
+// replaces it textually.
+const defined = import.meta.env.SAF_GIT_HASHES;
+
+const data = defined ?? gitHashesFromModules(modules);
 
 /**
- * Returns git hashes written by `saf-git-hashes` during client image Docker builds
- * (see `@saflib/docker` `generateDockerfiles`).
- * Falls back to `"unknown"` when the generated JSON file is absent.
+ * Returns the commits this client bundle's image was built from, as baked in
+ * by `@saflib/vite` `makeConfig` (from `/etc/saf/build.json`, see
+ * `saf-docker build`). Falls back to the `git-hashes.json` written by the
+ * deprecated `saf-git-hashes`, then to `"unknown"`.
  */
 export function getGitHashes(): GitHashes {
   if (!data) return { root: "unknown", saflib: "unknown" };

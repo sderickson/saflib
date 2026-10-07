@@ -215,7 +215,7 @@ export function findPackagesWithDockerfileTemplates(
   return packageList;
 }
 
-function findMonorepoRoot(startDir: string): string {
+export function findMonorepoRoot(startDir: string): string {
   let currentDir = path.resolve(startDir);
   while (true) {
     if (existsSync(path.join(currentDir, "package-lock.json"))) {

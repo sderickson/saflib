@@ -313,9 +313,11 @@ function finishProductInitLineReplace(
   let result = preserveTemplates
     ? prepared
     : prepared.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
-  result = result
-    .split("@saflib/deploy")
-    .join(`@${context.organizationName}/deploy`);
+  // Only the deploy package itself — not e.g. `@saflib/deploy-cli`.
+  result = result.replace(
+    /@saflib\/deploy(?![\w-])/g,
+    `@${context.organizationName}/deploy`,
+  );
   result = result.split(dockerFrom).join(dockerTo);
   result = result.split(SOURCE_DOMAIN).join(context.domainName);
 

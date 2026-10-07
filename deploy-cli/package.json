@@ -1,0 +1,29 @@
+{
+  "name": "@saflib/deploy-cli",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "saf-deploy: build, push and deploy a SAF product's production stack to a remote Docker host",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "bin": {
+    "saf-deploy": "./bin/saf-deploy/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/commander": "*",
+    "@saflib/docker": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@types/node": "^24.0.0"
+  },
+  "sideEffects": false
+}

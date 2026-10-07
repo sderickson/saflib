@@ -8,7 +8,7 @@ services:
     depends_on:
       - clients
       - site
-    image: saflib-base-dev-caddy:latest
+    image: saflib-base-dev:latest
     build:
       context: ../..
       dockerfile: ./base/dev/Dockerfile

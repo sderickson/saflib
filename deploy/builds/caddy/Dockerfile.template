@@ -1,0 +1,48 @@
+# Production Caddy image: serves every static client build. Each `#{ image … }#`
+# names an upstream build that `saf-docker build` builds (or pulls) first.
+
+# Stage names embed `__product-name__` between letters (e.g. `clients…builder`):
+# Docker rejects `__` next to `-`, and each product needs unique stages.
+
+# Add static client build steps here:
+FROM #{ image @saflib/base-root-static }# AS root__product-name__builder
+RUN npm run build
+
+# BEGIN WORKFLOW AREA build-static-sites FOR vue/add-static-site
+FROM #{ image @saflib/base-__static-subdomain-name__-static }# AS static-subdomain-name-static-builder
+RUN npm run build
+# END WORKFLOW AREA
+
+# BEGIN WORKFLOW AREA build-product-dependencies FOR product/init
+FROM #{ image @saflib/base-clients }# AS clients__product-name__builder
+
+COPY ./deploy/env.__product-name__.prod-local /app/env.__product-name__.prod-local
+RUN export $(grep -v "^#" /app/env.__product-name__.prod-local | xargs) && DOMAIN=${DOMAIN} CLIENT_SUBDOMAINS=${CLIENT_SUBDOMAINS} npm run build
+# END WORKFLOW AREA
+
+FROM caddy:2.11.3-builder-alpine AS caddy-rebuild
+RUN xcaddy build v2.11.3
+
+FROM caddy:2.11.3-alpine
+COPY --from=caddy-rebuild /usr/bin/caddy /usr/bin/caddy
+RUN apk upgrade --no-cache && rm -rf /var/cache/apk/*
+
+# Copy over static client builds here:
+COPY --from=root__product-name__builder /app/base/clients/root/.vitepress/dist /srv/__product-name__-root
+
+# BEGIN WORKFLOW AREA copy-static-sites FOR vue/add-static-site
+COPY --from=static-subdomain-name-static-builder /app/base/clients/__static-subdomain-name__/.vitepress/dist /srv/__product-name__-__static-subdomain-name__
+# END WORKFLOW AREA
+
+# BEGIN WORKFLOW AREA copy-product-assets FOR product/init
+COPY --from=clients__product-name__builder /app/base/clients/build/dist /srv/__product-name__-clients
+# END WORKFLOW AREA
+
+COPY ./deploy/caddy/Caddyfile ./deploy/caddy/common.Caddyfile ./deploy/caddy/__product-name__.Caddyfile /etc/caddy/
+COPY ./deploy/caddy/evil /etc/caddy/evil
+COPY ./deploy/caddy/env.defaults /etc/__product-name__/env.defaults
+COPY ./deploy/scripts/apply-env-defaults.sh /usr/local/bin/apply-env-defaults.sh
+RUN chmod +x /usr/local/bin/apply-env-defaults.sh
+
+ENTRYPOINT ["/usr/local/bin/apply-env-defaults.sh", "caddy"]
+CMD ["run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

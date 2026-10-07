@@ -21,9 +21,5 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "references": [
-    {
-      "path": "../../docker"
-    }
-  ]
+  "references": []
 }

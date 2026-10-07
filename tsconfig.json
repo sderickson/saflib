@@ -164,6 +164,9 @@
       "path": "./deploy"
     },
     {
+      "path": "./deploy-cli"
+    },
+    {
       "path": "./dev-site/dev-site-db"
     },
     {

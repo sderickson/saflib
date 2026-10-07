@@ -17,7 +17,7 @@ After the code wiring is in place, a human still needs to configure Sentry and G
 ## 3. Local developer machine
 
 1. Optionally create **`<clients-build>/.env.sentry-build-plugin`** (path may differ in your repo) containing **`SENTRY_AUTH_TOKEN=...`** so local **`vite build`** can upload source maps. Keep this file **gitignored**.
-2. Run **`saf-git-hashes`** (or your equivalent) before production builds so release/git metadata matches what you expect.
+2. Build images with **`saf-docker build`** so release/git metadata comes from the image's build info (`/etc/saf/build.json`). The release is the commit the clients image was built from.
 
 ## 4. Sanity checks
 

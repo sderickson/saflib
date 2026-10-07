@@ -23,6 +23,9 @@
   },
   "references": [
     {
+      "path": "../deploy-cli"
+    },
+    {
       "path": "../docker"
     }
   ]

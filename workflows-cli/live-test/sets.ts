@@ -243,9 +243,9 @@ export const liveTestSets: LiveTestSet[] = [
           "--experimental-strip-types",
           "--disable-warning=ExperimentalWarning",
           "./workflows-cli/live-test/assert-contains.ts",
-          `${LIVE_TEST_PRODUCT}/dev/build-images.sh`,
-          "./tmp/clients/docs/Dockerfile",
-          "saflib-tmp-docs-static",
+          `${LIVE_TEST_PRODUCT}/dev/Dockerfile.template`,
+          // Upstream build marker; `saf-docker build` builds it first.
+          "#{ image @saflib/tmp-docs-static }#",
         ],
       })),
       step(CommandStepMachine, () => ({
