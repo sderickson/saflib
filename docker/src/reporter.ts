@@ -124,6 +124,7 @@ export function createReporter(
     plan: PlannedImage[],
     durationMs: number,
     timings: CheckTimings,
+    platform: string,
   ) => {
     const by = (action: PlannedImage["action"]) =>
       plan.filter((p) => p.action === action);
@@ -131,7 +132,7 @@ export function createReporter(
     const upToDate = by("up-to-date");
     const inRegistry = by("in-registry");
     print(
-      `Checked ${plan.length} image(s) in ${seconds(durationMs)} ` +
+      `Checked ${plan.length} image(s) for ${platform} in ${seconds(durationMs)} ` +
         `(generate ${seconds(timings.prepareMs)}, hash inputs ${seconds(timings.hashMs)}, ` +
         `image lookup ${seconds(timings.lookupMs)}): ` +
         `${toBuild.length} to build, ${upToDate.length} up to date` +
@@ -189,7 +190,12 @@ export function createReporter(
     onEvent(event) {
       switch (event.type) {
         case "checked":
-          printPlan(event.plan, event.durationMs, event.timings);
+          printPlan(
+            event.plan,
+            event.durationMs,
+            event.timings,
+            event.platform,
+          );
           if (live) timer = setInterval(redraw, 500);
           break;
         case "start":

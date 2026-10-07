@@ -73,6 +73,8 @@ export type BuildEvent =
   | {
       type: "checked";
       plan: PlannedImage[];
+      /** The resolved target platform, e.g. `linux/amd64` (part of every input hash). */
+      platform: string;
       /** Everything before the first build: the sum of `timings`. */
       durationMs: number;
       timings: CheckTimings;
@@ -281,6 +283,7 @@ export async function buildImages(
   emit({
     type: "checked",
     plan: planned,
+    platform,
     durationMs: timings.prepareMs + timings.hashMs + timings.lookupMs,
     timings,
   });
