@@ -10,6 +10,8 @@ interface BuildCommandOptions {
   force?: boolean;
   dryRun?: boolean;
   concurrency: string;
+  keep: string;
+  cleanup: boolean;
 }
 
 async function runBuild(
@@ -27,6 +29,7 @@ async function runBuild(
     force: options.force,
     dryRun,
     concurrency: Number(options.concurrency),
+    keepImages: options.cleanup === false ? false : Number(options.keep),
   });
   if (!ok) process.exitCode = 1;
 }
@@ -72,6 +75,12 @@ export const addBuildCommand = (program: Command) => {
     .option("--force", "rebuild even when an up-to-date image exists")
     .option("--dry-run", "only report what would happen (same as `status`)")
     .option("--concurrency <n>", "max concurrent docker builds", "4")
+    .option(
+      "--keep <n>",
+      "after building, keep this many input-tagged versions per image and architecture",
+      "2",
+    )
+    .option("--no-cleanup", "don't remove older versions of the built images")
     .action((identifiers: string[], options: BuildCommandOptions) =>
       runBuild(identifiers, options, !!options.dryRun),
     );

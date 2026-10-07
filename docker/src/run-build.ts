@@ -10,7 +10,11 @@ import { formatBuildReport } from "./build-report.ts";
 import { generateDockerfiles } from "./docker.ts";
 import { dockerCli } from "./executor.ts";
 import { findSaflibDir } from "./git-hashes.ts";
+import { cleanupImages } from "./cleanup.ts";
 import { createReporter } from "./reporter.ts";
+
+/** Input-tagged versions kept per image and architecture after a build. */
+export const DEFAULT_KEEP_IMAGES = 2;
 import { selectBuilds, type BuildSelection } from "./select.ts";
 
 export interface RunImageBuildOptions extends BuildSelection {
@@ -21,6 +25,12 @@ export interface RunImageBuildOptions extends BuildSelection {
   force?: boolean;
   dryRun?: boolean;
   concurrency?: number;
+  /**
+   * After building, untag older input-tagged versions of the images this run
+   * handled, keeping this many per image and architecture (plus the current
+   * ones). `false` disables cleanup. Default 2.
+   */
+  keepImages?: number | false;
 }
 
 function headOf(dir: string): string {
@@ -79,6 +89,20 @@ export async function runImageBuild(
         ? `, ${count("failed")} failed, ${count("blocked")} blocked`
         : ""),
   );
+  const keep = options.keepImages ?? DEFAULT_KEEP_IMAGES;
+  if (!options.dryRun && keep !== false) {
+    const { removed, skipped } = await cleanupImages(
+      dockerCli,
+      results.map((r) => r.image),
+      keep,
+      new Set(results.map((r) => r.tag)),
+    );
+    console.log(
+      `Cleanup: removed ${removed.length} old image tag(s), keeping the newest ${keep} per image and architecture` +
+        (skipped.length ? ` (${skipped.length} in use, left alone)` : ""),
+    );
+  }
+
   const reportFile = path.join(ctx.rootDir, ".saf-docker", "build-report.md");
   mkdirSync(path.dirname(reportFile), { recursive: true });
   writeFileSync(

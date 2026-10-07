@@ -58,6 +58,14 @@ class FakeDocker implements DockerExecutor {
     this.calls.push(`push ${ref}`);
     this.remote.add(ref);
   }
+  async listImages() {
+    return [];
+  }
+  async removeImage() {
+    return true;
+  }
+  async pruneDanglingImages() {}
+  async pruneBuildCache() {}
   async build(options: DockerBuildOptions) {
     this.active++;
     this.maxActive = Math.max(this.maxActive, this.active);

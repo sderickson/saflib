@@ -66,6 +66,8 @@ Before building anything it prints the plan: every image and whether it will be 
 
 Every run also writes `.saf-docker/build-report.md` (gitignored): each image's outcome, tag, time, cached/rebuilt step counts, log file and Docker Desktop link, plus any errors. The path is printed at the end. It's the place to look (or to point an agent at) after a run.
 
+After a (non-dry) run, `build` cleans up: it untags older `in-<hash>` versions of the images it handled — keeping the newest 2 per image and architecture plus whatever it just built or verified (`--keep <n>`, `--no-cleanup`) — and removes dangling images. Removal is never forced, so images containers still use are left alone. `saf-docker prune` does the same for every build's images and trims the build cache to a size cap (`--max-cache`, default `20gb`) rather than wiping it, so builds stay warm.
+
 `saf-docker inputs [refs…] [-v]` prints a build's inputs and hash, and warns about gitignored files that reach the build context without being hashed (fix those with `.dockerignore`). `saf-docker skip-rate` estimates from git history how often each build would be skipped.
 
 ## Build info at runtime

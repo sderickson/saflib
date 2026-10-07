@@ -132,6 +132,32 @@ export interface DockerExecutor {
   pull(ref: string, platform?: string): Promise<void>;
   push(ref: string): Promise<void>;
   build(options: DockerBuildOptions): Promise<BuildStats>;
+  /** Every local image tag, with its image's architecture and creation time. */
+  listImages(): Promise<LocalImage[]>;
+  /** Removes (untags) `ref`; never forced. Resolves false if docker refused. */
+  removeImage(ref: string): Promise<boolean>;
+  /** `docker image prune -f`: removes dangling (untagged, unused) images. */
+  pruneDanglingImages(): Promise<void>;
+  /** Trims the build cache down to `maxUsedSpace` (e.g. `20gb`). */
+  pruneBuildCache(maxUsedSpace: string): Promise<void>;
+}
+
+export interface LocalImage {
+  repository: string;
+  tag: string;
+  id: string;
+  /** Image creation time (ms since epoch). */
+  createdAt: number;
+  architecture: string;
+}
+
+/** Parses `docker images` CreatedAt, e.g. `2026-10-07 11:52:31 -0700 PDT`. */
+export function parseDockerTime(value: string): number {
+  const match = value.match(
+    /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) ([+-]\d{2})(\d{2})/,
+  );
+  if (!match) return Number.NaN;
+  return Date.parse(`${match[1]}T${match[2]}${match[3]}:${match[4]}`);
 }
 
 interface RunResult {
@@ -264,5 +290,59 @@ export const dockerCli: DockerExecutor = {
       env,
     });
     return tracker.stats();
+  },
+  listImages: async () => {
+    const listed = (await runOrThrow(["images", "--format", "{{json .}}"]))
+      .split("\n")
+      .filter(Boolean)
+      .map(
+        (line) =>
+          JSON.parse(line) as {
+            Repository: string;
+            Tag: string;
+            ID: string;
+            CreatedAt: string;
+          },
+      )
+      .filter(
+        (image) => image.Repository !== "<none>" && image.Tag !== "<none>",
+      );
+    const ids = [...new Set(listed.map((image) => image.ID))];
+    const architectures = new Map<string, string>();
+    for (let i = 0; i < ids.length; i += 100) {
+      const out = await runOrThrow([
+        "image",
+        "inspect",
+        "--format",
+        "{{.Id}} {{.Architecture}}",
+        ...ids.slice(i, i + 100),
+      ]);
+      for (const line of out.split("\n").filter(Boolean)) {
+        const [id, arch] = line.split(" ");
+        architectures.set(id.replace(/^sha256:/, "").slice(0, 12), arch);
+      }
+    }
+    return listed.map((image) => ({
+      repository: image.Repository,
+      tag: image.Tag,
+      id: image.ID,
+      createdAt: parseDockerTime(image.CreatedAt),
+      architecture:
+        architectures.get(image.ID.replace(/^sha256:/, "").slice(0, 12)) ??
+        "unknown",
+    }));
+  },
+  removeImage: async (ref) => (await run(["rmi", ref])).code === 0,
+  pruneDanglingImages: async () => {
+    await runOrThrow(["image", "prune", "-f"]);
+  },
+  pruneBuildCache: async (maxUsedSpace) => {
+    await runOrThrow([
+      "builder",
+      "prune",
+      "-f",
+      "--max-used-space",
+      maxUsedSpace,
+    ]);
   },
 };
