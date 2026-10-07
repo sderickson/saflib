@@ -646,17 +646,22 @@ repos done; lessons below are what generalized):
   `exec-remote.sh` didn't use it (`REMOTE_SUDO=0`).
 - conaudio (`conaudio/conaudio2`): update its saflib submodule first (not on
   the docker branch), then as above.
-- saf-2025 (`deploy/prod`): older layout. Rename `.env.remote` → `env.remote`
-  with the standard keys (`CONTAINER_REGISTRY`, remote paths), move
-  compose's `--env-file .env.prod` into `env_file:` entries, update saflib,
-  then as above.
+- A product on an older deploy layout is done too. What it needed: its saflib
+  submodule moved off an old branch (already squash-merged into main);
+  `env.remote` with the standard keys (it only had `SSH_HOSTNAME`, the rest
+  was hardcoded in scripts; `REMOTE_SUDO=0` since it SSHes as root); prod
+  compose switched from a literal registry to `$CONTAINER_REGISTRY/…`; the
+  compose `--env-file .env.prod` replaced by `remote-assets/.env` (compose's
+  default, so `saf-deploy up` needs no flag); generated `Dockerfile`s that had
+  been committed were untracked and gitignored; a leftover package name on
+  the deploy package fixed.
 - Dev scripts are the next standardization candidate (`dev-compose.sh`,
   `sync-node-modules.sh`, `resolve-*.sh` vary per product, e.g. conaudio's
   `--no-attach mongo`).
 
 ### Follow-ups
 
-1. **Migrate the remaining products** (conaudio, saf-2025); see the rollout
+1. **Migrate the remaining products** (conaudio); see the rollout
    checklist above for the pattern.
    Their dev/deploy scripts are copies that still use the old flow, which keeps
    working via the deprecated `saf-git-hashes`. Steps are in
