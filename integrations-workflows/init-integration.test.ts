@@ -24,13 +24,13 @@ describe("integrations/init (ported to the new engine)", () => {
 
   it("scaffolds from a monorepo-root path and weaves configure into common", async () => {
     const root = mkdtempSync(path.join(tmpdir(), "integrations-init-"));
-    const commonDir = path.join(root, "power-up", "service", "common");
+    const commonDir = path.join(root, "shop", "service", "common");
     mkdirSync(commonDir, { recursive: true });
     writeFileSync(
       path.join(commonDir, "package.json"),
       JSON.stringify(
         {
-          name: "@vendata/power-up-service-common",
+          name: "@acme/shop-service-common",
           private: true,
           type: "module",
           dependencies: {},
@@ -52,7 +52,7 @@ export async function initializeDependencies(): Promise<void> {
     );
 
     const runId = await createRun(dbKey, InitIntegrationWorkflowDefinition, {
-      input: { path: "power-up/service/integrations/mercury" },
+      input: { path: "shop/service/integrations/mercury" },
       cwd: root,
       mode: "script",
     });
@@ -67,7 +67,7 @@ export async function initializeDependencies(): Promise<void> {
 
     const clientPath = path.join(
       root,
-      "power-up",
+      "shop",
       "service",
       "integrations",
       "mercury",
@@ -77,21 +77,21 @@ export async function initializeDependencies(): Promise<void> {
     expect(readFileSync(clientPath, "utf-8")).toContain("configureMercury");
     expect(
       readFileSync(
-        path.join(root, "power-up/service/integrations/mercury/package.json"),
+        path.join(root, "shop/service/integrations/mercury/package.json"),
         "utf-8",
       ),
-    ).toContain("@vendata/power-up-mercury-integration");
+    ).toContain("@acme/shop-mercury-integration");
 
     const deps = readFileSync(path.join(commonDir, "dependencies.ts"), "utf-8");
     expect(deps).toContain(
-      'import { configureMercury } from "@vendata/power-up-mercury-integration"',
+      'import { configureMercury } from "@acme/shop-mercury-integration"',
     );
     expect(deps).toContain("await configureMercury(");
   });
 
   it("rejects paths that are not {product}/service/integrations/{name}", async () => {
     const runId = await createRun(dbKey, InitIntegrationWorkflowDefinition, {
-      input: { path: "power-up/service/common" },
+      input: { path: "shop/service/common" },
       cwd: mkdtempSync(path.join(tmpdir(), "integrations-init-bad-")),
       mode: "script",
     });

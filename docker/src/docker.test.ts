@@ -49,8 +49,8 @@ describe("stripPackageJsonForInstall", () => {
 
 describe("stageRootPackageName", () => {
   it("suffixes the image name so staged roots do not collide with the monorepo root", () => {
-    expect(stageRootPackageName("@pathclerk/pathclerk", "pathclerk-daemon-monolith")).toBe(
-      "@pathclerk/pathclerk--docker-pathclerk-daemon-monolith",
+    expect(stageRootPackageName("@acme/acme", "acme-app-monolith")).toBe(
+      "@acme/acme--docker-acme-app-monolith",
     );
   });
 });

@@ -8,8 +8,8 @@
 /**
  * Repo-relative directory that holds dated plan folders.
  * Matches the on-disk convention (`product/plans/notes/<date>-<name>/`)
- * used by pathclerk, vendata, and the SAF process templates — not a
- * hardcoded product name.
+ * used by product repos and the SAF process templates — not a hardcoded
+ * product name.
  */
 export function plansPrefix(productRoot: string | undefined): string {
   const root = (productRoot ?? "").replace(/^\/+|\/+$/g, "");

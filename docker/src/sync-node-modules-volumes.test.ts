@@ -25,23 +25,23 @@ afterEach(() => {
 
 describe("stripImageTag", () => {
   it("strips a :tag suffix", () => {
-    expect(stripImageTag("vendata-power-up-monolith:latest")).toBe(
-      "vendata-power-up-monolith",
+    expect(stripImageTag("acme-shop-monolith:latest")).toBe(
+      "acme-shop-monolith",
     );
   });
 
   it("keeps registry paths and only strips the final tag", () => {
-    expect(stripImageTag("ghcr.io/vendata/power-up-monolith:1.2.3")).toBe(
-      "ghcr.io/vendata/power-up-monolith",
+    expect(stripImageTag("ghcr.io/acme/shop-monolith:1.2.3")).toBe(
+      "ghcr.io/acme/shop-monolith",
     );
   });
 
   it("strips digests", () => {
     expect(
       stripImageTag(
-        "vendata-power-up-monolith@sha256:abcdef0123456789abcdef0123456789",
+        "acme-shop-monolith@sha256:abcdef0123456789abcdef0123456789",
       ),
-    ).toBe("vendata-power-up-monolith");
+    ).toBe("acme-shop-monolith");
   });
 });
 
@@ -49,7 +49,7 @@ describe("findAppNodeModulesVolumes", () => {
   const config: ComposeConfig = {
     services: {
       clients: {
-        image: "vendata-power-up-clients:latest",
+        image: "acme-shop-clients:latest",
         volumes: [
           { type: "bind", source: "../..", target: "/app" },
           {
@@ -60,7 +60,7 @@ describe("findAppNodeModulesVolumes", () => {
         ],
       },
       "power-up-monolith": {
-        image: "vendata-power-up-monolith:latest",
+        image: "acme-shop-monolith:latest",
         volumes: [
           {
             type: "volume",
@@ -82,13 +82,13 @@ describe("findAppNodeModulesVolumes", () => {
     },
     volumes: {
       clients_node_modules: {
-        name: "vendata-power-up-dev-clients-node-modules",
+        name: "acme-shop-dev-clients-node-modules",
       },
       monolith_node_modules: {
-        name: "vendata-power-up-dev-monolith-node-modules",
+        name: "acme-shop-dev-monolith-node-modules",
       },
       repo_node_modules: {
-        name: "vendata-power-up-dev-repo-node-modules",
+        name: "acme-shop-dev-repo-node-modules",
       },
     },
   };
@@ -98,14 +98,14 @@ describe("findAppNodeModulesVolumes", () => {
       {
         serviceName: "clients",
         volumeKey: "clients_node_modules",
-        volumeName: "vendata-power-up-dev-clients-node-modules",
-        imageName: "vendata-power-up-clients",
+        volumeName: "acme-shop-dev-clients-node-modules",
+        imageName: "acme-shop-clients",
       },
       {
         serviceName: "power-up-monolith",
         volumeKey: "monolith_node_modules",
-        volumeName: "vendata-power-up-dev-monolith-node-modules",
-        imageName: "vendata-power-up-monolith",
+        volumeName: "acme-shop-dev-monolith-node-modules",
+        imageName: "acme-shop-monolith",
       },
     ]);
   });
@@ -148,8 +148,8 @@ describe("decideVolumeSync", () => {
   const target = {
     serviceName: "power-up-monolith",
     volumeKey: "monolith_node_modules",
-    volumeName: "vendata-power-up-dev-monolith-node-modules",
-    imageName: "vendata-power-up-monolith",
+    volumeName: "acme-shop-dev-monolith-node-modules",
+    imageName: "acme-shop-monolith",
   };
 
   it("reuses when stamp matches and volume exists", () => {
@@ -200,22 +200,22 @@ describe("decideVolumeSync", () => {
 describe("planVolumeSyncs + stamps", () => {
   it("plans refresh vs reuse from stamps and stage hashes", () => {
     vol.fromJSON({
-      "/repo/.saf-docker/stage/vendata-power-up-clients/package.json":
+      "/repo/.saf-docker/stage/acme-shop-clients/package.json":
         '{"name":"clients"}\n',
-      "/repo/.saf-docker/stage/vendata-power-up-monolith/package.json":
+      "/repo/.saf-docker/stage/acme-shop-monolith/package.json":
         '{"name":"monolith"}\n',
     });
     const clientsHash = hashStageDirectory(
-      "/repo/.saf-docker/stage/vendata-power-up-clients",
+      "/repo/.saf-docker/stage/acme-shop-clients",
     );
     writeVolumeStamps("/repo", {
-      "vendata-power-up-dev-clients-node-modules": clientsHash,
+      "acme-shop-dev-clients-node-modules": clientsHash,
     });
 
     const config: ComposeConfig = {
       services: {
         clients: {
-          image: "vendata-power-up-clients:latest",
+          image: "acme-shop-clients:latest",
           volumes: [
             {
               type: "volume",
@@ -225,7 +225,7 @@ describe("planVolumeSyncs + stamps", () => {
           ],
         },
         monolith: {
-          image: "vendata-power-up-monolith:latest",
+          image: "acme-shop-monolith:latest",
           volumes: [
             {
               type: "volume",
@@ -237,10 +237,10 @@ describe("planVolumeSyncs + stamps", () => {
       },
       volumes: {
         clients_node_modules: {
-          name: "vendata-power-up-dev-clients-node-modules",
+          name: "acme-shop-dev-clients-node-modules",
         },
         monolith_node_modules: {
-          name: "vendata-power-up-dev-monolith-node-modules",
+          name: "acme-shop-dev-monolith-node-modules",
         },
       },
     };
@@ -264,12 +264,12 @@ describe("planVolumeSyncs + stamps", () => {
     });
 
     writeVolumeStamps("/repo", {
-      "vendata-power-up-dev-clients-node-modules": clientsHash,
-      "vendata-power-up-dev-monolith-node-modules": decisions[1]!.stageHash,
+      "acme-shop-dev-clients-node-modules": clientsHash,
+      "acme-shop-dev-monolith-node-modules": decisions[1]!.stageHash,
     });
     expect(
       readVolumeStamps("/repo")[
-        "vendata-power-up-dev-monolith-node-modules"
+        "acme-shop-dev-monolith-node-modules"
       ],
     ).toBe(decisions[1]!.stageHash);
   });
