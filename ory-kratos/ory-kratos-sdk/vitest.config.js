@@ -9,6 +9,10 @@ export default defineConfig({
   test: {
     ...defaultConfig.test,
     environment: "jsdom",
+    // flow-queries.test.ts vi.mock()s ../kratos-client.ts; with modules shared
+    // across files (isolate: false) the mock misses whenever another file in
+    // the same worker loaded the real client first.
+    isolate: true,
     coverage: {
       ...defaultConfig.test?.coverage,
       exclude: [

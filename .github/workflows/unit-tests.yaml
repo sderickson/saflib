@@ -30,5 +30,12 @@ jobs:
       - name: Install rollup for linux
         run: npm install @rollup/rollup-linux-x64-gnu
 
+      # Tests make real commits in temp repos (e.g. workflow runs committing
+      # their changes); runners have no git identity by default.
+      - name: Configure git identity
+        run: |
+          git config --global user.name "saflib CI"
+          git config --global user.email "ci@saflib.invalid"
+
       - name: Run Unit Tests
         run: npm run test
