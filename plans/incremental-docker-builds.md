@@ -366,10 +366,10 @@ builds; saflib's template builds inside products are unused and excluded.
 | Repo | images | skipped today | + closure-pruned lockfile | ceiling (no lockfile churn) | saflib pointer bumped |
 | ---- | -----: | ------------: | ------------------------: | --------------------------: | --------------------: |
 | saflib (platform) | 7 | 36% | 38% | ~37% | n/a |
-| vendata | 6 | 38% | 47% | 50% | 63/100 commits |
+| product A | 6 | 38% | 47% | 50% | 63/100 commits |
 | home-2026 | 12 | 30% | 41% | 49% | 53/89 |
 | saf-2025 | 2 | 39% | 48% | 53% | 61/100 |
-| pathclerk | 4 | 24% | 27% | 31% | 45/100 |
+| product B | 4 | 24% | 27% | 31% | 45/100 |
 
 - **Lockfile:** dropping `"dev": true` entries gains almost nothing (≤1 pt).
   Pruning each image's staged lockfile to the **production closure of its own
@@ -377,9 +377,9 @@ builds; saflib's template builds inside products are unused and excluded.
   bump anywhere rebuilds every image.
 - **What drives source rebuilds** (product images, across image × commit
   pairs that rebuild for source reasons): saflib-only vs product-only vs both:
-  vendata 138/83/80, home-2026 155/172/213, saf-2025 32/28/40, pathclerk
+  product A 138/83/80, home-2026 155/172/213, saf-2025 32/28/40, product B
   15/104/90. **The saflib pointer moves in roughly half of all product
-  commits** and is the single largest cause in vendata. Product images
+  commits** and is the single largest cause in product A. Product images
   already depend only on the saflib packages they use, so the remaining saflib
   churn is real dependency change.
 - **Platform repo:** saflib's images each depend on ~50 packages, so nearly
@@ -426,12 +426,12 @@ product's dependency or workspace changes must not rebuild another's images.
 
 **Verification done (2026-10-05):**
 - Ran real `npm ci --omit=dev --ignore-scripts` on pruned stages for every
-  image in saflib, home-2026, vendata, pathclerk and saf-2025 (product stages
+  image in saflib and four product repos (product stages
   were written to a temp dir; product repos untouched). Compared against the
   old unpruned staging: **no new `npm ls` problems in any image**. Installed
   sets are identical, or the pruned set is the old set minus packages the image
-  can't reach. Example: the vendata monolith drops from 830 to 736 packages,
-  because the root's dependencies on `@saflib/vue` and `@vendata/deploy`
+  can't reach. Example: one product's monolith drops from 830 to 736 packages,
+  because its root's dependencies on `@saflib/vue` and its deploy package
   installed their trees into every image.
 - Real `docker build` of `base/service/monolith` and `base/clients/root`.
   Inside the monolith, all 219 workspace production dependencies resolve
@@ -454,9 +454,9 @@ builds only):
 | ---- | -----: | ----------------------: | -----------------------: | --------------------: |
 | saflib | 7 | 36% | **39%** | ~37–47% per image |
 | home-2026 | 12 | 31% | **39%** | 50% |
-| vendata | 6 | 38% | **48%** | 50% |
+| product A | 6 | 38% | **48%** | 50% |
 | saf-2025 | 2 | 39% | **48%** | 53% |
-| pathclerk | 4 | 24% | **27%** | 31% |
+| product B | 4 | 24% | **27%** | 31% |
 
 The remaining gap to the ceiling is genuine dependency change: the image's
 own dependencies, saflib's dependencies, and root overrides.
@@ -616,8 +616,8 @@ hand-maintained image lists in build/push/pull. They now live in saflib as
   images.
 - `saf-docker build`'s logic moved into `@saflib/docker`'s
   `src/run-build.ts` (`runImageBuild`) so both CLIs share it.
-- `env.remote` stays the config; new optional `REMOTE_SUDO=0` (pathclerk and
-  conaudio skip `sudo -i`). Remote scripts use `$SUDO` (empty when root).
+- `env.remote` stays the config; new optional `REMOTE_SUDO=0` (for hosts
+  where remote commands shouldn't `sudo -i`). Remote scripts use `$SUDO` (empty when root).
 - saflib's golden `deploy/` template now has only npm scripts calling
   `saf-deploy`. Fixed `product/init` renaming `@saflib/deploy-cli` (it
   rewrote any `@saflib/deploy…` prefix).
@@ -626,37 +626,44 @@ hand-maintained image lists in build/push/pull. They now live in saflib as
   home-2026's `status` / `build:native` through `saf-deploy`. **Not run
   against a real server** (`sync`/`up`/`release`).
 
-**Rollout checklist per product** (home-2026 done):
-- vendata: saflib at the docker branch already. Migrate builds (Dockerfile.prod
-  → `deploy/builds/*`, dev `build-images.sh` → `--compose`, name alignment),
-  then switch deploy scripts to `saf-deploy`.
-- pathclerk: **done (2026-10-06)**. One product (`daemon`; `wfsmoke/` is
-  untracked leftovers). `deploy/builds/{daemon-root,daemon-clients,caddy,kratos,alloy}`
-  (published names kept via build.json; kratos tag `v26.2.0-alpine`); dev on
-  `--compose`; Playwright CI's dead `saf-docker-cli.ts generate` step removed.
-  Needed a saflib feature: **build secrets** (`build.json` `secrets`, env var
-  with optional env-file fallback, passed to BuildKit via the process env, not
-  hashed) for the Sentry token. Kept `sudo -i` (its exec-remote used it; only
-  its old sync.sh didn't, so `sync` now extracts as root).
+**Rollout checklist per product** (home-2026 and two other single-product
+repos done; lessons below are what generalized):
+- Per-site production builds (`deploy/builds/<site>` building one static
+  site and keeping only its output, plus a `caddy` build that only copies
+  them in) work the same everywhere; published image names are kept with
+  `build.json` `image`/`tags` (including custom kratos/alloy-style images).
+- `npm run build` targets the production platform (amd64); `build:native`
+  is opt-in for quick local runs.
+- Some products' Playwright CI still called a removed saflib file
+  (`saf-docker-cli.ts generate`) or a removed `build-no-generate` script;
+  replace with `npm run build`.
+- Check dependency graphs for over-broad deps: one static site depended on
+  the whole SPA package just to read a shared SCSS file, so every SPA edit
+  rebuilt it; copying that one file fixed it.
+- Client builds that upload source maps need the **build secrets** feature
+  (`build.json` `secrets`) for the Sentry token.
+- Remote `sudo -i`: keep the default unless the product's old
+  `exec-remote.sh` didn't use it (`REMOTE_SUDO=0`).
 - conaudio (`conaudio/conaudio2`): update its saflib submodule first (not on
-  the docker branch), `REMOTE_SUDO=0`, then as vendata.
+  the docker branch), then as above.
 - saf-2025 (`deploy/prod`): older layout. Rename `.env.remote` → `env.remote`
-  with the standard keys (`CONTAINER_REGISTRY=ghcr.io/sderickson`, remote
-  paths), move compose's `--env-file .env.prod` into `env_file:` entries,
-  update saflib, then as vendata.
+  with the standard keys (`CONTAINER_REGISTRY`, remote paths), move
+  compose's `--env-file .env.prod` into `env_file:` entries, update saflib,
+  then as above.
 - Dev scripts are the next standardization candidate (`dev-compose.sh`,
   `sync-node-modules.sh`, `resolve-*.sh` vary per product, e.g. conaudio's
   `--no-attach mongo`).
 
 ### Follow-ups
 
-1. **Migrate the remaining products** (vendata, pathclerk, saf-2025, …); see
-   home-2026 above for the pattern.
+1. **Migrate the remaining products** (conaudio, saf-2025); see the rollout
+   checklist above for the pattern.
    Their dev/deploy scripts are copies that still use the old flow, which keeps
    working via the deprecated `saf-git-hashes`. Steps are in
    `docker/docs/01-overview.md` → "Migrating an existing product". Their
-   hand-picked image names may differ from derived ones (e.g. vendata's
-   `…-clients-root`), so check with `saf-docker status`.
+   hand-picked image names may differ from derived ones (e.g. a hand-picked
+   `…-clients-root` vs the derived `…-root-static`), so check with
+   `saf-docker status`.
 2. Run the workflows live test (`workflows-cli/live-test`) to confirm
    `vue/add-static-site` + `product/init` against the new templates.
 3. Remove `saf-git-hashes` and the legacy `git-hashes.json` fallbacks once
