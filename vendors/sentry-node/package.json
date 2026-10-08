@@ -22,7 +22,7 @@
     "@saflib/errors-service": "*",
     "@saflib/node": "*",
     "@saflib/utils": "*",
-    "@sentry/node": "^10.0.0",
+    "@sentry/node": "^11.0.0",
     "@sentry/vite-plugin": "^5.2.1"
   },
   "peerDependencies": {
