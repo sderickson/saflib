@@ -23,7 +23,8 @@ working `claude` CLI, not just the host machine.
 - **The host's OAuth session is reused, not a separate API key.** A Claude
   Pro/Max login lives in the macOS Keychain (or a plain
   `~/.claude/.credentials.json` file on Linux, since there's no keychain in
-  a container). `scripts/resolve-claude-credentials.sh` (in this folder)
+  a container). `saf-dev-site prepare` (from `@saflib/dev-site-cli`, run via
+  `npm run dev` in this folder)
   extracts whichever one the host has into a gitignored
   `.claude-credentials.json` next to the compose files, which is
   bind-mounted read-write into the container at

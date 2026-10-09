@@ -5,15 +5,16 @@
   "scripts": {
     "typecheck": "tsc -b",
     "build": "saf-docker build --compose docker-compose.yaml",
-    "dev": "saf-docker build --compose docker-compose.yaml && ./scripts/sync-node-modules.sh && ./scripts/dev-compose.sh up -V",
-    "up": "saf-docker build --compose docker-compose.yaml && ./scripts/sync-node-modules.sh && ./scripts/dev-compose.sh up --detach -V",
+    "dev": "saf-docker build --compose docker-compose.yaml && saf-dev-site sync-node-modules && saf-dev-site compose up -V",
+    "up": "saf-docker build --compose docker-compose.yaml && saf-dev-site sync-node-modules && saf-dev-site compose up --detach -V",
     "prune": "saf-docker prune",
-    "down": "saf-docker generate && docker compose --env-file env.dev --env-file .env -f docker-compose.yaml down",
-    "dev-site": "saf-docker build @saflib/dev-site-docker && ./scripts/dev-site-compose.sh up -V",
-    "dev-site:down": "./scripts/dev-site-compose.sh down"
+    "down": "saf-docker generate && saf-dev-site compose --no-prepare down",
+    "dev-site": "saf-docker build @saflib/dev-site-docker && saf-dev-site compose --dev-site up -V",
+    "dev-site:down": "saf-dev-site compose --dev-site --no-prepare down"
   },
   "sideEffects": false,
   "devDependencies": {
+    "@saflib/dev-site-cli": "*",
     "@saflib/dev-site-docker": "*",
     "@saflib/docker": "*"
   }

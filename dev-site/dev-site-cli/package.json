@@ -1,0 +1,29 @@
+{
+  "name": "@saflib/dev-site-cli",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "saf-dev-site: prepare and run local dev-site docker compose stacks",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "saf-dev-site": "./bin/saf-dev-site/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/commander": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@types/node": "^24.0.0",
+    "memfs": "^4.17.0"
+  },
+  "sideEffects": false
+}
