@@ -331,6 +331,68 @@
         }
       }
     },
+    "/api/runs/{runId}/agent-message": {
+      "post": {
+        "summary": "Send a one-off message to the run's agent CLI",
+        "description": "Runs a single agent turn (Claude or Cursor CLI) with the given text. Does not advance the workflow or create a step row — only appends to `workflow_logs` under the run's current step index. Uses the same run lock as `advanceWorkflowRun`.\n",
+        "operationId": "sendFreeformAgentMessage",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "message"
+                ],
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Prompt text passed directly to the agent CLI for this turn.",
+                    "example": "Explain what the current step is trying to do."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Outcome of the agent turn.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/freeform-agent-message-result"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/runs/{runId}/goto": {
       "post": {
         "summary": "Seek a run to a step path",
@@ -834,6 +896,9 @@
       "StepResult": {
         "$ref": "#/components/schemas/step-result"
       },
+      "FreeformAgentMessageResult": {
+        "$ref": "#/components/schemas/freeform-agent-message-result"
+      },
       "PlanFile": {
         "$ref": "#/components/schemas/plan-file"
       },
@@ -1208,6 +1273,30 @@
             }
           }
         ]
+      },
+      "freeform-agent-message-result": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "Present when `status` is `error`."
+          },
+          "shouldContinue": {
+            "type": "boolean",
+            "description": "When `status` is `ok`, whether the agent subprocess signaled it needs another turn (same semantics as a workflow prompt step).\n"
+          }
+        }
       },
       "workflow-log-channel": {
         "type": "string",

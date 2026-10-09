@@ -8,6 +8,10 @@ export {
   isRunAdvancing,
   type AdvanceRunOptions,
 } from "./engine.ts";
+export {
+  sendFreeformAgentMessage,
+  type FreeformAgentMessageResult,
+} from "./freeform-agent-message.ts";
 export { stepSkipIf, isWorkflowStepSkip } from "./conditional-step.ts";
 export { commitIfDirty, revertUncommittedChanges } from "./git.ts";
 export { RUN_LOCK_MESSAGE } from "./run-lock.ts";

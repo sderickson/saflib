@@ -152,6 +152,39 @@
         </div>
       </template>
 
+      <div v-if="runId" class="run-view__direct-agent mb-3">
+        <v-textarea
+          v-model="directMessage"
+          label="Direct message to agent (one turn — does not advance the workflow)"
+          placeholder="Ask the agent anything in the run's working directory…"
+          rows="2"
+          auto-grow
+          density="compact"
+          variant="outlined"
+          hide-details
+          :disabled="isOtherRunActive"
+          @keydown.meta.enter.prevent="sendDirectMessage()"
+          @keydown.ctrl.enter.prevent="sendDirectMessage()"
+        />
+        <div class="d-flex align-center gap-2 mt-2">
+          <v-btn
+            color="secondary"
+            variant="tonal"
+            :disabled="!directMessage.trim() || isOtherRunActive || isAdvancing"
+            :loading="agentMessageMutation.isPending.value"
+            @click="sendDirectMessage()"
+          >
+            Send to agent
+          </v-btn>
+          <span class="text-caption text-medium-emphasis">
+            ⌘/Ctrl+Enter to send. Uses the same agent CLI as workflow steps.
+          </span>
+          <p v-if="agentMessageMutation.isError.value" class="text-error mb-0 ml-2">
+            {{ agentMessageMutation.error.value?.message }}
+          </p>
+        </div>
+      </div>
+
       <div class="run-view__foot-actions">
         <div class="run-view__foot-actions-left">
           <v-btn
@@ -339,6 +372,7 @@ import {
   useWorkflowRunStepTreeQuery,
   useWorkflowStepsQuery,
   useCreateWorkflowRunMutation,
+  useSendFreeformAgentMessageMutation,
   useGotoWorkflowRunMutation,
   usePreviewWorkflowDiffMutation,
   usePreviewWorkflowRunDiffMutation,
@@ -360,6 +394,7 @@ import {
   toggleMuted,
 } from "../run-alerts.ts";
 import { getAgentCli } from "../agent-settings.ts";
+import { unlockAudio } from "../run-alerts.ts";
 import { formatClockSummary, summarizeRunTimings } from "../plan-run-stats.ts";
 import { isMechanicalPreviewFailure } from "@saflib/new-workflows";
 
@@ -609,6 +644,7 @@ function openReflection() {
 const isAdvancing = computed(
   () =>
     (orchestrator.activeRunId.value === runId.value && orchestrator.advanceMutation.isPending.value) ||
+    agentMessageMutation.isPending.value ||
     run.value?.is_advancing === true,
 );
 
@@ -661,6 +697,24 @@ function stepStatusClasses(step: { index: number }): Record<string, boolean> {
 }
 
 const extraPrompt = ref("");
+const directMessage = ref("");
+const agentMessageMutation = useSendFreeformAgentMessageMutation();
+
+function sendDirectMessage() {
+  const message = directMessage.value.trim();
+  if (!runId.value || !message || isOtherRunActive.value || isAdvancing.value) return;
+  unlockAudio();
+  agentMessageMutation.mutate(
+    { runId: runId.value, message },
+    {
+      onSuccess: (outcome) => {
+        if (outcome.status === "ok") {
+          directMessage.value = "";
+        }
+      },
+    },
+  );
+}
 
 /**
  * The single "keep this run moving" action — a plain advance in most

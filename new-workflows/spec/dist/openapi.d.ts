@@ -103,6 +103,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{runId}/agent-message": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a one-off message to the run's agent CLI
+         * @description Runs a single agent turn (Claude or Cursor CLI) with the given text. Does not advance the workflow or create a step row — only appends to `workflow_logs` under the run's current step index. Uses the same run lock as `advanceWorkflowRun`.
+         */
+        post: operations["sendFreeformAgentMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs/{runId}/goto": {
         parameters: {
             query?: never;
@@ -245,6 +265,7 @@ export interface components {
         WorkflowRunStep: components["schemas"]["workflow-run-step"];
         WorkflowStepTreeNode: components["schemas"]["workflow-step-tree-node"];
         StepResult: components["schemas"]["step-result"];
+        FreeformAgentMessageResult: components["schemas"]["freeform-agent-message-result"];
         PlanFile: components["schemas"]["plan-file"];
         PlanSummary: components["schemas"]["plan-summary"];
         /** @description One entry in the registered-workflow list (`GET /workflows`). */
@@ -413,6 +434,14 @@ export interface components {
              * @enum {string}
              */
             status: "done";
+        };
+        "freeform-agent-message-result": {
+            /** @enum {string} */
+            status: "ok" | "error";
+            /** @description Present when `status` is `error`. */
+            message?: string;
+            /** @description When `status` is `ok`, whether the agent subprocess signaled it needs another turn (same semantics as a workflow prompt step). */
+            shouldContinue?: boolean;
         };
         /**
          * @description Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. "running step 3: copy"). `agent-input`: the prompt text sent to the agent.
@@ -808,6 +837,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["step-result"];
+                };
+            };
+            /** @description No run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    sendFreeformAgentMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Prompt text passed directly to the agent CLI for this turn.
+                     * @example Explain what the current step is trying to do.
+                     */
+                    message: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Outcome of the agent turn. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["freeform-agent-message-result"];
                 };
             };
             /** @description No run with that id. */

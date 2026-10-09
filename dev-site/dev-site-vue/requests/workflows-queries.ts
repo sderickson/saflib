@@ -367,6 +367,37 @@ export interface AdvanceWorkflowRunVariables {
   extraPrompt?: string;
 }
 
+export interface SendFreeformAgentMessageVariables {
+  runId: string;
+  message: string;
+}
+
+export function useSendFreeformAgentMessageMutation() {
+  const client = createWorkflowsClient();
+  const queryClient = useQueryClient();
+  return useMutation<
+    NewWorkflowsResponseBody["sendFreeformAgentMessage"][200],
+    TanstackError,
+    SendFreeformAgentMessageVariables
+  >({
+    mutationFn: ({ runId, message }) =>
+      handleClientMethod(
+        client.POST("/api/runs/{runId}/agent-message", {
+          params: { path: { runId } },
+          body: { message },
+        }),
+      ),
+    onMutate: () => {
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+    },
+    onSuccess: (_data, { runId }) => {
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
+      void prependNewerRunLogs(queryClient, runId);
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+    },
+  });
+}
+
 export function useAdvanceWorkflowRunMutation() {
   const client = createWorkflowsClient();
   const queryClient = useQueryClient();

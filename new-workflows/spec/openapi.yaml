@@ -29,6 +29,9 @@ paths:
   /api/runs/{runId}/advance:
     post:
       $ref: "./routes/runs/advance.yaml#/advanceWorkflowRun"
+  /api/runs/{runId}/agent-message:
+    post:
+      $ref: "./routes/runs/agent-message.yaml#/sendFreeformAgentMessage"
   /api/runs/{runId}/goto:
     post:
       $ref: "./routes/runs/goto.yaml#/gotoWorkflowRun"
@@ -80,6 +83,8 @@ components:
       $ref: "./schemas/workflow-step-tree-node.yaml"
     StepResult:
       $ref: "./schemas/step-result.yaml"
+    FreeformAgentMessageResult:
+      $ref: "./schemas/freeform-agent-message-result.yaml"
     PlanFile:
       $ref: "./schemas/plan-file.yaml"
     PlanSummary:
