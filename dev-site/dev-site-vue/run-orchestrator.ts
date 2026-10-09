@@ -229,11 +229,17 @@ function createOrchestrator(): RunOrchestrator {
         return;
       }
 
-      // A step asked to stop for a person (pauseAfter), including when that
-      // step is nested inside call-workflow. Do not treat it as a failure
-      // and do not keep auto-continuing — play-workflow and play-plan both
-      // wait until someone clicks play again.
+      // `pauseAfter` ends a step as `awaiting_user` even when the workflow
+      // has no more work (the next advance just returns `done`). Play-plan
+      // should blow through those review gates so phases cascade unattended.
       if (outcome.status === "awaiting_user") {
+        if (autoMode.value === "plan") {
+          const workflowRef = activeWorkflowRef.value;
+          if (workflowRef) {
+            continueRun(runId, workflowRef);
+            return;
+          }
+        }
         notify(
           "Paused for review",
           outcome.message ?? "Review the result, then continue.",

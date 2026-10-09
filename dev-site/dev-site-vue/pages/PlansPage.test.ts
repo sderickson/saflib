@@ -461,10 +461,13 @@ describe("PlansPage", () => {
       ),
       http.post(`${ORIGIN}/api/runs/:runId/advance`, () => {
         advanceCount++;
-        return HttpResponse.json({
-          status: "awaiting_user",
-          message: "Spec is written. Review it, then continue.",
-        });
+        if (advanceCount === 1) {
+          return HttpResponse.json({
+            status: "awaiting_user",
+            message: "Spec is written. Review it, then continue.",
+          });
+        }
+        return HttpResponse.json({ status: "done" });
       }),
     );
 
@@ -514,7 +517,7 @@ describe("PlansPage", () => {
       input: { name: "widget-repairs", prompt: "Track repair requests." },
     });
     await vi.waitFor(() => {
-      expect(advanceCount).toBe(1);
+      expect(advanceCount).toBe(2);
     });
   });
 
