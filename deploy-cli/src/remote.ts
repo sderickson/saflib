@@ -26,8 +26,9 @@ export function shellQuote(value: string): string {
 /**
  * What's piped to `ssh <host> 'bash -s'`: an optional `sudo -i` (unless
  * `REMOTE_SUDO=0` in env.remote), every env.remote value exported (compose
- * interpolates `$CONTAINER_REGISTRY`), `SUDO` set to `sudo` only when not
- * root, then the script.
+ * interpolates `$CONTAINER_REGISTRY`), `SUDO` for non-docker root steps,
+ * `docker_cmd` for docker/compose (sudo passes `CONTAINER_REGISTRY` through),
+ * then the script.
  */
 export function remotePayload(
   config: DeployConfig,
@@ -40,6 +41,12 @@ export function remotePayload(
     lines.push(`export ${key}=${shellQuote(value)}`);
   }
   lines.push('SUDO=$([ "$(id -u)" = 0 ] || echo sudo)');
+  lines.push(
+    "docker_cmd() {",
+    '  if [ "$(id -u)" = 0 ]; then docker "$@";',
+    '  else sudo CONTAINER_REGISTRY="$CONTAINER_REGISTRY" docker "$@"; fi',
+    "}",
+  );
   lines.push("set -e", script);
   return lines.join("\n") + "\n";
 }

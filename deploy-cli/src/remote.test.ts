@@ -118,6 +118,14 @@ if [ "$1" = pull ]; then echo "PULLED $2" >> "${dir}/pulls"; fi
 `,
     );
     chmodSync(path.join(bin, "docker"), 0o755);
+    writeFileSync(
+      path.join(bin, "sudo"),
+      `#!/bin/bash
+while [[ "$1" == *=* ]]; do export "$1"; shift; done
+exec "$@"
+`,
+    );
+    chmodSync(path.join(bin, "sudo"), 0o755);
     runLocally(
       remotePayload(
         {
