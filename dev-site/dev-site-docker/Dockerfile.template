@@ -40,6 +40,19 @@ RUN --mount=type=cache,target=/var/cache/cursor-agent,sharing=locked \
   && ln -sf /usr/local/lib/cursor-agent/cursor-agent /usr/local/bin/cursor-agent \
   && ln -sf /usr/local/lib/cursor-agent/cursor-agent /usr/local/bin/agent
 
+# Gitleaks — workflow step commits use the repo's core.hooksPath (.githooks/pre-commit).
+ARG GITLEAKS_VERSION=8.30.1
+RUN --mount=type=cache,target=/var/cache/gitleaks,sharing=locked \
+  ARCH="$(uname -m)" \
+  && case "$ARCH" in x86_64) ARCH=x64;; aarch64|arm64) ARCH=arm64;; *) echo "unsupported arch: $ARCH" >&2; exit 1;; esac \
+  && TARBALL="/var/cache/gitleaks/gitleaks_${GITLEAKS_VERSION}_linux_${ARCH}.tar.gz" \
+  && if [ ! -s "$TARBALL" ]; then \
+       curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_${ARCH}.tar.gz" \
+         -o "$TARBALL"; \
+     fi \
+  && tar -xzf "$TARBALL" -C /usr/local/bin gitleaks \
+  && chmod +x /usr/local/bin/gitleaks
+
 WORKDIR /app
 
 #{ copy_packages }#
