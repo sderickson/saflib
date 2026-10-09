@@ -12,6 +12,30 @@ export type StartDevSiteServiceOptions = {
   logLabel?: string;
 };
 
+/** URLs to print at startup (clickable in most terminals). */
+function devSitePublicHttpUrls(
+  typedEnv: DevSiteHttpEnvSchema,
+  hostPort: string,
+  port: number,
+): string[] {
+  const fromEnv = typedEnv.DEV_SITE_PUBLIC_HTTP_URL
+    ?.split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (fromEnv?.length) {
+    return fromEnv;
+  }
+
+  const protocol = typedEnv.PROTOCOL ?? "http";
+  const host = hostPort.includes(":")
+    ? hostPort.slice(0, hostPort.lastIndexOf(":"))
+    : hostPort;
+  const displayHost =
+    host === "0.0.0.0" || host === "::" || host === "" ? "localhost" : host;
+  const base = `${protocol}://${displayHost}:${port}`;
+  return [base.endsWith("/") ? base : `${base}/`];
+}
+
 /**
  * Boot the dev-site HTTP service (API + optional SPA static) from typed env.
  * Product job trigger maps are intentionally omitted; add later if needed.
@@ -51,7 +75,9 @@ export async function startDevSiteService(
     });
 
     startExpressServer(lease.app, { port });
-    log.info(`Listening on ${hostPort} (port ${port})`);
+    for (const url of devSitePublicHttpUrls(typedEnv, hostPort, port)) {
+      log.info(`  ➜  Local:   ${url}`);
+    }
     if (!typedEnv.DEV_SITE_STATIC_DIR) {
       log.info(`${logLabel}: DEV_SITE_STATIC_DIR unset — API only`);
     }
