@@ -221,9 +221,23 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
 
     step<CopyStepInput, InitIntegrationContext>("copy", runCopyStep, ({ context }) => {
       const baseReplace = makeLineReplace(context);
+      const integrationsFileName = "dependencies.integrations.ts";
+      const integrationsInCwd = path.join(context.parentDir, integrationsFileName);
+      const integrationsInProduct = path.join(
+        context.productRoot,
+        "service",
+        "common",
+        integrationsFileName,
+      );
+      const dependenciesSource =
+        existsSync(integrationsInCwd) || existsSync(integrationsInProduct)
+          ? existsSync(integrationsInCwd)
+            ? integrationsInCwd
+            : integrationsInProduct
+          : dependenciesLive;
       return {
         templateFiles: {
-          dependencies: dependenciesLive,
+          dependencies: dependenciesSource,
         },
         name: context.integrationName,
         targetDir: context.parentDir,

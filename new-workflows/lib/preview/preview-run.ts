@@ -1,5 +1,6 @@
 import path from "node:path";
 import {
+  existsSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
@@ -71,6 +72,10 @@ interface WalkState {
   currentHash: string;
   entries: PreviewStepEntry[];
   dbKey: DbKey;
+  /** Repo-absolute paths of files materialized by earlier preview copy/transform steps. */
+  previewCopiedFiles: Record<string, string>;
+  /** Repo-relative cwd for workflow `context()` — mirrors a real run's rolling package dir. */
+  logicalRepoCwd: string;
 }
 
 /**
@@ -94,6 +99,7 @@ export async function previewRun(
   if (error) throw error;
 
   const scratchRoot = mkdtempSync(path.join(tmpdir(), "saflib-preview-"));
+  const repoRelativeCwd = path.relative(repoRoot, cwd);
   const state: WalkState = {
     repoRoot,
     scratchRoot,
@@ -101,6 +107,8 @@ export async function previewRun(
     currentHash: baseHash,
     entries: [],
     dbKey,
+    previewCopiedFiles: {},
+    logicalRepoCwd: repoRelativeCwd.split(path.sep).join("/"),
   };
 
   // The preview `cwd` mirrors the real repo's directory layout under a
@@ -110,7 +118,6 @@ export async function previewRun(
   // would occupy in the real repo. That's what makes stripping the scratch
   // root back off (`path.relative(scratchRoot, absPath)`) yield the
   // correct repo-relative path for git plumbing.
-  const repoRelativeCwd = path.relative(repoRoot, cwd);
   const previewCwd = path.join(scratchRoot, repoRelativeCwd);
   mkdirSync(previewCwd, { recursive: true });
 
@@ -135,20 +142,27 @@ async function walkSteps(
 
   for (let stepIndex = 0; stepIndex < def.steps.length; stepIndex++) {
     const step = def.steps[stepIndex];
-    const context = def.context({ input, cwd: rollingCwd });
+    const contextCwd =
+      def.id === "integrations/init"
+        ? path.join(state.repoRoot, state.logicalRepoCwd)
+        : rollingCwd;
+    const context = def.context({ input, cwd: contextCwd });
 
     if (step.kind === "cd") {
       const stepInput = step.input({ context }) as CdStepInput;
-      const nextCwd = stepInput.path.startsWith("/")
+      const joined = stepInput.path.startsWith("/")
         ? stepInput.path
         : path.join(originalCwd, stepInput.path);
-      // Map scratch-relative cwd back to the real repo for package.json checks —
-      // the scratch tree only materializes copy/transform targets, not every
-      // package root a plan might cd into.
-      const repoRelative = path.relative(state.scratchRoot, nextCwd);
-      const realCdTarget = path.join(state.repoRoot, repoRelative);
+      const underRepo =
+        joined === state.repoRoot || joined.startsWith(state.repoRoot + path.sep);
+      const nextCwd = underRepo
+        ? path.join(state.scratchRoot, path.relative(state.repoRoot, joined))
+        : joined;
+      if (underRepo) {
+        state.logicalRepoCwd = path.relative(state.repoRoot, joined).split(path.sep).join("/");
+      }
       try {
-        validateCdTarget(realCdTarget, "dry", {});
+        validatePreviewCdStep(state, nextCwd, originalCwd, stepInput);
         rollingCwd = nextCwd;
         state.entries.push({ workflowId: def.id, stepIndex, kind: step.kind, applied: true });
       } catch (err) {
@@ -261,6 +275,20 @@ function fileStepContext(
   };
 }
 
+function remapRepoPathForPreview(state: WalkState, absPath: string): string {
+  if (absPath === state.repoRoot || absPath.startsWith(state.repoRoot + path.sep)) {
+    return path.join(state.scratchRoot, path.relative(state.repoRoot, absPath));
+  }
+  return absPath;
+}
+
+function remapCopyInputForPreview(state: WalkState, input: CopyStepInput): CopyStepInput {
+  return {
+    ...input,
+    targetDir: remapRepoPathForPreview(state, input.targetDir),
+  };
+}
+
 async function applyFileStep(
   state: WalkState,
   workflowId: string,
@@ -269,12 +297,16 @@ async function applyFileStep(
   stepInput: unknown,
   cwd: string,
 ): Promise<PreviewFileChange[]> {
+  const effectiveInput =
+    kind === "copy"
+      ? remapCopyInputForPreview(state, stepInput as CopyStepInput)
+      : stepInput;
   // Only the destinations this step will write — never the whole package
   // `targetDir` (vue/add-view's targetDir is the clients/ parent; materializing
   // that pulled fonts/images and made SPA previews take tens of seconds).
   const absTargets =
     kind === "copy"
-      ? resolveCopyTargetPaths(stepInput as CopyStepInput)
+      ? resolveCopyTargetPaths(effectiveInput as CopyStepInput)
       : [resolveTransformFilePath(stepInput as TransformFileStepInput, cwd)];
 
   const existingBlobHashes = materializePaths(state, absTargets);
@@ -282,7 +314,7 @@ async function applyFileStep(
     const ctx = fileStepContext(state, workflowId, stepIndex, cwd);
     const outcome =
       kind === "copy"
-        ? await runCopyStep(stepInput as CopyStepInput, ctx)
+        ? await runCopyStep(effectiveInput as CopyStepInput, ctx)
         : await runTransformFileStep(stepInput as TransformFileStepInput, ctx);
     if (outcome.status !== "success") {
       throw new Error(
@@ -290,6 +322,19 @@ async function applyFileStep(
           ? outcome.message
           : `Stopped with status ${outcome.status}`,
       );
+    }
+
+    if (kind === "copy") {
+      const copied = (outcome.result as { copiedFiles?: Record<string, string> } | undefined)
+        ?.copiedFiles;
+      if (copied) {
+        for (const [fileId, absScratchPath] of Object.entries(copied)) {
+          const rel = toRepoRelative(state, absScratchPath);
+          if (rel && !rel.startsWith("..") && !path.isAbsolute(rel)) {
+            state.previewCopiedFiles[fileId] = path.join(state.repoRoot, rel);
+          }
+        }
+      }
     }
 
     const writtenAbs =
@@ -316,6 +361,43 @@ function toRepoRelative(state: WalkState, absPath: string): string {
   return path.relative(state.scratchRoot, absPath).split(path.sep).join("/");
 }
 
+function packageJsonInPreviewTree(
+  state: WalkState,
+  repoRelativeDir: string,
+): boolean {
+  const normalized = repoRelativeDir.split(path.sep).join("/").replace(/\/$/, "");
+  const relPath = normalized ? `${normalized}/package.json` : "package.json";
+  const { result: entries, error } = listTree(state.repoRoot, state.currentHash, [relPath]);
+  if (error) return false;
+  return (entries?.length ?? 0) > 0;
+}
+
+/**
+ * CD validation for preview/validate: honor the live repo, paths created by
+ * earlier preview steps (in-memory commit), and pending copy targets — not
+ * only what exists on disk right now.
+ */
+function validatePreviewCdStep(
+  state: WalkState,
+  nextCwd: string,
+  _originalCwd: string,
+  stepInput: CdStepInput,
+): void {
+  const repoRelative = path.relative(state.scratchRoot, nextCwd);
+  if (repoRelative.startsWith("..") || path.isAbsolute(repoRelative)) {
+    throw new Error(`CD target is outside the preview repo: ${stepInput.path}`);
+  }
+  const realCdTarget = path.join(state.repoRoot, repoRelative);
+
+  if (existsSync(path.join(realCdTarget, "package.json"))) {
+    return;
+  }
+  if (packageJsonInPreviewTree(state, repoRelative)) {
+    return;
+  }
+  validateCdTarget(realCdTarget, "dry", state.previewCopiedFiles);
+}
+
 /**
  * Pulls only the given absolute scratch paths (that already exist in the
  * running commit) onto disk, returning each path's current blob hash.
@@ -332,25 +414,33 @@ function materializePaths(state: WalkState, absPaths: string[]): Map<string, str
 
   const { result: entries, error } = listTree(state.repoRoot, state.currentHash, relPaths);
   if (error) throw error;
-  if (!entries || entries.length === 0) return new Map();
+  const entryByPath = new Map((entries ?? []).map((e) => [e.path, e]));
 
-  const { result: blobs, error: blobsError } = readBlobs(
-    state.repoRoot,
-    entries.map((e) => e.blobHash),
-  );
+  const blobHashes = [...new Set((entries ?? []).map((e) => e.blobHash))];
+  const { result: blobs, error: blobsError } =
+    blobHashes.length > 0
+      ? readBlobs(state.repoRoot, blobHashes)
+      : { result: new Map<string, Buffer>(), error: undefined };
   if (blobsError) throw blobsError;
 
-  for (const entry of entries) {
+  for (const relPath of relPaths) {
+    const dest = path.join(state.scratchRoot, relPath);
+    mkdirSync(path.dirname(dest), { recursive: true });
+    const onDisk = path.join(state.repoRoot, relPath);
+    if (existsSync(onDisk)) {
+      // Prefer the working tree so `validate` / dev-site preview match what
+      // you see in the editor, not only what's committed at `baseHash`.
+      writeFileSync(dest, readFileSync(onDisk), "utf-8");
+      continue;
+    }
+    const entry = entryByPath.get(relPath);
+    if (!entry) continue;
     const content = blobs!.get(entry.blobHash);
     if (content === undefined) continue;
-    const dest = path.join(state.scratchRoot, entry.path);
-    mkdirSync(path.dirname(dest), { recursive: true });
-    // Preview only materializes text merge targets (routers, strings, …).
-    // Binary untouched siblings are never listed here after the path filter.
     writeFileSync(dest, content, "utf-8");
   }
 
-  return new Map(entries.map((e) => [e.path, e.blobHash]));
+  return new Map((entries ?? []).map((e) => [e.path, e.blobHash]));
 }
 
 /** Hashes and stages only the written paths, then advances the running commit. */

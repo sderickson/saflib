@@ -59,4 +59,4 @@ Each phase file should end at a place you can typecheck and test. A later phase 
     prompt: Summarize what changed in the widget table. Do not start the next phase.
 ```
 
-Smoke-check a phase with `new-workflow validate` on the file path before treating it as ready to run.
+Smoke-check a phase with `new-workflow validate <path-to-phase.yaml>` from the plan folder (or anywhere in the repo). Validate previews mechanical steps against the monorepo root at `HEAD`, preferring the working tree when a target file exists on disk. For `integrations/init`, pass `path: <product>/service/integrations/<name>` from the repo root — do not `cd` into the product folder alone (it has no `package.json`).
