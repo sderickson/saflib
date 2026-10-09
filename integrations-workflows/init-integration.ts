@@ -39,7 +39,12 @@ interface InitIntegrationInput {
    * Path of the new integration package from the monorepo root, e.g.
    * `power-up/service/integrations/mercury`.
    */
-  path: string;
+  path?: string;
+  /**
+   * Legacy: kebab-case integration name when the run's cwd is already the
+   * product root (e.g. after `cd daemon`). Prefer `path` for new plans.
+   */
+  name?: string;
 }
 
 interface InitIntegrationContext extends ParsePackageNameOutput {
@@ -52,10 +57,29 @@ interface InitIntegrationContext extends ParsePackageNameOutput {
   cwd: string;
 }
 
+function resolveIntegrationFromName(
+  integrationName: string,
+  cwd: string,
+): { integrationName: string; productRoot: string; targetDir: string; parentDir: string } {
+  const parentDir = path.resolve(cwd, "service", "common");
+  const productRoot = path.dirname(path.dirname(parentDir));
+  return {
+    integrationName,
+    productRoot,
+    targetDir: path.join(productRoot, "service", "integrations", integrationName),
+    parentDir,
+  };
+}
+
 function resolveIntegrationPath(
   rawPath: string,
   cwd: string,
 ): { integrationName: string; productRoot: string; targetDir: string; parentDir: string } {
+  if (rawPath === undefined || rawPath === null || rawPath === "") {
+    throw new Error(
+      'integrations/init requires input.path (e.g. "daemon/service/integrations/uscis") or legacy input.name when cwd is the product root',
+    );
+  }
   const normalized = rawPath.replace(/^\.\//, "").replace(/\/$/, "");
   const match = INTEGRATION_PATH_RE.exec(normalized);
   if (!match?.groups) {
@@ -71,6 +95,35 @@ function resolveIntegrationPath(
     targetDir: path.join(productRoot, "service", "integrations", integrationName),
     parentDir: path.join(productRoot, "service", "common"),
   };
+}
+
+function resolveInitIntegrationLocations(
+  input: InitIntegrationInput,
+  cwd: string,
+): {
+  integrationName: string;
+  productRoot: string;
+  targetDir: string;
+  parentDir: string;
+  pathLabel: string;
+} {
+  if (input.path) {
+    const locations = resolveIntegrationPath(input.path, cwd);
+    return {
+      ...locations,
+      pathLabel: input.path.replace(/^\.\//, "").replace(/\/$/, ""),
+    };
+  }
+  if (input.name) {
+    const locations = resolveIntegrationFromName(input.name, cwd);
+    return {
+      ...locations,
+      pathLabel: path.join("service", "integrations", input.name),
+    };
+  }
+  throw new Error(
+    'integrations/init requires input.path (e.g. "daemon/service/integrations/uscis") or legacy input.name when cwd is the product root',
+  );
 }
 
 /**
@@ -98,13 +151,17 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
         description:
           "Path of the new integration from the monorepo root, e.g. 'power-up/service/integrations/mercury'.",
       },
+      name: {
+        type: "string",
+        description:
+          "Legacy kebab-case name when cwd is already the product root (after `cd <product>`).",
+      },
     },
-    required: ["path"],
   },
 
   context: ({ input, cwd }) => {
-    const { integrationName, productRoot, targetDir, parentDir } =
-      resolveIntegrationPath(input.path, cwd);
+    const { integrationName, productRoot, targetDir, parentDir, pathLabel } =
+      resolveInitIntegrationLocations(input, cwd);
 
     let org = "saflib";
     let productName = path.basename(productRoot);
@@ -125,7 +182,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
       targetDir,
       parentDir,
       productRoot,
-      path: input.path.replace(/^\.\//, "").replace(/\/$/, ""),
+      path: pathLabel,
       serviceName: productName,
       cwd,
     };

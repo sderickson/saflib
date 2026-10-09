@@ -89,6 +89,53 @@ export async function initializeDependencies(): Promise<void> {
     expect(deps).toContain("await configureMercury(");
   });
 
+  it("accepts legacy input.name when cwd is the product root", async () => {
+    const root = mkdtempSync(path.join(tmpdir(), "integrations-init-legacy-"));
+    const productRoot = path.join(root, "daemon");
+    const commonDir = path.join(productRoot, "service", "common");
+    mkdirSync(commonDir, { recursive: true });
+    writeFileSync(
+      path.join(commonDir, "package.json"),
+      JSON.stringify(
+        {
+          name: "@pathclerk/daemon-service-common",
+          private: true,
+          type: "module",
+          dependencies: {},
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    writeFileSync(
+      path.join(commonDir, "dependencies.ts"),
+      `// BEGIN WORKFLOW AREA integration-imports FOR integrations/init
+// END WORKFLOW AREA
+
+export async function initializeDependencies(): Promise<void> {
+  // BEGIN WORKFLOW AREA integration-configure FOR integrations/init
+  // END WORKFLOW AREA
+}
+`,
+    );
+
+    const runId = await createRun(dbKey, InitIntegrationWorkflowDefinition, {
+      input: { name: "uscis" },
+      cwd: productRoot,
+      mode: "script",
+    });
+
+    for (let i = 0; i < 2; i++) {
+      const { output, result } = advanceRun(dbKey, InitIntegrationWorkflowDefinition, runId);
+      await collectOutput(output);
+      expect((await result).status).toBe("success");
+    }
+
+    expect(
+      existsSync(path.join(productRoot, "service", "integrations", "uscis", "client.ts")),
+    ).toBe(true);
+  });
+
   it("rejects paths that are not {product}/service/integrations/{name}", async () => {
     const runId = await createRun(dbKey, InitIntegrationWorkflowDefinition, {
       input: { path: "shop/service/common" },
