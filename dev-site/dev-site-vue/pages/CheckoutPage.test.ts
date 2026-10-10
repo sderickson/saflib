@@ -215,6 +215,7 @@ describe("CheckoutPage compare package tree", () => {
       () =>
         HttpResponse.json(
           checkoutFixture({
+            github_repo: "acme/pathclerk",
             compare: {
               against_ref: "main",
               merge_base_hash: BASE,
@@ -298,5 +299,25 @@ describe("CheckoutPage compare package tree", () => {
       expect(wrapper.text()).toContain("+10/+5 LOC");
     });
     expect(wrapper.get(".pkg-head__name").text()).toBe("@demo/keep");
+  });
+
+  it("links to a path-scoped GitHub compare for the selected package", async () => {
+    await router.push({
+      path: "/checkout",
+      query: { compare: "main", package: "@demo/keep" },
+    });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Changes on GitHub");
+    });
+    const link = wrapper
+      .findAll("a")
+      .find((a) => a.text().includes("Changes on GitHub") && a.attributes("href")?.includes("path="));
+    expect(link).toBeDefined();
+    expect(link!.attributes("href")).toContain(
+      `compare/${BASE}...feature?path=products%2Fkeep%2F`,
+    );
   });
 });

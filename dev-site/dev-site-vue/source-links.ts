@@ -62,8 +62,16 @@ export function githubCompareUrl(
   github_repo: string,
   baseRef: string,
   headRef: string,
+  options?: { /** Limit the diff to this repo-relative path (file or directory). */ path?: string },
 ): string {
-  return `https://github.com/${github_repo}/compare/${baseRef}...${headRef}`;
+  const url = new URL(
+    `https://github.com/${github_repo}/compare/${baseRef}...${headRef}`,
+  );
+  const path = options?.path?.replace(/^\/+/, "").trim();
+  if (path) {
+    url.searchParams.set("path", path);
+  }
+  return url.toString();
 }
 
 export function openSource(

@@ -119,7 +119,10 @@
               <PackageDirTree
                 :nodes="dirTree"
                 :selected-package-name="selectedPackageName"
+                :dir-focus-enabled="compareReady"
+                :focused-dir-path="treeCompareDirPath"
                 @select="selectPackage"
+                @focus-dir="onTreeFocusDir"
               />
             </div>
           </template>
@@ -160,6 +163,18 @@
                     <code>{{ selectedPkg.directory || "." }}</code>
                   </span>
                   <v-spacer />
+                  <v-btn
+                    v-if="githubFocusedCompareHref"
+                    size="small"
+                    variant="text"
+                    prepend-icon="mdi-github"
+                    :href="githubFocusedCompareHref"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    :title="`Open compare on GitHub (${githubFocusComparePath})`"
+                  >
+                    Changes on GitHub
+                  </v-btn>
                   <v-btn
                     v-if="drizzleWorkflowHref"
                     size="small"
@@ -368,7 +383,11 @@ import {
 import { parsePackageDescription } from "../scope-docs";
 import { collectPackageIssues } from "../package-issues";
 import { toPackageDetailForIssues } from "../wire-maps";
-import { repoPathPrefix } from "../repo-paths";
+import {
+  githubComparePathFilter,
+  joinRepoRelativePath,
+  repoPathPrefix,
+} from "../repo-paths";
 import { formatLocChangePair, formatLocPair } from "../format-loc";
 import type { TestScope } from "../test-tree";
 import { toModuleStem } from "../test-tree";
@@ -475,7 +494,7 @@ const effectiveGithubRef = computed(() =>
   }),
 );
 
-const githubCompareHref = computed(() => {
+const githubCompareRefs = computed(() => {
   if (!github_repo.value || !compareMode.value) {
     return undefined;
   }
@@ -485,7 +504,13 @@ const githubCompareHref = computed(() => {
   if (!c?.hash || !base || base === c.hash) {
     return undefined;
   }
-  return githubCompareUrl(github_repo.value, base, head);
+  return { base, head };
+});
+
+const githubCompareHref = computed(() => {
+  const refs = githubCompareRefs.value;
+  if (!refs || !github_repo.value) return undefined;
+  return githubCompareUrl(github_repo.value, refs.base, refs.head);
 });
 
 const pathRenames = computed(
@@ -587,6 +612,55 @@ const selectedPackageName = computed(() => {
 const selectedPkg = computed(() =>
   visibleRows.value.find((p) => p.package_name === selectedPackageName.value),
 );
+
+/** Package-tree directory focus (repo-relative compare path is derived from this). */
+const treeCompareDirPath = ref<string | undefined>(undefined);
+
+watch(selectedPackageName, () => {
+  treeCompareDirPath.value = undefined;
+});
+
+watch(
+  () => [route.query.file, route.query.dir] as const,
+  () => {
+    treeCompareDirPath.value = undefined;
+  },
+);
+
+const githubFocusComparePath = computed(() => {
+  const pkg = selectedPkg.value;
+  if (!pkg) return undefined;
+  const productRoot = checkout.value?.product_root ?? "";
+
+  if (treeCompareDirPath.value) {
+    return githubComparePathFilter(
+      repoPathPrefix(productRoot, treeCompareDirPath.value),
+      "dir",
+    );
+  }
+
+  const root = repoPathPrefix(productRoot, pkg.directory);
+  const file = route.query.file;
+  if (typeof file === "string" && file) {
+    return githubComparePathFilter(joinRepoRelativePath(root, file), "file");
+  }
+  const dir = route.query.dir;
+  if (typeof dir === "string" && dir) {
+    return githubComparePathFilter(joinRepoRelativePath(root, dir), "dir");
+  }
+  return root ? githubComparePathFilter(root, "dir") : undefined;
+});
+
+const githubFocusedCompareHref = computed(() => {
+  const refs = githubCompareRefs.value;
+  const path = githubFocusComparePath.value;
+  if (!refs || !github_repo.value || !path) return undefined;
+  return githubCompareUrl(github_repo.value, refs.base, refs.head, { path });
+});
+
+function onTreeFocusDir(packageDirectoryRelativePath: string) {
+  treeCompareDirPath.value = packageDirectoryRelativePath;
+}
 
 const locDeltaText = computed(() => {
   const d = selectedPkg.value?.locDelta;

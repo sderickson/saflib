@@ -55,4 +55,14 @@ describe("githubCompareUrl", () => {
       "https://github.com/acme/widget/compare/mergebase123...feature/source-links",
     );
   });
+
+  it("scopes the diff with a path query param", () => {
+    expect(
+      githubCompareUrl("acme/widget", "main", "feature", {
+        path: "daemon/service/",
+      }),
+    ).toBe(
+      "https://github.com/acme/widget/compare/main...feature?path=daemon%2Fservice%2F",
+    );
+  });
 });
