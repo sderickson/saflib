@@ -7,19 +7,6 @@ export function joinRepoRelativePath(...parts: string[]): string {
     .join("/");
 }
 
-/**
- * Path filter for GitHub compare (`?path=`). Directories use a trailing slash;
- * files do not.
- */
-export function githubComparePathFilter(
-  repoRelativePath: string,
-  kind: "dir" | "file",
-): string {
-  const normalized = repoRelativePath.replace(/^\/+/, "").replace(/\/+$/, "");
-  if (!normalized) return "";
-  return kind === "dir" ? `${normalized}/` : normalized;
-}
-
 /** Join product_root + package directory into a repo-relative path prefix. */
 export function repoPathPrefix(
   product_root: string | undefined,

@@ -301,7 +301,13 @@ describe("CheckoutPage compare package tree", () => {
     expect(wrapper.get(".pkg-head__name").text()).toBe("@demo/keep");
   });
 
-  it("links to a path-scoped GitHub compare for the selected package", async () => {
+  it("offers a copy-git-diff button scoped to the selected package", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+
     await router.push({
       path: "/checkout",
       query: { compare: "main", package: "@demo/keep" },
@@ -310,14 +316,17 @@ describe("CheckoutPage compare package tree", () => {
       propsData: { subdomain: "test" },
     });
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("Changes on GitHub");
+      expect(wrapper.text()).toContain("Copy git diff");
     });
-    const link = wrapper
-      .findAll("a")
-      .find((a) => a.text().includes("Changes on GitHub") && a.attributes("href")?.includes("path="));
-    expect(link).toBeDefined();
-    expect(link!.attributes("href")).toContain(
-      `compare/${BASE}...feature?path=products%2Fkeep%2F`,
+
+    const btn = wrapper
+      .findAllComponents({ name: "v-btn" })
+      .find((b) => b.text() === "Copy git diff");
+    expect(btn).toBeDefined();
+    await btn!.trigger("click");
+
+    expect(writeText).toHaveBeenCalledWith(
+      `git diff ${BASE}...feature -- products/keep`,
     );
   });
 });

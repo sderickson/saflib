@@ -164,16 +164,14 @@
                   </span>
                   <v-spacer />
                   <v-btn
-                    v-if="githubFocusedCompareHref"
+                    v-if="scopedGitDiffCommand"
                     size="small"
                     variant="text"
-                    prepend-icon="mdi-github"
-                    :href="githubFocusedCompareHref"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    :title="`Open compare on GitHub (${githubFocusComparePath})`"
+                    prepend-icon="mdi-content-copy"
+                    :title="scopedGitDiffCommand"
+                    @click="copyScopedGitDiff"
                   >
-                    Changes on GitHub
+                    {{ copyDiffFeedback ? "Copied" : "Copy git diff" }}
                   </v-btn>
                   <v-btn
                     v-if="drizzleWorkflowHref"
@@ -383,11 +381,8 @@ import {
 import { parsePackageDescription } from "../scope-docs";
 import { collectPackageIssues } from "../package-issues";
 import { toPackageDetailForIssues } from "../wire-maps";
-import {
-  githubComparePathFilter,
-  joinRepoRelativePath,
-  repoPathPrefix,
-} from "../repo-paths";
+import { joinRepoRelativePath, repoPathPrefix } from "../repo-paths";
+import { formatGitDiffCompareCommand } from "../compare-git-diff.ts";
 import { formatLocChangePair, formatLocPair } from "../format-loc";
 import type { TestScope } from "../test-tree";
 import { toModuleStem } from "../test-tree";
@@ -627,36 +622,48 @@ watch(
   },
 );
 
-const githubFocusComparePath = computed(() => {
+const compareFocusPathPrefix = computed(() => {
   const pkg = selectedPkg.value;
   if (!pkg) return undefined;
   const productRoot = checkout.value?.product_root ?? "";
 
   if (treeCompareDirPath.value) {
-    return githubComparePathFilter(
-      repoPathPrefix(productRoot, treeCompareDirPath.value),
-      "dir",
-    );
+    return repoPathPrefix(productRoot, treeCompareDirPath.value);
   }
 
   const root = repoPathPrefix(productRoot, pkg.directory);
   const file = route.query.file;
   if (typeof file === "string" && file) {
-    return githubComparePathFilter(joinRepoRelativePath(root, file), "file");
+    return joinRepoRelativePath(root, file);
   }
   const dir = route.query.dir;
   if (typeof dir === "string" && dir) {
-    return githubComparePathFilter(joinRepoRelativePath(root, dir), "dir");
+    return joinRepoRelativePath(root, dir);
   }
-  return root ? githubComparePathFilter(root, "dir") : undefined;
+  return root || undefined;
 });
 
-const githubFocusedCompareHref = computed(() => {
-  const refs = githubCompareRefs.value;
-  const path = githubFocusComparePath.value;
-  if (!refs || !github_repo.value || !path) return undefined;
-  return githubCompareUrl(github_repo.value, refs.base, refs.head, { path });
+const scopedGitDiffCommand = computed(() => {
+  const base = compareFromHash.value;
+  if (!compareReady.value || !base) return undefined;
+  return formatGitDiffCompareCommand({
+    baseRef: base,
+    headRef: effectiveGithubRef.value,
+    pathPrefix: compareFocusPathPrefix.value,
+  });
 });
+
+const copyDiffFeedback = ref(false);
+
+async function copyScopedGitDiff() {
+  const cmd = scopedGitDiffCommand.value;
+  if (!cmd || typeof navigator.clipboard?.writeText !== "function") return;
+  await navigator.clipboard.writeText(cmd);
+  copyDiffFeedback.value = true;
+  window.setTimeout(() => {
+    copyDiffFeedback.value = false;
+  }, 2000);
+}
 
 function onTreeFocusDir(packageDirectoryRelativePath: string) {
   treeCompareDirPath.value = packageDirectoryRelativePath;
