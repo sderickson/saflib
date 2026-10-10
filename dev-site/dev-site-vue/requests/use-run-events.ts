@@ -28,6 +28,7 @@ export function useRunEvents(runId: MaybeRefOrGetter<string | undefined>): void 
       source = new EventSource(`/api/runs/${id}/events`);
       source.addEventListener("change", () => {
         queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", id] });
+        queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
         void prependNewerRunLogs(queryClient, id);
       });
     },

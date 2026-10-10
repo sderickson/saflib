@@ -50,13 +50,10 @@ Use `prompt` steps for edits to files that already exist and were not created by
 
 ## Stopping points
 
-Each phase file should end at a place you can typecheck and test. A later phase assumes earlier phases have been run. Put a short `prompt` at the end of a phase only when a person must look at the result before the next file; set `pauseAfter: true` on that step so play-workflow and play-plan stop even if they are set to continue.
+Each phase file should end at a place you can typecheck and test (often a `command` step running `npm run typecheck` or tests in that package). A later phase assumes earlier phases have been run.
 
-```yaml
-  - kind: prompt
-    pauseAfter: true
-    pauseMessage: Review the schema diff, then continue.
-    prompt: Summarize what changed in the widget table. Do not start the next phase.
-```
+**Do not** add a trailing “summarize this phase” `prompt` with `pauseAfter: true` by default. That was an older pattern for manual review between files; it adds an extra agent turn and blocks unattended **play-plan** unless the dev site is in plan mode (which auto-continues past `pauseAfter`). Prefer ending on mechanical work plus typecheck.
+
+Use `pauseAfter: true` only when a step truly needs a human gate before anything else in the same file should run — for example a spec review inside `processes/spec-project`, or a one-off “run e2e on the host before merge” checkpoint. **Play-workflow** and **play-step** honor `pauseAfter`; **play-plan** ignores it and keeps cascading to the next `phase-*.workflow.yaml` when a phase finishes.
 
 Smoke-check a phase with `new-workflow validate <path-to-phase.yaml>` from the plan folder (or anywhere in the repo). Validate previews mechanical steps against the monorepo root at `HEAD`, preferring the working tree when a target file exists on disk. For `integrations/init`, pass `path: <product>/service/integrations/<name>` from the repo root — do not `cd` into the product folder alone (it has no `package.json`).

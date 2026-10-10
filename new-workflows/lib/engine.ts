@@ -170,6 +170,21 @@ async function runStep(
   const stepIndex = run.current_step_index;
   const step = def.steps[stepIndex];
   if (!step) {
+    // Past the last step — e.g. the on-disk workflow was shortened after
+    // this run advanced, or the row was left mid-flight. Persist `done` so
+    // the run does not stay `running` forever while `/advance` keeps
+    // returning `{ status: "done" }` without updating the row.
+    if (run.status !== "done") {
+      const finishedAt = new Date();
+      const completionHash = resolveRef(run.cwd, "HEAD").result ?? null;
+      await updateStatusAndStepWorkflowRun(dbKey, {
+        id: runId,
+        status: "done",
+        current_step_index: stepIndex,
+        completion_hash: completionHash,
+        now: finishedAt,
+      });
+    }
     return { status: "done" };
   }
 

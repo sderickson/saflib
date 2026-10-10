@@ -12,8 +12,13 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useWorkflowRunsQuery } from "../requests/workflows-queries.ts";
+import {
+  useSendFreeformAgentMessageMutation,
+  useWorkflowRunsQuery,
+} from "../requests/workflows-queries.ts";
 import { runStatusVisual, NOT_RUN_YET_ICON, type RunStatusVisual } from "../run-status-visual.ts";
+import { useRunOrchestrator } from "../run-orchestrator.ts";
+import { isRunAdvancingForDisplay } from "../run-client-advancing.ts";
 
 const props = defineProps<{
   filePath: string;
@@ -26,6 +31,8 @@ const runsQuery = useWorkflowRunsQuery(() =>
   props.kind === "workflow" ? props.filePath : undefined,
 );
 const mostRecentRun = computed(() => runsQuery.data.value?.runs[0]);
+const orchestrator = useRunOrchestrator();
+const agentMessageMutation = useSendFreeformAgentMessageMutation();
 
 const visual = computed<RunStatusVisual>(() => {
   if (props.kind === "markdown") {
@@ -37,7 +44,15 @@ const visual = computed<RunStatusVisual>(() => {
   if (!mostRecentRun.value) {
     return { label: "not run yet", spinner: false, icon: NOT_RUN_YET_ICON };
   }
-  return runStatusVisual(mostRecentRun.value);
+  const run = mostRecentRun.value;
+  const isAdvancing = isRunAdvancingForDisplay(run.id, run.is_advancing, {
+    activeRunId: orchestrator.activeRunId.value,
+    advancePending: orchestrator.advanceMutation.isPending.value,
+    agentMessagePendingRunId: agentMessageMutation.isPending.value
+      ? agentMessageMutation.variables.value?.runId
+      : undefined,
+  });
+  return runStatusVisual({ ...run, is_advancing: isAdvancing });
 });
 </script>
 

@@ -156,6 +156,8 @@ export function useWorkflowRunsQuery(id: MaybeRefOrGetter<string | undefined>) {
       handleClientMethod(
         client.GET("/api/workflows/{id}/runs", { params: { path: { id: toValue(id)! } } }),
       ),
+    refetchInterval: (query) =>
+      query.state.data?.runs[0]?.is_advancing === true ? 2_000 : false,
   });
 }
 
@@ -202,6 +204,8 @@ export function useWorkflowRunQuery(runId: MaybeRefOrGetter<string | undefined>)
       handleClientMethod(
         client.GET("/api/runs/{runId}", { params: { path: { runId: toValue(runId)! } } }),
       ),
+    refetchInterval: (query) =>
+      query.state.data?.run?.is_advancing === true ? 2_000 : false,
   });
 }
 
@@ -421,21 +425,16 @@ export function useAdvanceWorkflowRunMutation() {
     onMutate: () => {
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
     },
-    onSuccess: (_data, vars) => {
+    onSettled: (_data, _error, vars) => {
       const runId = typeof vars === "string" ? vars : vars.runId;
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+    },
+    onSuccess: (_data, vars) => {
+      const runId = typeof vars === "string" ? vars : vars.runId;
       // Merge tip-only (don't invalidate all infinite pages — that gaps
       // older cached pages). SSE does the same during the turn.
       void prependNewerRunLogs(queryClient, runId);
-      // Also every open `workflow-runs` (list-by-file) query — e.g.
-      // `PlanNavIcon`'s and `PlansPage`'s own "most recent run" — not just
-      // this run's own detail. Without this, retrying a failed run left
-      // the nav icon and the plans page's inline run picker both showing
-      // stale pre-retry status until something else happened to refetch
-      // them; this call only knows the runId, not which workflow/file it
-      // belongs to, so invalidate the whole `workflow-runs` key prefix
-      // rather than one specific id.
-      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
     },
   });
 }
@@ -448,11 +447,17 @@ export function useAdvanceWorkflowRunMutation() {
  */
 export function useCancelWorkflowRunMutation() {
   const client = createWorkflowsClient();
+  const queryClient = useQueryClient();
   return useMutation<NewWorkflowsResponseBody["cancelWorkflowRun"][200], TanstackError, string>({
     mutationFn: (runId) =>
       handleClientMethod(
         client.POST("/api/runs/{runId}/cancel", { params: { path: { runId } } }),
       ),
+    onSuccess: (_data, runId) => {
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-logs", runId] });
+    },
   });
 }
 

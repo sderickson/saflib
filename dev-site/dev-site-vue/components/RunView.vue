@@ -82,6 +82,15 @@
         </div>
       </div>
       <div v-else ref="logContainer" class="run-view__logs" @scroll="onScroll">
+        <div
+          v-if="logAnchor !== undefined"
+          class="run-view__logs-anchor-banner text-body-2 text-medium-emphasis"
+        >
+          Viewing step {{ logAnchor }} history —
+          <button type="button" class="run-view__logs-live-link" @click="returnToLiveLogs">
+            jump to live
+          </button>
+        </div>
         <div v-if="logsQuery.isFetchingNextPage.value" class="run-view__logs-loading">
           Loading earlier logs…
         </div>
@@ -90,7 +99,7 @@
           :key="itemKey(item)"
           class="run-view__log-item"
           :data-step-index="itemStepIndex(item)"
-          :class="{ 'run-view__log-item--sticky': isLastAgentInput(item) }"
+          :class="{ 'run-view__log-item--sticky': showStickyAgentInput && isLastAgentInput(item) }"
         >
           <ToolCallCard
             v-if="item.type === 'tool-call'"
@@ -380,6 +389,7 @@ import {
 } from "../requests/workflows-queries.ts";
 import { useRunEvents } from "../requests/use-run-events.ts";
 import { useRunOrchestrator } from "../run-orchestrator.ts";
+import { isRunAdvancingForDisplay } from "../run-client-advancing.ts";
 import { runStatusVisual, type RunStatusVisual } from "../run-status-visual.ts";
 import LogEntry from "./LogEntry.vue";
 import LogEntryGroup from "./LogEntryGroup.vue";
@@ -641,12 +651,17 @@ function openReflection() {
  * Advance button with no way to tell "it's already working" from "nothing
  * is happening", and no way to Stop it either.
  */
-const isAdvancing = computed(
-  () =>
-    (orchestrator.activeRunId.value === runId.value && orchestrator.advanceMutation.isPending.value) ||
-    agentMessageMutation.isPending.value ||
-    run.value?.is_advancing === true,
-);
+const isAdvancing = computed(() => {
+  const id = runId.value;
+  if (!id) return false;
+  return isRunAdvancingForDisplay(id, run.value?.is_advancing === true, {
+    activeRunId: orchestrator.activeRunId.value,
+    advancePending: orchestrator.advanceMutation.isPending.value,
+    agentMessagePendingRunId: agentMessageMutation.isPending.value
+      ? agentMessageMutation.variables.value?.runId
+      : undefined,
+  });
+});
 
 /**
  * Preview only before anything has actually started — no run yet, or a
@@ -799,6 +814,12 @@ let loadingNewer = false;
 /** Step index to scroll into view once its logs arrive. */
 const pendingScrollStep = ref<number | undefined>(undefined);
 
+watch(runId, () => {
+  logAnchor.value = undefined;
+  pendingScrollStep.value = undefined;
+  isFollowing.value = true;
+});
+
 function isNearBottom(el: HTMLElement): boolean {
   return el.scrollHeight - el.scrollTop - el.clientHeight <= SCROLL_BOTTOM_THRESHOLD_PX;
 }
@@ -870,6 +891,11 @@ function isLastAgentInput(item: LogItem): boolean {
   return item.type === "single" && item.log.id === lastAgentInputLogId.value;
 }
 
+/** Sticky latest prompt only on the live tail — not when browsing a step window. */
+const showStickyAgentInput = computed(
+  () => logAnchor.value === undefined && isFollowing.value,
+);
+
 /**
  * Which step's logs are at the *bottom* of the visible viewport — drives
  * the sidebar highlight. That's the step whose content you're actually
@@ -913,19 +939,19 @@ function scrollLogTo(target: HTMLElement) {
 }
 
 function scrollToStep(index: number) {
-  const el = logContainer.value;
-  const target = el?.querySelector<HTMLElement>(`[data-step-index="${index}"]`);
-  if (target) {
-    isFollowing.value = false;
-    scrollLogTo(target);
-    return;
-  }
-  // Not in the loaded window — re-anchor the log query at this step, then
-  // scroll once those rows render. Scrolling up or down from there pages
-  // the gap in that direction.
+  // Always re-anchor from the server for the step — scrolling within the
+  // current loaded window reused the first `[data-step-index]` match and
+  // left you staring at the same tail rows (often just the sticky agent
+  // prompt + one line) no matter which step you picked.
   isFollowing.value = false;
   pendingScrollStep.value = index;
   logAnchor.value = index;
+}
+
+function returnToLiveLogs() {
+  logAnchor.value = undefined;
+  pendingScrollStep.value = undefined;
+  isFollowing.value = true;
 }
 
 function onScroll() {
@@ -1067,6 +1093,22 @@ const failureMessage = computed(() => {
   font-size: 0.8rem;
   white-space: pre-wrap;
   word-break: break-word;
+}
+.run-view__logs-anchor-banner {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0.35rem 0.75rem;
+  background: rgba(var(--v-theme-surface), 0.95);
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+.run-view__logs-live-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: rgb(var(--v-theme-primary));
+  cursor: pointer;
+  text-decoration: underline;
 }
 .run-view__logs-loading {
   opacity: 0.6;
