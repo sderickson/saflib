@@ -9,7 +9,17 @@
       <span v-if="label" class="log-entry__label">{{ label }}</span>
       <span v-if="timeLabel" class="log-entry__time">{{ timeLabel }}</span>
     </div>
-    <div v-if="isMarkdown" class="log-entry__body log-entry__body--markdown">
+    <div v-if="embeddedToolResult" class="log-entry__body log-entry__tool-result">
+      <div class="log-entry__section-label">Tool result</div>
+      <ToolResultBody
+        :content="embeddedToolResult.content"
+        :is-error="embeddedToolResult.is_error"
+      />
+    </div>
+    <div v-else-if="isThinkingPlaceholder" class="log-entry__body log-entry__thinking">
+      thinking…
+    </div>
+    <div v-else-if="isMarkdown" class="log-entry__body log-entry__body--markdown">
       <div v-if="isAgentInput && !expanded" class="log-entry__markdown-preview">
         {{ markdownPreviewText }}
       </div>
@@ -33,7 +43,9 @@
 import { computed, ref } from "vue";
 import { marked } from "marked";
 import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
+import { parseToolLogPayload } from "@saflib/new-workflows-spec";
 import { formatLogTime } from "../format-log-time.ts";
+import ToolResultBody from "./ToolResultBody.vue";
 
 const props = defineProps<{ log: WorkflowLogEntry }>();
 // Also doubles as "expanded" for the plain-text show-more toggle below —
@@ -59,8 +71,25 @@ const body = computed(() => headerMatch.value?.[2] ?? props.log.content);
 // bold) — worth rendering as such instead of a monospace text dump.
 // `tool`/`terminal` entries are one-line narration or raw command output,
 // not prose, so they keep the plain preview/expand behavior below.
+const embeddedToolResult = computed(() => {
+  if (props.log.channel !== "agent") return undefined;
+  const payload =
+    parseToolLogPayload(body.value) ?? parseToolLogPayload(props.log.content);
+  return payload?.kind === "tool_result" ? payload : undefined;
+});
+
+const isThinkingPlaceholder = computed(
+  () =>
+    props.log.channel === "agent" &&
+    !embeddedToolResult.value &&
+    body.value.trim() === "(thinking…)",
+);
+
 const isMarkdown = computed(
-  () => props.log.channel === "agent" || props.log.channel === "agent-input",
+  () =>
+    (props.log.channel === "agent" || props.log.channel === "agent-input") &&
+    !embeddedToolResult.value &&
+    !isThinkingPlaceholder.value,
 );
 const renderedHtml = computed(() =>
   isMarkdown.value ? (marked.parse(body.value, { async: false }) as string) : "",
@@ -212,5 +241,20 @@ const moreLabel = computed(
 }
 .log-entry--tool .log-entry__channel {
   color: #4caf50;
+}
+.log-entry__thinking {
+  font-style: italic;
+  opacity: 0.55;
+  font-family: unset;
+}
+.log-entry__section-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.55;
+  margin-bottom: 0.2rem;
+}
+.log-entry__tool-result {
+  font-family: unset;
 }
 </style>

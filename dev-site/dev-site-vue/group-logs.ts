@@ -57,7 +57,9 @@ export function groupLogs(logs: WorkflowLogEntry[]): LogItem[] {
       const idx = groupIndexById.get(payload.tool_use_id);
       const existing = idx !== undefined ? items[idx] : undefined;
       if (existing?.type === "tool-call") {
-        existing.resultLog = log;
+        if (!existing.resultLog) {
+          existing.resultLog = log;
+        }
         continue;
       }
     }
