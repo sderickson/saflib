@@ -14,6 +14,58 @@ function writePlaceholder(outPath: string): void {
   chmodSync(outPath, 0o600);
 }
 
+/** Avoid clobbering a working mount when Keychain / host lookup fails this run. */
+function keepExistingCredentialsFile(
+  outPath: string,
+  looksValid: (raw: string) => boolean,
+  reason: string,
+): boolean {
+  if (!existsSync(outPath)) return false;
+  try {
+    const raw = readFileSync(outPath, "utf8").trim();
+    if (!raw || raw === "{}") return false;
+    if (!looksValid(raw)) return false;
+    console.error(
+      `dev-site: kept existing ${path.basename(outPath)} (${reason})`,
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function claudeCredentialsLookValid(raw: string): boolean {
+  try {
+    const data = JSON.parse(raw) as Record<string, unknown>;
+    return Object.keys(data).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function cursorCredentialsFileLooksValid(raw: string): boolean {
+  try {
+    const { access, refresh } = readTokensFromAuthFileContent(raw);
+    return Boolean(access && refresh && tokensLookValid(access, refresh));
+  } catch {
+    return false;
+  }
+}
+
+function readTokensFromAuthFileContent(raw: string): {
+  access: string;
+  refresh: string;
+} {
+  const data = JSON.parse(raw) as {
+    accessToken?: string;
+    refreshToken?: string;
+  };
+  return {
+    access: data.accessToken ?? "",
+    refresh: data.refreshToken ?? "",
+  };
+}
+
 function securityFindGenericPassword(
   account: string,
   service: string,
@@ -46,6 +98,15 @@ export function writeClaudeCredentials(devDir: string): void {
       );
       return;
     }
+    if (
+      keepExistingCredentialsFile(
+        outPath,
+        claudeCredentialsLookValid,
+        "Keychain lookup failed; existing file still looks valid",
+      )
+    ) {
+      return;
+    }
     writePlaceholder(outPath);
     console.error(
       "dev-site: no Claude Code Keychain entry found (run 'claude login' on host, then re-run prepare) — wrote empty placeholder",
@@ -63,6 +124,15 @@ export function writeClaudeCredentials(devDir: string): void {
       );
       return;
     }
+    if (
+      keepExistingCredentialsFile(
+        outPath,
+        claudeCredentialsLookValid,
+        "no ~/.claude/.credentials.json; existing copy still looks valid",
+      )
+    ) {
+      return;
+    }
     writePlaceholder(outPath);
     console.error(
       "dev-site: no ~/.claude/.credentials.json found — wrote empty placeholder",
@@ -70,6 +140,15 @@ export function writeClaudeCredentials(devDir: string): void {
     return;
   }
 
+  if (
+    keepExistingCredentialsFile(
+      outPath,
+      claudeCredentialsLookValid,
+      "unsupported OS; existing copy still looks valid",
+    )
+  ) {
+    return;
+  }
   writePlaceholder(outPath);
   console.error(
     "dev-site: unsupported host OS for Claude credential extraction — wrote empty placeholder",
@@ -123,14 +202,7 @@ function readTokensFromAuthFile(src: string): {
   access: string;
   refresh: string;
 } {
-  const data = JSON.parse(readFileSync(src, "utf8")) as {
-    accessToken?: string;
-    refreshToken?: string;
-  };
-  return {
-    access: data.accessToken ?? "",
-    refresh: data.refreshToken ?? "",
-  };
+  return readTokensFromAuthFileContent(readFileSync(src, "utf8"));
 }
 
 export function writeCursorCredentials(devDir: string): void {
@@ -171,6 +243,15 @@ export function writeCursorCredentials(devDir: string): void {
     if (tryAuthFile(path.join(os.homedir(), ".cursor/auth.json"), "~/.cursor/auth.json")) {
       return;
     }
+    if (
+      keepExistingCredentialsFile(
+        outPath,
+        cursorCredentialsFileLooksValid,
+        "Keychain / auth.json missing; existing copy still looks valid",
+      )
+    ) {
+      return;
+    }
     writePlaceholder(outPath);
     console.error(
       "dev-site: Cursor Agent credentials missing or expired — wrote empty placeholder",
@@ -186,6 +267,15 @@ export function writeCursorCredentials(devDir: string): void {
     ) {
       return;
     }
+    if (
+      keepExistingCredentialsFile(
+        outPath,
+        cursorCredentialsFileLooksValid,
+        "no auth.json; existing copy still looks valid",
+      )
+    ) {
+      return;
+    }
     writePlaceholder(outPath);
     console.error(
       "dev-site: Cursor Agent credentials missing or expired — wrote empty placeholder",
@@ -193,6 +283,15 @@ export function writeCursorCredentials(devDir: string): void {
     return;
   }
 
+  if (
+    keepExistingCredentialsFile(
+      outPath,
+      cursorCredentialsFileLooksValid,
+      "unsupported OS; existing copy still looks valid",
+    )
+  ) {
+    return;
+  }
   writePlaceholder(outPath);
   console.error(
     "dev-site: unsupported host OS for Cursor credential extraction — wrote empty placeholder",
