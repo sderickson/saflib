@@ -21,13 +21,13 @@ describe("resolveDevLayout", () => {
     vol.fromJSON(
       {
         [`${root}/saflib/base/.gitkeep`]: "",
-        [`${root}/daemon/dev/docker-compose.yaml`]: "",
+        [`${root}/my-product/dev/docker-compose.yaml`]: "",
       },
       "/",
     );
-    const layout = resolveDevLayout(`${root}/daemon/dev`);
+    const layout = resolveDevLayout(`${root}/my-product/dev`);
     expect(layout.repoMount).toBe(root);
-    expect(layout.productRoot).toBe("daemon");
+    expect(layout.productRoot).toBe("my-product");
     expect(layout.containerSaflibRoot).toBe("/repo/saflib");
     expect(layout.gitDirMount).toBeUndefined();
   });

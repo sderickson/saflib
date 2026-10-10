@@ -98,7 +98,7 @@ export async function initializeDependencies(): Promise<void> {
       path.join(commonDir, "package.json"),
       JSON.stringify(
         {
-          name: "@pathclerk/daemon-service-common",
+          name: "@example/my-product-service-common",
           private: true,
           type: "module",
           dependencies: {},

@@ -29,7 +29,8 @@ working `claude` CLI, not just the host machine.
   `.claude-credentials.json` next to the compose files, which is
   bind-mounted read-write into the container at
   `/home/node/.claude/.credentials.json`. It runs on every `npm run dev`
-  (wired into `dev-compose.sh`/`dev-site-compose.sh`), never prints the
+  (`saf-dev-site compose` prepares by default; see
+  `@saflib/dev-site-cli`), never prints the
   credential value, and soft-fails to an empty placeholder if the host
   isn't logged in — `docker compose up` still comes up either way, just
   without a working agent.

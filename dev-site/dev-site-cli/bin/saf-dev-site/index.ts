@@ -9,7 +9,7 @@ import { addSyncNodeModulesCommand } from "./sync-node-modules.ts";
 const program = new Command()
   .name("saf-dev-site")
   .description(
-    "Prepare and run local dev-site docker compose stacks. Run from a product's dev/ directory (e.g. daemon/dev).",
+    "Prepare and run local dev-site docker compose stacks. Run from a product dev/ directory (e.g. my-product/dev).",
   );
 
 addPrepareCommand(program);

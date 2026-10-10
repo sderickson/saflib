@@ -2,13 +2,13 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 export interface DevLayout {
-  /** Absolute product dev/ directory (e.g. …/daemon/dev). */
+  /** Absolute product dev/ directory (e.g. …/my-product/dev). */
   devDir: string;
   /** Host path bind-mounted at /repo in the site container. */
   repoMount: string;
   /** saflib root on the host. */
   saflibRoot: string;
-  /** Product scope within the repo (e.g. daemon, base). */
+  /** Product scope within the repo (e.g. my-product, base). */
   productRoot: string;
   /** SAFLIB_ROOT inside the container. */
   containerSaflibRoot: string;

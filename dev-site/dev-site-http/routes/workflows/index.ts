@@ -56,8 +56,9 @@ let _workflowsDbKey: ReturnType<typeof newWorkflowsDbManager.connect> | undefine
 /**
  * `onDisk: true` (the default) writes into the package's own `data/`
  * folder — fine on a host checkout, but inside the docker container that
- * package dir is the bind-mounted `/repo` (see resolve-dev-site-env.sh's
- * SAFLIB_ROOT fix for the same class of problem with @saflib/templates).
+ * package dir is the bind-mounted `/repo` (see `dev-site.env` from
+ * `saf-dev-site prepare` / DEV_SITE_SAFLIB_ROOT for the same class of
+ * problem with @saflib/templates).
  * Writing a heavily-written sqlite file onto a macOS bind mount from a
  * Linux container risks the same mmap/locking trouble as sharing
  * node_modules did (see docker-entrypoint.sh) — so docker-compose points

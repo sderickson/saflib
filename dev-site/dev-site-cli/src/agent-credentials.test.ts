@@ -31,7 +31,7 @@ import {
 } from "./agent-credentials.ts";
 
 describe("agent-credentials preserve on failure", () => {
-  const devDir = "/daemon/dev";
+  const devDir = "/my-product/dev";
 
   beforeEach(() => {
     vol.reset();

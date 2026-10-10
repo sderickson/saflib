@@ -8,10 +8,12 @@ import {
 describe("formatToolInvocation", () => {
   it("formats Read with a repo path", () => {
     expect(
-      formatToolInvocation("Read", { file_path: "/repo/daemon/service/sdk/foo.ts" }),
+      formatToolInvocation("Read", {
+        file_path: "/repo/my-product/service/sdk/foo.ts",
+      }),
     ).toEqual({
       title: "Read",
-      detail: "daemon/service/sdk/foo.ts",
+      detail: "my-product/service/sdk/foo.ts",
       inputIsRedundant: true,
     });
   });
