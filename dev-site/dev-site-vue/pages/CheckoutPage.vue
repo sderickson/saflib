@@ -164,16 +164,6 @@
                   </span>
                   <v-spacer />
                   <v-btn
-                    v-if="scopedGitDiffCommand"
-                    size="small"
-                    variant="text"
-                    prepend-icon="mdi-content-copy"
-                    :title="scopedGitDiffCommand"
-                    @click="copyScopedGitDiff"
-                  >
-                    {{ copyDiffFeedback ? "Copied" : "Copy git diff" }}
-                  </v-btn>
-                  <v-btn
                     v-if="drizzleWorkflowHref"
                     size="small"
                     variant="tonal"
@@ -193,18 +183,19 @@
                 </p>
 
                 <v-tabs
+                  v-if="showPkgTabs"
                   :model-value="tab"
                   density="compact"
                   class="pkg-tabs"
                   @update:model-value="setTab"
                 >
                   <v-tab value="spec">Spec</v-tab>
-                  <v-tab value="docs">Docs</v-tab>
-                  <v-tab value="secrets">Secrets</v-tab>
-                  <v-tab value="issues">
+                  <v-tab v-if="showDiffTab" value="diff">Diff</v-tab>
+                  <v-tab v-if="showDocsTab" value="docs">Docs</v-tab>
+                  <v-tab v-if="showSecretsTab" value="secrets">Secrets</v-tab>
+                  <v-tab v-if="showIssuesTab" value="issues">
                     Issues
                     <v-chip
-                      v-if="issueCount > 0"
                       class="ml-2"
                       size="x-small"
                       color="warning"
@@ -230,6 +221,7 @@
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
                     @update:scope="setSpecScope"
+                    @open-diff="goDiffTab"
                   />
                   <PackageSpecRoutesPane
                     v-else-if="tab === 'spec' && selectedPkg.kind === 'spec'"
@@ -243,6 +235,7 @@
                     :github-repo="github_repo"
                     :github-ref="effectiveGithubRef"
                     :local-repo-root="localRepoRoot"
+                    @open-diff="goDiffTab"
                   />
                   <PackageHttpPane
                     v-else-if="tab === 'spec' && selectedPkg.kind === 'http'"
@@ -258,6 +251,7 @@
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
                     @update:scope="setSpecScope"
+                    @open-diff="goDiffTab"
                   />
                   <PackageSdkPane
                     v-else-if="tab === 'spec' && selectedPkg.kind === 'sdk'"
@@ -273,6 +267,7 @@
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
                     @update:scope="setSpecScope"
+                    @open-diff="goDiffTab"
                   />
                   <PackageSpecPane
                     v-else-if="tab === 'spec'"
@@ -288,6 +283,15 @@
                     :local-repo-root="localRepoRoot"
                     :scope="specScope"
                     @update:scope="setSpecScope"
+                    @open-diff="goDiffTab"
+                  />
+                  <PackageDiffPane
+                    v-else-if="tab === 'diff' && compareFromHash && scopedGitDiffCommand"
+                    :subdomain="subdomain"
+                    :base-ref="compareFromHash"
+                    :head-ref="effectiveGithubRef"
+                    :path-prefix="compareFocusPathPrefix"
+                    :command="scopedGitDiffCommand"
                   />
                   <PackageDocsPane
                     v-else-if="tab === 'docs'"
@@ -311,7 +315,7 @@
                     :product-root="checkout.product_root"
                   />
                   <PackageIssuesPane
-                    v-else
+                    v-else-if="tab === 'issues'"
                     :subdomain="subdomain"
                     :commit-hash="paneCommitHash"
                     :package-name="selectedPkg.package_name"
@@ -366,6 +370,7 @@ import {
   useCommitDiff,
   useCommitPackage,
   useRepoFile,
+  useRepoFiles,
   useScanMutation,
 } from "../requests/queries";
 import { classifyPackageKind } from "../package-kind";
@@ -400,6 +405,7 @@ import PackageSpecRoutesPane from "../components/PackageSpecRoutesPane.vue";
 import PackageHttpPane from "../components/PackageHttpPane.vue";
 import PackageSdkPane from "../components/PackageSdkPane.vue";
 import PackageIssuesPane from "../components/PackageIssuesPane.vue";
+import PackageDiffPane from "../components/PackageDiffPane.vue";
 import ResizableColumns from "../components/ResizableColumns.vue";
 import ChangeChip from "../components/ChangeChip.vue";
 import { githubCompareUrl, resolveGithubSourceRef } from "../source-links";
@@ -653,18 +659,6 @@ const scopedGitDiffCommand = computed(() => {
   });
 });
 
-const copyDiffFeedback = ref(false);
-
-async function copyScopedGitDiff() {
-  const cmd = scopedGitDiffCommand.value;
-  if (!cmd || typeof navigator.clipboard?.writeText !== "function") return;
-  await navigator.clipboard.writeText(cmd);
-  copyDiffFeedback.value = true;
-  window.setTimeout(() => {
-    copyDiffFeedback.value = false;
-  }, 2000);
-}
-
 function onTreeFocusDir(packageDirectoryRelativePath: string) {
   treeCompareDirPath.value = packageDirectoryRelativePath;
 }
@@ -716,10 +710,73 @@ const issueCount = computed(() => {
   }).length;
 });
 
-const tab = computed<"spec" | "docs" | "secrets" | "issues">(() => {
+type PackageTab = "spec" | "diff" | "docs" | "secrets" | "issues";
+
+const packageRepoPrefix = computed(() => {
+  const pkg = selectedPkg.value;
+  if (!pkg) return "";
+  return repoPathPrefix(checkout.value?.product_root ?? "", pkg.directory);
+});
+
+const packageDocsQuery = useRepoFiles(props.subdomain, () => ({
+  ref: paneCommitHash.value,
+  prefix: packageRepoPrefix.value || undefined,
+  ext: ".md",
+}));
+
+const showDocsTab = computed(
+  () =>
+    Boolean(selectedPkg.value && paneCommitHash.value) &&
+    !packageDocsQuery.isLoading.value &&
+    (packageDocsQuery.data.value?.files?.length ?? 0) > 0,
+);
+
+const packageSecretsPath = computed(() => {
+  if (!paneCommitHash.value || !packageRepoPrefix.value) return "";
+  return `${packageRepoPrefix.value}/secrets.json`;
+});
+
+const packageSecretsFileQuery = useRepoFile(props.subdomain, () => ({
+  ref: paneCommitHash.value,
+  path: packageSecretsPath.value,
+}));
+
+const showSecretsTab = computed(() => {
+  if (!selectedPkg.value || packageSecretsFileQuery.isLoading.value) return false;
+  const content = packageSecretsFileQuery.data.value?.content;
+  if (!content?.trim()) return false;
+  try {
+    const parsed: unknown = JSON.parse(content);
+    return Array.isArray(parsed) && parsed.length > 0;
+  } catch {
+    return false;
+  }
+});
+
+const showDiffTab = computed(() => compareReady.value);
+const showIssuesTab = computed(() => issueCount.value > 0);
+
+const availableTabs = computed((): PackageTab[] => {
+  const tabs: PackageTab[] = ["spec"];
+  if (showDiffTab.value) tabs.push("diff");
+  if (showDocsTab.value) tabs.push("docs");
+  if (showSecretsTab.value) tabs.push("secrets");
+  if (showIssuesTab.value) tabs.push("issues");
+  return tabs;
+});
+
+const showPkgTabs = computed(() => availableTabs.value.length > 1);
+
+const tab = computed<PackageTab>(() => {
   const t = route.query.tab;
-  if (t === "docs" || t === "secrets" || t === "issues") return t;
+  if (t === "diff" || t === "docs" || t === "secrets" || t === "issues") return t;
   return "spec";
+});
+
+watch([tab, availableTabs], () => {
+  if (!availableTabs.value.includes(tab.value)) {
+    replaceQuery({ tab: undefined });
+  }
 });
 
 const specScope = computed<TestScope>(() => {
@@ -750,12 +807,18 @@ const replaceQuery = (patch: Record<string, string | undefined>) => {
 };
 
 const setTab = (value: unknown) => {
-  const next =
-    value === "docs" || value === "secrets" || value === "issues"
+  const next: PackageTab =
+    value === "diff" || value === "docs" || value === "secrets" || value === "issues"
       ? value
       : "spec";
+  if (!availableTabs.value.includes(next)) return;
   replaceQuery({ tab: next === "spec" ? undefined : next });
 };
+
+function goDiffTab() {
+  if (!showDiffTab.value) return;
+  replaceQuery({ tab: "diff" });
+}
 
 const setSpecScope = (scope: TestScope) => {
   if (scope.kind === "all") {

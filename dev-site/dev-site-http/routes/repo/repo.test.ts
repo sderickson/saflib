@@ -140,4 +140,27 @@ describe("repo routes", () => {
       .query({ ref: headHash, path: "missing.md" });
     expect(response.status).toBe(404);
   });
+
+  it("GET /api/repo/diff returns scoped git diff text", async () => {
+    writeFileSync(join(repo_root, "src/a.ts"), "export const a = 2;\n");
+    git(repo_root, ["add", "src/a.ts"]);
+    execFileSync("git", ["commit", "-m", "bump a"], {
+      cwd: repo_root,
+      env: {
+        ...process.env,
+        GIT_AUTHOR_NAME: "Test",
+        GIT_AUTHOR_EMAIL: "test@example.com",
+        GIT_COMMITTER_NAME: "Test",
+        GIT_COMMITTER_EMAIL: "test@example.com",
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    const head2 = git(repo_root, ["rev-parse", "HEAD"]);
+    const response = await request(lease.app)
+      .get("/api/repo/diff")
+      .query({ base: headHash, head: head2, prefix: "src" });
+    expect(response.status).toBe(200);
+    expect(response.body.truncated).toBe(false);
+    expect(response.body.diff).toContain("src/a.ts");
+  });
 });

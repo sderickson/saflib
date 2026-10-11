@@ -301,13 +301,7 @@ describe("CheckoutPage compare package tree", () => {
     expect(wrapper.get(".pkg-head__name").text()).toBe("@demo/keep");
   });
 
-  it("offers a copy-git-diff button scoped to the selected package", async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, "clipboard", {
-      value: { writeText },
-      configurable: true,
-    });
-
+  it("shows Spec and Diff tabs in compare mode", async () => {
     await router.push({
       path: "/checkout",
       query: { compare: "main", package: "@demo/keep" },
@@ -316,17 +310,8 @@ describe("CheckoutPage compare package tree", () => {
       propsData: { subdomain: "test" },
     });
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("Copy git diff");
+      expect(wrapper.text()).toContain("Diff");
     });
-
-    const btn = wrapper
-      .findAllComponents({ name: "v-btn" })
-      .find((b) => b.text() === "Copy git diff");
-    expect(btn).toBeDefined();
-    await btn!.trigger("click");
-
-    expect(writeText).toHaveBeenCalledWith(
-      `git diff ${BASE}...feature -- products/keep`,
-    );
+    expect(wrapper.text()).toContain("Spec");
   });
 });

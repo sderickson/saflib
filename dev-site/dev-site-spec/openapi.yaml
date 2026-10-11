@@ -32,6 +32,9 @@ paths:
   /api/repo/file:
     get:
       $ref: "./routes/repo/file.yaml#/getRepoFile"
+  /api/repo/diff:
+    get:
+      $ref: "./routes/repo/diff.yaml#/getRepoDiff"
   /api/workflow-runs/{runId}/preview-diff:
     get:
       $ref: "./routes/workflow-runs/preview-diff.yaml#/previewWorkflowRunDiff"

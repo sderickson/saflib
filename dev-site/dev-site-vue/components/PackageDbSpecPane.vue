@@ -3,8 +3,12 @@
     <v-progress-linear v-if="isLoading" indeterminate class="mb-2" />
     <v-alert v-if="error" type="error" density="compact" class="mb-2">{{ error.message }}</v-alert>
 
+    <PackageCompareSpecEmpty
+      v-if="!isLoading && !fileNav.length && compareFromHash"
+      @open-diff="emit('open-diff')"
+    />
     <div
-      v-if="!isLoading && !fileNav.length"
+      v-else-if="!isLoading && !fileNav.length"
       class="text-body-2 text-medium-emphasis"
     >
       No schemas, queries, or other modules found for this package.
@@ -218,6 +222,7 @@ import ResizableColumns from "./ResizableColumns.vue";
 import TestFileNav from "./TestFileNav.vue";
 import TestTree from "./TestTree.vue";
 import ChangeChip from "./ChangeChip.vue";
+import PackageCompareSpecEmpty from "./PackageCompareSpecEmpty.vue";
 
 interface DbQuery {
   file_name: string;
@@ -271,6 +276,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   "update:scope": [scope: TestScope];
+  "open-diff": [];
 }>();
 
 const scope = computed(() => props.scope ?? { kind: "all" as const });

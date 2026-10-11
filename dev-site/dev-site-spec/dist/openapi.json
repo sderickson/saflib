@@ -713,6 +713,77 @@
         }
       }
     },
+    "/api/repo/diff": {
+      "get": {
+        "summary": "Git diff between two refs",
+        "operationId": "getRepoDiff",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Returns `git diff base...head` as UTF-8 text, optionally limited to a path prefix.\n",
+        "parameters": [
+          {
+            "name": "base",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "head",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Repo-relative pathspec (package, directory, or file prefix)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diff text",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "diff",
+                    "truncated"
+                  ],
+                  "properties": {
+                    "diff": {
+                      "type": "string"
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid refs or git error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/workflow-runs/{runId}/preview-diff": {
       "get": {
         "summary": "Preview a workflow run's effect as a commit diff",

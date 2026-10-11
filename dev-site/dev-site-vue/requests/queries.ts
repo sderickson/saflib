@@ -279,3 +279,30 @@ export function useRepoFile(
   });
 }
 
+export function useRepoDiff(
+  subdomain: string,
+  base: MaybeRefOrGetter<string>,
+  head: MaybeRefOrGetter<string>,
+  prefix: MaybeRefOrGetter<string | undefined>,
+) {
+  const client = createDevSiteClient(subdomain);
+  return useQuery<DevSiteResponseBody["getRepoDiff"][200], TanstackError>({
+    queryKey: ["dev-site", "repo-diff", base, head, prefix],
+    enabled: () => Boolean(toValue(base) && toValue(head)),
+    queryFn: () => {
+      const p = toValue(prefix)?.replace(/^\/+/, "").replace(/\/+$/, "");
+      return handleClientMethod(
+        client.GET("/api/repo/diff", {
+          params: {
+            query: {
+              base: toValue(base),
+              head: toValue(head),
+              prefix: p || undefined,
+            },
+          },
+        }),
+      );
+    },
+  });
+}
+
