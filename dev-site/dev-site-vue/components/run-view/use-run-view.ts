@@ -201,16 +201,36 @@ export function useRunView(props: RunViewProps) {
     );
   }
 
+  /**
+   * Why the agent can't take a direct message right now, if it can't. One
+   * agent turn at a time: not while this run is advancing (a step or an
+   * earlier message), and not while any other run is being driven (a
+   * workflow/plan chain holds `activeRunId` across its steps).
+   */
+  const agentMessageBlockedReason = computed((): string | undefined => {
+    if (!runId.value) return "No run yet";
+    if (isOtherRunActive.value) return "Another workflow is running";
+    if (isAdvancing.value) return "Agent is running";
+    return undefined;
+  });
+
   function sendDirectMessage() {
     const message = directMessage.value.trim();
-    if (!runId.value || !message || isOtherRunActive.value || isAdvancing.value) return;
+    if (!message || agentMessageBlockedReason.value) return;
     unlockAudio();
+    // Clear right away — the request stays open for the whole agent turn.
+    // Put the text back if it didn't go through (unless they've typed more).
+    directMessage.value = "";
+    const restore = () => {
+      if (!directMessage.value) directMessage.value = message;
+    };
     agentMessageMutation.mutate(
-      { runId: runId.value, message },
+      { runId: runId.value!, message },
       {
         onSuccess: (outcome) => {
-          if (outcome.status === "ok") directMessage.value = "";
+          if (outcome.status !== "ok") restore();
         },
+        onError: restore,
       },
     );
   }
@@ -235,7 +255,12 @@ export function useRunView(props: RunViewProps) {
     if (!run.value?.base_commit_hash) return;
     router.push({
       path: "/checkout",
-      query: { compare: run.value.base_commit_hash, reflection: runId.value },
+      query: {
+        compare: run.value.base_commit_hash,
+        // Pin the end so later commits on the branch don't leak in.
+        ...(run.value.completion_hash ? { head: run.value.completion_hash } : {}),
+        reflection: runId.value,
+      },
     });
   }
 
@@ -258,7 +283,13 @@ export function useRunView(props: RunViewProps) {
   );
 
   const agentMessagePending = computed(() => agentMessageMutation.isPending.value);
-  const agentMessageError = computed(() => agentMessageMutation.error.value?.message);
+  const agentMessageError = computed(() => {
+    const data = agentMessageMutation.data.value;
+    return (
+      agentMessageMutation.error.value?.message ??
+      (data?.status === "error" ? data.message : undefined)
+    );
+  });
   const createPending = computed(() => createRunMutation.isPending.value);
   const createError = computed(() => createRunMutation.error.value?.message);
   const cancelPending = computed(
@@ -313,6 +344,7 @@ export function useRunView(props: RunViewProps) {
     logsLoadingOlder,
     logsLoadingNewer,
     showStickyAgentInput: logs.showStickyAgentInput,
+    showJumpToLatest: logs.showJumpToLatest,
     scrollToStep: logs.scrollToStep,
     returnToLiveLogs: logs.returnToLiveLogs,
     onLogScroll: logs.onScroll,
@@ -343,6 +375,7 @@ export function useRunView(props: RunViewProps) {
     agentMessageMutation,
     agentMessagePending,
     agentMessageError,
+    agentMessageBlockedReason,
     createPending,
     createError,
     cancelPending,

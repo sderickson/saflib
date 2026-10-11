@@ -5,6 +5,8 @@
       :run-clock="vm.runClock"
       :current-step-index="vm.headerStepDisplay"
       :status-visual="vm.statusVisual"
+      :can-see-changes="Boolean(vm.run?.base_commit_hash)"
+      @see-changes="vm.openReflection"
     />
 
     <div class="run-view__body">
@@ -27,7 +29,7 @@
       />
       <RunViewLogPane
         v-else
-        :log-anchor="vm.logAnchor"
+        :show-jump-to-latest="vm.showJumpToLatest"
         :log-items="vm.logItems"
         :loading-older="vm.logsLoadingOlder"
         :loading-newer="vm.logsLoadingNewer"
@@ -55,6 +57,7 @@
       :direct-message="vm.directMessage"
       :agent-message-pending="vm.agentMessagePending"
       :agent-message-error="vm.agentMessageError"
+      :agent-message-blocked-reason="vm.agentMessageBlockedReason"
       :create-pending="vm.createPending"
       :create-error="vm.createError"
       :cancel-pending="vm.cancelPending"
@@ -76,7 +79,6 @@
       @open-reset="vm.openReset"
       @update:reset-open="vm.resetConfirmOpen = $event"
       @confirm-reset="vm.confirmReset"
-      @reflection="vm.openReflection"
       @open-goto="vm.openGotoModal"
       @update:goto-open="vm.gotoModalOpen = $event"
       @goto-path="vm.selectGotoPath"

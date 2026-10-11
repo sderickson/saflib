@@ -45,37 +45,40 @@
       </div>
     </template>
 
-    <div v-if="runId" class="run-view__direct-agent mb-3">
-      <v-textarea
-        :model-value="directMessage"
-        label="Direct message to agent (one turn — does not advance the workflow)"
-        placeholder="Ask the agent anything in the run's working directory…"
-        rows="2"
-        auto-grow
-        density="compact"
-        variant="outlined"
-        hide-details
-        :disabled="isOtherRunActive"
-        @update:model-value="emit('update:directMessage', $event)"
-        @keydown.meta.enter.prevent="emit('send-direct')"
-        @keydown.ctrl.enter.prevent="emit('send-direct')"
-      />
-      <div class="d-flex align-center gap-2 mt-2">
+    <v-textarea
+      v-if="runId && messageOpen"
+      ref="messageInput"
+      :model-value="directMessage"
+      :placeholder="agentMessageBlockedReason ? `${agentMessageBlockedReason} — wait to message the agent` : 'Message the agent — ⌘/Ctrl+Enter to send'"
+      rows="1"
+      auto-grow
+      max-rows="8"
+      density="compact"
+      variant="outlined"
+      hide-details="auto"
+      class="mb-3"
+      :disabled="Boolean(agentMessageBlockedReason)"
+      :error-messages="agentMessageError"
+      @update:model-value="emit('update:directMessage', $event)"
+      @keydown.meta.enter.prevent="emit('send-direct')"
+      @keydown.ctrl.enter.prevent="emit('send-direct')"
+      @keydown.esc="messageOpen = false"
+    >
+      <template #append-inner>
         <v-btn
-          color="secondary"
-          variant="tonal"
-          :disabled="!directMessage.trim() || isOtherRunActive || isAdvancing"
+          icon="mdi-send"
+          variant="text"
+          size="small"
+          density="comfortable"
+          color="primary"
+          :disabled="!directMessage.trim() || Boolean(agentMessageBlockedReason)"
           :loading="agentMessagePending"
+          aria-label="Send to agent"
+          title="Send to agent"
           @click="emit('send-direct')"
-        >
-          Send to agent
-        </v-btn>
-        <span class="text-caption text-medium-emphasis">
-          ⌘/Ctrl+Enter to send. Uses the same agent CLI as workflow steps.
-        </span>
-        <p v-if="agentMessageError" class="text-error mb-0 ml-2">{{ agentMessageError }}</p>
-      </div>
-    </div>
+        />
+      </template>
+    </v-textarea>
 
     <div class="run-view__foot-actions">
       <div class="run-view__foot-actions-left">
@@ -134,7 +137,25 @@
               title="Play current plan"
               @click="emit('play-plan')"
             />
+            <v-btn
+              icon="mdi-chevron-double-up"
+              :disabled="isAdvancing || isOtherRunActive || gotoPending"
+              :loading="gotoPending"
+              aria-label="Go to step"
+              title="Go to step"
+              @click="emit('open-goto')"
+            />
           </v-btn-group>
+          <v-btn
+            icon="mdi-message-text-outline"
+            density="comfortable"
+            :variant="messageOpen ? 'flat' : 'tonal'"
+            :color="messageOpen ? 'primary' : undefined"
+            class="ml-2"
+            aria-label="Message the agent"
+            title="Message the agent (one turn — does not advance the workflow)"
+            @click="toggleMessage"
+          />
           <v-dialog :model-value="resetOpen" max-width="420" @update:model-value="emit('update:resetOpen', $event)">
             <v-card>
               <v-card-title class="text-body-1">Reset this run?</v-card-title>
@@ -152,23 +173,6 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-btn
-            v-if="run?.base_commit_hash"
-            variant="tonal"
-            class="ml-2"
-            @click="emit('reflection')"
-          >
-            Reflection
-          </v-btn>
-          <v-btn
-            variant="tonal"
-            class="ml-2"
-            :disabled="isAdvancing || isOtherRunActive || gotoPending"
-            :loading="gotoPending"
-            @click="emit('open-goto')"
-          >
-            Go to Step
-          </v-btn>
           <v-dialog :model-value="gotoOpen" max-width="560" @update:model-value="emit('update:gotoOpen', $event)">
             <v-card>
               <v-card-title class="text-body-1">Go to step</v-card-title>
@@ -244,13 +248,13 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick, ref } from "vue";
 import type { FlatStepTreeNode } from "./run-view.logic.ts";
 
 defineProps<{
   runId?: string;
   run?: {
     status?: string;
-    base_commit_hash?: string | null;
   };
   pauseMessage: string;
   failureMessage: string;
@@ -263,6 +267,8 @@ defineProps<{
   directMessage: string;
   agentMessagePending: boolean;
   agentMessageError?: string;
+  /** Set while another agent turn is in flight anywhere; blocks sending. */
+  agentMessageBlockedReason?: string;
   createPending: boolean;
   createError?: string;
   cancelPending: boolean;
@@ -287,7 +293,6 @@ const emit = defineEmits<{
   "open-reset": [];
   "update:resetOpen": [value: boolean];
   "confirm-reset": [];
-  reflection: [];
   "open-goto": [];
   "update:gotoOpen": [value: boolean];
   "goto-path": [path: string];
@@ -298,6 +303,17 @@ const emit = defineEmits<{
   "toggle-mute": [];
   "volume-change": [value: number];
 }>();
+
+const messageOpen = ref(false);
+const messageInput = ref<{ focus: () => void } | null>(null);
+
+async function toggleMessage() {
+  messageOpen.value = !messageOpen.value;
+  if (messageOpen.value) {
+    await nextTick();
+    messageInput.value?.focus();
+  }
+}
 </script>
 
 <style scoped>

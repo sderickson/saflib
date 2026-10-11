@@ -46,6 +46,11 @@ export function packageKey(m: PackageMetrics): string {
   return m.package_name;
 }
 
+/**
+ * Code-shape equality only. `debt_count` is deliberately excluded: it moves
+ * when *other* packages change (e.g. a new import clears dead-code
+ * findings), which would mark untouched packages as modified.
+ */
 export function metricsEqual(a: PackageMetrics, b: PackageMetrics): boolean {
   return (
     a.source_files === b.source_files &&
@@ -53,8 +58,7 @@ export function metricsEqual(a: PackageMetrics, b: PackageMetrics): boolean {
     a.prod_lines === b.prod_lines &&
     a.test_lines === b.test_lines &&
     a.test_files === b.test_files &&
-    a.directory === b.directory &&
-    a.debt_count === b.debt_count
+    a.directory === b.directory
   );
 }
 

@@ -35,6 +35,11 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
   const showStickyAgentInput = computed(
     () => logAnchor.value === undefined && isFollowing.value,
   );
+  // Anchored windows don't receive SSE tip merges, so they count as "not live"
+  // even when scrolled to their end.
+  const showJumpToLatest = computed(
+    () => logAnchor.value !== undefined || !isFollowing.value,
+  );
 
   watch(runId, () => {
     navToken++;
@@ -90,10 +95,18 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
     updateCurrentStepIndex();
   }
 
-  function returnToLiveLogs() {
-    navToken++;
+  /** Back to the live tip, pinned to the bottom. */
+  async function returnToLiveLogs() {
+    const token = ++navToken;
     logAnchor.value = undefined;
     isFollowing.value = true;
+    await nextTick();
+    await logsSettled();
+    await nextTick();
+    const el = logContainer.value;
+    if (token !== navToken || !el) return;
+    el.scrollTop = el.scrollHeight;
+    updateCurrentStepIndex();
   }
 
   function updateCurrentStepIndex() {
@@ -174,6 +187,7 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
     logItems,
     currentStepIndex,
     showStickyAgentInput,
+    showJumpToLatest,
     scrollToStep,
     returnToLiveLogs,
     onScroll,

@@ -217,8 +217,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.product_root"
                     :github-repo="github_repo"
-                    :github-ref="effectiveGithubRef"
-                    :local-repo-root="localRepoRoot"
+                    :github-ref="sourceGithubRef"
                     :scope="specScope"
                     @update:scope="setSpecScope"
                     @open-diff="goDiffTab"
@@ -233,8 +232,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.product_root"
                     :github-repo="github_repo"
-                    :github-ref="effectiveGithubRef"
-                    :local-repo-root="localRepoRoot"
+                    :github-ref="sourceGithubRef"
                     @open-diff="goDiffTab"
                   />
                   <PackageHttpPane
@@ -247,8 +245,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.product_root"
                     :github-repo="github_repo"
-                    :github-ref="effectiveGithubRef"
-                    :local-repo-root="localRepoRoot"
+                    :github-ref="sourceGithubRef"
                     :scope="specScope"
                     @update:scope="setSpecScope"
                     @open-diff="goDiffTab"
@@ -263,8 +260,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.product_root"
                     :github-repo="github_repo"
-                    :github-ref="effectiveGithubRef"
-                    :local-repo-root="localRepoRoot"
+                    :github-ref="sourceGithubRef"
                     :scope="specScope"
                     @update:scope="setSpecScope"
                     @open-diff="goDiffTab"
@@ -279,8 +275,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.product_root"
                     :github-repo="github_repo"
-                    :github-ref="effectiveGithubRef"
-                    :local-repo-root="localRepoRoot"
+                    :github-ref="sourceGithubRef"
                     :scope="specScope"
                     @update:scope="setSpecScope"
                     @open-diff="goDiffTab"
@@ -293,7 +288,6 @@
                     :path-prefix="compareFocusPathPrefix"
                     :command="scopedGitDiffCommand"
                     :github-repo="github_repo"
-                    :local-repo-root="localRepoRoot"
                   />
                   <PackageDocsPane
                     v-else-if="tab === 'docs'"
@@ -305,8 +299,7 @@
                     :product-root="checkout.product_root"
                     :packages="checkout.packages"
                     :github-repo="github_repo"
-                    :github-ref="effectiveGithubRef"
-                    :local-repo-root="localRepoRoot"
+                    :github-ref="sourceGithubRef"
                     @navigate-package="onDocNavigatePackage"
                   />
                   <PackageSecretsPane
@@ -324,8 +317,7 @@
                     :package-directory="selectedPkg.directory"
                     :product-root="checkout.product_root"
                     :github-repo="github_repo"
-                    :github-ref="effectiveGithubRef"
-                    :local-repo-root="localRepoRoot"
+                    :github-ref="sourceGithubRef"
                   />
                 </div>
               </template>
@@ -450,12 +442,18 @@ const compare_ref = computed(() => {
 });
 const compareMode = computed(() => Boolean(compare_ref.value));
 
+/** Pinned head commit (a reflected run's `completion_hash`); HEAD when unset. */
+const head_ref = computed(() => {
+  const q = route.query.head;
+  return typeof q === "string" && q ? q : undefined;
+});
+
 const {
   data: checkout,
   isLoading,
   error,
   refetch,
-} = useCheckout(props.subdomain, compare_ref);
+} = useCheckout(props.subdomain, compare_ref, head_ref);
 
 /** Prefer server-configured repo (matches analyzed git root); router prop is fallback. */
 const github_repo = computed(
@@ -495,6 +493,15 @@ const effectiveGithubRef = computed(() =>
     commit_hash: checkout.value?.hash,
     fallbackRef: props.githubRef,
   }),
+);
+
+/**
+ * Pane file links open on GitHub at the exact commit being observed (not the
+ * fork point, and not a branch name that may have moved). IDE links are not
+ * offered here: the server's repo root is a container path in docker.
+ */
+const sourceGithubRef = computed(
+  () => checkout.value?.hash ?? effectiveGithubRef.value,
 );
 
 const githubCompareRefs = computed(() => {

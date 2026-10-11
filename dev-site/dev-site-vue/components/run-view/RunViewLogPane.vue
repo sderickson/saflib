@@ -1,32 +1,36 @@
 <template>
-  <div :ref="onRootRef" class="run-view__logs" @scroll="onScroll">
-    <div
-      v-if="logAnchor !== undefined"
-      class="run-view__logs-anchor-banner text-body-2 text-medium-emphasis"
-    >
-      Viewing step {{ logAnchor + 1 }} history —
-      <button type="button" class="run-view__logs-live-link" @click="$emit('return-live')">
-        jump to live
-      </button>
+  <div class="run-view__logs-wrap">
+    <div :ref="onRootRef" class="run-view__logs" @scroll="onScroll">
+      <div v-if="loadingOlder" class="run-view__logs-loading">Loading earlier logs…</div>
+      <div
+        v-for="item in logItems"
+        :key="itemKey(item)"
+        class="run-view__log-item"
+        :data-step-index="stepIndex(item)"
+        :class="{ 'run-view__log-item--sticky': stickyAgentInput && isLastAgentInput(item) }"
+      >
+        <ToolCallCard
+          v-if="item.type === 'tool-call'"
+          :name="item.name"
+          :input="item.input"
+          :result-log="item.resultLog"
+        />
+        <LogEntryGroup v-else-if="item.type === 'channel-group'" :logs="item.logs" />
+        <LogEntry v-else :log="item.log" />
+      </div>
+      <div v-if="loadingNewer" class="run-view__logs-loading">Loading later logs…</div>
     </div>
-    <div v-if="loadingOlder" class="run-view__logs-loading">Loading earlier logs…</div>
-    <div
-      v-for="item in logItems"
-      :key="itemKey(item)"
-      class="run-view__log-item"
-      :data-step-index="stepIndex(item)"
-      :class="{ 'run-view__log-item--sticky': stickyAgentInput && isLastAgentInput(item) }"
+    <v-btn
+      v-if="showJumpToLatest"
+      class="run-view__logs-jump"
+      size="small"
+      rounded="pill"
+      color="primary"
+      prepend-icon="mdi-arrow-down"
+      @click="$emit('return-live')"
     >
-      <ToolCallCard
-        v-if="item.type === 'tool-call'"
-        :name="item.name"
-        :input="item.input"
-        :result-log="item.resultLog"
-      />
-      <LogEntryGroup v-else-if="item.type === 'channel-group'" :logs="item.logs" />
-      <LogEntry v-else :log="item.log" />
-    </div>
-    <div v-if="loadingNewer" class="run-view__logs-loading">Loading later logs…</div>
+      Jump to latest
+    </v-btn>
   </div>
 </template>
 
@@ -38,7 +42,8 @@ import LogEntryGroup from "../LogEntryGroup.vue";
 import ToolCallCard from "../ToolCallCard.vue";
 
 defineProps<{
-  logAnchor?: number;
+  /** Not pinned to the live bottom (scrolled up, or viewing a step's history). */
+  showJumpToLatest: boolean;
   logItems: LogItem[];
   loadingOlder: boolean;
   loadingNewer: boolean;
@@ -54,6 +59,13 @@ defineEmits<{ "return-live": [] }>();
 </script>
 
 <style scoped>
+.run-view__logs-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .run-view__logs {
   flex: 1 1 auto;
   min-height: 0;
@@ -62,21 +74,12 @@ defineEmits<{ "return-live": [] }>();
   padding: 0.75rem 1rem;
   background: rgba(128, 128, 128, 0.05);
 }
-.run-view__logs-anchor-banner {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  padding: 0.35rem 0.75rem;
-  background: rgba(var(--v-theme-surface), 0.95);
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-}
-.run-view__logs-live-link {
-  background: none;
-  border: none;
-  padding: 0;
-  color: rgb(var(--v-theme-primary));
-  cursor: pointer;
-  text-decoration: underline;
+.run-view__logs-jump {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
 }
 .run-view__logs-loading {
   opacity: 0.6;

@@ -121,6 +121,8 @@ export interface operations {
             query?: {
                 /** @description Local branch name to take the merge-base against. Defaults to the server `main` ref. */
                 compare_ref?: string;
+                /** @description Commit/ref to report on instead of HEAD (e.g. a workflow run's `completion_hash`). When set, `branch` is null. */
+                head_ref?: string;
             };
             header?: never;
             path?: never;

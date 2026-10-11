@@ -22,6 +22,15 @@
               "type": "string"
             },
             "description": "Local branch name to take the merge-base against. Defaults to the server `main` ref.\n"
+          },
+          {
+            "name": "head_ref",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Commit/ref to report on instead of HEAD (e.g. a workflow run's `completion_hash`). When set, `branch` is null.\n"
           }
         ],
         "responses": {

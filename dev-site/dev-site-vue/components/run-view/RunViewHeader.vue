@@ -13,6 +13,18 @@
     </v-chip>
     <v-chip v-else size="small">not started</v-chip>
     <span v-if="runClock" class="run-view__clock text-body-2 text-medium-emphasis">{{ runClock }}</span>
+    <v-btn
+      v-if="canSeeChanges"
+      variant="text"
+      size="small"
+      density="comfortable"
+      color="primary"
+      class="run-view__see-changes"
+      prepend-icon="mdi-file-compare"
+      @click="emit('see-changes')"
+    >
+      see changes
+    </v-btn>
     <v-spacer />
     <span v-if="runId" class="text-body-2 text-medium-emphasis">step {{ currentStepIndex }}</span>
   </header>
@@ -26,7 +38,11 @@ defineProps<{
   runClock?: string;
   currentStepIndex?: number;
   statusVisual: RunStatusVisual;
+  /** Run started inside a git repo, so there's a base commit to diff from. */
+  canSeeChanges: boolean;
 }>();
+
+const emit = defineEmits<{ "see-changes": [] }>();
 </script>
 
 <style scoped>
@@ -40,5 +56,9 @@ defineProps<{
 }
 .run-view__clock {
   margin-left: 0.5rem;
+}
+.run-view__see-changes {
+  margin-left: 0.25rem;
+  text-transform: none;
 }
 </style>

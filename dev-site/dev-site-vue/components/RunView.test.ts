@@ -394,10 +394,10 @@ describe("RunView", () => {
     const wrapper = mountRunView();
 
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("Go to Step");
+      expect(wrapper.find('button[aria-label="Go to step"]').exists()).toBe(true);
     });
 
-    const gotoButton = wrapper.findAll("button").find((b) => b.text() === "Go to Step");
+    const gotoButton = wrapper.find('button[aria-label="Go to step"]');
     expect(gotoButton).toBeTruthy();
     await gotoButton!.trigger("click");
     await nextTick();
@@ -661,7 +661,7 @@ describe("RunView", () => {
     // No VCR buttons or Reflection button pre-run.
     expect(wrapper.find('[aria-label="Play current step"]').exists()).toBe(false);
     expect(wrapper.find('[aria-label="Reset run"]').exists()).toBe(false);
-    expect(wrapper.findAll("button").find((b) => b.text() === "Reflection")).toBeUndefined();
+    expect(wrapper.findAll("button").find((b) => b.text() === "see changes")).toBeUndefined();
   });
 
   it("pending run: shows Preview changes (not a blank log pane) alongside VCR controls", async () => {
@@ -880,7 +880,7 @@ describe("RunView", () => {
     });
   });
 
-  it("Reflection navigates to the Checkout compare view for this run's base_commit_hash", async () => {
+  it("see changes navigates to the Checkout compare view for this run's base_commit_hash", async () => {
     runState = runFixture({ status: "running", base_commit_hash: "abc123base" });
 
     const wrapper = mountRunView();
@@ -888,7 +888,7 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const reflectButton = wrapper.findAll("button").find((b) => b.text() === "Reflection");
+    const reflectButton = wrapper.findAll("button").find((b) => b.text() === "see changes");
     expect(reflectButton).toBeTruthy();
     await reflectButton!.trigger("click");
 
@@ -899,7 +899,7 @@ describe("RunView", () => {
     expect(router.currentRoute.value.query.reflection).toBe("run-1");
   });
 
-  it("has no Reflection button when the run never captured a base_commit_hash", async () => {
+  it("has no see changes button when the run never captured a base_commit_hash", async () => {
     runState = runFixture({ status: "running", base_commit_hash: null });
 
     const wrapper = mountRunView();
@@ -907,7 +907,105 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    expect(wrapper.findAll("button").find((b) => b.text() === "Reflection")).toBeUndefined();
+    expect(wrapper.findAll("button").find((b) => b.text() === "see changes")).toBeUndefined();
+  });
+
+  describe("direct agent message", () => {
+    async function openMessage(wrapper: ReturnType<typeof mountRunView>) {
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("starting");
+      });
+      await wrapper.find('[aria-label="Message the agent"]').trigger("click");
+      await nextTick();
+      return wrapper.find("textarea");
+    }
+
+    it("clears the text as soon as it's sent, and blocks another send while the turn runs", async () => {
+      const bodies: unknown[] = [];
+      let resolveTurn!: (value: unknown) => void;
+      const turn = new Promise((resolve) => {
+        resolveTurn = resolve;
+      });
+      server.use(
+        http.post(`${ORIGIN}/api/runs/:runId/agent-message`, async ({ request }) => {
+          bodies.push(await request.json());
+          await turn;
+          return HttpResponse.json({ status: "ok", shouldContinue: false });
+        }),
+      );
+
+      const wrapper = mountRunView();
+      const textarea = await openMessage(wrapper);
+      await textarea.setValue("hello agent");
+      await textarea.trigger("keydown", { key: "Enter", metaKey: true });
+
+      await vi.waitFor(() => {
+        expect(bodies).toEqual([{ message: "hello agent" }]);
+      });
+      expect((textarea.element as HTMLTextAreaElement).value).toBe("");
+      await vi.waitFor(() => {
+        expect(textarea.attributes("disabled")).toBeDefined();
+      });
+
+      // A second ⌘+Enter mid-turn is ignored.
+      await textarea.trigger("keydown", { key: "Enter", metaKey: true });
+      expect(bodies).toHaveLength(1);
+
+      resolveTurn({});
+      await vi.waitFor(() => {
+        expect(textarea.attributes("disabled")).toBeUndefined();
+      });
+    });
+
+    it("restores the text when the turn fails", async () => {
+      server.use(
+        http.post(`${ORIGIN}/api/runs/:runId/agent-message`, () =>
+          HttpResponse.json({ status: "error", message: "agent exploded" }),
+        ),
+      );
+
+      const wrapper = mountRunView();
+      const textarea = await openMessage(wrapper);
+      await textarea.setValue("try this");
+      await textarea.trigger("keydown", { key: "Enter", metaKey: true });
+
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("agent exploded");
+      });
+      expect((textarea.element as HTMLTextAreaElement).value).toBe("try this");
+    });
+
+    it("can't send while a step is running", async () => {
+      let messages = 0;
+      let resolveAdvance!: (value: unknown) => void;
+      const advancePromise = new Promise((resolve) => {
+        resolveAdvance = resolve;
+      });
+      server.use(
+        http.post(`${ORIGIN}/api/runs/:runId/advance`, async () => {
+          await advancePromise;
+          return HttpResponse.json({ status: "awaiting_user" });
+        }),
+        http.post(`${ORIGIN}/api/runs/:runId/agent-message`, () => {
+          messages++;
+          return HttpResponse.json({ status: "ok", shouldContinue: false });
+        }),
+      );
+
+      const wrapper = mountRunView();
+      const textarea = await openMessage(wrapper);
+      await textarea.setValue("sneaky");
+      await wrapper.find('[aria-label="Play current workflow"]').trigger("click");
+
+      await vi.waitFor(() => {
+        expect(textarea.attributes("disabled")).toBeDefined();
+      });
+      expect(textarea.attributes("placeholder")).toContain("Agent is running");
+      await textarea.trigger("keydown", { key: "Enter", metaKey: true });
+      expect(messages).toBe(0);
+
+      resolveAdvance({});
+    });
   });
 
   it("mode buttons stay clickable while this run's own advance is in flight, and switching mode doesn't re-fire a call immediately", async () => {
