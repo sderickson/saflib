@@ -28,6 +28,25 @@ const dependenciesLive = path.join(
   templatesProductRoot,
   "service/common/dependencies.ts",
 );
+/** Workflow-area stubs woven into `dependencies.integrations.ts` when present. */
+const dependenciesIntegrationsWeave = path.join(
+  templatesProductRoot,
+  "service/common/dependencies.integrations.weave.ts",
+);
+
+function resolveIntegrationsDepsPath(parentDir: string, productRoot: string): string | undefined {
+  const integrationsFileName = "dependencies.integrations.ts";
+  const integrationsInCwd = path.join(parentDir, integrationsFileName);
+  const integrationsInProduct = path.join(
+    productRoot,
+    "service",
+    "common",
+    integrationsFileName,
+  );
+  if (existsSync(integrationsInCwd)) return integrationsInCwd;
+  if (existsSync(integrationsInProduct)) return integrationsInProduct;
+  return undefined;
+}
 const overviewDoc = path.join(templatesSaflibRoot, "integrations", "docs", "01-overview.md");
 
 /** Expected shape: `{product}/service/integrations/{name}` (relative to cwd / monorepo root). */
@@ -221,26 +240,23 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
 
     step<CopyStepInput, InitIntegrationContext>("copy", runCopyStep, ({ context }) => {
       const baseReplace = makeLineReplace(context);
-      const integrationsFileName = "dependencies.integrations.ts";
-      const integrationsInCwd = path.join(context.parentDir, integrationsFileName);
-      const integrationsInProduct = path.join(
+      const integrationsDepsPath = resolveIntegrationsDepsPath(
+        context.parentDir,
         context.productRoot,
-        "service",
-        "common",
-        integrationsFileName,
       );
-      const dependenciesSource =
-        existsSync(integrationsInCwd) || existsSync(integrationsInProduct)
-          ? existsSync(integrationsInCwd)
-            ? integrationsInCwd
-            : integrationsInProduct
-          : dependenciesLive;
+      const weaveIntoIntegrationsFile = integrationsDepsPath !== undefined;
+      const dependenciesSource = weaveIntoIntegrationsFile
+        ? dependenciesIntegrationsWeave
+        : dependenciesLive;
       return {
         templateFiles: {
           dependencies: dependenciesSource,
         },
         name: context.integrationName,
         targetDir: context.parentDir,
+        ...(weaveIntoIntegrationsFile
+          ? { targetBasenames: { dependencies: "dependencies.integrations.ts" } }
+          : {}),
         lineReplace: (line: string) => {
           let result = line;
           result = result
@@ -290,7 +306,7 @@ Read the overview doc first: ${overviewDoc}
 
 1. Import the installed SDK (if any).
 2. Keep fetching credentials via \`store.getSecretByName(...)\` and \`secrets.json\` (already wired). Update the secret name if you renamed it in \`secrets.json\`.
-3. **Do not change the configure / isMocked pattern** (test mode mocks; missing secret warns; \`"mock"\` sentinel selects mocks). See the docs for why.
+3. Follow the **configure / isMocked** pattern from \`daemon-stripe\` (\`client.real.ts\` / \`client.ts\`): \`NODE_ENV=test\` uses mocks; explicit \`"mock"\` sentinel selects mocks; **do not** implicitly mock when secrets are missing — throw with a clear error (or require explicit mock config) so production cannot boot half-configured. Split config/secret env vars (non-secret client id in \`env.schema.json\`, secret in \`secrets.json\`) when the vendor uses that shape.
 4. Define a scoped client type using \`Pick\` to select only the SDK methods this integration will use. For nested SDKs, pick from each namespace. See the docs for patterns.
 5. Implement the **mock client** in \`mocks/client.ts\` (already imported). Put all mock data and mock method implementations there — keep \`mocks/client.ts\` **SDK-free** (\`import type\` only from the vendor package). Tests import mocks via \`@<package>/mocks\`.
 6. Implement the **real client** by initialising the SDK (or fetch wrapper) and casting it to the scoped type.
