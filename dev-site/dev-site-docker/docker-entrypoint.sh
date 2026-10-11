@@ -34,7 +34,8 @@ fi
 # `new_workflows_data`): a fresh named volume mount is root-owned, and
 # @saflib/new-workflows-db's sqlite file lives there instead of on the
 # bind-mounted /repo (see routes/workflows/index.ts).
-if [ -d /data/new-workflows ]; then
+if [ -d /data ]; then
+  mkdir -p /data/new-workflows
   chown -R node:node /data/new-workflows
 fi
 
