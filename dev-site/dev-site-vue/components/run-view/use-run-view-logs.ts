@@ -2,6 +2,7 @@ import { computed, nextTick, ref, watch, type Ref } from "vue";
 import {
   flattenRunLogPages,
   useWorkflowRunLogsQuery,
+  type LogAnchor,
 } from "../../requests/workflows-queries.ts";
 import { groupLogs } from "../../group-logs.ts";
 import {
@@ -9,6 +10,7 @@ import {
   isNearScrollBottom,
   lastAgentInputLogId,
   logItemKey,
+  logItemSeq,
   logItemStepIndex,
   scrollTopForLogTarget,
   stepIndexAtViewportBottom,
@@ -18,7 +20,7 @@ const SCROLL_BOTTOM_THRESHOLD_PX = 32;
 const SCROLL_TOP_THRESHOLD_PX = 80;
 
 export function useRunViewLogs(runId: Ref<string | undefined>) {
-  const logAnchor = ref<number | undefined>(undefined);
+  const logAnchor = ref<LogAnchor | undefined>(undefined);
   const logsQuery = useWorkflowRunLogsQuery(runId, logAnchor);
   const logs = computed(() => flattenRunLogPages(logsQuery.data.value?.pages));
   const logItems = computed(() => groupLogs(logs.value));
@@ -69,23 +71,24 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
   }
 
   /**
-   * Sidebar jump: re-key the logs query to a window starting at `index`,
-   * wait for that window to load and render, then scroll its first row
-   * to the top.
+   * Sidebar jump: re-key the logs query to a window starting at `anchor`
+   * (a step's first row, or one specific row such as a direct message),
+   * wait for that window to load and render, then scroll its first row to
+   * the top.
    */
-  async function scrollToStep(index: number) {
+  async function jumpTo(anchor: LogAnchor) {
     const token = ++navToken;
     isFollowing.value = false;
-    logAnchor.value = index;
+    logAnchor.value = anchor;
     // Let vue-query pick up the new key before checking fetch state.
     await nextTick();
     await logsSettled();
     await nextTick();
     if (token !== navToken) return;
 
-    const target = logContainer.value?.querySelector<HTMLElement>(
-      `[data-step-index="${index}"]`,
-    );
+    const selector =
+      "step" in anchor ? `[data-step-index="${anchor.step}"]` : `[data-seq="${anchor.seq}"]`;
+    const target = logContainer.value?.querySelector<HTMLElement>(selector);
     if (!target) return;
     scrollLogTo(target);
     // Cards can grow after first paint (markdown, code blocks); re-pin once.
@@ -94,6 +97,9 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
     });
     updateCurrentStepIndex();
   }
+
+  const scrollToStep = (index: number) => jumpTo({ step: index });
+  const scrollToMessage = (seq: number) => jumpTo({ seq });
 
   /** Back to the live tip, pinned to the bottom. */
   async function returnToLiveLogs() {
@@ -189,10 +195,12 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
     showStickyAgentInput,
     showJumpToLatest,
     scrollToStep,
+    scrollToMessage,
     returnToLiveLogs,
     onScroll,
     logItemStepIndex,
     logItemKey,
+    logItemSeq,
     isLastAgentInput,
   };
 }

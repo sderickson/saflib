@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  buildSidebarItems,
   displayStepNumber,
   flattenStepTree,
   stepStatusClassNames,
@@ -73,5 +74,23 @@ describe("run-view.logic", () => {
     expect(volumeIconName(true, 0.8)).toBe("mdi-volume-off");
     expect(volumeIconName(false, 0.2)).toBe("mdi-volume-medium");
     expect(volumeIconName(false, 0.9)).toBe("mdi-volume-high");
+  });
+
+  it("puts each direct message after the step it was sent during, in send order", () => {
+    const steps = [
+      { index: 0, kind: "cd" },
+      { index: 1, kind: "prompt" },
+      { index: 2, kind: "command" },
+    ];
+    const msg = (seq: number, step_index: number | null) => ({
+      seq,
+      step_index,
+      content: `m${seq}`,
+      created_at: "",
+    });
+    const items = buildSidebarItems(steps, [msg(30, 1), msg(10, 0), msg(20, 1), msg(40, 3)]);
+    expect(items.map((i) => (i.type === "step" ? `s${i.step.index}` : `m${i.message.seq}`))).toEqual(
+      ["s0", "m10", "s1", "m20", "m30", "s2", "m40"],
+    );
   });
 });

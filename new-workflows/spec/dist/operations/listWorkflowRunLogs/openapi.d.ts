@@ -86,6 +86,8 @@ export interface operations {
                 before_seq?: number;
                 /** @description Anchor this page at the earliest log for that step, then the following `limit` rows (still returned newest-first). */
                 step_index?: number;
+                /** @description Anchor this page at the row with this `seq` (e.g. a direct message from `GET /runs/{runId}/messages`), then the following `limit` rows. */
+                anchor_seq?: number;
                 /** @description With `after_seq`, return the oldest `limit` rows after the cursor (the next page toward the present) instead of the newest ones. */
                 contiguous?: boolean;
                 /** @description Page size (default 100). */

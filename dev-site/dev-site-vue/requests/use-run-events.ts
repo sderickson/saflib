@@ -29,6 +29,8 @@ export function useRunEvents(runId: MaybeRefOrGetter<string | undefined>): void 
       source.addEventListener("change", () => {
         queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", id] });
         queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+        // Cheap, and a new direct message should show in the sidebar as it starts.
+        queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-messages", id] });
         void prependNewerRunLogs(queryClient, id);
       });
     },

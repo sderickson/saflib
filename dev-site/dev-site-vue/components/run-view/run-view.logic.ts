@@ -62,6 +62,13 @@ export function logItemStepIndex(item: LogItem): number | null {
   return item.log.step_index;
 }
 
+/** The item's first row's `seq` — a sidebar message jump targets it. */
+export function logItemSeq(item: LogItem): number {
+  if (item.type === "tool-call") return item.useLog.seq;
+  if (item.type === "channel-group") return item.logs[0]!.seq;
+  return item.log.seq;
+}
+
 export function logItemKey(item: LogItem): string {
   if (item.type === "tool-call") return item.id;
   if (item.type === "channel-group") return item.id;
@@ -140,4 +147,62 @@ export function volumeIconName(muted: boolean, volume: number): string {
   if (muted || volume <= 0) return "mdi-volume-off";
   if (volume < 0.5) return "mdi-volume-medium";
   return "mdi-volume-high";
+}
+
+export type SidebarStep = {
+  index: number;
+  kind: string;
+  label?: string;
+  params?: Record<string, string>;
+};
+
+export type SidebarMessage = {
+  seq: number;
+  step_index: number | null;
+  content: string;
+  created_at: string;
+};
+
+export type SidebarItem =
+  | { type: "step"; key: string; step: SidebarStep }
+  | { type: "message"; key: string; message: SidebarMessage };
+
+/**
+ * Steps in order, each followed by the direct messages sent while the run
+ * was on it (in send order). A message's `step_index` is the run's current
+ * step when it was sent — mid-step or after it finished — so it lands right
+ * after that step. Messages sent past the last step (run done) go at the end.
+ */
+export function buildSidebarItems(
+  steps: SidebarStep[],
+  messages: SidebarMessage[],
+): SidebarItem[] {
+  const sorted = [...messages].sort((a, b) => a.seq - b.seq);
+  const lastIndex = steps.length ? steps[steps.length - 1]!.index : undefined;
+  const byStep = new Map<number, SidebarMessage[]>();
+  const trailing: SidebarMessage[] = [];
+  for (const m of sorted) {
+    const at = m.step_index ?? 0;
+    if (lastIndex === undefined || at > lastIndex) {
+      trailing.push(m);
+      continue;
+    }
+    // Attach to the last step at or before `at` (step indexes can have gaps).
+    const owner = [...steps].reverse().find((s) => s.index <= at) ?? steps[0]!;
+    const list = byStep.get(owner.index) ?? [];
+    list.push(m);
+    byStep.set(owner.index, list);
+  }
+  const asItem = (message: SidebarMessage): SidebarItem => ({
+    type: "message",
+    key: `message-${message.seq}`,
+    message,
+  });
+  return [
+    ...steps.flatMap((step): SidebarItem[] => [
+      { type: "step", key: `step-${step.index}`, step },
+      ...(byStep.get(step.index) ?? []).map(asItem),
+    ]),
+    ...trailing.map(asItem),
+  ];
 }

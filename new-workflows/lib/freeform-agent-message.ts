@@ -10,6 +10,13 @@ import { runAgentTurn } from "./agents/dispatch.ts";
 import { withRunLock, RUN_LOCK_MESSAGE } from "./run-lock.ts";
 import type { WorkflowContext } from "./types.ts";
 
+/**
+ * Content of the `tool` log row written immediately before a direct
+ * message's `agent-input` row. It's how the message list (sidebar) tells a
+ * direct message apart from a step's own prompt — keep it stable.
+ */
+export const FREEFORM_MESSAGE_MARKER = "Direct agent message (does not advance the workflow)";
+
 export type FreeformAgentMessageResult =
   | { status: "ok"; shouldContinue: boolean }
   | { status: "error"; message: string };
@@ -72,7 +79,7 @@ async function runFreeformAgentMessage(
   write({
     channel: "tool",
     level: "info",
-    content: "Direct agent message (does not advance the workflow)",
+    content: FREEFORM_MESSAGE_MARKER,
   });
   write({ channel: "agent-input", level: "info", content: trimmed });
 

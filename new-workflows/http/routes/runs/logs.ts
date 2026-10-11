@@ -10,6 +10,7 @@ export const listWorkflowRunLogsHandler = createHandler(async (req, res) => {
   const after_seq = parseIntParam(req.query.after_seq);
   const before_seq = parseIntParam(req.query.before_seq);
   const step_index = parseIntParam(req.query.step_index);
+  const anchor_seq = parseIntParam(req.query.anchor_seq);
   const contiguous = parseBoolParam(req.query.contiguous);
   const limit = parseIntParam(req.query.limit);
 
@@ -19,6 +20,7 @@ export const listWorkflowRunLogsHandler = createHandler(async (req, res) => {
     before_seq,
     afterContiguous: contiguous,
     step_index,
+    anchor_seq,
     limit,
   });
   if (error) throw error satisfies never;

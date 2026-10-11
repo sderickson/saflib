@@ -49,6 +49,15 @@
             }
           },
           {
+            "name": "anchor_seq",
+            "in": "query",
+            "required": false,
+            "description": "Anchor this page at the row with this `seq` (e.g. a direct message from `GET /runs/{runId}/messages`), then the following `limit` rows.\n",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
             "name": "contiguous",
             "in": "query",
             "required": false,

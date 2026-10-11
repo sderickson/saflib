@@ -80,6 +80,7 @@ const handlers = [
     return HttpResponse.json({ logs: withSeq(page), has_more: rows.length > limit });
   }),
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: stepsState })),
+  http.get(`${ORIGIN}/api/runs/:runId/messages`, () => HttpResponse.json({ messages: [] })),
   http.get(`${ORIGIN}/api/runs/:runId/step-tree`, () =>
     HttpResponse.json({
       steps: (stepsState as { index: number; kind: string; label?: string }[]).map((s) => ({
@@ -1174,6 +1175,64 @@ describe("RunView", () => {
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("oldest line");
     });
+  });
+
+  it("lists direct messages in the sidebar after their step, and jumps to one on click", async () => {
+    const requests: string[] = [];
+    const dm = {
+      id: "dm1",
+      seq: 500,
+      run_id: "run-1",
+      step_index: 0,
+      channel: "agent-input",
+      level: "info",
+      content: "please also check the sdk",
+      created_at: "2026-09-15T00:00:05.000Z",
+    };
+    server.use(
+      http.get(`${ORIGIN}/api/runs/:runId/messages`, () => HttpResponse.json({ messages: [dm] })),
+      http.get(`${ORIGIN}/api/runs/:runId/logs`, ({ request }) => {
+        const url = new URL(request.url);
+        requests.push(url.search);
+        if (url.searchParams.get("anchor_seq") === "500") {
+          return HttpResponse.json({ logs: [dm], has_more: true, has_more_newer: false });
+        }
+        return HttpResponse.json({
+          logs: withSeq([
+            {
+              id: "tip",
+              run_id: "run-1",
+              step_index: 1,
+              channel: "tool",
+              level: "info",
+              content: "live tip",
+              created_at: "2026-09-15T00:00:09.000Z",
+            },
+          ]),
+          has_more: true,
+          has_more_newer: false,
+        });
+      }),
+    );
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.find(".run-view__sidebar-message").exists()).toBe(true);
+    });
+    // Order: step 1, its message, step 2.
+    const rows = wrapper
+      .findAll(".run-view__sidebar-step, .run-view__sidebar-message")
+      .map((r) => r.text());
+    expect(rows[0]).toContain("cd test-product/service/db");
+    expect(rows[1]).toContain("please also check the sdk");
+    expect(rows[2]).toContain("Say hello!");
+
+    await wrapper.find(".run-view__sidebar-message").trigger("click");
+    await vi.waitFor(() => {
+      expect(requests.some((q) => q.includes("anchor_seq=500"))).toBe(true);
+      expect(wrapper.find('.run-view__logs [data-seq="500"]').exists()).toBe(true);
+    });
+    expect(wrapper.text()).toContain("Jump to latest");
   });
 
   it("jumps to an unloaded step and pages older and newer logs from there", async () => {

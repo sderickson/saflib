@@ -183,6 +183,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{runId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a run's direct agent messages
+         * @description The free-form messages sent to the agent with `agent-message` (not a step's own prompts), oldest first. Each is the message's own `agent-input` log row, so its `seq` can anchor the logs view and its `step_index` says which step the run was on when it was sent.
+         */
+        get: operations["listWorkflowRunMessages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs/{runId}/steps": {
         parameters: {
             query?: never;
@@ -983,6 +1003,8 @@ export interface operations {
                 before_seq?: number;
                 /** @description Anchor this page at the earliest log for that step, then the following `limit` rows (still returned newest-first). */
                 step_index?: number;
+                /** @description Anchor this page at the row with this `seq` (e.g. a direct message from `GET /runs/{runId}/messages`), then the following `limit` rows. */
+                anchor_seq?: number;
                 /** @description With `after_seq`, return the oldest `limit` rows after the cursor (the next page toward the present) instead of the newest ones. */
                 contiguous?: boolean;
                 /** @description Page size (default 100). */
@@ -1018,6 +1040,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listWorkflowRunMessages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The run's direct messages, oldest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        messages: components["schemas"]["workflow-log-entry"][];
+                    };
                 };
             };
         };

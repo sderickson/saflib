@@ -41,6 +41,9 @@ paths:
   /api/runs/{runId}/logs:
     get:
       $ref: "./routes/runs/logs.yaml#/listWorkflowRunLogs"
+  /api/runs/{runId}/messages:
+    get:
+      $ref: "./routes/runs/messages.yaml#/listWorkflowRunMessages"
   /api/runs/{runId}/steps:
     get:
       $ref: "./routes/runs/steps.yaml#/getWorkflowRunSteps"

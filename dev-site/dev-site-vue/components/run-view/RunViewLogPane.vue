@@ -7,6 +7,7 @@
         :key="itemKey(item)"
         class="run-view__log-item"
         :data-step-index="stepIndex(item)"
+        :data-seq="seq(item)"
         :class="{ 'run-view__log-item--sticky': stickyAgentInput && isLastAgentInput(item) }"
       >
         <ToolCallCard
@@ -51,6 +52,7 @@ defineProps<{
   stickyAgentInput: boolean;
   itemKey: (item: LogItem) => string;
   stepIndex: (item: LogItem) => number | null;
+  seq: (item: LogItem) => number;
   isLastAgentInput: (item: LogItem) => boolean;
   onScroll: () => void;
   onRootRef: VNodeRef;

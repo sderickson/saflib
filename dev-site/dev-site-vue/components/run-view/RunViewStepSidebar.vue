@@ -1,40 +1,55 @@
 <template>
   <aside class="run-view__sidebar">
-    <div
-      v-for="step in steps"
-      :key="step.index"
-      class="run-view__sidebar-step"
-      :class="stepClass(step)"
-      @click="emit('select-step', step.index)"
-    >
-      <div class="run-view__sidebar-step-head">
-        <span class="run-view__sidebar-step-index">{{ step.index + 1 }}</span>
-        <span class="run-view__sidebar-step-label" :title="step.label ?? step.kind">
-          {{ step.label ?? step.kind }}
-        </span>
+    <template v-for="item in items" :key="item.key">
+      <div
+        v-if="item.type === 'step'"
+        class="run-view__sidebar-step"
+        :class="stepClass(item.step)"
+        @click="emit('select-step', item.step.index)"
+      >
+        <div class="run-view__sidebar-step-head">
+          <span class="run-view__sidebar-step-index">{{ item.step.index + 1 }}</span>
+          <span class="run-view__sidebar-step-label" :title="item.step.label ?? item.step.kind">
+            {{ item.step.label ?? item.step.kind }}
+          </span>
+        </div>
+        <ul v-if="item.step.params" class="run-view__sidebar-step-params">
+          <li
+            v-for="(value, key) in item.step.params"
+            :key="key"
+            class="run-view__sidebar-step-param"
+            :title="`${key}: ${value}`"
+          >
+            <span class="run-view__sidebar-step-param-key">{{ key }}:</span> {{ value }}
+          </li>
+        </ul>
       </div>
-      <ul v-if="step.params" class="run-view__sidebar-step-params">
-        <li
-          v-for="(value, key) in step.params"
-          :key="key"
-          class="run-view__sidebar-step-param"
-          :title="`${key}: ${value}`"
-        >
-          <span class="run-view__sidebar-step-param-key">{{ key }}:</span> {{ value }}
-        </li>
-      </ul>
-    </div>
+      <div
+        v-else
+        class="run-view__sidebar-message"
+        :title="item.message.content"
+        @click="emit('select-message', item.message.seq)"
+      >
+        <v-icon icon="mdi-message-text-outline" size="14" class="run-view__sidebar-message-icon" />
+        <span class="run-view__sidebar-message-text">{{ item.message.content }}</span>
+        <span class="run-view__sidebar-message-time">{{ formatLogTime(item.message.created_at) }}</span>
+      </div>
+    </template>
   </aside>
 </template>
 
 <script setup lang="ts">
+import { formatLogTime } from "../../format-log-time.ts";
+import type { SidebarItem } from "./run-view.logic.ts";
+
 defineProps<{
-  steps: { index: number; kind: string; label?: string; params?: Record<string, string> }[];
+  items: SidebarItem[];
   stepClass: (step: { index: number }) => Record<string, boolean>;
 }>();
 
 const emit = defineEmits<{
   "select-step": [index: number];
+  "select-message": [seq: number];
 }>();
 </script>
 
@@ -87,6 +102,38 @@ const emit = defineEmits<{
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.72rem;
+}
+.run-view__sidebar-message {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem 0.3rem 1.6rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  opacity: 0.85;
+}
+.run-view__sidebar-message:hover {
+  background: rgba(128, 128, 128, 0.08);
+}
+.run-view__sidebar-message-icon {
+  flex: 0 0 auto;
+  align-self: center;
+  opacity: 0.6;
+}
+.run-view__sidebar-message-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-style: italic;
+}
+.run-view__sidebar-message-time {
+  flex: 0 0 auto;
+  opacity: 0.5;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
 }
 .run-view__sidebar-step-param-key {
   opacity: 0.7;

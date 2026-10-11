@@ -40,7 +40,7 @@ export function flattenRunLogPages(
  * a full refetch of page 0 with a sliding window would leave a gap
  * between the new tip and the still-cached older pages.
  */
-/** Live tip only — sidebar step anchors use a fourth query-key segment (`step_index`). */
+/** Live tip only — sidebar anchors (a step or a message) use a fourth query-key segment. */
 export function isLiveRunLogsQueryKey(key: readonly unknown[]): boolean {
   return key.length === 3 && key[0] === "new-workflows" && key[1] === "run-logs";
 }
@@ -88,7 +88,10 @@ export async function prependNewerRunLogs(
   }
 }
 
-/** Cursor for one logs page. `undefined` is the live tip, or a step anchor when one is selected. */
+/** Where an anchored (non-live) logs window starts: a step's first row, or a specific row. */
+export type LogAnchor = { step: number } | { seq: number };
+
+/** Cursor for one logs page. `undefined` is the live tip, or the anchor when one is selected. */
 export type LogPageParam =
   | undefined
   | { before_seq: number }
@@ -217,8 +220,8 @@ export function useWorkflowRunQuery(runId: MaybeRefOrGetter<string | undefined>)
 
 export function useWorkflowRunLogsQuery(
   runId: MaybeRefOrGetter<string | undefined>,
-  /** When set, the first page is the window starting at this step instead of the live tip. */
-  anchorStep: MaybeRefOrGetter<number | undefined> = undefined,
+  /** When set, the first page is the window starting at this anchor instead of the live tip. */
+  anchor: MaybeRefOrGetter<LogAnchor | undefined> = undefined,
 ) {
   const client = createWorkflowsClient();
   return useInfiniteQuery<
@@ -230,16 +233,14 @@ export function useWorkflowRunLogsQuery(
   >({
     queryKey: computed(() => {
       const id = toValue(runId);
-      const step = toValue(anchorStep);
-      return step === undefined
-        ? ["new-workflows", "run-logs", id]
-        : ["new-workflows", "run-logs", id, step];
+      const a = toValue(anchor);
+      if (!a) return ["new-workflows", "run-logs", id];
+      return ["new-workflows", "run-logs", id, "step" in a ? `step:${a.step}` : `seq:${a.seq}`];
     }),
     enabled: () => Boolean(toValue(runId)),
     initialPageParam: undefined as LogPageParam,
     queryFn: ({ pageParam }) => {
-      const step = toValue(anchorStep);
-      const anchored = pageParam === undefined && step !== undefined;
+      const a = pageParam === undefined ? toValue(anchor) : undefined;
       return handleClientMethod(
         client.GET("/api/runs/{runId}/logs", {
           params: {
@@ -252,7 +253,8 @@ export function useWorkflowRunLogsQuery(
               ...(pageParam && "after_seq" in pageParam
                 ? { after_seq: pageParam.after_seq, contiguous: true }
                 : {}),
-              ...(anchored ? { step_index: step } : {}),
+              ...(a && "step" in a ? { step_index: a.step } : {}),
+              ...(a && "seq" in a ? { anchor_seq: a.seq } : {}),
             },
           },
         }),
@@ -267,6 +269,20 @@ export function useWorkflowRunLogsQuery(
       if (!firstPage.has_more_newer || firstPage.logs.length === 0) return undefined;
       return { after_seq: firstPage.logs[0]!.seq, contiguous: true as const };
     },
+  });
+}
+
+export function useWorkflowRunMessagesQuery(runId: MaybeRefOrGetter<string | undefined>) {
+  const client = createWorkflowsClient();
+  return useQuery<NewWorkflowsResponseBody["listWorkflowRunMessages"][200], TanstackError>({
+    queryKey: ["new-workflows", "run-messages", runId],
+    enabled: () => Boolean(toValue(runId)),
+    queryFn: () =>
+      handleClientMethod(
+        client.GET("/api/runs/{runId}/messages", {
+          params: { path: { runId: toValue(runId)! } },
+        }),
+      ),
   });
 }
 
@@ -404,6 +420,7 @@ export function useSendFreeformAgentMessageMutation() {
     },
     onSuccess: (_data, { runId }) => {
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-messages", runId] });
       void prependNewerRunLogs(queryClient, runId);
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
     },

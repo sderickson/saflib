@@ -3,6 +3,7 @@ import { useRouter } from "vue-router";
 import {
   useWorkflowRunQuery,
   useWorkflowRunStepsQuery,
+  useWorkflowRunMessagesQuery,
   useWorkflowRunStepTreeQuery,
   useWorkflowStepsQuery,
   useCreateWorkflowRunMutation,
@@ -27,6 +28,7 @@ import { getAgentCli } from "../../agent-settings.ts";
 import { formatClockSummary, summarizeRunTimings } from "../../plan-run-stats.ts";
 import { isMechanicalPreviewFailure } from "@saflib/new-workflows/preview/preview-failures";
 import {
+  buildSidebarItems,
   displayStepNumber,
   flattenStepTree,
   resolveFailureMessage,
@@ -80,6 +82,11 @@ export function useRunView(props: RunViewProps) {
         : workflowStepsQuery.data.value?.steps) ?? [],
   );
   useRunEvents(runId);
+
+  const messagesQuery = useWorkflowRunMessagesQuery(runId);
+  const sidebarItems = computed(() =>
+    buildSidebarItems(steps.value, messagesQuery.data.value?.messages ?? []),
+  );
 
   const workflowPreviewMutation = usePreviewWorkflowDiffMutation();
   const runPreviewMutation = usePreviewWorkflowRunDiffMutation();
@@ -304,7 +311,7 @@ export function useRunView(props: RunViewProps) {
 
   const headerStepDisplay = computed(() => {
     const anchor = logs.logAnchor.value;
-    if (anchor !== undefined) return displayStepNumber(anchor);
+    if (anchor && "step" in anchor) return displayStepNumber(anchor.step);
     const viewport = logs.currentStepIndex.value;
     if (viewport !== undefined) return displayStepNumber(viewport);
     const cur = run.value?.current_step_index;
@@ -346,10 +353,13 @@ export function useRunView(props: RunViewProps) {
     showStickyAgentInput: logs.showStickyAgentInput,
     showJumpToLatest: logs.showJumpToLatest,
     scrollToStep: logs.scrollToStep,
+    scrollToMessage: logs.scrollToMessage,
+    sidebarItems,
     returnToLiveLogs: logs.returnToLiveLogs,
     onLogScroll: logs.onScroll,
     logItemKey: logs.logItemKey,
     logItemStepIndex: logs.logItemStepIndex,
+    logItemSeq: logs.logItemSeq,
     isLastAgentInput: logs.isLastAgentInput,
     showPreviewPane,
     previewShown,

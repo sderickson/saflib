@@ -24,6 +24,7 @@ export { deleteFromStepWorkflowStep } from "./queries/workflow-step/delete-from-
 export { appendWorkflowLog } from "./queries/workflow-log/append.ts";
 export { listByRunWorkflowLog } from "./queries/workflow-log/list-by-run.ts";
 export type { WorkflowLogRow } from "./queries/workflow-log/list-by-run.ts";
+export { listDirectMessagesWorkflowLog } from "./queries/workflow-log/list-direct-messages.ts";
 export { createWorkflowConfig } from "./queries/workflow-config/create.ts";
 export { getByIdWorkflowConfig } from "./queries/workflow-config/get-by-id.ts";
 export { listWorkflowConfig } from "./queries/workflow-config/list.ts";

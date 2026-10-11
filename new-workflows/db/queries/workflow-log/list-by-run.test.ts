@@ -193,4 +193,20 @@ describe("listByRunWorkflowLog", () => {
     });
     expect(newer.result?.logs.map((r) => r.content)).toEqual(["same-6"]);
   });
+
+  it("anchors a page at an arbitrary row via anchor_seq", async () => {
+    await seedRun(dbKey, 5);
+    const all = await listByRunWorkflowLog(dbKey, { run_id: "run-1" });
+    const log1 = all.result!.logs.find((r) => r.content === "log-1")!;
+
+    const { result } = await listByRunWorkflowLog(dbKey, {
+      run_id: "run-1",
+      anchor_seq: log1.seq,
+      limit: 2,
+    });
+
+    expect(result?.logs.map((r) => r.content)).toEqual(["log-2", "log-1"]);
+    expect(result?.has_more).toBe(true);
+    expect(result?.has_more_newer).toBe(true);
+  });
 });

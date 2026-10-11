@@ -27,6 +27,8 @@ export type ListByRunWorkflowLogParams = {
   afterContiguous?: boolean;
   /** Anchor the page at the earliest log for this step, then the next `limit` rows. */
   step_index?: number;
+  /** Anchor the page at this row (e.g. a direct message), then the next `limit` rows. */
+  anchor_seq?: number;
   /** Page size. Defaults to 100. */
   limit?: number;
 };
@@ -64,18 +66,21 @@ export const listByRunWorkflowLog = queryWrapper(
       return older.length > 0;
     };
 
-    if (
-      params.step_index !== undefined &&
+    const anchored =
+      (params.step_index !== undefined || params.anchor_seq !== undefined) &&
       params.after_seq === undefined &&
-      params.before_seq === undefined
-    ) {
-      const anchorRows = await db
-        .select({ seq })
-        .from(workflowLogTable)
-        .where(and(runFilter, eq(workflowLogTable.step_index, params.step_index)))
-        .orderBy(sql`${seq} asc`)
-        .limit(1);
-      const anchor = anchorRows[0]?.seq;
+      params.before_seq === undefined;
+    if (anchored) {
+      let anchor = params.anchor_seq;
+      if (anchor === undefined) {
+        const anchorRows = await db
+          .select({ seq })
+          .from(workflowLogTable)
+          .where(and(runFilter, eq(workflowLogTable.step_index, params.step_index!)))
+          .orderBy(sql`${seq} asc`)
+          .limit(1);
+        anchor = anchorRows[0]?.seq;
+      }
       if (anchor === undefined) {
         return { result: { logs: [], has_more: false, has_more_newer: false } };
       }

@@ -11,9 +11,10 @@
 
     <div class="run-view__body">
       <RunViewStepSidebar
-        :steps="vm.steps"
+        :items="vm.sidebarItems"
         :step-class="vm.stepStatusClasses"
         @select-step="vm.scrollToStep"
+        @select-message="vm.scrollToMessage"
       />
 
       <RunViewPreviewPane
@@ -36,6 +37,7 @@
         :sticky-agent-input="vm.showStickyAgentInput"
         :item-key="vm.logItemKey"
         :step-index="vm.logItemStepIndex"
+        :seq="vm.logItemSeq"
         :is-last-agent-input="vm.isLastAgentInput"
         :on-scroll="vm.onLogScroll"
         :on-root-ref="vm.bindLogContainer"

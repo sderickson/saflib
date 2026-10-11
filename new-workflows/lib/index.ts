@@ -10,6 +10,7 @@ export {
 } from "./engine.ts";
 export {
   sendFreeformAgentMessage,
+  FREEFORM_MESSAGE_MARKER,
   type FreeformAgentMessageResult,
 } from "./freeform-agent-message.ts";
 export { stepSkipIf, isWorkflowStepSkip } from "./conditional-step.ts";

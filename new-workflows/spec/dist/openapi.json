@@ -561,6 +561,15 @@
             }
           },
           {
+            "name": "anchor_seq",
+            "in": "query",
+            "required": false,
+            "description": "Anchor this page at the row with this `seq` (e.g. a direct message from `GET /runs/{runId}/messages`), then the following `limit` rows.\n",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
             "name": "contiguous",
             "in": "query",
             "required": false,
@@ -621,6 +630,48 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/runs/{runId}/messages": {
+      "get": {
+        "summary": "List a run's direct agent messages",
+        "description": "The free-form messages sent to the agent with `agent-message` (not a step's own prompts), oldest first. Each is the message's own `agent-input` log row, so its `seq` can anchor the logs view and its `step_index` says which step the run was on when it was sent.\n",
+        "operationId": "listWorkflowRunMessages",
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The run's direct messages, oldest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "messages"
+                  ],
+                  "properties": {
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-log-entry"
+                      }
+                    }
+                  }
                 }
               }
             }
