@@ -40,6 +40,13 @@ function runFixture(overrides: Partial<Record<string, unknown>> = {}) {
   };
 }
 
+/** Test rows: `seq` (the server's insertion-order cursor) from the fixture's timestamp. */
+type LogRow = { id: string; created_at: string; seq?: number };
+const seqOf = (l: LogRow) => l.seq ?? Date.parse(l.created_at);
+function withSeq<T extends LogRow>(logs: T[]): (T & { seq: number })[] {
+  return logs.map((l) => ({ ...l, seq: seqOf(l) }));
+}
+
 let runState = runFixture();
 let logsState: unknown[] = [
   {
@@ -61,17 +68,16 @@ const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId`, () => HttpResponse.json({ run: runState })),
   http.get(`${ORIGIN}/api/runs/:runId/logs`, ({ request }) => {
     const url = new URL(request.url);
-    const before = url.searchParams.get("before");
-    const since = url.searchParams.get("since");
+    const before = url.searchParams.get("before_seq");
+    const since = url.searchParams.get("after_seq");
     const limit = Number(url.searchParams.get("limit") ?? 100);
-    type LogRow = { id: string; created_at: string };
     let rows = [...(logsState as LogRow[])];
-    if (since) rows = rows.filter((l) => l.created_at > since);
-    if (before) rows = rows.filter((l) => l.created_at < before);
+    if (since) rows = rows.filter((l) => seqOf(l) > Number(since));
+    if (before) rows = rows.filter((l) => seqOf(l) < Number(before));
     // API contract: newest first.
-    rows.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
+    rows.sort((a, b) => seqOf(b) - seqOf(a));
     const page = rows.slice(0, limit);
-    return HttpResponse.json({ logs: page, has_more: rows.length > limit });
+    return HttpResponse.json({ logs: withSeq(page), has_more: rows.length > limit });
   }),
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: stepsState })),
   http.get(`${ORIGIN}/api/runs/:runId/step-tree`, () =>
@@ -1139,17 +1145,16 @@ describe("RunView", () => {
     server.use(
       http.get(`${ORIGIN}/api/runs/:runId/logs`, ({ request }) => {
         const url = new URL(request.url);
-        const before = url.searchParams.get("before");
-        const since = url.searchParams.get("since");
+        const before = url.searchParams.get("before_seq");
+        const since = url.searchParams.get("after_seq");
         // Force a 2-row page so three fixtures need a second fetch.
         const limit = 2;
-        type LogRow = { id: string; created_at: string };
-        let rows = [...(logsState as LogRow[])];
-        if (since) rows = rows.filter((l) => l.created_at > since);
-        if (before) rows = rows.filter((l) => l.created_at < before);
-        rows.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
+            let rows = [...(logsState as LogRow[])];
+        if (since) rows = rows.filter((l) => seqOf(l) > Number(since));
+        if (before) rows = rows.filter((l) => seqOf(l) < Number(before));
+        rows.sort((a, b) => seqOf(b) - seqOf(a));
         const page = rows.slice(0, limit);
-        return HttpResponse.json({ logs: page, has_more: rows.length > limit });
+        return HttpResponse.json({ logs: withSeq(page), has_more: rows.length > limit });
       }),
     );
 
@@ -1182,12 +1187,12 @@ describe("RunView", () => {
         const url = new URL(request.url);
         requests.push(url.search);
         const step = url.searchParams.get("step_index");
-        const before = url.searchParams.get("before");
-        const since = url.searchParams.get("since");
+        const before = url.searchParams.get("before_seq");
+        const since = url.searchParams.get("after_seq");
         const contiguous = url.searchParams.get("contiguous");
         if (step === "5") {
           return HttpResponse.json({
-            logs: [
+            logs: withSeq([
               {
                 id: "s5",
                 run_id: "run-1",
@@ -1197,14 +1202,14 @@ describe("RunView", () => {
                 content: "fifth step line",
                 created_at: "2026-09-15T00:00:05.000Z",
               },
-            ],
+            ]),
             has_more: true,
             has_more_newer: true,
           });
         }
         if (before) {
           return HttpResponse.json({
-            logs: [
+            logs: withSeq([
               {
                 id: "older",
                 run_id: "run-1",
@@ -1214,14 +1219,14 @@ describe("RunView", () => {
                 content: "older than the jump",
                 created_at: "2026-09-15T00:00:04.000Z",
               },
-            ],
+            ]),
             has_more: false,
             has_more_newer: false,
           });
         }
         if (since && contiguous === "true") {
           return HttpResponse.json({
-            logs: [
+            logs: withSeq([
               {
                 id: "newer",
                 run_id: "run-1",
@@ -1231,13 +1236,13 @@ describe("RunView", () => {
                 content: "newer than the jump",
                 created_at: "2026-09-15T00:00:06.000Z",
               },
-            ],
+            ]),
             has_more: false,
             has_more_newer: false,
           });
         }
         return HttpResponse.json({
-          logs: [
+          logs: withSeq([
             {
               id: "tip",
               run_id: "run-1",
@@ -1247,7 +1252,7 @@ describe("RunView", () => {
               content: "live tip",
               created_at: "2026-09-15T00:00:09.000Z",
             },
-          ],
+          ]),
           has_more: true,
           has_more_newer: false,
         });

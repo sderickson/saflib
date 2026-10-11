@@ -7,8 +7,9 @@
   >
     <div class="tool-call-card__head">
       <span class="tool-call-card__title">{{ invocation.title }}</span>
-      <span v-if="!resultLog" class="tool-call-card__status text-caption text-medium-emphasis">
-        running…
+      <span class="tool-call-card__status">
+        <span v-if="!resultLog" class="text-caption text-medium-emphasis">running…</span>
+        <span v-if="timeLabel" class="tool-call-card__time">{{ timeLabel }}</span>
       </span>
     </div>
     <code v-if="invocation.detail" class="tool-call-card__detail">{{ invocation.detail }}</code>
@@ -33,13 +34,18 @@ import {
   type WorkflowLogEntry,
 } from "@saflib/new-workflows-spec";
 import { formatToolInvocation } from "../tool-display.ts";
+import { formatLogTime } from "../format-log-time.ts";
 import ToolResultBody from "./ToolResultBody.vue";
 
 const props = defineProps<{
   name: string;
   input: unknown;
   resultLog?: WorkflowLogEntry;
+  /** The `tool_use` row's `created_at` — when the call started. */
+  startedAt?: string;
 }>();
+
+const timeLabel = computed(() => (props.startedAt ? formatLogTime(props.startedAt) : ""));
 
 const invocation = computed(() => formatToolInvocation(props.name, props.input));
 
@@ -79,6 +85,17 @@ const fullInputText = computed(() => JSON.stringify(props.input, null, 2));
   align-items: baseline;
   justify-content: space-between;
   gap: 0.5rem;
+}
+.tool-call-card__status {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.tool-call-card__time {
+  opacity: 0.45;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
 }
 .tool-call-card__title {
   font-weight: 600;

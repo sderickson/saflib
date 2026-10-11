@@ -14,6 +14,7 @@
           :name="item.name"
           :input="item.input"
           :result-log="item.resultLog"
+          :started-at="item.useLog.created_at"
         />
         <LogEntryGroup v-else-if="item.type === 'channel-group'" :logs="item.logs" />
         <LogEntry v-else :log="item.log" />
@@ -88,7 +89,11 @@ defineEmits<{ "return-live": [] }>();
 }
 .run-view__log-item--sticky {
   position: sticky;
-  top: 0;
+  /* Cancel the scroller's top padding — sticky offsets are measured inside
+     it, which otherwise leaves a strip of scrolling logs above this. */
+  top: -0.75rem;
+  /* Contain the card's own margins so no see-through gap sits above it. */
+  display: flow-root;
   z-index: 1;
   background: rgb(var(--v-theme-surface));
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);

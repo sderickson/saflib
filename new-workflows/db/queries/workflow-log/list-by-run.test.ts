@@ -57,7 +57,7 @@ describe("listByRunWorkflowLog", () => {
     expect(result?.has_more).toBe(true);
   });
 
-  it("pages older history via `before`", async () => {
+  it("pages older history via `before_seq`", async () => {
     await seedRun(dbKey, 5);
 
     const first = await listByRunWorkflowLog(dbKey, { run_id: "run-1", limit: 2 });
@@ -66,19 +66,21 @@ describe("listByRunWorkflowLog", () => {
 
     const older = await listByRunWorkflowLog(dbKey, {
       run_id: "run-1",
-      before: first.result!.logs.at(-1)!.created_at,
+      before_seq: first.result!.logs.at(-1)!.seq,
       limit: 2,
     });
     expect(older.result?.logs.map((r) => r.content)).toEqual(["log-2", "log-1"]);
     expect(older.result?.has_more).toBe(true);
   });
 
-  it("pages newer rows via `after`", async () => {
+  it("pages newer rows via `after_seq`", async () => {
     await seedRun(dbKey, 3);
+    const all = await listByRunWorkflowLog(dbKey, { run_id: "run-1" });
+    const oldest = all.result!.logs.at(-1)!;
 
     const { result } = await listByRunWorkflowLog(dbKey, {
       run_id: "run-1",
-      after: t(0),
+      after_seq: oldest.seq,
       limit: 10,
     });
 
@@ -89,10 +91,12 @@ describe("listByRunWorkflowLog", () => {
 
   it("pages the next newer rows contiguously via afterContiguous", async () => {
     await seedRun(dbKey, 5);
+    const all = await listByRunWorkflowLog(dbKey, { run_id: "run-1" });
+    const oldest = all.result!.logs.at(-1)!;
 
     const { result } = await listByRunWorkflowLog(dbKey, {
       run_id: "run-1",
-      after: t(0),
+      after_seq: oldest.seq,
       afterContiguous: true,
       limit: 2,
     });
@@ -144,5 +148,49 @@ describe("listByRunWorkflowLog", () => {
     expect(result?.logs.map((r) => r.content)).toEqual(["step-5-b", "step-5-a"]);
     expect(result?.has_more).toBe(true);
     expect(result?.has_more_newer).toBe(true);
+  });
+
+  it("keeps insertion order and loses nothing when many rows share one second", async () => {
+    // `created_at` is second-precision: a tool call and its result usually
+    // land in the same second. Timestamp cursors dropped/reordered these.
+    for (let i = 0; i < 6; i++) {
+      await appendWorkflowLog(dbKey, {
+        run_id: "run-1",
+        step_index: 0,
+        channel: "tool",
+        level: "info",
+        content: `same-${i}`,
+        now: t(0),
+      });
+    }
+
+    const first = await listByRunWorkflowLog(dbKey, { run_id: "run-1", limit: 4 });
+    expect(first.result?.logs.map((r) => r.content)).toEqual([
+      "same-5",
+      "same-4",
+      "same-3",
+      "same-2",
+    ]);
+    const older = await listByRunWorkflowLog(dbKey, {
+      run_id: "run-1",
+      before_seq: first.result!.logs.at(-1)!.seq,
+      limit: 4,
+    });
+    expect(older.result?.logs.map((r) => r.content)).toEqual(["same-1", "same-0"]);
+
+    // A tip merge after a same-second append still picks the new row up.
+    await appendWorkflowLog(dbKey, {
+      run_id: "run-1",
+      step_index: 0,
+      channel: "tool",
+      level: "info",
+      content: "same-6",
+      now: t(0),
+    });
+    const newer = await listByRunWorkflowLog(dbKey, {
+      run_id: "run-1",
+      after_seq: first.result!.logs[0]!.seq,
+    });
+    expect(newer.result?.logs.map((r) => r.content)).toEqual(["same-6"]);
   });
 });

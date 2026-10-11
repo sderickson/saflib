@@ -5,6 +5,7 @@ import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
 function logFixture(overrides: Partial<WorkflowLogEntry> = {}): WorkflowLogEntry {
   return {
     id: `l${Math.random()}`,
+    seq: 1,
     run_id: "run-1",
     step_index: 0,
     channel: "agent",

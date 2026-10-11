@@ -50,6 +50,7 @@ describe("run-view.logic", () => {
       resolveFailureMessage(undefined, [
         {
           id: "1",
+          seq: 1,
           run_id: "r",
           step_index: 0,
           channel: "tool",

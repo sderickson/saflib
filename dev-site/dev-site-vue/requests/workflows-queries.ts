@@ -64,14 +64,14 @@ export async function prependNewerRunLogs(
     // A sidebar jump leaves a gap above the loaded window. Filling it
     // belongs to scroll-down (`contiguous`), not this tip merge.
     if (!first || first.has_more_newer) continue;
-    const tip = first.logs[0]?.created_at;
-    if (!tip) {
+    const tip = first.logs[0]?.seq;
+    if (tip === undefined) {
       await queryClient.invalidateQueries({ queryKey: key });
       continue;
     }
     const fresh = await handleClientMethod(
       client.GET("/api/runs/{runId}/logs", {
-        params: { path: { runId }, query: { since: tip, limit: 200 } },
+        params: { path: { runId }, query: { after_seq: tip, limit: 200 } },
       }),
     );
     if (fresh.logs.length === 0) continue;
@@ -91,8 +91,8 @@ export async function prependNewerRunLogs(
 /** Cursor for one logs page. `undefined` is the live tip, or a step anchor when one is selected. */
 export type LogPageParam =
   | undefined
-  | { before: string }
-  | { since: string; contiguous: true };
+  | { before_seq: number }
+  | { after_seq: number; contiguous: true };
 
 /**
  * Same-origin — the workflows API is mounted into dev-site-http itself.
@@ -246,9 +246,11 @@ export function useWorkflowRunLogsQuery(
             path: { runId: toValue(runId)! },
             query: {
               limit: RUN_LOGS_PAGE_SIZE,
-              ...(pageParam && "before" in pageParam ? { before: pageParam.before } : {}),
-              ...(pageParam && "since" in pageParam
-                ? { since: pageParam.since, contiguous: true }
+              ...(pageParam && "before_seq" in pageParam
+                ? { before_seq: pageParam.before_seq }
+                : {}),
+              ...(pageParam && "after_seq" in pageParam
+                ? { after_seq: pageParam.after_seq, contiguous: true }
                 : {}),
               ...(anchored ? { step_index: step } : {}),
             },
@@ -259,11 +261,11 @@ export function useWorkflowRunLogsQuery(
     getNextPageParam: (lastPage) => {
       if (!lastPage.has_more || lastPage.logs.length === 0) return undefined;
       // Newest-first page → last row is the oldest cursor for the next older page.
-      return { before: lastPage.logs[lastPage.logs.length - 1]!.created_at };
+      return { before_seq: lastPage.logs[lastPage.logs.length - 1]!.seq };
     },
     getPreviousPageParam: (firstPage) => {
       if (!firstPage.has_more_newer || firstPage.logs.length === 0) return undefined;
-      return { since: firstPage.logs[0]!.created_at, contiguous: true as const };
+      return { after_seq: firstPage.logs[0]!.seq, contiguous: true as const };
     },
   });
 }

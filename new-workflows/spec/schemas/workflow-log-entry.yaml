@@ -5,6 +5,7 @@ description: >
 additionalProperties: false
 required:
   - id
+  - seq
   - run_id
   - step_index
   - channel
@@ -15,6 +16,12 @@ properties:
   id:
     type: string
     example: "aBcD1234"
+  seq:
+    type: integer
+    description: >
+      Insertion order within the log table. The total order of log rows and
+      the pagination cursor — `created_at` is second-precision and ties.
+    example: 1042
   run_id:
     type: string
     example: "0SG36FJe6m4W"

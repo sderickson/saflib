@@ -7,16 +7,16 @@ import { mapLogToWire } from "../../map-log.ts";
 export const listWorkflowRunLogsHandler = createHandler(async (req, res) => {
   const ctx = newWorkflowsHttpStorage.getStore()!;
   const runId = req.params.runId as string;
-  const since = req.query.since as string | undefined;
-  const before = req.query.before as string | undefined;
+  const after_seq = parseIntParam(req.query.after_seq);
+  const before_seq = parseIntParam(req.query.before_seq);
   const step_index = parseIntParam(req.query.step_index);
   const contiguous = parseBoolParam(req.query.contiguous);
   const limit = parseIntParam(req.query.limit);
 
   const { result, error } = await listByRunWorkflowLog(ctx.dbKey, {
     run_id: runId,
-    after: since ? new Date(since) : undefined,
-    before: before ? new Date(before) : undefined,
+    after_seq,
+    before_seq,
     afterContiguous: contiguous,
     step_index,
     limit,
