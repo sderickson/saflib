@@ -25,7 +25,7 @@ import {
 } from "../../run-alerts.ts";
 import { getAgentCli } from "../../agent-settings.ts";
 import { formatClockSummary, summarizeRunTimings } from "../../plan-run-stats.ts";
-import { isMechanicalPreviewFailure } from "@saflib/new-workflows";
+import { isMechanicalPreviewFailure } from "@saflib/new-workflows/preview/preview-failures";
 import {
   flattenStepTree,
   resolveFailureMessage,

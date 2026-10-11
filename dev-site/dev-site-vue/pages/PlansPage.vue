@@ -170,7 +170,7 @@
 import { computed, onMounted, onUnmounted, reactive, ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useQueryClient } from "@tanstack/vue-query";
-import type { WorkflowInputSchema } from "@saflib/new-workflows";
+import type { WorkflowInputSchema } from "@saflib/new-workflows/input-schema";
 import {
   useWorkflowsQuery,
   useCreatePlanMutation,

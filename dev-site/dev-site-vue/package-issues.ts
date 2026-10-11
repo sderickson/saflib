@@ -1,6 +1,7 @@
 /**
  * Re-export shared issue collectors used by Spec → Issues and `saf-dev-site issues`.
- * Use the `/issues` subpath — the package root pulls Node-only modules into Vite.
+ * Use `issues/package-issues` — the `issues` barrel also exports workdir
+ * analyzers that pull Node-only modules into Vite.
  */
 export {
   collectPackageIssues,
@@ -13,4 +14,4 @@ export {
   type PackageIssue,
   type PackageIssueKind,
   type PackageDetailForIssues,
-} from "@saflib/imports/issues";
+} from "@saflib/imports/issues/package-issues";

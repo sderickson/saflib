@@ -115,23 +115,9 @@ export interface WorkflowStep<C> {
   pauseMessage?: string;
 }
 
-/**
- * Deliberately small JSON-Schema-*shaped* subset — just enough for a CLI (or
- * future dev-site form) to coerce named args into a workflow's input. Not a
- * general validator: no nesting, no `oneOf`, no patterns.
- */
-export interface WorkflowInputSchema {
-  type: "object";
-  properties: Record<
-    string,
-    {
-      type: "string" | "boolean" | "number";
-      description?: string;
-      default?: string | boolean | number;
-    }
-  >;
-  required?: string[];
-}
+import type { WorkflowInputSchema } from "./input-schema.ts";
+
+export type { WorkflowInputSchema };
 
 export interface WorkflowDefinition<Input = unknown, C = unknown> {
   id: string;
