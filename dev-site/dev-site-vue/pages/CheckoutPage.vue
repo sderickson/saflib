@@ -292,6 +292,8 @@
                     :head-ref="effectiveGithubRef"
                     :path-prefix="compareFocusPathPrefix"
                     :command="scopedGitDiffCommand"
+                    :github-repo="github_repo"
+                    :local-repo-root="localRepoRoot"
                   />
                   <PackageDocsPane
                     v-else-if="tab === 'docs'"

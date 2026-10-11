@@ -132,6 +132,12 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
 }
+.rsplit__col > :slotted(*) {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+}
 .rsplit__col--right {
   flex: 1 1 auto;
 }

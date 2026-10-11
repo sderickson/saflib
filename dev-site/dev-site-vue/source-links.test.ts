@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  githubCompareFileDiffAnchor,
+  githubCompareFileUrl,
   githubCompareUrl,
   resolveGithubSourceRef,
   sourceOpenUrls,
@@ -56,4 +58,14 @@ describe("githubCompareUrl", () => {
     );
   });
 
+  it("anchors a single file on the compare page", async () => {
+    await expect(githubCompareFileDiffAnchor("lib/whois/errors.rb")).resolves.toBe(
+      "diff-447a111a507d8046f1ee64817cd197e9c68424b597d85d83afbbc9364f4fe41d",
+    );
+    await expect(
+      githubCompareFileUrl("acme/widget", "main", "feature", "lib/whois/errors.rb"),
+    ).resolves.toBe(
+      "https://github.com/acme/widget/compare/main...feature#diff-447a111a507d8046f1ee64817cd197e9c68424b597d85d83afbbc9364f4fe41d",
+    );
+  });
 });
