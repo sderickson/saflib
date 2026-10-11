@@ -4,7 +4,7 @@
       v-if="logAnchor !== undefined"
       class="run-view__logs-anchor-banner text-body-2 text-medium-emphasis"
     >
-      Viewing step {{ logAnchor }} history —
+      Viewing step {{ logAnchor + 1 }} history —
       <button type="button" class="run-view__logs-live-link" @click="$emit('return-live')">
         jump to live
       </button>

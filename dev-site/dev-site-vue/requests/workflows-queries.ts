@@ -40,6 +40,11 @@ export function flattenRunLogPages(
  * a full refetch of page 0 with a sliding window would leave a gap
  * between the new tip and the still-cached older pages.
  */
+/** Live tip only — sidebar step anchors use a fourth query-key segment (`step_index`). */
+export function isLiveRunLogsQueryKey(key: readonly unknown[]): boolean {
+  return key.length === 3 && key[0] === "new-workflows" && key[1] === "run-logs";
+}
+
 export async function prependNewerRunLogs(
   queryClient: QueryClient,
   runId: string,
@@ -54,6 +59,7 @@ export async function prependNewerRunLogs(
   }
   const client = createWorkflowsClient();
   for (const [key, existing] of matches) {
+    if (!isLiveRunLogsQueryKey(key)) continue;
     const first = existing?.pages[0];
     // A sidebar jump leaves a gap above the loaded window. Filling it
     // belongs to scroll-down (`contiguous`), not this tip merge.

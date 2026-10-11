@@ -3,7 +3,7 @@
     <RunViewHeader
       :run-id="vm.runId"
       :run-clock="vm.runClock"
-      :current-step-index="vm.run?.current_step_index"
+      :current-step-index="vm.headerStepDisplay"
       :status-visual="vm.statusVisual"
     />
 

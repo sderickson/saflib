@@ -27,7 +27,8 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
   const isFollowing = ref(true);
   let loadingOlder = false;
   let loadingNewer = false;
-  const pendingScrollStep = ref<number | undefined>(undefined);
+  /** Bumped on every jump/return so a superseded jump doesn't scroll. */
+  let navToken = 0;
   const currentStepIndex = ref<number | undefined>(undefined);
 
   const lastAgentInputId = computed(() => lastAgentInputLogId(logs.value));
@@ -36,8 +37,8 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
   );
 
   watch(runId, () => {
+    navToken++;
     logAnchor.value = undefined;
-    pendingScrollStep.value = undefined;
     isFollowing.value = true;
   });
 
@@ -47,38 +48,51 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
     el.scrollTop = scrollTopForLogTarget(el, target);
   }
 
-  async function attemptPendingStepScroll(): Promise<void> {
-    const pending = pendingScrollStep.value;
-    const el = logContainer.value;
-    if (pending === undefined || !el) return;
-    if (logsQuery.isFetching.value || logsQuery.isPending.value) return;
-
-    await nextTick();
-    const target = el.querySelector<HTMLElement>(`[data-step-index="${pending}"]`);
-    if (target) {
-      scrollLogTo(target);
-      requestAnimationFrame(() => scrollLogTo(target));
-      pendingScrollStep.value = undefined;
-      return;
-    }
-    if (logAnchor.value === pending) {
-      pendingScrollStep.value = undefined;
-    }
+  /** Resolves once the query for the current key has no fetch in flight. */
+  function logsSettled(): Promise<void> {
+    return new Promise((resolve) => {
+      const stop = watch(
+        () => logsQuery.isFetching.value,
+        (fetching) => {
+          if (fetching) return;
+          queueMicrotask(() => stop());
+          resolve();
+        },
+        { immediate: true },
+      );
+    });
   }
 
-  function scrollToStep(index: number) {
+  /**
+   * Sidebar jump: re-key the logs query to a window starting at `index`,
+   * wait for that window to load and render, then scroll its first row
+   * to the top.
+   */
+  async function scrollToStep(index: number) {
+    const token = ++navToken;
     isFollowing.value = false;
-    pendingScrollStep.value = index;
-    const sameAnchor = logAnchor.value === index;
     logAnchor.value = index;
-    if (sameAnchor) {
-      void attemptPendingStepScroll();
-    }
+    // Let vue-query pick up the new key before checking fetch state.
+    await nextTick();
+    await logsSettled();
+    await nextTick();
+    if (token !== navToken) return;
+
+    const target = logContainer.value?.querySelector<HTMLElement>(
+      `[data-step-index="${index}"]`,
+    );
+    if (!target) return;
+    scrollLogTo(target);
+    // Cards can grow after first paint (markdown, code blocks); re-pin once.
+    requestAnimationFrame(() => {
+      if (token === navToken) scrollLogTo(target);
+    });
+    updateCurrentStepIndex();
   }
 
   function returnToLiveLogs() {
+    navToken++;
     logAnchor.value = undefined;
-    pendingScrollStep.value = undefined;
     isFollowing.value = true;
   }
 
@@ -140,25 +154,12 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
 
   watch(
     logItems,
-    async () => {
-      await attemptPendingStepScroll();
+    () => {
       const el = logContainer.value;
-      if (pendingScrollStep.value === undefined && isFollowing.value && el) {
-        await nextTick();
-        el.scrollTop = el.scrollHeight;
-      }
+      if (isFollowing.value && el) el.scrollTop = el.scrollHeight;
       updateCurrentStepIndex();
     },
     { flush: "post" },
-  );
-
-  watch(
-    () => logsQuery.isFetching.value,
-    (fetching, wasFetching) => {
-      if (wasFetching && !fetching && pendingScrollStep.value !== undefined) {
-        void attemptPendingStepScroll();
-      }
-    },
   );
 
   function isLastAgentInput(item: ReturnType<typeof groupLogs>[number]) {

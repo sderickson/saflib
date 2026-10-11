@@ -8,7 +8,7 @@
       @click="emit('select-step', step.index)"
     >
       <div class="run-view__sidebar-step-head">
-        <span class="run-view__sidebar-step-index">{{ step.index }}</span>
+        <span class="run-view__sidebar-step-index">{{ step.index + 1 }}</span>
         <span class="run-view__sidebar-step-label" :title="step.label ?? step.kind">
           {{ step.label ?? step.kind }}
         </span>

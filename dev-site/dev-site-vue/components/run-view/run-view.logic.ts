@@ -1,6 +1,11 @@
 import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
 import type { LogItem } from "../../group-logs.ts";
 
+/** 1-based step label for UI (API `step_index` / `current_step_index` are 0-based). */
+export function displayStepNumber(zeroBasedIndex: number): number {
+  return zeroBasedIndex + 1;
+}
+
 export type FlatStepTreeNode = {
   path: string;
   kind: string;

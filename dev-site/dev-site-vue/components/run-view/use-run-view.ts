@@ -27,6 +27,7 @@ import { getAgentCli } from "../../agent-settings.ts";
 import { formatClockSummary, summarizeRunTimings } from "../../plan-run-stats.ts";
 import { isMechanicalPreviewFailure } from "@saflib/new-workflows/preview/preview-failures";
 import {
+  displayStepNumber,
   flattenStepTree,
   resolveFailureMessage,
   shouldShowPreviewPane,
@@ -270,6 +271,18 @@ export function useRunView(props: RunViewProps) {
   const logsLoadingOlder = computed(() => logs.logsQuery.isFetchingNextPage.value);
   const logsLoadingNewer = computed(() => logs.logsQuery.isFetchingPreviousPage.value);
 
+  const headerStepDisplay = computed(() => {
+    const anchor = logs.logAnchor.value;
+    if (anchor !== undefined) return displayStepNumber(anchor);
+    const viewport = logs.currentStepIndex.value;
+    if (viewport !== undefined) return displayStepNumber(viewport);
+    const cur = run.value?.current_step_index;
+    if (cur === undefined) return undefined;
+    const n = steps.value.length;
+    if (n > 0 && cur >= n) return n;
+    return displayStepNumber(cur);
+  });
+
   function closePreview() {
     previewShown.value = false;
   }
@@ -292,6 +305,8 @@ export function useRunView(props: RunViewProps) {
     steps,
     stepStatusClasses,
     logAnchor: logs.logAnchor,
+    headerStepDisplay,
+    currentStepIndex: logs.currentStepIndex,
     logContainer: logs.logContainer,
     logItems: logs.logItems,
     logsQuery: logs.logsQuery,

@@ -9,23 +9,17 @@ export const listWorkflowRunLogsHandler = createHandler(async (req, res) => {
   const runId = req.params.runId as string;
   const since = req.query.since as string | undefined;
   const before = req.query.before as string | undefined;
-  const stepRaw = req.query.step_index;
-  const step_index =
-    typeof stepRaw === "string" && stepRaw.length > 0 ? Number.parseInt(stepRaw, 10) : undefined;
-  const contiguous = req.query.contiguous === "true";
-  const limitRaw = req.query.limit;
-  const limit =
-    typeof limitRaw === "string" && limitRaw.length > 0
-      ? Number.parseInt(limitRaw, 10)
-      : undefined;
+  const step_index = parseIntParam(req.query.step_index);
+  const contiguous = parseBoolParam(req.query.contiguous);
+  const limit = parseIntParam(req.query.limit);
 
   const { result, error } = await listByRunWorkflowLog(ctx.dbKey, {
     run_id: runId,
     after: since ? new Date(since) : undefined,
     before: before ? new Date(before) : undefined,
     afterContiguous: contiguous,
-    step_index: Number.isFinite(step_index) ? step_index : undefined,
-    limit: Number.isFinite(limit) ? limit : undefined,
+    step_index,
+    limit,
   });
   if (error) throw error satisfies never;
 
@@ -36,3 +30,14 @@ export const listWorkflowRunLogsHandler = createHandler(async (req, res) => {
   };
   res.status(200).json(response);
 });
+
+// The OpenAPI validator coerces query params to their schema types, so these
+// arrive as numbers/booleans in the server but as strings when unvalidated.
+function parseIntParam(raw: unknown): number | undefined {
+  const n = typeof raw === "number" ? raw : typeof raw === "string" ? Number.parseInt(raw, 10) : NaN;
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function parseBoolParam(raw: unknown): boolean {
+  return raw === true || raw === "true";
+}

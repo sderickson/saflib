@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  displayStepNumber,
   flattenStepTree,
   stepStatusClassNames,
   isNearScrollBottom,
@@ -9,6 +10,11 @@ import {
 } from "./run-view.logic.ts";
 
 describe("run-view.logic", () => {
+  it("maps 0-based step_index to 1-based labels", () => {
+    expect(displayStepNumber(0)).toBe(1);
+    expect(displayStepNumber(6)).toBe(7);
+  });
+
   it("flattens nested step trees", () => {
     const flat = flattenStepTree([
       {
