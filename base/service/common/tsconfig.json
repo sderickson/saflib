@@ -9,7 +9,8 @@
     "dist/types",
     "e2e",
     "playwright-report",
-    "test-results"
+    "test-results",
+    "**/*.weave.ts"
   ],
   "compilerOptions": {
     "rootDir": ".",
