@@ -30,12 +30,14 @@ if [ -d /repo ]; then
   fi
 fi
 
-# Same story for /data/new-workflows (see docker-compose.yaml's
-# `new_workflows_data`): a fresh named volume mount is root-owned, and
-# @saflib/new-workflows-db's sqlite file lives there instead of on the
-# bind-mounted /repo (see routes/workflows/index.ts).
+# Same story for /data: the sqlite files (dev-site.sqlite and
+# new-workflows/local.sqlite) belong on a container-only named volume, not a
+# macOS bind mount — WAL's mmap'd -shm files on the host file share can leak
+# inode references and panic Docker Desktop's VM on shutdown. A fresh named
+# volume mount is root-owned, so hand it to `node` before dropping to it.
 if [ -d /data ]; then
   mkdir -p /data/new-workflows
+  chown node:node /data
   chown -R node:node /data/new-workflows
 fi
 
