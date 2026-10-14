@@ -6,9 +6,17 @@ import type { EnvEnvSchema } from "@saflib/env/env";
  */
 export interface VendorsInfisicalEnvSchema extends EnvEnvSchema {
   /**
-   * Infisical access token for the secret store. Sentinel "mock" selects the mock Infisical client (returns env fallbacks / placeholders).
+   * Infisical static access token (machine identity Token Auth). Sentinel "mock" selects the mock Infisical client (returns env fallbacks / placeholders). Omit when using Universal Auth (INFISICAL_CLIENT_ID + INFISICAL_CLIENT_SECRET).
    */
-  INFISICAL_TOKEN: string;
+  INFISICAL_TOKEN?: string;
+  /**
+   * Machine identity Universal Auth client id. With INFISICAL_CLIENT_SECRET, takes precedence over INFISICAL_TOKEN.
+   */
+  INFISICAL_CLIENT_ID?: string;
+  /**
+   * Machine identity Universal Auth client secret. Used with INFISICAL_CLIENT_ID.
+   */
+  INFISICAL_CLIENT_SECRET?: string;
   /**
    * Infisical project id. Optional when INFISICAL_TOKEN is "mock".
    */
