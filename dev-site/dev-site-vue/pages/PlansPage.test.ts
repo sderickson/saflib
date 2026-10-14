@@ -434,7 +434,7 @@ describe("PlansPage", () => {
     });
   });
 
-  it("New project writes phase-0-plan and starts it in play-plan mode", async () => {
+  it("New project writes phase-0-plan and stops at the spec review pause", async () => {
     let planBody: unknown;
     let advanceCount = 0;
     server.use(
@@ -517,8 +517,10 @@ describe("PlansPage", () => {
       input: { name: "widget-repairs", prompt: "Track repair requests." },
     });
     await vi.waitFor(() => {
-      expect(advanceCount).toBe(2);
+      expect(advanceCount).toBe(1);
     });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(advanceCount).toBe(1);
   });
 
 });

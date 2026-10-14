@@ -229,17 +229,10 @@ function createOrchestrator(): RunOrchestrator {
         return;
       }
 
-      // `pauseAfter` ends a step as `awaiting_user` even when the workflow
-      // has no more work (the next advance just returns `done`). Play-plan
-      // should blow through those review gates so phases cascade unattended.
+      // `pauseAfter` ends a step as `awaiting_user` — a human review gate.
+      // Every mode stops here, play-plan included; play-plan only skips
+      // waiting *between* phase files, not gates a phase asks for.
       if (outcome.status === "awaiting_user") {
-        if (autoMode.value === "plan") {
-          const workflowRef = activeWorkflowRef.value;
-          if (workflowRef) {
-            continueRun(runId, workflowRef);
-            return;
-          }
-        }
         notify(
           "Paused for review",
           outcome.message ?? "Review the result, then continue.",
