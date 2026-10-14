@@ -113,6 +113,28 @@ describe("repo files routes", () => {
     expect(logic.content).toContain("useHome");
   });
 
+  it("includes uncommitted files inside new subdirectories of a directory prefix", async () => {
+    mkdirSync(join(repo_root, "plans/2026-10-14-new-project"), {
+      recursive: true,
+    });
+    writeFileSync(
+      join(repo_root, "plans/2026-10-14-new-project/phase-0-plan.workflow.yaml"),
+      "name: Plan new-project\n",
+    );
+    mkdirSync(join(repo_root, "plans/node_modules/dep"), { recursive: true });
+    writeFileSync(join(repo_root, "plans/node_modules/dep/index.js"), "");
+    writeFileSync(join(repo_root, ".gitignore"), "node_modules/\n");
+    const response = await request(lease.app).get("/api/repo/files").query({
+      ref: "HEAD",
+      prefix: "plans",
+    });
+    expect(response.status).toBe(200);
+    const paths = response.body.files.map((f: { path: string }) => f.path);
+    expect(paths).toEqual([
+      "plans/2026-10-14-new-project/phase-0-plan.workflow.yaml",
+    ]);
+  });
+
   it("rejects content without a prefix", async () => {
     const response = await request(lease.app).get("/api/repo/files").query({
       ref: headHash,

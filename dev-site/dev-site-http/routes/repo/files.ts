@@ -1,9 +1,15 @@
 import { createHandler } from "@saflib/express";
 import type { ResponseBody, QueryParams } from "@saflib/dev-site-spec/operations/listRepoFiles";
 import createError from "http-errors";
-import { existsSync, readdirSync, statSync } from "node:fs";
-import { resolve, sep } from "node:path";
-import { GitCommandError, listTree, readBlobs, resolveRef } from "@saflib/git";
+import { existsSync, statSync } from "node:fs";
+import { resolve } from "node:path";
+import {
+  GitCommandError,
+  listTree,
+  listWorkingTreeFiles,
+  readBlobs,
+  resolveRef,
+} from "@saflib/git";
 import { getDevSiteHttpContext } from "../../context.ts";
 import { readWorkingTreeFile } from "./file.ts";
 import { matchesPathPrefix } from "../../repo-path-prefix.ts";
@@ -39,12 +45,12 @@ function parseBool(value: unknown): boolean {
   return false;
 }
 
-function isUnderRepoRoot(repo_root: string, abs: string): boolean {
-  const root = resolve(repo_root);
-  return abs === root || abs.startsWith(root + sep);
-}
-
-/** Files in the prefix's parent directory that match the stem/dir prefix. */
+/**
+ * Working-tree files (staged or untracked, not ignored) matching `prefix`,
+ * including ones nested inside brand-new directories under it — e.g. a
+ * freshly-created, uncommitted plan folder. Searches from the prefix's
+ * parent directory so stem prefixes (`src/Foo` → `src/Foo.ts`) still match.
+ */
 function listWorkingTreePrefixFiles(
   repo_root: string,
   prefix: string,
@@ -52,19 +58,14 @@ function listWorkingTreePrefixFiles(
   if (!prefix) return [];
   const lastSlash = prefix.lastIndexOf("/");
   const dirRel = lastSlash === -1 ? "" : prefix.slice(0, lastSlash);
-  const root = resolve(repo_root);
-  const absDir = dirRel ? resolve(root, dirRel) : root;
-  if (!isUnderRepoRoot(repo_root, absDir) || !existsSync(absDir)) return [];
-  if (!statSync(absDir).isDirectory()) return [];
-  const out: string[] = [];
-  for (const name of readdirSync(absDir)) {
-    const rel = dirRel ? `${dirRel}/${name}` : name;
-    if (!matchesPathPrefix(rel, prefix)) continue;
-    const abs = resolve(absDir, name);
-    if (!statSync(abs).isFile()) continue;
-    out.push(rel);
-  }
-  return out;
+  const { result, error } = listWorkingTreeFiles(repo_root, [dirRel]);
+  if (error) return [];
+  return result.filter(
+    (rel) =>
+      matchesPathPrefix(rel, prefix) &&
+      existsSync(resolve(repo_root, rel)) &&
+      statSync(resolve(repo_root, rel)).isFile(),
+  );
 }
 
 export const listRepoFilesHandler = createHandler(async (req, res) => {

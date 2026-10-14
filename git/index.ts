@@ -18,6 +18,7 @@ export {
   closeScratchIndex,
 } from "./scratch-tree.ts";
 export { listIgnored } from "./list-ignored.ts";
+export { listWorkingTreeFiles } from "./list-working-tree-files.ts";
 export {
   treeHash,
   objectHashesAt,
