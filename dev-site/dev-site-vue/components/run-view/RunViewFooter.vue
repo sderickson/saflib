@@ -215,9 +215,6 @@
           </span>
         </template>
         <p v-if="createError" class="text-error ml-2 mb-0">{{ createError }}</p>
-        <span v-if="isAdvancing" class="text-body-2 text-medium-emphasis ml-3">
-          Agent is running…
-        </span>
       </div>
       <div class="run-view__foot-actions-right">
         <v-btn

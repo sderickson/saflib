@@ -308,6 +308,10 @@ export function useRunView(props: RunViewProps) {
   const gotoError = computed(() => gotoMutation.error.value?.message);
   const logsLoadingOlder = computed(() => logs.logsQuery.isFetchingNextPage.value);
   const logsLoadingNewer = computed(() => logs.logsQuery.isFetchingPreviousPage.value);
+  // Under the last loaded log — only meaningful when that's the newest one.
+  const showRunningIndicator = computed(
+    () => isAdvancing.value && !logs.logsQuery.hasPreviousPage.value,
+  );
 
   const headerStepDisplay = computed(() => {
     const anchor = logs.logAnchor.value;
@@ -350,6 +354,7 @@ export function useRunView(props: RunViewProps) {
     logsQuery: logs.logsQuery,
     logsLoadingOlder,
     logsLoadingNewer,
+    showRunningIndicator,
     showStickyAgentInput: logs.showStickyAgentInput,
     showJumpToLatest: logs.showJumpToLatest,
     scrollToStep: logs.scrollToStep,

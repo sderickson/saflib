@@ -17,6 +17,14 @@ import {
 } from "./run-view.logic.ts";
 
 const SCROLL_BOTTOM_THRESHOLD_PX = 32;
+
+function prefersReducedMotion(): boolean {
+  try {
+    return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  } catch {
+    return false;
+  }
+}
 const SCROLL_TOP_THRESHOLD_PX = 80;
 
 export function useRunViewLogs(runId: Ref<string | undefined>) {
@@ -31,6 +39,12 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
   let loadingNewer = false;
   /** Bumped on every jump/return so a superseded jump doesn't scroll. */
   let navToken = 0;
+  /**
+   * A programmatic smooth scroll to the bottom is in flight. Its own
+   * intermediate scroll events aren't "the user scrolled away", so they
+   * mustn't turn following off; real user input cancels it instead.
+   */
+  let autoScrolling = false;
   const currentStepIndex = ref<number | undefined>(undefined);
 
   const lastAgentInputId = computed(() => lastAgentInputLogId(logs.value));
@@ -78,6 +92,7 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
    */
   async function jumpTo(anchor: LogAnchor) {
     const token = ++navToken;
+    autoScrolling = false;
     isFollowing.value = false;
     logAnchor.value = anchor;
     // Let vue-query pick up the new key before checking fetch state.
@@ -104,6 +119,7 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
   /** Back to the live tip, pinned to the bottom. */
   async function returnToLiveLogs() {
     const token = ++navToken;
+    autoScrolling = false;
     logAnchor.value = undefined;
     isFollowing.value = true;
     await nextTick();
@@ -162,20 +178,58 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
   function onScroll() {
     const el = logContainer.value;
     if (el) {
-      isFollowing.value =
-        !logsQuery.hasPreviousPage.value &&
-        isNearScrollBottom(el, SCROLL_BOTTOM_THRESHOLD_PX);
+      if (autoScrolling) {
+        if (isNearScrollBottom(el, SCROLL_BOTTOM_THRESHOLD_PX)) autoScrolling = false;
+      } else {
+        isFollowing.value =
+          !logsQuery.hasPreviousPage.value &&
+          isNearScrollBottom(el, SCROLL_BOTTOM_THRESHOLD_PX);
+      }
       void loadOlderLogsIfNeeded(el);
       void loadNewerLogsIfNeeded(el);
     }
     updateCurrentStepIndex();
   }
 
+  /**
+   * New rows at the tip slide in by scrolling (rows themselves never
+   * animate their size). A first load or a different window (jump, return
+   * to live) snaps instead.
+   */
+  function followToBottom(el: HTMLElement, smooth: boolean) {
+    if (smooth && typeof el.scrollTo === "function" && !prefersReducedMotion()) {
+      autoScrolling = true;
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    } else {
+      el.scrollTop = el.scrollHeight;
+    }
+  }
+
+  const cancelAutoScroll = () => {
+    autoScrolling = false;
+  };
+  const USER_SCROLL_EVENTS = ["wheel", "touchstart", "keydown", "mousedown"] as const;
+  watch(logContainer, (el, old) => {
+    for (const type of USER_SCROLL_EVENTS) {
+      old?.removeEventListener(type, cancelAutoScroll);
+      el?.addEventListener(type, cancelAutoScroll, { passive: true });
+    }
+    old?.removeEventListener("scrollend", cancelAutoScroll);
+    el?.addEventListener("scrollend", cancelAutoScroll);
+  });
+
   watch(
     logItems,
-    () => {
+    (items, previous) => {
       const el = logContainer.value;
-      if (isFollowing.value && el) el.scrollTop = el.scrollHeight;
+      if (isFollowing.value && el) {
+        const sameWindow =
+          previous !== undefined &&
+          previous.length > 0 &&
+          items.length > 0 &&
+          logItemKey(previous[0]!) === logItemKey(items[0]!);
+        followToBottom(el, sameWindow);
+      }
       updateCurrentStepIndex();
     },
     { flush: "post" },

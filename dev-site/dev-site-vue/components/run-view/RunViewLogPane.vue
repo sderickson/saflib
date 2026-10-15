@@ -21,6 +21,15 @@
         <LogEntry v-else :log="item.log" />
       </div>
       <div v-if="loadingNewer" class="run-view__logs-loading">Loading later logs…</div>
+      <div v-if="showRunningIndicator" class="run-view__logs-running">
+        <v-progress-linear
+          indeterminate
+          rounded
+          height="3"
+          color="primary"
+          aria-label="Agent is running"
+        />
+      </div>
     </div>
     <v-btn
       v-if="showJumpToLatest"
@@ -46,6 +55,8 @@ import ToolCallCard from "../ToolCallCard.vue";
 defineProps<{
   /** Not pinned to the live bottom (scrolled up, or viewing a step's history). */
   showJumpToLatest: boolean;
+  /** The agent is working and the loaded window ends at the newest log. */
+  showRunningIndicator: boolean;
   logItems: LogItem[];
   loadingOlder: boolean;
   loadingNewer: boolean;
@@ -83,6 +94,12 @@ defineEmits<{ "return-live": [] }>();
   left: 50%;
   transform: translateX(-50%);
   z-index: 3;
+}
+.run-view__logs-running {
+  /* Deliberately small: a glanceable "still going" under the latest log,
+     not a page-wide banner. */
+  max-width: 160px;
+  padding: 0.5rem 0 0.25rem;
 }
 .run-view__logs-loading {
   opacity: 0.6;

@@ -19,6 +19,68 @@ class EventSourceStub {
   close() {}
 }
 
+type RecordingEventSource = {
+  listeners: Map<string, () => void>;
+  readyState: number;
+  closed: boolean;
+};
+
+/** Like `EventSourceStub`, but keeps listeners so a test can fire SSE events. */
+function stubRecordingEventSource() {
+  const sources: RecordingEventSource[] = [];
+  vi.stubGlobal(
+    "EventSource",
+    class implements RecordingEventSource {
+      listeners = new Map<string, () => void>();
+      readyState = 1;
+      closed = false;
+      constructor() {
+        sources.push(this);
+      }
+      addEventListener(type: string, fn: () => void) {
+        this.listeners.set(type, fn);
+      }
+      removeEventListener() {}
+      close() {
+        this.closed = true;
+        this.readyState = 2;
+      }
+    },
+  );
+  const latest = () => {
+    const source = sources[sources.length - 1];
+    if (!source) throw new Error("no EventSource opened yet");
+    return source;
+  };
+  return {
+    sources,
+    fireChange: () => latest().listeners.get("change")?.(),
+    fireOpen: () => latest().listeners.get("open")?.(),
+    /** What the browser does when a reconnect gets a non-stream response: closes for good. */
+    failPermanently: () => {
+      const source = latest();
+      source.readyState = 2;
+      source.listeners.get("error")?.();
+    },
+  };
+}
+
+/** Simulates the server persisting one more log row mid-turn. */
+function appendLog(id: string, content: string, second: number) {
+  logsState = [
+    ...logsState,
+    {
+      id,
+      run_id: "run-1",
+      step_index: 1,
+      channel: "agent",
+      level: "info",
+      content,
+      created_at: `2026-09-15T00:00:${String(second).padStart(2, "0")}.000Z`,
+    },
+  ];
+}
+
 function runFixture(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     id: "run-1",
@@ -639,7 +701,7 @@ describe("RunView", () => {
     const wrapper = mountRunView();
 
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("Agent is running");
+      expect(wrapper.find('.run-view__logs [aria-label="Agent is running"]').exists()).toBe(true);
     });
     // The stale "failed" banner/recovery form must not show while a retry
     // is actually in progress, and the Play/Continue button must be
@@ -964,6 +1026,59 @@ describe("RunView", () => {
       });
     });
 
+    it("shows the agent's new logs live while a message turn is running", async () => {
+      const sse = stubRecordingEventSource();
+      let resolveTurn!: (value: unknown) => void;
+      const turn = new Promise((resolve) => {
+        resolveTurn = resolve;
+      });
+      server.use(
+        http.post(`${ORIGIN}/api/runs/:runId/agent-message`, async () => {
+          await turn;
+          return HttpResponse.json({ status: "ok", shouldContinue: true });
+        }),
+      );
+
+      const wrapper = mountRunView();
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("starting");
+      });
+      const textarea = await openMessage(wrapper);
+      await textarea.setValue("hello agent");
+      await textarea.trigger("keydown", { key: "Enter", metaKey: true });
+
+      // Mid-turn: the server persists a new row and publishes a change hint.
+      appendLog("l2", "agent says hi", 5);
+      sse.fireChange();
+
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("agent says hi");
+      });
+      resolveTurn({});
+    });
+
+    it("reconnects when the browser gives up on the event stream, and catches up on reopen", async () => {
+      const sse = stubRecordingEventSource();
+      const wrapper = mountRunView();
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("starting");
+      });
+      sse.fireOpen();
+
+      // e.g. the dev-site restarted: the proxy answered the browser's retry with a 502.
+      sse.failPermanently();
+      appendLog("l2", "logged while disconnected", 7);
+
+      await vi.waitFor(() => {
+        expect(sse.sources).toHaveLength(2);
+      });
+      expect(sse.sources[0].closed).toBe(true);
+      sse.fireOpen();
+      await vi.waitFor(() => {
+        expect(wrapper.find(".run-view__logs").text()).toContain("logged while disconnected");
+      });
+    });
+
     it("restores the text when the turn fails", async () => {
       server.use(
         http.post(`${ORIGIN}/api/runs/:runId/agent-message`, () =>
@@ -1175,6 +1290,37 @@ describe("RunView", () => {
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("oldest line");
     });
+  });
+
+  it("slides new logs in with a smooth scroll, and keeps following through the animation's own scroll events", async () => {
+    const sse = stubRecordingEventSource();
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+    const el = wrapper.find(".run-view__logs").element as HTMLElement;
+    Object.defineProperty(el, "scrollHeight", { configurable: true, value: 1000 });
+    Object.defineProperty(el, "clientHeight", { configurable: true, value: 200 });
+    const scrollTo = vi.fn();
+    el.scrollTo = scrollTo as unknown as HTMLElement["scrollTo"];
+
+    appendLog("l2", "first new row", 5);
+    sse.fireChange();
+    await vi.waitFor(() => {
+      expect(scrollTo).toHaveBeenCalledWith({ top: 1000, behavior: "smooth" });
+    });
+
+    // Mid-animation: well short of the bottom. Not the user scrolling away.
+    el.scrollTop = 300;
+    el.dispatchEvent(new Event("scroll"));
+    scrollTo.mockClear();
+
+    appendLog("l3", "second new row", 6);
+    sse.fireChange();
+    await vi.waitFor(() => {
+      expect(scrollTo).toHaveBeenCalledWith({ top: 1000, behavior: "smooth" });
+    });
+    expect(wrapper.text()).not.toContain("Jump to latest");
   });
 
   it("lists direct messages in the sidebar after their step, and jumps to one on click", async () => {

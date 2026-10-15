@@ -31,6 +31,7 @@
       <RunViewLogPane
         v-else
         :show-jump-to-latest="vm.showJumpToLatest"
+        :show-running-indicator="vm.showRunningIndicator"
         :log-items="vm.logItems"
         :loading-older="vm.logsLoadingOlder"
         :loading-newer="vm.logsLoadingNewer"
