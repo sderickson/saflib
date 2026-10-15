@@ -7,10 +7,9 @@ import type { AgentAdapter } from "./types.ts";
  * otherwise reports a brand-new session id — so session carry-over is
  * testable end to end.
  */
-export const executePromptWithMock: AgentAdapter = async (msg, ctx) => {
+export const executePromptWithMock: AgentAdapter = async (msg, ctx, onRawOutput) => {
   ctx.log({ channel: "agent", level: "info", content: msg });
-  return {
-    shouldContinue: true,
-    sessionId: ctx.agentConfig?.sessionId ?? `mock-session-${randomUUID()}`,
-  };
+  const sessionId = ctx.agentConfig?.sessionId ?? `mock-session-${randomUUID()}`;
+  onRawOutput?.(`${JSON.stringify({ type: "result", session_id: sessionId, prompt: msg })}\n`);
+  return { shouldContinue: true, sessionId };
 };

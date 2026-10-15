@@ -19,14 +19,34 @@ sqlite3 /tmp/wfdb/local.sqlite
 | `workflow_step` | step attempt (retries add rows) | where time went; `label` says what the step was (`npm run typecheck`, `update: schema`); `commit_hash` links to its commit |
 | `workflow_agent_turn` | agent CLI invocation | session reuse, model, API time, turn count, tokens, cost |
 | `workflow_log` | output line | what happened inside a step |
+| `workflow_agent_turn_raw` | agent CLI invocation (`turn_id` = `workflow_agent_turn.id`) | the CLI's raw stdout, for debugging how an adapter parses it |
 
 Gotchas:
 
 - `workflow_run`, `workflow_step`, and `workflow_log` timestamps are **unix seconds**. `workflow_agent_turn` timestamps are **milliseconds**.
 - Logs are filed under the *root* run being advanced (`run_id`, `step_index`). For output from a nested child, filter on `source_run_id` / `source_step_index` instead.
-- Agent tool calls are `agent`-channel rows whose `content` is JSON starting with `{"kind":"tool_use"`. Use `json_extract(content, '$.name')` and `'$.input.file_path'`.
+- Agent tool calls are `agent`-channel rows whose `content` is JSON starting with `{"kind":"tool_use"`. Use `json_extract(content, '$.name')` and `'$.input.file_path'`. Both CLIs log them under Claude's tool names (`Read`, `Edit`, `Bash`, …). Cursor rows from before 2026-10-15 are plain text instead (`Reading file: …`, `Command successful`).
 - `call-workflow` steps span all their child's steps. Exclude them when summing step time, or you'll double-count.
 - A gap between one step's `finished_at` and the next one's `started_at` is usually a person: a `pauseAfter` review, or a failed step waiting to be retried.
+
+## Raw agent CLI output
+
+`workflow_agent_turn_raw.output` holds exactly what the agent CLI printed to stdout for one turn: `stream-json` NDJSON, one event per line. It's the place to look when the dev site shows a tool call wrong or not at all. Cursor's `stream-json` events aren't documented, so check `lib/agents/cursor-agent.ts` against these rows when Cursor output looks off.
+
+Each turn keeps up to 500k characters from the start of its output and 500k from the end. `omitted_chars` counts what was cut from the middle, and the output marks the cut with a `… N characters omitted …` line. Turns from before 2026-10-15 have no row.
+
+Pull the newest turn's raw output to a file, then inspect its event shapes:
+
+```sh
+sqlite3 /tmp/wfdb/local.sqlite "select r.output from workflow_agent_turn_raw r join workflow_agent_turn t on t.id = r.turn_id
+  where t.cli = 'cursor-agent' order by t.started_at desc limit 1" > /tmp/raw.ndjson
+
+# Every distinct event type/subtype, and for tool calls the tool's key:
+jq -c '[.type, .subtype, (.tool_call // {} | keys[0])]' /tmp/raw.ndjson 2>/dev/null | sort | uniq -c
+
+# One full example of a given tool's completed event:
+grep '"subtype":"completed"' /tmp/raw.ndjson | grep shellToolCall | head -1 | jq .
+```
 
 ## Git history
 

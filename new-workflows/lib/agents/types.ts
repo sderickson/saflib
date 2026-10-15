@@ -30,4 +30,6 @@ export interface AgentTurnResult {
 export type AgentAdapter = (
   msg: string,
   ctx: WorkflowContext,
+  /** Receives the CLI's stdout verbatim, chunk by chunk (see `workflow_agent_turn_raw`). */
+  onRawOutput?: (chunk: string) => void,
 ) => Promise<AgentTurnResult>;

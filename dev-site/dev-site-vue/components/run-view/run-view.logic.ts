@@ -58,6 +58,7 @@ export function stepStatusClassNames(
 
 export function logItemStepIndex(item: LogItem): number | null {
   if (item.type === "tool-call") return item.useLog.step_index;
+  if (item.type === "tool-batch") return item.calls[0]!.useLog.step_index;
   if (item.type === "channel-group") return item.logs[0]!.step_index;
   return item.log.step_index;
 }
@@ -65,13 +66,13 @@ export function logItemStepIndex(item: LogItem): number | null {
 /** The item's first row's `seq` — a sidebar message jump targets it. */
 export function logItemSeq(item: LogItem): number {
   if (item.type === "tool-call") return item.useLog.seq;
+  if (item.type === "tool-batch") return item.calls[0]!.useLog.seq;
   if (item.type === "channel-group") return item.logs[0]!.seq;
   return item.log.seq;
 }
 
 export function logItemKey(item: LogItem): string {
-  if (item.type === "tool-call") return item.id;
-  if (item.type === "channel-group") return item.id;
+  if (item.type !== "single") return item.id;
   return item.log.id;
 }
 

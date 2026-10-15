@@ -1,5 +1,6 @@
 import {
   createWorkflowAgentTurn,
+  createWorkflowAgentTurnRaw,
   getByIdWorkflowRun,
   updateAgentConfigWorkflowRun,
 } from "@saflib/new-workflows-db";
@@ -102,10 +103,11 @@ async function invokeAndRecord(
     },
   };
   const startedAt = new Date();
+  const raw = createRawOutputBuffer();
   let result: AgentTurnResult | undefined;
   let error: unknown;
   try {
-    result = await ADAPTERS[agentConfig.cli](msg, turnCtx);
+    result = await ADAPTERS[agentConfig.cli](msg, turnCtx, raw.append);
   } catch (e) {
     error = e;
   }
@@ -115,7 +117,7 @@ async function invokeAndRecord(
     const metrics = result?.metrics ?? {};
     const errorMessage =
       error === undefined ? null : error instanceof Error ? error.message : String(error);
-    await bestEffort(() =>
+    const turn = await bestEffort(() =>
       createWorkflowAgentTurn(ctx.dbKey, {
         run_id: ctx.runId,
         step_index: ctx.stepIndex,
@@ -144,6 +146,18 @@ async function invokeAndRecord(
         cost_usd: metrics.costUsd ?? null,
       }),
     );
+    const turnId = turn?.result?.id;
+    if (turnId) {
+      const { output, omittedChars } = raw.read();
+      await bestEffort(() =>
+        createWorkflowAgentTurnRaw(ctx.dbKey, {
+          turn_id: turnId,
+          output,
+          omitted_chars: omittedChars,
+          created_at: finishedAt,
+        }),
+      );
+    }
   }
   return { result, error };
 }
@@ -162,6 +176,45 @@ function isMissingSessionError(error: unknown): boolean {
     error instanceof AgentExitedWithoutResultError &&
     /no conversation found|session .*not found/i.test(error.stderr)
   );
+}
+
+/** Raw output kept per turn: this much from the start, and this much from the end. */
+const RAW_OUTPUT_HEAD_CHARS = 500_000;
+const RAW_OUTPUT_TAIL_CHARS = 500_000;
+
+/**
+ * Collects a turn's stdout within a fixed budget: the start (session setup,
+ * the first events of each kind) and the end (the result, or whatever it
+ * was doing when it died) matter most, so the middle is what gets cut.
+ */
+export function createRawOutputBuffer(
+  headChars = RAW_OUTPUT_HEAD_CHARS,
+  tailChars = RAW_OUTPUT_TAIL_CHARS,
+) {
+  let head = "";
+  let tail = "";
+  let omittedChars = 0;
+  return {
+    append: (chunk: string) => {
+      if (head.length < headChars) {
+        const room = headChars - head.length;
+        head += chunk.slice(0, room);
+        chunk = chunk.slice(room);
+      }
+      if (!chunk) return;
+      tail += chunk;
+      if (tail.length > tailChars) {
+        omittedChars += tail.length - tailChars;
+        tail = tail.slice(tail.length - tailChars);
+      }
+    },
+    read: () => ({
+      output: omittedChars
+        ? `${head}\n… ${omittedChars} characters omitted …\n${tail}`
+        : head + tail,
+      omittedChars,
+    }),
+  };
 }
 
 async function bestEffort<T>(fn: () => Promise<T>): Promise<T | undefined> {

@@ -19,6 +19,7 @@
             :result-log="item.resultLog"
             :started-at="item.useLog.created_at"
           />
+          <ToolCallBatch v-else-if="item.type === 'tool-batch'" :calls="item.calls" />
           <LogEntryGroup v-else-if="item.type === 'channel-group'" :logs="item.logs" />
           <LogEntry v-else :log="item.log" />
         </div>
@@ -56,6 +57,7 @@ import type { LogItem } from "../../group-logs.ts";
 import LogEntry from "../LogEntry.vue";
 import LogEntryGroup from "../LogEntryGroup.vue";
 import ToolCallCard from "../ToolCallCard.vue";
+import ToolCallBatch from "../ToolCallBatch.vue";
 
 defineProps<{
   /** Not pinned to the live bottom (scrolled up, or viewing a step's history). */

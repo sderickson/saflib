@@ -28,6 +28,8 @@ export type { WorkflowLogRow } from "./queries/workflow-log/list-by-run.ts";
 export { createWorkflowAgentTurn } from "./queries/workflow-agent-turn/create.ts";
 export { listByRunStepWorkflowAgentTurn } from "./queries/workflow-agent-turn/list-by-run-step.ts";
 export { listBySessionRunWorkflowAgentTurn } from "./queries/workflow-agent-turn/list-by-session-run.ts";
+export { createWorkflowAgentTurnRaw } from "./queries/workflow-agent-turn-raw/create.ts";
+export { getByTurnIdWorkflowAgentTurnRaw } from "./queries/workflow-agent-turn-raw/get-by-turn-id.ts";
 export { listDirectMessagesWorkflowLog } from "./queries/workflow-log/list-direct-messages.ts";
 export { createWorkflowConfig } from "./queries/workflow-config/create.ts";
 export { getByIdWorkflowConfig } from "./queries/workflow-config/get-by-id.ts";

@@ -47,7 +47,7 @@ export function killProcessGroup(pid: number | undefined, signal: NodeJS.Signals
  * `runAgentTurn` to persist (no cost-file TSV logging, no global
  * time-budget tracking here).
  */
-export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
+export const executePromptWithClaude: AgentAdapter = async (msg, ctx, onRawOutput) => {
   return new Promise((resolve, reject) => {
     const args = [
       "-p",
@@ -104,7 +104,9 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
     };
 
     agent.stdout.on("data", (data: Buffer) => {
-      buffer += data.toString();
+      const chunk = data.toString();
+      onRawOutput?.(chunk);
+      buffer += chunk;
       while (buffer.includes("\n")) {
         const line = buffer.split("\n")[0];
         buffer = buffer.slice(line.length + 1);

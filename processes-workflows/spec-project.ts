@@ -113,6 +113,8 @@ Do not write phase workflow files in this step.`,
 
 Read ${phaseWorkflowDocs} and follow it. Write phase-1-….workflow.yaml, phase-2-….workflow.yaml, and so on. Do not write a plan.md. Do not write an orchestrator named after the project. Do not modify phase-0-plan.workflow.yaml.
 
+Each phase file is run by a different agent, starting a fresh session with no memory of earlier phases. Group each phase around one small, coherent slice of related work, so one agent can do all of it without carrying unrelated context. Write each phase's prompts so they make sense without the earlier phases' conversations: name the files and spec sections they rely on. See "One agent per phase" in the doc above.
+
 Each phase is a stopping point (typecheck and tests). One schema, route, query, handler, or view per call-workflow. cd into the target package before those calls. Use monorepo-root paths on integrations/init (\`path: <product>/service/integrations/<name>\`), not \`cd\` into the product folder alone.`,
     })),
 

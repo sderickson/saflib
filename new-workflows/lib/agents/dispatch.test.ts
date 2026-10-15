@@ -9,7 +9,9 @@ import {
   getChildByParentStepWorkflowRun,
   listBySessionRunWorkflowAgentTurn,
   listByRunWorkflowStep,
+  getByTurnIdWorkflowAgentTurnRaw,
 } from "@saflib/new-workflows-db";
+import { createRawOutputBuffer } from "./dispatch.ts";
 import { defineWorkflow, step, createRun, advanceRun } from "../engine.ts";
 import { collectOutput } from "../output.ts";
 import type { LogChunk } from "../types.ts";
@@ -74,6 +76,28 @@ describe("runAgentTurn", () => {
     }
     throw new Error("run never finished");
   }
+
+  it("keeps each turn's raw CLI output alongside the turn", async () => {
+    const cwd = mkdtempSync(path.join(tmpdir(), "agent-raw-"));
+    const runId = await createRun(dbKey, ParentDefinition, {
+      input: {},
+      cwd,
+      mode: "run",
+      agentConfig: { cli: "mock-agent" },
+    });
+
+    await runToEnd(runId);
+
+    const { result: turns } = await listBySessionRunWorkflowAgentTurn(dbKey, {
+      session_run_id: runId,
+    });
+    const outputs = await Promise.all(
+      turns!.map(async (t) => (await getByTurnIdWorkflowAgentTurnRaw(dbKey, { turn_id: t.id })).result?.output),
+    );
+    expect(outputs).toHaveLength(4);
+    expect(outputs.every((o) => o?.startsWith('{"type":"result"'))).toBe(true);
+    expect(outputs.some((o) => o?.includes('"prompt":"child two"'))).toBe(true);
+  });
 
   it("resumes one agent session across every step of the run, nested children included", async () => {
     const cwd = mkdtempSync(path.join(tmpdir(), "agent-session-"));
@@ -143,5 +167,21 @@ describe("runAgentTurn", () => {
 
     expect(first.sessionId).toBeTruthy();
     expect(second.sessionId).toBe(first.sessionId);
+  });
+});
+
+describe("createRawOutputBuffer", () => {
+  it("keeps everything under the cap", () => {
+    const raw = createRawOutputBuffer(5, 5);
+    raw.append("abc");
+    raw.append("defg");
+    expect(raw.read()).toEqual({ output: "abcdefg", omittedChars: 0 });
+  });
+
+  it("keeps the start and the end and counts what it cut from the middle", () => {
+    const raw = createRawOutputBuffer(3, 3);
+    raw.append("abcdef");
+    raw.append("ghij");
+    expect(raw.read()).toEqual({ output: "abc\n… 4 characters omitted …\nhij", omittedChars: 4 });
   });
 });

@@ -51,8 +51,30 @@ export function formatToolInvocation(name: string, input: unknown): ToolInvocati
     if (name === "Glob" && typeof record.pattern === "string") {
       return { title: "Glob", detail: record.pattern };
     }
+    if (name === "LS" && typeof record.path === "string") {
+      return { title: "LS", detail: shortenRepoPath(record.path), inputIsRedundant: true };
+    }
+    if (name === "TodoWrite" && Array.isArray(record.todos)) {
+      return { title: "Todos", detail: formatTodos(record.todos), inputIsRedundant: true };
+    }
   }
   return { title: name };
+}
+
+const TODO_MARKS: Record<string, string> = {
+  completed: "☑",
+  in_progress: "▸",
+};
+
+/** One line per todo, marked by status (both CLIs use `content` + `status`). */
+function formatTodos(todos: unknown[]): string {
+  return todos
+    .map((todo) => {
+      const t = (todo ?? {}) as { content?: unknown; status?: unknown };
+      const status = typeof t.status === "string" ? t.status.replace(/^TODO_STATUS_/, "").toLowerCase() : "";
+      return `${TODO_MARKS[status] ?? "☐"} ${typeof t.content === "string" ? t.content : ""}`;
+    })
+    .join("\n");
 }
 
 /** Split workflow-style tool output on `---section---` markers. */
