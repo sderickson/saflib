@@ -4,6 +4,7 @@ import { startExpressServer } from "@saflib/express";
 import { makeSubsystemReporters } from "@saflib/node";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import type { DevSiteHttpEnvSchema } from "./env.ts";
+import { scheduleWorkflowHistoryPruning } from "./routes/workflows/index.ts";
 
 export type StartDevSiteServiceOptions = {
   /** Default sqlite path when DEV_SITE_DB_PATH is unset. */
@@ -11,6 +12,30 @@ export type StartDevSiteServiceOptions = {
   /** Log prefix for startup messages. Defaults to dev-site-http. */
   logLabel?: string;
 };
+
+/** URLs to print at startup (clickable in most terminals). */
+function devSitePublicHttpUrls(
+  typedEnv: DevSiteHttpEnvSchema,
+  hostPort: string,
+  port: number,
+): string[] {
+  const fromEnv = typedEnv.DEV_SITE_PUBLIC_HTTP_URL
+    ?.split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (fromEnv?.length) {
+    return fromEnv;
+  }
+
+  const protocol = typedEnv.PROTOCOL ?? "http";
+  const host = hostPort.includes(":")
+    ? hostPort.slice(0, hostPort.lastIndexOf(":"))
+    : hostPort;
+  const displayHost =
+    host === "0.0.0.0" || host === "::" || host === "" ? "localhost" : host;
+  const base = `${protocol}://${displayHost}:${port}`;
+  return [base.endsWith("/") ? base : `${base}/`];
+}
 
 /**
  * Boot the dev-site HTTP service (API + optional SPA static) from typed env.
@@ -51,7 +76,10 @@ export async function startDevSiteService(
     });
 
     startExpressServer(lease.app, { port });
-    log.info(`Listening on ${hostPort} (port ${port})`);
+    scheduleWorkflowHistoryPruning();
+    for (const url of devSitePublicHttpUrls(typedEnv, hostPort, port)) {
+      log.info(`  ➜  Local:   ${url}`);
+    }
     if (!typedEnv.DEV_SITE_STATIC_DIR) {
       log.info(`${logLabel}: DEV_SITE_STATIC_DIR unset — API only`);
     }

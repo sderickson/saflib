@@ -6,6 +6,7 @@ export { listRefs } from "./list-refs.ts";
 export { isAncestor } from "./is-ancestor.ts";
 export { mergeBase } from "./merge-base.ts";
 export { listRenames } from "./list-renames.ts";
+export { diffRefs, DEFAULT_MAX_DIFF_BYTES } from "./diff-refs.ts";
 export { resolveRef } from "./resolve-ref.ts";
 export { currentBranch } from "./current-branch.ts";
 export { writeBlob } from "./write-blob.ts";
@@ -17,6 +18,7 @@ export {
   closeScratchIndex,
 } from "./scratch-tree.ts";
 export { listIgnored } from "./list-ignored.ts";
+export { listWorkingTreeFiles } from "./list-working-tree-files.ts";
 export {
   treeHash,
   objectHashesAt,

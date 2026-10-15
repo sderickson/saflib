@@ -38,8 +38,21 @@ export const createPlanHandler = createHandler(async (req, res) => {
   const date = new Date().toISOString().split("T")[0];
   const folder = `${date}-${body.name}`;
   const folderPath = path.join(ctx.plansRoot, folder);
-  mkdirSync(folderPath, { recursive: true });
-  writeFileSync(path.join(folderPath, fileName), stringify(configBody));
+  const filePath = path.join(folderPath, fileName);
+  try {
+    mkdirSync(folderPath, { recursive: true });
+    writeFileSync(filePath, stringify(configBody));
+  } catch (cause) {
+    const code = (cause as NodeJS.ErrnoException).code;
+    if (code === "EROFS" || code === "EACCES" || code === "ENOENT") {
+      throw createError(
+        503,
+        `Cannot write plan under ${ctx.plansRoot} (${code ?? "error"}). Check filesystem permissions on the repo checkout.`,
+        { cause },
+      );
+    }
+    throw cause;
+  }
 
   const response: NewWorkflowsResponseBody["createPlan"][201] = {
     plan: {

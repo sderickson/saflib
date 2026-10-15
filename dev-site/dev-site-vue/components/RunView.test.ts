@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, onTestFinished } from "vitest";
 import { nextTick } from "vue";
 import { enableAutoUnmount } from "@vue/test-utils";
 import { stubGlobals } from "@saflib/vue/testing";
@@ -17,6 +17,68 @@ class EventSourceStub {
   addEventListener() {}
   removeEventListener() {}
   close() {}
+}
+
+type RecordingEventSource = {
+  listeners: Map<string, () => void>;
+  readyState: number;
+  closed: boolean;
+};
+
+/** Like `EventSourceStub`, but keeps listeners so a test can fire SSE events. */
+function stubRecordingEventSource() {
+  const sources: RecordingEventSource[] = [];
+  vi.stubGlobal(
+    "EventSource",
+    class implements RecordingEventSource {
+      listeners = new Map<string, () => void>();
+      readyState = 1;
+      closed = false;
+      constructor() {
+        sources.push(this);
+      }
+      addEventListener(type: string, fn: () => void) {
+        this.listeners.set(type, fn);
+      }
+      removeEventListener() {}
+      close() {
+        this.closed = true;
+        this.readyState = 2;
+      }
+    },
+  );
+  const latest = () => {
+    const source = sources[sources.length - 1];
+    if (!source) throw new Error("no EventSource opened yet");
+    return source;
+  };
+  return {
+    sources,
+    fireChange: () => latest().listeners.get("change")?.(),
+    fireOpen: () => latest().listeners.get("open")?.(),
+    /** What the browser does when a reconnect gets a non-stream response: closes for good. */
+    failPermanently: () => {
+      const source = latest();
+      source.readyState = 2;
+      source.listeners.get("error")?.();
+    },
+  };
+}
+
+/** Simulates the server persisting one more log row mid-turn. */
+function appendLog(id: string, content: string, second: number) {
+  logsState = [
+    ...logsState,
+    {
+      id,
+      run_id: "run-1",
+      step_index: 1,
+      channel: "agent",
+      level: "info",
+      content,
+      created_at: `2026-09-15T00:00:${String(second).padStart(2, "0")}.000Z`,
+    },
+  ];
 }
 
 function runFixture(overrides: Partial<Record<string, unknown>> = {}) {
@@ -40,6 +102,13 @@ function runFixture(overrides: Partial<Record<string, unknown>> = {}) {
   };
 }
 
+/** Test rows: `seq` (the server's insertion-order cursor) from the fixture's timestamp. */
+type LogRow = { id: string; created_at: string; seq?: number };
+const seqOf = (l: LogRow) => l.seq ?? Date.parse(l.created_at);
+function withSeq<T extends LogRow>(logs: T[]): (T & { seq: number })[] {
+  return logs.map((l) => ({ ...l, seq: seqOf(l) }));
+}
+
 let runState = runFixture();
 let logsState: unknown[] = [
   {
@@ -61,19 +130,19 @@ const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId`, () => HttpResponse.json({ run: runState })),
   http.get(`${ORIGIN}/api/runs/:runId/logs`, ({ request }) => {
     const url = new URL(request.url);
-    const before = url.searchParams.get("before");
-    const since = url.searchParams.get("since");
+    const before = url.searchParams.get("before_seq");
+    const since = url.searchParams.get("after_seq");
     const limit = Number(url.searchParams.get("limit") ?? 100);
-    type LogRow = { id: string; created_at: string };
     let rows = [...(logsState as LogRow[])];
-    if (since) rows = rows.filter((l) => l.created_at > since);
-    if (before) rows = rows.filter((l) => l.created_at < before);
+    if (since) rows = rows.filter((l) => seqOf(l) > Number(since));
+    if (before) rows = rows.filter((l) => seqOf(l) < Number(before));
     // API contract: newest first.
-    rows.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
+    rows.sort((a, b) => seqOf(b) - seqOf(a));
     const page = rows.slice(0, limit);
-    return HttpResponse.json({ logs: page, has_more: rows.length > limit });
+    return HttpResponse.json({ logs: withSeq(page), has_more: rows.length > limit });
   }),
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: stepsState })),
+  http.get(`${ORIGIN}/api/runs/:runId/messages`, () => HttpResponse.json({ messages: [] })),
   http.get(`${ORIGIN}/api/runs/:runId/step-tree`, () =>
     HttpResponse.json({
       steps: (stepsState as { index: number; kind: string; label?: string }[]).map((s) => ({
@@ -137,6 +206,15 @@ describe("RunView", () => {
       { index: 1, kind: "prompt", label: "Say hello!" },
     ];
     vi.stubGlobal("EventSource", EventSourceStub);
+  });
+
+  it("explains that a run's logs were deleted for age", async () => {
+    runState = runFixture({ status: "done", logs_pruned_at: "2026-11-20T12:00:00.000Z" });
+    logsState = [];
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("This run's logs were deleted on");
+    });
   });
 
   it("shows run status and logs, and advances on click", async () => {
@@ -232,6 +310,8 @@ describe("RunView", () => {
     Object.defineProperty(el, "scrollHeight", { value: 1000, configurable: true });
     Object.defineProperty(el, "clientHeight", { value: 200, configurable: true });
     Object.defineProperty(el, "scrollTop", { value: 100, writable: true, configurable: true });
+    // Only a scroll the user caused turns following off.
+    el.dispatchEvent(new Event("wheel"));
     el.dispatchEvent(new Event("scroll"));
 
     const continueButton = wrapper.find('[aria-label="Play current step"]');
@@ -394,10 +474,10 @@ describe("RunView", () => {
     const wrapper = mountRunView();
 
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("Go to Step");
+      expect(wrapper.find('button[aria-label="Go to step"]').exists()).toBe(true);
     });
 
-    const gotoButton = wrapper.findAll("button").find((b) => b.text() === "Go to Step");
+    const gotoButton = wrapper.find('button[aria-label="Go to step"]');
     expect(gotoButton).toBeTruthy();
     await gotoButton!.trigger("click");
     await nextTick();
@@ -632,7 +712,7 @@ describe("RunView", () => {
     const wrapper = mountRunView();
 
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("Agent is running");
+      expect(wrapper.find('.run-view__logs [aria-label="Agent is running"]').exists()).toBe(true);
     });
     // The stale "failed" banner/recovery form must not show while a retry
     // is actually in progress, and the Play/Continue button must be
@@ -661,7 +741,7 @@ describe("RunView", () => {
     // No VCR buttons or Reflection button pre-run.
     expect(wrapper.find('[aria-label="Play current step"]').exists()).toBe(false);
     expect(wrapper.find('[aria-label="Reset run"]').exists()).toBe(false);
-    expect(wrapper.findAll("button").find((b) => b.text() === "Reflection")).toBeUndefined();
+    expect(wrapper.findAll("button").find((b) => b.text() === "see changes")).toBeUndefined();
   });
 
   it("pending run: shows Preview changes (not a blank log pane) alongside VCR controls", async () => {
@@ -880,7 +960,7 @@ describe("RunView", () => {
     });
   });
 
-  it("Reflection navigates to the Checkout compare view for this run's base_commit_hash", async () => {
+  it("see changes navigates to the Checkout compare view for this run's base_commit_hash", async () => {
     runState = runFixture({ status: "running", base_commit_hash: "abc123base" });
 
     const wrapper = mountRunView();
@@ -888,7 +968,7 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    const reflectButton = wrapper.findAll("button").find((b) => b.text() === "Reflection");
+    const reflectButton = wrapper.findAll("button").find((b) => b.text() === "see changes");
     expect(reflectButton).toBeTruthy();
     await reflectButton!.trigger("click");
 
@@ -899,7 +979,7 @@ describe("RunView", () => {
     expect(router.currentRoute.value.query.reflection).toBe("run-1");
   });
 
-  it("has no Reflection button when the run never captured a base_commit_hash", async () => {
+  it("has no see changes button when the run never captured a base_commit_hash", async () => {
     runState = runFixture({ status: "running", base_commit_hash: null });
 
     const wrapper = mountRunView();
@@ -907,7 +987,158 @@ describe("RunView", () => {
       expect(wrapper.text()).toContain("starting");
     });
 
-    expect(wrapper.findAll("button").find((b) => b.text() === "Reflection")).toBeUndefined();
+    expect(wrapper.findAll("button").find((b) => b.text() === "see changes")).toBeUndefined();
+  });
+
+  describe("direct agent message", () => {
+    async function openMessage(wrapper: ReturnType<typeof mountRunView>) {
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("starting");
+      });
+      await wrapper.find('[aria-label="Message the agent"]').trigger("click");
+      await nextTick();
+      return wrapper.find("textarea");
+    }
+
+    it("clears the text as soon as it's sent, and blocks another send while the turn runs", async () => {
+      const bodies: unknown[] = [];
+      let resolveTurn!: (value: unknown) => void;
+      const turn = new Promise((resolve) => {
+        resolveTurn = resolve;
+      });
+      server.use(
+        http.post(`${ORIGIN}/api/runs/:runId/agent-message`, async ({ request }) => {
+          bodies.push(await request.json());
+          await turn;
+          return HttpResponse.json({ status: "ok", shouldContinue: false });
+        }),
+      );
+
+      const wrapper = mountRunView();
+      const textarea = await openMessage(wrapper);
+      await textarea.setValue("hello agent");
+      await textarea.trigger("keydown", { key: "Enter", metaKey: true });
+
+      await vi.waitFor(() => {
+        expect(bodies).toEqual([{ message: "hello agent" }]);
+      });
+      expect((textarea.element as HTMLTextAreaElement).value).toBe("");
+      await vi.waitFor(() => {
+        expect(textarea.attributes("disabled")).toBeDefined();
+      });
+
+      // A second ⌘+Enter mid-turn is ignored.
+      await textarea.trigger("keydown", { key: "Enter", metaKey: true });
+      expect(bodies).toHaveLength(1);
+
+      resolveTurn({});
+      await vi.waitFor(() => {
+        expect(textarea.attributes("disabled")).toBeUndefined();
+      });
+    });
+
+    it("shows the agent's new logs live while a message turn is running", async () => {
+      const sse = stubRecordingEventSource();
+      let resolveTurn!: (value: unknown) => void;
+      const turn = new Promise((resolve) => {
+        resolveTurn = resolve;
+      });
+      server.use(
+        http.post(`${ORIGIN}/api/runs/:runId/agent-message`, async () => {
+          await turn;
+          return HttpResponse.json({ status: "ok", shouldContinue: true });
+        }),
+      );
+
+      const wrapper = mountRunView();
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("starting");
+      });
+      const textarea = await openMessage(wrapper);
+      await textarea.setValue("hello agent");
+      await textarea.trigger("keydown", { key: "Enter", metaKey: true });
+
+      // Mid-turn: the server persists a new row and publishes a change hint.
+      appendLog("l2", "agent says hi", 5);
+      sse.fireChange();
+
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("agent says hi");
+      });
+      resolveTurn({});
+    });
+
+    it("reconnects when the browser gives up on the event stream, and catches up on reopen", async () => {
+      const sse = stubRecordingEventSource();
+      const wrapper = mountRunView();
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("starting");
+      });
+      sse.fireOpen();
+
+      // e.g. the dev-site restarted: the proxy answered the browser's retry with a 502.
+      sse.failPermanently();
+      appendLog("l2", "logged while disconnected", 7);
+
+      await vi.waitFor(() => {
+        expect(sse.sources).toHaveLength(2);
+      });
+      expect(sse.sources[0].closed).toBe(true);
+      sse.fireOpen();
+      await vi.waitFor(() => {
+        expect(wrapper.find(".run-view__logs").text()).toContain("logged while disconnected");
+      });
+    });
+
+    it("restores the text when the turn fails", async () => {
+      server.use(
+        http.post(`${ORIGIN}/api/runs/:runId/agent-message`, () =>
+          HttpResponse.json({ status: "error", message: "agent exploded" }),
+        ),
+      );
+
+      const wrapper = mountRunView();
+      const textarea = await openMessage(wrapper);
+      await textarea.setValue("try this");
+      await textarea.trigger("keydown", { key: "Enter", metaKey: true });
+
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("agent exploded");
+      });
+      expect((textarea.element as HTMLTextAreaElement).value).toBe("try this");
+    });
+
+    it("can't send while a step is running", async () => {
+      let messages = 0;
+      let resolveAdvance!: (value: unknown) => void;
+      const advancePromise = new Promise((resolve) => {
+        resolveAdvance = resolve;
+      });
+      server.use(
+        http.post(`${ORIGIN}/api/runs/:runId/advance`, async () => {
+          await advancePromise;
+          return HttpResponse.json({ status: "awaiting_user" });
+        }),
+        http.post(`${ORIGIN}/api/runs/:runId/agent-message`, () => {
+          messages++;
+          return HttpResponse.json({ status: "ok", shouldContinue: false });
+        }),
+      );
+
+      const wrapper = mountRunView();
+      const textarea = await openMessage(wrapper);
+      await textarea.setValue("sneaky");
+      await wrapper.find('[aria-label="Play current workflow"]').trigger("click");
+
+      await vi.waitFor(() => {
+        expect(textarea.attributes("disabled")).toBeDefined();
+      });
+      expect(textarea.attributes("placeholder")).toContain("Agent is running");
+      await textarea.trigger("keydown", { key: "Enter", metaKey: true });
+      expect(messages).toBe(0);
+
+      resolveAdvance({});
+    });
   });
 
   it("mode buttons stay clickable while this run's own advance is in flight, and switching mode doesn't re-fire a call immediately", async () => {
@@ -1041,17 +1272,16 @@ describe("RunView", () => {
     server.use(
       http.get(`${ORIGIN}/api/runs/:runId/logs`, ({ request }) => {
         const url = new URL(request.url);
-        const before = url.searchParams.get("before");
-        const since = url.searchParams.get("since");
+        const before = url.searchParams.get("before_seq");
+        const since = url.searchParams.get("after_seq");
         // Force a 2-row page so three fixtures need a second fetch.
         const limit = 2;
-        type LogRow = { id: string; created_at: string };
-        let rows = [...(logsState as LogRow[])];
-        if (since) rows = rows.filter((l) => l.created_at > since);
-        if (before) rows = rows.filter((l) => l.created_at < before);
-        rows.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
+            let rows = [...(logsState as LogRow[])];
+        if (since) rows = rows.filter((l) => seqOf(l) > Number(since));
+        if (before) rows = rows.filter((l) => seqOf(l) < Number(before));
+        rows.sort((a, b) => seqOf(b) - seqOf(a));
         const page = rows.slice(0, limit);
-        return HttpResponse.json({ logs: page, has_more: rows.length > limit });
+        return HttpResponse.json({ logs: withSeq(page), has_more: rows.length > limit });
       }),
     );
 
@@ -1073,6 +1303,127 @@ describe("RunView", () => {
     });
   });
 
+  it("slides new logs in with a smooth scroll, and keeps following through the animation's own scroll events", async () => {
+    const sse = stubRecordingEventSource();
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+    const el = wrapper.find(".run-view__logs").element as HTMLElement;
+    Object.defineProperty(el, "scrollHeight", { configurable: true, value: 1000 });
+    Object.defineProperty(el, "clientHeight", { configurable: true, value: 200 });
+    const scrollTo = vi.fn();
+    el.scrollTo = scrollTo as unknown as HTMLElement["scrollTo"];
+
+    appendLog("l2", "first new row", 5);
+    sse.fireChange();
+    await vi.waitFor(() => {
+      expect(scrollTo).toHaveBeenCalledWith({ top: 1000, behavior: "smooth" });
+    });
+
+    // Mid-animation: well short of the bottom. Not the user scrolling away.
+    el.scrollTop = 300;
+    el.dispatchEvent(new Event("scroll"));
+    scrollTo.mockClear();
+
+    appendLog("l3", "second new row", 6);
+    sse.fireChange();
+    await vi.waitFor(() => {
+      expect(scrollTo).toHaveBeenCalledWith({ top: 1000, behavior: "smooth" });
+    });
+    expect(wrapper.text()).not.toContain("Jump to latest");
+  });
+
+  it("keeps the bottom pinned when content grows without new logs", async () => {
+    let onResize: (() => void) | undefined;
+    // jsdom has no ResizeObserver. Set and restore by hand: unstubbing all
+    // globals would also drop the suite's own stubs.
+    const original = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = class {
+      constructor(cb: () => void) {
+        onResize = cb;
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver;
+    onTestFinished(() => {
+      globalThis.ResizeObserver = original;
+    });
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+    const el = wrapper.find(".run-view__logs").element as HTMLElement;
+    Object.defineProperty(el, "clientHeight", { configurable: true, value: 200 });
+    Object.defineProperty(el, "scrollTop", { configurable: true, writable: true, value: 800 });
+    // e.g. a card finished rendering its markdown: 200px taller.
+    Object.defineProperty(el, "scrollHeight", { configurable: true, value: 1200 });
+    const scrollTo = vi.fn();
+    el.scrollTo = scrollTo as unknown as HTMLElement["scrollTo"];
+
+    onResize!();
+    expect(scrollTo).toHaveBeenCalledWith({ top: 1200, behavior: "smooth" });
+  });
+
+  it("lists direct messages in the sidebar after their step, and jumps to one on click", async () => {
+    const requests: string[] = [];
+    const dm = {
+      id: "dm1",
+      seq: 500,
+      run_id: "run-1",
+      step_index: 0,
+      channel: "agent-input",
+      level: "info",
+      content: "please also check the sdk",
+      created_at: "2026-09-15T00:00:05.000Z",
+    };
+    server.use(
+      http.get(`${ORIGIN}/api/runs/:runId/messages`, () => HttpResponse.json({ messages: [dm] })),
+      http.get(`${ORIGIN}/api/runs/:runId/logs`, ({ request }) => {
+        const url = new URL(request.url);
+        requests.push(url.search);
+        if (url.searchParams.get("anchor_seq") === "500") {
+          return HttpResponse.json({ logs: [dm], has_more: true, has_more_newer: false });
+        }
+        return HttpResponse.json({
+          logs: withSeq([
+            {
+              id: "tip",
+              run_id: "run-1",
+              step_index: 1,
+              channel: "tool",
+              level: "info",
+              content: "live tip",
+              created_at: "2026-09-15T00:00:09.000Z",
+            },
+          ]),
+          has_more: true,
+          has_more_newer: false,
+        });
+      }),
+    );
+
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.find(".run-view__sidebar-message").exists()).toBe(true);
+    });
+    // Order: step 1, its message, step 2.
+    const rows = wrapper
+      .findAll(".run-view__sidebar-step, .run-view__sidebar-message")
+      .map((r) => r.text());
+    expect(rows[0]).toContain("cd test-product/service/db");
+    expect(rows[1]).toContain("please also check the sdk");
+    expect(rows[2]).toContain("Say hello!");
+
+    await wrapper.find(".run-view__sidebar-message").trigger("click");
+    await vi.waitFor(() => {
+      expect(requests.some((q) => q.includes("anchor_seq=500"))).toBe(true);
+      expect(wrapper.find('.run-view__logs [data-seq="500"]').exists()).toBe(true);
+    });
+    expect(wrapper.text()).toContain("Jump to latest");
+  });
+
   it("jumps to an unloaded step and pages older and newer logs from there", async () => {
     const requests: string[] = [];
     stepsState = [
@@ -1084,12 +1435,12 @@ describe("RunView", () => {
         const url = new URL(request.url);
         requests.push(url.search);
         const step = url.searchParams.get("step_index");
-        const before = url.searchParams.get("before");
-        const since = url.searchParams.get("since");
+        const before = url.searchParams.get("before_seq");
+        const since = url.searchParams.get("after_seq");
         const contiguous = url.searchParams.get("contiguous");
         if (step === "5") {
           return HttpResponse.json({
-            logs: [
+            logs: withSeq([
               {
                 id: "s5",
                 run_id: "run-1",
@@ -1099,14 +1450,14 @@ describe("RunView", () => {
                 content: "fifth step line",
                 created_at: "2026-09-15T00:00:05.000Z",
               },
-            ],
+            ]),
             has_more: true,
             has_more_newer: true,
           });
         }
         if (before) {
           return HttpResponse.json({
-            logs: [
+            logs: withSeq([
               {
                 id: "older",
                 run_id: "run-1",
@@ -1116,14 +1467,14 @@ describe("RunView", () => {
                 content: "older than the jump",
                 created_at: "2026-09-15T00:00:04.000Z",
               },
-            ],
+            ]),
             has_more: false,
             has_more_newer: false,
           });
         }
         if (since && contiguous === "true") {
           return HttpResponse.json({
-            logs: [
+            logs: withSeq([
               {
                 id: "newer",
                 run_id: "run-1",
@@ -1133,13 +1484,13 @@ describe("RunView", () => {
                 content: "newer than the jump",
                 created_at: "2026-09-15T00:00:06.000Z",
               },
-            ],
+            ]),
             has_more: false,
             has_more_newer: false,
           });
         }
         return HttpResponse.json({
-          logs: [
+          logs: withSeq([
             {
               id: "tip",
               run_id: "run-1",
@@ -1149,7 +1500,7 @@ describe("RunView", () => {
               content: "live tip",
               created_at: "2026-09-15T00:00:09.000Z",
             },
-          ],
+          ]),
           has_more: true,
           has_more_newer: false,
         });

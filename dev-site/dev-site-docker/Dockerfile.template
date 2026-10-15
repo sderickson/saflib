@@ -40,6 +40,19 @@ RUN --mount=type=cache,target=/var/cache/cursor-agent,sharing=locked \
   && ln -sf /usr/local/lib/cursor-agent/cursor-agent /usr/local/bin/cursor-agent \
   && ln -sf /usr/local/lib/cursor-agent/cursor-agent /usr/local/bin/agent
 
+# Gitleaks — workflow step commits use the repo's core.hooksPath (.githooks/pre-commit).
+ARG GITLEAKS_VERSION=8.30.1
+RUN --mount=type=cache,target=/var/cache/gitleaks,sharing=locked \
+  ARCH="$(uname -m)" \
+  && case "$ARCH" in x86_64) ARCH=x64;; aarch64|arm64) ARCH=arm64;; *) echo "unsupported arch: $ARCH" >&2; exit 1;; esac \
+  && TARBALL="/var/cache/gitleaks/gitleaks_${GITLEAKS_VERSION}_linux_${ARCH}.tar.gz" \
+  && if [ ! -s "$TARBALL" ]; then \
+       curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_${ARCH}.tar.gz" \
+         -o "$TARBALL"; \
+     fi \
+  && tar -xzf "$TARBALL" -C /usr/local/bin gitleaks \
+  && chmod +x /usr/local/bin/gitleaks
+
 WORKDIR /app
 
 #{ copy_packages }#
@@ -56,19 +69,16 @@ ENV NODE_ENV=production \
   DEV_SITE_SERVICE_HTTP_HOST=0.0.0.0:3099 \
   DEV_SITE_MAIN_REF=main \
   DEV_SITE_STATIC_DIR=#{ package_root }#/clients/app/dist \
-  DEV_SITE_DB_PATH=/data/dev-site.sqlite
+  DEV_SITE_DB_PATH=/data/dev-site.sqlite \
+  NEW_WORKFLOWS_DB_PATH=/data/new-workflows/local.sqlite
 
-# `--dangerously-skip-permissions` (which the claude-agent adapter always
-# passes) refuses to run as root, so the app itself runs as the image's
-# built-in non-root `node` user (see docker-entrypoint.sh) — also just
-# better hygiene generally. `chown /app`: some packages (e.g.
-# new-workflows-db) fall back to a local on-disk sqlite file under their
-# own package dir when no explicit path is configured; that tree is
-# root-owned from the COPY/npm ci steps above. Pre-create `.claude` and
-# `.config/cursor` so the CLIs can write session state alongside the
-# bind-mounted credentials files (see docker-compose.yaml).
+# Install/build match other Node images (monolith, daemon-clients builder):
+# root + `npm ci` with the `/root/.npm` cache mount — no build-time chown.
+# At runtime, `docker-entrypoint.sh` drops to `node` because agent CLIs refuse
+# `--dangerously-skip-permissions` as root; workflow edits use bind-mounted
+# `/repo`, and sqlite paths use `/data` (see compose env).
 RUN mkdir -p /home/node/.claude /home/node/.config/cursor \
-  && chown -R node:node /home/node/.claude /home/node/.config /app
+  && chown -R node:node /home/node/.claude /home/node/.config
 
 # Stays root here (unlike the old `USER node` at this point): the
 # entrypoint needs a moment as root to fix ownership on /repo/node_modules

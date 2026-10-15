@@ -1,0 +1,1 @@
+ALTER TABLE `workflow_run` ADD `logs_pruned_at` integer;

@@ -165,6 +165,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/repo/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Git diff between two refs
+         * @description Returns `git diff base...head` as UTF-8 text, optionally limited to a path prefix.
+         */
+        get: operations["getRepoDiff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workflow-runs/{runId}/preview-diff": {
         parameters: {
             query?: never;
@@ -994,6 +1014,8 @@ export interface operations {
             query?: {
                 /** @description Local branch name to take the merge-base against. Defaults to the server `main` ref. */
                 compare_ref?: string;
+                /** @description Commit/ref to report on instead of HEAD (e.g. a workflow run's `completion_hash`). When set, `branch` is null. */
+                head_ref?: string;
             };
             header?: never;
             path?: never;
@@ -1140,6 +1162,43 @@ export interface operations {
             };
             /** @description Git command failed */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getRepoDiff: {
+        parameters: {
+            query: {
+                base: string;
+                head: string;
+                /** @description Repo-relative pathspec (package, directory, or file prefix). */
+                prefix?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Diff text */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        diff: string;
+                        truncated: boolean;
+                    };
+                };
+            };
+            /** @description Invalid refs or git error */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

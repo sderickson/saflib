@@ -13,7 +13,9 @@ import {
   defineWorkflow,
   step,
   CANCELLED_BY_USER_MESSAGE,
+  FREEFORM_MESSAGE_MARKER,
 } from "@saflib/new-workflows";
+import { appendWorkflowLog } from "@saflib/new-workflows-db";
 import { createNewWorkflowsRouter } from "./index.ts";
 
 const execFileAsync = promisify(execFile);
@@ -42,6 +44,32 @@ describe("createNewWorkflowsRouter", () => {
         defaultCwd: cwd,
       }),
     );
+  });
+
+  it("GET /api/runs/:runId/messages lists direct messages, and anchor_seq jumps the logs to one", async () => {
+    const created = await request(app)
+      .post("/api/workflows/example%2Fhello/runs")
+      .send({ input: { name: "example-thing" }, mode: "run", agentConfig: { cli: "mock-agent" } });
+    const runId = created.body.run.id;
+    const now = new Date();
+    for (const [channel, content] of [
+      ["agent-input", "step prompt"],
+      ["tool", FREEFORM_MESSAGE_MARKER],
+      ["agent-input", "hey agent"],
+      ["agent", "on it"],
+    ] as const) {
+      await appendWorkflowLog(dbKey, { run_id: runId, step_index: 0, channel, level: "info", content, now });
+    }
+
+    const messages = await request(app).get(`/api/runs/${runId}/messages`);
+    expect(messages.status).toBe(200);
+    expect(messages.body.messages.map((m: { content: string }) => m.content)).toEqual(["hey agent"]);
+
+    const seq = messages.body.messages[0].seq;
+    const logs = await request(app).get(`/api/runs/${runId}/logs?anchor_seq=${seq}&limit=1`);
+    expect(logs.status).toBe(200);
+    expect(logs.body.logs.map((l: { content: string }) => l.content)).toEqual(["hey agent"]);
+    expect(logs.body.has_more_newer).toBe(true);
   });
 
   it("GET /api/workflows lists the registry", async () => {

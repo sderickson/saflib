@@ -1,8 +1,8 @@
-import type { WorkflowLogEntity } from "@saflib/new-workflows-db";
+import type { WorkflowLogRow } from "@saflib/new-workflows-db";
 import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
 
 /** Maps a `new-workflows-db` log row to the wire `WorkflowLogEntry`: date fields → ISO strings. */
-export function mapLogToWire(log: WorkflowLogEntity): WorkflowLogEntry {
+export function mapLogToWire(log: WorkflowLogRow): WorkflowLogEntry {
   const { created_at, ...rest } = log;
   return {
     ...rest,

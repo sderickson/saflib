@@ -53,6 +53,7 @@ describe("new-workflows-spec", () => {
       parent_step_index: null,
       created_at: "2026-09-13T00:00:00.000Z",
       updated_at: "2026-09-13T00:00:00.000Z",
+      logs_pruned_at: null,
       is_advancing: false,
       was_cancelled: false,
     };

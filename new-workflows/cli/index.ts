@@ -11,6 +11,7 @@ import { addStatusCommand } from "./commands/status.ts";
 import { addGotoCommand } from "./commands/goto.ts";
 import { addPreviewCommand } from "./commands/preview.ts";
 import { addValidateCommand } from "./commands/validate.ts";
+import { addPruneCommand } from "./commands/prune.ts";
 
 export { parseNamedArgs } from "./args.ts";
 export { loadWorkflowDefinition } from "@saflib/new-workflows";
@@ -41,6 +42,7 @@ export async function runNewWorkflowCli(
   addGotoCommand(ctx);
   addPreviewCommand(ctx);
   addValidateCommand(ctx);
+  addPruneCommand(ctx);
 
   await program.parseAsync(process.argv);
 }

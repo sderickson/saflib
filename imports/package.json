@@ -13,6 +13,7 @@
     ".": "./index.ts",
     "./facts": "./src/facts/index.ts",
     "./issues": "./src/issues/index.ts",
+    "./issues/package-issues": "./src/issues/package-issues.ts",
     "./reporter": "./reporter.ts",
     "./src/snapshot/snapshot": "./src/snapshot/snapshot.ts",
     "./src/graph/detect-cycles": "./src/graph/detect-cycles.ts",

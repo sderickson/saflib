@@ -175,16 +175,22 @@ export function useScanMutation(subdomain: string) {
 export function useCheckout(
   subdomain: string,
   compare_ref: MaybeRefOrGetter<string | undefined> = undefined,
+  /** Report on this commit instead of HEAD (a run's `completion_hash`). */
+  head_ref: MaybeRefOrGetter<string | undefined> = undefined,
 ) {
   const client = createDevSiteClient(subdomain);
   return useQuery<DevSiteResponseBody["getCheckout"][200], TanstackError>({
-    queryKey: ["dev-site", "checkout", compare_ref],
+    queryKey: ["dev-site", "checkout", compare_ref, head_ref],
     queryFn: () => {
       const ref = toValue(compare_ref);
+      const head = toValue(head_ref);
       return handleClientMethod(
         client.GET("/api/checkout", {
           params: {
-            query: ref ? { compare_ref: ref } : {},
+            query: {
+              ...(ref ? { compare_ref: ref } : {}),
+              ...(head ? { head_ref: head } : {}),
+            },
           },
         }),
       );
@@ -271,6 +277,33 @@ export function useRepoFile(
             query: {
               ref: p.ref,
               path: p.path,
+            },
+          },
+        }),
+      );
+    },
+  });
+}
+
+export function useRepoDiff(
+  subdomain: string,
+  base: MaybeRefOrGetter<string>,
+  head: MaybeRefOrGetter<string>,
+  prefix: MaybeRefOrGetter<string | undefined>,
+) {
+  const client = createDevSiteClient(subdomain);
+  return useQuery<DevSiteResponseBody["getRepoDiff"][200], TanstackError>({
+    queryKey: ["dev-site", "repo-diff", base, head, prefix],
+    enabled: () => Boolean(toValue(base) && toValue(head)),
+    queryFn: () => {
+      const p = toValue(prefix)?.replace(/^\/+/, "").replace(/\/+$/, "");
+      return handleClientMethod(
+        client.GET("/api/repo/diff", {
+          params: {
+            query: {
+              base: toValue(base),
+              head: toValue(head),
+              prefix: p || undefined,
             },
           },
         }),

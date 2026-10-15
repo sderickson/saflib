@@ -7,7 +7,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./input-schema": "./input-schema.ts",
+    "./preview/preview-failures": "./preview/preview-failures.ts"
   },
   "scripts": {
     "test": "vitest run",

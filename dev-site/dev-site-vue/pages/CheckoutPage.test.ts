@@ -215,6 +215,7 @@ describe("CheckoutPage compare package tree", () => {
       () =>
         HttpResponse.json(
           checkoutFixture({
+            github_repo: "acme/pathclerk",
             compare: {
               against_ref: "main",
               merge_base_hash: BASE,
@@ -298,5 +299,19 @@ describe("CheckoutPage compare package tree", () => {
       expect(wrapper.text()).toContain("+10/+5 LOC");
     });
     expect(wrapper.get(".pkg-head__name").text()).toBe("@demo/keep");
+  });
+
+  it("shows Spec and Diff tabs in compare mode", async () => {
+    await router.push({
+      path: "/checkout",
+      query: { compare: "main", package: "@demo/keep" },
+    });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Diff");
+    });
+    expect(wrapper.text()).toContain("Spec");
   });
 });

@@ -432,6 +432,15 @@
               "type": "string"
             },
             "description": "Local branch name to take the merge-base against. Defaults to the server `main` ref.\n"
+          },
+          {
+            "name": "head_ref",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Commit/ref to report on instead of HEAD (e.g. a workflow run's `completion_hash`). When set, `branch` is null.\n"
           }
         ],
         "responses": {
@@ -702,6 +711,77 @@
           },
           "500": {
             "description": "Git command failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repo/diff": {
+      "get": {
+        "summary": "Git diff between two refs",
+        "operationId": "getRepoDiff",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Returns `git diff base...head` as UTF-8 text, optionally limited to a path prefix.\n",
+        "parameters": [
+          {
+            "name": "base",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "head",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Repo-relative pathspec (package, directory, or file prefix)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diff text",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "diff",
+                    "truncated"
+                  ],
+                  "properties": {
+                    "diff": {
+                      "type": "string"
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid refs or git error",
             "content": {
               "application/json": {
                 "schema": {

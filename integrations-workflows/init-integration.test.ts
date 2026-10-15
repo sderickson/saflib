@@ -89,6 +89,106 @@ export async function initializeDependencies(): Promise<void> {
     expect(deps).toContain("await configureMercury(");
   });
 
+  it("weaves into dependencies.integrations.ts when that file exists (scale-m3)", async () => {
+    const root = mkdtempSync(path.join(tmpdir(), "integrations-init-integrations-deps-"));
+    const commonDir = path.join(root, "shop", "service", "common");
+    mkdirSync(commonDir, { recursive: true });
+    writeFileSync(
+      path.join(commonDir, "package.json"),
+      JSON.stringify(
+        {
+          name: "@acme/shop-service-common",
+          private: true,
+          type: "module",
+          dependencies: {},
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    writeFileSync(
+      path.join(commonDir, "dependencies.integrations.ts"),
+      `// BEGIN WORKFLOW AREA integration-imports FOR integrations/init
+// END WORKFLOW AREA
+
+export async function initializeIntegrationDependencies(): Promise<void> {
+  const store = {};
+  // BEGIN WORKFLOW AREA integration-configure FOR integrations/init
+  // END WORKFLOW AREA
+}
+`,
+    );
+
+    const runId = await createRun(dbKey, InitIntegrationWorkflowDefinition, {
+      input: { path: "shop/service/integrations/mercury" },
+      cwd: root,
+      mode: "script",
+    });
+
+    for (let i = 0; i < 2; i++) {
+      const { output, result } = advanceRun(dbKey, InitIntegrationWorkflowDefinition, runId);
+      await collectOutput(output);
+      expect((await result).status).toBe("success");
+    }
+
+    const deps = readFileSync(
+      path.join(commonDir, "dependencies.integrations.ts"),
+      "utf-8",
+    );
+    expect(deps).toContain(
+      'import { configureMercury } from "@acme/shop-mercury-integration"',
+    );
+    expect(deps).toContain("await configureMercury(store)");
+    expect(existsSync(path.join(commonDir, "dependencies.ts"))).toBe(false);
+  });
+
+  it("accepts legacy input.name when cwd is the product root", async () => {
+    const root = mkdtempSync(path.join(tmpdir(), "integrations-init-legacy-"));
+    const productRoot = path.join(root, "daemon");
+    const commonDir = path.join(productRoot, "service", "common");
+    mkdirSync(commonDir, { recursive: true });
+    writeFileSync(
+      path.join(commonDir, "package.json"),
+      JSON.stringify(
+        {
+          name: "@example/my-product-service-common",
+          private: true,
+          type: "module",
+          dependencies: {},
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    writeFileSync(
+      path.join(commonDir, "dependencies.ts"),
+      `// BEGIN WORKFLOW AREA integration-imports FOR integrations/init
+// END WORKFLOW AREA
+
+export async function initializeDependencies(): Promise<void> {
+  // BEGIN WORKFLOW AREA integration-configure FOR integrations/init
+  // END WORKFLOW AREA
+}
+`,
+    );
+
+    const runId = await createRun(dbKey, InitIntegrationWorkflowDefinition, {
+      input: { name: "uscis" },
+      cwd: productRoot,
+      mode: "script",
+    });
+
+    for (let i = 0; i < 2; i++) {
+      const { output, result } = advanceRun(dbKey, InitIntegrationWorkflowDefinition, runId);
+      await collectOutput(output);
+      expect((await result).status).toBe("success");
+    }
+
+    expect(
+      existsSync(path.join(productRoot, "service", "integrations", "uscis", "client.ts")),
+    ).toBe(true);
+  });
+
   it("rejects paths that are not {product}/service/integrations/{name}", async () => {
     const runId = await createRun(dbKey, InitIntegrationWorkflowDefinition, {
       input: { path: "shop/service/common" },

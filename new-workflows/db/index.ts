@@ -15,14 +15,30 @@ export { createWorkflowRun } from "./queries/workflow-run/create.ts";
 export { getByIdWorkflowRun } from "./queries/workflow-run/get-by-id.ts";
 export { updateStatusAndStepWorkflowRun } from "./queries/workflow-run/update-status-and-step.ts";
 export { updateInputWorkflowRun } from "./queries/workflow-run/update-input.ts";
+export { updateAgentConfigWorkflowRun } from "./queries/workflow-run/update-agent-config.ts";
 export { getChildByParentStepWorkflowRun } from "./queries/workflow-run/get-child-by-parent-step.ts";
 export { listByWorkflowRefWorkflowRun } from "./queries/workflow-run/list-by-workflow-ref.ts";
+export {
+  pruneHistoryWorkflowRun,
+  vacuumIfMostlyFreeWorkflowDb,
+} from "./queries/workflow-run/prune-history.ts";
+export type {
+  PruneHistoryWorkflowRunParams,
+  PruneHistoryWorkflowRunResult,
+} from "./queries/workflow-run/prune-history.ts";
 export { createWorkflowStep } from "./queries/workflow-step/create.ts";
 export { updateResultWorkflowStep } from "./queries/workflow-step/update-result.ts";
 export { listByRunWorkflowStep } from "./queries/workflow-step/list-by-run.ts";
 export { deleteFromStepWorkflowStep } from "./queries/workflow-step/delete-from-step.ts";
 export { appendWorkflowLog } from "./queries/workflow-log/append.ts";
 export { listByRunWorkflowLog } from "./queries/workflow-log/list-by-run.ts";
+export type { WorkflowLogRow } from "./queries/workflow-log/list-by-run.ts";
+export { createWorkflowAgentTurn } from "./queries/workflow-agent-turn/create.ts";
+export { listByRunStepWorkflowAgentTurn } from "./queries/workflow-agent-turn/list-by-run-step.ts";
+export { listBySessionRunWorkflowAgentTurn } from "./queries/workflow-agent-turn/list-by-session-run.ts";
+export { createWorkflowAgentTurnRaw } from "./queries/workflow-agent-turn-raw/create.ts";
+export { getByTurnIdWorkflowAgentTurnRaw } from "./queries/workflow-agent-turn-raw/get-by-turn-id.ts";
+export { listDirectMessagesWorkflowLog } from "./queries/workflow-log/list-direct-messages.ts";
 export { createWorkflowConfig } from "./queries/workflow-config/create.ts";
 export { getByIdWorkflowConfig } from "./queries/workflow-config/get-by-id.ts";
 export { listWorkflowConfig } from "./queries/workflow-config/list.ts";

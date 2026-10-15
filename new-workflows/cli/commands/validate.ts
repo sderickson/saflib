@@ -32,9 +32,11 @@ export function addValidateCommand(ctx: CliContext): void {
     .argument("<id-or-path>", "Workflow id, or path to a workflow file")
     .argument("[args...]", "Named args for the workflow (--key=value)")
     .action(async (idOrPath: string, args: string[]) => {
-      const cwd = cliCwd();
-      const repoRoot = findRepoRoot(cwd);
-      const definition = await loadWorkflowDefinition(idOrPath, ctx.registry, { cwd });
+      const invocationCwd = cliCwd();
+      const repoRoot = findRepoRoot(invocationCwd);
+      const definition = await loadWorkflowDefinition(idOrPath, ctx.registry, {
+        cwd: invocationCwd,
+      });
       const input = parseNamedArgs(args, definition.inputSchema);
 
       const { result: baseHash, error: refError } = resolveRef(repoRoot, "HEAD");
@@ -44,10 +46,13 @@ export function addValidateCommand(ctx: CliContext): void {
         return;
       }
 
+      // Plan phase files use `cd` paths relative to the monorepo root (see
+      // phase-workflows.md), same as dev-site preview — not relative to the
+      // shell cwd when validate is invoked from a plan folder.
       const result = await previewRun(ctx.dbKey, definition, input, {
         repoRoot,
         baseHash: baseHash!,
-        cwd,
+        cwd: repoRoot,
       });
 
       const errors = result.entries.filter(isMechanicalPreviewFailure);

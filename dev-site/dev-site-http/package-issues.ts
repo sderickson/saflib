@@ -1,5 +1,5 @@
 /**
- * Re-export issue collectors — canonical home is `@saflib/imports/issues`.
+ * Re-export issue collectors — canonical home is `@saflib/imports/issues/package-issues`.
  */
 export {
   collectPackageIssues,
@@ -12,4 +12,4 @@ export {
   type PackageDetailForIssues,
   type PackageIssue,
   type PackageIssueKind,
-} from "@saflib/imports/issues";
+} from "@saflib/imports/issues/package-issues";

@@ -103,6 +103,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{runId}/agent-message": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a one-off message to the run's agent CLI
+         * @description Runs a single agent turn (Claude or Cursor CLI) with the given text. Does not advance the workflow or create a step row — only appends to `workflow_logs` under the run's current step index. Uses the same run lock as `advanceWorkflowRun`.
+         */
+        post: operations["sendFreeformAgentMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs/{runId}/goto": {
         parameters: {
             query?: never;
@@ -152,9 +172,29 @@ export interface paths {
         };
         /**
          * List a run's logs
-         * @description Newest-first, cursor-paginated. Pass `before` (an ISO timestamp) to page older history for infinite scroll; pass `since` for rows newer than a known tip (e.g. after an SSE change hint). Pass `step_index` to anchor the first page at that step so a sidebar jump can load a window that is not the live tip. The client re-fetches rather than getting log content pushed over the wire.
+         * @description Newest-first, cursor-paginated by each row's `seq` (insertion order — `created_at` is only second-precision, so it can't be a cursor). Pass `before_seq` to page older history for infinite scroll; pass `after_seq` for rows newer than a known tip (e.g. after an SSE change hint). Pass `step_index` to anchor the first page at that step so a sidebar jump can load a window that is not the live tip. The client re-fetches rather than getting log content pushed over the wire.
          */
         get: operations["listWorkflowRunLogs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/runs/{runId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a run's direct agent messages
+         * @description The free-form messages sent to the agent with `agent-message` (not a step's own prompts), oldest first. Each is the message's own `agent-input` log row, so its `seq` can anchor the logs view and its `step_index` says which step the run was on when it was sent.
+         */
+        get: operations["listWorkflowRunMessages"];
         put?: never;
         post?: never;
         delete?: never;
@@ -245,6 +285,7 @@ export interface components {
         WorkflowRunStep: components["schemas"]["workflow-run-step"];
         WorkflowStepTreeNode: components["schemas"]["workflow-step-tree-node"];
         StepResult: components["schemas"]["step-result"];
+        FreeformAgentMessageResult: components["schemas"]["freeform-agent-message-result"];
         PlanFile: components["schemas"]["plan-file"];
         PlanSummary: components["schemas"]["plan-summary"];
         /** @description One entry in the registered-workflow list (`GET /workflows`). */
@@ -342,6 +383,11 @@ export interface components {
             created_at: string;
             /** Format: date-time */
             updated_at: string;
+            /**
+             * Format: date-time
+             * @description When this run's logs were deleted for age (see `pruneHistoryWorkflowRun`). The run and its steps remain. Null while the logs are still there.
+             */
+            logs_pruned_at: string | null;
             /** @description True while this run (or a nested call-workflow descendant advancing on its behalf) is actively being advanced right now, server-side — independent of `status`, which only reflects the last *completed* step. Lets a client that reloaded mid-step (losing its own "request still pending" state) tell "actively running" apart from "idle". */
             is_advancing: boolean;
             /** @description True when `status` is `failed` because a person stopped it (see the run's Stop button) rather than a genuine step error — there's no separate `WorkflowRunStatus` for this; cancelling just makes the in-flight step's own promise reject, landing as an ordinary `"failed"`. Always false for any other `status`. */
@@ -414,6 +460,14 @@ export interface components {
              */
             status: "done";
         };
+        "freeform-agent-message-result": {
+            /** @enum {string} */
+            status: "ok" | "error";
+            /** @description Present when `status` is `error`. */
+            message?: string;
+            /** @description When `status` is `ok`, whether the agent subprocess signaled it needs another turn (same semantics as a workflow prompt step). */
+            shouldContinue?: boolean;
+        };
         /**
          * @description Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. "running step 3: copy"). `agent-input`: the prompt text sent to the agent.
          * @example tool
@@ -430,6 +484,11 @@ export interface components {
         "workflow-log-entry": {
             /** @example aBcD1234 */
             id: string;
+            /**
+             * @description Insertion order within the log table. The total order of log rows and the pagination cursor — `created_at` is second-precision and ties.
+             * @example 1042
+             */
+            seq: number;
             /** @example 0SG36FJe6m4W */
             run_id: string;
             step_index: number | null;
@@ -439,6 +498,13 @@ export interface components {
             content: string;
             /** Format: date-time */
             created_at: string;
+            /**
+             * @description The run that produced this line. Differs from `run_id` when a nested `call-workflow` child produced it (its output is filed under the root run's step). Null on lines written before this was tracked.
+             * @example 7fQx2LmN9pA1
+             */
+            source_run_id: string | null;
+            /** @description Step index within `source_run_id` that produced this line. Null on lines written before this was tracked. */
+            source_step_index: number | null;
         };
         "workflow-step-tree-node": {
             /**
@@ -821,6 +887,47 @@ export interface operations {
             };
         };
     };
+    sendFreeformAgentMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Prompt text passed directly to the agent CLI for this turn.
+                     * @example Explain what the current step is trying to do.
+                     */
+                    message: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Outcome of the agent turn. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["freeform-agent-message-result"];
+                };
+            };
+            /** @description No run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
     gotoWorkflowRun: {
         parameters: {
             query?: never;
@@ -902,13 +1009,15 @@ export interface operations {
     listWorkflowRunLogs: {
         parameters: {
             query?: {
-                /** @description Only rows created strictly after this timestamp (newer than tip). */
-                since?: string;
-                /** @description Only rows created strictly before this timestamp (older page). */
-                before?: string;
+                /** @description Only rows with `seq` greater than this (newer than tip). */
+                after_seq?: number;
+                /** @description Only rows with `seq` less than this (older page). */
+                before_seq?: number;
                 /** @description Anchor this page at the earliest log for that step, then the following `limit` rows (still returned newest-first). */
                 step_index?: number;
-                /** @description With `since`, return the oldest `limit` rows after the cursor (the next page toward the present) instead of the newest ones. */
+                /** @description Anchor this page at the row with this `seq` (e.g. a direct message from `GET /runs/{runId}/messages`), then the following `limit` rows. */
+                anchor_seq?: number;
+                /** @description With `after_seq`, return the oldest `limit` rows after the cursor (the next page toward the present) instead of the newest ones. */
                 contiguous?: boolean;
                 /** @description Page size (default 100). */
                 limit?: number;
@@ -929,9 +1038,9 @@ export interface operations {
                 content: {
                     "application/json": {
                         logs: components["schemas"]["workflow-log-entry"][];
-                        /** @description True when another older page (`before` the oldest row here) may return more rows. */
+                        /** @description True when another older page (`before_seq` the oldest row here) may return more rows. */
                         has_more: boolean;
-                        /** @description True when another newer page (`since` the newest row here, `contiguous`) may return more rows. False on the live tip. */
+                        /** @description True when another newer page (`after_seq` the newest row here, `contiguous`) may return more rows. False on the live tip. */
                         has_more_newer: boolean;
                     };
                 };
@@ -943,6 +1052,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listWorkflowRunMessages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The run's direct messages, oldest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        messages: components["schemas"]["workflow-log-entry"][];
+                    };
                 };
             };
         };

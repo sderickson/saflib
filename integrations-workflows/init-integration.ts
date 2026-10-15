@@ -28,6 +28,25 @@ const dependenciesLive = path.join(
   templatesProductRoot,
   "service/common/dependencies.ts",
 );
+/** Workflow-area stubs woven into `dependencies.integrations.ts` when present. */
+const dependenciesIntegrationsWeave = path.join(
+  templatesProductRoot,
+  "service/common/dependencies.integrations.weave.ts",
+);
+
+function resolveIntegrationsDepsPath(parentDir: string, productRoot: string): string | undefined {
+  const integrationsFileName = "dependencies.integrations.ts";
+  const integrationsInCwd = path.join(parentDir, integrationsFileName);
+  const integrationsInProduct = path.join(
+    productRoot,
+    "service",
+    "common",
+    integrationsFileName,
+  );
+  if (existsSync(integrationsInCwd)) return integrationsInCwd;
+  if (existsSync(integrationsInProduct)) return integrationsInProduct;
+  return undefined;
+}
 const overviewDoc = path.join(templatesSaflibRoot, "integrations", "docs", "01-overview.md");
 
 /** Expected shape: `{product}/service/integrations/{name}` (relative to cwd / monorepo root). */
@@ -39,7 +58,12 @@ interface InitIntegrationInput {
    * Path of the new integration package from the monorepo root, e.g.
    * `power-up/service/integrations/mercury`.
    */
-  path: string;
+  path?: string;
+  /**
+   * Legacy: kebab-case integration name when the run's cwd is already the
+   * product root (e.g. after `cd daemon`). Prefer `path` for new plans.
+   */
+  name?: string;
 }
 
 interface InitIntegrationContext extends ParsePackageNameOutput {
@@ -52,10 +76,29 @@ interface InitIntegrationContext extends ParsePackageNameOutput {
   cwd: string;
 }
 
+function resolveIntegrationFromName(
+  integrationName: string,
+  cwd: string,
+): { integrationName: string; productRoot: string; targetDir: string; parentDir: string } {
+  const parentDir = path.resolve(cwd, "service", "common");
+  const productRoot = path.dirname(path.dirname(parentDir));
+  return {
+    integrationName,
+    productRoot,
+    targetDir: path.join(productRoot, "service", "integrations", integrationName),
+    parentDir,
+  };
+}
+
 function resolveIntegrationPath(
   rawPath: string,
   cwd: string,
 ): { integrationName: string; productRoot: string; targetDir: string; parentDir: string } {
+  if (rawPath === undefined || rawPath === null || rawPath === "") {
+    throw new Error(
+      'integrations/init requires input.path (e.g. "daemon/service/integrations/uscis") or legacy input.name when cwd is the product root',
+    );
+  }
   const normalized = rawPath.replace(/^\.\//, "").replace(/\/$/, "");
   const match = INTEGRATION_PATH_RE.exec(normalized);
   if (!match?.groups) {
@@ -71,6 +114,35 @@ function resolveIntegrationPath(
     targetDir: path.join(productRoot, "service", "integrations", integrationName),
     parentDir: path.join(productRoot, "service", "common"),
   };
+}
+
+function resolveInitIntegrationLocations(
+  input: InitIntegrationInput,
+  cwd: string,
+): {
+  integrationName: string;
+  productRoot: string;
+  targetDir: string;
+  parentDir: string;
+  pathLabel: string;
+} {
+  if (input.path) {
+    const locations = resolveIntegrationPath(input.path, cwd);
+    return {
+      ...locations,
+      pathLabel: input.path.replace(/^\.\//, "").replace(/\/$/, ""),
+    };
+  }
+  if (input.name) {
+    const locations = resolveIntegrationFromName(input.name, cwd);
+    return {
+      ...locations,
+      pathLabel: path.join("service", "integrations", input.name),
+    };
+  }
+  throw new Error(
+    'integrations/init requires input.path (e.g. "daemon/service/integrations/uscis") or legacy input.name when cwd is the product root',
+  );
 }
 
 /**
@@ -98,13 +170,17 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
         description:
           "Path of the new integration from the monorepo root, e.g. 'power-up/service/integrations/mercury'.",
       },
+      name: {
+        type: "string",
+        description:
+          "Legacy kebab-case name when cwd is already the product root (after `cd <product>`).",
+      },
     },
-    required: ["path"],
   },
 
   context: ({ input, cwd }) => {
-    const { integrationName, productRoot, targetDir, parentDir } =
-      resolveIntegrationPath(input.path, cwd);
+    const { integrationName, productRoot, targetDir, parentDir, pathLabel } =
+      resolveInitIntegrationLocations(input, cwd);
 
     let org = "saflib";
     let productName = path.basename(productRoot);
@@ -125,7 +201,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
       targetDir,
       parentDir,
       productRoot,
-      path: input.path.replace(/^\.\//, "").replace(/\/$/, ""),
+      path: pathLabel,
       serviceName: productName,
       cwd,
     };
@@ -164,12 +240,23 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
 
     step<CopyStepInput, InitIntegrationContext>("copy", runCopyStep, ({ context }) => {
       const baseReplace = makeLineReplace(context);
+      const integrationsDepsPath = resolveIntegrationsDepsPath(
+        context.parentDir,
+        context.productRoot,
+      );
+      const weaveIntoIntegrationsFile = integrationsDepsPath !== undefined;
+      const dependenciesSource = weaveIntoIntegrationsFile
+        ? dependenciesIntegrationsWeave
+        : dependenciesLive;
       return {
         templateFiles: {
-          dependencies: dependenciesLive,
+          dependencies: dependenciesSource,
         },
         name: context.integrationName,
         targetDir: context.parentDir,
+        ...(weaveIntoIntegrationsFile
+          ? { targetBasenames: { dependencies: "dependencies.integrations.ts" } }
+          : {}),
         lineReplace: (line: string) => {
           let result = line;
           result = result
@@ -219,7 +306,7 @@ Read the overview doc first: ${overviewDoc}
 
 1. Import the installed SDK (if any).
 2. Keep fetching credentials via \`store.getSecretByName(...)\` and \`secrets.json\` (already wired). Update the secret name if you renamed it in \`secrets.json\`.
-3. **Do not change the configure / isMocked pattern** (test mode mocks; missing secret warns; \`"mock"\` sentinel selects mocks). See the docs for why.
+3. Follow the **configure / isMocked** pattern from \`daemon-stripe\` (\`client.real.ts\` / \`client.ts\`): \`NODE_ENV=test\` uses mocks; explicit \`"mock"\` sentinel selects mocks; **do not** implicitly mock when secrets are missing — throw with a clear error (or require explicit mock config) so production cannot boot half-configured. Split config/secret env vars (non-secret client id in \`env.schema.json\`, secret in \`secrets.json\`) when the vendor uses that shape.
 4. Define a scoped client type using \`Pick\` to select only the SDK methods this integration will use. For nested SDKs, pick from each namespace. See the docs for patterns.
 5. Implement the **mock client** in \`mocks/client.ts\` (already imported). Put all mock data and mock method implementations there — keep \`mocks/client.ts\` **SDK-free** (\`import type\` only from the vendor package). Tests import mocks via \`@<package>/mocks\`.
 6. Implement the **real client** by initialising the SDK (or fetch wrapper) and casting it to the scoped type.

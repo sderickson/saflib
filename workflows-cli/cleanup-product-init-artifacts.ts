@@ -7,7 +7,6 @@
  */
 import {
   existsSync,
-  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -15,6 +14,13 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import {
+  LIVE_TEST_SNAPSHOT_ENV,
+  SAFLIB_RESTORE_PATHS,
+  clientAppTsconfigPaths,
+  readLiveTestSnapshot,
+  restoreLiveTestSnapshot,
+} from "./live-test/snapshot.ts";
 
 const saflibRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -38,14 +44,6 @@ const SCAFFOLD_CI_PATHS = [
 const SCAFFOLD_ROOT_DOTFILES = [
   "eslint.config.js",
   ".prettierrc.json",
-] as const;
-
-/** Tracked files product/init rewrites during live-test (restore via git). */
-const GIT_RESTORE_PATHS = [
-  "vitest.config.ts",
-  "package.json",
-  ".github/workflows/unit-tests.yaml",
-  "vue/tsconfig.app.json",
 ] as const;
 
 function rmQuiet(rel: string): void {
@@ -76,17 +74,6 @@ function gitRestore(cwd: string, relPaths: readonly string[]): void {
     const label = path.relative(saflibRoot, path.join(cwd, rel)) || rel;
     console.log(`Restored ${label}`);
   }
-}
-
-function clientAppTsconfigPaths(): string[] {
-  const clientsDir = path.join(saflibRoot, "base/clients");
-  if (!existsSync(clientsDir)) return [];
-  return readdirSync(clientsDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) =>
-      path.join("base/clients", entry.name, "tsconfig.app.json"),
-    )
-    .filter((rel) => existsSync(path.join(saflibRoot, rel)));
 }
 
 function removeLiveTestWorkspaces(): void {
@@ -130,22 +117,47 @@ for (const p of [
   rmQuiet(p);
 }
 
-if (isGitWorkTree(saflibRoot)) {
+// live-test snapshots the files it will touch (see live-test/snapshot.ts) and
+// passes the snapshot here; restoring from it keeps uncommitted edits, which a
+// `git checkout` would discard. Without one (cleanup run by hand), fall back to
+// git for saflib's own files, but never touch the parent repo's.
+const snapshotFile = process.env[LIVE_TEST_SNAPSHOT_ENV];
+const snapshot = snapshotFile ? readLiveTestSnapshot(snapshotFile) : undefined;
+
+if (snapshot) {
+  const restored = restoreLiveTestSnapshot(saflibRoot, snapshot);
+  for (const rel of restored) {
+    console.log(`Restored ${rel}`);
+  }
+  // Left for live-test to delete: the live-test workflow runs this script as a
+  // step and live-test runs it again at exit, and both need the snapshot.
+  // The parent's node_modules was installed against the live-test's package
+  // files; reinstall so it matches the restored ones again (a mismatched
+  // install once paired one rolldown with another's native binary).
+  if (restored.some((rel) => rel === "../package.json" || rel === "../package-lock.json")) {
+    console.log("Reinstalling the parent repo's dependencies to match its restored lockfile…");
+    const install = spawnSync("npm", ["install"], {
+      cwd: path.dirname(saflibRoot),
+      stdio: "inherit",
+    });
+    if (install.status !== 0) {
+      console.error("npm install in the parent repo failed; run it by hand.");
+    }
+  }
+} else if (isGitWorkTree(saflibRoot)) {
   gitRestore(saflibRoot, [
-    ...GIT_RESTORE_PATHS,
-    ...clientAppTsconfigPaths(),
+    ...SAFLIB_RESTORE_PATHS,
+    ...clientAppTsconfigPaths(saflibRoot),
   ]);
+  if (existsSync(path.join(saflibRoot, "..", "package.json"))) {
+    console.log(
+      "No live-test snapshot, so the parent repo's package.json, package-lock.json, and tsconfig.json were left as they are; check them for live-test changes.",
+    );
+  }
 } else {
   removeLiveTestWorkspaces();
 }
 
 rmUntrackedScaffoldRootFiles();
-
-// npm install / lock-prune during product/init refresh locks (and product-root
-// overrides when saflib is nested); drop that churn so live-test leaves trees clean.
-for (const dir of [saflibRoot, path.dirname(saflibRoot)]) {
-  if (!isGitWorkTree(dir)) continue;
-  gitRestore(dir, ["package-lock.json", "package.json"]);
-}
 
 console.log("Live-test cleanup done.");

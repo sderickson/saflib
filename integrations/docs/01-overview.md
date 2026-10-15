@@ -14,13 +14,13 @@ Integration packages live under `{product}/service/integrations/{name}/` alongsi
 | ---------------- | ------------------------------------------------------------------------------------------- |
 | Package path     | `{product}/service/integrations/{name}/`                                                    |
 | Package name     | `@{org}/{product}-{name}`                                                                   |
-| Boot wiring      | `integrations/init` weaves `configure{Name}()` into `{product}/service/common` dependencies |
+| Boot wiring      | `integrations/init` weaves `configure{Name}()` into `{product}/service/common/dependencies.integrations.ts` when that file exists (scale-m3), else `dependencies.ts` |
 | What apps import | **Calls** from the integration package — not the vendor SDK                                 |
 | Tests            | `vitest run` sets `NODE_ENV=test` → mocks automatically; no `vi.mock` on integrations       |
 
 ## Runtime: Credentials, Mocks, and CLI Testing
 
-Store credentials in [a secret store](../../secret-store/docs/01-overview.md), and declare any secrets the integration needs in the integration package. By default when the secret store is mocked, any missing secrets will be "mock" and so when this happens, the integration package should return a mock client. This way tests and local development can run without breaking or needing real credentials, which is important for both security and ease of development.
+Store credentials in [a secret store](../../secret-store/docs/01-overview.md), and declare any secrets the integration needs in the integration package. Use explicit `"mock"` sentinels (and `NODE_ENV=test` for unit tests) to select mock clients — do not silently mock when secrets are missing in production configure paths (follow `daemon-stripe` fail-closed configure). This keeps local dev and CI safe without hiding misconfiguration at boot.
 
 Workflows will automatically create these mock behaviors for you.
 

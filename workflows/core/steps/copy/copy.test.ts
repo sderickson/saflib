@@ -47,6 +47,25 @@ export default {
     await rm(testDir, { recursive: true });
   });
 
+  it("finishes without copying when skipUnlessPathExists names a missing path", async () => {
+    const actor = createActor(CopyStepMachine, {
+      input: {
+        templateFiles: {
+          "template-file.ts": path.join(sourceDir, "template-file.ts"),
+        },
+        targetDir: targetDir,
+        name: "foo-bar",
+        skipUnlessPathExists: path.join(testDir, "does-not-exist.ts"),
+      },
+    });
+
+    actor.start();
+    await pollingWaitFor(actor, workflowAllSettled);
+
+    expect(actor.getSnapshot().value).toBe("done");
+    expect(actor.getSnapshot().output?.copiedFiles).toEqual({});
+  });
+
   it("should copy and rename template files correctly", async () => {
     const actor = createActor(CopyStepMachine, {
       input: {

@@ -54,6 +54,11 @@ export interface CopyStepInput {
    * opt in explicitly per workflow instead of guessing.
    */
   templateRoot?: string;
+  /**
+   * Optional per-`templateFiles` key override for the destination basename
+   * (after `name` / `lineReplace` substitutions on the source basename).
+   */
+  targetBasenames?: Record<string, string>;
 }
 
 /** Always skipped when expanding directory template sources. */
@@ -220,11 +225,13 @@ export function resolveCopyTargetPath(
   targetDir: string,
   name: string | undefined,
   lineReplace: ((line: string) => string) | undefined,
+  basenameOverride?: string,
 ): string {
   const relativePath = path.relative(sharedPrefix, sourcePath);
   let intermediaryDir = relativePath.includes("/") ? path.dirname(relativePath) : "";
   if (lineReplace) intermediaryDir = lineReplace(intermediaryDir);
-  const targetFileName = transformName(path.basename(sourcePath), name, lineReplace);
+  const targetFileName =
+    basenameOverride ?? transformName(path.basename(sourcePath), name, lineReplace);
   return path.join(targetDir, intermediaryDir, targetFileName);
 }
 
@@ -232,8 +239,15 @@ export function resolveCopyTargetPath(
 export function resolveCopyTargetPaths(input: CopyStepInput): string[] {
   const templateFiles = flattenTemplateFiles(input);
   const sharedPrefix = input.templateRoot ?? sharedPrefixOf(Object.values(templateFiles));
-  return Object.values(templateFiles).map((sourcePath) =>
-    resolveCopyTargetPath(sourcePath, sharedPrefix, input.targetDir, input.name, input.lineReplace),
+  return Object.keys(templateFiles).map((fileId) =>
+    resolveCopyTargetPath(
+      templateFiles[fileId],
+      sharedPrefix,
+      input.targetDir,
+      input.name,
+      input.lineReplace,
+      input.targetBasenames?.[fileId],
+    ),
   );
 }
 
@@ -246,6 +260,7 @@ async function copyAndRenameOneFile(params: {
   lineReplace: ((line: string) => string) | undefined;
   workflowId: string;
   flags: Record<string, boolean> | undefined;
+  basenameOverride?: string;
 }): Promise<{ fileName: string; filePath: string; fileExisted: boolean }> {
   const { sourcePath, sharedPrefix, targetDir, name, lineReplace, workflowId, flags } =
     params;
@@ -255,6 +270,7 @@ async function copyAndRenameOneFile(params: {
     targetDir,
     name,
     lineReplace,
+    params.basenameOverride,
   );
   const targetFileName = path.basename(targetPath);
 
@@ -342,11 +358,9 @@ export const runCopyStep: StepFn<CopyStepInput> = async (rawInput, ctx) => {
 
   if (ctx.mode === "dry" || ctx.mode === "checklist") {
     for (const fileId of fileIds) {
-      const targetFileName = transformName(
-        path.basename(templateFiles[fileId]),
-        input.name,
-        input.lineReplace,
-      );
+      const targetFileName =
+        input.targetBasenames?.[fileId] ??
+        transformName(path.basename(templateFiles[fileId]), input.name, input.lineReplace);
       copiedFiles[fileId] = path.join(input.targetDir, targetFileName);
     }
     ctx.log({
@@ -367,6 +381,7 @@ export const runCopyStep: StepFn<CopyStepInput> = async (rawInput, ctx) => {
       lineReplace: input.lineReplace,
       workflowId: ctx.workflowId,
       flags: input.flags,
+      basenameOverride: input.targetBasenames?.[fileId],
     });
     copiedFiles[fileId] = filePath;
     ctx.log({

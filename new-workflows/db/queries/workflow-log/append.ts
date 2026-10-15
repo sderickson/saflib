@@ -7,7 +7,10 @@ import { workflowLogTable } from "../../schemas/workflow-log.ts";
 export type AppendWorkflowLogParams = Pick<
   typeof workflowLogTable.$inferInsert,
   "run_id" | "step_index" | "channel" | "level" | "content"
-> & {
+> &
+  Partial<
+    Pick<typeof workflowLogTable.$inferInsert, "source_run_id" | "source_step_index">
+  > & {
   now: Date;
 };
 

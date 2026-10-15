@@ -18,6 +18,13 @@ const dbRoot = path.join(templatesProductRoot, "service", "db");
 const schemaStub = path.join(dbRoot, "schemas", "__group-name__.ts");
 /** Live schema.ts — schema-exports area holds the stub; CopyStep upserts it. */
 const schemaIndexLive = path.join(dbRoot, "schema.ts");
+/** Weaves the same export into `schemas/index.ts` when the package uses that barrel for drizzle-kit. */
+const schemaRegistryWeave = path.join(
+  dbRoot,
+  "schemas",
+  "update-schema-registry",
+  "index.ts",
+);
 // `templatesSaflibRoot`, not `import.meta.dirname` — see add-query.ts's `refDoc`
 // comment for why (container bind-mount root override).
 const schemaDoc = path.join(templatesSaflibRoot, "drizzle", "docs", "02-schema.md");
@@ -105,6 +112,21 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
       flags: { file: context.file },
     })),
+
+    step<CopyStepInput, UpdateSchemaWorkflowContext>(
+      "copy",
+      runCopyStep,
+      ({ context }) => ({
+        templateFiles: {
+          index: schemaRegistryWeave,
+        },
+        name: context.targetName,
+        targetDir: path.join(context.cwd, "schemas"),
+        lineReplace: makeLineReplace(context),
+        flags: { file: context.file },
+        skipUnlessPathExists: path.join(context.cwd, "schemas", "index.ts"),
+      }),
+    ),
 
     step<UpdateStepInput, UpdateSchemaWorkflowContext>("update", runUpdateStep, ({ context }) => ({
       fileId: "schema",

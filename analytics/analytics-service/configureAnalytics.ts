@@ -1,4 +1,5 @@
 import type { AnalyticsService } from "./types.ts";
+import { setAnalyticsConsentResolver } from "./consent.ts";
 
 let analyticsClient: AnalyticsService | undefined;
 
@@ -32,4 +33,5 @@ export function resetAnalyticsForTests(): void {
     throw new Error("resetAnalyticsForTests is only available in test");
   }
   analyticsClient = undefined;
+  setAnalyticsConsentResolver(undefined);
 }

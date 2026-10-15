@@ -1,0 +1,46 @@
+sendFreeformAgentMessage:
+  summary: Send a one-off message to the run's agent CLI
+  description: >
+    Runs a single agent turn (Claude or Cursor CLI) with the given text.
+    Does not advance the workflow or create a step row — only appends to
+    `workflow_logs` under the run's current step index. Uses the same
+    run lock as `advanceWorkflowRun`.
+  operationId: sendFreeformAgentMessage
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required:
+            - message
+          properties:
+            message:
+              type: string
+              minLength: 1
+              description: Prompt text passed directly to the agent CLI for this turn.
+              example: "Explain what the current step is trying to do."
+
+  responses:
+    "200":
+      description: Outcome of the agent turn.
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/FreeformAgentMessageResult"
+    "404":
+      description: No run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

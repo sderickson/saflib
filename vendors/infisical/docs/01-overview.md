@@ -14,10 +14,11 @@ Call `configureSecretStore()` at process startup before wiring email, object sto
 
 Environment (see `env.schema.json`):
 
-- **`INFISICAL_TOKEN`** — access token; `mock` selects the mock client
-- **`INFISICAL_PROJECT_ID`** — project id (optional when token is `mock`)
+- **`INFISICAL_CLIENT_ID`** + **`INFISICAL_CLIENT_SECRET`** — machine identity [Universal Auth](https://infisical.com/docs/documentation/platform/identities/universal-auth) credentials (preferred for deployed services). The store logs in on the first secret fetch, shares that login across concurrent fetches, and logs in again (retrying once) when Infisical rejects the short-lived access token.
+- **`INFISICAL_TOKEN`** — static access token (machine identity Token Auth); `mock` selects the mock client. Used when the Universal Auth pair is not set.
+- **`INFISICAL_PROJECT_ID`** — project id (optional in mock mode)
 - **`INFISICAL_ENVIRONMENT`** — environment slug (e.g. `dev`, `staging`, `prod`)
 
-On startup, `configureSecretStore()` logs whether the store came up in **live** or **mock** mode (token length / project prefix / environment — never the raw token). If live mode is missing project id or environment, it logs an error. Ensure secret env files end with a trailing newline so Docker Compose does not drop the last variable.
+On startup, `configureSecretStore()` logs whether the store came up in **live** or **mock** mode and which auth method it uses (client id prefix or token length / project prefix / environment — never the raw secret). If live mode is missing project id or environment, it logs an error. Ensure secret env files end with a trailing newline so Docker Compose does not drop the last variable.
 
 Vendor packages such as [`@saflib/vendors-brevo`](../../brevo/docs/01-overview.md) fetch API keys through the configured store.

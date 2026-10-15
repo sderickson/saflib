@@ -20,7 +20,7 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Upsert 2 templates.
+- Upsert the table stub and export lines (`schema.ts`, and `schemas/index.ts` when that barrel exists).
 - Update example.ts to add the new table, or modify it.
 - Run `npm run typecheck`
 - Run `npm run generate`

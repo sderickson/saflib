@@ -6,12 +6,15 @@ import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
 function logFixture(overrides: Partial<WorkflowLogEntry> = {}): WorkflowLogEntry {
   return {
     id: "l1",
+    seq: 1,
     run_id: "run-1",
     step_index: 0,
     channel: "tool",
     level: "info",
     content: "Running command: npm --version",
     created_at: "2026-09-15T00:00:00.000Z",
+    source_run_id: null,
+    source_step_index: null,
     ...overrides,
   };
 }

@@ -6,12 +6,15 @@ import type { WorkflowLogEntry } from "@saflib/new-workflows-spec";
 function resultLog(overrides: Partial<WorkflowLogEntry> = {}): WorkflowLogEntry {
   return {
     id: "l2",
+    seq: 2,
     run_id: "run-1",
     step_index: 0,
     channel: "agent",
     level: "info",
     content: JSON.stringify({ kind: "tool_result", tool_use_id: "toolu_1", content: "ok", is_error: false }),
     created_at: "2026-09-15T00:00:00.000Z",
+    source_run_id: null,
+    source_step_index: null,
     ...overrides,
   };
 }
@@ -24,7 +27,8 @@ describe("ToolCallCard", () => {
         input: { command: "npm run typecheck", description: "Check types" },
       },
     });
-    expect(wrapper.text()).toContain("$ npm run typecheck");
+    expect(wrapper.text()).toContain("Bash");
+    expect(wrapper.text()).toContain("npm run typecheck");
     expect(wrapper.text()).toContain("Check types");
   });
 
@@ -35,8 +39,8 @@ describe("ToolCallCard", () => {
     expect(wrapper.text()).toContain("running…");
   });
 
-  it("previews the first 4 lines of output and expands to the rest", async () => {
-    const output = ["a", "b", "c", "d", "e", "f"].join("\n");
+  it("previews the first 5 lines of output and expands to the rest", async () => {
+    const output = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"].join("\n");
     const wrapper = mountWithPlugins(ToolCallCard, {
       props: {
         name: "Bash",
@@ -47,14 +51,14 @@ describe("ToolCallCard", () => {
       },
     });
 
-    expect(wrapper.find(".tool-call-card__body").text()).toBe("a\nb\nc\nd");
+    expect(wrapper.find(".tool-result-body__pre").text()).toContain("a");
     expect(wrapper.text()).not.toContain("running…");
 
-    const toggle = wrapper.find(".tool-call-card__toggle");
-    expect(toggle.text()).toContain("2 more line");
+    const toggle = wrapper.find(".tool-result-body__toggle");
+    expect(toggle.text()).toContain("5 more line");
     await toggle.trigger("click");
 
-    expect(wrapper.find(".tool-call-card__body").text()).toBe(output);
+    expect(wrapper.find(".tool-result-body__pre").text()).toBe(output);
   });
 
   it("flags an errored result", () => {
@@ -70,14 +74,13 @@ describe("ToolCallCard", () => {
     expect(wrapper.find(".tool-call-card--error").exists()).toBe(true);
   });
 
-  it("shows an expandable full-input section for non-Bash tools", async () => {
+  it("shows path detail for Read without redundant full input", () => {
     const wrapper = mountWithPlugins(ToolCallCard, {
       props: { name: "Read", input: { file_path: "/repo/README.md" } },
     });
-    expect(wrapper.text()).toContain("Read(");
-    expect(wrapper.find(".tool-call-card__toggle").exists()).toBe(true);
-
-    await wrapper.find(".tool-call-card__toggle").trigger("click");
-    expect(wrapper.text()).toContain("/repo/README.md");
+    expect(wrapper.text()).toContain("Read");
+    expect(wrapper.text()).toContain("README.md");
+    expect(wrapper.text()).not.toContain("Full input");
+    expect(wrapper.find(".tool-call-card__pre").exists()).toBe(false);
   });
 });

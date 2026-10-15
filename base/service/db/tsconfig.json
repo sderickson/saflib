@@ -23,7 +23,8 @@
     "dist/types",
     "e2e",
     "playwright-report",
-    "test-results"
+    "test-results",
+    "schemas/update-schema-registry"
   ],
   "include": [
     "**/*.ts",

@@ -24,7 +24,35 @@ export interface ChannelGroup {
   logs: WorkflowLogEntry[];
 }
 
-export type LogItem = ToolCallGroup | SingleLogItem | ChannelGroup;
+/** Two or more back-to-back look-around calls (reads, searches), shown as one compact list. */
+export interface ToolBatch {
+  type: "tool-batch";
+  id: string;
+  calls: ToolCallGroup[];
+}
+
+export type LogItem = ToolCallGroup | ToolBatch | SingleLogItem | ChannelGroup;
+
+/**
+ * Tools that only look around. An agent often fires off a dozen of these
+ * in a row, and one card each buries the edits and commands that matter.
+ * Names are claude's; the cursor adapter logs its calls under the same names.
+ */
+const EXPLORE_TOOLS = new Set(["Read", "Grep", "Glob", "LS"]);
+
+const REPO_ROOT = "/repo";
+/** `/repo/daemon/x.ts` → `daemon/x.ts`, and a bare `/repo` → `.` — not mid-path, e.g. `/foo/repo/`. */
+const REPO_PATH = /(?<![\w./-])\/repo(\/|(?![\w.-]))/g;
+
+/**
+ * Agents run with the monorepo mounted at `/repo`; paths read better
+ * relative to it. Applied to the raw content (JSON payloads included) so
+ * every renderer gets it for free.
+ */
+export function shortenRepoPaths(text: string): string {
+  if (!text.includes(REPO_ROOT)) return text;
+  return text.replace(REPO_PATH, (_match, slash: string) => (slash ? "" : "."));
+}
 
 /**
  * Pairs a `tool_use` log entry with its later `tool_result` (by id), so the
@@ -38,7 +66,9 @@ export function groupLogs(logs: WorkflowLogEntry[]): LogItem[] {
   const items: LogItem[] = [];
   const groupIndexById = new Map<string, number>();
 
-  for (const log of logs) {
+  for (const raw of logs) {
+    const content = shortenRepoPaths(raw.content);
+    const log = content === raw.content ? raw : { ...raw, content };
     const payload = parseToolLogPayload(log.content);
 
     if (payload?.kind === "tool_use") {
@@ -57,7 +87,9 @@ export function groupLogs(logs: WorkflowLogEntry[]): LogItem[] {
       const idx = groupIndexById.get(payload.tool_use_id);
       const existing = idx !== undefined ? items[idx] : undefined;
       if (existing?.type === "tool-call") {
-        existing.resultLog = log;
+        if (!existing.resultLog) {
+          existing.resultLog = log;
+        }
         continue;
       }
     }
@@ -65,7 +97,27 @@ export function groupLogs(logs: WorkflowLogEntry[]): LogItem[] {
     items.push({ type: "single", log });
   }
 
-  return mergeConsecutiveChannels(items);
+  return mergeConsecutiveChannels(batchExploreCalls(items));
+}
+
+function batchExploreCalls(items: LogItem[]): LogItem[] {
+  const out: LogItem[] = [];
+  let run: ToolCallGroup[] = [];
+  const flush = () => {
+    if (run.length === 1) out.push(run[0]!);
+    else if (run.length > 1) out.push({ type: "tool-batch", id: `batch-${run[0]!.id}`, calls: run });
+    run = [];
+  };
+  for (const item of items) {
+    if (item.type === "tool-call" && EXPLORE_TOOLS.has(item.name)) {
+      run.push(item);
+      continue;
+    }
+    flush();
+    out.push(item);
+  }
+  flush();
+  return out;
 }
 
 /**

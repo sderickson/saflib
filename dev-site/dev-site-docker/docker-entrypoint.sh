@@ -15,17 +15,29 @@ if [ -d /repo ]; then
   if touch /repo/node_modules/.writecheck 2>/dev/null; then
     rm -f /repo/node_modules/.writecheck
     chown -R node:node /repo/node_modules
-    su node -c 'cd /repo && npm install --include=dev'
+    skip_install=
+    case "${DEV_SITE_SKIP_REPO_NPM_INSTALL:-}" in 1|true|yes) skip_install=1 ;; esac
+    if [ -n "$skip_install" ]; then
+      echo "dev-site: skipping /repo npm install (DEV_SITE_SKIP_REPO_NPM_INSTALL)" >&2
+    elif [ -f /repo/node_modules/.dev-site-deps-ready ]; then
+      echo "dev-site: reusing /repo/node_modules (remove volume or .dev-site-deps-ready to reinstall)" >&2
+    else
+      su node -c 'cd /repo && npm install --include=dev'
+      touch /repo/node_modules/.dev-site-deps-ready
+    fi
   else
     echo "dev-site: /repo/node_modules is not writable (read-only /repo mount); skipping chown/npm install" >&2
   fi
 fi
 
-# Same story for /data/new-workflows (see docker-compose.yaml's
-# `new_workflows_data`): a fresh named volume mount is root-owned, and
-# @saflib/new-workflows-db's sqlite file lives there instead of on the
-# bind-mounted /repo (see routes/workflows/index.ts).
-if [ -d /data/new-workflows ]; then
+# Same story for /data: the sqlite files (dev-site.sqlite and
+# new-workflows/local.sqlite) belong on a container-only named volume, not a
+# macOS bind mount — WAL's mmap'd -shm files on the host file share can leak
+# inode references and panic Docker Desktop's VM on shutdown. A fresh named
+# volume mount is root-owned, so hand it to `node` before dropping to it.
+if [ -d /data ]; then
+  mkdir -p /data/new-workflows
+  chown node:node /data
   chown -R node:node /data/new-workflows
 fi
 

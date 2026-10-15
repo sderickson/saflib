@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * List a run's logs
-         * @description Newest-first, cursor-paginated. Pass `before` (an ISO timestamp) to page older history for infinite scroll; pass `since` for rows newer than a known tip (e.g. after an SSE change hint). Pass `step_index` to anchor the first page at that step so a sidebar jump can load a window that is not the live tip. The client re-fetches rather than getting log content pushed over the wire.
+         * @description Newest-first, cursor-paginated by each row's `seq` (insertion order — `created_at` is only second-precision, so it can't be a cursor). Pass `before_seq` to page older history for infinite scroll; pass `after_seq` for rows newer than a known tip (e.g. after an SSE change hint). Pass `step_index` to anchor the first page at that step so a sidebar jump can load a window that is not the live tip. The client re-fetches rather than getting log content pushed over the wire.
          */
         get: operations["listWorkflowRunLogs"];
         put?: never;
@@ -32,6 +32,11 @@ export interface components {
         "workflow-log-entry": {
             /** @example aBcD1234 */
             id: string;
+            /**
+             * @description Insertion order within the log table. The total order of log rows and the pagination cursor — `created_at` is second-precision and ties.
+             * @example 1042
+             */
+            seq: number;
             /** @example 0SG36FJe6m4W */
             run_id: string;
             step_index: number | null;
@@ -41,6 +46,13 @@ export interface components {
             content: string;
             /** Format: date-time */
             created_at: string;
+            /**
+             * @description The run that produced this line. Differs from `run_id` when a nested `call-workflow` child produced it (its output is filed under the root run's step). Null on lines written before this was tracked.
+             * @example 7fQx2LmN9pA1
+             */
+            source_run_id: string | null;
+            /** @description Step index within `source_run_id` that produced this line. Null on lines written before this was tracked. */
+            source_step_index: number | null;
         };
         /**
          * @description Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. "running step 3: copy"). `agent-input`: the prompt text sent to the agent.
@@ -75,13 +87,15 @@ export interface operations {
     listWorkflowRunLogs: {
         parameters: {
             query?: {
-                /** @description Only rows created strictly after this timestamp (newer than tip). */
-                since?: string;
-                /** @description Only rows created strictly before this timestamp (older page). */
-                before?: string;
+                /** @description Only rows with `seq` greater than this (newer than tip). */
+                after_seq?: number;
+                /** @description Only rows with `seq` less than this (older page). */
+                before_seq?: number;
                 /** @description Anchor this page at the earliest log for that step, then the following `limit` rows (still returned newest-first). */
                 step_index?: number;
-                /** @description With `since`, return the oldest `limit` rows after the cursor (the next page toward the present) instead of the newest ones. */
+                /** @description Anchor this page at the row with this `seq` (e.g. a direct message from `GET /runs/{runId}/messages`), then the following `limit` rows. */
+                anchor_seq?: number;
+                /** @description With `after_seq`, return the oldest `limit` rows after the cursor (the next page toward the present) instead of the newest ones. */
                 contiguous?: boolean;
                 /** @description Page size (default 100). */
                 limit?: number;
@@ -102,9 +116,9 @@ export interface operations {
                 content: {
                     "application/json": {
                         logs: components["schemas"]["workflow-log-entry"][];
-                        /** @description True when another older page (`before` the oldest row here) may return more rows. */
+                        /** @description True when another older page (`before_seq` the oldest row here) may return more rows. */
                         has_more: boolean;
-                        /** @description True when another newer page (`since` the newest row here, `contiguous`) may return more rows. False on the live tip. */
+                        /** @description True when another newer page (`after_seq` the newest row here, `contiguous`) may return more rows. False on the live tip. */
                         has_more_newer: boolean;
                     };
                 };

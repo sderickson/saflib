@@ -229,10 +229,9 @@ function createOrchestrator(): RunOrchestrator {
         return;
       }
 
-      // A step asked to stop for a person (pauseAfter), including when that
-      // step is nested inside call-workflow. Do not treat it as a failure
-      // and do not keep auto-continuing — play-workflow and play-plan both
-      // wait until someone clicks play again.
+      // `pauseAfter` ends a step as `awaiting_user` — a human review gate.
+      // Every mode stops here, play-plan included; play-plan only skips
+      // waiting *between* phase files, not gates a phase asks for.
       if (outcome.status === "awaiting_user") {
         notify(
           "Paused for review",

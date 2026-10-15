@@ -67,6 +67,8 @@ export const advanceWorkflowRunHandler = createHandler(async (req, res) => {
       channel: chunk.channel,
       level: chunk.level,
       content: chunk.content,
+      source_run_id: chunk.sourceRunId ?? runId,
+      source_step_index: chunk.sourceStepIndex ?? stepIndex,
       now: new Date(),
     });
     // Per-chunk, not just once at the end: a step (an agent turn

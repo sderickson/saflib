@@ -6,6 +6,8 @@
         class="pkg-tree__row"
         :class="{
           'pkg-tree__row--package': node.kind === 'package',
+          'pkg-tree__row--dir': node.kind === 'dir' && dirFocusEnabled,
+          'pkg-tree__row--dir-focus': node.kind === 'dir' && isFocusedDir(node),
           'pkg-tree__row--selected':
             node.kind === 'package' && node.package_name === selectedPackageName,
           'pkg-tree__row--added': node.change === 'added',
@@ -45,7 +47,10 @@
         v-if="node.children.length"
         :nodes="node.children"
         :selected-package-name="selectedPackageName"
+        :dir-focus-enabled="dirFocusEnabled"
+        :focused-dir-path="focusedDirPath"
         @select="$emit('select', $event)"
+        @focus-dir="$emit('focus-dir', $event)"
       />
     </li>
   </ul>
@@ -62,18 +67,33 @@ import {
 import { emptyIssueCountsByKind } from "../package-issues";
 import ChangeChip from "./ChangeChip.vue";
 
-defineProps<{
+const props = defineProps<{
   nodes: PackageDirNode[];
   selectedPackageName?: string;
+  /** When set, directory rows are clickable to focus a compare scope. */
+  dirFocusEnabled?: boolean;
+  /** Package-directory-relative path (matches `dir:` node ids), e.g. `products`. */
+  focusedDirPath?: string;
 }>();
 
 const emit = defineEmits<{
   select: [package_name: string];
+  "focus-dir": [packageDirectoryRelativePath: string];
 }>();
+
+const isFocusedDir = (node: PackageDirNode) => {
+  if (node.kind !== "dir" || !props.focusedDirPath) return false;
+  const path = node.id.startsWith("dir:") ? node.id.slice(4) : "";
+  return path === props.focusedDirPath;
+};
 
 const onClick = (node: PackageDirNode) => {
   if (node.kind === "package" && node.package_name) {
     emit("select", node.package_name);
+    return;
+  }
+  if (props.dirFocusEnabled && node.kind === "dir" && node.id.startsWith("dir:")) {
+    emit("focus-dir", node.id.slice(4));
   }
 };
 
@@ -119,8 +139,13 @@ const debtTip = (node: PackageDirNode) =>
   color: inherit;
   font: inherit;
 }
-.pkg-tree__row--package {
+.pkg-tree__row--package,
+.pkg-tree__row--dir {
   cursor: pointer;
+}
+.pkg-tree__row--dir:hover,
+.pkg-tree__row--dir-focus {
+  background: rgba(var(--v-theme-on-surface), 0.06);
 }
 .pkg-tree__row--package:hover {
   background: rgba(var(--v-theme-on-surface), 0.06);
