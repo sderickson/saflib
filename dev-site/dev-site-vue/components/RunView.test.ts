@@ -208,6 +208,15 @@ describe("RunView", () => {
     vi.stubGlobal("EventSource", EventSourceStub);
   });
 
+  it("explains that a run's logs were deleted for age", async () => {
+    runState = runFixture({ status: "done", logs_pruned_at: "2026-11-20T12:00:00.000Z" });
+    logsState = [];
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("This run's logs were deleted on");
+    });
+  });
+
   it("shows run status and logs, and advances on click", async () => {
     let advanced = false;
     server.use(

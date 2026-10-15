@@ -12,7 +12,19 @@
         <span v-if="timeLabel" class="tool-call-card__time">{{ timeLabel }}</span>
       </span>
     </div>
-    <code v-if="invocation.detail" class="tool-call-card__detail">{{ invocation.detail }}</code>
+    <code
+      v-if="invocation.detail"
+      class="tool-call-card__detail"
+      :class="{ 'tool-call-card__detail--clamped': detailClamped }"
+    >{{ detailText }}</code>
+    <button
+      v-if="detailIsLong"
+      type="button"
+      class="tool-call-card__toggle"
+      @click="detailExpanded = !detailExpanded"
+    >
+      {{ detailExpanded ? "Show less" : detailMoreLabel }}
+    </button>
     <div v-if="description" class="tool-call-card__description">{{ description }}</div>
 
     <template v-if="showFullInput">
@@ -22,13 +34,13 @@
 
     <template v-if="resultText">
       <div class="tool-call-card__section-label">Output</div>
-      <ToolResultBody :content="resultText" :is-error="isError" />
+      <ToolResultBody :content="resultText" :is-error="isError" :preview-lines="5" />
     </template>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import {
   parseToolLogPayload,
   type WorkflowLogEntry,
@@ -48,6 +60,31 @@ const props = defineProps<{
 const timeLabel = computed(() => (props.startedAt ? formatLogTime(props.startedAt) : ""));
 
 const invocation = computed(() => formatToolInvocation(props.name, props.input));
+
+/**
+ * Collapsed, a long command (a heredoc script, say) shows its first few
+ * lines; with the output's own short preview the card stays around ten
+ * lines. The CSS clamp also catches one very long line that wraps.
+ */
+const DETAIL_PREVIEW_LINES = 3;
+const DETAIL_PREVIEW_CHARS = 240;
+const detailExpanded = ref(false);
+const detailLines = computed(() => (invocation.value.detail ?? "").split("\n"));
+const detailIsLong = computed(
+  () =>
+    detailLines.value.length > DETAIL_PREVIEW_LINES ||
+    (invocation.value.detail ?? "").length > DETAIL_PREVIEW_CHARS,
+);
+const detailClamped = computed(() => detailIsLong.value && !detailExpanded.value);
+const detailText = computed(() =>
+  detailClamped.value && detailLines.value.length > DETAIL_PREVIEW_LINES
+    ? `${detailLines.value.slice(0, DETAIL_PREVIEW_LINES).join("\n")}\n…`
+    : (invocation.value.detail ?? ""),
+);
+const detailMoreLabel = computed(() => {
+  const hidden = detailLines.value.length - DETAIL_PREVIEW_LINES;
+  return hidden > 0 ? `Show ${hidden} more line${hidden === 1 ? "" : "s"}` : "Show all";
+});
 
 const description = computed(() => {
   const input = props.input as { description?: unknown } | null | undefined;
@@ -108,6 +145,23 @@ const fullInputText = computed(() => JSON.stringify(props.input, null, 2));
   white-space: pre-wrap;
   word-break: break-word;
   opacity: 0.9;
+}
+.tool-call-card__detail--clamped {
+  /* The ellipsis line plus the preview lines; also stops a single long
+     line from wrapping on and on. */
+  max-height: calc((3 + 1) * 1lh);
+  overflow: hidden;
+}
+/* Same look as the log entries' own show-more toggle. */
+.tool-call-card__toggle {
+  display: block;
+  margin-top: 0.2rem;
+  background: none;
+  border: none;
+  padding: 0;
+  color: rgb(var(--v-theme-primary));
+  font-size: 0.75rem;
+  cursor: pointer;
 }
 .tool-call-card__description {
   opacity: 0.65;

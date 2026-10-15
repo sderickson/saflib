@@ -43,6 +43,13 @@
       "when": 1792081915001,
       "tag": "0005_fixed_eternity",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1792082383102,
+      "tag": "0006_steady_silvermane",
+      "breakpoints": true
     }
   ]
 }

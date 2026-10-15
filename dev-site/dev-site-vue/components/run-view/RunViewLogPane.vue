@@ -3,6 +3,10 @@
     <div :ref="onRootRef" class="run-view__logs" @scroll="onScroll">
       <!-- One wrapper so a ResizeObserver sees every change in content height. -->
       <div class="run-view__logs-content">
+        <div v-if="logsPrunedAt" class="run-view__logs-pruned">
+          This run's logs were deleted on {{ prunedDate }} because they were old. Its steps and
+          commits are still here.
+        </div>
         <div v-if="loadingOlder" class="run-view__logs-loading">Loading earlier logs…</div>
         <div
           v-for="item in logItems"
@@ -52,14 +56,16 @@
 </template>
 
 <script setup lang="ts">
-import type { VNodeRef } from "vue";
+import { computed, type VNodeRef } from "vue";
 import type { LogItem } from "../../group-logs.ts";
 import LogEntry from "../LogEntry.vue";
 import LogEntryGroup from "../LogEntryGroup.vue";
 import ToolCallCard from "../ToolCallCard.vue";
 import ToolCallBatch from "../ToolCallBatch.vue";
 
-defineProps<{
+const props = defineProps<{
+  /** When this run's logs were deleted for age, if they were. */
+  logsPrunedAt: string | null;
   /** Not pinned to the live bottom (scrolled up, or viewing a step's history). */
   showJumpToLatest: boolean;
   /** The agent is working and the loaded window ends at the newest log. */
@@ -77,6 +83,10 @@ defineProps<{
 }>();
 
 defineEmits<{ "return-live": [] }>();
+
+const prunedDate = computed(() =>
+  props.logsPrunedAt ? new Date(props.logsPrunedAt).toLocaleDateString() : "",
+);
 </script>
 
 <style scoped>
@@ -141,6 +151,11 @@ defineEmits<{ "return-live": [] }>();
   50% {
     opacity: 0.35;
   }
+}
+.run-view__logs-pruned {
+  opacity: 0.7;
+  font-style: italic;
+  padding-bottom: 0.5rem;
 }
 .run-view__logs-loading {
   opacity: 0.6;

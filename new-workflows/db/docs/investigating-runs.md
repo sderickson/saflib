@@ -23,6 +23,8 @@ sqlite3 /tmp/wfdb/local.sqlite
 
 Gotchas:
 
+- **Old runs lose their heavy rows.** For `done` and `failed` runs, raw agent output is deleted after 7 days and logs after 30, along with nested runs. The dev site does this 30 seconds after it starts, then daily. `new-workflow prune` does it by hand, with `--raw-days` and `--log-days` to change the ages. Runs, steps, and agent turns are kept, and `workflow_run.logs_pruned_at` says when a run's logs went. Runs still going or waiting on a person are never pruned.
+
 - `workflow_run`, `workflow_step`, and `workflow_log` timestamps are **unix seconds**. `workflow_agent_turn` timestamps are **milliseconds**.
 - Logs are filed under the *root* run being advanced (`run_id`, `step_index`). For output from a nested child, filter on `source_run_id` / `source_step_index` instead.
 - Agent tool calls are `agent`-channel rows whose `content` is JSON starting with `{"kind":"tool_use"`. Use `json_extract(content, '$.name')` and `'$.input.file_path'`. Both CLIs log them under Claude's tool names (`Read`, `Edit`, `Bash`, …). Cursor rows from before 2026-10-15 are plain text instead (`Reading file: …`, `Command successful`).

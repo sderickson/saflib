@@ -6,7 +6,12 @@
         <pre class="tool-result-body__pre">{{ section.body }}</pre>
       </div>
     </template>
-    <pre v-else class="tool-result-body__pre">{{ preview }}</pre>
+    <pre
+      v-else
+      class="tool-result-body__pre"
+      :class="{ 'tool-result-body__pre--clamped': !expanded }"
+      :style="{ '--preview-lines': PREVIEW_LINES + 1 }"
+    >{{ preview }}</pre>
     <button
       v-if="canExpand"
       type="button"
@@ -26,13 +31,18 @@ import {
   toolResultLineCount,
 } from "../tool-display.ts";
 
-const props = defineProps<{
-  content: string;
-  isError?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    content: string;
+    isError?: boolean;
+    /** Lines shown while collapsed. */
+    previewLines?: number;
+  }>(),
+  { previewLines: 8 },
+);
 
 const expanded = ref(false);
-const PREVIEW_LINES = 8;
+const PREVIEW_LINES = props.previewLines;
 
 const sections = computed(() => splitToolResultSections(props.content));
 
@@ -82,6 +92,11 @@ const expandLabel = computed(() => {
 </script>
 
 <style scoped>
+/* Catches long lines that wrap; the line count alone only limits newlines. */
+.tool-result-body__pre--clamped {
+  max-height: calc(var(--preview-lines) * 1lh);
+  overflow: hidden;
+}
 .tool-result-body__section {
   margin-top: 0.35rem;
 }

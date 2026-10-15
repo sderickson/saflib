@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import path from "node:path";
 import type { AgentAdapter } from "./types.ts";
 import { AgentExitedWithoutResultError } from "./claude-agent.ts";
 import { subprocessEnv } from "../subprocess-env.ts";
@@ -125,8 +126,11 @@ export function createCursorToolCallTracker() {
   return {
     toPayload(json: any): ToolUseLogPayload | ToolResultLogPayload | undefined {
       const call = json.tool_call ?? {};
-      const key = Object.keys(call)[0];
-      if (!key) return undefined;
+      // Alongside the tool's own `<name>ToolCall` key, cursor sends
+      // bookkeeping keys (`toolCallId`, `startedAtMs`, `hookAdditionalContexts`, …).
+      const key = Object.keys(call).find((k) => k.endsWith("ToolCall"));
+      // `getMcpTools` is cursor loading its own tool schemas, not work.
+      if (!key || key === "getMcpToolsToolCall") return undefined;
       const body = call[key] ?? {};
       const queue = open.get(key) ?? [];
       open.set(key, queue);
@@ -204,9 +208,27 @@ function resultText(key: string, value: any): string {
   }
   if (key === "readToolCall" && typeof value.content === "string") return value.content;
   if (key === "globToolCall" && Array.isArray(value.files)) return value.files.join("\n");
+  if (key === "grepToolCall" && value.workspaceResults) return grepMatches(value.workspaceResults);
   if (key === "editToolCall" && typeof value.diffString === "string") return value.diffString;
   if (typeof value.message === "string") return value.message;
   return JSON.stringify(value, null, 2);
+}
+
+/** `{ <root>: { content: { matches: [{ file, matches: [{ lineNumber, content }] }] } } }` → `file:line: text` lines. */
+function grepMatches(workspaceResults: Record<string, any>): string {
+  const lines: string[] = [];
+  for (const [root, result] of Object.entries(workspaceResults)) {
+    for (const file of result?.content?.matches ?? []) {
+      const filePath = typeof file.file === "string" ? path.join(root, file.file) : "?";
+      for (const match of file.matches ?? []) {
+        lines.push(`${filePath}:${match.lineNumber}: ${match.content}`);
+      }
+    }
+    for (const file of result?.files?.files ?? result?.files ?? []) {
+      if (typeof file === "string") lines.push(path.join(root, file));
+    }
+  }
+  return lines.length ? lines.join("\n") : "No matches";
 }
 
 function clip(text: string): string {

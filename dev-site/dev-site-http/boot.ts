@@ -4,6 +4,7 @@ import { startExpressServer } from "@saflib/express";
 import { makeSubsystemReporters } from "@saflib/node";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import type { DevSiteHttpEnvSchema } from "./env.ts";
+import { scheduleWorkflowHistoryPruning } from "./routes/workflows/index.ts";
 
 export type StartDevSiteServiceOptions = {
   /** Default sqlite path when DEV_SITE_DB_PATH is unset. */
@@ -75,6 +76,7 @@ export async function startDevSiteService(
     });
 
     startExpressServer(lease.app, { port });
+    scheduleWorkflowHistoryPruning();
     for (const url of devSitePublicHttpUrls(typedEnv, hostPort, port)) {
       log.info(`  ➜  Local:   ${url}`);
     }

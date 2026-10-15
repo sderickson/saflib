@@ -32,6 +32,7 @@
         v-else
         :show-jump-to-latest="vm.showJumpToLatest"
         :show-running-indicator="vm.showRunningIndicator"
+        :logs-pruned-at="vm.run?.logs_pruned_at ?? null"
         :log-items="vm.logItems"
         :loading-older="vm.logsLoadingOlder"
         :loading-newer="vm.logsLoadingNewer"

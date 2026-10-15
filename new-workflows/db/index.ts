@@ -18,6 +18,14 @@ export { updateInputWorkflowRun } from "./queries/workflow-run/update-input.ts";
 export { updateAgentConfigWorkflowRun } from "./queries/workflow-run/update-agent-config.ts";
 export { getChildByParentStepWorkflowRun } from "./queries/workflow-run/get-child-by-parent-step.ts";
 export { listByWorkflowRefWorkflowRun } from "./queries/workflow-run/list-by-workflow-ref.ts";
+export {
+  pruneHistoryWorkflowRun,
+  vacuumIfMostlyFreeWorkflowDb,
+} from "./queries/workflow-run/prune-history.ts";
+export type {
+  PruneHistoryWorkflowRunParams,
+  PruneHistoryWorkflowRunResult,
+} from "./queries/workflow-run/prune-history.ts";
 export { createWorkflowStep } from "./queries/workflow-step/create.ts";
 export { updateResultWorkflowStep } from "./queries/workflow-step/update-result.ts";
 export { listByRunWorkflowStep } from "./queries/workflow-step/list-by-run.ts";

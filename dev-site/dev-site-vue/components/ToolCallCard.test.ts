@@ -39,7 +39,7 @@ describe("ToolCallCard", () => {
     expect(wrapper.text()).toContain("running…");
   });
 
-  it("previews the first 8 lines of output and expands to the rest", async () => {
+  it("previews the first 5 lines of output and expands to the rest", async () => {
     const output = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"].join("\n");
     const wrapper = mountWithPlugins(ToolCallCard, {
       props: {
@@ -55,7 +55,7 @@ describe("ToolCallCard", () => {
     expect(wrapper.text()).not.toContain("running…");
 
     const toggle = wrapper.find(".tool-result-body__toggle");
-    expect(toggle.text()).toContain("2 more line");
+    expect(toggle.text()).toContain("5 more line");
     await toggle.trigger("click");
 
     expect(wrapper.find(".tool-result-body__pre").text()).toBe(output);

@@ -22,6 +22,7 @@ required:
   - updated_at
   - is_advancing
   - was_cancelled
+  - logs_pruned_at
 properties:
   id:
     type: string
@@ -83,6 +84,13 @@ properties:
   updated_at:
     type: string
     format: date-time
+  logs_pruned_at:
+    type: [string, "null"]
+    format: date-time
+    description: >
+      When this run's logs were deleted for age (see
+      `pruneHistoryWorkflowRun`). The run and its steps remain. Null while
+      the logs are still there.
   is_advancing:
     type: boolean
     description: >

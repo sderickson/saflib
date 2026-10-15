@@ -47,3 +47,19 @@ describe("ToolCallBatch", () => {
     expect(wrapper.text()).toContain("file body");
   });
 });
+
+describe("ToolCallCard collapsed size", () => {
+  it("shows a long command's first lines until expanded", async () => {
+    const { default: ToolCallCard } = await import("./ToolCallCard.vue");
+    const command = Array.from({ length: 40 }, (_, i) => `line ${i + 1}`).join("\n");
+    const wrapper = mountWithPlugins(ToolCallCard, { props: { name: "Bash", input: { command } } });
+
+    expect(wrapper.text()).toContain("line 3");
+    expect(wrapper.text()).not.toContain("line 4");
+    const toggle = wrapper.find(".tool-call-card__toggle");
+    expect(toggle.text()).toBe("Show 37 more lines");
+
+    await toggle.trigger("click");
+    expect(wrapper.text()).toContain("line 40");
+  });
+});

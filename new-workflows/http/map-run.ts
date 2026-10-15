@@ -12,11 +12,12 @@ export function mapRunToWire(
   isAdvancing: boolean,
   wasCancelled: boolean,
 ): WorkflowRun {
-  const { created_at, updated_at, ...rest } = run;
+  const { created_at, updated_at, logs_pruned_at, ...rest } = run;
   return {
     ...rest,
     created_at: created_at.toISOString(),
     updated_at: updated_at.toISOString(),
+    logs_pruned_at: logs_pruned_at?.toISOString() ?? null,
     is_advancing: isAdvancing,
     was_cancelled: wasCancelled,
   };

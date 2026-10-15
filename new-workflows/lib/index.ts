@@ -51,6 +51,13 @@ export {
 export { cancelActiveAgentProcess } from "./agents/registry.ts";
 export { cancelRunAndDescendants } from "./cancel-run.ts";
 export {
+  pruneWorkflowHistory,
+  DEFAULT_LOG_RETENTION_DAYS,
+  DEFAULT_RAW_OUTPUT_RETENTION_DAYS,
+  type PruneWorkflowHistoryOptions,
+  type PruneWorkflowHistoryResult,
+} from "./prune-history.ts";
+export {
   parseGotoPath,
   formatGotoPath,
   buildStepTree,

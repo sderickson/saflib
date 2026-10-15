@@ -71,6 +71,12 @@ export interface WorkflowRunEntity {
   parent_step_index: number | null;
   created_at: Date;
   updated_at: Date;
+  /**
+   * When `pruneHistoryWorkflowRun` deleted this run's logs (and raw agent
+   * output) for age. The run, its steps, and its agent turns stay; null
+   * while the logs are still there.
+   */
+  logs_pruned_at: Date | null;
 }
 
 export const workflowRunTable = sqliteTable(
@@ -102,6 +108,7 @@ export const workflowRunTable = sqliteTable(
     parent_step_index: integer("parent_step_index"),
     created_at: integer("created_at", { mode: "timestamp" }).notNull(),
     updated_at: integer("updated_at", { mode: "timestamp" }).notNull(),
+    logs_pruned_at: integer("logs_pruned_at", { mode: "timestamp" }),
   },
   (table) => [
     index("workflow_run_workflow_ref_idx").on(table.workflow_ref),

@@ -73,4 +73,52 @@ describe("createCursorToolCallTracker", () => {
       tracker.toPayload(started({ webSearchToolCall: { args: { query: "q" } } })),
     ).toMatchObject({ name: "webSearch", input: { query: "q" } });
   });
+
+  it("finds the tool's key among cursor's bookkeeping keys, and hides getMcpTools", () => {
+    const tracker = createCursorToolCallTracker();
+    expect(
+      tracker.toPayload(
+        started(
+          {
+            toolCallId: "x",
+            startedAtMs: "1",
+            hookAdditionalContexts: [],
+            shellToolCall: { args: { command: "ls" } },
+          },
+          "c1",
+        ),
+      ),
+    ).toMatchObject({ name: "Bash", input: { command: "ls" } });
+    expect(
+      tracker.toPayload(started({ getMcpToolsToolCall: { args: { toolName: "Task" } } }, "c2")),
+    ).toBeUndefined();
+  });
+
+  it("lists grep matches as file:line: text, relative to the searched root", () => {
+    const tracker = createCursorToolCallTracker();
+    tracker.toPayload(started({ grepToolCall: { args: { pattern: "x" } } }, "g"));
+    const result = tracker.toPayload(
+      completed(
+        {
+          grepToolCall: {
+            result: {
+              success: {
+                workspaceResults: {
+                  "/repo/daemon/service/sdk": {
+                    content: {
+                      matches: [
+                        { file: "../../plans/a.md", matches: [{ lineNumber: 8, content: "the x" }] },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "g",
+      ),
+    );
+    expect(result).toMatchObject({ content: "/repo/daemon/plans/a.md:8: the x", is_error: false });
+  });
 });
