@@ -493,6 +493,13 @@ export interface components {
             content: string;
             /** Format: date-time */
             created_at: string;
+            /**
+             * @description The run that produced this line. Differs from `run_id` when a nested `call-workflow` child produced it (its output is filed under the root run's step). Null on lines written before this was tracked.
+             * @example 7fQx2LmN9pA1
+             */
+            source_run_id: string | null;
+            /** @description Step index within `source_run_id` that produced this line. Null on lines written before this was tracked. */
+            source_step_index: number | null;
         };
         "workflow-step-tree-node": {
             /**

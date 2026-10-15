@@ -21,6 +21,14 @@ export interface LogChunk {
   channel: Channel;
   level: LogLevel;
   content: string;
+  /**
+   * The run/step that produced this chunk. Stamped by the engine as the
+   * chunk leaves `runStep` (steps never set these themselves), so a
+   * nested child's chunks keep their own child run/step even after
+   * `call-workflow` forwards them up into the parent's stream.
+   */
+  sourceRunId?: string;
+  sourceStepIndex?: number;
 }
 
 /**

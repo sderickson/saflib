@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { summarizeContentBlock, killProcessGroup } from "./claude-agent.ts";
+import {
+  summarizeContentBlock,
+  killProcessGroup,
+  parseResultMetrics,
+  formatResultSummary,
+} from "./claude-agent.ts";
 
 describe("summarizeContentBlock", () => {
   it("returns text blocks verbatim", () => {
@@ -59,5 +64,44 @@ describe("killProcessGroup", () => {
       throw new Error("ESRCH");
     });
     expect(() => killProcessGroup(123, "SIGKILL")).not.toThrow();
+  });
+});
+
+describe("parseResultMetrics", () => {
+  it("pulls timing, usage, and cost from a result event", () => {
+    const metrics = parseResultMetrics({
+      type: "result",
+      subtype: "success",
+      is_error: false,
+      duration_ms: 90_000,
+      duration_api_ms: 84_200,
+      num_turns: 12,
+      total_cost_usd: 0.42131,
+      usage: {
+        input_tokens: 40,
+        output_tokens: 3_100,
+        cache_read_input_tokens: 220_000,
+        cache_creation_input_tokens: 18_000,
+      },
+    });
+    expect(metrics).toEqual({
+      resultSubtype: "success",
+      isError: false,
+      apiDurationMs: 84_200,
+      numTurns: 12,
+      inputTokens: 40,
+      outputTokens: 3_100,
+      cacheReadInputTokens: 220_000,
+      cacheCreationInputTokens: 18_000,
+      costUsd: 0.42131,
+    });
+    expect(formatResultSummary(metrics)).toBe(" · 12 turns · 84s API · $0.4213");
+  });
+
+  it("leaves missing fields undefined", () => {
+    const metrics = parseResultMetrics({ type: "result", subtype: "error_max_turns", is_error: true });
+    expect(metrics).toMatchObject({ resultSubtype: "error_max_turns", isError: true });
+    expect(metrics.costUsd).toBeUndefined();
+    expect(formatResultSummary(metrics)).toBe("");
   });
 });

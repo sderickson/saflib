@@ -159,7 +159,7 @@ async function runStep(
   dbKey: DbKey,
   def: WorkflowDefinition<any, any>,
   runId: string,
-  write: (chunk: Parameters<WorkflowContext["log"]>[0]) => void,
+  rawWrite: (chunk: Parameters<WorkflowContext["log"]>[0]) => void,
   options?: AdvanceRunOptions,
 ): Promise<StepResult> {
   const { result: run, error: runError } = await getByIdWorkflowRun(dbKey, {
@@ -169,6 +169,14 @@ async function runStep(
 
   const stepIndex = run.current_step_index;
   const step = def.steps[stepIndex];
+  // Stamp each chunk with where it came from, unless a nested child run
+  // (forwarded up by `call-workflow`) already stamped its own.
+  const write: typeof rawWrite = (chunk) =>
+    rawWrite({
+      ...chunk,
+      sourceRunId: chunk.sourceRunId ?? runId,
+      sourceStepIndex: chunk.sourceStepIndex ?? stepIndex,
+    });
   if (!step) {
     // Past the last step — e.g. the on-disk workflow was shortened after
     // this run advanced, or the row was left mid-flight. Persist `done` so
@@ -264,8 +272,8 @@ async function runStep(
     }
   }
 
+  const label = summarizeStepInput(step.kind, stepInput) ?? step.kind;
   if (stepResult.status === "success") {
-    const label = summarizeStepInput(step.kind, stepInput) ?? step.kind;
     const commitMessage = options?.skip
       ? `${def.id}: skip ${label}`
       : `${def.id}: ${label}`;
@@ -296,6 +304,7 @@ async function runStep(
     status: stepResult.status === "success" ? "success" : stepResult.status,
     result: "result" in stepResult ? (stepResult.result ?? null) : null,
     error: stepResult.status === "error" ? stepResult.message : null,
+    label,
     now: finishedAt,
   });
 

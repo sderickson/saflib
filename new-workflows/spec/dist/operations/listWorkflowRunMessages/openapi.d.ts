@@ -46,6 +46,13 @@ export interface components {
             content: string;
             /** Format: date-time */
             created_at: string;
+            /**
+             * @description The run that produced this line. Differs from `run_id` when a nested `call-workflow` child produced it (its output is filed under the root run's step). Null on lines written before this was tracked.
+             * @example 7fQx2LmN9pA1
+             */
+            source_run_id: string | null;
+            /** @description Step index within `source_run_id` that produced this line. Null on lines written before this was tracked. */
+            source_step_index: number | null;
         };
         /**
          * @description Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. "running step 3: copy"). `agent-input`: the prompt text sent to the agent.

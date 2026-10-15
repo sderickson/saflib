@@ -13,6 +13,8 @@ function logFixture(overrides: Partial<WorkflowLogEntry> = {}): WorkflowLogEntry
     level: "info",
     content: "Running command: npm --version",
     created_at: "2026-09-15T00:00:00.000Z",
+    source_run_id: null,
+    source_step_index: null,
     ...overrides,
   };
 }

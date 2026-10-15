@@ -14,6 +14,8 @@ export type UpdateResultWorkflowStepParams = {
   status: WorkflowStepStatus;
   result: Record<string, unknown> | null;
   error: string | null;
+  /** See `WorkflowStepEntity.label`. Omit to leave it unchanged. */
+  label?: string | null;
   now: Date;
 };
 
@@ -37,6 +39,7 @@ export const updateResultWorkflowStep = queryWrapper(
         status: params.status,
         result: params.result,
         error: params.error,
+        ...(params.label !== undefined ? { label: params.label } : {}),
         finished_at: params.now,
       })
       .where(eq(workflowStepTable.id, params.id))

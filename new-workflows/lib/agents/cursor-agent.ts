@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import type { AgentAdapter } from "./types.ts";
+import { AgentExitedWithoutResultError } from "./claude-agent.ts";
 import { subprocessEnv } from "../subprocess-env.ts";
 
 /**
@@ -25,6 +26,7 @@ export const executePromptWithCursor: AgentAdapter = async (msg, ctx) => {
 
     let buffer = "";
     let sessionId = "";
+    let stderr = "";
     let resultReceived = false;
     let pipeClosed = false;
     let shouldContinue = true;
@@ -78,12 +80,17 @@ export const executePromptWithCursor: AgentAdapter = async (msg, ctx) => {
     });
 
     agent.stderr.on("data", (data: Buffer) => {
+      stderr += data.toString();
       ctx.log({ channel: "agent", level: "error", content: data.toString() });
     });
 
     agent.on("error", reject);
-    agent.on("close", () => {
+    agent.on("close", (code) => {
       pipeClosed = true;
+      if (!resultReceived) {
+        reject(new AgentExitedWithoutResultError(code, stderr));
+        return;
+      }
       maybeResolve();
     });
   });

@@ -33,6 +33,15 @@ export interface WorkflowLogEntity {
   level: WorkflowLogLevel;
   content: string;
   created_at: Date;
+  /**
+   * The run/step that actually produced this line. Logs are filed under
+   * the *root* run being advanced (`run_id`/`step_index`, what the UI
+   * lists by), so a nested `call-workflow` child's output lands under its
+   * parent's step — these say which child run and child step it came
+   * from. Null on rows written before these columns existed.
+   */
+  source_run_id: string | null;
+  source_step_index: number | null;
 }
 
 export const workflowLogTable = sqliteTable(
@@ -49,6 +58,8 @@ export const workflowLogTable = sqliteTable(
       .default("info"),
     content: text("content").notNull(),
     created_at: integer("created_at", { mode: "timestamp" }).notNull(),
+    source_run_id: text("source_run_id"),
+    source_step_index: integer("source_step_index"),
   },
   (table) => [
     index("workflow_log_run_id_created_at_idx").on(

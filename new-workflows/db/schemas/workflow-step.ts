@@ -26,6 +26,12 @@ export interface WorkflowStepEntity {
   run_id: string;
   step_index: number;
   kind: string;
+  /**
+   * Human-readable summary of what this step did, e.g. `npm run
+   * typecheck` or `update: schema` — same text as its commit message
+   * label. Null until the step finishes, or if its input never resolved.
+   */
+  label: string | null;
   status: WorkflowStepStatus;
   result: Record<string, unknown> | null;
   error: string | null;
@@ -42,6 +48,7 @@ export const workflowStepTable = sqliteTable(
     run_id: text("run_id").notNull(),
     step_index: integer("step_index").notNull(),
     kind: text("kind").notNull(),
+    label: text("label"),
     status: text("status", { enum: workflowStepStatus }).notNull(),
     result: text("result", { mode: "json" }).$type<Record<
       string,

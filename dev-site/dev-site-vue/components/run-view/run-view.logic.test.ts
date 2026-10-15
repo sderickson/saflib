@@ -58,6 +58,8 @@ describe("run-view.logic", () => {
           level: "error",
           content: "boom",
           created_at: "",
+          source_run_id: null,
+          source_step_index: null,
         },
       ]),
     ).toBe("boom");

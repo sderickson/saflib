@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import type { AgentAdapter } from "./types.ts";
+import type { AgentAdapter, AgentTurnMetrics } from "./types.ts";
 import { registerActiveAgentProcess, unregisterActiveAgentProcess } from "./registry.ts";
 import { subprocessEnv } from "../subprocess-env.ts";
 import type { ToolUseLogPayload, ToolResultLogPayload } from "./tool-log-payload.ts";
@@ -43,8 +43,9 @@ export function killProcessGroup(pid: number | undefined, signal: NodeJS.Signals
  * (force) flag in this same file — both exist so an unattended workflow
  * run doesn't stall on a permission prompt no one is present to answer.
  *
- * Same simplification as `cursor-agent.ts`: no cost-file TSV logging, no
- * global time-budget tracking.
+ * Cost/usage from the final `result` event comes back as `metrics` for
+ * `runAgentTurn` to persist (no cost-file TSV logging, no global
+ * time-budget tracking here).
  */
 export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
   return new Promise((resolve, reject) => {
@@ -72,6 +73,9 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
 
     let buffer = "";
     let sessionId = "";
+    let model: string | undefined;
+    let metrics: AgentTurnMetrics | undefined;
+    let stderr = "";
     let resultReceived = false;
     let pipeClosed = false;
     let cancelled = false;
@@ -91,7 +95,11 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
 
     const maybeResolve = () => {
       if (resultReceived && pipeClosed) {
-        resolve({ shouldContinue: true, sessionId: sessionId || undefined });
+        resolve({
+          shouldContinue: true,
+          sessionId: sessionId || undefined,
+          metrics: metrics ? { ...metrics, model } : model ? { model } : undefined,
+        });
       }
     };
 
@@ -110,6 +118,9 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
 
         if (json.session_id) {
           sessionId = json.session_id;
+        }
+        if (json.type === "system" && json.subtype === "init" && json.model) {
+          model = json.model;
         }
 
         if (json.type === "assistant" || json.type === "user") {
@@ -148,7 +159,8 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
             });
           }
         } else if (json.type === "result") {
-          const content = `---------- RESULT ----------\n${json.is_error ? `Error (${json.subtype})` : "Success"}`;
+          metrics = parseResultMetrics(json);
+          const content = `---------- RESULT ----------\n${json.is_error ? `Error (${json.subtype})` : "Success"}${formatResultSummary(metrics)}`;
           ctx.log({
             channel: "agent",
             level: json.is_error ? "error" : "info",
@@ -161,6 +173,7 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
     });
 
     agent.stderr.on("data", (data: Buffer) => {
+      stderr += data.toString();
       ctx.log({ channel: "agent", level: "error", content: data.toString() });
     });
 
@@ -168,11 +181,18 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx) => {
       unregisterActiveAgentProcess(ctx.runId);
       reject(err);
     });
-    agent.on("close", () => {
+    agent.on("close", (code) => {
       unregisterActiveAgentProcess(ctx.runId);
       pipeClosed = true;
       if (cancelled) {
         reject(new Error(CANCELLED_BY_USER_MESSAGE));
+        return;
+      }
+      if (!resultReceived) {
+        // Exited without a `result` event — e.g. `--resume` of a session
+        // that no longer exists, or a crash. Without this the promise
+        // never settled and the step hung forever.
+        reject(new AgentExitedWithoutResultError(code, stderr));
         return;
       }
       maybeResolve();
@@ -196,4 +216,48 @@ export function summarizeContentBlock(block: any): string {
     default:
       return JSON.stringify(block);
   }
+}
+
+/** The CLI process exited before emitting its final `result` event. */
+export class AgentExitedWithoutResultError extends Error {
+  constructor(
+    readonly exitCode: number | null,
+    readonly stderr: string,
+  ) {
+    super(
+      `Agent exited (code ${exitCode ?? "unknown"}) without a result${stderr.trim() ? `: ${stderr.trim()}` : ""}`,
+    );
+    this.name = "AgentExitedWithoutResultError";
+  }
+}
+
+function numberOrUndefined(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+/** Pulls cost/usage out of Claude Code's final `result` stream-json event. */
+export function parseResultMetrics(json: any): AgentTurnMetrics {
+  const usage = json.usage ?? {};
+  return {
+    resultSubtype: typeof json.subtype === "string" ? json.subtype : undefined,
+    isError: Boolean(json.is_error),
+    apiDurationMs: numberOrUndefined(json.duration_api_ms),
+    numTurns: numberOrUndefined(json.num_turns),
+    inputTokens: numberOrUndefined(usage.input_tokens),
+    outputTokens: numberOrUndefined(usage.output_tokens),
+    cacheReadInputTokens: numberOrUndefined(usage.cache_read_input_tokens),
+    cacheCreationInputTokens: numberOrUndefined(usage.cache_creation_input_tokens),
+    costUsd: numberOrUndefined(json.total_cost_usd),
+  };
+}
+
+/** e.g. ` · 12 turns · 84s API · $0.4213` — appended to the RESULT log line. */
+export function formatResultSummary(metrics: AgentTurnMetrics): string {
+  const parts: string[] = [];
+  if (metrics.numTurns !== undefined) parts.push(`${metrics.numTurns} turns`);
+  if (metrics.apiDurationMs !== undefined) {
+    parts.push(`${Math.round(metrics.apiDurationMs / 1000)}s API`);
+  }
+  if (metrics.costUsd !== undefined) parts.push(`$${metrics.costUsd.toFixed(4)}`);
+  return parts.length ? ` · ${parts.join(" · ")}` : "";
 }

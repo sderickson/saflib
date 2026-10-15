@@ -34,6 +34,8 @@ export const sendFreeformAgentMessageHandler = createHandler(async (req, res) =>
       channel: chunk.channel,
       level: chunk.level,
       content: chunk.content,
+      source_run_id: chunk.sourceRunId ?? runId,
+      source_step_index: chunk.sourceStepIndex ?? stepIndex,
       now: new Date(),
     });
     publishRunChanged(runId);

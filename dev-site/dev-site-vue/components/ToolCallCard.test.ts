@@ -13,6 +13,8 @@ function resultLog(overrides: Partial<WorkflowLogEntry> = {}): WorkflowLogEntry 
     level: "info",
     content: JSON.stringify({ kind: "tool_result", tool_use_id: "toolu_1", content: "ok", is_error: false }),
     created_at: "2026-09-15T00:00:00.000Z",
+    source_run_id: null,
+    source_step_index: null,
     ...overrides,
   };
 }
