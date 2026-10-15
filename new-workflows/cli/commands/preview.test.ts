@@ -43,6 +43,8 @@ describe("preview CLI command", () => {
   let repoRoot: string;
   let originalCwd: string;
   let originalExitCode: typeof process.exitCode;
+  let originalTmpdirEnv: string | undefined;
+  let privateTmp: string;
 
   beforeAll(() => {
     dbKey = newWorkflowsDbManager.connect();
@@ -55,6 +57,12 @@ describe("preview CLI command", () => {
   beforeEach(() => {
     newWorkflowsDbManager.clearAllTablesForTests(dbKey);
     repoRoot = mkdtempSync(path.join(tmpdir(), "saflib-preview-cli-"));
+    // Preview's scratch dirs go under os.tmpdir(). Point that at a folder only
+    // this test uses, so "no scratch dirs left behind" can't be thrown off by
+    // other test files running previews in parallel (as happens in CI).
+    privateTmp = mkdtempSync(path.join(tmpdir(), "preview-cli-tmp-"));
+    originalTmpdirEnv = process.env.TMPDIR;
+    process.env.TMPDIR = privateTmp;
     git(repoRoot, ["init"]);
     git(repoRoot, ["checkout", "-b", "main"]);
     git(repoRoot, ["commit", "--allow-empty", "-m", "base"]);
@@ -67,6 +75,9 @@ describe("preview CLI command", () => {
   afterEach(() => {
     process.chdir(originalCwd);
     process.exitCode = originalExitCode;
+    if (originalTmpdirEnv === undefined) delete process.env.TMPDIR;
+    else process.env.TMPDIR = originalTmpdirEnv;
+    rmSync(privateTmp, { recursive: true, force: true });
     rmSync(repoRoot, { recursive: true, force: true });
   });
 
