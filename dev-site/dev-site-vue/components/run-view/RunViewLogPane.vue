@@ -1,34 +1,39 @@
 <template>
   <div class="run-view__logs-wrap">
     <div :ref="onRootRef" class="run-view__logs" @scroll="onScroll">
-      <div v-if="loadingOlder" class="run-view__logs-loading">Loading earlier logs…</div>
-      <div
-        v-for="item in logItems"
-        :key="itemKey(item)"
-        class="run-view__log-item"
-        :data-step-index="stepIndex(item)"
-        :data-seq="seq(item)"
-        :class="{ 'run-view__log-item--sticky': stickyAgentInput && isLastAgentInput(item) }"
-      >
-        <ToolCallCard
-          v-if="item.type === 'tool-call'"
-          :name="item.name"
-          :input="item.input"
-          :result-log="item.resultLog"
-          :started-at="item.useLog.created_at"
-        />
-        <LogEntryGroup v-else-if="item.type === 'channel-group'" :logs="item.logs" />
-        <LogEntry v-else :log="item.log" />
-      </div>
-      <div v-if="loadingNewer" class="run-view__logs-loading">Loading later logs…</div>
-      <div v-if="showRunningIndicator" class="run-view__logs-running">
-        <v-progress-linear
-          indeterminate
-          rounded
-          height="3"
-          color="primary"
+      <!-- One wrapper so a ResizeObserver sees every change in content height. -->
+      <div class="run-view__logs-content">
+        <div v-if="loadingOlder" class="run-view__logs-loading">Loading earlier logs…</div>
+        <div
+          v-for="item in logItems"
+          :key="itemKey(item)"
+          class="run-view__log-item"
+          :data-step-index="stepIndex(item)"
+          :data-seq="seq(item)"
+          :class="{ 'run-view__log-item--sticky': stickyAgentInput && isLastAgentInput(item) }"
+        >
+          <ToolCallCard
+            v-if="item.type === 'tool-call'"
+            :name="item.name"
+            :input="item.input"
+            :result-log="item.resultLog"
+            :started-at="item.useLog.created_at"
+          />
+          <LogEntryGroup v-else-if="item.type === 'channel-group'" :logs="item.logs" />
+          <LogEntry v-else :log="item.log" />
+        </div>
+        <div v-if="loadingNewer" class="run-view__logs-loading">Loading later logs…</div>
+        <!-- Not v-progress-linear: it pauses its animation whenever its
+             IntersectionObserver says it's off-screen, which left it frozen
+             here after the first pass. -->
+        <div
+          v-if="showRunningIndicator"
+          class="run-view__logs-running"
+          role="progressbar"
           aria-label="Agent is running"
-        />
+        >
+          <div class="run-view__logs-running-bar" />
+        </div>
       </div>
     </div>
     <v-btn
@@ -98,8 +103,42 @@ defineEmits<{ "return-live": [] }>();
 .run-view__logs-running {
   /* Deliberately small: a glanceable "still going" under the latest log,
      not a page-wide banner. */
-  max-width: 160px;
-  padding: 0.5rem 0 0.25rem;
+  position: relative;
+  overflow: hidden;
+  width: 160px;
+  max-width: 100%;
+  height: 3px;
+  margin: 0.75rem auto 0.25rem;
+  border-radius: 9999px;
+  background: rgba(var(--v-theme-primary), 0.2);
+}
+.run-view__logs-running-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: rgb(var(--v-theme-primary));
+  animation: run-view-running 1.4s ease-in-out infinite;
+}
+@keyframes run-view-running {
+  from {
+    left: -40%;
+  }
+  to {
+    left: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .run-view__logs-running-bar {
+    left: 30%;
+    animation: run-view-running-pulse 2s ease-in-out infinite;
+  }
+}
+@keyframes run-view-running-pulse {
+  50% {
+    opacity: 0.35;
+  }
 }
 .run-view__logs-loading {
   opacity: 0.6;

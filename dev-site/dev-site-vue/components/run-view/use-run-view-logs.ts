@@ -1,4 +1,4 @@
-import { computed, nextTick, ref, watch, type Ref } from "vue";
+import { computed, nextTick, onScopeDispose, ref, watch, type Ref } from "vue";
 import {
   flattenRunLogPages,
   useWorkflowRunLogsQuery,
@@ -40,11 +40,13 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
   /** Bumped on every jump/return so a superseded jump doesn't scroll. */
   let navToken = 0;
   /**
-   * A programmatic smooth scroll to the bottom is in flight. Its own
-   * intermediate scroll events aren't "the user scrolled away", so they
-   * mustn't turn following off; real user input cancels it instead.
+   * The user has wheeled, touched, clicked, or pressed a key in the log
+   * pane since the last programmatic scroll. Only then can a scroll away
+   * from the bottom turn following off: smooth-scroll frames, content
+   * growing under a finished scroll, and a new scroll interrupting an
+   * old one all fire scroll events short of the bottom on their own.
    */
-  let autoScrolling = false;
+  let userScrolling = false;
   const currentStepIndex = ref<number | undefined>(undefined);
 
   const lastAgentInputId = computed(() => lastAgentInputLogId(logs.value));
@@ -92,7 +94,7 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
    */
   async function jumpTo(anchor: LogAnchor) {
     const token = ++navToken;
-    autoScrolling = false;
+    userScrolling = false;
     isFollowing.value = false;
     logAnchor.value = anchor;
     // Let vue-query pick up the new key before checking fetch state.
@@ -119,7 +121,7 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
   /** Back to the live tip, pinned to the bottom. */
   async function returnToLiveLogs() {
     const token = ++navToken;
-    autoScrolling = false;
+    userScrolling = false;
     logAnchor.value = undefined;
     isFollowing.value = true;
     await nextTick();
@@ -178,12 +180,10 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
   function onScroll() {
     const el = logContainer.value;
     if (el) {
-      if (autoScrolling) {
-        if (isNearScrollBottom(el, SCROLL_BOTTOM_THRESHOLD_PX)) autoScrolling = false;
-      } else {
-        isFollowing.value =
-          !logsQuery.hasPreviousPage.value &&
-          isNearScrollBottom(el, SCROLL_BOTTOM_THRESHOLD_PX);
+      if (isNearScrollBottom(el, SCROLL_BOTTOM_THRESHOLD_PX)) {
+        isFollowing.value = !logsQuery.hasPreviousPage.value;
+      } else if (userScrolling) {
+        isFollowing.value = false;
       }
       void loadOlderLogsIfNeeded(el);
       void loadNewerLogsIfNeeded(el);
@@ -197,25 +197,40 @@ export function useRunViewLogs(runId: Ref<string | undefined>) {
    * to live) snaps instead.
    */
   function followToBottom(el: HTMLElement, smooth: boolean) {
+    userScrolling = false;
     if (smooth && typeof el.scrollTo === "function" && !prefersReducedMotion()) {
-      autoScrolling = true;
       el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     } else {
       el.scrollTop = el.scrollHeight;
     }
   }
 
-  const cancelAutoScroll = () => {
-    autoScrolling = false;
+  const onUserInput = () => {
+    userScrolling = true;
   };
   const USER_SCROLL_EVENTS = ["wheel", "touchstart", "keydown", "mousedown"] as const;
+
+  /**
+   * Content can grow without `logItems` changing: the running indicator
+   * appearing, a card rendering its markdown or a tool result. While
+   * following, keep the bottom pinned through all of it.
+   */
+  const contentObserver =
+    typeof ResizeObserver === "function"
+      ? new ResizeObserver(() => {
+          const el = logContainer.value;
+          if (el && isFollowing.value && !isNearScrollBottom(el, 1)) followToBottom(el, true);
+        })
+      : undefined;
+  onScopeDispose(() => contentObserver?.disconnect());
+
   watch(logContainer, (el, old) => {
     for (const type of USER_SCROLL_EVENTS) {
-      old?.removeEventListener(type, cancelAutoScroll);
-      el?.addEventListener(type, cancelAutoScroll, { passive: true });
+      old?.removeEventListener(type, onUserInput);
+      el?.addEventListener(type, onUserInput, { passive: true });
     }
-    old?.removeEventListener("scrollend", cancelAutoScroll);
-    el?.addEventListener("scrollend", cancelAutoScroll);
+    contentObserver?.disconnect();
+    if (el?.firstElementChild) contentObserver?.observe(el.firstElementChild);
   });
 
   watch(

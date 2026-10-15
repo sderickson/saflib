@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, onTestFinished } from "vitest";
 import { nextTick } from "vue";
 import { enableAutoUnmount } from "@vue/test-utils";
 import { stubGlobals } from "@saflib/vue/testing";
@@ -301,6 +301,8 @@ describe("RunView", () => {
     Object.defineProperty(el, "scrollHeight", { value: 1000, configurable: true });
     Object.defineProperty(el, "clientHeight", { value: 200, configurable: true });
     Object.defineProperty(el, "scrollTop", { value: 100, writable: true, configurable: true });
+    // Only a scroll the user caused turns following off.
+    el.dispatchEvent(new Event("wheel"));
     el.dispatchEvent(new Event("scroll"));
 
     const continueButton = wrapper.find('[aria-label="Play current step"]');
@@ -1321,6 +1323,38 @@ describe("RunView", () => {
       expect(scrollTo).toHaveBeenCalledWith({ top: 1000, behavior: "smooth" });
     });
     expect(wrapper.text()).not.toContain("Jump to latest");
+  });
+
+  it("keeps the bottom pinned when content grows without new logs", async () => {
+    let onResize: (() => void) | undefined;
+    // jsdom has no ResizeObserver. Set and restore by hand: unstubbing all
+    // globals would also drop the suite's own stubs.
+    const original = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = class {
+      constructor(cb: () => void) {
+        onResize = cb;
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver;
+    onTestFinished(() => {
+      globalThis.ResizeObserver = original;
+    });
+    const wrapper = mountRunView();
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("starting");
+    });
+    const el = wrapper.find(".run-view__logs").element as HTMLElement;
+    Object.defineProperty(el, "clientHeight", { configurable: true, value: 200 });
+    Object.defineProperty(el, "scrollTop", { configurable: true, writable: true, value: 800 });
+    // e.g. a card finished rendering its markdown: 200px taller.
+    Object.defineProperty(el, "scrollHeight", { configurable: true, value: 1200 });
+    const scrollTo = vi.fn();
+    el.scrollTo = scrollTo as unknown as HTMLElement["scrollTo"];
+
+    onResize!();
+    expect(scrollTo).toHaveBeenCalledWith({ top: 1200, behavior: "smooth" });
   });
 
   it("lists direct messages in the sidebar after their step, and jumps to one on click", async () => {
