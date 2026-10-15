@@ -6,6 +6,7 @@ import {
   capturedAnalyticsCalls,
   createAnalyticsService,
   makeTypedAnalytics,
+  setAnalyticsConsentResolver,
 } from "./index.ts";
 
 describe("createAnalyticsService", () => {
@@ -130,6 +131,49 @@ describe("capture merges SafContext (e.g. host)", () => {
         user_agent: "vitest/1",
         accept_language: "en-US,en;q=0.9",
       },
+    });
+  });
+});
+
+describe("analytics consent", () => {
+  beforeEach(() => {
+    clearCapturedAnalyticsCalls();
+    vi.stubEnv("NODE_ENV", "development");
+    vi.spyOn(node, "getSafContext").mockReturnValue({
+      serviceName: "example-http",
+      subsystemName: "http",
+      operationName: "op",
+      auth: { userId: "user-1" },
+    });
+  });
+
+  afterEach(() => {
+    setAnalyticsConsentResolver(undefined);
+    vi.unstubAllEnvs();
+    vi.mocked(node.getSafContext).mockRestore();
+  });
+
+  it("identifies the user when they consented (or no resolver is set)", () => {
+    const svc = createAnalyticsService({ type: "in-memory" });
+    svc.capture({ event: "e1" });
+    setAnalyticsConsentResolver(() => true);
+    svc.capture({ event: "e2" });
+    expect(capturedAnalyticsCalls.map((c) => c.distinctId)).toEqual(["user-1", "user-1"]);
+    expect(capturedAnalyticsCalls[1]!.kind === "capture" && capturedAnalyticsCalls[1]!.context).toBeFalsy();
+  });
+
+  it("captures anonymously, unlinked and without a person profile, when they didn't", () => {
+    setAnalyticsConsentResolver((userId) => userId !== "user-1");
+    const svc = createAnalyticsService({ type: "in-memory" });
+    svc.capture({ event: "e1", org: "org-1" });
+    svc.capture({ event: "e2" });
+
+    const [first, second] = capturedAnalyticsCalls;
+    expect(first!.distinctId).not.toBe("user-1");
+    expect(first!.distinctId).not.toBe(second!.distinctId);
+    expect(first!.kind === "capture" && first!.context).toEqual({
+      org: "org-1",
+      $process_person_profile: false,
     });
   });
 });
