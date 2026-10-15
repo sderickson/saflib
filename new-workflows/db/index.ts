@@ -26,6 +26,7 @@ export { appendWorkflowLog } from "./queries/workflow-log/append.ts";
 export { listByRunWorkflowLog } from "./queries/workflow-log/list-by-run.ts";
 export type { WorkflowLogRow } from "./queries/workflow-log/list-by-run.ts";
 export { createWorkflowAgentTurn } from "./queries/workflow-agent-turn/create.ts";
+export { listByRunStepWorkflowAgentTurn } from "./queries/workflow-agent-turn/list-by-run-step.ts";
 export { listBySessionRunWorkflowAgentTurn } from "./queries/workflow-agent-turn/list-by-session-run.ts";
 export { listDirectMessagesWorkflowLog } from "./queries/workflow-log/list-direct-messages.ts";
 export { createWorkflowConfig } from "./queries/workflow-config/create.ts";

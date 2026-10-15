@@ -5,12 +5,15 @@ import {
   createWorkflowStep,
   updateResultWorkflowStep,
   listByRunWorkflowStep,
+  listByRunStepWorkflowAgentTurn,
 } from "@saflib/new-workflows-db";
-import type { DbKey, WorkflowRunStatus } from "@saflib/new-workflows-db";
+import type { DbKey, WorkflowRunEntity, WorkflowRunStatus } from "@saflib/new-workflows-db";
 import { resolveRef } from "@saflib/git";
 import { createOutputStream } from "./output.ts";
 import { commitIfDirty, revertUncommittedChanges } from "./git.ts";
 import { summarizeStepInput } from "./describe-steps.ts";
+import { buildCommitMessage, summarizeAgentTurns } from "./commit-message.ts";
+import { loadRunChain } from "./run-chain.ts";
 import { withRunLock, RUN_LOCK_MESSAGE, getActiveLockHolder } from "./run-lock.ts";
 import type {
   AgentConfig,
@@ -151,6 +154,50 @@ export function advanceRun(
  * right now" even though its own `status` field is still whatever it was
  * after the *last completed* step.
  */
+/**
+ * The commit message for a step's changes — see `commit-message.ts` for
+ * the format. Best-effort: anything going wrong while gathering its
+ * context falls back to the plain `<workflow>: <label>` form rather than
+ * blocking the commit.
+ */
+async function stepCommitMessage(
+  dbKey: DbKey,
+  args: {
+    run: WorkflowRunEntity;
+    def: WorkflowDefinition<any, any>;
+    step: WorkflowStep<unknown>;
+    stepIndex: number;
+    stepInput: unknown;
+    stepResult: Record<string, unknown> | undefined;
+    label: string;
+    skipped: boolean;
+    startedAt: Date;
+  },
+): Promise<string> {
+  const fallback = `${args.def.id}: ${args.skipped ? "skip " : ""}${args.label}`;
+  try {
+    const chain = await loadRunChain(dbKey, args.run);
+    const { result: turns } = await listByRunStepWorkflowAgentTurn(dbKey, {
+      run_id: args.run.id,
+      step_index: args.stepIndex,
+      since: args.startedAt,
+    });
+    return buildCommitMessage({
+      chain,
+      stepIndex: args.stepIndex,
+      stepCount: args.def.steps.length,
+      kind: args.step.kind,
+      stepInput: args.stepInput,
+      stepResult: args.stepResult,
+      label: args.label,
+      skipped: args.skipped,
+      agentSummary: summarizeAgentTurns(turns ?? []),
+    });
+  } catch {
+    return fallback;
+  }
+}
+
 export function isRunAdvancing(dbKey: DbKey, runId: string): boolean {
   return getActiveLockHolder(dbKey)?.label === runId;
 }
@@ -273,14 +320,28 @@ async function runStep(
   }
 
   const label = summarizeStepInput(step.kind, stepInput) ?? step.kind;
+  let commitHash: string | null | undefined;
   if (stepResult.status === "success") {
-    const commitMessage = options?.skip
-      ? `${def.id}: skip ${label}`
-      : `${def.id}: ${label}`;
+    const commitMessage = await stepCommitMessage(dbKey, {
+      run,
+      def,
+      step,
+      stepIndex,
+      stepInput,
+      stepResult: stepResult.result,
+      label,
+      skipped: Boolean(options?.skip),
+      startedAt: now,
+    });
     try {
       const committed = await commitIfDirty(run.cwd, commitMessage);
       if (committed) {
-        write({ channel: "tool", level: "info", content: `Committed: ${commitMessage}` });
+        commitHash = resolveRef(run.cwd, "HEAD").result ?? null;
+        write({
+          channel: "tool",
+          level: "info",
+          content: `Committed: ${commitMessage.split("\n")[0]}`,
+        });
       }
     } catch (error) {
       // The whole revert/skip/retry recovery flow (`options.revert`,
@@ -305,6 +366,7 @@ async function runStep(
     result: "result" in stepResult ? (stepResult.result ?? null) : null,
     error: stepResult.status === "error" ? stepResult.message : null,
     label,
+    commit_hash: commitHash,
     now: finishedAt,
   });
 

@@ -13,15 +13,13 @@ import {
   executePromptWithClaude,
 } from "./claude-agent.ts";
 import { executePromptWithMock } from "./mock-agent.ts";
+import { loadRunChain } from "../run-chain.ts";
 
 const ADAPTERS: Record<AgentConfig["cli"], AgentAdapter> = {
   "cursor-agent": executePromptWithCursor,
   "claude-agent": executePromptWithClaude,
   "mock-agent": executePromptWithMock,
 };
-
-/** Guards the parent walk against a (corrupt) cycle in `parent_run_id`. */
-const MAX_RUN_DEPTH = 32;
 
 /**
  * Runs one agent turn in `run` mode. Only called when `ctx.mode === "run"`.
@@ -155,13 +153,7 @@ async function findSessionRun(ctx: WorkflowContext): Promise<WorkflowRunEntity |
   return bestEffort(async () => {
     const own = await getByIdWorkflowRun(ctx.dbKey, { id: ctx.runId });
     if (own.error) return undefined;
-    let run = own.result;
-    for (let depth = 0; run.parent_run_id && depth < MAX_RUN_DEPTH; depth++) {
-      const parent = await getByIdWorkflowRun(ctx.dbKey, { id: run.parent_run_id });
-      if (parent.error) break;
-      run = parent.result;
-    }
-    return run;
+    return (await loadRunChain(ctx.dbKey, own.result))[0];
   });
 }
 

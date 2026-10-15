@@ -16,7 +16,7 @@ sqlite3 /tmp/wfdb/local.sqlite
 | Table | One row per | Use it for |
 |---|---|---|
 | `workflow_run` | run; nested `call-workflow` children have `parent_run_id` | phase wall-clock (`created_at` → `updated_at`), final status |
-| `workflow_step` | step attempt (retries add rows) | where time went; `label` says what the step was (`npm run typecheck`, `update: schema`) |
+| `workflow_step` | step attempt (retries add rows) | where time went; `label` says what the step was (`npm run typecheck`, `update: schema`); `commit_hash` links to its commit |
 | `workflow_agent_turn` | agent CLI invocation | session reuse, model, API time, turn count, tokens, cost |
 | `workflow_log` | output line | what happened inside a step |
 
@@ -27,6 +27,36 @@ Gotchas:
 - Agent tool calls are `agent`-channel rows whose `content` is JSON starting with `{"kind":"tool_use"`. Use `json_extract(content, '$.name')` and `'$.input.file_path'`.
 - `call-workflow` steps span all their child's steps. Exclude them when summing step time, or you'll double-count.
 - A gap between one step's `finished_at` and the next one's `started_at` is usually a person: a `pauseAfter` review, or a failed step waiting to be retried.
+
+## Git history
+
+Every step that changes files commits them. The message is built by `lib/commit-message.ts`:
+
+```
+results-payments 2.7.2 openapi/route(push-to-stripe) update: route
+
+File: daemon/service/spec/routes/matter-finalizations/push-to-stripe.yaml
+Step 2 of 5 in openapi/route (push-to-stripe), called from step 7 of
+phase-2-stripe-invoice-items.workflow.yaml.
+Agent: claude-agent, resumed session 3f2a9c1d, 4 turns, 38s, $0.06
+
+Workflow-Plan: daemon/plans/notes/2026-10-14-results-payments
+Workflow-Run: Bd0roKh92yfr
+Workflow-Step: 2.7.2
+Workflow-Source-Run: 9x2KqL0p
+Workflow-Source: openapi/route
+```
+
+- **The address** `2.7.2` means phase 2, step 7, nested step 2. Step numbers are **1-based** (`step_index + 1`), matching the dev-site UI.
+- **`Workflow-Run`** is always the root run. `Workflow-Source-Run` is the nested run that actually committed, present only when nested.
+- **`workflow_step.commit_hash`** links each step to its commit. It's null when the step changed nothing.
+- Commits made before this format (2026-10-15) use the old `<workflow>: <label>` subject and have no trailers.
+
+```sh
+git log --oneline --grep 'Workflow-Plan: daemon/plans/notes/2026-10-14-results-payments'  # a whole plan
+git log --oneline --grep 'Workflow-Run: Bd0roKh92yfr'                                     # one phase
+git log --format='%h %(trailers:key=Workflow-Step,valueonly,separator=)%x09%s' -20       # by address
+```
 
 ## Queries
 

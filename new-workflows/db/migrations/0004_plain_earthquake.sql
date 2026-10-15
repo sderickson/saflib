@@ -1,0 +1,1 @@
+ALTER TABLE `workflow_step` ADD `commit_hash` text;

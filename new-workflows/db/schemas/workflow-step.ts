@@ -35,6 +35,11 @@ export interface WorkflowStepEntity {
   status: WorkflowStepStatus;
   result: Record<string, unknown> | null;
   error: string | null;
+  /**
+   * The commit holding this step's changes. Null when the step changed
+   * nothing (most command steps), failed, or predates this column.
+   */
+  commit_hash: string | null;
   started_at: Date;
   finished_at: Date | null;
 }
@@ -55,6 +60,7 @@ export const workflowStepTable = sqliteTable(
       unknown
     > | null>(),
     error: text("error"),
+    commit_hash: text("commit_hash"),
     started_at: integer("started_at", { mode: "timestamp" }).notNull(),
     finished_at: integer("finished_at", { mode: "timestamp" }),
   },

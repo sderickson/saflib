@@ -220,14 +220,16 @@ export function summarizeContentBlock(block: any): string {
 
 /** The CLI process exited before emitting its final `result` event. */
 export class AgentExitedWithoutResultError extends Error {
-  constructor(
-    readonly exitCode: number | null,
-    readonly stderr: string,
-  ) {
+  readonly exitCode: number | null;
+  readonly stderr: string;
+
+  constructor(exitCode: number | null, stderr: string) {
     super(
       `Agent exited (code ${exitCode ?? "unknown"}) without a result${stderr.trim() ? `: ${stderr.trim()}` : ""}`,
     );
     this.name = "AgentExitedWithoutResultError";
+    this.exitCode = exitCode;
+    this.stderr = stderr;
   }
 }
 
