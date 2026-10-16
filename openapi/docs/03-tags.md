@@ -21,3 +21,21 @@ Enforced by:
 
 Import constants from `@saflib/openapi` (`OPENAPI_TAG_*`) in middleware — do not
 hard-code tag strings elsewhere.
+
+## Access: prefer OpenAPI `security`
+
+`no-auth`, `email-verified`, `mfa-required` and `site-admin-only` are legacy.
+Operations can declare access in OpenAPI instead, which `@saflib/express`
+compiles at mount time (see `makeRegisterRoute`):
+
+| Legacy tag                         | OpenAPI                                        |
+| ---------------------------------- | ---------------------------------------------- |
+| `no-auth`                          | `x-public: true` (`security: []` is rejected)  |
+| (none, authenticated)              | `security: [{ session: [] }]`                  |
+| `email-verified` + `mfa-required`  | `security: [{ session: [email-verified, mfa] }]` |
+| `site-admin-only`                  | `security: [{ session: [site-admin] }]`        |
+
+Products add their own schemes (e.g. `org: [paid]`) by passing
+`securityResolvers` to `makeRegisterRoute`, and set `requireSecurity: true` once
+every operation is migrated. An operation must not mix legacy access tags with
+`security` / `x-public`. `csrf-exempt` and `background` stay as tags.

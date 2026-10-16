@@ -150,6 +150,15 @@ function compileRequirement(
   });
 }
 
+/**
+ * True when every operation in `apiSpec` declares its access in OpenAPI
+ * (`security` or `x-public`) rather than relying on legacy tags/options.
+ */
+export function declaresOperationSecurity(apiSpec: OpenApiDocument): boolean {
+  const operations = listOperations(apiSpec);
+  return operations.length > 0 && operations.every(declaresAccess);
+}
+
 /** Run handlers in order, as Express would for a route's middleware list. */
 function runChain(handlers: Handler[]): Handler {
   return (req, res, next) => {

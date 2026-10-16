@@ -195,6 +195,21 @@ describe("makeRegisterRoute with OpenAPI security", () => {
     expect((await request(app).get("/legacy").set(makeUserHeaders())).status).toBe(200);
   });
 
+  it("requireSecurity rejects operations without security or x-public", () => {
+    const registerRoute = makeRegisterRoute({ requireSecurity: true });
+    const router = express.Router();
+    const handler: Handler = (_req, res) => res.end();
+    expect(() => registerRoute(router, opSpec({}), handler)).toThrow(
+      /GET \/things\/:thingId must declare OpenAPI `security`/,
+    );
+    expect(() =>
+      registerRoute(router, opSpec({ security: [{ session: [] }] }), handler),
+    ).not.toThrow();
+    expect(() =>
+      registerRoute(router, opSpec({ "x-public": true }), handler),
+    ).not.toThrow();
+  });
+
   it("rejects legacy auth options on operations that declare security", () => {
     const registerRoute = makeRegisterRoute();
     expect(() =>

@@ -4,7 +4,10 @@ import {
   createScopedMiddleware,
   type ScopedMiddlewareOptions,
 } from "./middleware/composition.ts";
-import type { SecurityResolvers } from "./middleware/security.ts";
+import {
+  declaresOperationSecurity,
+  type SecurityResolvers,
+} from "./middleware/security.ts";
 
 export type RouteHttpMethod = "get" | "post" | "put" | "patch" | "delete";
 
@@ -75,11 +78,24 @@ export type RegisterRoute = (
  * `before` → OpenAPI validation, CSRF, context, security → `after` → handler.
  */
 export function makeRegisterRoute(
-  config: { securityResolvers?: SecurityResolvers } = {},
+  config: {
+    securityResolvers?: SecurityResolvers;
+    /**
+     * Throw at mount time unless the operation declares `security` or
+     * `x-public`, instead of falling back to legacy tag/option auth. Products
+     * that have fully migrated should set this.
+     */
+    requireSecurity?: boolean;
+  } = {},
 ): RegisterRoute {
   return (router, apiSpec, handler, options = {}) => {
     const { before = [], after = [], ...scopedOptions } = options;
     const { method, path } = httpRouteFromOperationSpec(apiSpec);
+    if (config.requireSecurity && !declaresOperationSecurity(apiSpec)) {
+      throw new Error(
+        `${method.toUpperCase()} ${path} must declare OpenAPI \`security\` (or \`x-public: true\`)`,
+      );
+    }
     router[method](
       path,
       ...before,
