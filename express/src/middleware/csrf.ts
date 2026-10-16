@@ -5,6 +5,7 @@ import {
   OPENAPI_TAG_NO_AUTH,
 } from "@saflib/openapi";
 import { isInternalRequest } from "../markInternal.ts";
+import { isPublicOperation } from "./security.ts";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -47,6 +48,7 @@ export const makeCsrfMiddleware = (): Handler => {
 
     const tags = req.openapi.schema.tags;
     if (
+      isPublicOperation(req.openapi.schema) ||
       tags?.includes(OPENAPI_TAG_NO_AUTH) ||
       tags?.includes(OPENAPI_TAG_CSRF_EXEMPT)
     ) {

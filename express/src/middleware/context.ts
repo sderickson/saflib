@@ -217,6 +217,32 @@ async function resolveAuth(req: Request): Promise<AuthResolution> {
   return {};
 }
 
+/**
+ * Auth resolutions per request. Apps mount context middleware both globally
+ * and per-operation (after the OpenAPI validator, to pick up operationId);
+ * without this, each pass re-fetches the Kratos session.
+ */
+const authResolutionCache = new WeakMap<Request, Promise<AuthResolution>>();
+
+function resolveAuthOnce(req: Request): Promise<AuthResolution> {
+  const cached = authResolutionCache.get(req);
+  if (cached) {
+    return cached;
+  }
+  const resolution = resolveAuth(req);
+  // Assertion auth defers until operationId is known; don't cache the
+  // placeholder or the later pass would never verify the assertion.
+  const assertionDeferred =
+    isInternalRequest(req) &&
+    typeof req.headers["x-saf-identity-assertion"] === "string" &&
+    req.headers["x-saf-identity-assertion"].length > 0 &&
+    !req.openapi?.schema?.operationId;
+  if (!assertionDeferred) {
+    authResolutionCache.set(req, resolution);
+  }
+  return resolution;
+}
+
 export const makeContextMiddleware = () => {
   const contextMiddleware: Handler = (req, _res, next) => {
     const operationName =
@@ -224,7 +250,7 @@ export const makeContextMiddleware = () => {
       req.openapi?.openApiRoute ??
       "unknown-operation";
 
-    resolveAuth(req)
+    resolveAuthOnce(req)
       .then((resolution) => {
         let reqId = "no-request-id";
         if (resolution.requestId) {

@@ -15,6 +15,7 @@ import { makeAuthMiddleware } from "./auth.ts";
 import { makeCsrfMiddleware } from "./csrf.ts";
 import { makeCsrfTokenMiddleware } from "./csrf-token.ts";
 import multer from "multer";
+import { compileOperationSecurity, type SecurityResolvers } from "./security.ts";
 
 /**
  * Options for creating global middleware.
@@ -87,6 +88,11 @@ export interface ScopedMiddlewareOptions {
   emailVerificationRequired?: boolean;
   /** When true, require an MFA session (AAL2+), same as the `mfa-required` OpenAPI tag. */
   mfaRequired?: boolean;
+  /**
+   * Product security schemes (`session` is built in). Used when the operation
+   * declares OpenAPI `security`; then the auth options above must be unset.
+   */
+  securityResolvers?: SecurityResolvers;
 }
 
 /**
@@ -111,6 +117,7 @@ export const createScopedMiddleware = (
     adminRequired,
     emailVerificationRequired,
     mfaRequired,
+    securityResolvers,
   } = options;
 
   let openApiValidatorMiddleware: Handler[] = [];
@@ -121,9 +128,15 @@ export const createScopedMiddleware = (
     }) as unknown as Handler[];
   }
 
-  let authMiddleware: Handler[] = [];
+  const hasLegacyAuthOptions =
+    enforceAuth !== undefined ||
+    adminRequired !== undefined ||
+    emailVerificationRequired !== undefined ||
+    mfaRequired !== undefined;
+
+  let legacyAuthMiddleware: Handler[] = [];
   if (enforceAuth !== false) {
-    authMiddleware = [
+    legacyAuthMiddleware = [
       makeAuthMiddleware({
         adminRequired,
         emailVerificationRequired,
@@ -131,6 +144,27 @@ export const createScopedMiddleware = (
       }),
     ];
   }
+
+  // OpenAPI `security` replaces tag/option-based auth for operations that declare it.
+  const securityMiddleware = apiSpec
+    ? compileOperationSecurity(apiSpec, securityResolvers, legacyAuthMiddleware)
+    : undefined;
+  const singleOperation =
+    apiSpec !== undefined &&
+    Object.values(apiSpec.paths ?? {}).reduce(
+      (n, item) =>
+        n +
+        Object.keys(item ?? {}).filter((k) =>
+          ["get", "post", "put", "patch", "delete"].includes(k),
+        ).length,
+      0,
+    ) === 1;
+  if (securityMiddleware && singleOperation && hasLegacyAuthOptions) {
+    throw new Error(
+      "Operation declares OpenAPI security; remove enforceAuth/adminRequired/emailVerificationRequired/mfaRequired options",
+    );
+  }
+  const authMiddleware = securityMiddleware ?? legacyAuthMiddleware;
 
   return [
     ...openApiValidatorMiddleware,

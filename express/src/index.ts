@@ -32,6 +32,22 @@ export {
 export { makeContextMiddleware } from "./middleware/context.ts";
 export { makeAuthMiddleware, drainRequest, type AuthMiddlewareOptions } from "./middleware/auth.ts";
 export { makeCsrfMiddleware } from "./middleware/csrf.ts";
+export {
+  compileOperationSecurity,
+  sessionSecurityResolver,
+  SESSION_SCOPE_EMAIL_VERIFIED,
+  SESSION_SCOPE_MFA,
+  SESSION_SCOPE_SITE_ADMIN,
+  type SecurityResolver,
+  type SecurityResolvers,
+} from "./middleware/security.ts";
+export {
+  makeRegisterRoute,
+  httpRouteFromOperationSpec,
+  type RegisterRoute,
+  type RegisterRouteOptions,
+  type RouteHttpMethod,
+} from "./register-route.ts";
 export { makeCsrfTokenMiddleware } from "./middleware/csrf-token.ts";
 export {
   createChangeEventMiddleware,

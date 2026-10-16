@@ -1,6 +1,8 @@
 export interface OpenApiDoc {
   openapi: string;
   info?: { title?: string; version?: string };
+  /** Document-wide default; folded into each operation when sliced. */
+  security?: Array<Record<string, string[]>>;
   paths?: Record<string, Record<string, unknown>>;
   components?: {
     schemas?: Record<string, unknown>;
@@ -129,8 +131,21 @@ export function sliceOperation(
     );
   }
 
+  // Security requirements name schemes directly (no $ref), and a top-level
+  // default would be lost in the fragment, so fold both in explicitly.
+  const security =
+    (operation as { security?: OpenApiDoc["security"] }).security ??
+    bundled.security;
+  const slicedOperation =
+    security === undefined ? operation : { ...operation, security };
+
   const refs = new Set<string>();
   collectInternalRefs(operation, refs);
+  for (const requirement of security ?? []) {
+    for (const scheme of Object.keys(requirement)) {
+      refs.add(`#/components/securitySchemes/${scheme}`);
+    }
+  }
   const collected = new Set<string>();
   resolveTransitiveRefs(bundled, refs, collected);
 
@@ -142,7 +157,7 @@ export function sliceOperation(
     },
     paths: {
       [pathKey]: {
-        [method]: operation,
+        [method]: slicedOperation,
       },
     },
     components: buildComponentSubset(bundled, collected),
