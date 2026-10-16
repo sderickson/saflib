@@ -14,7 +14,7 @@ const bundled: OpenApiDoc = {
         responses: {},
       },
     },
-    "/c": { get: { operationId: "getC", security: [], responses: {} } },
+    "/c": { get: { operationId: "getC", "x-public": true, responses: {} } },
   },
   components: {
     securitySchemes: {
@@ -47,9 +47,13 @@ describe("sliceOperation security", () => {
     ]);
   });
 
-  it("keeps an explicit public override", () => {
+  it("does not fold the default into x-public operations", () => {
     const slice = sliceOperation(bundled, "/c", "get", "getC");
-    expect(slice.paths!["/c"]!.get).toMatchObject({ security: [] });
+    expect(slice.paths!["/c"]!.get).toEqual({
+      operationId: "getC",
+      "x-public": true,
+      responses: {},
+    });
     expect(slice.components!.securitySchemes).toBeUndefined();
   });
 });

@@ -133,9 +133,13 @@ export function sliceOperation(
 
   // Security requirements name schemes directly (no $ref), and a top-level
   // default would be lost in the fragment, so fold both in explicitly.
+  // `x-public` operations never inherit the default.
+  const op = operation as {
+    security?: OpenApiDoc["security"];
+    "x-public"?: unknown;
+  };
   const security =
-    (operation as { security?: OpenApiDoc["security"] }).security ??
-    bundled.security;
+    op.security ?? (op["x-public"] === true ? undefined : bundled.security);
   const slicedOperation =
     security === undefined ? operation : { ...operation, security };
 

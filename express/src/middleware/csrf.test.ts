@@ -166,10 +166,13 @@ describe("CSRF validator middleware", () => {
     expect(response.body.error).toMatch(/OpenAPI operation/);
   });
 
-  it("bypasses csrf for routes tagged no-auth", async () => {
+  it.each([
+    ["tagged no-auth", { tags: ["no-auth"] }],
+    ["marked x-public", { "x-public": true }],
+  ])("bypasses csrf for routes %s", async (_label, schema) => {
     const app = express();
     app.use((req, _res, next) => {
-      req.openapi = { schema: { tags: ["no-auth"] } } as any;
+      req.openapi = { schema } as any;
       next();
     });
     app.use(makeCsrfTokenMiddleware());

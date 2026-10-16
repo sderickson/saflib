@@ -53,9 +53,17 @@ const LEGACY_ACCESS_TAGS: readonly string[] = [
 
 type SecurityRequirement = Record<string, string[]>;
 
+/**
+ * Operation extension marking an intentionally unauthenticated route. Plain
+ * `security: []` is rejected so that going public is always an explicit,
+ * greppable decision rather than a one-token edit to an auth requirement.
+ */
+export const OPENAPI_EXTENSION_PUBLIC = "x-public" as const;
+
 type OperationSecurityInfo = {
   operationId: string;
   security?: SecurityRequirement[];
+  isPublic: boolean;
   tags: string[];
 };
 
@@ -63,6 +71,7 @@ function toInfo(op: Record<string, unknown>): OperationSecurityInfo {
   return {
     operationId: String(op.operationId ?? "unknown"),
     security: op.security as SecurityRequirement[] | undefined,
+    isPublic: op[OPENAPI_EXTENSION_PUBLIC] === true,
     tags: (op.tags as string[] | undefined) ?? [],
   };
 }
@@ -77,11 +86,14 @@ function listOperations(apiSpec: OpenApiDocument): OperationSecurityInfo[] {
   );
 }
 
-/** Build the middleware for one operation that declares `security`. */
+/** Declares access via OpenAPI (`security` or `x-public`) rather than legacy tags. */
+function declaresAccess(op: OperationSecurityInfo): boolean {
+  return op.security !== undefined || op.isPublic;
+}
+
+/** Build the middleware for one operation that declares `security` or `x-public`. */
 function compileRequirement(
-  { operationId, security, tags }: OperationSecurityInfo & {
-    security: SecurityRequirement[];
-  },
+  { operationId, security, isPublic, tags }: OperationSecurityInfo,
   resolvers: SecurityResolvers,
 ): Handler[] {
   const fail = (message: string): never => {
@@ -92,8 +104,19 @@ function compileRequirement(
   if (legacy.length > 0) {
     fail(`remove legacy access tags (${legacy.join(", ")}) when declaring security`);
   }
-  if (security.length === 0) {
+  if (isPublic) {
+    // `security: []` alongside is allowed so specs with a document-wide
+    // default stay accurate for other OpenAPI tooling.
+    if (security !== undefined && security.length > 0) {
+      fail(`\`${OPENAPI_EXTENSION_PUBLIC}: true\` cannot be combined with security requirements`);
+    }
     return [];
+  }
+  if (security === undefined) {
+    return fail("missing security");
+  }
+  if (security.length === 0) {
+    fail(`use \`${OPENAPI_EXTENSION_PUBLIC}: true\` for public operations instead of \`security: []\``);
   }
   if (security.length > 1) {
     fail("multiple (OR) security requirements are not supported");
@@ -153,15 +176,15 @@ function runChain(handlers: Handler[]): Handler {
 /**
  * Compile OpenAPI `security` into middleware.
  *
- * - No operation declares `security`: returns `undefined`; callers use
- *   tag-based auth.
+ * - No operation declares `security` or `x-public`: returns `undefined`;
+ *   callers use tag-based auth.
  * - Single-operation spec (the normal per-route case): compiled at mount
  *   time, so unknown schemes/scopes, OR'd requirements, or legacy access
  *   tags alongside `security` throw at startup.
  * - Multi-operation spec (whole-service validators, some tests): dispatches
  *   on the matched `operationId`, compiling each operation's security on
  *   first use (same errors, surfaced as a 500 rather than at startup).
- *   Operations without `security` there get `legacyAuth`.
+ *   Operations without `security`/`x-public` there get `legacyAuth`.
  */
 export function compileOperationSecurity(
   apiSpec: OpenApiDocument,
@@ -169,13 +192,13 @@ export function compileOperationSecurity(
   legacyAuth: Handler[] = [],
 ): Handler[] | undefined {
   const operations = listOperations(apiSpec);
-  if (!operations.some((op) => op.security !== undefined)) {
+  if (!operations.some(declaresAccess)) {
     return undefined;
   }
 
   if (operations.length === 1) {
     const op = operations[0]!;
-    return compileRequirement({ ...op, security: op.security! }, resolvers);
+    return compileRequirement(op, resolvers);
   }
 
   const compiled = new Map<string, Handler>();
@@ -187,7 +210,7 @@ export function compileOperationSecurity(
       return;
     }
     const info = toInfo(schema);
-    if (info.security === undefined) {
+    if (!declaresAccess(info)) {
       legacyChain(req, res, next);
       return;
     }
@@ -195,7 +218,7 @@ export function compileOperationSecurity(
     if (!chain) {
       try {
         chain = runChain(
-          compileRequirement({ ...info, security: info.security }, resolvers),
+          compileRequirement(info, resolvers),
         );
       } catch (err) {
         next(err);
@@ -208,7 +231,11 @@ export function compileOperationSecurity(
   return [dispatcher];
 }
 
-/** True when the matched operation declares `security: []` (public). */
-export function isPublicOperation(schema: { security?: unknown } | undefined) {
-  return Array.isArray(schema?.security) && schema.security.length === 0;
+/** True when the matched operation is marked `x-public: true`. */
+export function isPublicOperation(schema: object | undefined) {
+  return (
+    (schema as Record<string, unknown> | undefined)?.[
+      OPENAPI_EXTENSION_PUBLIC
+    ] === true
+  );
 }

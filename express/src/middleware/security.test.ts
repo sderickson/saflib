@@ -79,8 +79,11 @@ describe("compileOperationSecurity", () => {
     expect(compileOperationSecurity(opSpec({}))).toBeUndefined();
   });
 
-  it("returns no middleware for public operations", () => {
-    expect(compileOperationSecurity(opSpec({ security: [] }))).toEqual([]);
+  it("returns no middleware for operations marked x-public", () => {
+    expect(compileOperationSecurity(opSpec({ "x-public": true }))).toEqual([]);
+    expect(
+      compileOperationSecurity(opSpec({ "x-public": true, security: [] })),
+    ).toEqual([]);
   });
 
   it.each([
@@ -89,6 +92,9 @@ describe("compileOperationSecurity", () => {
     [{ security: [{ session: [] }, { session: ["mfa"] }] }, /multiple \(OR\)/],
     [{ security: [{ session: [] }], tags: ["mfa-required"] }, /legacy access tags/],
     [{ security: [{ team: ["member"] }] }, /must include the `session` scheme/],
+    [{ security: [] }, /use `x-public: true` for public operations/],
+    [{ "x-public": true, security: [{ session: [] }] }, /cannot be combined/],
+    [{ "x-public": true, tags: ["no-auth"] }, /legacy access tags/],
   ])("fails closed at mount time: %j", (operation, message) => {
     expect(() =>
       compileOperationSecurity(opSpec(operation), { team: teamResolver }),
@@ -98,7 +104,7 @@ describe("compileOperationSecurity", () => {
 
 describe("makeRegisterRoute with OpenAPI security", () => {
   it("mounts at the spec's method and path", async () => {
-    const res = await request(appFor({ security: [] })).get("/things/abc");
+    const res = await request(appFor({ "x-public": true })).get("/things/abc");
     expect(res.status).toBe(200);
   });
 
