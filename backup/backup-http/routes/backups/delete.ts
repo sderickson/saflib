@@ -1,23 +1,12 @@
 import { createHandler } from "@saflib/express";
 import type { BackupServiceResponseBody } from "@saflib/backup-spec";
 import createError from "http-errors";
-import { getSafContextWithAuth } from "@saflib/node";
 import type { ObjectStore } from "@saflib/object-store";
 import { PathTraversalError, StorageError } from "@saflib/object-store";
 import { mapObjectStoreFileToBackup } from "./_helpers.ts";
 
 export const createDeleteHandler = (objectStore: ObjectStore) => {
   return createHandler(async (req, res) => {
-    const { auth } = getSafContextWithAuth();
-
-    if (!auth.isAdmin) {
-      const errorResponse: BackupServiceResponseBody["deleteBackup"][403] = {
-        message: "Forbidden - admin access required",
-        code: "FORBIDDEN",
-      };
-      res.status(403).json(errorResponse);
-      return;
-    }
 
     const backupId = req.params.backupId;
 

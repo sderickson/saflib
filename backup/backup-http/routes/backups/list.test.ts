@@ -135,9 +135,7 @@ describe("GET /backups", () => {
       .set(makeUserHeaders());
 
     expect(response.status).toBe(403);
-    expect(response.body).toMatchObject({
-      code: "FORBIDDEN",
-    });
+    // Enforced by the operation's `session: [site-admin]` security.
   });
 
   it("should require authentication", async () => {
