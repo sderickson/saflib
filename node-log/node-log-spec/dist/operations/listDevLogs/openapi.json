@@ -9,9 +9,7 @@
       "get": {
         "summary": "Snapshot of buffered development logs",
         "operationId": "listDevLogs",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "parameters": [
           {
             "name": "after",

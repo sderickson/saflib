@@ -16,7 +16,7 @@ const sampleSpec = asOpenApiDocument({
     "/jobs-demo/start": {
       post: {
         operationId: "startJobsDemo",
-        tags: ["site-admin-only"],
+        security: [{ session: ["site-admin"] }],
         responses: { "200": { description: "ok" } },
       },
     },

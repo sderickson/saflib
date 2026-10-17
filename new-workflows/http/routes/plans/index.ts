@@ -10,17 +10,13 @@ export function createPlansRouter(): IRouter {
 
   router.get(
     "/plans",
-    ...createOperationScopedMiddleware(listPlansOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(listPlansOperationJsonSpec),
     listPlansHandler,
   );
 
   router.post(
     "/plans",
-    ...createOperationScopedMiddleware(createPlanOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(createPlanOperationJsonSpec),
     createPlanHandler,
   );
 

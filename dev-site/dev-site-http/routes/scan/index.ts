@@ -8,9 +8,7 @@ export function createScanRouter(): IRouter {
 
   router.post(
     "/api/scan",
-    ...createOperationScopedMiddleware(executeScanOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(executeScanOperationJsonSpec),
     executeScanHandler,
   );
 

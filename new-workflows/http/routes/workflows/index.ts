@@ -10,17 +10,13 @@ export function createWorkflowsRouter(): IRouter {
 
   router.get(
     "/workflows",
-    ...createOperationScopedMiddleware(listWorkflowsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(listWorkflowsOperationJsonSpec),
     listWorkflowsHandler,
   );
 
   router.get(
     "/workflows/:id/steps",
-    ...createOperationScopedMiddleware(getWorkflowStepsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(getWorkflowStepsOperationJsonSpec),
     getWorkflowStepsHandler,
   );
 

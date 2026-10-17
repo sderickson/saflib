@@ -10,6 +10,7 @@
         "summary": "List a run's direct agent messages",
         "description": "The free-form messages sent to the agent with `agent-message` (not a step's own prompts), oldest first. Each is the message's own `agent-input` log row, so its `seq` can anchor the logs view and its `step_index` says which step the run was on when it was sent.\n",
         "operationId": "listWorkflowRunMessages",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",

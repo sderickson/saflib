@@ -1,7 +1,8 @@
 getMineUserConfigs:
   summary: "Get or lazy-create the caller's user config"
   operationId: "getMineUserConfigs"
-  tags: []
+  security:
+    - session: []
   description: >
     Returns the authenticated user's `user_config` preferences (display name,
     marketing email opt-in, and Terms of Service agreement timestamp). If no row

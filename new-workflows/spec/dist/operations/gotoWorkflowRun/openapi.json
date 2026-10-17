@@ -10,6 +10,7 @@
         "summary": "Seek a run to a step path",
         "description": "Jump the run (and nested `call-workflow` children along the path) so the next advance resumes at that step. Path uses slash-separated indices (e.g. `2/4`). Invalidates leaf step attempts from the target index onward. The same semantics as `new-workflow goto`.\n",
         "operationId": "gotoWorkflowRun",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",

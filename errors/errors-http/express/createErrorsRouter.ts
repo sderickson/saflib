@@ -13,7 +13,7 @@ import { cspReportJsonBody } from "./csp-report-json-body.ts";
 /**
  * Production error routes (always mounted):
  * - `POST /csp-violations` — browser CSP reports
- * - `POST /admin/test-error` — intentional server error (site-admin-only)
+ * - `POST /admin/test-error` — intentional server error (`session: [site-admin]`)
  */
 export function createErrorsRouter(): Router {
   const router = Router();
@@ -37,7 +37,7 @@ export function createErrorsRouter(): Router {
 /**
  * Development-only mock error routes (ring buffer):
  * - `POST /errors/record` — browser client error capture
- * - `GET /admin/errors` — ring buffer listing (no-auth; dev router only)
+ * - `GET /admin/errors` — ring buffer listing (`x-public`; dev router only)
  */
 export function createDevErrorsRouter(): Router {
   const router = Router();
@@ -50,9 +50,7 @@ export function createDevErrorsRouter(): Router {
 
   router.get(
     "/admin/errors",
-    ...createOperationScopedMiddleware(listReportedErrorsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(listReportedErrorsOperationJsonSpec),
     createListReportedErrorsHandler(),
   );
 

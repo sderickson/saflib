@@ -1,8 +1,7 @@
 listDevLogs:
   summary: Snapshot of buffered development logs
   operationId: listDevLogs
-  tags:
-    - no-auth
+  x-public: true
   parameters:
     - name: after
       in: query
@@ -52,8 +51,7 @@ listDevLogs:
 streamDevLogs:
   summary: SSE stream of development log entries
   operationId: streamDevLogs
-  tags:
-    - no-auth
+  x-public: true
   parameters:
     - name: Last-Event-ID
       in: header

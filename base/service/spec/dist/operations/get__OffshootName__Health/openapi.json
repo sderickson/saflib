@@ -8,6 +8,7 @@
     "/__offshoot-name__/health": {
       "get": {
         "operationId": "get__OffshootName__Health",
+        "x-public": true,
         "summary": "Health check for the __offshoot-name__ offshoot",
         "responses": {
           "200": {

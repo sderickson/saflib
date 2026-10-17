@@ -1,8 +1,7 @@
 getCheckout:
   summary: Current checkout (HEAD) analysis status
   operationId: getCheckout
-  tags:
-    - no-auth
+  x-public: true
   description: >
     Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compare_ref` (default `main`). Used by the Current checkout UI.
   parameters:

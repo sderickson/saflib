@@ -10,6 +10,7 @@
         "summary": "List a run's logs",
         "description": "Newest-first, cursor-paginated by each row's `seq` (insertion order — `created_at` is only second-precision, so it can't be a cursor). Pass `before_seq` to page older history for infinite scroll; pass `after_seq` for rows newer than a known tip (e.g. after an SSE change hint). Pass `step_index` to anchor the first page at that step so a sidebar jump can load a window that is not the live tip. The client re-fetches rather than getting log content pushed over the wire.\n",
         "operationId": "listWorkflowRunLogs",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",

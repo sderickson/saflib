@@ -1,9 +1,7 @@
 import type { Handler } from "express";
 import {
-  OPENAPI_TAG_EMAIL_VERIFIED,
-  OPENAPI_TAG_MFA_REQUIRED,
-  OPENAPI_TAG_NO_AUTH,
-  OPENAPI_TAG_SITE_ADMIN_ONLY,
+  OPENAPI_EXTENSION_PUBLIC,
+  findOperationAccessProblem,
   type OpenApiDocument,
 } from "@saflib/openapi";
 import { makeAuthMiddleware } from "./auth.ts";
@@ -44,27 +42,16 @@ export const sessionSecurityResolver: SecurityResolver = {
   ],
 };
 
-const LEGACY_ACCESS_TAGS: readonly string[] = [
-  OPENAPI_TAG_NO_AUTH,
-  OPENAPI_TAG_EMAIL_VERIFIED,
-  OPENAPI_TAG_MFA_REQUIRED,
-  OPENAPI_TAG_SITE_ADMIN_ONLY,
-];
-
 type SecurityRequirement = Record<string, string[]>;
 
-/**
- * Operation extension marking an intentionally unauthenticated route. Plain
- * `security: []` is rejected so that going public is always an explicit,
- * greppable decision rather than a one-token edit to an auth requirement.
- */
-export const OPENAPI_EXTENSION_PUBLIC = "x-public" as const;
+export { OPENAPI_EXTENSION_PUBLIC };
 
 type OperationSecurityInfo = {
   operationId: string;
   security?: SecurityRequirement[];
   isPublic: boolean;
-  tags: string[];
+  /** Set when `security` / `x-public` is missing or malformed. */
+  problem?: string;
 };
 
 function toInfo(op: Record<string, unknown>): OperationSecurityInfo {
@@ -72,7 +59,7 @@ function toInfo(op: Record<string, unknown>): OperationSecurityInfo {
     operationId: String(op.operationId ?? "unknown"),
     security: op.security as SecurityRequirement[] | undefined,
     isPublic: op[OPENAPI_EXTENSION_PUBLIC] === true,
-    tags: (op.tags as string[] | undefined) ?? [],
+    problem: findOperationAccessProblem(op),
   };
 }
 
@@ -86,37 +73,23 @@ function listOperations(apiSpec: OpenApiDocument): OperationSecurityInfo[] {
   );
 }
 
-/** Declares access via OpenAPI (`security` or `x-public`) rather than legacy tags. */
-function declaresAccess(op: OperationSecurityInfo): boolean {
-  return op.security !== undefined || op.isPublic;
-}
-
-/** Build the middleware for one operation that declares `security` or `x-public`. */
-function compileRequirement(
-  { operationId, security, isPublic, tags }: OperationSecurityInfo,
-  resolvers: SecurityResolvers,
-): Handler[] {
-  const fail = (message: string): never => {
+function failFor(operationId: string) {
+  return (message: string): never => {
     throw new Error(`OpenAPI security for ${operationId}: ${message}`);
   };
+}
 
-  const legacy = tags.filter((t) => LEGACY_ACCESS_TAGS.includes(t));
-  if (legacy.length > 0) {
-    fail(`remove legacy access tags (${legacy.join(", ")}) when declaring security`);
+/** Build the middleware for one operation from its `security` / `x-public`. */
+function compileRequirement(
+  { operationId, security, isPublic, problem }: OperationSecurityInfo,
+  resolvers: SecurityResolvers,
+): Handler[] {
+  const fail = failFor(operationId);
+  if (problem) {
+    fail(problem);
   }
-  if (isPublic) {
-    // `security: []` alongside is allowed so specs with a document-wide
-    // default stay accurate for other OpenAPI tooling.
-    if (security !== undefined && security.length > 0) {
-      fail(`\`${OPENAPI_EXTENSION_PUBLIC}: true\` cannot be combined with security requirements`);
-    }
+  if (isPublic || !security) {
     return [];
-  }
-  if (security === undefined) {
-    return fail("missing security");
-  }
-  if (security.length === 0) {
-    fail(`use \`${OPENAPI_EXTENSION_PUBLIC}: true\` for public operations instead of \`security: []\``);
   }
   if (security.length > 1) {
     fail("multiple (OR) security requirements are not supported");
@@ -150,15 +123,6 @@ function compileRequirement(
   });
 }
 
-/**
- * True when every operation in `apiSpec` declares its access in OpenAPI
- * (`security` or `x-public`) rather than relying on legacy tags/options.
- */
-export function declaresOperationSecurity(apiSpec: OpenApiDocument): boolean {
-  const operations = listOperations(apiSpec);
-  return operations.length > 0 && operations.every(declaresAccess);
-}
-
 /** Run handlers in order, as Express would for a route's middleware list. */
 function runChain(handlers: Handler[]): Handler {
   return (req, res, next) => {
@@ -183,35 +147,33 @@ function runChain(handlers: Handler[]): Handler {
 }
 
 /**
- * Compile OpenAPI `security` into middleware.
+ * Compile OpenAPI `security` / `x-public` into middleware. Every operation
+ * must declare one or the other; a missing or malformed declaration throws at
+ * mount time.
  *
- * - No operation declares `security` or `x-public`: returns `undefined`;
- *   callers use tag-based auth.
- * - Single-operation spec (the normal per-route case): compiled at mount
- *   time, so unknown schemes/scopes, OR'd requirements, or legacy access
- *   tags alongside `security` throw at startup.
+ * - Single-operation spec (the normal per-route case): fully compiled at
+ *   mount time, so unknown schemes/scopes and OR'd requirements also throw at
+ *   startup.
  * - Multi-operation spec (whole-service validators, some tests): dispatches
- *   on the matched `operationId`, compiling each operation's security on
- *   first use (same errors, surfaced as a 500 rather than at startup).
- *   Operations without `security`/`x-public` there get `legacyAuth`.
+ *   on the matched `operationId`, compiling each operation's requirement on
+ *   first use. Unknown schemes there surface as a 500, never an open route.
  */
 export function compileOperationSecurity(
   apiSpec: OpenApiDocument,
   resolvers: SecurityResolvers = {},
-  legacyAuth: Handler[] = [],
-): Handler[] | undefined {
+): Handler[] {
   const operations = listOperations(apiSpec);
-  if (!operations.some(declaresAccess)) {
-    return undefined;
+  for (const op of operations) {
+    if (op.problem) {
+      failFor(op.operationId)(op.problem);
+    }
   }
 
   if (operations.length === 1) {
-    const op = operations[0]!;
-    return compileRequirement(op, resolvers);
+    return compileRequirement(operations[0]!, resolvers);
   }
 
   const compiled = new Map<string, Handler>();
-  const legacyChain = runChain(legacyAuth);
   const dispatcher: Handler = (req, res, next) => {
     const schema = req.openapi?.schema as Record<string, unknown> | undefined;
     if (!schema) {
@@ -219,16 +181,10 @@ export function compileOperationSecurity(
       return;
     }
     const info = toInfo(schema);
-    if (!declaresAccess(info)) {
-      legacyChain(req, res, next);
-      return;
-    }
     let chain = compiled.get(info.operationId);
     if (!chain) {
       try {
-        chain = runChain(
-          compileRequirement(info, resolvers),
-        );
+        chain = runChain(compileRequirement(info, resolvers));
       } catch (err) {
         next(err);
         return;

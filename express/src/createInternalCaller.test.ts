@@ -44,6 +44,7 @@ const probeSpec = asOpenApiDocument({
     "/probe": {
       get: {
         operationId: "probeOperation",
+        security: [{ session: [] }],
         responses: {
           "200": {
             description: "ok",
@@ -99,7 +100,6 @@ function makeProbeApp() {
   app.use(
     createScopedMiddleware({
       apiSpec: probeSpec,
-      enforceAuth: true,
     }),
   );
   app.get("/probe", (_req, res) => {

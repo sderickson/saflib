@@ -5,8 +5,8 @@ sealAuditLog:
     the product's ship callback (upload + off-system seal report). Clears the active
     store only after ship succeeds. Requires an authenticated site admin.
   operationId: sealAuditLog
-  tags:
-    - site-admin-only
+  security:
+    - session: [site-admin]
   responses:
     "200":
       description: Seal completed; `audit_seal_result.status` is `sealed`.

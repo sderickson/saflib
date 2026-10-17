@@ -75,8 +75,10 @@ function appFor(operation: Record<string, unknown>) {
 }
 
 describe("compileOperationSecurity", () => {
-  it("returns undefined when the operation declares no security (legacy tags apply)", () => {
-    expect(compileOperationSecurity(opSpec({}))).toBeUndefined();
+  it("requires every operation to declare security or x-public", () => {
+    expect(() => compileOperationSecurity(opSpec({}))).toThrow(
+      /getThing: missing `security`/,
+    );
   });
 
   it("returns no middleware for operations marked x-public", () => {
@@ -90,11 +92,9 @@ describe("compileOperationSecurity", () => {
     [{ security: [{ session: [], nope: [] }] }, /no resolver registered for scheme "nope"/],
     [{ security: [{ session: ["admin"] }] }, /unknown scope "admin" for scheme "session"/],
     [{ security: [{ session: [] }, { session: ["mfa"] }] }, /multiple \(OR\)/],
-    [{ security: [{ session: [] }], tags: ["mfa-required"] }, /legacy access tags/],
     [{ security: [{ team: ["member"] }] }, /must include the `session` scheme/],
     [{ security: [] }, /use `x-public: true` for public operations/],
     [{ "x-public": true, security: [{ session: [] }] }, /cannot be combined/],
-    [{ "x-public": true, tags: ["no-auth"] }, /legacy access tags/],
   ])("fails closed at mount time: %j", (operation, message) => {
     expect(() =>
       compileOperationSecurity(opSpec(operation), { team: teamResolver }),
@@ -153,9 +153,10 @@ describe("makeRegisterRoute with OpenAPI security", () => {
       ...secured,
       paths: {
         ...secured.paths,
-        "/legacy": {
+        "/public": {
           get: {
-            operationId: "getLegacy",
+            operationId: "getPublic",
+            "x-public": true,
             responses: {
               "200": { description: "ok" },
               "401": { description: "no", content: { "application/json": { schema: {} } } },
@@ -174,7 +175,7 @@ describe("makeRegisterRoute with OpenAPI security", () => {
     app.get("/things/:thingId", (_req, res) => {
       res.json({ team: res.locals.team });
     });
-    app.get("/legacy", (_req, res) => {
+    app.get("/public", (_req, res) => {
       res.end();
     });
     app.use(errorHandler);
@@ -190,35 +191,22 @@ describe("makeRegisterRoute with OpenAPI security", () => {
     expect(owner.status).toBe(200);
     expect(owner.body).toEqual({ team: "owned" });
 
-    // Operations without `security` keep legacy (tag/option) auth.
-    expect((await request(app).get("/legacy")).status).toBe(401);
-    expect((await request(app).get("/legacy").set(makeUserHeaders())).status).toBe(200);
+    expect((await request(app).get("/public")).status).toBe(200);
   });
 
-  it("requireSecurity rejects operations without security or x-public", () => {
-    const registerRoute = makeRegisterRoute({ requireSecurity: true });
-    const router = express.Router();
-    const handler: Handler = (_req, res) => res.end();
-    expect(() => registerRoute(router, opSpec({}), handler)).toThrow(
-      /GET \/things\/:thingId must declare OpenAPI `security`/,
+  it("rejects multi-operation specs with an undeclared operation at mount time", () => {
+    const secured = opSpec({ security: [{ session: [] }] });
+    const multi = asOpenApiDocument({
+      ...secured,
+      paths: {
+        ...secured.paths,
+        "/undeclared": {
+          get: { operationId: "getUndeclared", responses: {} },
+        },
+      },
+    });
+    expect(() => createScopedMiddleware({ apiSpec: multi })).toThrow(
+      /getUndeclared: missing `security`/,
     );
-    expect(() =>
-      registerRoute(router, opSpec({ security: [{ session: [] }] }), handler),
-    ).not.toThrow();
-    expect(() =>
-      registerRoute(router, opSpec({ "x-public": true }), handler),
-    ).not.toThrow();
-  });
-
-  it("rejects legacy auth options on operations that declare security", () => {
-    const registerRoute = makeRegisterRoute();
-    expect(() =>
-      registerRoute(
-        express.Router(),
-        opSpec({ security: [{ session: [] }] }),
-        (_req, res) => res.end(),
-        { mfaRequired: true },
-      ),
-    ).toThrow(/remove enforceAuth/);
   });
 });

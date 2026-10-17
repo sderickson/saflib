@@ -10,6 +10,7 @@
         "summary": "List a workflow's steps, without needing a run",
         "description": "Same shape as `getWorkflowRunSteps`, but resolved straight from the workflow definition (a registered code id, or a plan file path) rather than an existing run's `workflow_ref` — for showing the sidebar/outline before a workflow has ever been started.\n",
         "operationId": "getWorkflowSteps",
+        "x-public": true,
         "parameters": [
           {
             "name": "id",

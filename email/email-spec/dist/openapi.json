@@ -86,6 +86,7 @@
       "get": {
         "summary": "List all sent emails",
         "operationId": "listSentEmails",
+        "x-public": true,
         "parameters": [
           {
             "name": "user_email",
@@ -127,9 +128,7 @@
       "post": {
         "summary": "Receive email dispatch from Ory Kratos HTTP courier",
         "operationId": "postKratosCourier",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "requestBody": {
           "required": true,
           "content": {

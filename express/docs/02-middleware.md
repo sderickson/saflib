@@ -25,10 +25,10 @@ Auth assumes a reverse proxy (typically Caddy `forward_auth`) has already verifi
 ## Scoped
 
 - **OpenAPI validation** — request/response validation via `express-openapi-validator`; attaches `req.openapi`
-- **CSRF** — double-submit token check on unsafe methods (honors `no-auth` and `csrf-exempt` tags)
+- **CSRF** — double-submit token check on unsafe methods (skips `x-public` operations and the `csrf-exempt` tag)
 - **Context** — populates `@saflib/node` AsyncLocalStorage for handlers and loggers
 - **Unsafe request logging** — structured logging for mutating requests (Winston → Loki in production)
-- **Auth** — enforces OpenAPI tags (`no-auth`, `email-verified`, `mfa-required`, `site-admin-only`, etc.)
+- **Auth** — enforces each operation's OpenAPI `security` (built-in `session` scheme with `email-verified`, `mfa`, `site-admin` scopes, plus product schemes passed as `securityResolvers`); `x-public: true` operations skip it. An operation that declares neither fails at mount time.
 
 ## Error
 

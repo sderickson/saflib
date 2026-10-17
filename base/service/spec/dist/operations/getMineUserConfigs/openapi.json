@@ -9,7 +9,11 @@
       "get": {
         "summary": "Get or lazy-create the caller's user config",
         "operationId": "getMineUserConfigs",
-        "tags": [],
+        "security": [
+          {
+            "session": []
+          }
+        ],
         "description": "Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`display_name` empty string, `marketing_emails_opt_in` false, `marketing_emails_opt_in_at` null, `terms_of_service_agreed_at` null) and returns that row.\n**Lazy-create pattern:** empty `user_config` rows are created on first GET (not via a Kratos registration webhook). This keeps Kratos auth-only and the product DB responsible for user-facing prefs.\n",
         "responses": {
           "200": {
@@ -140,6 +144,14 @@
             "example": "The requested resource could not be found."
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
       }
     }
   }

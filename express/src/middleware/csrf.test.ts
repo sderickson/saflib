@@ -167,7 +167,7 @@ describe("CSRF validator middleware", () => {
   });
 
   it.each([
-    ["tagged no-auth", { tags: ["no-auth"] }],
+    ["tagged csrf-exempt", { tags: ["csrf-exempt"] }],
     ["marked x-public", { "x-public": true }],
   ])("bypasses csrf for routes %s", async (_label, schema) => {
     const app = express();

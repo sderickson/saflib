@@ -1,8 +1,7 @@
 reflectWorkflowRunDiff:
   summary: A workflow run's actual effect as a commit diff
   operationId: reflectWorkflowRunDiff
-  tags:
-    - no-auth
+  x-public: true
   description: >
     Diffs `base_commit_hash` (the repo's HEAD when the run started) against
     `completion_hash` (HEAD the moment it finished) — both real commits, so

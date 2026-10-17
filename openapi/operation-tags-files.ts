@@ -9,8 +9,15 @@ import { parse as parseYaml } from "yaml";
 import {
   OPENAPI_ENFORCED_TAG_SET,
   OPENAPI_ENFORCED_TAGS,
+  findOperationAccessProblem,
   type OpenApiTagViolation,
 } from "./operation-tags.ts";
+
+export type OpenApiAccessViolation = {
+  operationId: string;
+  path: string;
+  problem: string;
+};
 
 function collectRouteYamlFiles(dir: string): string[] {
   if (!existsSync(dir)) {
@@ -50,11 +57,11 @@ const HTTP_METHOD_KEYS = new Set([
  * Prefer this in package tests; use {@link assertOpenApiOperationTags} on the
  * bundled document at process startup.
  */
-export function findUnknownOpenApiRouteFileTags(
+function forEachRouteFileOperation(
   packageRoot: string,
-): OpenApiTagViolation[] {
+  visit: (operationId: string, op: Record<string, unknown>, rel: string) => void,
+): void {
   const root = path.resolve(packageRoot);
-  const violations: OpenApiTagViolation[] = [];
 
   for (const file of collectRouteYamlFiles(path.join(root, "routes"))) {
     let doc: unknown;
@@ -76,13 +83,8 @@ export function findUnknownOpenApiRouteFileTags(
       }
       const node = value as Record<string, unknown>;
 
-      const checkOp = (operationId: string, op: Record<string, unknown>) => {
-        for (const tag of (op.tags as string[] | undefined) ?? []) {
-          if (!OPENAPI_ENFORCED_TAG_SET.has(tag)) {
-            violations.push({ operationId, tag, path: rel });
-          }
-        }
-      };
+      const checkOp = (operationId: string, op: Record<string, unknown>) =>
+        visit(operationId, op, rel);
 
       if (Array.isArray(node.tags) || node.responses) {
         const operationId =
@@ -98,13 +100,54 @@ export function findUnknownOpenApiRouteFileTags(
       }
     }
   }
+}
 
+export function findUnknownOpenApiRouteFileTags(
+  packageRoot: string,
+): OpenApiTagViolation[] {
+  const violations: OpenApiTagViolation[] = [];
+  forEachRouteFileOperation(packageRoot, (operationId, op, rel) => {
+    for (const tag of (op.tags as string[] | undefined) ?? []) {
+      if (!OPENAPI_ENFORCED_TAG_SET.has(tag)) {
+        violations.push({ operationId, tag, path: rel });
+      }
+    }
+  });
   return violations;
 }
 
+/**
+ * Scan routes YAML under a spec package for operations whose access is not
+ * declared with OpenAPI `security` or `x-public: true`.
+ */
+export function findOpenApiRouteFileAccessViolations(
+  packageRoot: string,
+): OpenApiAccessViolation[] {
+  const violations: OpenApiAccessViolation[] = [];
+  forEachRouteFileOperation(packageRoot, (operationId, op, rel) => {
+    const problem = findOperationAccessProblem(op);
+    if (problem) {
+      violations.push({ operationId, path: rel, problem });
+    }
+  });
+  return violations;
+}
+
+/**
+ * Throw if any route YAML operation uses a tag outside the enforced allowlist
+ * or does not declare its access (`security` / `x-public`).
+ */
 export function assertOpenApiRouteFileTags(
   packageRoot: string = process.cwd(),
 ): void {
+  const access = findOpenApiRouteFileAccessViolations(packageRoot);
+  if (access.length > 0) {
+    throw new Error(
+      `OpenAPI operations must declare access:\n${access
+        .map((v) => `  ${v.operationId} (${v.path}): ${v.problem}`)
+        .join("\n")}`,
+    );
+  }
   const violations = findUnknownOpenApiRouteFileTags(packageRoot);
   if (violations.length === 0) {
     return;

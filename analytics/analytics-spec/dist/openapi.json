@@ -72,9 +72,7 @@
       "post": {
         "summary": "Record a product analytics event",
         "operationId": "recordProductEvent",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -137,9 +135,7 @@
         "summary": "List buffered product events",
         "description": "Development ring-buffer listing (`createDevAnalyticsRouter` only). Tagged `no-auth` so local dev stacks can read captured events without a session.\n",
         "operationId": "listProductEvents",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "parameters": [
           {
             "name": "name",

@@ -10,6 +10,7 @@
         "summary": "List runs of a registered workflow or plan, newest first",
         "description": "Lets a UI show \"start a new run\" alongside \"go to an existing run\" for a workflow or plan, without having to track run ids separately.\n",
         "operationId": "listWorkflowRuns",
+        "x-public": true,
         "parameters": [
           {
             "name": "id",

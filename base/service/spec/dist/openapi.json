@@ -11,8 +11,12 @@
         "summary": "Start the jobs demo chain",
         "description": "Site-admin-only foreground endpoint that enqueues `jobsDemoStepB` with optional demo options (dedupe, concurrency, retry simulation payload).\n",
         "operationId": "startJobsDemo",
-        "tags": [
-          "site-admin-only"
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
         ],
         "requestBody": {
           "required": false,
@@ -63,8 +67,14 @@
         "summary": "Jobs demo chain step B",
         "description": "Background step that optionally fails N times (503) to demonstrate retries, then enqueues `jobsDemoStepC`.\n",
         "operationId": "jobsDemoStepB",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
         "tags": [
-          "site-admin-only",
           "background"
         ],
         "requestBody": {
@@ -126,8 +136,14 @@
         "summary": "Jobs demo chain step C",
         "description": "Background terminal step that records demo chain completion.",
         "operationId": "jobsDemoStepC",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
         "tags": [
-          "site-admin-only",
           "background"
         ],
         "requestBody": {
@@ -178,7 +194,11 @@
       "get": {
         "summary": "Get or lazy-create the caller's user config",
         "operationId": "getMineUserConfigs",
-        "tags": [],
+        "security": [
+          {
+            "session": []
+          }
+        ],
         "description": "Returns the authenticated user's `user_config` preferences (display name, marketing email opt-in, and Terms of Service agreement timestamp). If no row exists yet, inserts defaults (`display_name` empty string, `marketing_emails_opt_in` false, `marketing_emails_opt_in_at` null, `terms_of_service_agreed_at` null) and returns that row.\n**Lazy-create pattern:** empty `user_config` rows are created on first GET (not via a Kratos registration webhook). This keeps Kratos auth-only and the product DB responsible for user-facing prefs.\n",
         "responses": {
           "200": {
@@ -226,7 +246,11 @@
       "put": {
         "summary": "Update the caller's user config",
         "operationId": "putMineUserConfigs",
-        "tags": [],
+        "security": [
+          {
+            "session": []
+          }
+        ],
         "description": "Upserts the authenticated user's display name and marketing email preference. Lazy-creates the `user_config` row when missing. `display_name` is trimmed; empty or whitespace-only values are rejected. When `marketing_emails_opt_in` becomes `true`, sets `marketing_emails_opt_in_at` to now if newly opted in; when set to `false`, clears `marketing_emails_opt_in_at` to null. Pass `terms_of_service_agreed_at: \"now\"` to record Terms of Service agreement at the server's current time (preserved once set; not overwritten). `user_id`, timestamps, and client-supplied ISO values for `marketing_emails_opt_in_at` / `terms_of_service_agreed_at` may be included when echoing a prior GET but are ignored — ownership and timestamps are server-controlled.\n",
         "requestBody": {
           "required": true,
@@ -340,9 +364,7 @@
       "post": {
         "summary": "Public marketing-email unsubscribe",
         "operationId": "unsubscribeMarketingEmailsUserConfigs",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Clears marketing email opt-in for the identity matching the given address, when one exists. Always returns **200** with an empty success payload — never reveals whether the email is known, whether a `user_config` row exists, or the prior opt-in state. Tagged `no-auth` (and therefore CSRF-exempt) so unsubscribe links work without a session.\n",
         "requestBody": {
           "required": true,
@@ -397,8 +419,12 @@
       "get": {
         "summary": "Look up a Kratos identity by ID (site-admin)",
         "operationId": "getUsersByIdAdmin",
-        "tags": [
-          "site-admin-only"
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
         ],
         "parameters": [
           {
@@ -484,6 +510,7 @@
     "/__offshoot-name__/health": {
       "get": {
         "operationId": "get__OffshootName__Health",
+        "x-public": true,
         "summary": "Health check for the __offshoot-name__ offshoot",
         "responses": {
           "200": {
@@ -510,6 +537,14 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
+      }
+    },
     "schemas": {
       "Error": {
         "$ref": "#/components/schemas/error"

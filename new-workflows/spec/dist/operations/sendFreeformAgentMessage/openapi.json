@@ -10,6 +10,7 @@
         "summary": "Send a one-off message to the run's agent CLI",
         "description": "Runs a single agent turn (Claude or Cursor CLI) with the given text. Does not advance the workflow or create a step row — only appends to `workflow_logs` under the run's current step index. Uses the same run lock as `advanceWorkflowRun`.\n",
         "operationId": "sendFreeformAgentMessage",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",

@@ -6,6 +6,7 @@ getWorkflowSteps:
     than an existing run's `workflow_ref` — for showing the sidebar/outline
     before a workflow has ever been started.
   operationId: getWorkflowSteps
+  x-public: true
 
   parameters:
     - name: id

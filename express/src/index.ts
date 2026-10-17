@@ -34,7 +34,6 @@ export { makeAuthMiddleware, drainRequest, type AuthMiddlewareOptions } from "./
 export { makeCsrfMiddleware } from "./middleware/csrf.ts";
 export {
   compileOperationSecurity,
-  declaresOperationSecurity,
   sessionSecurityResolver,
   SESSION_SCOPE_EMAIL_VERIFIED,
   SESSION_SCOPE_MFA,

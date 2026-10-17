@@ -3,8 +3,8 @@ cancelJobsByOriginalRequest:
   description: >
     Cancels every non-terminal, non-running job that shares the given `original_request_id` (`terminal_reason: cancelled-by-chain`). Running jobs in the chain are left alone. Returns the jobs that were cancelled. Mounted as monolith chrome (`site-admin-only`).
   operationId: cancelJobsByOriginalRequest
-  tags:
-    - site-admin-only
+  security:
+    - session: [site-admin]
 
   requestBody:
     required: true

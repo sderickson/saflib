@@ -62,6 +62,7 @@ const workApiSpec = asOpenApiDocument({
       post: {
         operationId: "testJobStart",
         tags: [],
+        security: [{ session: [] }],
         responses: { "200": jsonOk },
       },
     },
@@ -69,6 +70,7 @@ const workApiSpec = asOpenApiDocument({
       post: {
         operationId: "testJobStepB",
         tags: ["background"],
+        security: [{ session: [] }],
         responses: { "200": jsonOk },
       },
     },
@@ -76,6 +78,7 @@ const workApiSpec = asOpenApiDocument({
       post: {
         operationId: "testJobStepC",
         tags: ["background"],
+        security: [{ session: [] }],
         responses: { "200": jsonOk },
       },
     },
@@ -95,7 +98,6 @@ function createWorkApp() {
     "/test",
     ...createScopedMiddleware({
       apiSpec: workApiSpec,
-      enforceAuth: true,
     }),
   );
 

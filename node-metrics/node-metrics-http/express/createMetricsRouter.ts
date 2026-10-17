@@ -12,9 +12,7 @@ export function createMetricsRouter(): Router {
 
   router.get(
     "/admin/metrics/snapshot",
-    ...createOperationScopedMiddleware(getMetricsSnapshotOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(getMetricsSnapshotOperationJsonSpec),
     createGetMetricsSnapshotHandler(),
   );
 

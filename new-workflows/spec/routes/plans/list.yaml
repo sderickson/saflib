@@ -4,6 +4,7 @@ listPlans:
     Scans the plans root (e.g. `test-product/plans/`) for folders holding
     workflow config files, newest-first.
   operationId: listPlans
+  x-public: true
 
   responses:
     "200":

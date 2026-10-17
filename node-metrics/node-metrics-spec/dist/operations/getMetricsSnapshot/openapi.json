@@ -10,9 +10,7 @@
         "summary": "Snapshot of parsed in-process Prometheus metrics",
         "description": "Development-only metrics viewer (`createMetricsRouter` only). Tagged `no-auth` for local dev stacks without a session.\n",
         "operationId": "getMetricsSnapshot",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "responses": {
           "200": {
             "description": "Parsed metric series from the in-process prom-client registry.",

@@ -12,23 +12,17 @@ export function createRepoRouter(): IRouter {
 
   router.get(
     "/api/repo/files",
-    ...createOperationScopedMiddleware(listRepoFilesOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(listRepoFilesOperationJsonSpec),
     listRepoFilesHandler,
   );
   router.get(
     "/api/repo/file",
-    ...createOperationScopedMiddleware(getRepoFileOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(getRepoFileOperationJsonSpec),
     getRepoFileHandler,
   );
   router.get(
     "/api/repo/diff",
-    ...createOperationScopedMiddleware(getRepoDiffOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(getRepoDiffOperationJsonSpec),
     getRepoDiffHandler,
   );
 

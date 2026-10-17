@@ -9,6 +9,7 @@
       "get": {
         "summary": "Get a run by id",
         "operationId": "getWorkflowRun",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",
