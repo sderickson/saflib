@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./json-spec": "./json-spec.ts",
+    "./paths": "./paths.ts",
     "./types": "./types.ts",
     "./operations/*": "./dist/operations/*/index.ts",
     "./schemas/*": "./dist/schemas/*/index.ts"

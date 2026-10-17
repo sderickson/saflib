@@ -1,0 +1,174 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "checkAuditLogRotationMaintenance",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/maintenance/check-audit-log-rotation": {
+      "post": {
+        "summary": "Watchdog: alert if audit log rotation is stale",
+        "operationId": "checkAuditLogRotationMaintenance",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "tags": [
+          "background"
+        ],
+        "description": "Background maintenance: checks that the earliest row in the active audit DB is not older than ~26 hours (seal should have rotated sooner). Invoked by the `checkAuditLogRotation` cron schedule and manually by site admins. Empty active DB or age within threshold → 200 with `auditRotationStatus`. Stale rotation → 500 so the job retries then goes `dead` and is visible in the jobs admin UI. Empty body — no client fields.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Empty JSON object. Staleness threshold is fixed server-side; no client fields.\n",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rotation is healthy: active DB is empty or the earliest row age is within the staleness threshold.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "auditRotationStatus"
+                  ],
+                  "properties": {
+                    "auditRotationStatus": {
+                      "$ref": "#/components/schemas/audit-rotation-status"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - caller is not a site admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Watchdog tripped: earliest active audit row is older than the staleness threshold (~26h). Job queue treats this as retryable until `dead`.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "audit-rotation-status": {
+        "type": "object",
+        "description": "Outcome of one audit-rotation watchdog check when the active audit DB is empty or the earliest row is within the staleness threshold. Unhealthy (stale) checks do not use this schema — they return HTTP 500.\n",
+        "additionalProperties": false,
+        "properties": {
+          "healthy": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Always `true` on 200. Present so clients can distinguish a successful check without relying solely on HTTP status.\n",
+            "example": true
+          },
+          "empty": {
+            "type": "boolean",
+            "description": "`true` when the active audit DB has no rows (nothing to age-check). `false` when at least one row exists and its age is within threshold.\n",
+            "example": false
+          },
+          "earliest_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of the oldest row in the active audit DB (`headAt`). `null` when `empty` is true.\n",
+            "example": "2026-08-06T12:00:00.000Z"
+          },
+          "age_ms": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "Milliseconds between `earliest_at` and the check time. `null` when `empty` is true. Always ≤ `threshold_ms` on a healthy response.\n",
+            "example": 3600000
+          },
+          "threshold_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Staleness threshold in milliseconds (26 hours). An `age_ms` above this value causes the operation to return 500 instead of this body.\n",
+            "example": 93600000
+          }
+        },
+        "required": [
+          "healthy",
+          "empty",
+          "earliest_at",
+          "age_ms",
+          "threshold_ms"
+        ],
+        "example": {
+          "healthy": true,
+          "empty": false,
+          "earliest_at": "2026-08-06T12:00:00.000Z",
+          "age_ms": 3600000,
+          "threshold_ms": 93600000
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
+      }
+    }
+  }
+}

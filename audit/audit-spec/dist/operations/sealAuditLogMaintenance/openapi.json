@@ -1,0 +1,197 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "sealAuditLogMaintenance",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/maintenance/seal-audit-log": {
+      "post": {
+        "summary": "Seal and ship the active audit database",
+        "operationId": "sealAuditLogMaintenance",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "tags": [
+          "background"
+        ],
+        "description": "Background maintenance: runs the same seal-and-ship pipeline as the admin seal endpoint (snapshot, verify chain, compress, upload, digest email, rotate). Invoked by the `sealAuditLog` cron schedule and manually by site admins. Unlike admin `sealAuditLog`, a skip (empty active DB or concurrent seal lock) is a **200** with `auditSealResult.status: skipped` — an idempotent no-op for safe job redelivery. Empty body — no client fields.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Empty JSON object. Seal options are fixed server-side; no client fields.\n",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seal completed (`status: sealed` with `archive`) or skipped as a no-op (`status: skipped`, `reason: empty` or `in_progress`). Both are successful deliveries for the job queue.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/seal-audit-log-response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - caller is not a site admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "seal-audit-log-response": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "audit_seal_result"
+        ],
+        "properties": {
+          "audit_seal_result": {
+            "$ref": "#/components/schemas/audit-seal-result"
+          }
+        }
+      },
+      "audit-seal-result": {
+        "type": "object",
+        "description": "Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `duration_ms` are present.\n",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "duration_ms"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "sealed",
+              "skipped"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "empty",
+              "in_progress"
+            ]
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "archive": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "filename",
+              "size_bytes",
+              "sha256_hex",
+              "archive_key",
+              "row_count",
+              "head_hash",
+              "tail_hash",
+              "first_ts",
+              "last_ts"
+            ],
+            "properties": {
+              "filename": {
+                "type": "string"
+              },
+              "size_bytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sha256_hex": {
+                "type": "string",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "archive_key": {
+                "type": "string",
+                "description": "Remote archive identifier (object path, bucket key, etc.)."
+              },
+              "row_count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "head_hash": {
+                "type": "string",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "tail_hash": {
+                "type": "string",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "first_ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "last_ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "branch_count": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
+      }
+    }
+  }
+}

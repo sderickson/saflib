@@ -1,0 +1,61 @@
+checkAuditLogRotationMaintenance:
+  summary: "Watchdog: alert if audit log rotation is stale"
+  operationId: "checkAuditLogRotationMaintenance"
+  security:
+    - session: [site-admin]
+  tags:
+    - background
+  description: >
+    Background maintenance: checks that the earliest row in the active audit
+    DB is not older than ~26 hours (seal should have rotated sooner). Invoked
+    by the `checkAuditLogRotation` cron schedule and manually by site admins.
+    Empty active DB or age within threshold → 200 with `auditRotationStatus`.
+    Stale rotation → 500 so the job retries then goes `dead` and is visible in
+    the jobs admin UI. Empty body — no client fields.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          description: >
+            Empty JSON object. Staleness threshold is fixed server-side; no
+            client fields.
+          properties: {}
+  responses:
+    "200":
+      description: >
+        Rotation is healthy: active DB is empty or the earliest row age is
+        within the staleness threshold.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - auditRotationStatus
+            properties:
+              auditRotationStatus:
+                $ref: "../../schemas/audit-rotation-status.yaml"
+    "401":
+      description: "Unauthorized - missing or invalid auth headers, or not logged in."
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: "Forbidden - caller is not a site admin."
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "500":
+      description: >
+        Watchdog tripped: earliest active audit row is older than the
+        staleness threshold (~26h). Job queue treats this as retryable until
+        `dead`.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

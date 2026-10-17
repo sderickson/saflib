@@ -26,6 +26,9 @@
       "path": "./audit/audit-http"
     },
     {
+      "path": "./audit/audit-rotator"
+    },
+    {
       "path": "./audit/audit-sdk"
     },
     {
