@@ -91,6 +91,7 @@ export interface components {
     schemas: {
         AuditLog: components["schemas"]["audit-log"];
         AuditRotationStatus: components["schemas"]["audit-rotation-status"];
+        AuditSealResult: components["schemas"]["audit-seal-result"];
         /** @description Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `duration_ms` are present. */
         "audit-seal-result": {
             /** @enum {string} */

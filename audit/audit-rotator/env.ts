@@ -6,7 +6,6 @@ import type { NodeEnvSchema } from "@saflib/node/env";
  */
 export interface AuditRotatorEnvSchema extends EnvEnvSchema, NodeEnvSchema {
   AUDIT_LOCAL_RETENTION_DAYS?: string;
-  NODE_ENV?: string;
 }
 
 export const typedEnv = (globalThis.process

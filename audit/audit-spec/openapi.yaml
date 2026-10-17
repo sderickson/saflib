@@ -13,6 +13,8 @@ components:
       $ref: "./schemas/audit-log.yaml"
     AuditRotationStatus:
       $ref: "./schemas/audit-rotation-status.yaml"
+    AuditSealResult:
+      $ref: "./schemas/audit-seal-result.yaml"
     audit-seal-result:
       $ref: "./schemas/audit-seal-result.yaml"
     seal-audit-log-response:
