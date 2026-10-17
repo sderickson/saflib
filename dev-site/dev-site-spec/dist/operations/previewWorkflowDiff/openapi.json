@@ -9,9 +9,7 @@
       "post": {
         "summary": "Preview a workflow's effect as a commit diff, without running it",
         "operationId": "previewWorkflowDiff",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Same as `previewWorkflowRunDiff`, but for a workflow that's never been run at all — no `workflow_run` row required, so this works before ever clicking \"Start workflow\". `id` is the same thing `POST /api/workflows/{id}/runs` accepts (a registered workflow id, or a plan file's path); `input`/`cwd` default the same way a real run's would.\n",
         "parameters": [
           {

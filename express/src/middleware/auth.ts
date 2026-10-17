@@ -4,26 +4,18 @@ import {
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
   AUTH_ERROR_MFA_REQUIRED,
 } from "@saflib/utils/auth-error-codes";
-import {
-  OPENAPI_TAG_EMAIL_VERIFIED,
-  OPENAPI_TAG_MFA_REQUIRED,
-  OPENAPI_TAG_NO_AUTH,
-  OPENAPI_TAG_SITE_ADMIN_ONLY,
-} from "@saflib/openapi";
 import { typedEnv } from "../../env.ts";
 
+/**
+ * Session requirements. Routes get these from OpenAPI `security` via the
+ * built-in `session` resolver (`site-admin`, `email-verified`, `mfa` scopes).
+ */
 export interface AuthMiddlewareOptions {
-  /**
-   * @deprecated Prefer the OpenAPI `site-admin-only` tag. Kept for callers that
-   * do not run OpenAPI validation middleware.
-   */
+  /** Require a site admin; implies verified email + MFA. */
   adminRequired?: boolean;
   /** When true, respond with 403 unless `auth.emailVerified` is true. */
   emailVerificationRequired?: boolean;
-  /**
-   * When true, respond with 403 unless the session meets MFA (AAL2+).
-   * Site-admin routes also require MFA via the `site-admin-only` tag.
-   */
+  /** When true, respond with 403 unless the session meets MFA (AAL2+). */
   mfaRequired?: boolean;
 }
 
@@ -63,25 +55,14 @@ export const makeAuthMiddleware = (
 
   return (req, res, next): void => {
     const { auth } = getSafContext();
-    const tags = req.openapi?.schema?.tags;
-    const routeRequiresSiteAdmin =
-      tags?.includes(OPENAPI_TAG_SITE_ADMIN_ONLY) === true ||
-      Boolean(adminRequired);
+    const routeRequiresSiteAdmin = Boolean(adminRequired);
 
     const routeRequiresVerifiedEmail =
-      Boolean(emailVerificationRequired) ||
-      tags?.includes(OPENAPI_TAG_EMAIL_VERIFIED) === true ||
-      routeRequiresSiteAdmin;
+      Boolean(emailVerificationRequired) || routeRequiresSiteAdmin;
 
     const routeRequiresMfa =
       isMfaEnforcementEnabled() &&
-      (Boolean(mfaRequired) ||
-        tags?.includes(OPENAPI_TAG_MFA_REQUIRED) === true ||
-        routeRequiresSiteAdmin);
-
-    if (tags?.includes(OPENAPI_TAG_NO_AUTH)) {
-      return next();
-    }
+      (Boolean(mfaRequired) || routeRequiresSiteAdmin);
 
     if (!auth) {
       drainRequest(req).then(() => {

@@ -8,6 +8,7 @@ cancelWorkflowRun:
     A no-op (returns `cancelled: false`) if nothing was running, including
     the common race where the agent had already finished.
   operationId: cancelWorkflowRun
+  x-public: true
 
   parameters:
     - name: runId

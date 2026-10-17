@@ -6,6 +6,7 @@ listWorkflowRunMessages:
     `agent-input` log row, so its `seq` can anchor the logs view and its
     `step_index` says which step the run was on when it was sent.
   operationId: listWorkflowRunMessages
+  x-public: true
 
   parameters:
     - name: runId

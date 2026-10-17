@@ -10,6 +10,7 @@
         "summary": "Run the next step of a run",
         "description": "The HTTP face of `new-workflows/lib`'s single \"run next step\" entry point — the caller (this endpoint's caller) decides whether/when to call it again. Persists the step's output to `workflow_logs` and publishes a change hint on this run's SSE channel as a side effect.\n",
         "operationId": "advanceWorkflowRun",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",

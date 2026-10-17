@@ -7,7 +7,7 @@ import type { NodeEnvSchema } from "@saflib/node/env";
  */
 export interface ExpressEnvSchema extends EnvEnvSchema, NodeEnvSchema {
   /**
-   * When 'true', skip MFA gates on admin routes and operations tagged mfa-required. Useful for local development.
+   * When 'true', skip MFA gates on admin routes and operations whose security requires the `mfa` session scope. Useful for local development.
    */
   DISABLE_MFA_ENFORCEMENT?: "true" | "false";
 }

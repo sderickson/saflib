@@ -10,7 +10,6 @@ const router = express.Router();
 router.use(
   ...createScopedMiddleware({
     apiSpec: jsonSpec,
-    adminRequired: true,
   }),
 );
 router.get("/jobs", listCronJobsHandler);

@@ -186,7 +186,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 
       - Import \`operationJsonSpec\` from \`@…-spec/operations/${context.operationId}\` (not full \`jsonSpec\`).
       - Do **not** mount \`createScopedMiddleware({ apiSpec: jsonSpec })\` on a router prefix.
-      - Products with extra middleware (e.g. org context) use a **product** helper such as \`registerOrgScopedRoute\` that wraps \`createOperationScopedMiddleware\` — do not add that to generic SAF templates.
+      - If the product exports a \`registerRoute\` built with \`makeRegisterRoute\` (e.g. \`#handlers/register-route.ts\`), use \`registerRoute(router, operationJsonSpec, handler)\` instead: method, path, and access (OpenAPI \`security\` / \`x-public\`, including product schemes such as \`org\`) all come from the spec, so pass no auth options.
 
       **Package routers.ts:** Add the group's \`create…Router()\` to \`groupRouterMounts()\` in \`routers.ts\` (workflow area). Main \`http.ts\` spreads that barrel; offshoot \`http.ts\` mounts it on the offshoot barrel router. Route handler tests mount the **group router** via \`acquireRouterSlimRouteTest\` in \`test/slim-route-test.ts\`, not \`create…HttpApp()\` with the full default mount list.
 

@@ -29,89 +29,67 @@ export function createRunsRouter(): IRouter {
 
   router.get(
     "/workflows/:id/runs",
-    ...createOperationScopedMiddleware(listWorkflowRunsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(listWorkflowRunsOperationJsonSpec),
     listWorkflowRunsHandler,
   );
 
   router.post(
     "/workflows/:id/runs",
-    ...createOperationScopedMiddleware(createWorkflowRunOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(createWorkflowRunOperationJsonSpec),
     createWorkflowRunHandler,
   );
 
   router.get(
     "/runs/:runId",
-    ...createOperationScopedMiddleware(getWorkflowRunOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(getWorkflowRunOperationJsonSpec),
     getWorkflowRunHandler,
   );
 
   router.post(
     "/runs/:runId/advance",
-    ...createOperationScopedMiddleware(advanceWorkflowRunOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(advanceWorkflowRunOperationJsonSpec),
     advanceWorkflowRunHandler,
   );
 
   router.post(
     "/runs/:runId/agent-message",
-    ...createOperationScopedMiddleware(sendFreeformAgentMessageOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(sendFreeformAgentMessageOperationJsonSpec),
     sendFreeformAgentMessageHandler,
   );
 
   router.post(
     "/runs/:runId/goto",
-    ...createOperationScopedMiddleware(gotoWorkflowRunOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(gotoWorkflowRunOperationJsonSpec),
     gotoWorkflowRunHandler,
   );
 
   router.post(
     "/runs/:runId/cancel",
-    ...createOperationScopedMiddleware(cancelWorkflowRunOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(cancelWorkflowRunOperationJsonSpec),
     cancelWorkflowRunHandler,
   );
 
   router.get(
     "/runs/:runId/logs",
-    ...createOperationScopedMiddleware(listWorkflowRunLogsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(listWorkflowRunLogsOperationJsonSpec),
     listWorkflowRunLogsHandler,
   );
 
   router.get(
     "/runs/:runId/messages",
-    ...createOperationScopedMiddleware(listWorkflowRunMessagesOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(listWorkflowRunMessagesOperationJsonSpec),
     listWorkflowRunMessagesHandler,
   );
 
   router.get(
     "/runs/:runId/steps",
-    ...createOperationScopedMiddleware(getWorkflowRunStepsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(getWorkflowRunStepsOperationJsonSpec),
     getWorkflowRunStepsHandler,
   );
 
   router.get(
     "/runs/:runId/step-tree",
-    ...createOperationScopedMiddleware(getWorkflowRunStepTreeOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(getWorkflowRunStepTreeOperationJsonSpec),
     getWorkflowRunStepTreeHandler,
   );
 

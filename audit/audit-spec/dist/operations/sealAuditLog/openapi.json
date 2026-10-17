@@ -10,8 +10,12 @@
         "summary": "Seal the active audit database (admin)",
         "description": "Snapshot the active DB, verify the hash chain, compress locally, then invoke the product's ship callback (upload + off-system seal report). Clears the active store only after ship succeeds. Requires an authenticated site admin.\n",
         "operationId": "sealAuditLog",
-        "tags": [
-          "site-admin-only"
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
         ],
         "responses": {
           "200": {
@@ -215,6 +219,14 @@
             }
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
       }
     }
   }

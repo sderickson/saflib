@@ -21,9 +21,7 @@ export function createDevAnalyticsRouter(): Router {
 
   router.get(
     "/admin/product-events",
-    ...createOperationScopedMiddleware(listProductEventsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(listProductEventsOperationJsonSpec),
     createListProductEventsHandler(),
   );
 

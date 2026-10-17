@@ -9,6 +9,7 @@
       "post": {
         "summary": "Start a run of a registered workflow",
         "operationId": "createWorkflowRun",
+        "x-public": true,
         "parameters": [
           {
             "name": "id",

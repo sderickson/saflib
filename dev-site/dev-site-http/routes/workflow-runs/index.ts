@@ -12,23 +12,17 @@ export function createWorkflowRunsRouter(): IRouter {
 
   router.get(
     "/api/workflow-runs/:runId/preview-diff",
-    ...createOperationScopedMiddleware(previewWorkflowRunDiffOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(previewWorkflowRunDiffOperationJsonSpec),
     previewWorkflowRunDiffHandler,
   );
   router.get(
     "/api/workflow-runs/:runId/reflect-diff",
-    ...createOperationScopedMiddleware(reflectWorkflowRunDiffOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(reflectWorkflowRunDiffOperationJsonSpec),
     reflectWorkflowRunDiffHandler,
   );
   router.post(
     "/api/workflows/:id/preview-diff",
-    ...createOperationScopedMiddleware(previewWorkflowDiffOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(previewWorkflowDiffOperationJsonSpec),
     previewWorkflowDiffHandler,
   );
 

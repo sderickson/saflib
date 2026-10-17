@@ -9,9 +9,7 @@
       "get": {
         "summary": "List files at a commit",
         "operationId": "listRepoFiles",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Prefix matches the exact path, descendants (`docs` matches `docs/guide.md`), and files sharing the stem (`src/Foo` matches `src/Foo.ts`, `src/Foo.vue`, `src/Foo.test.ts` — not `src/FooAsync.vue`). Used for browsing docs and source without checking out.\n",
         "parameters": [
           {

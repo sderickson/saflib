@@ -12,12 +12,11 @@ import { unsubscribeMarketingEmailsUserConfigsHandler } from "./unsubscribe-mark
 export function createUserConfigsRouter(): IRouter {
   const router = express.Router();
 
-  // `no-auth` OpenAPI tag skips session/CSRF on this operation.
+  // `x-public` in the spec skips session/CSRF on this operation.
   router.post(
     "/user-configs/unsubscribe-marketing",
     ...createOperationScopedMiddleware(
       unsubscribeMarketingEmailsUserConfigsOperationJsonSpec,
-      { enforceAuth: false },
     ),
     unsubscribeMarketingEmailsUserConfigsHandler,
   );

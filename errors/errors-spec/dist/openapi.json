@@ -6,6 +6,14 @@
     "description": "Unified error capture (client, server, CSP) and admin viewing via an in-memory ring buffer."
   },
   "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
+      }
+    },
     "schemas": {
       "ReportedError": {
         "$ref": "#/components/schemas/reported-error"
@@ -81,9 +89,7 @@
       "post": {
         "summary": "Record a client-reported error",
         "operationId": "recordReportedError",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -149,9 +155,9 @@
         "summary": "Ingest a Content-Security-Policy violation report",
         "description": "Accepts a browser CSP violation payload (`application/csp-report` or JSON with a `csp-report` object), normalizes into the shared error ring buffer as `kind: csp-violation`, and returns **204**. Tagged `csrf-exempt` because the browser cannot send our double-submit CSRF header on automatic violation posts. Tagged `no-auth` because browsers cannot rely on session cookies on automatic `report-uri` posts (no-cors).\n",
         "operationId": "postCspViolationReport",
+        "x-public": true,
         "tags": [
-          "csrf-exempt",
-          "no-auth"
+          "csrf-exempt"
         ],
         "requestBody": {
           "required": true,
@@ -194,8 +200,12 @@
         "summary": "Admin-only intentional server error",
         "description": "Throws an error on the server for verifying error reporting (e.g. Sentry and the admin Errors page). Requires an authenticated site admin.\n",
         "operationId": "postAdminTestError",
-        "tags": [
-          "site-admin-only"
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
         ],
         "responses": {
           "401": {
@@ -236,9 +246,7 @@
         "summary": "List buffered reported errors",
         "description": "Development ring-buffer listing (`createDevErrorsRouter` only). Tagged `no-auth` so local dev stacks can read captured errors without a session, matching `/dev/logs`.\n",
         "operationId": "listReportedErrors",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "parameters": [
           {
             "name": "kind",

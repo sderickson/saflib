@@ -9,6 +9,7 @@ listWorkflowRunLogs:
     window that is not the live tip. The client re-fetches rather than
     getting log content pushed over the wire.
   operationId: listWorkflowRunLogs
+  x-public: true
 
   parameters:
     - name: runId

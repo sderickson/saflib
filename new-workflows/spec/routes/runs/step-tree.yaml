@@ -5,6 +5,7 @@ getWorkflowRunStepTree:
     path addresses suitable for `gotoWorkflowRun`. Nested definitions
     appear even before a child run has been created.
   operationId: getWorkflowRunStepTree
+  x-public: true
 
   parameters:
     - name: runId

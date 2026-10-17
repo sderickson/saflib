@@ -9,9 +9,7 @@
       "get": {
         "summary": "Git diff between two refs",
         "operationId": "getRepoDiff",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Returns `git diff base...head` as UTF-8 text, optionally limited to a path prefix.\n",
         "parameters": [
           {

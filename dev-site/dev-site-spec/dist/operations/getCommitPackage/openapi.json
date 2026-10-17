@@ -9,9 +9,7 @@
       "get": {
         "summary": "Package-scoped symbols for one analyzed commit",
         "operationId": "getCommitPackage",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes db_inventory (drizzle tables + query dirs). For spec packages, also includes spec_inventory (OpenAPI schemas + REST resources). For http and sdk packages, spec_inventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, spec_inventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layout_issues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.\n",
         "parameters": [
           {

@@ -9,9 +9,7 @@
       "get": {
         "summary": "Read a file at a commit",
         "operationId": "getRepoFile",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Read the UTF-8 contents of one blob at a commit by repo-relative path. Returns 404 when the path is missing at that ref.\n",
         "parameters": [
           {

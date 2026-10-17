@@ -24,7 +24,7 @@ Portable subset of threat-model controls:
 | ------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | TLS / HSTS, CSP, CORS allowlist, `-Server`                    | Caddy snippets in `base/dev/caddy-config` and `saflib/deploy/caddy`       |
 | CSRF double-submit, authz tags, MFA hooks, OpenAPI validation | `@saflib/express`                                                         |
-| CSP violation ingest → unified errors buffer                  | `@saflib/errors-http` (`POST /csp-violations`, `no-auth` + `csrf-exempt`) |
+| CSP violation ingest → unified errors buffer                  | `@saflib/errors-http` (`POST /csp-violations`, `x-public` + `csrf-exempt`) |
 | Playwright regression                                         | This package (`npm run test:e2e` against `base/dev`)                      |
 | Audit fail-closed (when wired)                                | `@saflib/audit-http` + product audit map                                  |
 | Secrets                                                       | `createSecretStore({ type: "env" })` only                                 |
@@ -33,7 +33,7 @@ Portable subset of threat-model controls:
 ## Public API surface (skip Kratos `forward_auth` at Caddy + Express early auth gate)
 
 Keep this list in sync with Caddy `@public_monolith`, `isPublicMonolithRoute` in
-`base/service/http`, and OpenAPI `no-auth` tags:
+`base/service/http`, and OpenAPI `x-public: true`:
 
 - `GET /health`
 - `POST /csp-violations` (also mounted via `@saflib/errors-http` in Express global middleware)

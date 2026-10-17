@@ -10,6 +10,7 @@
         "summary": "Step tree for a run (including nested call-workflow children)",
         "description": "Indented outline of every step under this run, with slash-separated path addresses suitable for `gotoWorkflowRun`. Nested definitions appear even before a child run has been created.\n",
         "operationId": "getWorkflowRunStepTree",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",

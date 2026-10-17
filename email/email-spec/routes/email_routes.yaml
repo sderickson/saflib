@@ -2,6 +2,7 @@
 get:
   summary: List all sent emails
   operationId: listSentEmails
+  x-public: true
   parameters:
     - name: user_email
       in: query

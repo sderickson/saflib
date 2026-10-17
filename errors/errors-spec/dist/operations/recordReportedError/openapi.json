@@ -9,9 +9,7 @@
       "post": {
         "summary": "Record a client-reported error",
         "operationId": "recordReportedError",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "requestBody": {
           "required": true,
           "content": {

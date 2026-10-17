@@ -6,6 +6,7 @@ sendFreeformAgentMessage:
     `workflow_logs` under the run's current step index. Uses the same
     run lock as `advanceWorkflowRun`.
   operationId: sendFreeformAgentMessage
+  x-public: true
 
   parameters:
     - name: runId

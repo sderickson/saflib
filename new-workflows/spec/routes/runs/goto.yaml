@@ -6,6 +6,7 @@ gotoWorkflowRun:
     indices (e.g. `2/4`). Invalidates leaf step attempts from the target
     index onward. The same semantics as `new-workflow goto`.
   operationId: gotoWorkflowRun
+  x-public: true
 
   parameters:
     - name: runId

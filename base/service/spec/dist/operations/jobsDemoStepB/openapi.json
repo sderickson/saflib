@@ -10,8 +10,14 @@
         "summary": "Jobs demo chain step B",
         "description": "Background step that optionally fails N times (503) to demonstrate retries, then enqueues `jobsDemoStepC`.\n",
         "operationId": "jobsDemoStepB",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
         "tags": [
-          "site-admin-only",
           "background"
         ],
         "requestBody": {
@@ -136,6 +142,14 @@
             "example": "The requested resource could not be found."
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
       }
     }
   }

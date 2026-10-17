@@ -2,8 +2,7 @@
 post:
   summary: Receive email dispatch from Ory Kratos HTTP courier
   operationId: postKratosCourier
-  tags:
-    - no-auth
+  x-public: true
   requestBody:
     required: true
     content:

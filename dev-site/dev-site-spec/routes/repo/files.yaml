@@ -1,8 +1,7 @@
 listRepoFiles:
   summary: List files at a commit
   operationId: listRepoFiles
-  tags:
-    - no-auth
+  x-public: true
   description: >
     List blob paths at a commit (git ls-tree), optionally filtered by path
     prefix and/or file extension(s). Prefix matches the exact path, descendants

@@ -3,8 +3,8 @@ listJobs:
   description: >
     Admin list of queued jobs with optional filters and offset pagination. Mounted on the public app as monolith chrome (`site-admin-only`).
   operationId: listJobs
-  tags:
-    - site-admin-only
+  security:
+    - session: [site-admin]
 
   parameters:
     - name: status

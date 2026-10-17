@@ -1,7 +1,8 @@
 putMineUserConfigs:
   summary: "Update the caller's user config"
   operationId: "putMineUserConfigs"
-  tags: []
+  security:
+    - session: []
   description: >
     Upserts the authenticated user's display name and marketing email preference. Lazy-creates the `user_config` row when missing. `display_name` is trimmed; empty or whitespace-only values are rejected. When `marketing_emails_opt_in` becomes `true`, sets `marketing_emails_opt_in_at` to now if newly opted in; when set to `false`, clears `marketing_emails_opt_in_at` to null. Pass `terms_of_service_agreed_at: "now"` to record Terms of Service agreement at the server's current time (preserved once set; not overwritten). `user_id`, timestamps, and client-supplied ISO values for `marketing_emails_opt_in_at` / `terms_of_service_agreed_at` may be included when echoing a prior GET but are ignored — ownership and timestamps are server-controlled.
 

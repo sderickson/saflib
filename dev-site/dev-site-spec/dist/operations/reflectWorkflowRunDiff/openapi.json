@@ -9,9 +9,7 @@
       "get": {
         "summary": "A workflow run's actual effect as a commit diff",
         "operationId": "reflectWorkflowRunDiff",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Diffs `base_commit_hash` (the repo's HEAD when the run started) against `completion_hash` (HEAD the moment it finished) — both real commits, so this stays correct regardless of what else has landed in the repo since, unlike comparing against the repo's live current HEAD would. For a run that hasn't finished yet, falls back to live HEAD instead — `is_final: false` on the result marks that as a still-moving view.\n",
         "parameters": [
           {

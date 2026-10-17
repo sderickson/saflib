@@ -10,8 +10,12 @@
         "summary": "List audit log events (admin)",
         "description": "Paginated keyset scan of the audit database, ordered by timestamp then id. `head_at` / `tail_at` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.\n",
         "operationId": "listAuditLogs",
-        "tags": [
-          "site-admin-only"
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
         ],
         "parameters": [
           {
@@ -266,6 +270,14 @@
             "example": "The requested resource could not be found."
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
       }
     }
   }

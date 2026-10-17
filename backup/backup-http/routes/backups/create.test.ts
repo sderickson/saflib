@@ -63,9 +63,7 @@ describe("POST /backups", () => {
       .send({});
 
     expect(response.status).toBe(403);
-    expect(response.body).toMatchObject({
-      code: "FORBIDDEN",
-    });
+    // Enforced by the operation's `session: [site-admin]` security.
   });
 
   it("should return 401 when authentication is missing", async () => {

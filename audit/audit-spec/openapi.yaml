@@ -5,6 +5,9 @@ info:
   description: Hash-chained append-only audit log — admin browse and chain verification.
 
 components:
+  securitySchemes:
+    session:
+      $ref: "pkg:@saflib/openapi/security-schemes/session.yaml"
   schemas:
     AuditLog:
       $ref: "./schemas/audit-log.yaml"

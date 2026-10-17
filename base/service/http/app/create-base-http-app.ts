@@ -42,7 +42,7 @@ export type CreateBaseHttpAppShellOptions = BaseServiceContextOptions & {
    */
   mounts: HttpRouterMount[];
   /**
-   * Public / no-auth gate. Defaults to {@link isPublicMonolithRoute}.
+   * Public (`x-public`) gate. Defaults to {@link isPublicMonolithRoute}.
    * Keep in sync with Caddy `@public_monolith`.
    */
   isPublicMonolithRoute?: (req: Request) => boolean;

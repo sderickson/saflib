@@ -9,9 +9,7 @@
       "get": {
         "summary": "Preview a workflow run's effect as a commit diff",
         "operationId": "previewWorkflowRunDiff",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Computes what the run's workflow (walking `copy`/`transform-file`/`cd` steps, recursing into `call-workflow`) would change, as a real but never-persisted, never-referenced git commit — then diffs it against the repo's current commit the same way `diffCommits` diffs two real ones. Steps that genuinely need a real run (an agent turn, a shell command) are reported in `entries`, not silently skipped.\n",
         "parameters": [
           {

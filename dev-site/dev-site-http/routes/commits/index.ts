@@ -14,31 +14,23 @@ export function createCommitsRouter(): IRouter {
 
   router.get(
     "/api/commits",
-    ...createOperationScopedMiddleware(listCommitsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(listCommitsOperationJsonSpec),
     listCommitsHandler,
   );
   // More specific path before /api/commits/:hash
   router.get(
     "/api/commits/:hash/packages/:package_name",
-    ...createOperationScopedMiddleware(getCommitPackageOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(getCommitPackageOperationJsonSpec),
     getCommitPackageHandler,
   );
   router.get(
     "/api/commits/:hash",
-    ...createOperationScopedMiddleware(getCommitsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(getCommitsOperationJsonSpec),
     getCommitsHandler,
   );
   router.get(
     "/api/commits/:hash/diff/:other_hash",
-    ...createOperationScopedMiddleware(diffCommitsOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(diffCommitsOperationJsonSpec),
     diffCommitsHandler,
   );
 

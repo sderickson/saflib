@@ -10,6 +10,7 @@
         "summary": "Save a new plan (a config-defined workflow) to the plans folder",
         "description": "Writes `<plansRoot>/<date>-<name>/<fileName>` with the given config body (`fileName` defaults to `<name>.yaml`). Doesn't run it — see POST /workflows/{id}/runs with the returned file's `path` as `id`.\n",
         "operationId": "createPlan",
+        "x-public": true,
         "requestBody": {
           "required": true,
           "content": {

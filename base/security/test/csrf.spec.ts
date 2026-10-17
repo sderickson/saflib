@@ -108,7 +108,7 @@ test.describe("CSRF (double-submit)", () => {
     expect(res.status(), await res.text()).toBe(200);
   });
 
-  test("POST /user-configs/unsubscribe-marketing is no-auth and does not require CSRF token", async ({
+  test("POST /user-configs/unsubscribe-marketing is x-public and does not require CSRF token", async ({
     request,
   }) => {
     const res = await request.post(
@@ -121,7 +121,7 @@ test.describe("CSRF (double-submit)", () => {
     expect(res.status()).toBe(200);
   });
 
-  test("POST /csp-violations is no-auth and does not require CSRF token", async ({
+  test("POST /csp-violations is x-public and does not require CSRF token", async ({
     request,
   }) => {
     const res = await request.post(`${apiOrigin()}/csp-violations`, {

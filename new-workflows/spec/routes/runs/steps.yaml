@@ -7,6 +7,7 @@ getWorkflowRunSteps:
     step's own rendered input where that's safe to compute without
     executing it, else just the step `kind`.
   operationId: getWorkflowRunSteps
+  x-public: true
 
   parameters:
     - name: runId

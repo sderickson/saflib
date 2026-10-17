@@ -9,6 +9,13 @@
       "post": {
         "summary": "Create a manual backup",
         "operationId": "createBackup",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
         "requestBody": {
           "required": false,
           "content": {
@@ -157,6 +164,14 @@
             "example": "The requested resource could not be found."
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
       }
     }
   }

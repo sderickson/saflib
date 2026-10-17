@@ -1,9 +1,8 @@
 getUsersByIdAdmin:
   summary: "Look up a Kratos identity by ID (site-admin)"
   operationId: "getUsersByIdAdmin"
-
-  tags:
-    - site-admin-only
+  security:
+    - session: [site-admin]
 
   parameters:
     - name: "id"

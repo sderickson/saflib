@@ -10,8 +10,12 @@
         "summary": "Admin-only intentional server error",
         "description": "Throws an error on the server for verifying error reporting (e.g. Sentry and the admin Errors page). Requires an authenticated site admin.\n",
         "operationId": "postAdminTestError",
-        "tags": [
-          "site-admin-only"
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
         ],
         "responses": {
           "401": {
@@ -63,6 +67,14 @@
             "example": "The requested resource could not be found."
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
       }
     }
   }

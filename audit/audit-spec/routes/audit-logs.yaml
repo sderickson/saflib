@@ -3,9 +3,9 @@ listAuditLogs:
   description: >
     Paginated keyset scan of the audit database, ordered by timestamp then id. `head_at` / `tail_at` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.
   operationId: listAuditLogs
+  security:
+    - session: [site-admin]
 
-  tags:
-    - site-admin-only
   parameters:
     - name: from
       in: query

@@ -1,8 +1,7 @@
 recordProductEvent:
   summary: Record a product analytics event
   operationId: recordProductEvent
-  tags:
-    - no-auth
+  x-public: true
   requestBody:
     required: true
     content:
@@ -45,8 +44,7 @@ listProductEvents:
     Development ring-buffer listing (`createDevAnalyticsRouter` only). Tagged
     `no-auth` so local dev stacks can read captured events without a session.
   operationId: listProductEvents
-  tags:
-    - no-auth
+  x-public: true
   parameters:
     - name: name
       in: query

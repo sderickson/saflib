@@ -9,6 +9,13 @@
       "get": {
         "summary": "List all backups",
         "operationId": "listBackups",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of backups",
@@ -132,6 +139,14 @@
             "example": "The requested resource could not be found."
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
       }
     }
   }

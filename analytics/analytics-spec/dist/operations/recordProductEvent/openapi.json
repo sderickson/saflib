@@ -9,9 +9,7 @@
       "post": {
         "summary": "Record a product analytics event",
         "operationId": "recordProductEvent",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "requestBody": {
           "required": true,
           "content": {

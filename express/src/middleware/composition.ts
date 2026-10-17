@@ -11,10 +11,10 @@ import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
 import { noStoreCacheControl } from "./noStore.ts";
-import { makeAuthMiddleware } from "./auth.ts";
 import { makeCsrfMiddleware } from "./csrf.ts";
 import { makeCsrfTokenMiddleware } from "./csrf-token.ts";
 import multer from "multer";
+import { compileOperationSecurity, type SecurityResolvers } from "./security.ts";
 
 /**
  * Options for creating global middleware.
@@ -80,13 +80,14 @@ export const createGlobalMiddleware = (
  * Options for creating scoped middleware.
  */
 export interface ScopedMiddlewareOptions {
-  apiSpec?: OpenApiDocument;
+  /**
+   * The operation(s) served. Access comes from each operation's OpenAPI
+   * `security` (or `x-public: true`); there are no code-side auth options.
+   */
+  apiSpec: OpenApiDocument;
   fileUploader?: multer.Options;
-  enforceAuth?: boolean;
-  adminRequired?: boolean;
-  emailVerificationRequired?: boolean;
-  /** When true, require an MFA session (AAL2+), same as the `mfa-required` OpenAPI tag. */
-  mfaRequired?: boolean;
+  /** Product security schemes (`session` is built in). */
+  securityResolvers?: SecurityResolvers;
 }
 
 /**
@@ -104,42 +105,20 @@ export const createOperationScopedMiddleware = (
 export const createScopedMiddleware = (
   options: ScopedMiddlewareOptions,
 ): Handler[] => {
-  const {
+  const { apiSpec, fileUploader, securityResolvers } = options;
+
+  const openApiValidatorMiddleware = createOpenApiValidator({
     apiSpec,
     fileUploader,
-    enforceAuth,
-    adminRequired,
-    emailVerificationRequired,
-    mfaRequired,
-  } = options;
-
-  let openApiValidatorMiddleware: Handler[] = [];
-  if (apiSpec) {
-    openApiValidatorMiddleware = createOpenApiValidator({
-      apiSpec,
-      fileUploader,
-    }) as unknown as Handler[];
-  }
-
-  let authMiddleware: Handler[] = [];
-  if (enforceAuth !== false) {
-    authMiddleware = [
-      makeAuthMiddleware({
-        adminRequired,
-        emailVerificationRequired,
-        mfaRequired,
-      }),
-    ];
-  }
+  }) as unknown as Handler[];
 
   return [
     ...openApiValidatorMiddleware,
-    // CSRF reads OpenAPI tags (`no-auth`, `csrf-exempt`); only mount when a
-    // validator will attach `req.openapi.schema` on this chain.
-    ...(apiSpec ? [makeCsrfMiddleware()] : []),
+    // CSRF reads `x-public` and the `csrf-exempt` tag from `req.openapi.schema`.
+    makeCsrfMiddleware(),
     makeContextMiddleware(),
     unsafeRequestLogger,
-    ...authMiddleware,
+    ...compileOperationSecurity(apiSpec, securityResolvers),
   ];
 };
 

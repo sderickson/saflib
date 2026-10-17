@@ -1,6 +1,8 @@
 listBackups:
   summary: "List all backups"
   operationId: "listBackups"
+  security:
+    - session: [site-admin]
 
   responses:
     "200":
