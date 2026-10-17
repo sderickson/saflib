@@ -73,13 +73,11 @@ const HTTP_METHODS = [
   "trace",
 ] as const satisfies readonly (keyof OpenAPIV3.PathItemObject)[];
 
-/**
- * Walk a bundled OpenAPI document and map every `operation_id` to its HTTP
- * method, path template, and whether it carries the `background` tag.
- */
-export function buildOperationMap(apiSpec: OpenApiDocument): OperationMap {
+function buildOperationMapFromSpec(
+  apiSpec: OpenApiDocument,
+  map: Map<string, ResolvedOperation>,
+): void {
   assertOpenApiOperationTags(apiSpec);
-  const map = new Map<string, ResolvedOperation>();
 
   for (const [pathTemplate, pathItem] of Object.entries(apiSpec.paths ?? {})) {
     if (!pathItem || typeof pathItem !== "object") {
@@ -97,6 +95,11 @@ export function buildOperationMap(apiSpec: OpenApiDocument): OperationMap {
       }
 
       const tags = operation.tags ?? [];
+      if (map.has(operation_id)) {
+        throw new Error(
+          `Duplicate operationId "${operation_id}" across OpenAPI specs`,
+        );
+      }
       map.set(operation_id, {
         method: method.toUpperCase(),
         pathTemplate,
@@ -104,7 +107,20 @@ export function buildOperationMap(apiSpec: OpenApiDocument): OperationMap {
       });
     }
   }
+}
 
+/**
+ * Walk one or more OpenAPI documents and map every `operation_id` to its HTTP
+ * method, path template, and whether it carries the `background` tag.
+ */
+export function buildOperationMap(
+  apiSpec: OpenApiDocument | OpenApiDocument[],
+): OperationMap {
+  const specs = Array.isArray(apiSpec) ? apiSpec : [apiSpec];
+  const map = new Map<string, ResolvedOperation>();
+  for (const spec of specs) {
+    buildOperationMapFromSpec(spec, map);
+  }
   return map;
 }
 
@@ -115,7 +131,7 @@ export interface ValidateJobsStartupParams {
    * Pre-built map, or the OpenAPI document to walk. Prefer passing a shared
    * `OperationMap` when the runtime will reuse it for delivery.
    */
-  operations: OperationMap | OpenApiDocument;
+  operations: OperationMap | OpenApiDocument | OpenApiDocument[];
 }
 
 /**
@@ -123,9 +139,9 @@ export interface ValidateJobsStartupParams {
  * Throws on unknown ids, missing `background` tags, or timeout ceiling breaches.
  */
 function isOperationMap(
-  value: OperationMap | OpenApiDocument,
+  value: OperationMap | OpenApiDocument | OpenApiDocument[],
 ): value is OperationMap {
-  return !("paths" in value);
+  return !Array.isArray(value) && !("paths" in value);
 }
 
 /**

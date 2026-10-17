@@ -41,7 +41,7 @@ export interface JobsServiceOptions {
    * Bundled product OpenAPI document used to resolve operation_id → method/path
    * and to validate `background` tags / known ids at startup.
    */
-  apiSpec: OpenApiDocument;
+  apiSpec: OpenApiDocument | OpenApiDocument[];
 
   /**
    * Unix socket path of the target app (M1 internal listener) for delivery.

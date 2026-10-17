@@ -60,6 +60,46 @@ describe("buildOperationMap", () => {
     });
     expect(map.get("jobsDemoStepC")?.isBackground).toBe(true);
   });
+
+  it("merges multiple specs into one map", () => {
+    const other = asOpenApiDocument({
+      openapi: "3.1.0",
+      info: { title: "other", version: "1.0.0" },
+      paths: {
+        "/billing/push": {
+          post: {
+            operationId: "pushToStripeMatterFinalizations",
+            tags: ["background"],
+            responses: { "200": { description: "ok" } },
+          },
+        },
+      },
+    });
+
+    const map = buildOperationMap([sampleSpec, other]);
+    expect(map.get("pushToStripeMatterFinalizations")?.isBackground).toBe(true);
+    expect(map.get("jobsDemoStepB")?.isBackground).toBe(true);
+  });
+
+  it("rejects duplicate operationId across specs", () => {
+    const duplicate = asOpenApiDocument({
+      openapi: "3.1.0",
+      info: { title: "dup", version: "1.0.0" },
+      paths: {
+        "/other/start": {
+          post: {
+            operationId: "startJobsDemo",
+            tags: ["background"],
+            responses: { "200": { description: "ok" } },
+          },
+        },
+      },
+    });
+
+    expect(() => buildOperationMap([sampleSpec, duplicate])).toThrow(
+      /Duplicate operationId "startJobsDemo"/,
+    );
+  });
 });
 
 describe("cron trigger keys", () => {
