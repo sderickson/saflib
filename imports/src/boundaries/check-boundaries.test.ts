@@ -23,6 +23,8 @@ type PkgSpec = {
   deps?: string[];
   devDeps?: string[];
   kind?: string;
+  /** Omit the default `tsconfig.json`. */
+  noTsconfig?: boolean;
   files?: Record<string, string>;
 };
 
@@ -59,6 +61,8 @@ function makeMonorepo(
         devDependencies: asDeps(spec.devDeps),
       }),
     );
+    if (!spec.noTsconfig)
+      fs.writeFileSync(path.join(dir, "tsconfig.json"), "{}");
     for (const [file, body] of Object.entries(spec.files ?? {})) {
       fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
       fs.writeFileSync(path.join(dir, file), body);
@@ -117,6 +121,37 @@ describe("checkBoundaries", () => {
       "relative-escape: packages/a/spec.yaml -> ../b/schemas/x.yaml",
       "relative-escape: packages/a/src/bad.ts -> ../../b/index.ts",
     ]);
+  });
+
+  it("flags package.json imports maps that point outside the package", () => {
+    const root = makeMonorepo({
+      "packages/a": { name: "@x/a" },
+      "packages/b": { name: "@x/b" },
+    });
+    const pjPath = path.join(root, "packages/a/package.json");
+    const pj = JSON.parse(fs.readFileSync(pjPath, "utf8"));
+    pj.imports = { "#ok/*": "./src/*", "#test/*": "../b/test/*" };
+    fs.writeFileSync(pjPath, JSON.stringify(pj));
+    expect(keys(root)).toEqual([
+      "relative-escape: packages/a/package.json#imports #test/* -> ../b/test/*",
+    ]);
+  });
+
+  it("flags TypeScript packages without a tsconfig.json", () => {
+    const root = makeMonorepo({
+      "packages/a": {
+        name: "@x/a",
+        noTsconfig: true,
+        files: { "index.ts": "export {};\n" },
+      },
+      "packages/b": { name: "@x/b", files: { "index.ts": "export {};\n" } },
+      "packages/c": {
+        name: "@x/c",
+        noTsconfig: true,
+        files: { "spec.yaml": "a: 1\n" },
+      },
+    });
+    expect(keys(root)).toEqual(["missing-tsconfig: @x/a"]);
   });
 
   it("does not attribute a nested package's files to its parent", () => {

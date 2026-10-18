@@ -22,7 +22,7 @@ import {
 } from "./selectors.ts";
 
 export type BoundaryViolationKind =
-  "undeclared" | "relative-escape" | "cycle" | "forbidden";
+  "undeclared" | "relative-escape" | "cycle" | "forbidden" | "missing-tsconfig";
 
 export interface BoundaryViolation {
   kind: BoundaryViolationKind;
@@ -195,6 +195,22 @@ function relativeSpecifiers(file: string, src: string): string[] {
     .filter((s) => s.startsWith("."));
 }
 
+/** `package.json` `imports` entries as [key, target] pairs (conditions flattened). */
+function importsMapTargets(pj: PackageJson): Array<[string, string]> {
+  const imports = (pj as unknown as { imports?: Record<string, unknown> })
+    .imports;
+  if (!imports || typeof imports !== "object") return [];
+  const out: Array<[string, string]> = [];
+  const visit = (key: string, value: unknown) => {
+    if (typeof value === "string") out.push([key, value]);
+    else if (value && typeof value === "object") {
+      for (const nested of Object.values(value)) visit(key, nested);
+    }
+  };
+  for (const [key, value] of Object.entries(imports)) visit(key, value);
+  return out;
+}
+
 function normalizeCycle(cycle: string[]): string[] {
   const nodes = cycle.slice(0, -1);
   let minIdx = 0;
@@ -292,7 +308,39 @@ export function checkBoundaries(
   let filesScanned = 0;
 
   for (const pkg of packages) {
-    for (const file of listPackageFiles(pkg, packageDirs)) {
+    const pkgJsonRel = path
+      .relative(rootDir, path.join(pkg.dir, "package.json"))
+      .split(path.sep)
+      .join("/");
+    for (const [key, target] of importsMapTargets(pkg.pj)) {
+      const abs = path.resolve(pkg.dir, target);
+      if (isUnder(abs, pkg.dir)) continue;
+      pushGrouped(
+        violations,
+        {
+          kind: "relative-escape",
+          key: `relative-escape: ${pkgJsonRel}#imports ${key} -> ${target}`,
+          message: `${pkg.name} maps import ${key} to ${target}, outside the package`,
+        },
+        pkgJsonRel,
+      );
+    }
+
+    const files = listPackageFiles(pkg, packageDirs);
+    const hasTypeScript = files.some((f) => /\.(?:tsx?|vue)$/.test(f));
+    if (hasTypeScript && !fs.existsSync(path.join(pkg.dir, "tsconfig.json"))) {
+      pushGrouped(
+        violations,
+        {
+          kind: "missing-tsconfig",
+          key: `missing-tsconfig: ${pkg.name}`,
+          message: `${pkg.name} has TypeScript sources but no tsconfig.json, so the root build never typechecks it`,
+        },
+        undefined,
+      );
+    }
+
+    for (const file of files) {
       filesScanned += 1;
       const repoRel = path.relative(rootDir, file).split(path.sep).join("/");
       const dev = isDevFile(path.relative(pkg.dir, file), extraDevPatterns);
