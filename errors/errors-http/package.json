@@ -18,12 +18,12 @@
     "@saflib/env": "*",
     "@saflib/errors-service": "*",
     "@saflib/errors-spec": "*",
+    "@saflib/express": "*",
     "@saflib/node": "*",
     "express": "^5.0.0",
     "http-errors": "^2.0.0"
   },
   "devDependencies": {
-    "@saflib/express": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "@types/express": "^5.0.0",

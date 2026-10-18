@@ -78,28 +78,32 @@ export const chooseVuetifySelectOption = async (
   await listboxOptions.first().waitFor({ state: "visible", timeout: 2_000 });
 
   let matchedName = needle;
+  // Accessible name as rendered (may keep a trailing `…`); used for the exact click.
+  let matchedAccessibleName = needle;
   await expect
     .poll(
       async () => {
         const optionLocators = await listboxOptions.all();
-        let fuzzy: string | undefined;
+        let fuzzy: { visible: string; raw: string } | undefined;
         for (const locator of optionLocators) {
           const text = (await locator.textContent()) ?? "";
           const visible = text.replace(/\u2026|\.\.\.$/g, "").trim();
           if (!visible) continue;
           if (visible === needle) {
             matchedName = visible;
+            matchedAccessibleName = text.trim();
             return true;
           }
           if (
             !fuzzy &&
             (visible.includes(needle) || needle.includes(visible))
           ) {
-            fuzzy = visible;
+            fuzzy = { visible, raw: text.trim() };
           }
         }
         if (fuzzy) {
-          matchedName = fuzzy;
+          matchedName = fuzzy.visible;
+          matchedAccessibleName = fuzzy.raw;
           return true;
         }
         return false;
@@ -114,7 +118,7 @@ export const chooseVuetifySelectOption = async (
   // Fresh locator — virtualized menus recycle DOM nodes between poll and click.
   // Avoid force:true so Vuetify actually commits the selection to v-model.
   const optionLocator = page.getByRole("option", {
-    name: matchedName,
+    name: matchedAccessibleName,
     exact: true,
   });
   await optionLocator.click();

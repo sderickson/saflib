@@ -15,7 +15,6 @@
     "@ory/client": "^1.22.37",
     "@saflib/analytics-http": "*",
     "@saflib/env": "*",
-    "@saflib/errors-http": "*",
     "@saflib/node": "*",
     "@saflib/node-log-http": "*",
     "@saflib/notify": "*",

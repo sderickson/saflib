@@ -63,11 +63,6 @@ export { createHandler } from "./handler.ts";
 export { createDevLogsRouter } from "@saflib/node-log-http";
 export { createDevAnalyticsRouter } from "@saflib/analytics-http";
 export {
-  createErrorsRouter,
-  createDevErrorsRouter,
-} from "@saflib/errors-http";
-
-export {
   makeUserHeaders,
   makeAdminHeaders,
   makeAssertionHeaders,

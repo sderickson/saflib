@@ -27,3 +27,6 @@ paths:
   /admin/errors:
     get:
       $ref: "./routes/errors.yaml#/listReportedErrors"
+  /maintenance/raise-test-error:
+    post:
+      $ref: "./routes/maintenance/raise-test-error.yaml#/raiseTestErrorMaintenance"

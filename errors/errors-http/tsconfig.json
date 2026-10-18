@@ -22,6 +22,9 @@
       "path": "../../env"
     },
     {
+      "path": "../../express"
+    },
+    {
       "path": "../../node"
     },
     {

@@ -1,0 +1,50 @@
+# Healthy response for checkAuditLogRotationMaintenance. Stale rotation
+# (>26h since earliest active row) returns 500 instead of this body so the
+# job retries then goes dead and is visible in the jobs admin UI.
+type: object
+description: >
+  Outcome of one audit-rotation watchdog check when the active audit DB is empty or the earliest row is within the staleness threshold. Unhealthy (stale) checks do not use this schema — they return HTTP 500.
+additionalProperties: false
+properties:
+  healthy:
+    type: boolean
+    enum:
+      - true
+    description: >
+      Always `true` on 200. Present so clients can distinguish a successful check without relying solely on HTTP status.
+    example: true
+  empty:
+    type: boolean
+    description: >
+      `true` when the active audit DB has no rows (nothing to age-check). `false` when at least one row exists and its age is within threshold.
+    example: false
+  earliest_at:
+    type: [ string, "null" ]
+    format: date-time
+    description: >
+      ISO 8601 timestamp of the oldest row in the active audit DB (`headAt`). `null` when `empty` is true.
+    example: "2026-08-06T12:00:00.000Z"
+  age_ms:
+    type: [ integer, "null" ]
+    minimum: 0
+    description: >
+      Milliseconds between `earliest_at` and the check time. `null` when `empty` is true. Always ≤ `threshold_ms` on a healthy response.
+    example: 3600000
+  threshold_ms:
+    type: integer
+    minimum: 0
+    description: >
+      Staleness threshold in milliseconds (26 hours). An `age_ms` above this value causes the operation to return 500 instead of this body.
+    example: 93600000
+required:
+  - healthy
+  - empty
+  - earliest_at
+  - age_ms
+  - threshold_ms
+example:
+  healthy: true
+  empty: false
+  earliest_at: "2026-08-06T12:00:00.000Z"
+  age_ms: 3600000
+  threshold_ms: 93600000

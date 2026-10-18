@@ -13,13 +13,10 @@
   ],
   "references": [
     {
-      "path": "../env"
-    },
-    {
       "path": "../analytics/analytics-http"
     },
     {
-      "path": "../errors/errors-http"
+      "path": "../env"
     },
     {
       "path": "../node"

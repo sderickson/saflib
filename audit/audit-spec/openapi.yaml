@@ -11,6 +11,14 @@ components:
   schemas:
     AuditLog:
       $ref: "./schemas/audit-log.yaml"
+    AuditRotationStatus:
+      $ref: "./schemas/audit-rotation-status.yaml"
+    AuditSealResult:
+      $ref: "./schemas/audit-seal-result.yaml"
+    audit-seal-result:
+      $ref: "./schemas/audit-seal-result.yaml"
+    seal-audit-log-response:
+      $ref: "./schemas/seal-audit-log-response.yaml"
     Error:
       $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
@@ -21,3 +29,9 @@ paths:
   /audit-logs/seal:
     post:
       $ref: "./routes/audit-logs/seal.yaml#/sealAuditLog"
+  /maintenance/seal-audit-log:
+    post:
+      $ref: "./routes/maintenance/seal-audit-log.yaml#/sealAuditLogMaintenance"
+  /maintenance/check-audit-log-rotation:
+    post:
+      $ref: "./routes/maintenance/check-audit-log-rotation.yaml#/checkAuditLogRotationMaintenance"
