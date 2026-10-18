@@ -293,16 +293,16 @@ describe("isDevFile", () => {
 
 describe("matchesPackageSelector", () => {
   const pkg = {
-    name: "@x/daemon-billing-http",
-    dir: "/r/daemon/billing/http",
-    relDir: "daemon/billing/http",
+    name: "@x/app-billing-http",
+    dir: "/r/product/billing/http",
+    relDir: "product/billing/http",
     kind: "http",
   };
   it.each([
-    ["@x/daemon-*-http", true],
-    ["@x/daemon-http", false],
-    ["dir:daemon/**", true],
-    ["dir:daemon/*", false],
+    ["@x/app-*-http", true],
+    ["@x/app-http", false],
+    ["dir:product/**", true],
+    ["dir:product/*", false],
     ["kind:http", true],
     ["kind:sdk", false],
   ])("%s → %s", (selector, expected) => {
