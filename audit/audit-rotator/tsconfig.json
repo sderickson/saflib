@@ -5,10 +5,16 @@
       "path": "../../drizzle"
     },
     {
+      "path": "../../email/email-service"
+    },
+    {
       "path": "../../env"
     },
     {
       "path": "../../node"
+    },
+    {
+      "path": "../../object-store"
     },
     {
       "path": "../audit-db"

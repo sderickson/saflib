@@ -16,12 +16,17 @@
   "dependencies": {
     "@saflib/audit-db": "*",
     "@saflib/drizzle": "*",
+    "@saflib/email-service": "*",
     "@saflib/env": "*",
-    "@saflib/node": "*"
+    "@saflib/node": "*",
+    "@saflib/object-store": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@types/proper-lockfile": "^4.1.4",
+    "better-sqlite3": "12.11.1",
+    "proper-lockfile": "^4.1.2"
   },
   "sideEffects": false,
   "imports": {
