@@ -44,7 +44,7 @@ export interface components {
              * @description Package layer kind. From package.json saf.kind when set, otherwise inferred from a unique identifier dependency such as @saflib/drizzle (db), @saflib/express (http), @saflib/openapi (spec), @saflib/sdk (sdk), or @saflib/vue (spa).
              * @enum {string}
              */
-            kind?: "db" | "http" | "spec" | "spa" | "sdk" | "lib" | "integration" | "other";
+            kind?: "db" | "http" | "spec" | "spa" | "sdk" | "lib" | "integration" | "objects" | "test" | "other";
             /** @description Count of source files (excluding tests). */
             source_files: number;
             /** @description Total lines across source files. */

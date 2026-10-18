@@ -24,6 +24,8 @@ properties:
       - sdk
       - lib
       - integration
+      - objects
+      - test
       - other
   source_files:
     type: integer

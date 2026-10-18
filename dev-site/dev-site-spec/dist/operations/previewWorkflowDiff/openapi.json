@@ -294,6 +294,8 @@
               "sdk",
               "lib",
               "integration",
+              "objects",
+              "test",
               "other"
             ]
           },

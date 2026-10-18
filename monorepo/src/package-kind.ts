@@ -15,6 +15,10 @@ export const PACKAGE_KINDS = [
   "sdk",
   "lib",
   "integration",
+  /** Business-object schemas (components-only OpenAPI), shared below the API. */
+  "objects",
+  /** Test fixtures and harnesses; only test files may import these. */
+  "test",
   "other",
 ] as const;
 
