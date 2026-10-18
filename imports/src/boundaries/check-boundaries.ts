@@ -18,6 +18,7 @@ import { readSource } from "../graph/read-source.ts";
 import { listGitIgnoredPackageDirectories } from "../tsconfig/build-graph.ts";
 import {
   matchesPackageSelector,
+  matchesSubpath,
   type PackageForSelector,
 } from "./selectors.ts";
 
@@ -55,8 +56,16 @@ interface WorkspacePackage extends PackageForSelector {
 interface ImportEdge {
   from: string;
   to: string;
+  /** Path within `to` (`schemas/Foo`), or `.` for the package root. */
+  subpath: string;
   file: string;
   dev: boolean;
+}
+
+/** `@scope/pkg/schemas/Foo.ts` → `schemas/Foo`; `@scope/pkg` → `.`. */
+export function subpathOfSpecifier(spec: string, packageName: string): string {
+  const rest = spec.slice(packageName.length).replace(/^\//, "");
+  return rest ? rest.replace(/\.[cm]?[jt]sx?$/, "") : ".";
 }
 
 const SOURCE_EXT_RE = /\.(?:[cm]?[jt]sx?|vue)$/;
@@ -396,7 +405,13 @@ export function checkBoundaries(
         if (spec.startsWith(".") || spec.startsWith("#")) continue;
         const name = packageNameOfSpecifier(spec);
         if (name === pkg.name || !byName.has(name)) continue;
-        edges.push({ from: pkg.name, to: name, file: repoRel, dev });
+        edges.push({
+          from: pkg.name,
+          to: name,
+          subpath: subpathOfSpecifier(spec, name),
+          file: repoRel,
+          dev,
+        });
       }
     }
   }
@@ -419,7 +434,9 @@ export function checkBoundaries(
     for (const rule of rules) {
       if (!edge.dev || rule.includeDev) {
         const to = byName.get(edge.to)!;
-        if (ruleApplies(rule, from, to)) {
+        const subpathMatches =
+          !rule.subpaths || matchesSubpath(rule.subpaths, edge.subpath);
+        if (subpathMatches && ruleApplies(rule, from, to)) {
           pushGrouped(
             violations,
             {
@@ -440,7 +457,8 @@ export function checkBoundaries(
       const to = byName.get(dep);
       if (!to) continue;
       for (const rule of rules) {
-        if (ruleApplies(rule, from, to)) {
+        // A subpath rule depends on what is imported, not on the declaration.
+        if (!rule.subpaths && ruleApplies(rule, from, to)) {
           pushGrouped(
             violations,
             {

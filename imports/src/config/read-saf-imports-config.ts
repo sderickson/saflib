@@ -74,6 +74,12 @@ export interface SafImportsBoundaryRule {
   disallow: string[];
   /** Exceptions to `disallow`. */
   allow?: string[];
+  /**
+   * Only these parts of a disallowed package are off limits: globs over the
+   * import path within the package (`json-spec`, `operations/*`, `.` for the
+   * root). Other subpaths, and the bare dependency declaration, are allowed.
+   */
+  subpaths?: string[];
   /** Also apply to test/tooling files (default: runtime files only). */
   includeDev?: boolean;
 }

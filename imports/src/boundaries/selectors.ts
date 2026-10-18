@@ -27,6 +27,14 @@ function globToRegExp(glob: string): RegExp {
 }
 
 /**
+ * Match an import's subpath within its package (`schemas/Foo` for
+ * `@scope/pkg/schemas/Foo`, `.` for the package root) against globs.
+ */
+export function matchesSubpath(globs: string[], subpath: string): boolean {
+  return globs.some((glob) => globToRegExp(glob).test(subpath));
+}
+
+/**
  * Match a package against a selector:
  * - `kind:<k>` — `package.json` `saf.kind` equals `<k>`
  * - `dir:<glob>` — repo-relative package directory matches the glob

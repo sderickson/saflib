@@ -221,6 +221,40 @@ describe("checkBoundaries", () => {
     ]);
   });
 
+  it("limits a rule to the subpaths it lists", () => {
+    const root = makeMonorepo(
+      {
+        "packages/integrations/mail": {
+          name: "@x/mail",
+          deps: ["@x/api-spec"],
+          files: {
+            "objects.ts":
+              'import type { Foo } from "@x/api-spec/schemas/Foo";\n',
+            "client.ts": 'import { jsonSpec } from "@x/api-spec/json-spec";\n',
+          },
+        },
+        "packages/api-spec": { name: "@x/api-spec" },
+      },
+      {
+        rules: [
+          {
+            name: "integrations-no-api",
+            from: ["dir:packages/integrations/*"],
+            disallow: ["@x/*-spec"],
+            subpaths: [".", "json-spec", "operations/*"],
+          },
+        ],
+      },
+    );
+    const result = checkBoundaries({ root });
+    expect(result.violations.map((v) => [v.key, v.files])).toEqual([
+      [
+        "forbidden(integrations-no-api): @x/mail -> @x/api-spec",
+        ["packages/integrations/mail/client.ts"],
+      ],
+    ]);
+  });
+
   it("only checks packages in scope", () => {
     const root = makeMonorepo(
       {
