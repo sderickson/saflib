@@ -38,7 +38,7 @@ export const operationId = "${operationId}" as const;
   );
 }
 
-function schemaTypeExportName(schemaName: string): string {
+export function schemaTypeExportName(schemaName: string): string {
   if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(schemaName)) {
     return schemaName;
   }
@@ -99,7 +99,10 @@ export type ${typeName} = components["schemas"]["${schemaName}"];
 const execFileAsync = promisify(execFile);
 const openapiTypescriptBin = resolvePackageBin("openapi-typescript");
 
-async function runOpenApiTypegen(jsonPath: string, dtsPath: string): Promise<void> {
+async function runOpenApiTypegen(
+  jsonPath: string,
+  dtsPath: string,
+): Promise<void> {
   await execFileAsync(openapiTypescriptBin, [jsonPath, "-o", dtsPath]);
 }
 
@@ -117,10 +120,14 @@ async function runOpenApiTypegenPool(
   await Promise.all(Array.from({ length: concurrency }, () => worker()));
 }
 
-export async function generateOperationFragments(outputDir: string): Promise<number> {
+export async function generateOperationFragments(
+  outputDir: string,
+): Promise<number> {
   const { log } = getSafReporters();
   const bundledJsonPath = path.join(outputDir, "openapi.json");
-  const bundled = JSON.parse(readFileSync(bundledJsonPath, "utf8")) as OpenApiDoc;
+  const bundled = JSON.parse(
+    readFileSync(bundledJsonPath, "utf8"),
+  ) as OpenApiDoc;
   const entries = collectOperationsFromBundled(bundled);
 
   const operationsRoot = path.join(outputDir, "operations");
@@ -167,7 +174,9 @@ export function generateSchemaFragments(
 ): number {
   const { log } = getSafReporters();
   const bundledJsonPath = path.join(outputDir, "openapi.json");
-  const bundled = JSON.parse(readFileSync(bundledJsonPath, "utf8")) as OpenApiDoc;
+  const bundled = JSON.parse(
+    readFileSync(bundledJsonPath, "utf8"),
+  ) as OpenApiDoc;
 
   const schemaNames = canonicalSchemaFragmentNames([
     ...Object.keys(bundled.components?.schemas ?? {}),

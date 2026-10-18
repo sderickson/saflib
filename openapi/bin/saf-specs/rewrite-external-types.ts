@@ -1,4 +1,5 @@
 import type { ExternalSchemaProvenance } from "./resolve-pkg-refs.ts";
+import { schemaTypeExportName } from "./generate-fragments.ts";
 
 /**
  * Replace inlined / aliased external schemas in openapi-typescript output with
@@ -19,7 +20,7 @@ export function rewriteExternalSchemaTypes(
     const alias = `_Ext${i++}_${sanitizeIdent(schemaName)}`;
     aliasBySchema.set(schemaName, alias);
     imports.push(
-      `import type { ${prov.schemaName} as ${alias} } from "${prov.packageName}/schemas/${prov.schemaName}";`,
+      `import type { ${schemaTypeExportName(prov.schemaName)} as ${alias} } from "${prov.packageName}/schemas/${prov.schemaName}";`,
     );
   }
 
@@ -28,8 +29,13 @@ export function rewriteExternalSchemaTypes(
     result = replaceSchemaProperty(result, schemaName, alias);
   }
 
-  if (imports.length === 0) return result;
-  return `${imports.join("\n")}\n${result}`;
+  // Only import aliases that replaced something.
+  const used = imports.filter((line) => {
+    const alias = / as (_Ext\d+_[A-Za-z0-9_]+) /.exec(line)?.[1];
+    return alias !== undefined && result.includes(`: ${alias}`);
+  });
+  if (used.length === 0) return result;
+  return `${used.join("\n")}\n${result}`;
 }
 
 function sanitizeIdent(name: string): string {
@@ -59,7 +65,14 @@ function replaceSchemaProperty(
   const before = dts.slice(0, braceStart + 1);
   const inner = dts.slice(braceStart + 1, braceEnd);
   const after = dts.slice(braceEnd);
-  return before + replacePropertyAt(inner, 0, inner.length, schemaName, alias) + after;
+  // Only the block's own entries (e.g. `profile`), never nested properties
+  // that happen to share the name (e.g. a `value` property inside a schema).
+  const childIndent = /\n([ \t]*)\S/.exec(inner)?.[1];
+  return (
+    before +
+    replacePropertyAt(inner, 0, inner.length, schemaName, alias, childIndent) +
+    after
+  );
 }
 
 function replacePropertyAt(
@@ -68,9 +81,11 @@ function replacePropertyAt(
   _end: number,
   schemaName: string,
   alias: string,
+  onlyIndent?: string,
 ): string {
+  // Keys that aren't identifiers (`"a-number"`) are quoted in openapi-typescript output.
   const re = new RegExp(
-    `(^|[\\n\\r])([ \\t]*)(${escapeRegExp(schemaName)})(\\??)\\s*:`,
+    `(^|[\\n\\r])([ \\t]*)("?)(${escapeRegExp(schemaName)})\\3(\\??)\\s*:`,
     "g",
   );
   let match: RegExpExecArray | null;
@@ -78,9 +93,13 @@ function replacePropertyAt(
   const replacements: Array<{ from: number; to: number; value: string }> = [];
 
   while ((match = re.exec(text)) !== null) {
+    if (onlyIndent !== undefined && match[2] !== onlyIndent) continue;
     const propStart = match.index + match[1].length;
     const nameStart = propStart + match[2].length;
-    const colonIdx = text.indexOf(":", nameStart + schemaName.length);
+    const colonIdx = text.indexOf(
+      ":",
+      nameStart + schemaName.length + match[3].length * 2,
+    );
     if (colonIdx === -1) continue;
     let valueStart = colonIdx + 1;
     while (valueStart < text.length && /[ \t]/.test(text[valueStart]!)) {
@@ -89,11 +108,12 @@ function replacePropertyAt(
     const valueEnd = scanTypeExpressionEnd(text, valueStart);
     if (valueEnd === -1) continue;
     const indent = match[2];
-    const optional = match[4];
+    const quote = match[3];
+    const optional = match[5];
     replacements.push({
       from: propStart,
       to: valueEnd,
-      value: `${indent}${schemaName}${optional}: ${alias}`,
+      value: `${indent}${quote}${schemaName}${quote}${optional}: ${alias}`,
     });
   }
 
@@ -122,6 +142,11 @@ function scanTypeExpressionEnd(text: string, start: number): number {
       }
       if (ch === inStr) inStr = null;
       i++;
+      continue;
+    }
+    const comment = skipComment(text, i);
+    if (comment !== i) {
+      i = comment;
       continue;
     }
     if (ch === '"' || ch === "'" || ch === "`") {
@@ -169,6 +194,11 @@ function findMatchingBrace(text: string, openIdx: number): number {
       if (ch === inStr) inStr = null;
       continue;
     }
+    const comment = skipComment(text, i);
+    if (comment !== i) {
+      i = comment - 1;
+      continue;
+    }
     if (ch === '"' || ch === "'" || ch === "`") {
       inStr = ch;
       continue;
@@ -180,6 +210,24 @@ function findMatchingBrace(text: string, openIdx: number): number {
     }
   }
   return -1;
+}
+
+/**
+ * If a `//` or `/* *\/` comment starts at `i`, return the index just past it;
+ * otherwise `i`. JSDoc descriptions contain apostrophes and braces that must not
+ * be read as code.
+ */
+function skipComment(text: string, i: number): number {
+  if (text[i] !== "/") return i;
+  if (text[i + 1] === "/") {
+    const end = text.indexOf("\n", i);
+    return end === -1 ? text.length : end;
+  }
+  if (text[i + 1] === "*") {
+    const end = text.indexOf("*/", i + 2);
+    return end === -1 ? text.length : end + 2;
+  }
+  return i;
 }
 
 function escapeRegExp(s: string): string {

@@ -38,7 +38,10 @@ function joinRef(resource: string, fragment: string): string {
   return fragment ? `${resource}${fragment}` : resource;
 }
 
-function resolvePackageRoot(packageName: string, fromCwd: string): string {
+export function resolvePackageRoot(
+  packageName: string,
+  fromCwd: string,
+): string {
   const require = createRequire(path.join(fromCwd, "package.json"));
   try {
     return path.dirname(require.resolve(`${packageName}/package.json`));
