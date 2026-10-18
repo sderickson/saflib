@@ -178,10 +178,26 @@ export function generateSchemaFragments(
     readFileSync(bundledJsonPath, "utf8"),
   ) as OpenApiDoc;
 
-  const schemaNames = canonicalSchemaFragmentNames([
-    ...Object.keys(bundled.components?.schemas ?? {}),
-    ...externalSchemas.keys(),
-  ]);
+  // Schemas owned by another package get no stub here: import them from the
+  // owning package. (This package's openapi.d.ts still references them.)
+  const schemas = bundled.components?.schemas ?? {};
+  // A named component that is only `$ref: "#/components/schemas/<file-key>"`
+  // (e.g. `BacklogItem` → `backlog-item`) is the same type; stub just the name.
+  const aliasedKeys = new Set<string>();
+  for (const [name, schema] of Object.entries(schemas)) {
+    const ref = (schema as { $ref?: unknown } | undefined)?.$ref;
+    if (
+      typeof ref === "string" &&
+      Object.keys(schema as object).length === 1 &&
+      /^[A-Z]/.test(name)
+    ) {
+      const m = /^#\/components\/schemas\/(.+)$/.exec(ref);
+      if (m && m[1] !== name) aliasedKeys.add(m[1]!);
+    }
+  }
+  const schemaNames = canonicalSchemaFragmentNames(Object.keys(schemas)).filter(
+    (name) => !externalSchemas.has(name) && !aliasedKeys.has(name),
+  );
   const schemasRoot = path.join(outputDir, "schemas");
   mkdirSync(schemasRoot, { recursive: true });
 

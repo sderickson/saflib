@@ -1,4 +1,4 @@
-import type { Error as _Ext0_error } from "@saflib/jobs-spec/schemas/Error";
+import type { Error as _Ext0_error } from "@saflib/openapi/schemas/Error";
 import type { Error as _Ext1_Error } from "@saflib/openapi/schemas/Error";
 import type { Job as _Ext2_job } from "@saflib/jobs-spec/schemas/Job";
 /**
