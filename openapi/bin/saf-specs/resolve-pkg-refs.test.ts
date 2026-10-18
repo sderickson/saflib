@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -67,10 +67,55 @@ describe("rewritePkgRefs", () => {
   });
 });
 
+describe("rewritePkgRefs with nested pkg: refs", () => {
+  it("rewrites pkg: refs inside other packages' schemas", () => {
+    const result = rewritePkgRefs({
+      entryFile: "openapi.yaml",
+      cwd: parentDir,
+    });
+    try {
+      const files: string[] = [];
+      const walk = (dir: string) => {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          const full = path.join(dir, entry.name);
+          if (entry.isDirectory()) walk(full);
+          else files.push(full);
+        }
+      };
+      walk(result.tempDir);
+      const gadget = files.find((f) => f.endsWith("schemas/gadget.yaml"));
+      expect(gadget).toBeDefined();
+      expect(readFileSync(gadget!, "utf8")).not.toContain("pkg:");
+      for (const file of files) {
+        expect(readFileSync(file, "utf8"), file).not.toContain("pkg:");
+      }
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("records provenance only from the generating package's documents", () => {
+    const result = rewritePkgRefs({
+      entryFile: "openapi.yaml",
+      cwd: parentDir,
+    });
+    try {
+      expect(result.externalSchemas.has("Gadget")).toBe(true);
+      // `Error` is only referenced from inside the offshoot's gadget.yaml.
+      expect(result.externalSchemas.has("Error")).toBe(false);
+    } finally {
+      result.cleanup();
+    }
+  });
+});
+
 describe("rewriteBundledExternalRefs", () => {
   it("rewrites temp-dir file refs to package-relative paths", () => {
     const tempDir = path.join("/tmp", "saf-specs-test");
-    const refPath = path.join(tempDir, "routes/__group-name__/__target-name__.yaml");
+    const refPath = path.join(
+      tempDir,
+      "routes/__group-name__/__target-name__.yaml",
+    );
     const doc = {
       paths: {
         "__url-path__": {

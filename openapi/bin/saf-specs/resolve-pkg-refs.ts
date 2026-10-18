@@ -5,6 +5,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -176,10 +177,7 @@ function recordExternal(
   map.set(schemaName, { packageName, schemaName });
 }
 
-function walkRefs(
-  value: unknown,
-  visit: (ref: string) => string,
-): unknown {
+function walkRefs(value: unknown, visit: (ref: string) => string): unknown {
   if (value === null || typeof value !== "object") return value;
   if (Array.isArray(value)) {
     return value.map((item) => walkRefs(item, visit));
@@ -200,7 +198,28 @@ function isUnderNodeModules(filePath: string): boolean {
   return filePath.split(path.sep).includes("node_modules");
 }
 
-function collectLocalFiles(entryAbs: string): string[] {
+/**
+ * Real path of a `pkg:` ref target when it is a YAML/JSON source file, so it
+ * can be rewritten like a local file (it may contain `pkg:` refs of its own).
+ */
+function pkgSourceFile(resource: string, cwd: string): string | undefined {
+  try {
+    const { absolutePath } = resolvePkgResource(resource, cwd);
+    if (!/\.(ya?ml|json)$/i.test(absolutePath) || !existsSync(absolutePath)) {
+      return undefined;
+    }
+    return realpathSync(absolutePath);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Files to copy and rewrite: everything reachable from the entry through
+ * relative refs, plus YAML/JSON reached through `pkg:` refs (and their own
+ * closure), so nested `pkg:` refs in other packages' schemas resolve too.
+ */
+function collectLocalFiles(entryAbs: string, cwd: string): string[] {
   const queue = [entryAbs];
   const seen = new Set<string>();
   const files: string[] = [];
@@ -218,10 +237,16 @@ function collectLocalFiles(entryAbs: string): string[] {
     const doc = parseYaml(text);
     walkRefs(doc, (ref) => {
       const { resource } = splitRef(ref);
+      if (resource.startsWith("pkg:")) {
+        const external = pkgSourceFile(resource, cwd);
+        if (external && !isUnderNodeModules(external) && !seen.has(external)) {
+          queue.push(external);
+        }
+        return ref;
+      }
       if (
         !resource ||
         resource.startsWith("#") ||
-        resource.startsWith("pkg:") ||
         /^[a-z]+:\/\//i.test(resource)
       ) {
         return ref;
@@ -268,7 +293,7 @@ export function rewritePkgRefs(options: {
     rmSync(tempDir, { recursive: true, force: true });
   };
 
-  const localFiles = collectLocalFiles(entryAbs);
+  const localFiles = collectLocalFiles(entryAbs, cwd);
   // Always include entry even if parse failed to walk
   if (!localFiles.includes(entryAbs)) localFiles.push(entryAbs);
 
@@ -277,13 +302,18 @@ export function rewritePkgRefs(options: {
     originalToTemp.set(fileAbs, tempCopyPath(tempDir, packageRoot, fileAbs));
   }
 
+  const isOwnFile = (fileAbs: string) =>
+    fileAbs === packageRoot || fileAbs.startsWith(packageRoot + path.sep);
+
   const rewriteRef = (ref: string, fromFile: string): string => {
     const { resource, fragment } = splitRef(ref);
 
     if (resource.startsWith("pkg:")) {
       const { packageName, absolutePath } = resolvePkgResource(resource, cwd);
       const schemaFromFrag = schemaNameFromComponentFragment(fragment);
-      if (schemaFromFrag) {
+      if (!isOwnFile(fromFile)) {
+        // Another package's document pulled in for rewriting: resolve only.
+      } else if (schemaFromFrag) {
         recordExternal(externalSchemas, packageName, schemaFromFrag);
       } else {
         // File-style pkg: ref — only treat as cross-package SoT when the
@@ -299,7 +329,10 @@ export function rewritePkgRefs(options: {
           recordExternal(externalSchemas, packageName, lookedUp);
         }
       }
-      return joinRef(absolutePath, fragment);
+      // Point at the rewritten copy when the target was collected, so any
+      // pkg: refs inside it are resolved too.
+      const real = existsSync(absolutePath) ? realpathSync(absolutePath) : "";
+      return joinRef(originalToTemp.get(real) ?? absolutePath, fragment);
     }
 
     if (
@@ -336,9 +369,13 @@ export function rewritePkgRefs(options: {
 
     const doc = parseYaml(readFileSync(fileAbs, "utf8"));
 
-    // Component aliases that only `$ref` a pkg: schema → provenance under local key
-    const schemas = (doc as { components?: { schemas?: Record<string, unknown> } })
-      ?.components?.schemas;
+    // Component aliases that only `$ref` a pkg: schema → provenance under local key.
+    // Only this package's own documents define its components; other packages'
+    // documents pulled in through pkg: refs are rewritten but not scanned here.
+    const schemas = isOwnFile(fileAbs)
+      ? (doc as { components?: { schemas?: Record<string, unknown> } })
+          ?.components?.schemas
+      : undefined;
     if (schemas && typeof schemas === "object") {
       for (const [localName, schema] of Object.entries(schemas)) {
         const ref =
