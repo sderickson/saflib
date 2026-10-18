@@ -176,7 +176,7 @@ describe("checkBoundaries", () => {
       },
     });
     expect(keys(root)).toEqual([
-      "cycle: @x/a -> @x/b -> @x/a",
+      "cycle: @x/a, @x/b",
       "undeclared: @x/b -> @x/a",
     ]);
   });
@@ -277,16 +277,34 @@ describe("matchesPackageSelector", () => {
 });
 
 describe("findPackageCycles", () => {
-  it("deduplicates rotations", () => {
+  it("groups packages into strongly connected components", () => {
     const graph = new Map([
-      ["b", new Set(["a"])],
       ["a", new Set(["b"])],
+      ["b", new Set(["a", "c"])],
+      ["c", new Set(["d"])],
+      ["d", new Set(["c"])],
+      ["e", new Set(["a"])],
     ]);
-    expect(findPackageCycles(graph)).toEqual([["a", "b", "a"]]);
+    expect(findPackageCycles(graph)).toEqual([
+      ["a", "b"],
+      ["c", "d"],
+    ]);
   });
 });
 
 describe("compareToBaseline", () => {
+  it("accepts a cycle that shrank and reports the old key as stale", () => {
+    const cycle = {
+      kind: "cycle" as const,
+      key: "cycle: a, b",
+      message: "",
+      files: [],
+    };
+    expect(
+      compareToBaseline([cycle], { violations: ["cycle: a, b, c"] }),
+    ).toEqual({ added: [], stale: ["cycle: a, b, c"] });
+  });
+
   it("splits new violations from fixed baseline entries", () => {
     const v = (key: string) => ({
       kind: "cycle" as const,

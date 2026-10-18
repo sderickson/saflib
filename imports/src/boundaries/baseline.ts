@@ -13,6 +13,12 @@ export interface BaselineComparison {
   stale: string[];
 }
 
+const CYCLE_PREFIX = "cycle: ";
+
+function cycleMembers(key: string): Set<string> {
+  return new Set(key.slice(CYCLE_PREFIX.length).split(", "));
+}
+
 export function readBaseline(filePath: string): BoundariesBaseline {
   if (!fs.existsSync(filePath)) return { violations: [] };
   const parsed = JSON.parse(
@@ -37,8 +43,19 @@ export function compareToBaseline(
 ): BaselineComparison {
   const known = new Set(baseline.violations);
   const current = new Set(violations.map((v) => v.key));
+  // A cycle that shrank is progress, not a new violation: accept a cycle whose
+  // packages are a subset of a baselined cycle (the old key then goes stale).
+  const knownCycles = baseline.violations
+    .filter((k) => k.startsWith(CYCLE_PREFIX))
+    .map(cycleMembers);
+  const isKnown = (v: BoundaryViolation) =>
+    known.has(v.key) ||
+    (v.kind === "cycle" &&
+      knownCycles.some((members) =>
+        [...cycleMembers(v.key)].every((m) => members.has(m)),
+      ));
   return {
-    added: violations.filter((v) => !known.has(v.key)),
+    added: violations.filter((v) => !isKnown(v)),
     stale: baseline.violations.filter((k) => !current.has(k)).sort(),
   };
 }

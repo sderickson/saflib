@@ -211,50 +211,78 @@ function importsMapTargets(pj: PackageJson): Array<[string, string]> {
   return out;
 }
 
-function normalizeCycle(cycle: string[]): string[] {
-  const nodes = cycle.slice(0, -1);
-  let minIdx = 0;
-  for (let i = 1; i < nodes.length; i++) {
-    if (nodes[i]! < nodes[minIdx]!) minIdx = i;
-  }
-  const rotated = [...nodes.slice(minIdx), ...nodes.slice(0, minIdx)];
-  return [...rotated, rotated[0]!];
-}
-
-/** Elementary cycles reachable by DFS back-edges (deduplicated by rotation). */
+/**
+ * Strongly connected components with more than one package (or a self-loop),
+ * each sorted by name. Unlike enumerating individual cycles, the result does
+ * not depend on traversal order, so baseline keys stay stable as edges change.
+ */
 export function findPackageCycles(graph: Map<string, Set<string>>): string[][] {
-  const color = new Map<string, 0 | 1 | 2>();
+  let index = 0;
+  const indices = new Map<string, number>();
+  const lowlink = new Map<string, number>();
+  const onStack = new Set<string>();
   const stack: string[] = [];
-  const seen = new Set<string>();
-  const cycles: string[][] = [];
+  const components: string[][] = [];
 
-  const dfs = (node: string) => {
-    color.set(node, 1);
+  const visit = (node: string) => {
+    indices.set(node, index);
+    lowlink.set(node, index);
+    index += 1;
     stack.push(node);
-    for (const next of [...(graph.get(node) ?? [])].sort()) {
-      const c = color.get(next) ?? 0;
-      if (c === 1) {
-        const cycle = normalizeCycle([
-          ...stack.slice(stack.indexOf(next)),
-          next,
-        ]);
-        const key = cycle.join(" -> ");
-        if (!seen.has(key)) {
-          seen.add(key);
-          cycles.push(cycle);
-        }
-      } else if (c === 0 && graph.has(next)) {
-        dfs(next);
+    onStack.add(node);
+    for (const next of graph.get(node) ?? []) {
+      if (!graph.has(next)) continue;
+      if (!indices.has(next)) {
+        visit(next);
+        lowlink.set(node, Math.min(lowlink.get(node)!, lowlink.get(next)!));
+      } else if (onStack.has(next)) {
+        lowlink.set(node, Math.min(lowlink.get(node)!, indices.get(next)!));
       }
     }
-    stack.pop();
-    color.set(node, 2);
+    if (lowlink.get(node) === indices.get(node)) {
+      const component: string[] = [];
+      let member: string;
+      do {
+        member = stack.pop()!;
+        onStack.delete(member);
+        component.push(member);
+      } while (member !== node);
+      const selfLoop = graph.get(node)?.has(node) ?? false;
+      if (component.length > 1 || selfLoop) components.push(component.sort());
+    }
   };
 
   for (const node of [...graph.keys()].sort()) {
-    if ((color.get(node) ?? 0) === 0) dfs(node);
+    if (!indices.has(node)) visit(node);
   }
-  return cycles.sort((a, b) => a.join(" ").localeCompare(b.join(" ")));
+  return components.sort((a, b) => a.join(" ").localeCompare(b.join(" ")));
+}
+
+/** Shortest path `from` → … → `from` inside one component, for messages. */
+function exampleCycle(
+  graph: Map<string, Set<string>>,
+  component: string[],
+): string[] {
+  const members = new Set(component);
+  const start = component[0]!;
+  const previous = new Map<string, string>();
+  const queue = [start];
+  while (queue.length > 0) {
+    const node = queue.shift()!;
+    for (const next of [...(graph.get(node) ?? [])].sort()) {
+      if (!members.has(next)) continue;
+      if (next === start) {
+        const path = [node];
+        while (path[0] !== start) path.unshift(previous.get(path[0]!)!);
+        return [...path, start];
+      }
+      if (!previous.has(next)) {
+        previous.set(next, node);
+        queue.push(next);
+      }
+    }
+  }
+  return [...component, start];
 }
 
 function pushGrouped(
@@ -440,15 +468,15 @@ export function checkBoundaries(
     if (!edge.dev) runtimeGraph.get(edge.from)!.add(edge.to);
   }
   const scopedNames = new Set(packages.map((p) => p.name));
-  for (const cycle of findPackageCycles(runtimeGraph)) {
-    if (!cycle.some((name) => scopedNames.has(name))) continue;
-    const chain = cycle.join(" -> ");
+  for (const component of findPackageCycles(runtimeGraph)) {
+    if (!component.some((name) => scopedNames.has(name))) continue;
+    const example = exampleCycle(runtimeGraph, component).join(" -> ");
     pushGrouped(
       violations,
       {
         kind: "cycle",
-        key: `cycle: ${chain}`,
-        message: `runtime package cycle: ${chain}`,
+        key: `cycle: ${component.join(", ")}`,
+        message: `runtime package cycle among ${component.length} package(s), e.g. ${example}`,
       },
       undefined,
     );
