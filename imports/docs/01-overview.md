@@ -35,11 +35,45 @@ npm exec saf-imports snapshot check --against <path>
 npm exec saf-imports spa analyze --spa <app|admin|account|auth>
 npm exec saf-imports spa measure --spa <name>
 npm exec saf-imports tsconfig sync|check|cycles|cleanup-declarations [--root <dir>]
+npm exec saf-imports boundaries [--all] [--update-baseline]
 ```
 
 For export coverage validation, use [saf-analyze-package](../../dev-tools/docs/package-issues.md).
 
 `measure --verbose` lists every first-party file (repo-root-relative, sorted) and external package the entry statically imports.
+
+## Package boundaries
+
+`saf-imports boundaries` checks package-level import hygiene across the workspace:
+
+- **undeclared** — a runtime file imports a workspace package that is not in `dependencies`, or a test/tooling file imports one that is in neither `dependencies` nor `devDependencies`. npm workspaces hoist every package, so these resolve anyway; they hide cycles from `tsconfig` project references.
+- **relative-escape** — a relative import (or OpenAPI `$ref`) that resolves outside its own package. Import the package by name instead (`pkg:` for `$ref`).
+- **cycle** — a cycle among runtime dependencies (declared `dependencies` plus actual runtime imports).
+- **forbidden** — a dependency that a configured rule disallows.
+
+Test and tooling files (`*.test.ts`, `*.fake(s).ts`, `*mocks.ts`, `test/`, `bin/`, `scripts/`, `*.config.*`, …) may use `devDependencies` and are left out of the runtime graph.
+
+Configure it in the repo-root `package.json`:
+
+```json
+"safImports": {
+  "boundaries": {
+    "baseline": "myproduct/import-boundaries.baseline.json",
+    "scope": ["dir:myproduct/**"],
+    "rules": [
+      {
+        "name": "integrations-no-api",
+        "from": ["dir:myproduct/service/integrations/*"],
+        "disallow": ["@myproduct/*-spec", "@myproduct/*-http"]
+      }
+    ]
+  }
+}
+```
+
+Selectors are package-name globs, `dir:<repo-relative glob>`, or `kind:<saf.kind>`. `scope` limits which packages are checked; everything is still a valid import target. Rules apply to runtime files unless `includeDev: true`.
+
+The baseline lists accepted violation keys. The check fails on violations missing from the baseline **and** on baseline entries that no longer occur, so the baseline only shrinks. After fixing violations, run `saf-imports boundaries --update-baseline`.
 
 ## Vitest reporter
 
