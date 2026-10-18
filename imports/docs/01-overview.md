@@ -50,6 +50,8 @@ For export coverage validation, use [saf-analyze-package](../../dev-tools/docs/p
 - **relative-escape** — a relative import (or OpenAPI `$ref`) that resolves outside its own package. Import the package by name instead (`pkg:` for `$ref`).
 - **cycle** — a cycle among runtime dependencies (declared `dependencies` plus actual runtime imports).
 - **forbidden** — a dependency that a configured rule disallows.
+- **missing-tsconfig** — a package with TypeScript sources but no `tsconfig.json`, so the root build never typechecks it.
+- **missing-kind** — a package without a known `saf.kind` (`db`, `http`, `spec`, `spa`, `sdk`, `lib`, `integration`, `objects`, `test`, `other`).
 
 Test and tooling files (`*.test.ts`, `*.fake(s).ts`, `*mocks.ts`, `test/`, `bin/`, `scripts/`, `*.config.*`, …) may use `devDependencies` and are left out of the runtime graph.
 

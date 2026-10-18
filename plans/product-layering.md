@@ -8,7 +8,7 @@
 
 - **Phase:** 1 done; 2 not started. A refactor of one large SAF product prototyped most of this.
 - **Last updated:** 2026-10-18
-- **Next action:** settle the open decisions below, then start Phase 2.
+- **Next action:** Phase 2 (layer model). D1–D4 are settled; the `objects`/`test` kinds and the `missing-kind` check have landed.
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
@@ -160,20 +160,14 @@ It never constructs clients or wires dependencies; the composition root does tha
 - [ ] `saflib/docs` architecture page with both layer tables and the "move it down, never sideways" rule. Link it from `best-practices.md` and the offshoot workflow docs.
 - [ ] Products: add kinds and a baseline, then burn down.
 
-## Open decisions
+## Decisions (settled 2026-10-18)
 
-- **D1 — `http-common` packaging.** A subpath of `service/common` (`./http/*`, as the prototype uses today) or its own package?
-  - **Own package:** makes the layer checkable by kind alone.
-  - **Subpath:** needs a path-level rule.
-  - **Lean:** own package in the template; a subpath is allowed via config.
-- **D2 — Offshoots using core objects.** May offshoot `spec`/`db` packages depend on the core `spec`/`db`, or must shared schemas move to `spec-common`/`objects`?
-  - The prototype does both today (`pkg:` `$ref`s into the core spec and a shared `spec-common`).
-  - **Lean:** offshoot → core is allowed for `spec` and `db` only, never `http`/`sdk`. Anything a second offshoot needs moves to `spec-common`.
-- **D3 — Where integration-to-domain logic lives.** Example: "send a WhatsApp message and record it in the backlog".
-  - **Lean:** domain calls the integration; the integration's `state/` may write its own tables but never calls domain.
-- **D4 — Required `saf.kind`.** Hard error or warning?
-  - **Lean:** warning for one release, then error.
+- **D1 — `http-common` packaging: its own package.** It's checkable by kind alone. Products with a `service/common/http/*` subpath migrate to it.
+- **D2 — Offshoots using core objects:** offshoot `spec`/`db` packages may reference the core `spec`/`db`, never core `http`/`sdk`. The core never references an offshoot; a schema both need lives in the core (or in an objects package).
+- **D3 — Integration state:** an integration package may define and manage its own state (tables and queries in its `state/`). Domain code calls the integration, never the other way around.
+- **D4 — `saf.kind`: required, as an error.** `saf-imports boundaries` reports `missing-kind` for any in-scope package without a known kind.
 
 ## Decisions log
 
 - 2026-10-18 — Plan created from a large product's package-layering refactor, generalized to the base template. Phase 1 (`saf-imports boundaries`) landed alongside it.
+- 2026-10-18 — D1–D4 settled (see Decisions). Added `objects` and `test` kinds to `@saflib/monorepo`, and `missing-kind` to `saf-imports boundaries`.
