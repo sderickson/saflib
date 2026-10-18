@@ -6,3 +6,5 @@ properties:
     type: string
   lastError:
     $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+  widget:
+    $ref: "pkg:@fixture/offshoot-spec/schemas/widget.yaml"

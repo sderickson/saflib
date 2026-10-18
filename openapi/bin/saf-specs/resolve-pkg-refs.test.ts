@@ -169,3 +169,19 @@ export interface components {
     expect(out).not.toMatch(/Widget:\s*\{\s*id:/);
   });
 });
+
+describe("rewritePkgRefs with a pkg: ref to its own package", () => {
+  it("does not record the package's own schemas as external", () => {
+    const result = rewritePkgRefs({
+      entryFile: "openapi.yaml",
+      cwd: offshootDir,
+    });
+    try {
+      expect(
+        [...result.externalSchemas.values()].map((p) => p.packageName),
+      ).not.toContain("@fixture/offshoot-spec");
+    } finally {
+      result.cleanup();
+    }
+  });
+});

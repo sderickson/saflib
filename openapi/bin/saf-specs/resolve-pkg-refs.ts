@@ -302,6 +302,23 @@ export function rewritePkgRefs(options: {
     originalToTemp.set(fileAbs, tempCopyPath(tempDir, packageRoot, fileAbs));
   }
 
+  const ownPackageName = (() => {
+    try {
+      const pj = JSON.parse(
+        readFileSync(path.join(packageRoot, "package.json"), "utf8"),
+      ) as { name?: string };
+      return pj.name;
+    } catch {
+      return undefined;
+    }
+  })();
+  const record = (packageName: string, schemaName: string) => {
+    // A pkg: ref to this same package is just a path; re-exporting it from
+    // itself would emit a circular type alias.
+    if (packageName === ownPackageName) return;
+    recordExternal(externalSchemas, packageName, schemaName);
+  };
+
   const isOwnFile = (fileAbs: string) =>
     fileAbs === packageRoot || fileAbs.startsWith(packageRoot + path.sep);
 
@@ -314,7 +331,7 @@ export function rewritePkgRefs(options: {
       if (!isOwnFile(fromFile)) {
         // Another package's document pulled in for rewriting: resolve only.
       } else if (schemaFromFrag) {
-        recordExternal(externalSchemas, packageName, schemaFromFrag);
+        record(packageName, schemaFromFrag);
       } else {
         // File-style pkg: ref — only treat as cross-package SoT when the
         // owning package declares a components.schemas entry for that file.
@@ -326,7 +343,7 @@ export function rewritePkgRefs(options: {
         const openapiPath = path.join(pkgRoot, "openapi.yaml");
         const lookedUp = findSchemaNameForFile(openapiPath, absolutePath);
         if (lookedUp) {
-          recordExternal(externalSchemas, packageName, lookedUp);
+          record(packageName, lookedUp);
         }
       }
       // Point at the rewritten copy when the target was collected, so any
@@ -390,8 +407,8 @@ export function rewritePkgRefs(options: {
         const { packageName } = resolvePkgResource(resource, cwd);
         const schemaName =
           schemaNameFromComponentFragment(fragment) ?? localName;
-        recordExternal(externalSchemas, packageName, schemaName);
-        recordExternal(externalSchemas, packageName, localName);
+        record(packageName, schemaName);
+        record(packageName, localName);
       }
     }
 
