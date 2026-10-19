@@ -1,7 +1,8 @@
 /**
  * Package-boundary checks for a workspace monorepo: undeclared workspace
  * imports, relative imports that leave their package, package-level cycles,
- * and configurable forbidden dependencies (`safImports.boundaries.rules`).
+ * built-in layer rules from `saf.kind` (`./layers.ts`), and configurable
+ * forbidden dependencies (`safImports.boundaries.rules`).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -22,6 +23,13 @@ import {
   matchesSubpath,
   type PackageForSelector,
 } from "./selectors.ts";
+import {
+  checkIntegrationInternals,
+  checkLayerEdge,
+  resolveFeature,
+  type LayerFinding,
+  type LayerPackage,
+} from "./layers.ts";
 
 export type BoundaryViolationKind =
   | "undeclared"
@@ -29,7 +37,8 @@ export type BoundaryViolationKind =
   | "cycle"
   | "forbidden"
   | "missing-tsconfig"
-  | "missing-kind";
+  | "missing-kind"
+  | "layer";
 
 export interface BoundaryViolation {
   kind: BoundaryViolationKind;
@@ -336,8 +345,32 @@ export function checkBoundaries(
     (p) => new RegExp(p),
   );
   const rules = config.rules ?? [];
+  const layersEnabled = config.layers !== false;
+  const violations = new Map<string, BoundaryViolation>();
 
   const allPackages = listWorkspacePackages(rootDir);
+  const layerPackages = new Map<string, LayerPackage>(
+    allPackages.map((p) => [
+      p.name,
+      {
+        name: p.name,
+        kind: p.kind,
+        ...resolveFeature(
+          p.dir,
+          rootDir,
+          (p.pj as { saf?: { feature?: unknown } }).saf?.feature,
+        ),
+      },
+    ]),
+  );
+  const pushLayer = (found: LayerFinding | undefined, file?: string) => {
+    if (!found) return;
+    pushGrouped(
+      violations,
+      { kind: "layer", key: found.key, message: found.message },
+      file,
+    );
+  };
   const byName = new Map(allPackages.map((p) => [p.name, p]));
   const packageDirs = new Set(allPackages.map((p) => p.dir));
   const packages = config.scope
@@ -345,9 +378,9 @@ export function checkBoundaries(
         config.scope!.some((s) => matchesPackageSelector(s, p)),
       )
     : allPackages;
+  const scopedNames = new Set(packages.map((p) => p.name));
 
   const edges: ImportEdge[] = [];
-  const violations = new Map<string, BoundaryViolation>();
   let filesScanned = 0;
 
   for (const pkg of packages) {
@@ -408,6 +441,25 @@ export function checkBoundaries(
 
       for (const spec of relativeSpecifiers(file, src)) {
         const target = path.resolve(path.dirname(file), spec);
+        if (
+          layersEnabled &&
+          !dev &&
+          isUnder(target, path.join(pkg.dir, "state"))
+        ) {
+          pushLayer(
+            checkIntegrationInternals(
+              layerPackages.get(pkg.name)!,
+              path.relative(pkg.dir, file),
+              {
+                stateFile: path
+                  .relative(pkg.dir, target)
+                  .split(path.sep)
+                  .join("/"),
+              },
+            ),
+            repoRel,
+          );
+        }
         if (isUnder(target, pkg.dir)) continue;
         const into = path.relative(rootDir, target).split(path.sep).join("/");
         pushGrouped(
@@ -452,6 +504,19 @@ export function checkBoundaries(
         edge.file,
       );
     }
+    if (layersEnabled && !edge.dev && scopedNames.has(edge.to)) {
+      const fromLayer = layerPackages.get(edge.from)!;
+      const toLayer = layerPackages.get(edge.to)!;
+      pushLayer(checkLayerEdge(fromLayer, toLayer, edge.subpath), edge.file);
+      pushLayer(
+        checkIntegrationInternals(
+          fromLayer,
+          path.relative(from.relDir, edge.file),
+          { packageKind: toLayer.kind, packageName: toLayer.name },
+        ),
+        edge.file,
+      );
+    }
     for (const rule of rules) {
       if (!edge.dev || rule.includeDev) {
         const to = byName.get(edge.to)!;
@@ -477,6 +542,15 @@ export function checkBoundaries(
     for (const dep of from.runtimeDeps) {
       const to = byName.get(dep);
       if (!to) continue;
+      if (layersEnabled && scopedNames.has(to.name)) {
+        pushLayer(
+          checkLayerEdge(
+            layerPackages.get(from.name)!,
+            layerPackages.get(to.name)!,
+            undefined,
+          ),
+        );
+      }
       for (const rule of rules) {
         // A subpath rule depends on what is imported, not on the declaration.
         if (!rule.subpaths && ruleApplies(rule, from, to)) {
@@ -506,7 +580,6 @@ export function checkBoundaries(
   for (const edge of edges) {
     if (!edge.dev) runtimeGraph.get(edge.from)!.add(edge.to);
   }
-  const scopedNames = new Set(packages.map((p) => p.name));
   for (const component of findPackageCycles(runtimeGraph)) {
     if (!component.some((name) => scopedNames.has(name))) continue;
     const example = exampleCycle(runtimeGraph, component).join(" -> ");

@@ -6,14 +6,14 @@
 
 ## Status
 
-- **Phase:** 1 done; parts of 6 done early (see below); 2 not started. A refactor of one large SAF product prototyped most of this.
+- **Phase:** 1 and 2 done; parts of 6 done early (see below). A refactor of one large SAF product prototyped most of this.
 - **Last updated:** 2026-10-18
-- **Next action:** Phase 2 (layer model). D1–D4 are settled; the `objects`/`test` kinds and the `missing-kind` check have landed, every base package declares a kind, and `product/workflows/base-boundaries.test.ts` keeps base free of violations.
+- **Next action:** Phase 3 (HTTP app chrome and composition), or burn down a product baseline. Previously: Phase 2 (layer model). D1–D4 are settled; the `objects`/`test` kinds and the `missing-kind` check have landed, every base package declares a kind, and `product/workflows/base-boundaries.test.ts` keeps base free of violations.
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
 | 1 | `saf-imports boundaries`: undeclared, relative-escape, cycle, forbidden + baseline | done |
-| 2 | Layer model: kinds → layers, built-in default rules, feature/sibling detection | todo |
+| 2 | Layer model: kinds → layers, built-in default rules, feature/sibling detection | done |
 | 3 | HTTP app chrome in saflib; composition root mounts routers | todo |
 | 4 | Domain/context rules; integration package shape | todo |
 | 5 | Client side: `sdk-common` in the template; delete runtime binders | todo |
@@ -52,22 +52,25 @@ Each layer may import only layers below it. Test files may import anything excep
 | # | Layer | `saf.kind` | May import | Template package |
 | - | ----- | ---------- | ---------- | ---------------- |
 | 1 | Composition | `app` | anything | `service/monolith` |
-| 2 | App chrome | `http-app` | shared http, saflib | `service/http-app` (new) |
-| 3 | Feature HTTP | `http` | 4–8 | `service/http`, `<offshoot>/http` |
-| 4 | Shared HTTP | `http-common` | 5–8 | `service/common/http/*` (or its own package) |
-| 5 | Domain | `domain` (today `lib`) | 6–8 | `service/common`, `service/audit`, integration `state/` |
-| 6 | Integrations | `integration` | 7 (db + objects only, from `state/`) | `service/integrations/*` |
-| 7 | Data & objects | `db`, `objects` | 8, other objects | `service/db`, `<offshoot>/db`, `<feature>/common` |
-| 8 | Contracts | `spec` | other specs (see decision D2) | `service/spec`, `<offshoot>/spec`, `spec-common` |
+| 2 | App chrome | `http-app` | http-common, domain, integration, db, spec, objects | `service/http-app` (new) |
+| 3 | Feature HTTP | `http` | http-common, domain, integration, db, spec, objects | `service/http`, `<offshoot>/http` |
+| 4 | Shared HTTP | `http-common` | domain, integration, db, spec, objects | `service/http-common` |
+| 5 | Domain | `domain` | integration, db, objects | `service/common`, `service/audit`, `service/jobs` |
+| 6 | Integrations | `integration` | db, objects (from `state/` only) | `service/integrations/*` |
+| 7 | Data | `db` | objects | `service/db`, `<offshoot>/db` |
+| 7 | Contracts | `spec` | objects | `service/spec`, `<offshoot>/spec`, `spec-common` |
+| 8 | Objects | `objects` | other objects | `<feature>/objects` |
+
+*(Revised 2026-10-18, Phase 2: `spec` and `db` are siblings above `objects`, not a chain. Specs import objects packages (their schemas alias them), so objects sit below spec; and domain/db code must not depend on API contracts, so nothing below HTTP imports `spec`.)* `lib` and `other` stay unlayered: unchecked, importable by everything but objects. Same-kind imports follow the sibling rule and D2; see `saflib/imports/docs/01-overview.md`.
 
 Client side, the same idea:
 
 | Layer | `saf.kind` | May import |
 | ----- | ---------- | ---------- |
-| SPA | `spa` | everything below |
-| Vue components | `vue` | sdk, sdk-common, spec |
-| Feature SDK | `sdk` | sdk-common, spec |
-| SDK common | `sdk-common` | spec |
+| SPA | `spa` | vue, sdk, sdk-common, spec, objects |
+| Vue components | `vue` | sdk, sdk-common, spec, objects |
+| Feature SDK | `sdk` | sdk-common, spec, objects |
+| SDK common | `sdk-common` | spec, objects |
 
 `test` packages (`service/test`, `<offshoot>/test`) are dev-only: importing them from a runtime file is a violation.
 
@@ -113,11 +116,11 @@ It never constructs clients or wires dependencies; the composition root does tha
 
 ### Phase 2 — Layer model
 
-- [ ] Add the kinds `app`, `http-app`, `http-common`, `domain`, `objects`, `sdk-common` and `vue` to `@saflib/monorepo`'s kind list, and validate that every package declares a kind.
-- [ ] Built-in default rules generated from the layer table: layer order, sibling rule, `test` kind dev-only, integration internals rule. `safImports.boundaries.layers: false` opts out.
-- [ ] Feature detection (parent dir, `saf.feature` override); unit tests.
-- [ ] Violation messages name the layer rule and suggest the move ("shared by billing/http and service/http → move to http-common").
-- [ ] Run on every product, and write baselines. The size of each baseline is the migration backlog.
+- [x] Add the kinds `app`, `http-app`, `http-common`, `domain`, `objects`, `sdk-common` and `vue` to `@saflib/monorepo`'s kind list, and validate that every package declares a kind.
+- [x] Built-in default rules generated from the layer table: layer order, sibling rule, `test` kind dev-only, integration internals rule. `safImports.boundaries.layers: false` opts out. Also `core-offshoot` (D2). Rules apply only between packages of the same product (same product root).
+- [x] Feature detection (`saf.feature` override); unit tests. Implemented as the first directory under the product root (nearest ancestor with `service/`), not the parent dir, so `service/integrations/*` stay in the core feature.
+- [x] Violation messages name the layer rule and suggest the move ("shared by billing/http and service/http → move to http-common").
+- [x] Run on every product, and write baselines. The size of each baseline is the migration backlog. Base: clean (enforced by `product/workflows/base-boundaries.test.ts`; `runBaseJobs` now takes the API spec from the composition root). The large product that prototyped this plan baselined 18 layer violations.
 
 ### Phase 3 — HTTP app chrome and composition
 
@@ -173,3 +176,4 @@ It never constructs clients or wires dependencies; the composition root does tha
 - 2026-10-18 — D1–D4 settled (see Decisions). Added `objects` and `test` kinds to `@saflib/monorepo`, and `missing-kind` to `saf-imports boundaries`.
 - 2026-10-18 — Base template brought in line: `saf.kind` on every base package, undeclared base dependencies declared, offshoot routers mounted from `service/monolith/http.ts` (with `express/init` retargeted), and `openapi/init` no longer weaves offshoot paths into the core spec (D2: the core never references an offshoot). Spec packages export `./json-spec` (generated `dist/json-spec.ts`), so bundles can omit components shared with packages they build on.
 - 2026-10-18 — D2 clarified: offshoot tables share the core SQLite database, and the core db schema index re-exporting them for migrations is the one allowed core → offshoot reference.
+- 2026-10-18 — Phase 2 landed. Decisions while implementing: (1) objects sit below spec and db (specs alias objects schemas), and nothing below HTTP imports `spec`; (2) `lib`/`other` stay unlayered, importable by all but objects; (3) any feature's `objects` package may be used by the core (D2's "or in an objects package"); (4) an offshoot may use the core's domain/integration/db/spec/objects packages, never its http/sdk/vue (D2, extended to domain and integration); (5) a feature is the first directory under the product root, and product-root packages are core; (6) layer rules apply only within one product root, so framework (`@saflib/*`) imports are never layered.

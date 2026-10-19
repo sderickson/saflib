@@ -1,7 +1,7 @@
 {
   "name": "@saflib/base-cron",
   "saf": {
-    "kind": "lib"
+    "kind": "domain"
   },
   "description": "Cron service for the base product",
   "type": "module",

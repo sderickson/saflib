@@ -42,7 +42,7 @@ export async function startBaseService() {
     log.info("base-cron startup complete.");
 
     log.info("Starting base-jobs runtime...");
-    await runBaseJobs(context);
+    await runBaseJobs(context, jsonSpec);
     log.info("base-jobs runtime startup complete.");
 
     log.info("Starting base-jobs app...");

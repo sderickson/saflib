@@ -1,7 +1,7 @@
 {
   "name": "@saflib/base-monolith",
   "saf": {
-    "kind": "other"
+    "kind": "app"
   },
   "type": "module",
   "scripts": {

@@ -1,7 +1,7 @@
 {
   "name": "@saflib/base-jobs",
   "saf": {
-    "kind": "lib"
+    "kind": "domain"
   },
   "description": "Jobs slice for the base golden product",
   "type": "module",
@@ -17,14 +17,14 @@
   "dependencies": {
     "@saflib/base-cron": "*",
     "@saflib/base-service-common": "*",
-    "@saflib/base-spec": "*",
     "@saflib/drizzle": "*",
     "@saflib/env": "*",
+    "@saflib/jobs-db": "*",
     "@saflib/jobs-http": "*",
-    "@saflib/jobs-db": "*"
+    "@saflib/openapi": "*"
   },
   "devDependencies": {
-    "@saflib/openapi": "*",
+    "@saflib/base-spec": "*",
     "@saflib/vitest": "*"
   },
   "sideEffects": false

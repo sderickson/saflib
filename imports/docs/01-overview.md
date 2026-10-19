@@ -51,7 +51,40 @@ For export coverage validation, use [saf-analyze-package](../../dev-tools/docs/p
 - **cycle** — a cycle among runtime dependencies (declared `dependencies` plus actual runtime imports).
 - **forbidden** — a dependency that a configured rule disallows.
 - **missing-tsconfig** — a package with TypeScript sources but no `tsconfig.json`, so the root build never typechecks it.
-- **missing-kind** — a package without a known `saf.kind` (`db`, `http`, `spec`, `spa`, `sdk`, `lib`, `integration`, `objects`, `test`, `other`).
+- **missing-kind** — a package without a known `saf.kind` (see the layer table below, plus `lib` and `other`).
+- **layer** — an import that breaks the product's layers (below).
+
+### Layers
+
+Every package declares a layer as its `saf.kind`. A package imports only the layers below it:
+
+| `saf.kind`    | May import (from the same product)                              |
+| ------------- | --------------------------------------------------------------- |
+| `app`         | anything (the composition root, e.g. `service/monolith`)        |
+| `http-app`    | `http-common`, `domain`, `integration`, `db`, `spec`, `objects` |
+| `http`        | `http-common`, `domain`, `integration`, `db`, `spec`, `objects` |
+| `http-common` | `domain`, `integration`, `db`, `spec`, `objects`                |
+| `domain`      | `integration`, `db`, `objects`                                  |
+| `integration` | `db`, `objects`                                                 |
+| `db`          | `objects`                                                       |
+| `spec`        | `objects`                                                       |
+| `objects`     | other `objects` only                                            |
+| `spa`         | `vue`, `sdk`, `sdk-common`, `spec`, `objects`                   |
+| `vue`         | `sdk`, `sdk-common`, `spec`, `objects`                          |
+| `sdk`         | `sdk-common`, `spec`, `objects`                                 |
+| `sdk-common`  | `spec`, `objects`                                               |
+| `test`        | anything, but only test files may import a `test` package       |
+
+`lib` and `other` packages aren't layered yet: they're unchecked, and every layer except `objects` may import them. Reclassify them as products migrate.
+
+Rules beyond the table (keys `layer(<rule>): from -> to`):
+
+- **siblings** — packages of the same kind in different features don't import each other; what they share moves down a layer (e.g. two `http` packages → `http-common`). An offshoot may use the core's `domain`, `integration`, `db`, `spec` and `objects` packages, never the core's `http` or `sdk`. Any `objects` package may import any other.
+- **core-offshoot** — the core never imports an offshoot, except an offshoot's `objects` package and the core db's schema index (`schema`, `schemas/*`) re-exporting offshoot tables. Wire offshoots together in the `app` package.
+- **test-dev-only** — a `test` package is never a runtime dependency.
+- **integration-internals** — an integration package's client code (`client.ts`, `calls/`, `bin/`) imports neither a `db` package nor its own `state/`.
+
+A **feature** is the first directory under the product root, the nearest ancestor that contains a `service/` directory: `service/*` is the core feature, `<offshoot>/*` an offshoot, and packages directly in the product root count as core. Set `saf.feature` in `package.json` to override. Imports of packages outside the product (e.g. `@saflib/*`) aren't layered. Turn the layer rules off with `"layers": false` under `safImports.boundaries`.
 
 Test and tooling files (`*.test.ts`, `*.fake(s).ts`, `*mocks.ts`, `test/`, `bin/`, `scripts/`, `*.config.*`, …) may use `devDependencies` and are left out of the runtime graph.
 

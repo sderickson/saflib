@@ -1,7 +1,7 @@
 {
   "name": "@saflib/base-service-common",
   "saf": {
-    "kind": "lib"
+    "kind": "domain"
   },
   "description": "Shared types and utilities for the base service",
   "private": true,
