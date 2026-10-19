@@ -61,6 +61,42 @@ export interface CheckBoundariesResult {
   packagesScanned: number;
   filesScanned: number;
   violations: BoundaryViolation[];
+  /** The scanned packages and import edges, for `saf-imports map`. */
+  graph: PackageGraph;
+}
+
+export interface GraphPackageInfo {
+  name: string;
+  /** Repo-relative directory. */
+  relDir: string;
+  kind?: string;
+  feature: string;
+  core: boolean;
+  /** Absolute product root; undefined outside a product. */
+  productRoot?: string;
+  /** Declared runtime (`dependencies`/peer/optional) and dev dependencies. */
+  dependencies: string[];
+  devDependencies: string[];
+  /** Runtime (non-test, non-tooling) source files and lines. */
+  sourceFiles: number;
+  sourceLines: number;
+  /** Test/tooling source files and lines. */
+  testFiles: number;
+  testLines: number;
+  /** Runtime source files (package-relative path → lines). */
+  sourceFileLines: Record<string, number>;
+}
+
+export interface PackageGraph {
+  packages: GraphPackageInfo[];
+  /** One entry per import of a workspace package by a scanned file. */
+  edges: Array<{
+    from: string;
+    to: string;
+    subpath: string;
+    file: string;
+    dev: boolean;
+  }>;
 }
 
 interface WorkspacePackage extends PackageForSelector {
@@ -399,6 +435,18 @@ export function checkBoundaries(
 
   const edges: ImportEdge[] = [];
   let filesScanned = 0;
+  const fileStats = new Map(
+    packages.map((p) => [
+      p.name,
+      {
+        sourceFiles: 0,
+        sourceLines: 0,
+        testFiles: 0,
+        testLines: 0,
+        sourceFileLines: {} as Record<string, number>,
+      },
+    ]),
+  );
   /** Workspace packages each package uses outside TS imports (pkg: refs, tsconfig, scripts, imports map). */
   const otherUses = new Map<string, Set<string>>();
   const useOther = (from: string, spec: string) => {
@@ -483,11 +531,25 @@ export function checkBoundaries(
 
     for (const file of files) {
       filesScanned += 1;
+      const stats = fileStats.get(pkg.name)!;
       const repoRel = path.relative(rootDir, file).split(path.sep).join("/");
       const dev = isDevFile(path.relative(pkg.dir, file), extraDevPatterns);
       const src = YAML_EXT_RE.test(file)
         ? fs.readFileSync(file, "utf8")
         : readSource(file);
+      if (!YAML_EXT_RE.test(file)) {
+        const lines = src.split("\n").length;
+        if (dev) {
+          stats.testFiles += 1;
+          stats.testLines += lines;
+        } else {
+          stats.sourceFiles += 1;
+          stats.sourceLines += lines;
+          stats.sourceFileLines[
+            path.relative(pkg.dir, file).split(path.sep).join("/")
+          ] = lines;
+        }
+      }
 
       for (const spec of relativeSpecifiers(file, src)) {
         const target = path.resolve(path.dirname(file), spec);
@@ -708,8 +770,34 @@ export function checkBoundaries(
   const sorted = [...violations.values()]
     .map((v) => ({ ...v, files: v.files.sort() }))
     .sort((a, b) => a.key.localeCompare(b.key));
+  const graph: PackageGraph = {
+    packages: packages.map((p) => {
+      const layer = layerPackages.get(p.name)!;
+      return {
+        name: p.name,
+        relDir: p.relDir,
+        kind: p.kind,
+        feature: layer.feature,
+        core: layer.core,
+        productRoot: layer.productRoot,
+        dependencies: [...p.runtimeDeps].sort(),
+        devDependencies: [...p.allDeps]
+          .filter((d) => !p.runtimeDeps.has(d))
+          .sort(),
+        ...fileStats.get(p.name)!,
+      };
+    }),
+    edges: edges.map(({ from, to, subpath, file, dev }) => ({
+      from,
+      to,
+      subpath,
+      file,
+      dev,
+    })),
+  };
   return {
     rootDir,
+    graph,
     packagesScanned: packages.length,
     filesScanned,
     violations: sorted,

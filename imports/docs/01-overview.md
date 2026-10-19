@@ -36,7 +36,10 @@ npm exec saf-imports spa analyze --spa <app|admin|account|auth>
 npm exec saf-imports spa measure --spa <name>
 npm exec saf-imports tsconfig sync|check|cycles|cleanup-declarations [--root <dir>]
 npm exec saf-imports boundaries [--all] [--update-baseline]
+npm exec saf-imports map [--package <name>] [--depth <n>] [--json]
 ```
+
+`map` prints the product's packages by layer and feature, with runtime lines and how many product packages each uses and is used by, plus the largest and most-shared packages. `map --package <name>` details one package: what it imports from each product package (files and subpaths), who imports it, what others import from it by subpath (its real public surface, and the parts only one consumer uses), and its runtime code by directory with each directory's product imports. Use it before moving code between packages to see where the seams are.
 
 For export coverage validation, use [saf-analyze-package](../../dev-tools/docs/package-issues.md).
 

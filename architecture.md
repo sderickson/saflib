@@ -2,6 +2,8 @@
 
 A SAF product is a workspace monorepo of small packages. Each package declares its **layer** as `saf.kind` in `package.json`, and `saf-imports boundaries` checks every import against the layers. This page is the map; the [boundaries docs](./imports/docs/01-overview.md#package-boundaries) are the precise rules.
 
+To see a product's layout, run `npm exec saf-imports map` (and `--package <name>` for one package); the dev-site's checkout page draws the same graph.
+
 ## The rule: move it down, never sideways
 
 A package imports only layers below its own. When two packages need the same code, it moves **down** a layer to a package both can import. It is never imported **sideways** from a sibling, and never injected at runtime with a `bind*()` call. The checker's messages say where shared code should go.
