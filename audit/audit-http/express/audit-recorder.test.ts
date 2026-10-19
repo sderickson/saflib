@@ -34,6 +34,10 @@ const testAuditMap: Record<string, AuditMapEntry> = {
     eventType: "widget.not_modified",
     resourceType: "widget",
   },
+  "GET /cleared/:id": {
+    eventType: "widget.cleared",
+    resourceType: "widget",
+  },
 };
 
 function mountTestApp(): {
@@ -87,6 +91,18 @@ function mountTestApp(): {
   app.get("/not-modified/:id", (_req, res) => {
     res.sendStatus(304);
   });
+  // Express leaves `req.params` unset once a request falls out of its router
+  // (e.g. an error that reaches the final handler).
+  app.get("/cleared/:id", (req, res) => {
+    for (const key of ["params", "query"]) {
+      Object.defineProperty(req, key, {
+        get: () => undefined,
+        set: () => {},
+        configurable: true,
+      });
+    }
+    res.sendStatus(500);
+  });
 
   app.use(createErrorMiddleware());
 
@@ -126,6 +142,17 @@ describe("createAuditRecorder", () => {
     expect(row.resource_type).toBe("widget");
     expect(row.resource_id).toBe("w1");
     expect(row.outcome).toBe("success");
+  });
+
+  it("still writes the row when req.params and req.query are unset", async () => {
+    const res = await request(app).get("/cleared/c1");
+    expect(res.status).toBe(500);
+    await drainAuditRecorder();
+
+    const { result } = await listAuditEventsByTimestamp(auditKey, { limit: 50 });
+    expect(result?.events).toHaveLength(1);
+    expect(result!.events[0]!.event_type).toBe("widget.cleared");
+    expect(result!.events[0]!.resource_id).toBe("c1");
   });
 
   it("writes no rows for an unmapped route", async () => {

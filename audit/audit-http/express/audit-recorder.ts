@@ -60,10 +60,10 @@ export function resolveRoutePattern(
 }
 
 function serializeQueryParams(
-  query: Request["query"],
+  query: Request["query"] | undefined,
 ): Record<string, string | string[]> {
   const out: Record<string, string | string[]> = {};
-  for (const [key, value] of Object.entries(query)) {
+  for (const [key, value] of Object.entries(query ?? {})) {
     if (value === undefined) continue;
     if (typeof value === "string") {
       out[key] = value;
@@ -97,8 +97,10 @@ function outcomeForEntry(
   return defaultOutcome(statusCode);
 }
 
-function primaryResourceId(params: Record<string, string>): string | undefined {
-  const values = Object.values(params);
+function primaryResourceId(
+  params: Record<string, string> | undefined,
+): string | undefined {
+  const values = Object.values(params ?? {});
   return values.length > 0 ? values[0] : undefined;
 }
 
@@ -123,7 +125,7 @@ function resolveResourceId(
   routePattern: string,
 ): string | undefined {
   return (
-    primaryResourceId(req.params as Record<string, string>) ??
+    primaryResourceId(req.params as Record<string, string> | undefined) ??
     resourceIdFromPath(routePattern, req.path)
   );
 }
@@ -245,7 +247,7 @@ export function createAuditRecorder(
     const authMethod = saf.auth?.userId ? "kratos_session" : "none";
     const ts = new Date();
     const durationMs = Date.now() - startedAt;
-    const pathParams = req.params as Record<string, string>;
+    const pathParams = (req.params ?? {}) as Record<string, string>;
     const primaryId = resolveResourceId(req, routePattern);
 
     const baseDetails = (): Extract<AuditEventDetails, { source: "http" }> => ({
@@ -339,7 +341,9 @@ export function createAuditRecorder(
       const authMethod = saf.auth?.userId ? "kratos_session" : "none";
       const ts = new Date();
       const durationMs = Date.now() - startedAt;
-      const pathParams = req.params as Record<string, string>;
+      // Express clears `req.params` once a request leaves its router (e.g. an
+      // error that reached the final handler); record the request regardless.
+      const pathParams = (req.params ?? {}) as Record<string, string>;
       const primaryId = resolveResourceId(req, routePattern);
 
       const baseDetails = (): Extract<AuditEventDetails, { source: "http" }> => ({
