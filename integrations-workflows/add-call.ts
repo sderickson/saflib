@@ -24,7 +24,12 @@ const integrationStubRoot = path.join(
   templatesProductRoot,
   "service/integrations/__integration-name__",
 );
-const overviewDoc = path.join(templatesSaflibRoot, "integrations", "docs", "01-overview.md");
+const overviewDoc = path.join(
+  templatesSaflibRoot,
+  "integrations",
+  "docs",
+  "01-overview.md",
+);
 
 interface AddCallInput {
   /** Path of the new call (e.g., './calls/parse-file.ts'). */
@@ -44,10 +49,14 @@ interface AddCallContext extends ParsePathOutput, ParsePackageNameOutput {
  * prompts, same step order, running on the new sqlite-backed engine
  * instead of XState.
  */
-export const AddCallWorkflowDefinition = defineWorkflow<AddCallInput, AddCallContext>({
+export const AddCallWorkflowDefinition = defineWorkflow<
+  AddCallInput,
+  AddCallContext
+>({
   id: "integrations/add-call",
 
-  description: "Add a new call to an integration package with implementation, mock, and bin script",
+  description:
+    "Add a new call to an integration package with implementation, mock, and bin script",
 
   inputSchema: {
     type: "object",
@@ -90,7 +99,10 @@ export const AddCallWorkflowDefinition = defineWorkflow<AddCallInput, AddCallCon
       return {
         templateFiles: {
           call: path.join(integrationStubRoot, "calls/__target-name__.ts"),
-          callMocks: path.join(integrationStubRoot, "calls/__target-name__.mocks.ts"),
+          callMocks: path.join(
+            integrationStubRoot,
+            "calls/__target-name__.mocks.ts",
+          ),
           bin: path.join(integrationStubRoot, "bin/__target-name__.ts"),
           index: path.join(integrationStubRoot, "index.ts"),
         },
@@ -99,7 +111,10 @@ export const AddCallWorkflowDefinition = defineWorkflow<AddCallInput, AddCallCon
         lineReplace: (line: string) => {
           let result = line;
           if (result.includes("template-integration")) {
-            result = result.replaceAll("template-integration", context.packageName);
+            result = result.replaceAll(
+              "template-integration",
+              context.packageName,
+            );
           }
           result = result
             .split("@saflib/base-__integration-name__-integration")
@@ -109,9 +124,12 @@ export const AddCallWorkflowDefinition = defineWorkflow<AddCallInput, AddCallCon
       };
     }),
 
-    step<UpdateStepInput, AddCallContext>("update", runUpdateStep, ({ context }) => ({
-      fileId: "call",
-      prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Implement the **${context.targetName}** call.
+    step<UpdateStepInput, AddCallContext>(
+      "update",
+      runUpdateStep,
+      ({ context }) => ({
+        fileId: "call",
+        prompt: `${context.prompt ? `Task: ${context.prompt}\n\n` : ""}Implement the **${context.targetName}** call.
 
 Read the overview doc first: ${overviewDoc}
 
@@ -122,12 +140,17 @@ This call wraps the scoped client to provide product-specific functionality. It 
 4. When not mocked, use the scoped client to make the real API call and return the result.
 
 See other integration packages in the monorepo for examples of complex calls with validation and caching.`,
-    })),
+      }),
+    ),
 
-    step<UpdateStepInput, AddCallContext>("update", runUpdateStep, ({ context }) => ({
-      fileId: "bin",
-      prompt: `${context.prompt ? `The call implements: ${context.prompt}\n\n` : ""}Update the bin script to call the implementation with appropriate test arguments. The script should demonstrate a realistic invocation so you can verify the call works end-to-end with \`npm run <script-name>\`.`,
-    })),
+    step<UpdateStepInput, AddCallContext>(
+      "update",
+      runUpdateStep,
+      ({ context }) => ({
+        fileId: "bin",
+        prompt: `${context.prompt ? `The call implements: ${context.prompt}\n\n` : ""}Update the bin script to call the implementation with appropriate test arguments. The script should demonstrate a realistic invocation so you can verify the call works end-to-end with \`npm run <script-name>\`.`,
+      }),
+    ),
 
     step<TransformFileStepInput, AddCallContext>(
       "transform-file",

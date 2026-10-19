@@ -215,7 +215,7 @@ describe("CheckoutPage compare package tree", () => {
       () =>
         HttpResponse.json(
           checkoutFixture({
-            github_repo: "acme/pathclerk",
+            github_repo: "acme/widgets",
             compare: {
               against_ref: "main",
               merge_base_hash: BASE,

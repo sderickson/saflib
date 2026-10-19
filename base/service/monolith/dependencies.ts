@@ -1,13 +1,11 @@
-import type { EmailService } from "@saflib/email-service";
 import { createSecretStore, type SecretStore } from "@saflib/secret-store";
-import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
+import { getEmailClient } from "@saflib/base-service-common/email";
 // BEGIN WORKFLOW AREA integration-imports FOR integrations/init
 import { configure__IntegrationName__ } from "@saflib/base-__integration-name__-integration";
 // END WORKFLOW AREA
 
 let secretStore: SecretStore | undefined;
 let initialized = false;
-let emailClient: EmailService | undefined;
 
 function ensureSecretStore(): SecretStore {
   if (!secretStore) {
@@ -17,8 +15,9 @@ function ensureSecretStore(): SecretStore {
 }
 
 /**
- * Initializes all process-level dependencies for the base service:
- * secret store, then integration clients that need secrets.
+ * Initializes all process-level dependencies for the base service: secret
+ * store, then integration clients that need secrets. The composition root owns
+ * this wiring; `integrations/init` adds each integration's configure call.
  *
  * Idempotent — safe to call from multiple entry points (HTTP, cron, CLI).
  * Must be awaited before serving requests.
@@ -32,15 +31,7 @@ export async function initializeDependencies(): Promise<void> {
   await configure__IntegrationName__(ensureSecretStore());
   // END WORKFLOW AREA
 
-  emailClient = resolveEmailServiceFromEnv();
+  getEmailClient();
 
   initialized = true;
-}
-
-/** Shared email service (mock in dev when `BREVO_API_KEY=mock`). */
-export function getEmailClient(): EmailService {
-  if (!emailClient) {
-    emailClient = resolveEmailServiceFromEnv();
-  }
-  return emailClient;
 }

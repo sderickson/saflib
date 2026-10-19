@@ -15,6 +15,7 @@
     "./run": "./run.ts"
   },
   "dependencies": {
+    "@saflib/base-__integration-name__-integration": "*",
     "@saflib/base-__offshoot-name__-http": "*",
     "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
@@ -32,6 +33,7 @@
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/ory-kratos-http": "*",
+    "@saflib/secret-store": "*",
     "@saflib/vendors-loki": "*",
     "@saflib/vendors-sentry-node": "*"
   },

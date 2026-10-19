@@ -15,7 +15,7 @@
 | 1 | `saf-imports boundaries`: undeclared, relative-escape, cycle, forbidden + baseline | done |
 | 2 | Layer model: kinds → layers, built-in default rules, feature/sibling detection | done |
 | 3 | HTTP app chrome in saflib; composition root mounts routers | done |
-| 4 | Domain/context rules; integration package shape | todo |
+| 4 | Domain/context rules; integration package shape | done |
 | 5 | Client side: `sdk-common` in the template; delete runtime binders | todo |
 | 6 | Templates and workflows produce layered packages | in progress |
 | 7 | Docs, then migrate products | todo |
@@ -134,12 +134,12 @@ It never constructs clients or wires dependencies; the composition root does tha
 
 ### Phase 4 — Domain and integrations
 
-- [ ] Template `service/common`:
+- [x] Template `service/common`:
   - context = infrastructure handles only;
   - move `dependencies.ts` / `dependencies.integrations*.ts` to `service/monolith`;
   - remove its integration dependencies.
-- [ ] Integration template (`integrations-workflows` init): `client.ts`, `calls/`, `bin/`, `mocks.ts`, `state/` (exported as `./state/*`), `configure*`/`get*Client` with a test seam.
-- [ ] Shared HTTP: template `service/common/http/*` with `registerRoute` and the tenant/org context, plus a convention that any API mapper used by two feature packages lives there.
+- [x] Integration template (`integrations-workflows` init): `client.ts`, `calls/`, `bin/`, `mocks.ts`, `state/` (exported as `./state/*`), `configure*`/`get*Client` with a test seam. The template exports `./state/*`; `saf-imports boundaries` enforces the client/state split (`integration-internals`).
+- [x] ~~Shared HTTP: template `service/common/http/*` with `registerRoute` and the tenant/org context~~ Superseded by D1 (`http-common` is its own package) and Phase 6 (created when the boundaries check first suggests it: the `siblings` rule tells two http packages to move shared code to `http-common`). Base has one feature http package, so it has no `http-common` yet.
 
 ### Phase 5 — Client side
 
@@ -178,3 +178,4 @@ It never constructs clients or wires dependencies; the composition root does tha
 - 2026-10-18 — D2 clarified: offshoot tables share the core SQLite database, and the core db schema index re-exporting them for migrations is the one allowed core → offshoot reference.
 - 2026-10-18 — Phase 2 landed. Decisions while implementing: (1) objects sit below spec and db (specs alias objects schemas), and nothing below HTTP imports `spec`; (2) `lib`/`other` stay unlayered, importable by all but objects; (3) any feature's `objects` package may be used by the core (D2's "or in an objects package"); (4) an offshoot may use the core's domain/integration/db/spec/objects packages, never its http/sdk/vue (D2, extended to domain and integration); (5) a feature is the first directory under the product root, and product-root packages are core; (6) layer rules apply only within one product root, so framework (`@saflib/*`) imports are never layered.
 - 2026-10-18 — Phase 3 landed: `createProductHttpApp`/`createRouteTestApp`/`publicRouteMatcher` in `@saflib/express`; an `http-app` package in base (and in the product that prototyped this); the reviewed public-route list moved to the composition root (with a test that it covers every `x-public` operation); jobs get their API specs from the composition root.
+- 2026-10-18 — Phase 4 landed in base: `dependencies.ts` (secret store, integration configure) moved to `service/monolith`; `service/common` keeps the context and an `email.ts` handle, with no integration dependencies. `integrations/init` (both engines) weaves into the composition root, falling back to `service/common` for products that haven't moved their wiring.

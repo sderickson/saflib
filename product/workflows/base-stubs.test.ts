@@ -131,7 +131,7 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     mustInclude: ["__targetName__"],
   },
   {
-    rel: "service/common/dependencies.ts",
+    rel: "service/monolith/dependencies.ts",
     mustInclude: ["configure__IntegrationName__", "__integration-name__"],
   },
   {
