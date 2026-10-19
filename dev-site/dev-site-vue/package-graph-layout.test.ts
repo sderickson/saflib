@@ -105,24 +105,47 @@ describe("layoutPackageGraph", () => {
   });
 });
 
-describe("collapsed lanes", () => {
-  it("shrinks collapsed lanes and hides their packages", () => {
-    const merged = mergePackageGraphs(head);
-    const full = layoutPackageGraph(merged);
-    const shrunk = layoutPackageGraph(merged, {
-      collapsedLanes: new Set(["billing"]),
-    });
+describe("focusing packages", () => {
+  const merged = mergePackageGraphs(head);
+  const full = layoutPackageGraph(merged);
+  const focused = layoutPackageGraph(merged, {
+    visible: new Set(["@p/http", "@p/db"]),
+  });
+
+  it("collapses lanes with nothing visible and hides other packages", () => {
     const billing = (l: typeof full) =>
       l.lanes.find((lane) => lane.feature === "billing")!;
-    expect(billing(shrunk).collapsed).toBe(true);
-    expect(billing(shrunk).width).toBeLessThan(billing(full).width);
-    expect(shrunk.width).toBeLessThan(full.width);
+    expect(billing(focused).collapsed).toBe(true);
+    expect(billing(focused).width).toBeLessThan(billing(full).width);
+    expect(focused.width).toBeLessThan(full.width);
     expect(
-      shrunk.nodes
+      focused.nodes
         .filter((n) => n.hidden)
         .map((n) => n.package_name)
         .sort(),
     ).toEqual(["@p/billing-db", "@p/billing-http"]);
+  });
+
+  it("keeps every box's order whatever is visible", () => {
+    const graph: PackageGraphData = {
+      packages: ["a", "b", "c", "d"].map((x) =>
+        pkg(`@p/${x}-http`, "http", "service"),
+      ),
+      edges: [],
+    };
+    const m = mergePackageGraphs(graph);
+    const order = (l: ReturnType<typeof layoutPackageGraph>) =>
+      l.nodes
+        .filter((n) => !n.hidden)
+        .sort((p, q) => p.x - q.x)
+        .map((n) => n.package_name);
+    const all = order(layoutPackageGraph(m));
+    const some = order(
+      layoutPackageGraph(m, { visible: new Set(["@p/a-http", "@p/d-http"]) }),
+    );
+    expect(some).toEqual(
+      all.filter((n) => n === "@p/a-http" || n === "@p/d-http"),
+    );
   });
 });
 

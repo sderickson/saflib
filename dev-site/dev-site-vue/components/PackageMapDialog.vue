@@ -2,6 +2,8 @@
   <v-dialog
     :model-value="modelValue"
     fullscreen
+    persistent
+    no-click-animation
     transition="dialog-bottom-transition"
     @update:model-value="emit('update:modelValue', $event)"
   >
@@ -96,12 +98,23 @@
               }"
             >
               <div
-                v-for="row in layout.rows.filter((r) => r.height > 0)"
+                v-for="row in layout.rows"
                 :key="row.label"
                 class="pkg-map__row-label"
-                :style="{ top: `${row.y}px`, height: `${row.height}px` }"
+                :style="{
+                  top: `${row.y}px`,
+                  height: `${row.height}px`,
+                  opacity: row.height > 0 ? 1 : 0,
+                }"
               >
-                {{ row.label }}
+                <v-tooltip location="end" max-width="340" open-delay="150">
+                  <template #activator="{ props: tip }">
+                    <span v-bind="tip" class="pkg-map__row-name">{{
+                      row.label
+                    }}</span>
+                  </template>
+                  {{ row.description }}
+                </v-tooltip>
               </div>
             </div>
             <svg
@@ -133,30 +146,37 @@
                   :y="L.headerH - 8"
                   :width="lane.width"
                   :height="layout.height - L.headerH"
+                  :style="{
+                    x: `${lane.x}px`,
+                    width: `${lane.width}px`,
+                    height: `${layout.height - L.headerH}px`,
+                  }"
                   rx="10"
                   :class="['lane', lane.core ? 'lane--core' : 'lane--offshoot']"
                 />
               </g>
 
               <!-- Layer rows -->
-              <g
-                v-for="row in layout.rows.filter((r) => r.height > 0)"
+              <line
+                v-for="row in layout.rows"
                 :key="row.label"
-              >
-                <line
-                  :x1="L.labelW"
-                  :x2="layout.width"
-                  :y1="row.y + row.height + L.rowGap / 2"
-                  :y2="row.y + row.height + L.rowGap / 2"
-                  class="row__rule"
-                />
-              </g>
+                :x1="L.labelW"
+                :x2="layout.width"
+                y1="0"
+                y2="0"
+                :style="{
+                  transform: `translateY(${row.y + row.height + L.rowGap / 2}px)`,
+                  opacity: row.height > 0 ? 1 : 0,
+                }"
+                class="row__rule"
+              />
 
               <!-- Edges -->
               <path
                 v-for="e in drawnEdges"
                 :key="e.id"
                 :d="e.d"
+                :style="{ d: `path('${e.d}')` }"
                 :class="e.classes"
                 :marker-end="`url(#pkg-map-arrow-${e.marker})`"
               >
@@ -165,9 +185,9 @@
 
               <!-- Packages -->
               <g
-                v-for="n in visibleNodes"
+                v-for="n in layout.nodes"
                 :key="n.package_name"
-                :transform="`translate(${n.x},${n.y})`"
+                :style="{ transform: `translate(${n.x}px, ${n.y}px)` }"
                 :class="nodeClasses(n)"
                 class="node"
                 @click.stop="select(n.package_name)"
@@ -279,6 +299,7 @@
 <script setup lang="ts">
 import {
   computed,
+  onBeforeUnmount,
   defineComponent,
   h,
   nextTick,
@@ -328,25 +349,14 @@ const merged = computed(() =>
     : { nodes: [], edges: [], hasChanges: false },
 );
 /**
- * While a package is selected, lanes holding none of its related packages
- * (itself, dependencies, dependents) shrink to a strip.
+ * While a package is selected, only it and its related packages take up
+ * space; the rest fade out and empty lanes and rows collapse. Box order never
+ * changes, so nothing reshuffles.
  */
-const collapsedLanes = computed(() => {
-  if (!selected.value) return new Set<string>();
-  const active = new Set(
-    merged.value.nodes
-      .filter((n) => related.value.has(n.package_name))
-      .map((n) => n.feature),
-  );
-  return new Set(
-    merged.value.nodes.map((n) => n.feature).filter((f) => !active.has(f)),
-  );
-});
 const layout = computed(() =>
-  layoutPackageGraph(merged.value, { collapsedLanes: collapsedLanes.value }),
-);
-const visibleNodes = computed(() =>
-  layout.value.nodes.filter((n) => !n.hidden),
+  layoutPackageGraph(merged.value, {
+    visible: selected.value ? related.value : undefined,
+  }),
 );
 const byName = computed(
   () => new Map(layout.value.nodes.map((n) => [n.package_name, n])),
@@ -396,6 +406,7 @@ function nodeClasses(n: PlacedNode) {
     (selected.value && !related.value.has(n.package_name)) ||
     (searchMatches.value && !searchMatches.value.has(n.package_name));
   return {
+    "node--hidden": n.hidden,
     "node--selected": n.package_name === selected.value,
     "node--dimmed": dimmed,
     "node--dep":
@@ -434,7 +445,7 @@ const drawnEdges = computed(() => {
     .map((e: MapEdge) => {
       const from = byName.value.get(e.from);
       const to = byName.value.get(e.to);
-      if (!from || !to || from.hidden || to.hidden) return null;
+      if (!from || !to) return null;
       const isDep =
         !!sel &&
         (e.from === sel ||
@@ -460,6 +471,7 @@ const drawnEdges = computed(() => {
           "edge--violation": !!e.violation,
           [`edge--${e.change}`]: !!e.change,
           "edge--dimmed": dimmed,
+          "edge--hidden": from.hidden || to.hidden,
         },
         title: `${e.from} → ${e.to}${e.change ? ` (${e.change})` : ""}${
           e.violation ? `\n${e.violation.message}` : ""
@@ -519,6 +531,19 @@ watch(
     }
   },
 );
+
+/**
+ * Escape never closes the map (the dialog is persistent); it clears the
+ * selection, or the search when nothing is selected.
+ */
+function onKeydown(event: KeyboardEvent) {
+  if (event.key !== "Escape" || !props.modelValue) return;
+  event.preventDefault();
+  if (selected.value) selected.value = "";
+  else if (search.value) search.value = "";
+}
+window.addEventListener("keydown", onKeydown);
+onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
 const KIND_COLORS: Record<string, string> = {
   app: "#6a1b9a",
@@ -707,6 +732,16 @@ const EdgeList = defineComponent({
   font-weight: 500;
   color: rgba(var(--v-theme-on-surface), 0.5);
 }
+.pkg-map__row-name {
+  cursor: help;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--v-theme-on-surface), 0.25);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.pkg-map__row-name:hover {
+  text-decoration-color: rgba(var(--v-theme-on-surface), 0.6);
+}
 .pkg-map__description {
   font-size: 13px;
   line-height: 1.45;
@@ -797,7 +832,6 @@ const EdgeList = defineComponent({
   fill: none;
   stroke: rgba(var(--v-theme-on-surface), 0.22);
   stroke-width: 1.2;
-  transition: opacity 0.15s;
 }
 .edge--violation {
   stroke: #e53935;
@@ -841,7 +875,6 @@ const EdgeList = defineComponent({
 
 .node {
   cursor: pointer;
-  transition: opacity 0.15s;
 }
 .node__box {
   fill: rgb(var(--v-theme-surface));
@@ -884,5 +917,45 @@ const EdgeList = defineComponent({
 }
 .node--dimmed {
   opacity: 0.25;
+}
+
+/* Focus changes animate: nodes slide, lanes and rows resize, edges morph. */
+.pkg-map__grid,
+.pkg-map__lane-label,
+.pkg-map__row-label {
+  transition:
+    width 0.35s ease,
+    height 0.35s ease,
+    left 0.35s ease,
+    top 0.35s ease,
+    opacity 0.25s ease;
+}
+.lane {
+  transition:
+    x 0.35s ease,
+    width 0.35s ease,
+    height 0.35s ease;
+}
+.row__rule {
+  transition:
+    transform 0.35s ease,
+    opacity 0.25s ease;
+}
+.node {
+  transition:
+    transform 0.35s ease,
+    opacity 0.25s ease;
+}
+.node--hidden {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+.edge {
+  transition:
+    d 0.35s ease,
+    opacity 0.25s ease;
+}
+.edge--hidden {
+  opacity: 0 !important;
 }
 </style>

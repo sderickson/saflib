@@ -108,17 +108,72 @@ export function mergePackageGraphs(
 }
 
 /** Layer rows, top to bottom. Each row holds the kinds at that depth. */
-export const LAYER_ROWS: Array<{ label: string; kinds: string[] }> = [
-  { label: "Composition", kinds: ["app", "spa"] },
-  { label: "App chrome · UI", kinds: ["http-app", "vue"] },
-  { label: "Feature HTTP · SDK", kinds: ["http", "sdk"] },
-  { label: "Shared HTTP · SDK common", kinds: ["http-common", "sdk-common"] },
-  { label: "Domain", kinds: ["domain"] },
-  { label: "Integrations", kinds: ["integration"] },
-  { label: "Data · Contracts", kinds: ["db", "spec"] },
-  { label: "Objects", kinds: ["objects"] },
-  { label: "Unlayered", kinds: ["lib", "other"] },
-  { label: "Tests", kinds: ["test"] },
+export const LAYER_ROWS: Array<{
+  label: string;
+  kinds: string[];
+  /** What the layer is for and what it may import (shown on hover). */
+  description: string;
+}> = [
+  {
+    label: "Composition",
+    kinds: ["app", "spa"],
+    description:
+      "Entry points that wire the product together. The app package (service/monolith) mounts every feature router, wires dependencies (secrets, integration clients) and boots the runtimes. SPAs compose the UI and import feature SDKs directly. May import anything.",
+  },
+  {
+    label: "App chrome · UI",
+    kinds: ["http-app", "vue"],
+    description:
+      "http-app builds the HTTP app shell: middleware order, the auth gate, and platform routers after the feature routers. vue packages hold Vue components shared by SPAs. http-app may import http-common and below; vue may import SDKs, specs and objects.",
+  },
+  {
+    label: "Feature HTTP · SDK",
+    kinds: ["http", "sdk"],
+    description:
+      "One pair per feature. http exports that feature's router, with handlers validated by its spec; sdk exports its typed API client and TanStack queries. Features never import another feature's http or sdk: shared code moves down a layer.",
+  },
+  {
+    label: "Shared HTTP · SDK common",
+    kinds: ["http-common", "sdk-common"],
+    description:
+      "Code that several feature packages share: route registration, org context and API mappers for http; the API client factory and query keys every SDK builds on.",
+  },
+  {
+    label: "Domain",
+    kinds: ["domain"],
+    description:
+      "Product logic below HTTP: the service context, pipelines, audit, jobs and cron. May use integrations, db and objects, but never API specs.",
+  },
+  {
+    label: "Integrations",
+    kinds: ["integration"],
+    description:
+      "Wrappers around third-party APIs with mockable clients. Client code (client.ts, calls/, bin/) never touches the database; product state an integration owns lives in its state/ folder. May import db and objects.",
+  },
+  {
+    label: "Data · Contracts",
+    kinds: ["db", "spec"],
+    description:
+      "db: Drizzle schemas and queries. spec: the OpenAPI contracts for the API. Both build only on objects, and nothing below HTTP imports a spec.",
+  },
+  {
+    label: "Objects",
+    kinds: ["objects"],
+    description:
+      "Business-object schemas shared by db, domain and spec code; specs alias them. May import only other objects packages.",
+  },
+  {
+    label: "Unlayered",
+    kinds: ["lib", "other"],
+    description:
+      "Packages not yet assigned a layer: shared libraries, tooling and build packages. The layer rules don't check them, and every layer except objects may import lib packages.",
+  },
+  {
+    label: "Tests",
+    kinds: ["test"],
+    description:
+      "Fixtures and test harnesses. Only test files may import them.",
+  },
 ];
 
 const ROW_BY_KIND = new Map(
@@ -180,24 +235,30 @@ export interface GraphLayout {
     width: number;
     collapsed: boolean;
   }>;
-  rows: Array<{ label: string; y: number; height: number }>;
+  rows: Array<{
+    label: string;
+    description: string;
+    y: number;
+    height: number;
+  }>;
   width: number;
   height: number;
 }
 
 /**
  * Place packages in layer rows × feature lanes. Within each box, packages are
- * ordered by the barycenter of their neighbours (a few up/down sweeps), which
- * keeps most dependency lines short and uncrossed.
+ * ordered by the barycenter of their neighbours (a few up/down sweeps over the
+ * full graph), which keeps most dependency lines short and uncrossed. The
+ * order never depends on `visible`, so focusing a package doesn't reshuffle.
+ *
+ * With `visible`, only those packages take up space: lanes left empty
+ * collapse to a strip, empty rows to nothing, and other packages are marked
+ * hidden (keeping their full-layout position, so they fade in place).
  */
 export function layoutPackageGraph(
   graph: MergedGraph,
-  options: {
-    /** Lanes shrunk to a narrow strip, their packages hidden. */
-    collapsedLanes?: Set<string>;
-  } = {},
+  options: { visible?: Set<string> } = {},
 ): GraphLayout {
-  const collapsed = options.collapsedLanes ?? new Set<string>();
   const L = LAYOUT;
   const lanes = orderLanes(graph.nodes);
   const laneIndex = new Map(lanes.map((f, i) => [f, i]));
@@ -205,7 +266,7 @@ export function layoutPackageGraph(
     graph.nodes.filter((n) => n.core).map((n) => n.feature),
   );
 
-  // Boxes: row × lane → node names, initially by directory.
+  // Boxes: row × lane → nodes, initially by directory.
   const cells = new Map<string, MapNode[]>();
   const cellKey = (r: number, l: number) => `${r}:${l}`;
   for (const n of [...graph.nodes].sort((a, b) =>
@@ -215,49 +276,44 @@ export function layoutPackageGraph(
     cells.set(key, [...(cells.get(key) ?? []), n]);
   }
 
-  // Lane widths and row heights from box sizes.
-  const cols = (count: number) => Math.min(count, L.maxPerLine);
-  const lines = (count: number) => Math.ceil(count / L.maxPerLine);
-  const laneWidths = lanes.map((feature, l) => {
-    if (collapsed.has(feature)) return L.collapsedW;
-    let most = 1;
+  /** Lane/row geometry and node positions for the given box contents. */
+  const measure = (boxes: Map<string, MapNode[]>, collapsed: Set<string>) => {
+    const cols = (count: number) => Math.min(count, L.maxPerLine);
+    const lines = (count: number) => Math.ceil(count / L.maxPerLine);
+    const laneWidths = lanes.map((feature, l) => {
+      if (collapsed.has(feature)) return L.collapsedW;
+      let most = 1;
+      for (let r = 0; r < LAYER_ROWS.length; r++) {
+        most = Math.max(most, cols(boxes.get(cellKey(r, l))?.length ?? 0));
+      }
+      return most * L.nodeW + (most - 1) * L.gapX + 2 * L.lanePad;
+    });
+    const laneX: number[] = [];
+    let x = L.labelW;
+    for (const w of laneWidths) {
+      laneX.push(x);
+      x += w + L.laneGap;
+    }
+    const rows: GraphLayout["rows"] = [];
+    let y = L.headerH;
     for (let r = 0; r < LAYER_ROWS.length; r++) {
-      most = Math.max(most, cols(cells.get(cellKey(r, l))?.length ?? 0));
+      let most = 0;
+      for (let l = 0; l < lanes.length; l++) {
+        if (collapsed.has(lanes[l]!)) continue;
+        most = Math.max(most, lines(boxes.get(cellKey(r, l))?.length ?? 0));
+      }
+      const height =
+        most === 0 ? 0 : most * L.nodeH + (most - 1) * L.gapY + 2 * L.rowPad;
+      rows.push({
+        label: LAYER_ROWS[r]!.label,
+        description: LAYER_ROWS[r]!.description,
+        y,
+        height,
+      });
+      if (height > 0) y += height + L.rowGap;
     }
-    return most * L.nodeW + (most - 1) * L.gapX + 2 * L.lanePad;
-  });
-  const rowLines = LAYER_ROWS.map((_, r) => {
-    let most = 0;
-    for (let l = 0; l < lanes.length; l++) {
-      if (collapsed.has(lanes[l]!)) continue;
-      most = Math.max(most, lines(cells.get(cellKey(r, l))?.length ?? 0));
-    }
-    return most;
-  });
-
-  const laneX: number[] = [];
-  let x = L.labelW;
-  for (const w of laneWidths) {
-    laneX.push(x);
-    x += w + L.laneGap;
-  }
-  const width = x - L.laneGap + L.lanePad;
-
-  const rows: GraphLayout["rows"] = [];
-  let y = L.headerH;
-  for (let r = 0; r < LAYER_ROWS.length; r++) {
-    const height =
-      rowLines[r] === 0
-        ? 0
-        : rowLines[r]! * L.nodeH + (rowLines[r]! - 1) * L.gapY + 2 * L.rowPad;
-    rows.push({ label: LAYER_ROWS[r]!.label, y, height });
-    if (height > 0) y += height + L.rowGap;
-  }
-  const height = y;
-
-  const pos = new Map<string, { x: number; y: number }>();
-  const place = () => {
-    for (const [key, list] of cells) {
+    const pos = new Map<string, { x: number; y: number }>();
+    for (const [key, list] of boxes) {
       const [r, l] = key.split(":").map(Number) as [number, number];
       list.forEach((n, i) => {
         pos.set(n.package_name, {
@@ -269,23 +325,31 @@ export function layoutPackageGraph(
         });
       });
     }
+    return {
+      laneX,
+      laneWidths,
+      rows,
+      pos,
+      width: x - L.laneGap + L.lanePad,
+      height: y,
+    };
   };
-  place();
 
-  // Barycenter sweeps: sort each box by the mean x of its neighbours.
+  // Barycenter sweeps over the full graph fix each box's order.
   const neighbours = new Map<string, string[]>();
   for (const e of graph.edges) {
     neighbours.set(e.from, [...(neighbours.get(e.from) ?? []), e.to]);
     neighbours.set(e.to, [...(neighbours.get(e.to) ?? []), e.from]);
   }
+  let full = measure(cells, new Set());
   for (let sweep = 0; sweep < 6; sweep++) {
     for (const list of cells.values()) {
       const score = new Map(
         list.map((n) => {
           const xs = (neighbours.get(n.package_name) ?? [])
-            .map((m) => pos.get(m)?.x)
+            .map((m) => full.pos.get(m)?.x)
             .filter((v): v is number => v !== undefined);
-          const own = pos.get(n.package_name)!.x;
+          const own = full.pos.get(n.package_name)!.x;
           return [
             n.package_name,
             xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : own,
@@ -298,29 +362,50 @@ export function layoutPackageGraph(
           a.directory.localeCompare(b.directory),
       );
     }
-    place();
+    full = measure(cells, new Set());
   }
 
-  const nodes: PlacedNode[] = graph.nodes.map((n) => ({
-    ...n,
-    ...pos.get(n.package_name)!,
-    row: rowOfKind(n.kind),
-    lane: laneIndex.get(n.feature)!,
-    hidden: collapsed.has(n.feature),
-  }));
+  const visible = options.visible;
+  let shown = full;
+  const collapsed = new Set<string>();
+  if (visible) {
+    const boxes = new Map<string, MapNode[]>();
+    for (const [key, list] of cells) {
+      boxes.set(
+        key,
+        list.filter((n) => visible.has(n.package_name)),
+      );
+    }
+    for (const n of graph.nodes) collapsed.add(n.feature);
+    for (const n of graph.nodes) {
+      if (visible.has(n.package_name)) collapsed.delete(n.feature);
+    }
+    shown = measure(boxes, collapsed);
+  }
+
+  const nodes: PlacedNode[] = graph.nodes.map((n) => {
+    const hidden = !!visible && !visible.has(n.package_name);
+    return {
+      ...n,
+      ...(hidden ? full.pos : shown.pos).get(n.package_name)!,
+      row: rowOfKind(n.kind),
+      lane: laneIndex.get(n.feature)!,
+      hidden,
+    };
+  });
 
   return {
     nodes,
     lanes: lanes.map((feature, i) => ({
       feature,
       core: coreLanes.has(feature),
-      x: laneX[i]!,
-      width: laneWidths[i]!,
+      x: shown.laneX[i]!,
+      width: shown.laneWidths[i]!,
       collapsed: collapsed.has(feature),
     })),
-    rows,
-    width,
-    height,
+    rows: shown.rows,
+    width: shown.width,
+    height: shown.height,
   };
 }
 
