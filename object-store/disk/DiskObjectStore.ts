@@ -91,6 +91,7 @@ export class DiskObjectStore extends ObjectStore {
         path: string;
         size?: number;
         metadata?: Record<string, string>;
+        updated?: string;
       }> = [];
 
       const walk = async (dir: string, baseRelative: string): Promise<void> => {
@@ -128,6 +129,7 @@ export class DiskObjectStore extends ObjectStore {
             files.push({
               path: relativePath,
               size: stats.size,
+              updated: stats.mtime.toISOString(),
             });
           }
         }

@@ -64,17 +64,25 @@ export class GcsObjectStore extends ObjectStore {
       const bucket = storage.bucket(this.bucketName);
       const file = bucket.file(objectName);
 
+      const gcsCustomMetadata: Record<string, string> = {
+        mimetype: uploadMetadata.mimetype,
+        filename: uploadMetadata.filename,
+        cacheTime: uploadMetadata.cacheTime,
+      };
+      for (const [key, value] of Object.entries(uploadMetadata)) {
+        if (value == null || key === "mimetype") {
+          continue;
+        }
+        gcsCustomMetadata[key] = String(value);
+      }
+
       try {
         await pipeline(
           stream,
           file.createWriteStream({
             metadata: {
               contentType: uploadMetadata.mimetype,
-              metadata: {
-                mimetype: uploadMetadata.mimetype,
-                filename: uploadMetadata.filename,
-                cacheTime: uploadMetadata.cacheTime,
-              },
+              metadata: gcsCustomMetadata,
             },
           }),
         );
@@ -127,6 +135,7 @@ export class GcsObjectStore extends ObjectStore {
         path: string;
         size?: number;
         metadata?: Record<string, string>;
+        updated?: string;
       }> = [];
 
       const [objects] = await bucket.getFiles({ prefix: searchPrefix });
@@ -134,6 +143,8 @@ export class GcsObjectStore extends ObjectStore {
         const meta = file.metadata.metadata as
           | Record<string, string>
           | undefined;
+        const updated =
+          file.metadata.updated ?? file.metadata.timeCreated ?? undefined;
         files.push({
           path: file.name,
           size:
@@ -141,6 +152,8 @@ export class GcsObjectStore extends ObjectStore {
               ? Number(file.metadata.size)
               : undefined,
           metadata: meta,
+          updated:
+            updated != null ? new Date(updated as string).toISOString() : undefined,
         });
       }
 
