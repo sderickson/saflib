@@ -1904,6 +1904,10 @@
                 "core": {
                   "type": "boolean",
                   "description": "Whether the feature is part of the product's core."
+                },
+                "description": {
+                  "type": "string",
+                  "description": "The package.json `description`, when set."
                 }
               }
             }

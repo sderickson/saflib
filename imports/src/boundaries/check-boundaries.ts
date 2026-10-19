@@ -38,7 +38,8 @@ export type BoundaryViolationKind =
   | "forbidden"
   | "missing-tsconfig"
   | "missing-kind"
-  | "layer";
+  | "layer"
+  | "unused-dependency";
 
 export interface BoundaryViolation {
   kind: BoundaryViolationKind;
@@ -207,6 +208,22 @@ function listPackageFiles(
 }
 
 const YAML_REF_RE = /\$ref:\s*["']?([^"'#\s]+)/g;
+const YAML_PKG_REF_RE = /pkg:((?:@[^/\s"'#]+\/)?[^/\s"'#]+)/g;
+
+/** Package specifiers named by `extends` in the package's tsconfig*.json files. */
+function tsconfigExtends(dir: string): string[] {
+  const out: string[] = [];
+  for (const entry of fs.readdirSync(dir)) {
+    if (!/^tsconfig.*\.json$/.test(entry)) continue;
+    const text = fs.readFileSync(path.join(dir, entry), "utf8");
+    for (const m of text.matchAll(/"extends"\s*:\s*(\[[^\]]*\]|"[^"]*")/g)) {
+      for (const s of m[1]!.matchAll(/"([^"]+)"/g)) {
+        if (!s[1]!.startsWith(".")) out.push(s[1]!);
+      }
+    }
+  }
+  return out;
+}
 
 function relativeSpecifiers(file: string, src: string): string[] {
   if (YAML_EXT_RE.test(file)) {
@@ -382,12 +399,45 @@ export function checkBoundaries(
 
   const edges: ImportEdge[] = [];
   let filesScanned = 0;
+  /** Workspace packages each package uses outside TS imports (pkg: refs, tsconfig, scripts, imports map). */
+  const otherUses = new Map<string, Set<string>>();
+  const useOther = (from: string, spec: string) => {
+    const name = packageNameOfSpecifier(spec);
+    if (name === from || !byName.has(name)) return;
+    if (!otherUses.has(from)) otherUses.set(from, new Set());
+    otherUses.get(from)!.add(name);
+  };
 
   for (const pkg of packages) {
     const pkgJsonRel = path
       .relative(rootDir, path.join(pkg.dir, "package.json"))
       .split(path.sep)
       .join("/");
+    for (const [, target] of importsMapTargets(pkg.pj)) {
+      if (!target.startsWith(".")) useOther(pkg.name, target);
+    }
+    for (const spec of tsconfigExtends(pkg.dir)) useOther(pkg.name, spec);
+    const scripts = Object.values(
+      (pkg.pj as { scripts?: Record<string, string> }).scripts ?? {},
+    ).join("\n");
+    for (const dep of pkg.allDeps) {
+      const bins = byName.get(dep)?.pj as { bin?: unknown } | undefined;
+      const names =
+        typeof bins?.bin === "string"
+          ? [packageNameOfSpecifier(dep).split("/").pop()!]
+          : Object.keys((bins?.bin as Record<string, string>) ?? {});
+      if (
+        names.some((b) =>
+          new RegExp(
+            `(^|[\\s/])${b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\s|$)`,
+            "m",
+          ).test(scripts),
+        )
+      ) {
+        useOther(pkg.name, dep);
+      }
+    }
+
     for (const [key, target] of importsMapTargets(pkg.pj)) {
       const abs = path.resolve(pkg.dir, target);
       if (isUnder(abs, pkg.dir)) continue;
@@ -473,7 +523,11 @@ export function checkBoundaries(
         );
       }
 
-      if (YAML_EXT_RE.test(file)) continue;
+      if (YAML_EXT_RE.test(file)) {
+        for (const m of src.matchAll(YAML_PKG_REF_RE))
+          useOther(pkg.name, m[1]!);
+        continue;
+      }
       for (const { spec } of extractImports(src)) {
         if (spec.startsWith(".") || spec.startsWith("#")) continue;
         const name = packageNameOfSpecifier(spec);
@@ -560,6 +614,63 @@ export function checkBoundaries(
               kind: "forbidden",
               key: `forbidden(${rule.name}): ${from.name} -> ${to.name}`,
               message: `${from.name} must not import ${to.name} (${rule.name})`,
+            },
+            undefined,
+          );
+        }
+      }
+    }
+  }
+
+  // Declared dependencies between packages of one product that nothing uses,
+  // or that only test/tooling files use.
+  if (config.unusedDependencies !== false) {
+    const runtimeUsed = new Map<string, Set<string>>();
+    const anyUsed = new Map<string, Set<string>>();
+    const add = (m: Map<string, Set<string>>, from: string, to: string) => {
+      if (!m.has(from)) m.set(from, new Set());
+      m.get(from)!.add(to);
+    };
+    for (const e of edges) {
+      add(anyUsed, e.from, e.to);
+      if (!e.dev) add(runtimeUsed, e.from, e.to);
+    }
+    for (const [from, tos] of otherUses) {
+      for (const to of tos) {
+        add(anyUsed, from, to);
+        add(runtimeUsed, from, to);
+      }
+    }
+    for (const pkg of packages) {
+      const fromLayer = layerPackages.get(pkg.name)!;
+      if (!fromLayer.productRoot) continue;
+      for (const dep of [...pkg.allDeps].sort()) {
+        if (dep === pkg.name || !scopedNames.has(dep)) continue;
+        if (layerPackages.get(dep)?.productRoot !== fromLayer.productRoot)
+          continue;
+        const runtime = pkg.runtimeDeps.has(dep);
+        const field = runtime ? "dependencies" : "devDependencies";
+        if (!anyUsed.get(pkg.name)?.has(dep)) {
+          pushGrouped(
+            violations,
+            {
+              kind: "unused-dependency",
+              key: `unused: ${pkg.name} -> ${dep}${runtime ? "" : " (dev)"}`,
+              message: `${pkg.name} lists ${dep} in ${field} but never uses it; remove it`,
+            },
+            undefined,
+          );
+        } else if (
+          runtime &&
+          pkg.kind !== "test" && // test packages are all test code
+          !runtimeUsed.get(pkg.name)?.has(dep)
+        ) {
+          pushGrouped(
+            violations,
+            {
+              kind: "unused-dependency",
+              key: `dev-only: ${pkg.name} -> ${dep}`,
+              message: `${pkg.name} lists ${dep} in dependencies but only test or tooling files use it; move it to devDependencies`,
             },
             undefined,
           );

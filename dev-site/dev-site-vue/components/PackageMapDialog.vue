@@ -54,113 +54,156 @@
           <p v-else-if="!layout.nodes.length" class="pa-6 text-medium-emphasis">
             No product packages found.
           </p>
-          <svg
+          <div
             v-else
-            :width="layout.width"
-            :height="layout.height"
-            class="pkg-map__svg"
-            @click="onSvgClick"
+            class="pkg-map__grid"
+            :style="{
+              width: `${layout.width}px`,
+              height: `${layout.height}px`,
+            }"
           >
-            <defs>
-              <marker
-                v-for="m in markers"
-                :id="`pkg-map-arrow-${m}`"
-                :key="m"
-                viewBox="0 0 8 8"
-                refX="7"
-                refY="4"
-                markerWidth="7"
-                markerHeight="7"
-                orient="auto-start-reverse"
+            <!-- Feature names, pinned to the top while scrolling -->
+            <div
+              class="pkg-map__top"
+              :style="{ width: `${layout.width}px`, height: `${HEADER}px` }"
+            >
+              <div class="pkg-map__corner" :style="{ width: `${L.labelW}px` }">
+                layer ╲ feature
+              </div>
+              <div
+                v-for="lane in layout.lanes"
+                :key="lane.feature"
+                class="pkg-map__lane-label"
+                :class="{ 'pkg-map__lane-label--collapsed': lane.collapsed }"
+                :style="{ left: `${lane.x}px`, width: `${lane.width}px` }"
+                :title="laneLabel(lane.feature)"
               >
-                <path d="M0,0 L8,4 L0,8 z" :class="`arrow arrow--${m}`" />
-              </marker>
-            </defs>
-
-            <!-- Feature lanes -->
-            <g v-for="lane in layout.lanes" :key="lane.feature">
-              <rect
-                :x="lane.x"
-                :y="L.headerH - 8"
-                :width="lane.width"
-                :height="layout.height - L.headerH"
-                rx="10"
-                :class="['lane', lane.core ? 'lane--core' : 'lane--offshoot']"
-              />
-              <text :x="lane.x + 12" :y="L.headerH - 16" class="lane__label">
                 {{ laneLabel(lane.feature) }}
-                <tspan v-if="lane.core" class="lane__core">core</tspan>
-              </text>
-            </g>
-
-            <!-- Layer rows -->
-            <g
-              v-for="row in layout.rows.filter((r) => r.height > 0)"
-              :key="row.label"
+                <span
+                  v-if="lane.core && !lane.collapsed"
+                  class="pkg-map__core-tag"
+                  >core</span
+                >
+              </div>
+            </div>
+            <!-- Layer names, pinned to the left while scrolling -->
+            <div
+              class="pkg-map__side"
+              :style="{
+                width: `${L.labelW - 10}px`,
+                height: `${layout.height}px`,
+                marginTop: `-${HEADER}px`,
+              }"
             >
-              <line
-                :x1="8"
-                :x2="layout.width"
-                :y1="row.y + row.height + L.rowGap / 2"
-                :y2="row.y + row.height + L.rowGap / 2"
-                class="row__rule"
-              />
-              <text :x="12" :y="row.y + row.height / 2 + 4" class="row__label">
-                {{ row.label }}
-              </text>
-            </g>
-
-            <!-- Edges -->
-            <path
-              v-for="e in drawnEdges"
-              :key="e.id"
-              :d="e.d"
-              :class="e.classes"
-              :marker-end="`url(#pkg-map-arrow-${e.marker})`"
-            >
-              <title>{{ e.title }}</title>
-            </path>
-
-            <!-- Packages -->
-            <g
-              v-for="n in layout.nodes"
-              :key="n.package_name"
-              :transform="`translate(${n.x},${n.y})`"
-              :class="nodeClasses(n)"
-              class="node"
-              @click.stop="select(n.package_name)"
-              @dblclick.stop="openPackage(n)"
-            >
-              <title>
-                {{ n.package_name }} ({{ n.kind }}){{
-                  n.change ? ` · ${n.change}` : ""
-                }}
-              </title>
-              <rect
-                :width="L.nodeW"
-                :height="L.nodeH"
-                rx="6"
-                class="node__box"
-              />
-              <rect
-                width="5"
-                :height="L.nodeH"
-                rx="2"
-                :fill="kindColor(n.kind)"
-              />
-              <text x="12" :y="L.nodeH / 2 + 4" class="node__label">
-                {{ truncate(shortName(n.package_name), 22) }}
-              </text>
-              <text
-                :x="L.nodeW - 8"
-                :y="L.nodeH / 2 + 4"
-                text-anchor="end"
-                class="node__kind"
+              <div
+                v-for="row in layout.rows.filter((r) => r.height > 0)"
+                :key="row.label"
+                class="pkg-map__row-label"
+                :style="{ top: `${row.y}px`, height: `${row.height}px` }"
               >
-                {{ n.kind }}
-              </text>
-            </g>
-          </svg>
+                {{ row.label }}
+              </div>
+            </div>
+            <svg
+              :width="layout.width"
+              :height="layout.height"
+              class="pkg-map__svg"
+              @click="onSvgClick"
+            >
+              <defs>
+                <marker
+                  v-for="m in markers"
+                  :id="`pkg-map-arrow-${m}`"
+                  :key="m"
+                  viewBox="0 0 8 8"
+                  refX="7"
+                  refY="4"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0,0 L8,4 L0,8 z" :class="`arrow arrow--${m}`" />
+                </marker>
+              </defs>
+
+              <!-- Feature lanes -->
+              <g v-for="lane in layout.lanes" :key="lane.feature">
+                <rect
+                  :x="lane.x"
+                  :y="L.headerH - 8"
+                  :width="lane.width"
+                  :height="layout.height - L.headerH"
+                  rx="10"
+                  :class="['lane', lane.core ? 'lane--core' : 'lane--offshoot']"
+                />
+              </g>
+
+              <!-- Layer rows -->
+              <g
+                v-for="row in layout.rows.filter((r) => r.height > 0)"
+                :key="row.label"
+              >
+                <line
+                  :x1="L.labelW"
+                  :x2="layout.width"
+                  :y1="row.y + row.height + L.rowGap / 2"
+                  :y2="row.y + row.height + L.rowGap / 2"
+                  class="row__rule"
+                />
+              </g>
+
+              <!-- Edges -->
+              <path
+                v-for="e in drawnEdges"
+                :key="e.id"
+                :d="e.d"
+                :class="e.classes"
+                :marker-end="`url(#pkg-map-arrow-${e.marker})`"
+              >
+                <title>{{ e.title }}</title>
+              </path>
+
+              <!-- Packages -->
+              <g
+                v-for="n in visibleNodes"
+                :key="n.package_name"
+                :transform="`translate(${n.x},${n.y})`"
+                :class="nodeClasses(n)"
+                class="node"
+                @click.stop="select(n.package_name)"
+                @dblclick.stop="openPackage(n)"
+              >
+                <title>
+                  {{ n.package_name }} ({{ n.kind }}){{
+                    n.change ? ` · ${n.change}` : ""
+                  }}
+                </title>
+                <rect
+                  :width="L.nodeW"
+                  :height="L.nodeH"
+                  rx="6"
+                  class="node__box"
+                />
+                <rect
+                  width="5"
+                  :height="L.nodeH"
+                  rx="2"
+                  :fill="kindColor(n.kind)"
+                />
+                <text x="12" :y="L.nodeH / 2 + 4" class="node__label">
+                  {{ truncate(shortName(n.package_name), 22) }}
+                </text>
+                <text
+                  :x="L.nodeW - 8"
+                  :y="L.nodeH / 2 + 4"
+                  text-anchor="end"
+                  class="node__kind"
+                >
+                  {{ n.kind }}
+                </text>
+              </g>
+            </svg>
+          </div>
         </div>
 
         <aside v-if="selectedNode" class="pkg-map__panel">
@@ -180,6 +223,9 @@
               @click="selected = ''"
             />
           </div>
+          <p v-if="selectedNode.description" class="pkg-map__description">
+            {{ selectedNode.description }}
+          </p>
           <div class="d-flex flex-wrap ga-1 my-2">
             <v-chip
               size="x-small"
@@ -253,6 +299,9 @@ import {
   type PlacedNode,
 } from "../package-graph-layout.ts";
 
+/** Height of the pinned feature header (the lanes start just below it). */
+const HEADER = L.headerH - 12;
+
 const props = defineProps<{
   modelValue: boolean;
   head?: PackageGraphData;
@@ -278,7 +327,27 @@ const merged = computed(() =>
     ? mergePackageGraphs(props.head, props.base)
     : { nodes: [], edges: [], hasChanges: false },
 );
-const layout = computed(() => layoutPackageGraph(merged.value));
+/**
+ * While a package is selected, lanes holding none of its related packages
+ * (itself, dependencies, dependents) shrink to a strip.
+ */
+const collapsedLanes = computed(() => {
+  if (!selected.value) return new Set<string>();
+  const active = new Set(
+    merged.value.nodes
+      .filter((n) => related.value.has(n.package_name))
+      .map((n) => n.feature),
+  );
+  return new Set(
+    merged.value.nodes.map((n) => n.feature).filter((f) => !active.has(f)),
+  );
+});
+const layout = computed(() =>
+  layoutPackageGraph(merged.value, { collapsedLanes: collapsedLanes.value }),
+);
+const visibleNodes = computed(() =>
+  layout.value.nodes.filter((n) => !n.hidden),
+);
 const byName = computed(
   () => new Map(layout.value.nodes.map((n) => [n.package_name, n])),
 );
@@ -365,7 +434,7 @@ const drawnEdges = computed(() => {
     .map((e: MapEdge) => {
       const from = byName.value.get(e.from);
       const to = byName.value.get(e.to);
-      if (!from || !to) return null;
+      if (!from || !to || from.hidden || to.hidden) return null;
       const isDep =
         !!sel &&
         (e.from === sel ||
@@ -403,8 +472,10 @@ const drawnEdges = computed(() => {
     .sort((a, b) => a.order - b.order);
 });
 
-function select(name: string) {
+async function select(name: string) {
   selected.value = name;
+  // Lanes collapse/expand with the selection; scroll once laid out.
+  await nextTick();
   scrollToNode(name);
 }
 
@@ -587,9 +658,86 @@ const EdgeList = defineComponent({
   overflow: auto;
   background: rgb(var(--v-theme-background));
 }
+.pkg-map__grid {
+  position: relative;
+}
 .pkg-map__svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
   display: block;
   font-family: inherit;
+}
+.pkg-map__top {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: rgb(var(--v-theme-background));
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.pkg-map__corner {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 12px 8px;
+  font-size: 11px;
+  color: rgba(var(--v-theme-on-surface), 0.45);
+  background: rgb(var(--v-theme-background));
+  border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.pkg-map__lane-label {
+  position: absolute;
+  bottom: 8px;
+  padding-left: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(var(--v-theme-on-surface), 0.85);
+}
+.pkg-map__lane-label--collapsed {
+  padding-left: 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+}
+.pkg-map__description {
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 6px 0 2px;
+  color: rgba(var(--v-theme-on-surface), 0.8);
+}
+.pkg-map__core-tag {
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgb(var(--v-theme-primary));
+}
+.pkg-map__side {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: rgb(var(--v-theme-background));
+  border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.pkg-map__row-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: rgba(var(--v-theme-on-surface), 0.55);
 }
 .pkg-map__panel {
   width: 340px;
@@ -641,27 +789,10 @@ const EdgeList = defineComponent({
 .lane--offshoot {
   fill: rgba(var(--v-theme-on-surface), 0.03);
 }
-.lane__label {
-  font-size: 13px;
-  font-weight: 600;
-  fill: rgba(var(--v-theme-on-surface), 0.8);
-}
-.lane__core {
-  font-size: 10px;
-  font-weight: 500;
-  fill: rgb(var(--v-theme-primary));
-}
 .row__rule {
   stroke: rgba(var(--v-border-color), 0.2);
   stroke-dasharray: 3 4;
 }
-.row__label {
-  font-size: 11px;
-  fill: rgba(var(--v-theme-on-surface), 0.55);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
 .edge {
   fill: none;
   stroke: rgba(var(--v-theme-on-surface), 0.22);

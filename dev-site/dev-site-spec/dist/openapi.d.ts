@@ -582,6 +582,8 @@ export interface components {
                 feature: string;
                 /** @description Whether the feature is part of the product's core. */
                 core: boolean;
+                /** @description The package.json `description`, when set. */
+                description?: string;
             }[];
             /** @description Runtime dependencies (package.json `dependencies`) between product packages. */
             edges: {

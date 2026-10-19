@@ -596,3 +596,90 @@ describe("layer rules", () => {
     ]);
   });
 });
+
+describe("unused dependencies", () => {
+  const unusedKeys = (root: string) =>
+    keys(root).filter(
+      (k) => k.startsWith("unused:") || k.startsWith("dev-only:"),
+    );
+
+  it("flags product dependencies nothing uses, and runtime ones only tests use", () => {
+    const root = makeMonorepo({
+      "packages/service/objects": { name: "@p/objects", kind: "objects" },
+      "packages/service/db": { name: "@p/db", kind: "db" },
+      "packages/service/spec": {
+        name: "@p/spec",
+        kind: "spec",
+        deps: ["@p/objects"],
+        files: {
+          "openapi.yaml": `components:\n  schemas:\n    A:\n      $ref: "pkg:@p/objects/schemas/a.yaml"\n`,
+        },
+      },
+      "packages/service/test": { name: "@p/test", kind: "test" },
+      "packages/service/http": {
+        name: "@p/http",
+        kind: "http",
+        deps: ["@p/db", "@p/spec", "@p/objects"],
+        devDeps: ["@p/test"],
+        files: {
+          "index.ts": `import "@p/db";`,
+          "index.test.ts": `import "@p/spec";`,
+        },
+      },
+    });
+    expect(unusedKeys(root)).toEqual([
+      "dev-only: @p/http -> @p/spec",
+      "unused: @p/http -> @p/objects",
+      "unused: @p/http -> @p/test (dev)",
+    ]);
+  });
+
+  it("counts tsconfig extends, imports-map targets and script bins as uses", () => {
+    const root = makeMonorepo({
+      "packages/service/tools": { name: "@p/tools", kind: "lib" },
+      "packages/service/cli": { name: "@p/cli", kind: "lib" },
+      "packages/service/fixtures": { name: "@p/fx", kind: "lib" },
+      "packages/service/app": {
+        name: "@p/app",
+        kind: "lib",
+        deps: ["@p/tools", "@p/cli", "@p/fx"],
+      },
+    });
+    const write = (rel: string, json: unknown) =>
+      fs.writeFileSync(path.join(root, rel), JSON.stringify(json));
+    write("packages/service/app/tsconfig.json", {
+      extends: "@p/tools/tsconfig.json",
+    });
+    write("packages/service/cli/package.json", {
+      name: "@p/cli",
+      saf: { kind: "lib" },
+      bin: { "p-cli": "./bin.ts" },
+    });
+    const pj = JSON.parse(
+      fs.readFileSync(
+        path.join(root, "packages/service/app/package.json"),
+        "utf8",
+      ),
+    );
+    pj.scripts = { gen: "p-cli generate" };
+    pj.imports = { "#fx": "@p/fx/index.ts" };
+    write("packages/service/app/package.json", pj);
+    expect(unusedKeys(root)).toEqual([]);
+  });
+
+  it("ignores framework packages and can be turned off", () => {
+    const root = makeMonorepo(
+      {
+        "packages/framework/express": { name: "@fw/express", kind: "lib" },
+        "packages/product/service/db": { name: "@p/db", kind: "db" },
+        "packages/product/service/http": {
+          name: "@p/http",
+          kind: "http",
+          deps: ["@fw/express", "@p/db"],
+        },
+      },
+      { unusedDependencies: false },
+    );
+    expect(unusedKeys(root)).toEqual([]);
+  });
+});

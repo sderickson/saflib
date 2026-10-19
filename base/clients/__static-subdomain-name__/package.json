@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@saflib/base-clients-common": "*",
-    "@saflib/base-links": "*",
     "@saflib/links": "*",
     "@saflib/sdk": "*",
     "@saflib/vite": "*",

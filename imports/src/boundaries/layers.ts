@@ -95,14 +95,19 @@ export interface LayerFinding {
   message: string;
 }
 
-/** Nearest ancestor of `dir` (not `dir` itself) containing a `service/` directory. */
+/** Nearest ancestor of `dir` (not `dir` itself) containing a `service/` folder of packages. */
 function findProductRoot(dir: string, rootDir: string): string | undefined {
   let current = path.dirname(dir);
   for (;;) {
     const rel = path.relative(rootDir, current);
     if (rel.startsWith("..") || path.isAbsolute(rel)) return undefined;
     const candidate = path.join(current, "service");
-    if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+    // A product's `service/` is a folder of packages, not a package itself.
+    if (
+      fs.existsSync(candidate) &&
+      fs.statSync(candidate).isDirectory() &&
+      !fs.existsSync(path.join(candidate, "package.json"))
+    ) {
       return current;
     }
     if (current === rootDir) return undefined;

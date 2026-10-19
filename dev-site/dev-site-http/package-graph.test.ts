@@ -28,7 +28,14 @@ describe("buildPackageGraph", () => {
       manifest("", "root", "other"),
       manifest("lib/x", "@lib/x", "lib"),
       manifest("prod/service/db", "@p/db", "db", ["@p/objects", "@lib/x"]),
-      manifest("prod/service/objects", "@p/objects", "objects"),
+      {
+        ...manifest("prod/service/objects", "@p/objects", "objects"),
+        json: {
+          name: "@p/objects",
+          saf: { kind: "objects" },
+          description: "Business objects",
+        } as PackageManifest["json"],
+      },
       manifest("prod/service/spec", "@p/spec", "spec", ["@p/objects"]),
       manifest("prod/service/common", "@p/common", "domain", [
         "@p/db",
@@ -68,5 +75,26 @@ describe("buildPackageGraph", () => {
       ["@p/common", "@p/spec", "order"],
       ["@p/billing-db", "@p/db", null],
     ]);
+  });
+});
+
+describe("buildPackageGraph descriptions", () => {
+  it("carries the package.json description", () => {
+    const graph = buildPackageGraph(
+      [
+        {
+          package_name: "@p/db",
+          directory: "prod/service/db",
+          kind: "db",
+          mixedIdentifiers: [],
+          json: {
+            name: "@p/db",
+            description: " Drizzle schema ",
+          } as PackageManifest["json"],
+        },
+      ],
+      { hash: "abc", product_root: "prod" },
+    );
+    expect(graph.packages[0]!.description).toBe("Drizzle schema");
   });
 });

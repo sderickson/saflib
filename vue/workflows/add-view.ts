@@ -165,7 +165,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}** to render the page:
 
       * Located at ${context.copiedFiles?.vue}
-      * Use the adjacent (${path.basename(context.copiedFiles!.loader)}) to add Tanstack queries for any data needed to render the page (the Tanstack queries are imported from the appropriate sdk package)
+      * Use the adjacent (${path.basename(context.copiedFiles!.loader)}) to add Tanstack queries for any data needed to render the page (the Tanstack queries are imported from the appropriate sdk package); declare that sdk package in this SPA's package.json dependencies if it isn't already (\`saf-imports boundaries\` flags undeclared imports and unused dependencies)
       * Use the adjacent (${path.basename(context.copiedFiles!.strings)}) for all user-facing copy. Keep \`documentTitle\` in that file for the browser tab (the Async component already wires it via \`useAsyncPageDocumentTitle\`).
       * Take the data from the loader, assert that it's loaded, and render the page.
       * Do not add any sort of loading state or skeleton; that's the job of the "Async" component (and \`AsyncPage\` for query errors). Sub-components should receive **values to render** (e.g. lists, labels), not query \`isPending\`/\`isError\` or raw query objects—unless you have deliberately split loading (JIT) and documented it.

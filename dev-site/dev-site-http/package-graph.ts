@@ -22,6 +22,8 @@ export interface PackageGraphNode {
   kind: string;
   feature: string;
   core: boolean;
+  /** package.json `description`, when set. */
+  description?: string;
 }
 
 export interface PackageGraphEdge {
@@ -35,6 +37,11 @@ export interface PackageGraph {
   product_root: string;
   packages: PackageGraphNode[];
   edges: PackageGraphEdge[];
+}
+
+function descriptionOf(m: PackageManifest): { description?: string } {
+  const d = (m.json as { description?: unknown }).description;
+  return typeof d === "string" && d.trim() ? { description: d.trim() } : {};
 }
 
 function trimSlashes(p: string): string {
@@ -62,6 +69,7 @@ export function buildPackageGraph(
         directory,
         kind: m.kind,
         ...featureInProduct(directory, saf?.feature),
+        ...descriptionOf(m),
       };
     })
     .sort((a, b) => a.directory.localeCompare(b.directory));

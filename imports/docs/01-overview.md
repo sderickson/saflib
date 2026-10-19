@@ -53,6 +53,7 @@ For export coverage validation, use [saf-analyze-package](../../dev-tools/docs/p
 - **missing-tsconfig** — a package with TypeScript sources but no `tsconfig.json`, so the root build never typechecks it.
 - **missing-kind** — a package without a known `saf.kind` (see the layer table below, plus `lib` and `other`).
 - **layer** — an import that breaks the product's layers (below).
+- **unused-dependency** — a dependency between two of the product's own packages that nothing uses (`unused: A -> B`, or `(dev)` for `devDependencies`), or a `dependencies` entry only test/tooling files use (`dev-only: A -> B`; move it to `devDependencies`). A dependency counts as used by an import, a YAML `pkg:` ref, a non-relative `imports` map target, a tsconfig `extends`, or a bin it provides appearing in an npm script. Framework packages (outside the product) aren't checked. Turn it off with `"unusedDependencies": false`.
 
 ### Layers
 
@@ -84,7 +85,7 @@ Rules beyond the table (keys `layer(<rule>): from -> to`):
 - **test-dev-only** — a `test` package is never a runtime dependency.
 - **integration-internals** — an integration package's client code (`client.ts`, `calls/`, `bin/`) imports neither a `db` package nor its own `state/`.
 
-A **feature** is the first directory under the product root, the nearest ancestor that contains a `service/` directory: `service/*`, `clients/*` and packages directly in the product root make up the core (one feature), and `<offshoot>/*` is an offshoot. Set `saf.feature` in `package.json` to override. Imports of packages outside the product (e.g. `@saflib/*`) aren't layered. Turn the layer rules off with `"layers": false` under `safImports.boundaries`.
+A **feature** is the first directory under the product root, the nearest ancestor that contains a `service/` folder of packages (not a package itself): `service/*`, `clients/*` and packages directly in the product root make up the core (one feature), and `<offshoot>/*` is an offshoot. Set `saf.feature` in `package.json` to override. Imports of packages outside the product (e.g. `@saflib/*`) aren't layered. Turn the layer rules off with `"layers": false` under `safImports.boundaries`.
 
 Test and tooling files (`*.test.ts`, `*.fake(s).ts`, `*mocks.ts`, `test/`, `bin/`, `scripts/`, `*.config.*`, …) may use `devDependencies` and are left out of the runtime graph.
 

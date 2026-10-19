@@ -10,6 +10,7 @@ export interface GraphPackage {
   kind: string;
   feature: string;
   core: boolean;
+  description?: string;
 }
 
 export interface GraphEdge {
@@ -157,6 +158,8 @@ export const LAYOUT = {
   labelW: 150,
   headerH: 56,
   maxPerLine: 4,
+  /** Width of a lane collapsed while a package is selected. */
+  collapsedW: 34,
 };
 
 export interface PlacedNode extends MapNode {
@@ -164,11 +167,19 @@ export interface PlacedNode extends MapNode {
   y: number;
   row: number;
   lane: number;
+  /** In a collapsed lane: not drawn. */
+  hidden: boolean;
 }
 
 export interface GraphLayout {
   nodes: PlacedNode[];
-  lanes: Array<{ feature: string; core: boolean; x: number; width: number }>;
+  lanes: Array<{
+    feature: string;
+    core: boolean;
+    x: number;
+    width: number;
+    collapsed: boolean;
+  }>;
   rows: Array<{ label: string; y: number; height: number }>;
   width: number;
   height: number;
@@ -179,7 +190,14 @@ export interface GraphLayout {
  * ordered by the barycenter of their neighbours (a few up/down sweeps), which
  * keeps most dependency lines short and uncrossed.
  */
-export function layoutPackageGraph(graph: MergedGraph): GraphLayout {
+export function layoutPackageGraph(
+  graph: MergedGraph,
+  options: {
+    /** Lanes shrunk to a narrow strip, their packages hidden. */
+    collapsedLanes?: Set<string>;
+  } = {},
+): GraphLayout {
+  const collapsed = options.collapsedLanes ?? new Set<string>();
   const L = LAYOUT;
   const lanes = orderLanes(graph.nodes);
   const laneIndex = new Map(lanes.map((f, i) => [f, i]));
@@ -200,7 +218,8 @@ export function layoutPackageGraph(graph: MergedGraph): GraphLayout {
   // Lane widths and row heights from box sizes.
   const cols = (count: number) => Math.min(count, L.maxPerLine);
   const lines = (count: number) => Math.ceil(count / L.maxPerLine);
-  const laneWidths = lanes.map((_, l) => {
+  const laneWidths = lanes.map((feature, l) => {
+    if (collapsed.has(feature)) return L.collapsedW;
     let most = 1;
     for (let r = 0; r < LAYER_ROWS.length; r++) {
       most = Math.max(most, cols(cells.get(cellKey(r, l))?.length ?? 0));
@@ -210,6 +229,7 @@ export function layoutPackageGraph(graph: MergedGraph): GraphLayout {
   const rowLines = LAYER_ROWS.map((_, r) => {
     let most = 0;
     for (let l = 0; l < lanes.length; l++) {
+      if (collapsed.has(lanes[l]!)) continue;
       most = Math.max(most, lines(cells.get(cellKey(r, l))?.length ?? 0));
     }
     return most;
@@ -286,6 +306,7 @@ export function layoutPackageGraph(graph: MergedGraph): GraphLayout {
     ...pos.get(n.package_name)!,
     row: rowOfKind(n.kind),
     lane: laneIndex.get(n.feature)!,
+    hidden: collapsed.has(n.feature),
   }));
 
   return {
@@ -295,6 +316,7 @@ export function layoutPackageGraph(graph: MergedGraph): GraphLayout {
       core: coreLanes.has(feature),
       x: laneX[i]!,
       width: laneWidths[i]!,
+      collapsed: collapsed.has(feature),
     })),
     rows,
     width,

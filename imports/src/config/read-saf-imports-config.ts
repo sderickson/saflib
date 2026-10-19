@@ -101,6 +101,11 @@ export interface SafImportsBoundariesConfig {
    * `src/boundaries/layers.ts`). On by default; `false` opts out.
    */
   layers?: boolean;
+  /**
+   * Flag dependencies between a product's own packages that nothing uses, or
+   * that only test/tooling files use. On by default; `false` opts out.
+   */
+  unusedDependencies?: boolean;
 }
 
 function readPackageJson(filePath: string): PackageJson & {

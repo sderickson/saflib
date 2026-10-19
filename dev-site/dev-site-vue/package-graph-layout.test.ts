@@ -105,6 +105,27 @@ describe("layoutPackageGraph", () => {
   });
 });
 
+describe("collapsed lanes", () => {
+  it("shrinks collapsed lanes and hides their packages", () => {
+    const merged = mergePackageGraphs(head);
+    const full = layoutPackageGraph(merged);
+    const shrunk = layoutPackageGraph(merged, {
+      collapsedLanes: new Set(["billing"]),
+    });
+    const billing = (l: typeof full) =>
+      l.lanes.find((lane) => lane.feature === "billing")!;
+    expect(billing(shrunk).collapsed).toBe(true);
+    expect(billing(shrunk).width).toBeLessThan(billing(full).width);
+    expect(shrunk.width).toBeLessThan(full.width);
+    expect(
+      shrunk.nodes
+        .filter((n) => n.hidden)
+        .map((n) => n.package_name)
+        .sort(),
+    ).toEqual(["@p/billing-db", "@p/billing-http"]);
+  });
+});
+
 describe("helpers", () => {
   it("orders lanes core first", () => {
     expect(
