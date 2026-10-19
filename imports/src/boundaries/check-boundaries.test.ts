@@ -22,7 +22,8 @@ type PkgSpec = {
   name: string;
   deps?: string[];
   devDeps?: string[];
-  kind?: string;
+  /** `saf.kind`; defaults to `lib`, `null` omits it. */
+  kind?: string | null;
   /** Omit the default `tsconfig.json`. */
   noTsconfig?: boolean;
   files?: Record<string, string>;
@@ -56,7 +57,7 @@ function makeMonorepo(
       path.join(dir, "package.json"),
       JSON.stringify({
         name: spec.name,
-        ...(spec.kind ? { saf: { kind: spec.kind } } : {}),
+        ...(spec.kind === null ? {} : { saf: { kind: spec.kind ?? "lib" } }),
         dependencies: asDeps(spec.deps),
         devDependencies: asDeps(spec.devDeps),
       }),
@@ -253,6 +254,15 @@ describe("checkBoundaries", () => {
         ["packages/integrations/mail/client.ts"],
       ],
     ]);
+  });
+
+  it("requires a known saf.kind", () => {
+    const root = makeMonorepo({
+      "packages/a": { name: "@x/a", kind: null },
+      "packages/b": { name: "@x/b", kind: "widget" },
+      "packages/c": { name: "@x/c", kind: "objects" },
+    });
+    expect(keys(root)).toEqual(["missing-kind: @x/a", "missing-kind: @x/b"]);
   });
 
   it("only checks packages in scope", () => {

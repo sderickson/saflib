@@ -1,5 +1,8 @@
 {
   "name": "@saflib/base-clients",
+  "saf": {
+    "kind": "other"
+  },
   "description": "Vite setup to build all base clients",
   "type": "module",
   "scripts": {

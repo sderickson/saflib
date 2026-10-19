@@ -31,12 +31,6 @@ paths:
       $ref: "./routes/__group-name__/__target-name__.yaml#/__operationId__"
   # END WORKFLOW AREA
 
-  # BEGIN WORKFLOW AREA offshoot-paths FOR openapi/init
-  /__offshoot-name__/health:
-    get:
-      $ref: "../../__offshoot-name__/spec/routes/health.yaml#/get__OffshootName__Health"
-  # END WORKFLOW AREA
-
 components:
   securitySchemes:
     session:

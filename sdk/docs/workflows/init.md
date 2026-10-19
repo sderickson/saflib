@@ -21,7 +21,6 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Upsert 5 templates.
-- Add @saflib/saflib-dossier-sdk dependency to parent sdk
 - Change working directory to dossier/sdk
 - Run `npm install`
 - Run `npm run typecheck`
@@ -31,10 +30,10 @@ When run, the workflow will:
 ```bash
 Usage: npm exec saf-workflow kickoff sdk/init <name>
 
-Scaffold an offshoot SDK package and register it on the parent sdk
+Scaffold an offshoot SDK package
 
 Arguments:
-  name        Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/sdk and registers it on the parent sdk package.
+  name        Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/sdk. SPAs depend on it directly; the product sdk never re-exports it.
               Example: "dossier"
 
 ```

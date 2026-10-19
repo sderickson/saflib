@@ -1,5 +1,8 @@
 {
   "name": "@saflib/base-monolith",
+  "saf": {
+    "kind": "other"
+  },
   "type": "module",
   "scripts": {
     "typecheck": "tsc -b",
@@ -7,9 +10,11 @@
   },
   "exports": {
     "./env": "./env.ts",
+    "./http": "./http.ts",
     "./run": "./run.ts"
   },
   "dependencies": {
+    "@saflib/base-__offshoot-name__-http": "*",
     "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",
@@ -25,7 +30,8 @@
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/ory-kratos-http": "*",
-    "@saflib/vendors-loki": "*"
+    "@saflib/vendors-loki": "*",
+    "@saflib/vendors-sentry-node": "*"
   },
   "sideEffects": false,
   "imports": {

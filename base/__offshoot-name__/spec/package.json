@@ -3,11 +3,12 @@
   "saf": {
     "kind": "spec"
   },
-  "description": "Offshoot OpenAPI for Base __offshoot-name__; parent spec $refs into this package",
+  "description": "Offshoot OpenAPI for Base __offshoot-name__; served by its own http package",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./json-spec": "./dist/json-spec.ts",
     "./openapi.yaml": "./openapi.yaml",
     "./package.json": "./package.json",
     "./operations/*": "./dist/operations/*/index.ts",

@@ -2,7 +2,7 @@ import type { Express, Router } from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { baseDb } from "@saflib/base-db/instances";
 import {
-  createBaseHttpApp,
+  buildBaseHttpApp,
   type BaseHttpAppLease,
   type HttpRouterMount,
 } from "#http.ts";
@@ -20,7 +20,7 @@ export type SlimRouteTestContext = {
 export function acquireSlimRouteTest(options: {
   mounts: HttpRouterMount[];
 }): SlimRouteTestContext {
-  const lease = createBaseHttpApp({ mounts: options.mounts });
+  const lease = buildBaseHttpApp({ mounts: options.mounts });
   return {
     app: lease.app,
     lease,

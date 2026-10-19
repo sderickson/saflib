@@ -7,3 +7,5 @@ components:
   schemas:
     Widget:
       $ref: "./schemas/widget.yaml"
+    Gadget:
+      $ref: "./schemas/gadget.yaml"

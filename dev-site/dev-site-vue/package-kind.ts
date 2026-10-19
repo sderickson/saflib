@@ -6,6 +6,8 @@ export type PackageKind =
   | "sdk"
   | "lib"
   | "integration"
+  | "objects"
+  | "test"
   | "other";
 
 const PACKAGE_KINDS: readonly PackageKind[] = [
@@ -16,6 +18,8 @@ const PACKAGE_KINDS: readonly PackageKind[] = [
   "sdk",
   "lib",
   "integration",
+  "objects",
+  "test",
   "other",
 ];
 
@@ -28,6 +32,8 @@ export const PACKAGE_KIND_SURFACES: Record<PackageKind, string[]> = {
   sdk: ["Exports"],
   lib: ["Exports"],
   integration: ["Entrypoints"],
+  objects: ["Objects"],
+  test: ["Fixtures"],
   other: [],
 };
 

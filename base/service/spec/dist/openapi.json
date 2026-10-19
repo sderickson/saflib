@@ -506,34 +506,6 @@
       "__method__": {
         "$ref": "./routes/__group-name__/__target-name__.yaml#/__operationId__"
       }
-    },
-    "/__offshoot-name__/health": {
-      "get": {
-        "operationId": "get__OffshootName__Health",
-        "x-public": true,
-        "summary": "Health check for the __offshoot-name__ offshoot",
-        "responses": {
-          "200": {
-            "description": "Offshoot is reachable",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "health"
-                  ],
-                  "properties": {
-                    "health": {
-                      "$ref": "#/components/schemas/health"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
     }
   },
   "components": {
@@ -1038,18 +1010,6 @@
         },
         "required": [
           "id"
-        ]
-      },
-      "health": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "example": "ok"
-          }
-        },
-        "required": [
-          "status"
         ]
       },
       "login": {

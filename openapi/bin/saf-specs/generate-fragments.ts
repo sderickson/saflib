@@ -1,44 +1,45 @@
 import { getSafReporters } from "@saflib/node";
-import { execFile } from "child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { mkdirSync, writeFileSync } from "fs";
 import path from "path";
-import { promisify } from "util";
-import { resolvePackageBin } from "./resolve-bin.ts";
 import {
   collectOperationsFromBundled,
   type OpenApiDoc,
-  sliceOperation,
-} from "./slice-bundled-openapi.ts";
+} from "../../slice-operation.ts";
 
 function writeOperationIndex(operationDir: string, operationId: string): void {
   writeFileSync(
     path.join(operationDir, "index.ts"),
-    `import type { operations, components, paths } from "./openapi.d.ts";
-import * as json from "./openapi.json" with { type: "json" };
-import {
-  castJson,
-  type ExtractResponseBody,
-  type ExtractRequestBody,
-  type ExtractRequestPathParams,
-  type ExtractRequestQueryParams,
+    `import type {
+  operations as AllOperations,
+  components,
+  paths,
+} from "../../openapi.d.ts";
+import { jsonSpec } from "../../json-spec.ts";
+import { sliceOperationById } from "@saflib/openapi/slice-operation";
+import type {
+  ExtractResponseBody,
+  ExtractRequestBody,
+  ExtractRequestPathParams,
+  ExtractRequestQueryParams,
 } from "@saflib/openapi";
 
-export type { operations, components, paths };
+export const operationId = "${operationId}" as const;
+
+export type operations = Pick<AllOperations, typeof operationId>;
+export type { components, paths };
 
 /** OpenAPI document for a single operation — use with createScopedMiddleware. */
-export const operationJsonSpec = castJson(json);
+export const operationJsonSpec = sliceOperationById(jsonSpec, operationId);
 
 export type ResponseBody = ExtractResponseBody<operations>;
 export type RequestBody = ExtractRequestBody<operations>;
 export type PathParams = ExtractRequestPathParams<operations>;
 export type QueryParams = ExtractRequestQueryParams<operations>;
-
-export const operationId = "${operationId}" as const;
 `,
   );
 }
 
-function schemaTypeExportName(schemaName: string): string {
+export function schemaTypeExportName(schemaName: string): string {
   if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(schemaName)) {
     return schemaName;
   }
@@ -96,83 +97,57 @@ export type ${typeName} = components["schemas"]["${schemaName}"];
   );
 }
 
-const execFileAsync = promisify(execFile);
-const openapiTypescriptBin = resolvePackageBin("openapi-typescript");
-
-async function runOpenApiTypegen(jsonPath: string, dtsPath: string): Promise<void> {
-  await execFileAsync(openapiTypescriptBin, [jsonPath, "-o", dtsPath]);
-}
-
-async function runOpenApiTypegenPool(
-  jobs: Array<{ jsonPath: string; dtsPath: string }>,
-  concurrency = 16,
-): Promise<void> {
-  let next = 0;
-  const worker = async () => {
-    while (next < jobs.length) {
-      const job = jobs[next++];
-      await runOpenApiTypegen(job.jsonPath, job.dtsPath);
-    }
-  };
-  await Promise.all(Array.from({ length: concurrency }, () => worker()));
-}
-
-export async function generateOperationFragments(outputDir: string): Promise<number> {
+/**
+ * One module per operation. Each slices its operation out of the package's
+ * complete document when imported, so no per-operation JSON is generated.
+ */
+export function generateOperationFragments(
+  outputDir: string,
+  bundled: OpenApiDoc,
+): number {
   const { log } = getSafReporters();
-  const bundledJsonPath = path.join(outputDir, "openapi.json");
-  const bundled = JSON.parse(readFileSync(bundledJsonPath, "utf8")) as OpenApiDoc;
   const entries = collectOperationsFromBundled(bundled);
-
   const operationsRoot = path.join(outputDir, "operations");
   mkdirSync(operationsRoot, { recursive: true });
-
-  const operationDirs: string[] = [];
-
   for (const entry of entries) {
     const operationDir = path.join(operationsRoot, entry.operationId);
     mkdirSync(operationDir, { recursive: true });
-
-    const slice = sliceOperation(
-      bundled,
-      entry.pathKey,
-      entry.method,
-      entry.operationId,
-    );
-    writeFileSync(
-      path.join(operationDir, "openapi.json"),
-      JSON.stringify(slice, null, 2),
-    );
     writeOperationIndex(operationDir, entry.operationId);
-    operationDirs.push(operationDir);
   }
-
-  log.info(`Typegen for ${operationDirs.length} operation fragments...`);
-  await runOpenApiTypegenPool(
-    operationDirs.map((operationDir) => ({
-      jsonPath: path.join(operationDir, "openapi.json"),
-      dtsPath: path.join(operationDir, "openapi.d.ts"),
-    })),
-  );
-
   log.info(`Generated ${entries.length} operation fragments.`);
   return entries.length;
 }
 
 export function generateSchemaFragments(
   outputDir: string,
+  bundled: OpenApiDoc,
   externalSchemas: Map<
     string,
     { packageName: string; schemaName: string }
   > = new Map(),
 ): number {
   const { log } = getSafReporters();
-  const bundledJsonPath = path.join(outputDir, "openapi.json");
-  const bundled = JSON.parse(readFileSync(bundledJsonPath, "utf8")) as OpenApiDoc;
 
-  const schemaNames = canonicalSchemaFragmentNames([
-    ...Object.keys(bundled.components?.schemas ?? {}),
-    ...externalSchemas.keys(),
-  ]);
+  // Schemas owned by another package get no stub here: import them from the
+  // owning package. (This package's openapi.d.ts still references them.)
+  const schemas = bundled.components?.schemas ?? {};
+  // A named component that is only `$ref: "#/components/schemas/<file-key>"`
+  // (e.g. `BacklogItem` → `backlog-item`) is the same type; stub just the name.
+  const aliasedKeys = new Set<string>();
+  for (const [name, schema] of Object.entries(schemas)) {
+    const ref = (schema as { $ref?: unknown } | undefined)?.$ref;
+    if (
+      typeof ref === "string" &&
+      Object.keys(schema as object).length === 1 &&
+      /^[A-Z]/.test(name)
+    ) {
+      const m = /^#\/components\/schemas\/(.+)$/.exec(ref);
+      if (m && m[1] !== name) aliasedKeys.add(m[1]!);
+    }
+  }
+  const schemaNames = canonicalSchemaFragmentNames(Object.keys(schemas)).filter(
+    (name) => !externalSchemas.has(name) && !aliasedKeys.has(name),
+  );
   const schemasRoot = path.join(outputDir, "schemas");
   mkdirSync(schemasRoot, { recursive: true });
 

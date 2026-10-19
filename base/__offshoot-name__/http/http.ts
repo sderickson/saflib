@@ -2,7 +2,7 @@ import express, { type IRouter } from "express";
 import { groupRouterMounts } from "./routers.ts";
 
 /**
- * __offshoot-name__ barrel router — mounted once by the parent http app.
+ * __offshoot-name__ barrel router — mounted once by the composition root (service/monolith).
  * Grow groups with `express/add-handler` (cwd in this package → `routers.ts`).
  */
 export function create__OffshootName__Router(): IRouter {

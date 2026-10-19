@@ -1,5 +1,8 @@
 {
   "name": "@saflib/base-dev",
+  "saf": {
+    "kind": "other"
+  },
   "description": "Docker compose setup for dev environment",
   "type": "module",
   "scripts": {

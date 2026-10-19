@@ -48,12 +48,7 @@ const stubPaths = [
 const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   {
     rel: "service/spec/openapi.yaml",
-    mustInclude: [
-      "__group-name__",
-      "__target-name__",
-      "__offshoot-name__",
-      "offshoot-paths",
-    ],
+    mustInclude: ["__group-name__", "__target-name__"],
   },
   {
     rel: "service/spec/events/index.yaml",
@@ -73,24 +68,21 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   },
   {
     rel: "service/http/routers.ts",
-    mustInclude: [
-      "router-imports",
-      "router-mounts",
-      "groupRouterMounts",
-    ],
+    mustInclude: ["router-imports", "router-mounts", "groupRouterMounts"],
   },
   {
     rel: "__offshoot-name__/http/routers.ts",
-    mustInclude: [
-      "router-imports",
-      "router-mounts",
-      "groupRouterMounts",
-    ],
+    mustInclude: ["router-imports", "router-mounts", "groupRouterMounts"],
   },
   {
     rel: "service/http/http.ts",
+    mustInclude: ["groupRouterMounts", "buildBaseHttpApp"],
+  },
+  {
+    rel: "service/monolith/http.ts",
     mustInclude: [
-      "groupRouterMounts",
+      "offshoot-router-imports",
+      "offshoot-router-mounts",
       "createBaseHttpApp",
     ],
   },

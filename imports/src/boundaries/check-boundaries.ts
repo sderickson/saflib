@@ -5,6 +5,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { isPackageKind, PACKAGE_KINDS } from "@saflib/monorepo/package-kind";
 import {
   buildMonorepoContext,
   type PackageJson,
@@ -23,7 +24,12 @@ import {
 } from "./selectors.ts";
 
 export type BoundaryViolationKind =
-  "undeclared" | "relative-escape" | "cycle" | "forbidden" | "missing-tsconfig";
+  | "undeclared"
+  | "relative-escape"
+  | "cycle"
+  | "forbidden"
+  | "missing-tsconfig"
+  | "missing-kind";
 
 export interface BoundaryViolation {
   kind: BoundaryViolationKind;
@@ -372,6 +378,21 @@ export function checkBoundaries(
           kind: "missing-tsconfig",
           key: `missing-tsconfig: ${pkg.name}`,
           message: `${pkg.name} has TypeScript sources but no tsconfig.json, so the root build never typechecks it`,
+        },
+        undefined,
+      );
+    }
+
+    if (!isPackageKind(pkg.kind)) {
+      pushGrouped(
+        violations,
+        {
+          kind: "missing-kind",
+          key: `missing-kind: ${pkg.name}`,
+          message:
+            pkg.kind === undefined
+              ? `${pkg.name} has no saf.kind in package.json (one of ${PACKAGE_KINDS.join(", ")})`
+              : `${pkg.name} has unknown saf.kind "${pkg.kind}" (one of ${PACKAGE_KINDS.join(", ")})`,
         },
         undefined,
       );

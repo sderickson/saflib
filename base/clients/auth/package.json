@@ -25,10 +25,11 @@
     "@saflib/base-clients-common": "*",
     "@saflib/base-links": "*",
     "@saflib/base-sdk": "*",
+    "@saflib/errors-vue": "*",
+    "@saflib/links": "*",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/ory-kratos-spa": "*",
-    "@saflib/vue": "*",
-    "@saflib/links": "*"
+    "@saflib/vue": "*"
   },
   "sideEffects": false,
   "imports": {

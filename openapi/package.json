@@ -10,11 +10,13 @@
     ".": "./index.ts",
     "./ajv-formats": "./ajv-formats.ts",
     "./error": "./error.ts",
+    "./external-components": "./external-components.ts",
     "./no-root-response-bodies": "./no-root-response-bodies.ts",
-    "./operation-tags-files": "./operation-tags-files.ts",
     "./openapi.yaml": "./openapi.yaml",
+    "./operation-tags-files": "./operation-tags-files.ts",
     "./schemas/Error": "./schemas/Error.ts",
     "./schemas/error.yaml": "./schemas/error.yaml",
+    "./slice-operation": "./slice-operation.ts",
     "./workflows": "./workflows/index.ts"
   },
   "scripts": {
