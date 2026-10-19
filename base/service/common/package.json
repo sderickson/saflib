@@ -1,5 +1,8 @@
 {
   "name": "@saflib/base-service-common",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Shared types and utilities for the base service",
   "private": true,
   "type": "module",
@@ -31,5 +34,8 @@
     "#context.ts": "./context.ts",
     "#dependencies.ts": "./dependencies.ts",
     "#env.ts": "./env.ts"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
   }
 }

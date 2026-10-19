@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: base __offshoot-name__ API
   version: 1.0.0
-  description: Offshoot OpenAPI paths and schemas; parent service-spec composes via $ref
+  description: Offshoot OpenAPI paths and schemas, validated by the offshoot's own http package
 
 paths:
   # Concrete health — outside add-route area so openapi/init does not empty it.
@@ -14,10 +14,6 @@ paths:
   __url-path__:
     __method__:
       $ref: "./routes/__group-name__/__target-name__.yaml#/__operationId__"
-  # END WORKFLOW AREA
-
-  # Empty: nested openapi/init can mount further offshoots here.
-  # BEGIN WORKFLOW AREA offshoot-paths FOR openapi/init
   # END WORKFLOW AREA
 
 components:

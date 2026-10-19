@@ -2,16 +2,19 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../../__offshoot-name__/http"
-    },
-    {
       "path": "../../../analytics/analytics-http"
     },
     {
       "path": "../../../cron/cron-http"
     },
     {
+      "path": "../../../drizzle"
+    },
+    {
       "path": "../../../email/email-service"
+    },
+    {
+      "path": "../../../env"
     },
     {
       "path": "../../../errors/errors-http"

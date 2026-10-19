@@ -1,5 +1,5 @@
 import { startExpressServer } from "@saflib/express";
-import { createBaseHttpApp } from "@saflib/base-http/http";
+import { createBaseHttpApp } from "./http.ts";
 import { baseDb } from "@saflib/base-db/instances";
 import { connectBaseAuditDb } from "@saflib/base-audit";
 import { makeSubsystemReporters } from "@saflib/node";

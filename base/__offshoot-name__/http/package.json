@@ -3,7 +3,7 @@
   "saf": {
     "kind": "http"
   },
-  "description": "Offshoot Express router for Base __offshoot-name__; mounted by parent http",
+  "description": "Offshoot Express router for Base __offshoot-name__; mounted by the composition root",
   "private": true,
   "type": "module",
   "exports": {

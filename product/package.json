@@ -27,6 +27,7 @@
     "@saflib/workflows": "*"
   },
   "devDependencies": {
+    "@saflib/imports": "*",
     "@saflib/vitest": "*"
   },
   "sideEffects": false

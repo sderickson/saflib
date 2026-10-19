@@ -24,6 +24,7 @@
     "@saflib/jobs-db": "*"
   },
   "devDependencies": {
+    "@saflib/openapi": "*",
     "@saflib/vitest": "*"
   },
   "sideEffects": false

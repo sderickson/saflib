@@ -1,5 +1,8 @@
 {
   "name": "@saflib/base-root-static",
+  "saf": {
+    "kind": "other"
+  },
   "description": "Static root site for Base using VitePress + Vuetify",
   "type": "module",
   "scripts": {

@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@saflib/analytics-http": "*",
-    "@saflib/base-__offshoot-name__-http": "*",
     "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",
@@ -27,18 +26,21 @@
     "@saflib/base-service-common": "*",
     "@saflib/base-spec": "*",
     "@saflib/cron-http": "*",
+    "@saflib/drizzle": "*",
     "@saflib/email-service": "*",
+    "@saflib/env": "*",
     "@saflib/errors-http": "*",
     "@saflib/express": "*",
-    "@saflib/vendors-brevo": "*",
     "@saflib/jobs-http": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/node-log-http": "*",
     "@saflib/node-metrics-http": "*",
-    "@saflib/utils": "*"
+    "@saflib/utils": "*",
+    "@saflib/vendors-brevo": "*"
   },
   "devDependencies": {
+    "@saflib/jobs-db": "*",
     "@saflib/vitest": "*",
     "supertest": "^7.0.0"
   },

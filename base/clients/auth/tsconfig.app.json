@@ -22,6 +22,9 @@
   ],
   "references": [
     {
+      "path": "../../../errors/errors-vue"
+    },
+    {
       "path": "../../../links"
     },
     {

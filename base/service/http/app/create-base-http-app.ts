@@ -57,8 +57,8 @@ export type BaseHttpAppLease = {
  * Express shell for the base HTTP service: middleware order, ALS context,
  * auth gate, audit, platform terminators (jobs/cron), and error handling.
  *
- * Product wiring (default mounts + offshoots) lives in {@link ./http.ts}
- * as {@link createBaseHttpApp}.
+ * Production wiring (handler groups + offshoot routers) lives in the
+ * composition root, `service/monolith/http.ts`.
  */
 export function buildBaseHttpApp(
   options: CreateBaseHttpAppShellOptions,

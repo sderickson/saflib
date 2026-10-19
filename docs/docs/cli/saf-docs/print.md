@@ -36,9 +36,9 @@ Commands:
   @saflib/backup-spec                            API specs for the backup service
   @saflib/base-__integration-name__-integration  Golden integration stub for Base (expansion via integrations/add-call)
   @saflib/base-__offshoot-name__-db              Offshoot schemas for Base __offshoot-name__; composed into the parent db SQLite
-  @saflib/base-__offshoot-name__-http            Offshoot Express router for Base __offshoot-name__; mounted by parent http
+  @saflib/base-__offshoot-name__-http            Offshoot Express router for Base __offshoot-name__; mounted by the composition root
   @saflib/base-__offshoot-name__-sdk             Offshoot TanStack fakes for Base __offshoot-name__; woven into parent sdk
-  @saflib/base-__offshoot-name__-spec            Offshoot OpenAPI for Base __offshoot-name__; parent spec $refs into this package
+  @saflib/base-__offshoot-name__-spec            Offshoot OpenAPI for Base __offshoot-name__; served by its own http package
   @saflib/base-__offshoot-name__-test            Shared factories for Base __offshoot-name__ models used in unit tests (SPA, HTTP, SDK fakes)
   @saflib/base-__static-subdomain-name__-static  Static __subdomain-name__ site for Base using VitePress + Vuetify
   @saflib/base-__subdomain-name__-spa            <Missing description>

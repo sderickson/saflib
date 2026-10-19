@@ -20,6 +20,9 @@
   },
   "references": [
     {
+      "path": "../../__offshoot-name__/http"
+    },
+    {
       "path": "../../../env"
     },
     {
@@ -42,6 +45,9 @@
     },
     {
       "path": "../../../vendors/loki"
+    },
+    {
+      "path": "../../../vendors/sentry-node"
     },
     {
       "path": "../audit"

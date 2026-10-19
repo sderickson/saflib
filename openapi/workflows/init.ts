@@ -4,27 +4,21 @@ import {
   step,
   CommandStepMachine,
   CdStepMachine,
-  TransformFileStepMachine,
   type OffshootInitContext,
   resolveOffshootInitContext,
   makeOffshootLineReplace,
-  parentLayerPackageJsonPath,
 } from "@saflib/workflows";
-import { offshootStubRoot, templatesProductRoot } from "@saflib/templates";
+import { offshootStubRoot } from "@saflib/templates";
 import path from "node:path";
 
 const offshootSpecRoot = path.join(offshootStubRoot, "spec");
 const offshootTestRoot = path.join(offshootStubRoot, "test");
-const parentOpenapiLive = path.join(
-  templatesProductRoot,
-  "service/spec/openapi.yaml",
-);
 
 const input = [
   {
     name: "name",
     description:
-      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/spec and weaves path $refs into the parent openapi.yaml.",
+      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/spec (and {name}/test). The offshoot spec stands alone; it may reference the product spec's schemas, never the reverse.",
     exampleValue: "dossier",
   },
 ] as const;
@@ -38,7 +32,7 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
   id: "openapi/init",
 
   description:
-    "Scaffold an offshoot OpenAPI package (and sibling test factories package) and weave path $refs into the parent spec",
+    "Scaffold an offshoot OpenAPI package and its sibling test factories package",
 
   checklistDescription: ({ offshootPackageName, offshootName }) =>
     `Init offshoot spec ${offshootPackageName} (+ ${offshootName}-test).`,
@@ -65,7 +59,6 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
     tsconfig: path.join(offshootSpecRoot, "tsconfig.json"),
     healthRoute: path.join(offshootSpecRoot, "routes/health.yaml"),
     healthSchema: path.join(offshootSpecRoot, "schemas/health.yaml"),
-    parentOpenapi: parentOpenapiLive,
   },
 
   docFiles: {},
@@ -87,28 +80,6 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
         offshootTest: offshootTestRoot,
       },
       lineReplace: makeOffshootLineReplace(context),
-    })),
-
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.offshootName,
-      targetDir: context.parentDir,
-      templateFiles: {
-        parentOpenapi: parentOpenapiLive,
-      },
-      lineReplace: makeOffshootLineReplace(context),
-      skipUnlessPathExists: parentLayerPackageJsonPath(context.parentDir),
-    })),
-
-    step(TransformFileStepMachine, ({ context }) => ({
-      filePath: parentLayerPackageJsonPath(context.parentDir),
-      description: `Add ${context.offshootPackageName} dependency to parent spec`,
-      skipIfMissing: true,
-      transform: (content: string) => {
-        const pkg = JSON.parse(content);
-        pkg.dependencies = pkg.dependencies ?? {};
-        pkg.dependencies[context.offshootPackageName] = "*";
-        return JSON.stringify(pkg, null, 2) + "\n";
-      },
     })),
 
     step(CdStepMachine, ({ context }) => ({

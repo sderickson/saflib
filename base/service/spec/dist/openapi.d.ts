@@ -145,23 +145,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/__offshoot-name__/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Health check for the __offshoot-name__ offshoot */
-        get: operations["get__OffshootName__Health"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -270,10 +253,6 @@ export interface components {
             updated_at?: string;
         } & {
             [key: string]: unknown;
-        };
-        health: {
-            /** @example ok */
-            status: string;
         };
         login: {
             /** @enum {string} */
@@ -701,28 +680,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["error"];
-                };
-            };
-        };
-    };
-    get__OffshootName__Health: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Offshoot is reachable */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        health: components["schemas"]["health"];
-                    };
                 };
             };
         };
