@@ -1,0 +1,73 @@
+type: object
+description: >
+  The product's packages at one commit and the runtime dependencies between
+  them, read from each package.json in git (no analysis needed). Packages
+  outside the product root (e.g. saflib) are left out.
+required:
+  - hash
+  - product_root
+  - packages
+  - edges
+properties:
+  hash:
+    type: string
+  product_root:
+    type: string
+    description: Repo-relative product root ("" when the repo is the product).
+  packages:
+    type: array
+    items:
+      type: object
+      required:
+        - package_name
+        - directory
+        - kind
+        - feature
+        - core
+      properties:
+        package_name:
+          type: string
+        directory:
+          type: string
+          description: Directory relative to the product root.
+        kind:
+          type: string
+          description: saf.kind (or inferred kind).
+        feature:
+          type: string
+          description: >
+            Feature the package belongs to: its first directory under the
+            product root, "" for the product root itself, or saf.feature.
+        core:
+          type: boolean
+          description: Whether the feature is part of the product's core.
+  edges:
+    type: array
+    description: >
+      Runtime dependencies (package.json `dependencies`) between product
+      packages.
+    items:
+      type: object
+      required:
+        - from
+        - to
+      properties:
+        from:
+          type: string
+          description: Depending package name.
+        to:
+          type: string
+          description: Dependency package name.
+        violation:
+          type: object
+          description: Set when this dependency breaks a layer rule.
+          required:
+            - rule
+            - message
+          properties:
+            rule:
+              type: string
+              description: >
+                Layer rule (order, siblings, core-offshoot, test-dev-only).
+            message:
+              type: string

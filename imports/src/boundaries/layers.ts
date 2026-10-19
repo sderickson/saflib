@@ -111,6 +111,24 @@ function findProductRoot(dir: string, rootDir: string): string | undefined {
 }
 
 /**
+ * The feature of a package at `relativeDir` (posix, relative to its product
+ * root): its first directory, or `""` directly in the product root, unless
+ * `saf.feature` (`override`) names one. Pure, for callers that read packages
+ * from somewhere other than the filesystem (e.g. a git commit).
+ */
+export function featureInProduct(
+  relativeDir: string,
+  override?: unknown,
+): { feature: string; core: boolean } {
+  if (typeof override === "string") {
+    return { feature: override, core: CORE_FEATURES.has(override) };
+  }
+  const parts = relativeDir.split("/").filter(Boolean);
+  const feature = parts.length > 1 ? parts[0]! : "";
+  return { feature, core: CORE_FEATURES.has(feature) };
+}
+
+/**
  * A package's feature: the first directory under its product root (the
  * nearest ancestor with a `service/` directory), or `""` for packages directly
  * in the product root. `saf.feature` overrides it. Without a product root, the
@@ -123,12 +141,11 @@ export function resolveFeature(
   override?: unknown,
 ): { feature: string; core: boolean; productRoot?: string } {
   const productRoot = findProductRoot(dir, rootDir);
+  if (productRoot && typeof override === "string") {
+    return { productRoot, ...featureInProduct("", override) };
+  }
   if (typeof override === "string") {
-    return {
-      productRoot,
-      feature: override,
-      core: productRoot !== undefined && CORE_FEATURES.has(override),
-    };
+    return { feature: override, core: false };
   }
   if (!productRoot) {
     return {
@@ -139,12 +156,11 @@ export function resolveFeature(
       core: false,
     };
   }
-  const parts = path.relative(productRoot, dir).split(path.sep);
-  const feature = parts.length > 1 ? parts[0]! : "";
   return {
     productRoot,
-    feature,
-    core: CORE_FEATURES.has(feature),
+    ...featureInProduct(
+      path.relative(productRoot, dir).split(path.sep).join("/"),
+    ),
   };
 }
 

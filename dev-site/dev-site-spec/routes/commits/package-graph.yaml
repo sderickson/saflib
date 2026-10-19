@@ -1,0 +1,33 @@
+getCommitPackageGraph:
+  summary: Product package graph at a commit
+  operationId: getCommitPackageGraph
+  x-public: true
+  description: >
+    The product's packages (kind, feature) and the runtime dependencies
+    between them at `hash`, with layer-rule violations flagged. Reads
+    package.json files from git, so any commit works without analysis. Used by
+    the checkout page's package map, and in compare mode for the fork point.
+  parameters:
+    - name: hash
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    "200":
+      description: Package graph
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - package_graph
+            properties:
+              package_graph:
+                $ref: "../../openapi.yaml#/components/schemas/PackageGraph"
+    "404":
+      description: Unknown commit
+      content:
+        application/json:
+          schema:
+            $ref: "../../openapi.yaml#/components/schemas/Error"

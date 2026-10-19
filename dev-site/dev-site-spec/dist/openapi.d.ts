@@ -66,6 +66,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/commits/{hash}/package-graph": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Product package graph at a commit
+         * @description The product's packages (kind, feature) and the runtime dependencies between them at `hash`, with layer-rule violations flagged. Reads package.json files from git, so any commit works without analysis. Used by the checkout page's package map, and in compare mode for the fork point.
+         */
+        get: operations["getCommitPackageGraph"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/commits/{hash}/packages/{package_name}": {
         parameters: {
             query?: never;
@@ -255,6 +275,7 @@ export interface components {
         Commit: components["schemas"]["commit"];
         CommitSummary: components["schemas"]["commit-summary"];
         PackageMetrics: components["schemas"]["package-metrics"];
+        PackageGraph: components["schemas"]["package-graph"];
         ExportEntry: components["schemas"]["export-entry"];
         TestCase: components["schemas"]["test-case"];
         CommitDetail: components["schemas"]["commit-detail"];
@@ -545,6 +566,36 @@ export interface components {
                     }[];
                 };
             };
+        };
+        /** @description The product's packages at one commit and the runtime dependencies between them, read from each package.json in git (no analysis needed). Packages outside the product root (e.g. saflib) are left out. */
+        "package-graph": {
+            hash: string;
+            /** @description Repo-relative product root ("" when the repo is the product). */
+            product_root: string;
+            packages: {
+                package_name: string;
+                /** @description Directory relative to the product root. */
+                directory: string;
+                /** @description saf.kind (or inferred kind). */
+                kind: string;
+                /** @description Feature the package belongs to: its first directory under the product root, "" for the product root itself, or saf.feature. */
+                feature: string;
+                /** @description Whether the feature is part of the product's core. */
+                core: boolean;
+            }[];
+            /** @description Runtime dependencies (package.json `dependencies`) between product packages. */
+            edges: {
+                /** @description Depending package name. */
+                from: string;
+                /** @description Dependency package name. */
+                to: string;
+                /** @description Set when this dependency breaks a layer rule. */
+                violation?: {
+                    /** @description Layer rule (order, siblings, core-offshoot, test-dev-only). */
+                    rule: string;
+                    message: string;
+                };
+            }[];
         };
         /** @description Drizzle table inventory for one db package (schemas + query dirs). */
         "db-inventory": {
@@ -880,6 +931,39 @@ export interface operations {
                 };
             };
             /** @description One or both commit hashes have no analysis snapshot. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getCommitPackageGraph: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hash: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Package graph */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        package_graph: components["schemas"]["package-graph"];
+                    };
+                };
+            };
+            /** @description Unknown commit */
             404: {
                 headers: {
                     [name: string]: unknown;
