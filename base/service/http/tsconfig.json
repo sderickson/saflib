@@ -2,22 +2,7 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../../../analytics/analytics-http"
-    },
-    {
-      "path": "../../../cron/cron-http"
-    },
-    {
       "path": "../../../drizzle"
-    },
-    {
-      "path": "../../../email/email-service"
-    },
-    {
-      "path": "../../../env"
-    },
-    {
-      "path": "../../../errors/errors-http"
     },
     {
       "path": "../../../express"
@@ -32,31 +17,13 @@
       "path": "../../../node"
     },
     {
-      "path": "../../../node-log/node-log-http"
-    },
-    {
-      "path": "../../../node-metrics/node-metrics-http"
-    },
-    {
       "path": "../../../utils"
-    },
-    {
-      "path": "../../../vendors/brevo"
-    },
-    {
-      "path": "../audit"
     },
     {
       "path": "../common"
     },
     {
-      "path": "../cron"
-    },
-    {
       "path": "../db"
-    },
-    {
-      "path": "../jobs"
     },
     {
       "path": "../spec"

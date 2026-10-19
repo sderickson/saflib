@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  existsSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { DbKey } from "@saflib/new-workflows-db";
@@ -22,7 +28,7 @@ describe("integrations/init (ported to the new engine)", () => {
     newWorkflowsDbManager.clearAllTablesForTests(dbKey);
   });
 
-  it("scaffolds from a monorepo-root path and weaves configure into common", async () => {
+  it("scaffolds from a monorepo-root path and weaves configure into common (products not yet migrated)", async () => {
     const root = mkdtempSync(path.join(tmpdir(), "integrations-init-"));
     const commonDir = path.join(root, "shop", "service", "common");
     mkdirSync(commonDir, { recursive: true });
@@ -59,7 +65,11 @@ export async function initializeDependencies(): Promise<void> {
 
     // Drive through the two copy steps (then stop at cd/touch/prompt…).
     for (let i = 0; i < 2; i++) {
-      const { output, result } = advanceRun(dbKey, InitIntegrationWorkflowDefinition, runId);
+      const { output, result } = advanceRun(
+        dbKey,
+        InitIntegrationWorkflowDefinition,
+        runId,
+      );
       await collectOutput(output);
       const outcome = await result;
       expect(outcome.status).toBe("success");
@@ -89,8 +99,63 @@ export async function initializeDependencies(): Promise<void> {
     expect(deps).toContain("await configureMercury(");
   });
 
+  it("weaves configure into the composition root's dependencies.ts", async () => {
+    const root = mkdtempSync(
+      path.join(tmpdir(), "integrations-init-monolith-"),
+    );
+    const commonDir = path.join(root, "shop", "service", "common");
+    const monolithDir = path.join(root, "shop", "service", "monolith");
+    mkdirSync(commonDir, { recursive: true });
+    mkdirSync(monolithDir, { recursive: true });
+    writeFileSync(
+      path.join(commonDir, "package.json"),
+      JSON.stringify(
+        { name: "@acme/shop-service-common", private: true },
+        null,
+        2,
+      ) + "\n",
+    );
+    writeFileSync(
+      path.join(monolithDir, "dependencies.ts"),
+      `// BEGIN WORKFLOW AREA integration-imports FOR integrations/init
+// END WORKFLOW AREA
+
+export async function initializeDependencies(): Promise<void> {
+  // BEGIN WORKFLOW AREA integration-configure FOR integrations/init
+  // END WORKFLOW AREA
+}
+`,
+    );
+
+    const runId = await createRun(dbKey, InitIntegrationWorkflowDefinition, {
+      input: { path: "shop/service/integrations/mercury" },
+      cwd: root,
+      mode: "script",
+    });
+    for (let i = 0; i < 2; i++) {
+      const { output, result } = advanceRun(
+        dbKey,
+        InitIntegrationWorkflowDefinition,
+        runId,
+      );
+      await collectOutput(output);
+      expect((await result).status).toBe("success");
+    }
+
+    const deps = readFileSync(
+      path.join(monolithDir, "dependencies.ts"),
+      "utf-8",
+    );
+    expect(deps).toContain(
+      'import { configureMercury } from "@acme/shop-mercury-integration"',
+    );
+    expect(existsSync(path.join(commonDir, "dependencies.ts"))).toBe(false);
+  });
+
   it("weaves into dependencies.integrations.ts when that file exists (scale-m3)", async () => {
-    const root = mkdtempSync(path.join(tmpdir(), "integrations-init-integrations-deps-"));
+    const root = mkdtempSync(
+      path.join(tmpdir(), "integrations-init-integrations-deps-"),
+    );
     const commonDir = path.join(root, "shop", "service", "common");
     mkdirSync(commonDir, { recursive: true });
     writeFileSync(
@@ -126,7 +191,11 @@ export async function initializeIntegrationDependencies(): Promise<void> {
     });
 
     for (let i = 0; i < 2; i++) {
-      const { output, result } = advanceRun(dbKey, InitIntegrationWorkflowDefinition, runId);
+      const { output, result } = advanceRun(
+        dbKey,
+        InitIntegrationWorkflowDefinition,
+        runId,
+      );
       await collectOutput(output);
       expect((await result).status).toBe("success");
     }
@@ -179,13 +248,19 @@ export async function initializeDependencies(): Promise<void> {
     });
 
     for (let i = 0; i < 2; i++) {
-      const { output, result } = advanceRun(dbKey, InitIntegrationWorkflowDefinition, runId);
+      const { output, result } = advanceRun(
+        dbKey,
+        InitIntegrationWorkflowDefinition,
+        runId,
+      );
       await collectOutput(output);
       expect((await result).status).toBe("success");
     }
 
     expect(
-      existsSync(path.join(productRoot, "service", "integrations", "uscis", "client.ts")),
+      existsSync(
+        path.join(productRoot, "service", "integrations", "uscis", "client.ts"),
+      ),
     ).toBe(true);
   });
 
@@ -195,7 +270,11 @@ export async function initializeDependencies(): Promise<void> {
       cwd: mkdtempSync(path.join(tmpdir(), "integrations-init-bad-")),
       mode: "script",
     });
-    const { output, result } = advanceRun(dbKey, InitIntegrationWorkflowDefinition, runId);
+    const { output, result } = advanceRun(
+      dbKey,
+      InitIntegrationWorkflowDefinition,
+      runId,
+    );
     await collectOutput(output);
     const outcome = await result;
     expect(outcome.status).toBe("error");

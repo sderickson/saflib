@@ -1,13 +1,15 @@
-export type {
-  BaseHttpAppLease,
-  HttpRouterMount,
-} from "./app/create-base-http-app.ts";
-
-export { buildBaseHttpApp } from "./app/create-base-http-app.ts";
+import express, { type IRouter } from "express";
+import { groupRouterMounts } from "./routers.ts";
 
 /**
- * This package's handler groups ({@link groupRouterMounts} in `routers.ts`,
- * grown with `express/add-handler`). The composition root
- * (`service/monolith/http.ts`) mounts them alongside offshoot routers.
+ * The base feature's router: every handler group in `routers.ts` (grown with
+ * `express/add-handler`). The composition root (`service/monolith/http.ts`)
+ * mounts it alongside each offshoot's router.
  */
-export { groupRouterMounts } from "./routers.ts";
+export function createBaseRouter(): IRouter {
+  const router = express.Router();
+  for (const mount of groupRouterMounts()) {
+    router.use(mount.createRouter());
+  }
+  return router;
+}

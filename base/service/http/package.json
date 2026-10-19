@@ -18,28 +18,19 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@saflib/analytics-http": "*",
-    "@saflib/base-audit": "*",
-    "@saflib/base-cron": "*",
     "@saflib/base-db": "*",
-    "@saflib/base-jobs": "*",
     "@saflib/base-service-common": "*",
     "@saflib/base-spec": "*",
-    "@saflib/cron-http": "*",
     "@saflib/drizzle": "*",
-    "@saflib/email-service": "*",
-    "@saflib/env": "*",
-    "@saflib/errors-http": "*",
     "@saflib/express": "*",
     "@saflib/jobs-http": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
-    "@saflib/node-log-http": "*",
-    "@saflib/node-metrics-http": "*",
-    "@saflib/utils": "*",
-    "@saflib/vendors-brevo": "*"
+    "@saflib/utils": "*"
   },
   "devDependencies": {
+    "@saflib/base-http-app": "*",
+    "@saflib/base-jobs": "*",
     "@saflib/jobs-db": "*",
     "@saflib/vitest": "*",
     "supertest": "^7.0.0"
@@ -47,7 +38,6 @@
   "sideEffects": false,
   "imports": {
     "#handlers/*": "./handlers/*",
-    "#http.ts": "./http.ts",
     "#test/*": "./test/*"
   }
 }

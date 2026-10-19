@@ -76,7 +76,7 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   },
   {
     rel: "service/http/http.ts",
-    mustInclude: ["groupRouterMounts", "buildBaseHttpApp"],
+    mustInclude: ["groupRouterMounts", "createBaseRouter"],
   },
   {
     rel: "service/monolith/http.ts",
@@ -131,7 +131,7 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
     mustInclude: ["__targetName__"],
   },
   {
-    rel: "service/common/dependencies.ts",
+    rel: "service/monolith/dependencies.ts",
     mustInclude: ["configure__IntegrationName__", "__integration-name__"],
   },
   {

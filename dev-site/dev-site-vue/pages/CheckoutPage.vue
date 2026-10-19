@@ -1,14 +1,28 @@
 <template>
-  <div class="checkout-page" :class="{ 'checkout-page--reflection-sheet': isReflectionSheet }">
+  <div
+    class="checkout-page"
+    :class="{ 'checkout-page--reflection-sheet': isReflectionSheet }"
+  >
     <div v-if="isReflectionSheet" class="reflection-banner">
       <v-icon icon="mdi-history" size="18" class="mr-2" />
-      <span class="reflection-banner__text">Reflection — what this workflow run actually changed</span>
+      <span class="reflection-banner__text"
+        >Reflection — what this workflow run actually changed</span
+      >
       <v-spacer />
-      <v-btn variant="text" size="small" prepend-icon="mdi-close" @click="closeReflectionSheet">
+      <v-btn
+        variant="text"
+        size="small"
+        prepend-icon="mdi-close"
+        @click="closeReflectionSheet"
+      >
         Close
       </v-btn>
     </div>
-    <v-progress-linear v-if="isLoading" indeterminate class="checkout-progress" />
+    <v-progress-linear
+      v-if="isLoading"
+      indeterminate
+      class="checkout-progress"
+    />
     <v-alert v-if="error" type="error" density="compact" class="ma-2">
       {{ error.message }}
     </v-alert>
@@ -19,11 +33,12 @@
     <template v-if="checkout">
       <div class="checkout-strip">
         <code class="checkout-strip__hash">{{ shortHash(checkout.hash) }}</code>
-        <span
-          class="checkout-strip__msg"
-          :title="checkout.message"
-        >{{ firstLine(checkout.message) }}</span>
-        <span class="checkout-strip__date">{{ formatDateTime(checkout.authored_at) }}</span>
+        <span class="checkout-strip__msg" :title="checkout.message">{{
+          firstLine(checkout.message)
+        }}</span>
+        <span class="checkout-strip__date">{{
+          formatDateTime(checkout.authored_at)
+        }}</span>
         <v-chip
           size="x-small"
           variant="tonal"
@@ -60,7 +75,9 @@
         >
           fork {{ shortHash(checkout.compare.merge_base_hash) }}
           ·
-          {{ checkout.compare.merge_base_analyzed ? "analyzed" : "not analyzed" }}
+          {{
+            checkout.compare.merge_base_analyzed ? "analyzed" : "not analyzed"
+          }}
         </v-chip>
         <v-btn
           v-if="github_repo && githubCompareHref"
@@ -73,7 +90,11 @@
           Changes on GitHub
         </v-btn>
         <v-btn
-          v-if="compareMode && checkout.compare && !checkout.compare.merge_base_analyzed"
+          v-if="
+            compareMode &&
+            checkout.compare &&
+            !checkout.compare.merge_base_analyzed
+          "
           color="primary"
           size="small"
           variant="flat"
@@ -85,7 +106,10 @@
         </v-btn>
       </div>
 
-      <div v-if="checkout.analyzed && isEmptyCompare" class="checkout-unscanned">
+      <div
+        v-if="checkout.analyzed && isEmptyCompare"
+        class="checkout-unscanned"
+      >
         <p class="checkout-unscanned__title">Nothing unique on this checkout</p>
         <p class="checkout-unscanned__body">
           HEAD is the fork point of
@@ -103,8 +127,24 @@
         >
           <template #left>
             <div class="checkout-col checkout-col--packages">
+              <v-btn
+                v-if="showPackageMapButton"
+                block
+                size="small"
+                variant="tonal"
+                prepend-icon="mdi-graph-outline"
+                class="mb-2"
+                :loading="isLoadingPackageMap"
+                @click="packageMapOpen = true"
+              >
+                Package map
+              </v-btn>
               <v-alert
-                v-if="compareMode && checkout.compare && !checkout.compare.merge_base_analyzed"
+                v-if="
+                  compareMode &&
+                  checkout.compare &&
+                  !checkout.compare.merge_base_analyzed
+                "
                 type="info"
                 density="compact"
                 variant="tonal"
@@ -112,10 +152,14 @@
               >
                 Scan the fork point
                 <code>{{ shortHash(checkout.compare.merge_base_hash) }}</code>
-                ({{ firstLine(checkout.compare.merge_base_message) }})
-                to filter this tree to added, removed, and modified packages.
+                ({{ firstLine(checkout.compare.merge_base_message) }}) to filter
+                this tree to added, removed, and modified packages.
               </v-alert>
-              <v-progress-linear v-if="isLoadingDiff" indeterminate class="mb-2" />
+              <v-progress-linear
+                v-if="isLoadingDiff"
+                indeterminate
+                class="mb-2"
+              />
               <PackageDirTree
                 :nodes="dirTree"
                 :selected-package-name="selectedPackageName"
@@ -135,7 +179,10 @@
                     :icon="packageKindIcon(selectedPkg.kind)"
                     :title="selectedPkg.kind"
                   />
-                  <span class="pkg-head__name" :title="selectedPkg.package_name">
+                  <span
+                    class="pkg-head__name"
+                    :title="selectedPkg.package_name"
+                  >
                     {{ selectedPkg.package_name }}
                   </span>
                   <span
@@ -158,8 +205,13 @@
                     class="pkg-head__meta"
                     :title="`${selectedPkg.source_lines}/${selectedPkg.test_lines} LOC`"
                   >
-                    {{ formatLocPair(selectedPkg.source_lines, selectedPkg.test_lines) }} LOC
-                    ·
+                    {{
+                      formatLocPair(
+                        selectedPkg.source_lines,
+                        selectedPkg.test_lines,
+                      )
+                    }}
+                    LOC ·
                     <code>{{ selectedPkg.directory || "." }}</code>
                   </span>
                   <v-spacer />
@@ -281,7 +333,9 @@
                     @open-diff="goDiffTab"
                   />
                   <PackageDiffPane
-                    v-else-if="tab === 'diff' && compareFromHash && scopedGitDiffCommand"
+                    v-else-if="
+                      tab === 'diff' && compareFromHash && scopedGitDiffCommand
+                    "
                     :subdomain="subdomain"
                     :base-ref="compareFromHash"
                     :head-ref="effectiveGithubRef"
@@ -333,10 +387,20 @@
             </div>
           </template>
         </ResizableColumns>
+        <PackageMapDialog
+          v-model="packageMapOpen"
+          :head="headGraph?.package_graph"
+          :base="compareMode ? baseGraph?.package_graph : undefined"
+          :loading="isLoadingPackageMap"
+          :initial-package="selectedPackageName"
+          @open-package="selectPackage"
+        />
       </div>
 
       <div v-else class="checkout-unscanned">
-        <p class="checkout-unscanned__title">This commit hasn’t been scanned yet</p>
+        <p class="checkout-unscanned__title">
+          This commit hasn’t been scanned yet
+        </p>
         <p class="checkout-unscanned__body">
           Scan builds the package inventory so you can browse specs, docs, and
           issues for this checkout.
@@ -362,16 +426,14 @@ import { useRoute, useRouter } from "vue-router";
 import {
   useCheckout,
   useCommitDiff,
+  usePackageGraph,
   useCommitPackage,
   useRepoFile,
   useRepoFiles,
   useScanMutation,
 } from "../requests/queries";
 import { classifyPackageKind } from "../package-kind";
-import {
-  buildPackageDirTree,
-  packageKindIcon,
-} from "../package-dir-tree";
+import { buildPackageDirTree, packageKindIcon } from "../package-dir-tree";
 import {
   classifyPackageSize,
   PACKAGE_SIZE_LABELS,
@@ -402,6 +464,8 @@ import PackageIssuesPane from "../components/PackageIssuesPane.vue";
 import PackageDiffPane from "../components/PackageDiffPane.vue";
 import ResizableColumns from "../components/ResizableColumns.vue";
 import ChangeChip from "../components/ChangeChip.vue";
+import PackageMapDialog from "../components/PackageMapDialog.vue";
+import { mergePackageGraphs } from "../package-graph-layout.ts";
 import { githubCompareUrl, resolveGithubSourceRef } from "../source-links";
 
 const props = withDefaults(
@@ -470,9 +534,9 @@ const compareReady = computed(() => {
   const c = checkout.value;
   return Boolean(
     compareMode.value &&
-      c?.analyzed &&
-      c.compare?.merge_base_analyzed &&
-      c.compare.merge_base_hash !== c.hash,
+    c?.analyzed &&
+    c.compare?.merge_base_analyzed &&
+    c.compare.merge_base_hash !== c.hash,
   );
 });
 
@@ -523,17 +587,13 @@ const githubCompareHref = computed(() => {
   return githubCompareUrl(github_repo.value, refs.base, refs.head);
 });
 
-const pathRenames = computed(
-  () => checkout.value?.compare?.renames ?? [],
-);
+const pathRenames = computed(() => checkout.value?.compare?.renames ?? []);
 
-const {
-  data: diffData,
-  isLoading: isLoadingDiff,
-} = useCommitDiff(
+const { data: diffData, isLoading: isLoadingDiff } = useCommitDiff(
   props.subdomain,
-  () => (compareReady.value ? checkout.value?.compare?.merge_base_hash ?? "" : ""),
-  () => (compareReady.value ? checkout.value?.hash ?? "" : ""),
+  () =>
+    compareReady.value ? (checkout.value?.compare?.merge_base_hash ?? "") : "",
+  () => (compareReady.value ? (checkout.value?.hash ?? "") : ""),
 );
 
 const changeByPackage = computed((): Record<string, ChangeKind> => {
@@ -751,7 +811,8 @@ const packageSecretsFileQuery = useRepoFile(props.subdomain, () => ({
 }));
 
 const showSecretsTab = computed(() => {
-  if (!selectedPkg.value || packageSecretsFileQuery.isLoading.value) return false;
+  if (!selectedPkg.value || packageSecretsFileQuery.isLoading.value)
+    return false;
   const content = packageSecretsFileQuery.data.value?.content;
   if (!content?.trim()) return false;
   try {
@@ -778,7 +839,8 @@ const showPkgTabs = computed(() => availableTabs.value.length > 1);
 
 const tab = computed<PackageTab>(() => {
   const t = route.query.tab;
-  if (t === "diff" || t === "docs" || t === "secrets" || t === "issues") return t;
+  if (t === "diff" || t === "docs" || t === "secrets" || t === "issues")
+    return t;
   return "spec";
 });
 
@@ -817,7 +879,10 @@ const replaceQuery = (patch: Record<string, string | undefined>) => {
 
 const setTab = (value: unknown) => {
   const next: PackageTab =
-    value === "diff" || value === "docs" || value === "secrets" || value === "issues"
+    value === "diff" ||
+    value === "docs" ||
+    value === "secrets" ||
+    value === "issues"
       ? value
       : "spec";
   if (!availableTabs.value.includes(next)) return;
@@ -868,7 +933,9 @@ watch(
     if (!visibleRows.value.length) return;
     if (
       selectedPackageName.value &&
-      visibleRows.value.some((p) => p.package_name === selectedPackageName.value)
+      visibleRows.value.some(
+        (p) => p.package_name === selectedPackageName.value,
+      )
     ) {
       return;
     }
@@ -879,6 +946,34 @@ watch(
   },
   { immediate: true },
 );
+
+/** Package map: the product's package graph at HEAD (and at the fork point when comparing). */
+const packageMapOpen = ref(false);
+const { data: headGraph, isLoading: isLoadingHeadGraph } = usePackageGraph(
+  props.subdomain,
+  () => checkout.value?.hash ?? "",
+);
+const baseGraphHash = computed(() =>
+  compareMode.value ? (checkout.value?.compare?.merge_base_hash ?? "") : "",
+);
+const { data: baseGraph, isLoading: isLoadingBaseGraph } = usePackageGraph(
+  props.subdomain,
+  baseGraphHash,
+);
+const isLoadingPackageMap = computed(
+  () =>
+    isLoadingHeadGraph.value ||
+    (!!baseGraphHash.value && isLoadingBaseGraph.value),
+);
+/** Always offered outside compare mode; in compare mode only when the graph changed. */
+const showPackageMapButton = computed(() => {
+  if (!compareMode.value) return true;
+  const head = headGraph.value?.package_graph;
+  const base = baseGraph.value?.package_graph;
+  if (!head || !base || baseGraphHash.value === checkout.value?.hash)
+    return false;
+  return mergePackageGraphs(head, base).hasChanges;
+});
 
 const selectPackage = (name: string) => {
   replaceQuery({
@@ -903,10 +998,7 @@ const onDocNavigatePackage = (package_name: string, docPath: string) => {
 
 const scanThisCommit = () => {
   if (!checkout.value) return;
-  scan(
-    { commit_hash: checkout.value.hash },
-    { onSuccess: () => refetch() },
-  );
+  scan({ commit_hash: checkout.value.hash }, { onSuccess: () => refetch() });
 };
 
 const scanForkPoint = () => {

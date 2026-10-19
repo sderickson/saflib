@@ -8,17 +8,32 @@
  */
 
 export const PACKAGE_KINDS = [
-  "db",
+  /** Composition root: wires every feature together (e.g. `service/monolith`). */
+  "app",
+  /** HTTP app chrome: middleware order, auth gate, platform routers. */
+  "http-app",
+  /** A feature's HTTP handlers and routers. */
   "http",
-  "spec",
-  "spa",
-  "sdk",
-  "lib",
+  /** HTTP code shared by feature http packages (route registration, mappers). */
+  "http-common",
+  /** Product logic shared below HTTP (forms, service context, audit). */
+  "domain",
   "integration",
+  "db",
+  "spec",
   /** Business-object schemas (components-only OpenAPI), shared below the API. */
   "objects",
+  "spa",
+  /** Vue components shared by SPAs. */
+  "vue",
+  "sdk",
+  /** The shared API client that feature SDKs build on. */
+  "sdk-common",
+  /** Utility code not yet assigned a layer; unchecked by layer rules. */
+  "lib",
   /** Test fixtures and harnesses; only test files may import these. */
   "test",
+  /** Build, dev and tooling packages; unchecked by layer rules. */
   "other",
 ] as const;
 

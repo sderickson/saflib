@@ -78,6 +78,8 @@ Software should be broken up into packages which have a well-defined purpose, a 
 
 SAF itself is broken up into [a good number of monorepo packages](https://github.com/sderickson/saflib/tree/main) which are also listed in the sidebar of the [documentation](https://docs.saf-demo.online/).
 
+SAF products go further: every package declares a layer, and `saf-imports boundaries` keeps imports flowing down the layers. When two packages need the same code, it moves down a layer rather than being imported sideways. See [Product Architecture](./architecture.md).
+
 ## Specify and Enforce Shared APIs, Models, and Strings
 
 Anything that is shared across system boundaries should have a clear, independent source of truth, and that source of truth should be enforced by every consumer, ideally by type checking or some other form of static analysis.

@@ -174,6 +174,54 @@
         }
       }
     },
+    "/api/commits/{hash}/package-graph": {
+      "get": {
+        "summary": "Product package graph at a commit",
+        "operationId": "getCommitPackageGraph",
+        "x-public": true,
+        "description": "The product's packages (kind, feature) and the runtime dependencies between them at `hash`, with layer-rule violations flagged. Reads package.json files from git, so any commit works without analysis. Used by the checkout page's package map, and in compare mode for the fork point.\n",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package graph",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "package_graph"
+                  ],
+                  "properties": {
+                    "package_graph": {
+                      "$ref": "#/components/schemas/package-graph"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown commit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/commits/{hash}/packages/{package_name}": {
       "get": {
         "summary": "Package-scoped symbols for one analyzed commit",
@@ -1009,6 +1057,9 @@
       "PackageMetrics": {
         "$ref": "#/components/schemas/package-metrics"
       },
+      "PackageGraph": {
+        "$ref": "#/components/schemas/package-graph"
+      },
       "ExportEntry": {
         "$ref": "#/components/schemas/export-entry"
       },
@@ -1299,14 +1350,20 @@
             "type": "string",
             "description": "Package layer kind. From package.json saf.kind when set, otherwise inferred from a unique identifier dependency such as @saflib/drizzle (db), @saflib/express (http), @saflib/openapi (spec), @saflib/sdk (sdk), or @saflib/vue (spa).\n",
             "enum": [
-              "db",
+              "app",
+              "http-app",
               "http",
-              "spec",
-              "spa",
-              "sdk",
-              "lib",
+              "http-common",
+              "domain",
               "integration",
+              "db",
+              "spec",
               "objects",
+              "spa",
+              "vue",
+              "sdk",
+              "sdk-common",
+              "lib",
               "test",
               "other"
             ]
@@ -1799,6 +1856,101 @@
           "test_cases",
           "db_schemas"
         ]
+      },
+      "package-graph": {
+        "type": "object",
+        "description": "The product's packages at one commit and the runtime dependencies between them, read from each package.json in git (no analysis needed). Packages outside the product root (e.g. saflib) are left out.\n",
+        "required": [
+          "hash",
+          "product_root",
+          "packages",
+          "edges"
+        ],
+        "properties": {
+          "hash": {
+            "type": "string"
+          },
+          "product_root": {
+            "type": "string",
+            "description": "Repo-relative product root (\"\" when the repo is the product)."
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "package_name",
+                "directory",
+                "kind",
+                "feature",
+                "core"
+              ],
+              "properties": {
+                "package_name": {
+                  "type": "string"
+                },
+                "directory": {
+                  "type": "string",
+                  "description": "Directory relative to the product root."
+                },
+                "kind": {
+                  "type": "string",
+                  "description": "saf.kind (or inferred kind)."
+                },
+                "feature": {
+                  "type": "string",
+                  "description": "Feature the package belongs to: its first directory under the product root, \"\" for the product root itself, or saf.feature.\n"
+                },
+                "core": {
+                  "type": "boolean",
+                  "description": "Whether the feature is part of the product's core."
+                },
+                "description": {
+                  "type": "string",
+                  "description": "The package.json `description`, when set."
+                }
+              }
+            }
+          },
+          "edges": {
+            "type": "array",
+            "description": "Runtime dependencies (package.json `dependencies`) between product packages.\n",
+            "items": {
+              "type": "object",
+              "required": [
+                "from",
+                "to"
+              ],
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "description": "Depending package name."
+                },
+                "to": {
+                  "type": "string",
+                  "description": "Dependency package name."
+                },
+                "violation": {
+                  "type": "object",
+                  "description": "Set when this dependency breaks a layer rule.",
+                  "required": [
+                    "rule",
+                    "message"
+                  ],
+                  "properties": {
+                    "rule": {
+                      "type": "string",
+                      "description": "Layer rule (order, siblings, core-offshoot, test-dev-only).\n"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "db-inventory": {
         "type": "object",

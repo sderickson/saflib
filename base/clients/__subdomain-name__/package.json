@@ -24,7 +24,6 @@
   "dependencies": {
     "@saflib/base-clients-common": "*",
     "@saflib/base-links": "*",
-    "@saflib/base-sdk": "*",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/vue": "*",
     "@saflib/links": "*"

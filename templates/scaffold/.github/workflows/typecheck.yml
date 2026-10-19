@@ -15,3 +15,5 @@ jobs:
       - uses: ./.github/actions/setup-node-deps
       - name: Run Typecheck
         run: npm run typecheck
+      - name: Check package boundaries
+        run: npm exec saf-imports boundaries

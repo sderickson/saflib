@@ -363,3 +363,323 @@ describe("compareToBaseline", () => {
     ).toEqual({ added: [v("new")], stale: ["fixed"] });
   });
 });
+
+describe("layer rules", () => {
+  const layerKeys = (root: string) =>
+    keys(root).filter((k) => k.startsWith("layer("));
+
+  it("flags imports that go up a layer, and allows ones that go down", () => {
+    const root = makeMonorepo({
+      "packages/service/db": {
+        name: "@p/db",
+        kind: "db",
+        deps: ["@p/objects"],
+        files: { "index.ts": `import "@p/objects";` },
+      },
+      "packages/service/objects": { name: "@p/objects", kind: "objects" },
+      "packages/service/spec": {
+        name: "@p/spec",
+        kind: "spec",
+        deps: ["@p/objects"],
+        files: { "index.ts": `import "@p/objects";` },
+      },
+      "packages/service/common": {
+        name: "@p/common",
+        kind: "domain",
+        deps: ["@p/db", "@p/spec"],
+        files: { "index.ts": `import "@p/db";\nimport "@p/spec";` },
+      },
+    });
+    expect(layerKeys(root)).toEqual(["layer(order): @p/common -> @p/spec"]);
+  });
+
+  it("lets anything use lib/other packages except objects", () => {
+    const root = makeMonorepo({
+      "packages/service/util": { name: "@p/util", kind: "lib" },
+      "packages/service/db": {
+        name: "@p/db",
+        kind: "db",
+        deps: ["@p/util"],
+        files: { "index.ts": `import "@p/util";` },
+      },
+      "packages/service/objects": {
+        name: "@p/objects",
+        kind: "objects",
+        deps: ["@p/util"],
+        files: { "index.ts": `import "@p/util";` },
+      },
+    });
+    expect(layerKeys(root)).toEqual(["layer(order): @p/objects -> @p/util"]);
+  });
+
+  it("forbids siblings across features, but lets offshoots use the core below http (D2)", () => {
+    const root = makeMonorepo({
+      "packages/service/http": { name: "@p/http", kind: "http" },
+      "packages/service/db": { name: "@p/db", kind: "db" },
+      "packages/billing/http": {
+        name: "@p/billing-http",
+        kind: "http",
+        deps: ["@p/http", "@p/billing-db"],
+        files: { "index.ts": `import "@p/http";\nimport "@p/billing-db";` },
+      },
+      "packages/billing/db": {
+        name: "@p/billing-db",
+        kind: "db",
+        deps: ["@p/db"],
+        files: { "index.ts": `import "@p/db";` },
+      },
+    });
+    const found = checkBoundaries({ root }).violations.filter(
+      (v) => v.kind === "layer",
+    );
+    expect(found.map((v) => v.key)).toEqual([
+      "layer(siblings): @p/billing-http -> @p/http",
+    ]);
+    expect(found[0]!.message).toContain("http-common");
+  });
+
+  it("forbids the core from importing an offshoot, except db schema re-exports", () => {
+    const root = makeMonorepo({
+      "packages/service/db": {
+        name: "@p/db",
+        kind: "db",
+        deps: ["@p/billing-db"],
+        files: {
+          "schema.ts": `export * from "@p/billing-db/schemas/invoice";`,
+          "queries.ts": `import { x } from "@p/billing-db/queries/list";`,
+        },
+      },
+      "packages/service/common": {
+        name: "@p/common",
+        kind: "domain",
+        deps: ["@p/billing-db"],
+        files: { "index.ts": `import "@p/billing-db";` },
+      },
+      "packages/service/monolith": {
+        name: "@p/monolith",
+        kind: "app",
+        deps: ["@p/billing-db"],
+        files: { "index.ts": `import "@p/billing-db";` },
+      },
+      "packages/service/spec": {
+        name: "@p/spec",
+        kind: "spec",
+        deps: ["@p/billing-objects"],
+        files: { "index.ts": `import "@p/billing-objects";` },
+      },
+      "packages/billing/db": { name: "@p/billing-db", kind: "db" },
+      "packages/billing/objects": {
+        name: "@p/billing-objects",
+        kind: "objects",
+      },
+    });
+    expect(layerKeys(root)).toEqual([
+      "layer(core-offshoot): @p/common -> @p/billing-db",
+      "layer(core-offshoot): @p/db -> @p/billing-db",
+    ]);
+    const db = checkBoundaries({ root }).violations.find(
+      (v) => v.key === "layer(core-offshoot): @p/db -> @p/billing-db",
+    )!;
+    expect(db.files).toEqual(["packages/service/db/queries.ts"]);
+  });
+
+  it("only lets test files import test packages", () => {
+    const root = makeMonorepo({
+      "packages/service/test": { name: "@p/test", kind: "test" },
+      "packages/service/db": {
+        name: "@p/db",
+        kind: "db",
+        deps: ["@p/test"],
+        files: {
+          "index.ts": `import "@p/test";`,
+          "index.test.ts": `import "@p/test";`,
+        },
+      },
+    });
+    expect(layerKeys(root)).toEqual(["layer(test-dev-only): @p/db -> @p/test"]);
+  });
+
+  it("keeps an integration's client code away from the database and state/", () => {
+    const root = makeMonorepo({
+      "packages/service/db": { name: "@p/db", kind: "db" },
+      "packages/service/integrations/mail": {
+        name: "@p/mail",
+        kind: "integration",
+        deps: ["@p/db"],
+        files: {
+          "client.ts": `import "./state/tokens.ts";`,
+          "calls/send.ts": `import "@p/db";`,
+          "state/tokens.ts": `import "@p/db";`,
+        },
+      },
+    });
+    expect(layerKeys(root)).toEqual([
+      "layer(integration-internals): @p/mail/calls/send.ts -> @p/db",
+      "layer(integration-internals): @p/mail/client.ts -> state/tokens.ts",
+    ]);
+  });
+
+  it("treats service/, clients/ and the product root as one core feature", () => {
+    const root = makeMonorepo({
+      "packages/service/vue": { name: "@p/vue", kind: "vue" },
+      "packages/clients/common": {
+        name: "@p/clients-common",
+        kind: "vue",
+        deps: ["@p/vue"],
+        files: { "index.ts": `import "@p/vue";` },
+      },
+      "packages/billing/vue": {
+        name: "@p/billing-vue",
+        kind: "vue",
+        deps: ["@p/vue"],
+        files: { "index.ts": `import "@p/vue";` },
+      },
+      "packages/billing/sdk": { name: "@p/billing-sdk", kind: "sdk" },
+      "packages/clients/app": {
+        name: "@p/app-spa",
+        kind: "spa",
+        deps: ["@p/billing-sdk"],
+        files: { "main.ts": `import "@p/billing-sdk";` },
+      },
+    });
+    expect(layerKeys(root)).toEqual([
+      "layer(siblings): @p/billing-vue -> @p/vue",
+    ]);
+  });
+
+  it("only layers packages within one product", () => {
+    const root = makeMonorepo({
+      "packages/framework/express": { name: "@fw/express", kind: "http" },
+      "packages/product/service/db": {
+        name: "@p/db",
+        kind: "db",
+        deps: ["@fw/express"],
+        files: { "index.ts": `import "@fw/express";` },
+      },
+    });
+    expect(layerKeys(root)).toEqual([]);
+  });
+
+  it("can be turned off", () => {
+    const root = makeMonorepo(
+      {
+        "packages/service/db": {
+          name: "@p/db",
+          kind: "db",
+          deps: ["@p/spec"],
+          files: { "index.ts": `import "@p/spec";` },
+        },
+        "packages/service/spec": { name: "@p/spec", kind: "spec" },
+      },
+      { layers: false },
+    );
+    expect(layerKeys(root)).toEqual([]);
+  });
+
+  it("honors saf.feature", () => {
+    const root = makeMonorepo({
+      "packages/service/http": { name: "@p/http", kind: "http" },
+      "packages/service/admin-http": {
+        name: "@p/admin-http",
+        kind: "http",
+        deps: ["@p/http"],
+        files: { "index.ts": `import "@p/http";` },
+      },
+    });
+    expect(layerKeys(root)).toEqual([]);
+    const pj = path.join(root, "packages/service/admin-http/package.json");
+    const json = JSON.parse(fs.readFileSync(pj, "utf8"));
+    json.saf.feature = "admin";
+    fs.writeFileSync(pj, JSON.stringify(json));
+    expect(layerKeys(root)).toEqual([
+      "layer(siblings): @p/admin-http -> @p/http",
+    ]);
+  });
+});
+
+describe("unused dependencies", () => {
+  const unusedKeys = (root: string) =>
+    keys(root).filter(
+      (k) => k.startsWith("unused:") || k.startsWith("dev-only:"),
+    );
+
+  it("flags product dependencies nothing uses, and runtime ones only tests use", () => {
+    const root = makeMonorepo({
+      "packages/service/objects": { name: "@p/objects", kind: "objects" },
+      "packages/service/db": { name: "@p/db", kind: "db" },
+      "packages/service/spec": {
+        name: "@p/spec",
+        kind: "spec",
+        deps: ["@p/objects"],
+        files: {
+          "openapi.yaml": `components:\n  schemas:\n    A:\n      $ref: "pkg:@p/objects/schemas/a.yaml"\n`,
+        },
+      },
+      "packages/service/test": { name: "@p/test", kind: "test" },
+      "packages/service/http": {
+        name: "@p/http",
+        kind: "http",
+        deps: ["@p/db", "@p/spec", "@p/objects"],
+        devDeps: ["@p/test"],
+        files: {
+          "index.ts": `import "@p/db";`,
+          "index.test.ts": `import "@p/spec";`,
+        },
+      },
+    });
+    expect(unusedKeys(root)).toEqual([
+      "dev-only: @p/http -> @p/spec",
+      "unused: @p/http -> @p/objects",
+      "unused: @p/http -> @p/test (dev)",
+    ]);
+  });
+
+  it("counts tsconfig extends, imports-map targets and script bins as uses", () => {
+    const root = makeMonorepo({
+      "packages/service/tools": { name: "@p/tools", kind: "lib" },
+      "packages/service/cli": { name: "@p/cli", kind: "lib" },
+      "packages/service/fixtures": { name: "@p/fx", kind: "lib" },
+      "packages/service/app": {
+        name: "@p/app",
+        kind: "lib",
+        deps: ["@p/tools", "@p/cli", "@p/fx"],
+      },
+    });
+    const write = (rel: string, json: unknown) =>
+      fs.writeFileSync(path.join(root, rel), JSON.stringify(json));
+    write("packages/service/app/tsconfig.json", {
+      extends: "@p/tools/tsconfig.json",
+    });
+    write("packages/service/cli/package.json", {
+      name: "@p/cli",
+      saf: { kind: "lib" },
+      bin: { "p-cli": "./bin.ts" },
+    });
+    const pj = JSON.parse(
+      fs.readFileSync(
+        path.join(root, "packages/service/app/package.json"),
+        "utf8",
+      ),
+    );
+    pj.scripts = { gen: "p-cli generate" };
+    pj.imports = { "#fx": "@p/fx/index.ts" };
+    write("packages/service/app/package.json", pj);
+    expect(unusedKeys(root)).toEqual([]);
+  });
+
+  it("ignores framework packages and can be turned off", () => {
+    const root = makeMonorepo(
+      {
+        "packages/framework/express": { name: "@fw/express", kind: "lib" },
+        "packages/product/service/db": { name: "@p/db", kind: "db" },
+        "packages/product/service/http": {
+          name: "@p/http",
+          kind: "http",
+          deps: ["@fw/express", "@p/db"],
+        },
+      },
+      { unusedDependencies: false },
+    );
+    expect(unusedKeys(root)).toEqual([]);
+  });
+});

@@ -9,6 +9,7 @@ import { addSnapshotCommand } from "./snapshot.ts";
 import { addTsconfigCommand } from "./tsconfig.ts";
 import { addSpaCommand } from "./spa.ts";
 import { addBoundariesCommand } from "./boundaries.ts";
+import { addMapCommand } from "./map.ts";
 // END WORKFLOW AREA
 
 const program = new Command()
@@ -25,6 +26,7 @@ addSnapshotCommand(program);
 addTsconfigCommand(program);
 addSpaCommand(program);
 addBoundariesCommand(program);
+addMapCommand(program);
 // END WORKFLOW AREA
 
 setupContext(

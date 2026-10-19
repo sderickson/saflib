@@ -72,7 +72,7 @@ ENV NODE_ENV=production \
   DEV_SITE_DB_PATH=/data/dev-site.sqlite \
   NEW_WORKFLOWS_DB_PATH=/data/new-workflows/local.sqlite
 
-# Install/build match other Node images (monolith, daemon-clients builder):
+# Install/build match other Node images (monolith, clients builder):
 # root + `npm ci` with the `/root/.npm` cache mount — no build-time chown.
 # At runtime, `docker-entrypoint.sh` drops to `node` because agent CLIs refuse
 # `--dangerously-skip-permissions` as root; workflow edits use bind-mounted

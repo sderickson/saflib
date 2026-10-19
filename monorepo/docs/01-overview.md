@@ -52,22 +52,24 @@ Backend packages for one product. Terminology:
 - **Service** — a coordinated set of servers and workers (e.g. identity)
 - **Monolith** — runs the product's servers and workers together
 
-| Package         | Role                                            | Kind        |
-| --------------- | ----------------------------------------------- | ----------- |
-| `common`        | shared service wiring (loggers, context, deps)  | library     |
-| `spec`          | OpenAPI contract                                | library     |
-| `db`            | drizzle schema and queries                      | library     |
-| `http`          | Express server and route handlers               | server      |
-| `sdk`           | TanStack Query clients tied to the API contract | library     |
-| `cron`          | scheduled job enqueuer                          | worker      |
-| `jobs`          | async job runtime and trigger map               | worker      |
-| `integrations/` | third-party API wrappers (see below)            | integration |
-| `monolith`      | boots http, cron, jobs, and related runtimes    | monolith    |
-| `test`          | shared test factories for spec models           | test        |
+| Package         | Role                                                                      | `saf.kind`    |
+| --------------- | ------------------------------------------------------------------------- | ------------- |
+| `common`        | service context and infrastructure handles (db keys, email)               | `domain`      |
+| `spec`          | OpenAPI contract                                                          | `spec`        |
+| `db`            | drizzle schema and queries                                                | `db`          |
+| `http`          | the product feature's route handlers, as one router                       | `http`        |
+| `http-app`      | Express app shell: middleware order, auth gate, platform routers          | `http-app`    |
+| `sdk-common`    | API client factory shared by every SDK                                    | `sdk-common`  |
+| `sdk`           | TanStack Query clients tied to the API contract                           | `sdk`         |
+| `cron`          | scheduled job enqueuer                                                    | `domain`      |
+| `jobs`          | async job runtime and trigger map                                         | `domain`      |
+| `integrations/` | third-party API wrappers (see below)                                      | `integration` |
+| `monolith`      | composition root: mounts every router, wires dependencies, boots runtimes | `app`         |
+| `test`          | shared test factories for spec models                                     | `test`        |
 
-**Dependency flow:** `spec` and `db` are independent layers. `http` depends on both and translates between wire and storage models. `sdk` depends on `spec` so clients stay decoupled from storage. `monolith` composes the runnable backends. All `clients/*` packages depend on `sdk` for API access.
+**Dependency flow:** each package imports only the layers below it; see [Product Architecture](../../architecture.md) for the layer tables and the rules `saf-imports boundaries` enforces. `spec` and `db` are independent layers. `http` depends on both and translates between wire and storage models. `sdk` depends on `spec` so clients stay decoupled from storage. `monolith` composes the runnable backends. All `clients/*` packages depend on `sdk` for API access.
 
-**Offshoots** — `{product}/{offshoot}/` holds a vertical slice (`db`, `http`, `spec`, `sdk`, `test`) when a feature is large enough to warrant its own OpenAPI surface and packages but still mounts into the parent product's HTTP app. See [@saflib/openapi](../../openapi/docs/01-overview.md#package-structure).
+**Offshoots** — `{product}/{offshoot}/` holds a vertical slice (`db`, `http`, `spec`, `sdk`, `test`) when a feature is large enough to warrant its own OpenAPI surface and packages. The composition root mounts its router; the core never imports it. See [@saflib/openapi](../../openapi/docs/01-overview.md#package-structure).
 
 **Integrations** — `{product}/service/integrations/{vendor}/` wraps a third-party SDK behind mockable **calls** (e.g. `stripe`, `sendgrid`). See [@saflib/integrations](../../integrations/docs/01-overview.md).
 

@@ -404,7 +404,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   steps: [
     step(TransformFileStepMachine, ({ context }) => ({
       filePath: path.join(context.cwd, "package.json"),
-      description: `Add ${context.productName}/** and deploy workspaces in package.json`,
+      description: `Add ${context.productName}/** and deploy workspaces, and scope saf-imports boundaries to the product, in package.json`,
       transform: (content: string) => {
         const pkg = JSON.parse(content);
         const workspaces = Array.from(
@@ -416,6 +416,15 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         );
         workspaces.sort();
         pkg.workspaces = workspaces;
+        // `saf-imports boundaries` (run in CI) checks the product's packages;
+        // saflib's own packages are import targets only.
+        pkg.safImports ??= {};
+        pkg.safImports.boundaries ??= {};
+        pkg.safImports.boundaries.scope ??= [];
+        const productScope = `dir:${context.productName}/**`;
+        if (!pkg.safImports.boundaries.scope.includes(productScope)) {
+          pkg.safImports.boundaries.scope.push(productScope);
+        }
         pkg.scripts ??= {};
         if (isEmbeddedProductMonorepo(context.cwd)) {
           pkg.scripts.preinstall ??=

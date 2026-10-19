@@ -1,0 +1,27 @@
+{
+  "name": "@saflib/base-sdk-common",
+  "saf": {
+    "kind": "sdk-common"
+  },
+  "description": "API client factory and query registration shared by the base SDK and offshoot SDKs",
+  "type": "module",
+  "exports": {
+    "./client": "./client.ts",
+    "./vue-query-register": "./vue-query-register.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/sdk": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": [
+    "./vue-query-register.ts"
+  ]
+}

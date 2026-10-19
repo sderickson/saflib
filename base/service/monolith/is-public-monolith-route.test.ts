@@ -42,3 +42,22 @@ describe("isPublicMonolithRoute", () => {
     );
   });
 });
+
+describe("isPublicMonolithRoute vs the spec", () => {
+  it("lets through every x-public operation", async () => {
+    const { jsonSpec } = await import("@saflib/base-spec");
+    const publicOps = Object.entries(jsonSpec.paths ?? {}).flatMap(
+      ([path, item]) =>
+        Object.entries(item as Record<string, { "x-public"?: unknown }>)
+          .filter(([, op]) => op?.["x-public"] === true)
+          .map(([method]) => ({
+            method: method.toUpperCase(),
+            path: path.replace(/\{[^}]+\}/g, "x"),
+          })),
+    );
+    expect(publicOps.length).toBeGreaterThan(0);
+    for (const op of publicOps) {
+      expect(isPublicMonolithRoute(req(op.method, op.path)), op.path).toBe(true);
+    }
+  });
+});

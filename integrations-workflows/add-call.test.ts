@@ -31,7 +31,11 @@ describe("integrations/add-call (ported to the new engine)", () => {
       mode: "script",
     });
 
-    const { output, result } = advanceRun(dbKey, AddCallWorkflowDefinition, runId);
+    const { output, result } = advanceRun(
+      dbKey,
+      AddCallWorkflowDefinition,
+      runId,
+    );
     await collectOutput(output);
     const outcome = await result;
     expect(outcome.status).toBe("success");

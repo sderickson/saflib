@@ -9,7 +9,8 @@
     "dist/types",
     "e2e",
     "playwright-report",
-    "test-results"
+    "test-results",
+    "**/*.weave.ts"
   ],
   "compilerOptions": {
     "rootDir": ".",
@@ -44,6 +45,9 @@
       "path": "../../../ory-kratos/ory-kratos-http"
     },
     {
+      "path": "../../../secret-store"
+    },
+    {
       "path": "../../../vendors/loki"
     },
     {
@@ -63,6 +67,12 @@
     },
     {
       "path": "../http"
+    },
+    {
+      "path": "../http-app"
+    },
+    {
+      "path": "../integrations/__integration-name__"
     },
     {
       "path": "../jobs"

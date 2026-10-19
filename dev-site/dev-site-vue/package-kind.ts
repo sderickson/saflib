@@ -1,38 +1,56 @@
 export type PackageKind =
-  | "db"
+  | "app"
+  | "http-app"
   | "http"
-  | "spec"
-  | "spa"
-  | "sdk"
-  | "lib"
+  | "http-common"
+  | "domain"
   | "integration"
+  | "db"
+  | "spec"
   | "objects"
+  | "spa"
+  | "vue"
+  | "sdk"
+  | "sdk-common"
+  | "lib"
   | "test"
   | "other";
 
 const PACKAGE_KINDS: readonly PackageKind[] = [
-  "db",
+  "app",
+  "http-app",
   "http",
-  "spec",
-  "spa",
-  "sdk",
-  "lib",
+  "http-common",
+  "domain",
   "integration",
+  "db",
+  "spec",
   "objects",
+  "spa",
+  "vue",
+  "sdk",
+  "sdk-common",
+  "lib",
   "test",
   "other",
 ];
 
 /** Surfaces this kind will eventually show (besides universal Tests). */
 export const PACKAGE_KIND_SURFACES: Record<PackageKind, string[]> = {
-  db: ["Schemas / queries"],
+  app: ["Mounts"],
+  "http-app": ["Middleware"],
   http: ["Routes"],
-  spec: ["Objects / routes"],
-  spa: ["Pages"],
-  sdk: ["Exports"],
-  lib: ["Exports"],
+  "http-common": ["Exports"],
+  domain: ["Exports"],
   integration: ["Entrypoints"],
+  db: ["Schemas / queries"],
+  spec: ["Objects / routes"],
   objects: ["Objects"],
+  spa: ["Pages"],
+  vue: ["Components"],
+  sdk: ["Exports"],
+  "sdk-common": ["Exports"],
+  lib: ["Exports"],
   test: ["Fixtures"],
   other: [],
 };

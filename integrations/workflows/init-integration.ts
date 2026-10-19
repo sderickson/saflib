@@ -21,14 +21,27 @@ const integrationStubRoot = path.join(
 );
 const dependenciesLive = path.join(
   templatesProductRoot,
-  "service/common/dependencies.ts",
+  "service/monolith/dependencies.ts",
 );
+
+/**
+ * Where the product wires integrations: the composition root
+ * (`service/monolith/dependencies.ts`), or `service/common` in products that
+ * haven't moved that wiring yet.
+ */
+function wiringDir(productRoot: string): string {
+  const monolith = path.join(productRoot, "service", "monolith");
+  return existsSync(path.join(monolith, "dependencies.ts")) ||
+    !existsSync(path.join(productRoot, "service", "common", "dependencies.ts"))
+    ? monolith
+    : path.join(productRoot, "service", "common");
+}
 
 const input = [
   {
     name: "name",
     description:
-      "Kebab-case integration name (e.g. 'stripe'). Creates service/integrations/{name} and weaves configure into common/dependencies.",
+      "Kebab-case integration name (e.g. 'stripe'). Creates service/integrations/{name} and weaves configure into the composition root's dependencies.ts (service/monolith).",
     exampleValue: "stripe",
   },
 ] as const;
@@ -62,10 +75,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const integrationName = input.name;
-    const parentDir = path.resolve(
-      input.cwd,
-      path.join("service", "common"),
-    );
+    const parentDir = path.resolve(input.cwd, path.join("service", "common"));
     const productRoot = path.dirname(path.dirname(parentDir));
     const targetDir = path.join(
       productRoot,
@@ -137,7 +147,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
       const baseReplace = makeLineReplace(context);
       return {
         name: context.integrationName,
-        targetDir: context.parentDir,
+        targetDir: wiringDir(context.productRoot),
         templateFiles: {
           dependencies: dependenciesLive,
         },

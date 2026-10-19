@@ -47,7 +47,8 @@
     "./workflows": "./workflows/index.ts",
     "./resolveAuthFromIdentityId": "./src/resolveAuthFromIdentityId.ts",
     "./kratos-admin": "./src/kratos-admin.ts",
-    "./env": "./env.ts"
+    "./env": "./env.ts",
+    "./test": "./src/test/route-test-app.ts"
   },
   "sideEffects": false
 }

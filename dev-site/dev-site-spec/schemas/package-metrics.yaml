@@ -17,14 +17,20 @@ properties:
       (db), @saflib/express (http), @saflib/openapi (spec), @saflib/sdk
       (sdk), or @saflib/vue (spa).
     enum:
-      - db
+      - app
+      - http-app
       - http
-      - spec
-      - spa
-      - sdk
-      - lib
+      - http-common
+      - domain
       - integration
+      - db
+      - spec
       - objects
+      - spa
+      - vue
+      - sdk
+      - sdk-common
+      - lib
       - test
       - other
   source_files:

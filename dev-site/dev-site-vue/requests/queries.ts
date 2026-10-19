@@ -7,7 +7,11 @@ import type {
   DevSiteResponseBody,
   DevSiteRequestBody,
 } from "@saflib/dev-site-spec";
-import { TanstackError, handleClientMethod, createSafClient } from "@saflib/sdk";
+import {
+  TanstackError,
+  handleClientMethod,
+  createSafClient,
+} from "@saflib/sdk";
 import { pickScopeDocFile, summarizeScopeDoc } from "../scope-docs.ts";
 
 /**
@@ -24,7 +28,8 @@ export function createDevSiteClient(subdomain: string) {
     // relative path (throws `Failed to parse URL`) under Node/undici,
     // including in tests. Same fix as `workflows-queries.ts`'s
     // `createWorkflowsClient`.
-    const baseUrl = typeof document !== "undefined" ? document.location.origin : "";
+    const baseUrl =
+      typeof document !== "undefined" ? document.location.origin : "";
     return createClient<paths>({
       baseUrl,
       credentials: "include",
@@ -70,10 +75,7 @@ export function useCommits(
   });
 }
 
-export function useCommit(
-  subdomain: string,
-  hash: MaybeRefOrGetter<string>,
-) {
+export function useCommit(subdomain: string, hash: MaybeRefOrGetter<string>) {
   const client = createDevSiteClient(subdomain);
   return useQuery<DevSiteResponseBody["getCommits"][200], TanstackError>({
     queryKey: ["dev-site", "commit", hash],
@@ -127,6 +129,29 @@ export function useCommitPackage(
   });
 }
 
+/** The product's package graph at a commit (works for unanalyzed commits). */
+export function usePackageGraph(
+  subdomain: string,
+  hash: MaybeRefOrGetter<string>,
+) {
+  const client = createDevSiteClient(subdomain);
+  return useQuery<
+    DevSiteResponseBody["getCommitPackageGraph"][200],
+    TanstackError
+  >({
+    queryKey: ["dev-site", "package-graph", hash],
+    enabled: () => Boolean(toValue(hash)),
+    staleTime: Infinity,
+    queryFn: () => {
+      return handleClientMethod(
+        client.GET("/api/commits/{hash}/package-graph", {
+          params: { path: { hash: toValue(hash) } },
+        }),
+      );
+    },
+  });
+}
+
 export function useCommitDiff(
   subdomain: string,
   from_hash: MaybeRefOrGetter<string>,
@@ -166,7 +191,9 @@ export function useScanMutation(subdomain: string) {
       queryClient.invalidateQueries({ queryKey: ["dev-site", "commits"] });
       queryClient.invalidateQueries({ queryKey: ["dev-site", "checkout"] });
       queryClient.invalidateQueries({ queryKey: ["dev-site", "commit"] });
-      queryClient.invalidateQueries({ queryKey: ["dev-site", "commit-package"] });
+      queryClient.invalidateQueries({
+        queryKey: ["dev-site", "commit-package"],
+      });
       queryClient.invalidateQueries({ queryKey: ["dev-site", "diff"] });
     },
   });
@@ -218,11 +245,7 @@ export function useRepoFiles(
     },
     queryFn: () => {
       const p = toValue(params);
-      const ext = p.ext
-        ? Array.isArray(p.ext)
-          ? p.ext
-          : [p.ext]
-        : undefined;
+      const ext = p.ext ? (Array.isArray(p.ext) ? p.ext : [p.ext]) : undefined;
       return handleClientMethod(
         client.GET("/api/repo/files", {
           params: {
@@ -311,4 +334,3 @@ export function useRepoDiff(
     },
   });
 }
-

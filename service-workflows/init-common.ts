@@ -72,7 +72,7 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
     step<CopyStepInput, InitCommonWorkflowContext>("copy", runCopyStep, ({ context }) => ({
       templateFiles: {
         context: path.join(sourceDir, "context.ts"),
-        dependencies: path.join(sourceDir, "dependencies.ts"),
+        email: path.join(sourceDir, "email.ts"),
         envSchema: path.join(sourceDir, "env.schema.json"),
         index: path.join(sourceDir, "index.ts"),
         packageJson: path.join(sourceDir, "package.json"),

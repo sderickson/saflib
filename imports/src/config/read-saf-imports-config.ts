@@ -96,6 +96,16 @@ export interface SafImportsBoundariesConfig {
   rules?: SafImportsBoundaryRule[];
   /** Extra regexes (package-relative paths) for test/tooling-only files. */
   devFilePatterns?: string[];
+  /**
+   * Built-in layer rules derived from each package's `saf.kind` (see
+   * `src/boundaries/layers.ts`). On by default; `false` opts out.
+   */
+  layers?: boolean;
+  /**
+   * Flag dependencies between a product's own packages that nothing uses, or
+   * that only test/tooling files use. On by default; `false` opts out.
+   */
+  unusedDependencies?: boolean;
 }
 
 function readPackageJson(filePath: string): PackageJson & {

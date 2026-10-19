@@ -1,7 +1,7 @@
 {
   "name": "@saflib/base-email",
   "saf": {
-    "kind": "lib"
+    "kind": "domain"
   },
   "description": "Email templates for the base product",
   "private": true,

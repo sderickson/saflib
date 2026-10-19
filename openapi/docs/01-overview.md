@@ -40,8 +40,8 @@ schema:
 
 Where a spec package lives in the product tree — `{product}/service/spec`, offshoot slices, and how `http` / `sdk` depend on it — is described in [monorepo service layout](../../monorepo/docs/01-overview.md#service). The golden reference implementation is [`saflib/base`](../../base/docs/01-overview.md):
 
-| Location                                                                                                     | Package             | Role                                                              |
-| ------------------------------------------------------------------------------------------------------------ | ------------------- | ----------------------------------------------------------------- |
-| [`base/service/spec`](https://github.com/sderickson/saflib/blob/main/base/service/spec/)                     | `@saflib/base-spec` | Product API contract                                              |
-| [`base/service/test`](https://github.com/sderickson/saflib/blob/main/base/service/test/)                     | `@saflib/base-test` | Shared schema factories for tests                                 |
-| [`base/__offshoot-name__/spec`](https://github.com/sderickson/saflib/blob/main/base/__offshoot-name__/spec/) | (offshoot spec)     | Bounded feature slice; paths woven into the parent `openapi.yaml` |
+| Location                                                                                                     | Package             | Role                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [`base/service/spec`](https://github.com/sderickson/saflib/blob/main/base/service/spec/)                     | `@saflib/base-spec` | Product API contract                                                                                               |
+| [`base/service/test`](https://github.com/sderickson/saflib/blob/main/base/service/test/)                     | `@saflib/base-test` | Shared schema factories for tests                                                                                  |
+| [`base/__offshoot-name__/spec`](https://github.com/sderickson/saflib/blob/main/base/__offshoot-name__/spec/) | (offshoot spec)     | Bounded feature slice; served and validated by the offshoot's own http package (the core spec never references it) |
