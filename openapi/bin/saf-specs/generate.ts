@@ -18,6 +18,11 @@ import {
 import { bundleOpenApiToJson } from "./bundle-openapi.ts";
 import { rewriteExternalSchemaTypes } from "./rewrite-external-types.ts";
 import { findSharedExternalComponents } from "./shared-external-components.ts";
+import {
+  jsonSpecModuleSource,
+  omitExternalComponents,
+} from "./external-bundles.ts";
+import type { OpenApiDoc } from "../../slice-operation.ts";
 
 /**
  * Clear codegen outputs under `-o` while preserving `types/` (composite `tsc -b`
@@ -84,7 +89,25 @@ export const addGenerateCommand = (program: Command) => {
           tempDir: resolved.tempDir,
           packageRoot: cwd,
         }) as typeof bundled;
-        writeFileSync(jsonPath, `${JSON.stringify(bundled, null, 2)}\n`);
+        // Components another package defines identically are left out of
+        // the committed bundle; dist/json-spec.ts merges them back in.
+        const { slim, owners } = omitExternalComponents({
+          bundled,
+          packageNames: [...resolved.externalSchemas.values()].map(
+            (p) => p.packageName,
+          ),
+          cwd,
+        });
+        writeFileSync(jsonPath, `${JSON.stringify(slim, null, 2)}\n`);
+        writeFileSync(
+          path.join(outputDir, "json-spec.ts"),
+          jsonSpecModuleSource(owners.values()),
+        );
+        if (owners.size > 0) {
+          log.info(
+            `Left ${owners.size} component(s) defined by other packages out of the bundle.`,
+          );
+        }
 
         // Schemas hoisted from other packages' files get those packages' types
         // too, not a second generated copy.
@@ -116,8 +139,12 @@ export const addGenerateCommand = (program: Command) => {
         log.info("Generating per-operation and schema fragments...");
         const { generateOperationFragments, generateSchemaFragments } =
           await import("./generate-fragments.ts");
-        await generateOperationFragments(outputDir);
-        generateSchemaFragments(outputDir, externalSchemas);
+        generateOperationFragments(outputDir, bundled as OpenApiDoc);
+        generateSchemaFragments(
+          outputDir,
+          bundled as OpenApiDoc,
+          externalSchemas,
+        );
 
         log.info("✅ OpenAPI generation completed successfully!");
       } finally {

@@ -10,6 +10,11 @@ Packages using `@saflib/openapi` can generate:
 
 - TypeScript types (`dist/openapi.d.ts` and per-operation/schema fragments)
 - JSON schemas (`dist/openapi.json`) for runtime validation
+- `dist/json-spec.ts`, which exports the package's complete document as `jsonSpec`
+
+Each `dist/operations/<operationId>` module slices its operation out of `jsonSpec` when imported (`operationJsonSpec`), so no per-operation JSON is committed.
+
+`dist/openapi.json` leaves out schema components that a package it builds on defines identically, listing them under `x-saf-external-components` (component name → owning package). `jsonSpec` merges them back in from the owners' own `jsonSpec`. Only packages that export `./json-spec` (pointing at `./dist/json-spec.ts`) can own components this way, so read a package's document through `jsonSpec` rather than `dist/openapi.json`.
 
 Use [product/init](../../product/docs/workflows/init.md) to copy `base` into a new product. Use [openapi/init](./workflows/init.md) to scaffold an offshoot spec (+ sibling `*-test` package). Use [openapi/add-route](./workflows/route.md), [add-schema](./workflows/schema.md), and [add-event](./workflows/add-event.md) to extend an existing spec.
 

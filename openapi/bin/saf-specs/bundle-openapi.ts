@@ -1,6 +1,6 @@
 import { bundle, loadConfig } from "@redocly/openapi-core";
 import { writeFileSync } from "node:fs";
-import type { OpenApiDoc } from "./slice-bundled-openapi.ts";
+import type { OpenApiDoc } from "../../slice-operation.ts";
 
 /**
  * Bundle an OpenAPI document into one JSON file with external `$ref`s promoted

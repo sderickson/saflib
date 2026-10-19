@@ -1,21 +1,26 @@
-import type { operations, components, paths } from "./openapi.d.ts";
-import * as json from "./openapi.json" with { type: "json" };
-import {
-  castJson,
-  type ExtractResponseBody,
-  type ExtractRequestBody,
-  type ExtractRequestPathParams,
-  type ExtractRequestQueryParams,
+import type {
+  operations as AllOperations,
+  components,
+  paths,
+} from "../../openapi.d.ts";
+import { jsonSpec } from "../../json-spec.ts";
+import { sliceOperationById } from "@saflib/openapi/slice-operation";
+import type {
+  ExtractResponseBody,
+  ExtractRequestBody,
+  ExtractRequestPathParams,
+  ExtractRequestQueryParams,
 } from "@saflib/openapi";
 
-export type { operations, components, paths };
+export const operationId = "get__OffshootName__Health" as const;
+
+export type operations = Pick<AllOperations, typeof operationId>;
+export type { components, paths };
 
 /** OpenAPI document for a single operation — use with createScopedMiddleware. */
-export const operationJsonSpec = castJson(json);
+export const operationJsonSpec = sliceOperationById(jsonSpec, operationId);
 
 export type ResponseBody = ExtractResponseBody<operations>;
 export type RequestBody = ExtractRequestBody<operations>;
 export type PathParams = ExtractRequestPathParams<operations>;
 export type QueryParams = ExtractRequestQueryParams<operations>;
-
-export const operationId = "get__OffshootName__Health" as const;

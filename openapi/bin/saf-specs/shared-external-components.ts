@@ -1,6 +1,11 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import {
+  dependsOn,
+  loadMergedBundle,
+  readPackageJson,
+} from "./external-bundles.ts";
+import {
   resolvePackageRoot,
   type ExternalSchemaProvenance,
 } from "./resolve-pkg-refs.ts";
@@ -40,14 +45,9 @@ export function findSharedExternalComponents(options: {
     // (e.g. two specs aliasing each other's schemas) hoists copies of our
     // schemas, and re-exporting in both directions would be circular.
     if (ownName && dependsOn(readPackageJson(root), ownName)) continue;
-    const bundlePath = path.join(root, "dist", "openapi.json");
     const stubsDir = path.join(root, "dist", "schemas");
-    if (!existsSync(bundlePath) || !existsSync(stubsDir)) continue;
-    const theirs = (
-      JSON.parse(readFileSync(bundlePath, "utf8")) as {
-        components?: { schemas?: Schemas };
-      }
-    ).components?.schemas;
+    if (!existsSync(stubsDir)) continue;
+    const theirs = loadMergedBundle(root)?.components?.schemas;
     if (!theirs) continue;
     const stubByLower = new Map(
       readdirSync(stubsDir).map((name) => [name.toLowerCase(), name]),
@@ -185,28 +185,4 @@ function definesSchemaLocally(stubDir: string): boolean {
   const indexPath = path.join(stubDir, "index.ts");
   if (!existsSync(indexPath)) return false;
   return !/^export type \{/m.test(readFileSync(indexPath, "utf8"));
-}
-
-type PackageJsonDeps = {
-  name?: string;
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-  peerDependencies?: Record<string, string>;
-};
-
-function readPackageJson(dir: string): PackageJsonDeps | undefined {
-  try {
-    return JSON.parse(
-      readFileSync(path.join(dir, "package.json"), "utf8"),
-    ) as PackageJsonDeps;
-  } catch {
-    return undefined;
-  }
-}
-
-function dependsOn(pj: PackageJsonDeps | undefined, name: string): boolean {
-  if (!pj) return false;
-  return [pj.dependencies, pj.devDependencies, pj.peerDependencies].some(
-    (deps) => deps !== undefined && name in deps,
-  );
 }
