@@ -35,7 +35,7 @@ Nothing below HTTP imports a `spec`: API contracts are for the HTTP and SDK laye
 
 ## Features and offshoots
 
-A **feature** is the first directory under the product root: `service/` is the core, and each offshoot (`<offshoot>/{db,spec,http,sdk,test}`) is its own feature. Packages directly in the product root count as core.
+A **feature** is the first directory under the product root. The **core** is one feature made of `service/`, `clients/` and packages directly in the product root; each offshoot (`<offshoot>/{db,spec,http,sdk,test}`) is its own feature. A package that lives in its own directory but is really core sets `saf.feature: "service"` in `package.json`.
 
 - An offshoot may use the core's `domain`, `integration`, `db`, `spec` and `objects` packages, never the core's `http` or `sdk`.
 - The core never references an offshoot. The composition root wires offshoots in: `service/monolith/http.ts` mounts each offshoot's router (`express/init` adds it), and SPAs import offshoot SDKs directly.

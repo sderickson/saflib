@@ -519,6 +519,34 @@ describe("layer rules", () => {
     ]);
   });
 
+  it("treats service/, clients/ and the product root as one core feature", () => {
+    const root = makeMonorepo({
+      "packages/service/vue": { name: "@p/vue", kind: "vue" },
+      "packages/clients/common": {
+        name: "@p/clients-common",
+        kind: "vue",
+        deps: ["@p/vue"],
+        files: { "index.ts": `import "@p/vue";` },
+      },
+      "packages/billing/vue": {
+        name: "@p/billing-vue",
+        kind: "vue",
+        deps: ["@p/vue"],
+        files: { "index.ts": `import "@p/vue";` },
+      },
+      "packages/billing/sdk": { name: "@p/billing-sdk", kind: "sdk" },
+      "packages/clients/app": {
+        name: "@p/app-spa",
+        kind: "spa",
+        deps: ["@p/billing-sdk"],
+        files: { "main.ts": `import "@p/billing-sdk";` },
+      },
+    });
+    expect(layerKeys(root)).toEqual([
+      "layer(siblings): @p/billing-vue -> @p/vue",
+    ]);
+  });
+
   it("only layers packages within one product", () => {
     const root = makeMonorepo({
       "packages/framework/express": { name: "@fw/express", kind: "http" },

@@ -80,11 +80,11 @@ Every package declares a layer as its `saf.kind`. A package imports only the lay
 Rules beyond the table (keys `layer(<rule>): from -> to`):
 
 - **siblings** — packages of the same kind in different features don't import each other; what they share moves down a layer (e.g. two `http` packages → `http-common`). An offshoot may use the core's `domain`, `integration`, `db`, `spec` and `objects` packages, never the core's `http` or `sdk`. Any `objects` package may import any other.
-- **core-offshoot** — the core never imports an offshoot, except an offshoot's `objects` package and the core db's schema index (`schema`, `schemas/*`) re-exporting offshoot tables. Wire offshoots together in the `app` package.
+- **core-offshoot** — the core never imports an offshoot, except from SPAs (which compose the client side and import offshoot SDKs directly), an offshoot's `objects` package and the core db's schema index (`schema`, `schemas/*`) re-exporting offshoot tables. Wire offshoots together in the `app` package.
 - **test-dev-only** — a `test` package is never a runtime dependency.
 - **integration-internals** — an integration package's client code (`client.ts`, `calls/`, `bin/`) imports neither a `db` package nor its own `state/`.
 
-A **feature** is the first directory under the product root, the nearest ancestor that contains a `service/` directory: `service/*` is the core feature, `<offshoot>/*` an offshoot, and packages directly in the product root count as core. Set `saf.feature` in `package.json` to override. Imports of packages outside the product (e.g. `@saflib/*`) aren't layered. Turn the layer rules off with `"layers": false` under `safImports.boundaries`.
+A **feature** is the first directory under the product root, the nearest ancestor that contains a `service/` directory: `service/*`, `clients/*` and packages directly in the product root make up the core (one feature), and `<offshoot>/*` is an offshoot. Set `saf.feature` in `package.json` to override. Imports of packages outside the product (e.g. `@saflib/*`) aren't layered. Turn the layer rules off with `"layers": false` under `safImports.boundaries`.
 
 Test and tooling files (`*.test.ts`, `*.fake(s).ts`, `*mocks.ts`, `test/`, `bin/`, `scripts/`, `*.config.*`, …) may use `devDependencies` and are left out of the runtime graph.
 

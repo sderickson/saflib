@@ -6,7 +6,8 @@
  * - **siblings:** packages of the same kind in different features don't import
  *   each other; what they share moves down a layer. An offshoot may still use
  *   the core's packages below HTTP (decision D2).
- * - **core-offshoot:** the core never references an offshoot (D2). The core
+ * - **core-offshoot:** the core never references an offshoot (D2), except
+ *   SPAs, which compose the client side and import offshoot SDKs directly. The core
  *   db's schema index may re-export offshoot tables, since they share one
  *   database and one migration history; any feature's `objects` package may
  *   be shared.
@@ -67,12 +68,18 @@ const SHARED_HOME: Record<string, string> = {
   spa: "vue or sdk",
 };
 
+/**
+ * Features that make up the product's core: the server tree (`service/`), the
+ * client tree (`clients/`) and packages directly in the product root (`""`).
+ */
+const CORE_FEATURES = new Set(["", "service", "clients"]);
+
 export interface LayerPackage {
   name: string;
   kind?: string;
   /** Feature id (`service`, `dossier`, …; `""` for product-root packages). */
   feature: string;
-  /** The product's core: `service/` and product-root packages. */
+  /** The product's core: `service/`, `clients/` and product-root packages. */
   core: boolean;
   /**
    * Absolute product root (nearest ancestor with a `service/` directory).
@@ -120,9 +127,7 @@ export function resolveFeature(
     return {
       productRoot,
       feature: override,
-      core:
-        productRoot !== undefined &&
-        (override === "service" || override === ""),
+      core: productRoot !== undefined && CORE_FEATURES.has(override),
     };
   }
   if (!productRoot) {
@@ -139,7 +144,7 @@ export function resolveFeature(
   return {
     productRoot,
     feature,
-    core: feature === "" || feature === "service",
+    core: CORE_FEATURES.has(feature),
   };
 }
 
@@ -203,12 +208,14 @@ export function checkLayerEdge(
   }
 
   // Objects packages are shared vocabulary: a schema both need may live in
-  // any feature's objects package (D2).
+  // any feature's objects package (D2). SPAs compose the client side, the way
+  // the app package composes the server: they import offshoot SDKs directly.
   if (
     from.core &&
     !to.core &&
     from.feature !== to.feature &&
-    toKind !== "objects"
+    toKind !== "objects" &&
+    fromKind !== "spa"
   ) {
     if (subpath === undefined && fromKind === "db" && toKind === "db") {
       return undefined; // decided by what is imported
@@ -223,7 +230,8 @@ export function checkLayerEdge(
   }
 
   if (toKind && toKind === fromKind) {
-    if (from.feature === to.feature) return undefined;
+    // The core is one feature, however its directories are split.
+    if (from.feature === to.feature || (from.core && to.core)) return undefined;
     if (fromKind === "objects") return undefined;
     if (to.core && SHARED_FROM_CORE.has(fromKind)) return undefined;
     const home = SHARED_HOME[fromKind] ?? "the layer below";
