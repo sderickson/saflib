@@ -1,11 +1,13 @@
 import type { Express, Router } from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { baseDb } from "@saflib/base-db/instances";
+import { publicRouteMatcher } from "@saflib/express";
+import { jsonSpec } from "@saflib/base-spec";
 import {
   buildBaseHttpApp,
   type BaseHttpAppLease,
   type HttpRouterMount,
-} from "#http.ts";
+} from "@saflib/base-http-app";
 
 export type SlimRouteTestContext = {
   app: Express;
@@ -20,7 +22,12 @@ export type SlimRouteTestContext = {
 export function acquireSlimRouteTest(options: {
   mounts: HttpRouterMount[];
 }): SlimRouteTestContext {
-  const lease = buildBaseHttpApp({ mounts: options.mounts });
+  const lease = buildBaseHttpApp({
+    mounts: options.mounts,
+    // Public routes come from the spec (`x-public`); production uses the
+    // composition root's reviewed list.
+    isPublicRoute: publicRouteMatcher([jsonSpec]),
+  });
   return {
     app: lease.app,
     lease,

@@ -122,6 +122,9 @@
       "path": "./base/service/http"
     },
     {
+      "path": "./base/service/http-app"
+    },
+    {
       "path": "./base/service/integrations/__integration-name__"
     },
     {

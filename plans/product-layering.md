@@ -14,7 +14,7 @@
 | ----- | ----------- | ----- |
 | 1 | `saf-imports boundaries`: undeclared, relative-escape, cycle, forbidden + baseline | done |
 | 2 | Layer model: kinds → layers, built-in default rules, feature/sibling detection | done |
-| 3 | HTTP app chrome in saflib; composition root mounts routers | todo |
+| 3 | HTTP app chrome in saflib; composition root mounts routers | done |
 | 4 | Domain/context rules; integration package shape | todo |
 | 5 | Client side: `sdk-common` in the template; delete runtime binders | todo |
 | 6 | Templates and workflows produce layered packages | in progress |
@@ -124,13 +124,13 @@ It never constructs clients or wires dependencies; the composition root does tha
 
 ### Phase 3 — HTTP app chrome and composition
 
-- [ ] Generalize the product-level HTTP app builder (mounts, security resolvers, public-route gate, error handling, SSE origins) into `@saflib/express` as `createProductHttpApp({ mounts, securityResolvers, isPublicRoute, … })`. The product's `http-app` package is a thin config wrapper.
-- [ ] Route-test harness (`acquireSlimRouteTest`-style) in `@saflib/express/test`. Mounts only the routers a test passes, so a feature http package tests itself without the whole product.
-- [ ] Composition root (`service/monolith`) owns:
+- [x] Generalize the product-level HTTP app builder (mounts, security resolvers, public-route gate, error handling, SSE origins) into `@saflib/express` as `createProductHttpApp({ mounts, securityResolvers, isPublicRoute, … })`. The product's `http-app` package is a thin config wrapper. Done as staged hooks (`beforeGlobal`, `runInContext`, `beforeIdentity`, `publicRouters`, `isPublicRoute`/`deferAuth`, `afterAuth`, `mounts`, `platformRouters`); base has `service/http-app`; products add their own `http-app` package. Security resolvers stay on each route's scoped middleware.
+- [x] Route-test harness (`acquireSlimRouteTest`-style) in `@saflib/express/test`. Mounts only the routers a test passes, so a feature http package tests itself without the whole product. `createRouteTestApp`; product harnesses build on their `http-app` package. Slim tests derive public routes from `x-public` (`publicRouteMatcher`).
+- [x] Composition root (`service/monolith`) owns:
   - the production mount list, public-route list and startup tasks;
   - the merged spec for jobs/cron (multi-spec `runJobs`);
   - the all-specs security test.
-- [ ] Feature http packages export `create<Feature>Router()` only.
+- [x] Feature http packages export `create<Feature>Router()` only. Base: `createBaseRouter()`.
 
 ### Phase 4 — Domain and integrations
 
@@ -177,3 +177,4 @@ It never constructs clients or wires dependencies; the composition root does tha
 - 2026-10-18 — Base template brought in line: `saf.kind` on every base package, undeclared base dependencies declared, offshoot routers mounted from `service/monolith/http.ts` (with `express/init` retargeted), and `openapi/init` no longer weaves offshoot paths into the core spec (D2: the core never references an offshoot). Spec packages export `./json-spec` (generated `dist/json-spec.ts`), so bundles can omit components shared with packages they build on.
 - 2026-10-18 — D2 clarified: offshoot tables share the core SQLite database, and the core db schema index re-exporting them for migrations is the one allowed core → offshoot reference.
 - 2026-10-18 — Phase 2 landed. Decisions while implementing: (1) objects sit below spec and db (specs alias objects schemas), and nothing below HTTP imports `spec`; (2) `lib`/`other` stay unlayered, importable by all but objects; (3) any feature's `objects` package may be used by the core (D2's "or in an objects package"); (4) an offshoot may use the core's domain/integration/db/spec/objects packages, never its http/sdk/vue (D2, extended to domain and integration); (5) a feature is the first directory under the product root, and product-root packages are core; (6) layer rules apply only within one product root, so framework (`@saflib/*`) imports are never layered.
+- 2026-10-18 — Phase 3 landed: `createProductHttpApp`/`createRouteTestApp`/`publicRouteMatcher` in `@saflib/express`; an `http-app` package in base (and in the product that prototyped this); the reviewed public-route list moved to the composition root (with a test that it covers every `x-public` operation); jobs get their API specs from the composition root.

@@ -65,6 +65,9 @@
       "path": "../http"
     },
     {
+      "path": "../http-app"
+    },
+    {
       "path": "../jobs"
     },
     {

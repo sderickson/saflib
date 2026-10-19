@@ -1,0 +1,40 @@
+{
+  "name": "@saflib/base-http-app",
+  "saf": {
+    "kind": "http-app"
+  },
+  "description": "HTTP app chrome for the base service: middleware order, auth gate and platform routers",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/analytics-http": "*",
+    "@saflib/base-audit": "*",
+    "@saflib/base-cron": "*",
+    "@saflib/base-db": "*",
+    "@saflib/base-jobs": "*",
+    "@saflib/base-service-common": "*",
+    "@saflib/cron-http": "*",
+    "@saflib/drizzle": "*",
+    "@saflib/email-service": "*",
+    "@saflib/env": "*",
+    "@saflib/errors-http": "*",
+    "@saflib/express": "*",
+    "@saflib/jobs-http": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/node-log-http": "*",
+    "@saflib/node-metrics-http": "*",
+    "@saflib/vendors-brevo": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "supertest": "^7.0.0"
+  },
+  "sideEffects": false
+}

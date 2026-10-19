@@ -45,7 +45,7 @@ describe("createTodos", () => {
 
 For a short chain of routers, prefer `acquireRouterSlimRouteTestMulti([createA, createB])` over the full app.
 
-The slim harness still runs `buildBaseHttpApp` (global middleware, service context, auth gate, platform terminators). Your mounted router is the only **product** mount; jobs, cron, and audit still run after it.
+The slim harness builds the product's app from its `http-app` package (`buildBaseHttpApp`: global middleware, service context, auth gate, platform routers), mounting only your router; jobs, cron and audit still run after it. Public routes come from the spec's `x-public` operations (`publicRouteMatcher`), while production uses the composition root's reviewed list. For a package with no product context, `createRouteTestApp` from `@saflib/express/test` gives the same shell around just the routers you pass.
 
 ## Coverage
 
@@ -55,7 +55,7 @@ The slim harness still runs `buildBaseHttpApp` (global middleware, service conte
 
 ## Integration tests (full app)
 
-Use `create…HttpApp()` with default mounts only in `*.integration.test.ts` when you need the full monolith: multiple product routers, jobs/cron behavior, OAuth flows, or cross-router interactions.
+Use the composition root's `create…HttpApp()` (every production mount) only in `*.integration.test.ts` when you need the full monolith: multiple product routers, jobs/cron behavior, OAuth flows, or cross-router interactions.
 
 ### Gotchas
 

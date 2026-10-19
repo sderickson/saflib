@@ -30,7 +30,11 @@ export {
   type GlobalMiddlewareOptions,
 } from "./middleware/composition.ts";
 export { makeContextMiddleware } from "./middleware/context.ts";
-export { makeAuthMiddleware, drainRequest, type AuthMiddlewareOptions } from "./middleware/auth.ts";
+export {
+  makeAuthMiddleware,
+  drainRequest,
+  type AuthMiddlewareOptions,
+} from "./middleware/auth.ts";
 export { makeCsrfMiddleware } from "./middleware/csrf.ts";
 export {
   compileOperationSecurity,
@@ -78,3 +82,10 @@ export {
 } from "./kratos-admin.ts";
 
 export { resolveAuthFromIdentityId } from "./resolveAuthFromIdentityId.ts";
+
+export {
+  createProductHttpApp,
+  type CreateProductHttpAppOptions,
+  type HttpRouterMount,
+} from "./app/create-product-http-app.ts";
+export { publicRouteMatcher } from "./app/public-routes.ts";

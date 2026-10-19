@@ -76,7 +76,7 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
   },
   {
     rel: "service/http/http.ts",
-    mustInclude: ["groupRouterMounts", "buildBaseHttpApp"],
+    mustInclude: ["groupRouterMounts", "createBaseRouter"],
   },
   {
     rel: "service/monolith/http.ts",
