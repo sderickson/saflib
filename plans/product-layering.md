@@ -6,9 +6,9 @@
 
 ## Status
 
-- **Phase:** 1 and 2 done; parts of 6 done early (see below). A refactor of one large SAF product prototyped most of this.
+- **Phase:** 1–6 done; 7 in progress (docs done, products burning down). A refactor of one large SAF product prototyped most of this.
 - **Last updated:** 2026-10-18
-- **Next action:** Phase 3 (HTTP app chrome and composition), or burn down a product baseline. Previously: Phase 2 (layer model). D1–D4 are settled; the `objects`/`test` kinds and the `missing-kind` check have landed, every base package declares a kind, and `product/workflows/base-boundaries.test.ts` keeps base free of violations.
+- **Next action:** burn down product baselines (Phase 7). Phases 1–6 are done. D1–D4 are settled; the `objects`/`test` kinds and the `missing-kind` check have landed, every base package declares a kind, and `product/workflows/base-boundaries.test.ts` keeps base free of violations.
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
@@ -18,7 +18,7 @@
 | 4 | Domain/context rules; integration package shape | done |
 | 5 | Client side: `sdk-common` in the template; delete runtime binders | done |
 | 6 | Templates and workflows produce layered packages | done |
-| 7 | Docs, then migrate products | todo |
+| 7 | Docs, then migrate products | in progress (products burning down) |
 
 ## Context
 
@@ -160,8 +160,8 @@ It never constructs clients or wires dependencies; the composition root does tha
 
 ### Phase 7 — Docs and migration
 
-- [ ] `saflib/docs` architecture page with both layer tables and the "move it down, never sideways" rule. Link it from `best-practices.md` and the offshoot workflow docs.
-- [ ] Products: add kinds and a baseline, then burn down.
+- [x] `saflib/docs` architecture page with both layer tables and the "move it down, never sideways" rule. Link it from `best-practices.md` and the offshoot workflow docs. Written as `saflib/architecture.md` (beside `best-practices.md`), linked from best practices and the monorepo layout docs; the openapi, express and integrations docs describe the new split.
+- [ ] Products: add kinds and a baseline, then burn down. Base: done (clean). The prototyping product: kinds and baseline done, burning down (27 → 9 layer violations so far).
 
 ## Decisions (settled 2026-10-18)
 
@@ -181,3 +181,4 @@ It never constructs clients or wires dependencies; the composition root does tha
 - 2026-10-18 — Phase 4 landed in base: `dependencies.ts` (secret store, integration configure) moved to `service/monolith`; `service/common` keeps the context and an `email.ts` handle, with no integration dependencies. `integrations/init` (both engines) weaves into the composition root, falling back to `service/common` for products that haven't moved their wiring.
 - 2026-10-18 — Phase 5 landed in base: `service/sdk-common` (kind `sdk-common`, Vue app tsconfig so its vue-query `Register` augmentation targets the same module as the SPAs) with `createApiClient<Paths>()`; core and offshoot SDKs each create their own typed client.
 - 2026-10-18 — Phase 6 landed: workflow guidance and offshoot workflows produce layered packages; new products run `saf-imports boundaries` in CI, scoped to the product; base has no accepted boundary violations besides the `lib/__package-name__` stub's optional folders.
+- 2026-10-18 — Phase 7 docs: `architecture.md` (layer tables, move-down rule, features/offshoots, ownership), linked from best practices and the monorepo docs.
