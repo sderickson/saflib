@@ -140,6 +140,9 @@
       "path": "./base/service/sdk"
     },
     {
+      "path": "./base/service/sdk-common"
+    },
+    {
       "path": "./base/service/spec"
     },
     {

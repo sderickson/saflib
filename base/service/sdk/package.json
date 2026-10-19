@@ -22,11 +22,12 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@saflib/monorepo": "*",
-    "@saflib/sdk": "*",
+    "@saflib/base-sdk-common": "*",
     "@saflib/base-spec": "*",
-    "@saflib/vue": "*",
-    "@saflib/ory-kratos-sdk": "*"
+    "@saflib/monorepo": "*",
+    "@saflib/ory-kratos-sdk": "*",
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*"
   },
   "devDependencies": {
     "@saflib/base-test": "*",

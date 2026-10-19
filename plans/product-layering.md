@@ -16,7 +16,7 @@
 | 2 | Layer model: kinds → layers, built-in default rules, feature/sibling detection | done |
 | 3 | HTTP app chrome in saflib; composition root mounts routers | done |
 | 4 | Domain/context rules; integration package shape | done |
-| 5 | Client side: `sdk-common` in the template; delete runtime binders | todo |
+| 5 | Client side: `sdk-common` in the template; delete runtime binders | done |
 | 6 | Templates and workflows produce layered packages | in progress |
 | 7 | Docs, then migrate products | todo |
 
@@ -143,12 +143,12 @@ It never constructs clients or wires dependencies; the composition root does tha
 
 ### Phase 5 — Client side
 
-- [ ] Template `service/sdk-common`:
+- [x] Template `service/sdk-common`:
   - the API client factory and tenant header;
   - shared query-key factories;
   - the cache constants and the vue-query `Register` declaration.
-- [ ] Offshoot SDK template imports `sdk-common` statically; delete the bind pattern from `base/__offshoot-name__/sdk`.
-- [ ] Product `sdk` re-exports `sdk-common` for SPA convenience. `sdk` never re-exports offshoot SDKs: SPAs depend on them directly.
+- [x] Offshoot SDK template imports `sdk-common` statically; delete the bind pattern from `base/__offshoot-name__/sdk`. Each SDK (core and offshoot) has its own `client.ts`: `createApiClient<paths>()` from `sdk-common`, typed by its own spec.
+- [x] ~~Product `sdk` re-exports `sdk-common` for SPA convenience.~~ Not needed: SPAs use each SDK's requests, and `sdk-common`'s `Register` declaration reaches them through the clients. `sdk` never re-exports offshoot SDKs: SPAs depend on them directly, and `sdk/init` no longer adds the offshoot SDK to the core `sdk`.
 
 ### Phase 6 — Templates and workflows
 
@@ -179,3 +179,4 @@ It never constructs clients or wires dependencies; the composition root does tha
 - 2026-10-18 — Phase 2 landed. Decisions while implementing: (1) objects sit below spec and db (specs alias objects schemas), and nothing below HTTP imports `spec`; (2) `lib`/`other` stay unlayered, importable by all but objects; (3) any feature's `objects` package may be used by the core (D2's "or in an objects package"); (4) an offshoot may use the core's domain/integration/db/spec/objects packages, never its http/sdk/vue (D2, extended to domain and integration); (5) a feature is the first directory under the product root, and product-root packages are core; (6) layer rules apply only within one product root, so framework (`@saflib/*`) imports are never layered.
 - 2026-10-18 — Phase 3 landed: `createProductHttpApp`/`createRouteTestApp`/`publicRouteMatcher` in `@saflib/express`; an `http-app` package in base (and in the product that prototyped this); the reviewed public-route list moved to the composition root (with a test that it covers every `x-public` operation); jobs get their API specs from the composition root.
 - 2026-10-18 — Phase 4 landed in base: `dependencies.ts` (secret store, integration configure) moved to `service/monolith`; `service/common` keeps the context and an `email.ts` handle, with no integration dependencies. `integrations/init` (both engines) weaves into the composition root, falling back to `service/common` for products that haven't moved their wiring.
+- 2026-10-18 — Phase 5 landed in base: `service/sdk-common` (kind `sdk-common`, Vue app tsconfig so its vue-query `Register` augmentation targets the same module as the SPAs) with `createApiClient<Paths>()`; core and offshoot SDKs each create their own typed client.

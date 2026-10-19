@@ -1,17 +1,5 @@
-import { createSafClient, TanstackError } from "@saflib/sdk";
 import type { paths } from "@saflib/base-spec";
+import { createApiClient } from "@saflib/base-sdk-common/client";
 
-let client: ReturnType<typeof createSafClient<paths>> | null = null;
-
-export const getClient = () => {
-  if (!client) {
-    client = createSafClient<paths>("api");
-  }
-  return client;
-};
-
-declare module "@tanstack/vue-query" {
-  interface Register {
-    defaultError: TanstackError;
-  }
-}
+/** The base API client, typed by the base spec. */
+export const getClient = createApiClient<paths>();

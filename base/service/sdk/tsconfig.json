@@ -16,6 +16,9 @@
       "path": "../../../vue"
     },
     {
+      "path": "../sdk-common"
+    },
+    {
       "path": "../spec"
     }
   ],
