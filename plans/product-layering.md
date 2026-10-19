@@ -163,7 +163,7 @@ It never constructs clients or wires dependencies; the composition root does tha
 ## Decisions (settled 2026-10-18)
 
 - **D1 — `http-common` packaging: its own package.** It's checkable by kind alone. Products with a `service/common/http/*` subpath migrate to it.
-- **D2 — Offshoots using core objects:** offshoot `spec`/`db` packages may reference the core `spec`/`db`, never core `http`/`sdk`. The core never references an offshoot; a schema both need lives in the core (or in an objects package).
+- **D2 — Offshoots using core objects:** offshoot `spec`/`db` packages may reference the core `spec`/`db`, never core `http`/`sdk`. The core never references an offshoot; a schema both need lives in the core (or in an objects package). One exception: the core db's schema index re-exports offshoot tables (`drizzle/init`'s `offshoot-schema-exports`), so the one shared SQLite database has one migration history.
 - **D3 — Integration state:** an integration package may define and manage its own state (tables and queries in its `state/`). Domain code calls the integration, never the other way around.
 - **D4 — `saf.kind`: required, as an error.** `saf-imports boundaries` reports `missing-kind` for any in-scope package without a known kind.
 
@@ -172,3 +172,4 @@ It never constructs clients or wires dependencies; the composition root does tha
 - 2026-10-18 — Plan created from a large product's package-layering refactor, generalized to the base template. Phase 1 (`saf-imports boundaries`) landed alongside it.
 - 2026-10-18 — D1–D4 settled (see Decisions). Added `objects` and `test` kinds to `@saflib/monorepo`, and `missing-kind` to `saf-imports boundaries`.
 - 2026-10-18 — Base template brought in line: `saf.kind` on every base package, undeclared base dependencies declared, offshoot routers mounted from `service/monolith/http.ts` (with `express/init` retargeted), and `openapi/init` no longer weaves offshoot paths into the core spec (D2: the core never references an offshoot). Spec packages export `./json-spec` (generated `dist/json-spec.ts`), so bundles can omit components shared with packages they build on.
+- 2026-10-18 — D2 clarified: offshoot tables share the core SQLite database, and the core db schema index re-exporting them for migrations is the one allowed core → offshoot reference.
