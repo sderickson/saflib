@@ -17,7 +17,7 @@
 | 3 | HTTP app chrome in saflib; composition root mounts routers | done |
 | 4 | Domain/context rules; integration package shape | done |
 | 5 | Client side: `sdk-common` in the template; delete runtime binders | done |
-| 6 | Templates and workflows produce layered packages | in progress |
+| 6 | Templates and workflows produce layered packages | done |
 | 7 | Docs, then migrate products | todo |
 
 ## Context
@@ -153,10 +153,10 @@ It never constructs clients or wires dependencies; the composition root does tha
 ### Phase 6 — Templates and workflows
 
 - [x] `express/init` offshoot areas (`offshoot-router-imports` / `-mounts`) move from `service/http/http.ts` to the composition root (`service/monolith/http.ts`).
-- [ ] `express/add-handler` stays within the feature package (`routers.ts`).
-- [ ] The offshoot workflow creates `{db,spec,http,sdk,test}` with the right kinds and dependencies, and creates no edge to the core http or sdk package. Done for http (`express/init` weaves into the composition root) and spec (`openapi/init` no longer weaves offshoot paths into the core spec, per D2). Still open: `sdk/init` adds the offshoot SDK to the core `sdk` (Phase 5).
-- [ ] Product init creates only the layers a one-feature product needs. `http-common`, `sdk-common` and `domain` are created on first offshoot or when the boundaries check first suggests one.
-- [ ] Template CI runs `saf-imports boundaries`. Partly: `product/workflows/base-boundaries.test.ts` checks the base packages within saflib's suite; a generated product doesn't run it in CI yet.
+- [x] `express/add-handler` stays within the feature package (`routers.ts`). Its guidance now describes the http-app / composition-root split.
+- [x] The offshoot workflow creates `{db,spec,http,sdk,test}` with the right kinds and dependencies, and creates no edge to the core http or sdk package. `express/init` weaves into the composition root, `openapi/init` no longer weaves offshoot paths into the core spec (D2), `sdk/init` no longer adds the offshoot SDK to the core `sdk`, and the offshoot SDK has its own client from `sdk-common`. `drizzle/init`'s schema re-export is D2's one exception.
+- [x] Product init creates only the layers a one-feature product needs. `http-common` and `objects` are created when the boundaries check first suggests one. Base does ship `sdk-common` (a few lines; every SDK's client comes from it, so offshoots never need the core SDK) and `domain` packages (`service/common` and friends are needed from day one).
+- [x] Template CI runs `saf-imports boundaries`. The scaffold's `typecheck.yml` runs it, `product/init` scopes it to the product (`safImports.boundaries.scope`), and `product/workflows/base-boundaries.test.ts` keeps base clean in saflib's suite. Base's shared SCSS moved into `clients/common/styles/`, removing its last relative-escape.
 
 ### Phase 7 — Docs and migration
 
@@ -180,3 +180,4 @@ It never constructs clients or wires dependencies; the composition root does tha
 - 2026-10-18 — Phase 3 landed: `createProductHttpApp`/`createRouteTestApp`/`publicRouteMatcher` in `@saflib/express`; an `http-app` package in base (and in the product that prototyped this); the reviewed public-route list moved to the composition root (with a test that it covers every `x-public` operation); jobs get their API specs from the composition root.
 - 2026-10-18 — Phase 4 landed in base: `dependencies.ts` (secret store, integration configure) moved to `service/monolith`; `service/common` keeps the context and an `email.ts` handle, with no integration dependencies. `integrations/init` (both engines) weaves into the composition root, falling back to `service/common` for products that haven't moved their wiring.
 - 2026-10-18 — Phase 5 landed in base: `service/sdk-common` (kind `sdk-common`, Vue app tsconfig so its vue-query `Register` augmentation targets the same module as the SPAs) with `createApiClient<Paths>()`; core and offshoot SDKs each create their own typed client.
+- 2026-10-18 — Phase 6 landed: workflow guidance and offshoot workflows produce layered packages; new products run `saf-imports boundaries` in CI, scoped to the product; base has no accepted boundary violations besides the `lib/__package-name__` stub's optional folders.

@@ -4,15 +4,11 @@ import { checkBoundaries } from "@saflib/imports/boundaries";
 
 /**
  * Violations the template carries on purpose:
- * - `clients/common` pulls the shared SCSS from `clients/build` by relative path;
  * - `lib/__package-name__` (`template-package`) has optional `bin/` and
  *   `workflows/` stubs whose dependencies are added by the workflows that
  *   create them.
  */
-const ACCEPTED = [
-  /^relative-escape: base\/clients\/common\/style-imports\.ts -> \.\.\/build\/[^/]+\.scss$/,
-  /^undeclared: template-package -> /,
-];
+const ACCEPTED = [/^undeclared: template-package -> /];
 
 /**
  * `product/init` copies `base` into new products, which then run

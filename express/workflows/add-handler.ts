@@ -188,9 +188,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       - Do **not** mount \`createScopedMiddleware({ apiSpec: jsonSpec })\` on a router prefix.
       - If the product exports a \`registerRoute\` built with \`makeRegisterRoute\` (e.g. \`#handlers/register-route.ts\`), use \`registerRoute(router, operationJsonSpec, handler)\` instead: method, path, and access (OpenAPI \`security\` / \`x-public\`, including product schemes such as \`org\`) all come from the spec, so pass no auth options.
 
-      **Package routers.ts:** Add the group's \`create…Router()\` to \`groupRouterMounts()\` in \`routers.ts\` (workflow area). Main \`http.ts\` spreads that barrel; offshoot \`http.ts\` mounts it on the offshoot barrel router. Route handler tests mount the **group router** via \`acquireRouterSlimRouteTest\` in \`test/slim-route-test.ts\`, not \`create…HttpApp()\` with the full default mount list.
+      **Package routers.ts:** Add the group's \`create…Router()\` to \`groupRouterMounts()\` in \`routers.ts\` (workflow area). The package's \`http.ts\` builds its one feature router from that barrel, and the composition root (\`service/monolith/http.ts\`) mounts it. Route handler tests mount the **group router** via \`acquireRouterSlimRouteTest\` in \`test/slim-route-test.ts\`, not the composition root's \`create…HttpApp()\`.
 
-      **Router mount order (http.ts):** Platform terminators (\`createCronRouter\`, etc.) stay in main \`http.ts\` *after* \`groupRouterMounts()\` / offshoot barrels. Product group routers belong in \`routers.ts\` so they always mount before those terminators.
+      **Router mount order:** The \`http-app\` package mounts platform routers (\`createCronRouter\`, etc.) *after* every feature router, so group routers only need to be in \`routers.ts\`.
 
       **OpenAPI schemas and express-openapi-validator:** Specs are OpenAPI **3.1**. Prefer \`type: [string, "null"]\` / \`type: [array, "null"]\`, and for nullable \`$ref\` objects \`oneOf: [{ type: "null" }, { \$ref: … }]\`. Do **not** use OpenAPI 3.0 \`nullable: true\` (especially with \`allOf: [\$ref]\` and no sibling \`type\` — that used to 500). See \`@saflib/openapi\` docs/02-api-design.md.
       - After schema fixes, rebuild the spec package (\`npm run build\` in the \`-spec\` package) so \`jsonSpec\` / \`dist/openapi.json\` pick up the change.${
@@ -224,7 +224,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         * Make sure to implement proper test cases that cover both success and error scenarios.
         * Do not do any mocking. Databases are in memory, and integrations have fake implementations. Do not use vitest's mock!
         * Do not test 500 or involve OpenAPI validation. Just success and 400 responses which are handled in the implementation.
-        * If a test unexpectedly gets **404** for a route you registered, check that the group is in \`routers.ts\` \`groupRouterMounts()\` and that main \`http.ts\` still mounts platform terminators (\`createCronRouter\`) *after* product barrels.
+        * If a test unexpectedly gets **404** for a route you registered, check that the group is in \`routers.ts\` \`groupRouterMounts()\`.
         * If a test unexpectedly gets **500** with \`"nullable" cannot be used without "type"\`, fix the OpenAPI schema in the adjacent \`-spec\` package (see handler-step guidance), rebuild the spec, and re-run — do not treat it as a handler bug.
         * Run tests with "npm run test" in ${context.cwd}.
         * **Default tier:** mount \`create${kebabCaseToPascalCase(context.groupName)}Router\` (the group \`index.ts\` factory) via \`acquireRouterSlimRouteTest\` from \`test/slim-route-test.ts\`, with \`beforeAll\`/\`afterAll\` and \`releaseSlimRouteTest\` in \`afterAll\`.

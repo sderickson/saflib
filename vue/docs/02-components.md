@@ -275,11 +275,11 @@ All components should avoid custom CSS if they can. Instead, take advantage of V
 
 When a look should apply product-wide, put it in the clients design-system files rather than a component `<style>` block:
 
-| File                                   | Use for                                                     |
-| -------------------------------------- | ----------------------------------------------------------- |
-| `clients/build/vuetify-settings.scss`  | Vuetify Sass variables (`@use "vuetify/settings" with (…)`) |
-| `clients/build/vuetify-overrides.scss` | CSS that restyles `.v-*` components                         |
-| `clients/build/globals.scss`           | App utility / layout classes that are not Vuetify restyles  |
+| File                                           | Use for                                                     |
+| ---------------------------------------------- | ----------------------------------------------------------- |
+| `clients/build/vuetify-settings.scss`          | Vuetify Sass variables (`@use "vuetify/settings" with (…)`) |
+| `clients/common/styles/vuetify-overrides.scss` | CSS that restyles `.v-*` components                         |
+| `clients/common/styles/globals.scss`           | App utility / layout classes that are not Vuetify restyles  |
 
 To see what Vuetify ships, open `node_modules/vuetify/lib/components/<VComponent>/` (e.g. `VBtn.sass`, `_variables.scss`) and `node_modules/vuetify/lib/styles/settings/`.
 
