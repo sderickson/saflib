@@ -19,7 +19,7 @@
     "@ory/client": "*",
     "@saflib/errors-vue": "*",
     "@saflib/utils": "*",
-    "@sentry/vue": "^10.0.0"
+    "@sentry/vue": "^11.0.0"
   },
   "peerDependencies": {
     "vue": "*"
