@@ -10,6 +10,8 @@
 
 export const OPENAPI_TAG_NO_AUTH = "no-auth" as const;
 export const OPENAPI_TAG_CSRF_EXEMPT = "csrf-exempt" as const;
+/** Skip global JSON body HTML blocking (e.g. concert program markdown). */
+export const OPENAPI_TAG_BLOCK_HTML_EXEMPT = "block-html-exempt" as const;
 export const OPENAPI_TAG_EMAIL_VERIFIED = "email-verified" as const;
 export const OPENAPI_TAG_MFA_REQUIRED = "mfa-required" as const;
 export const OPENAPI_TAG_SITE_ADMIN_ONLY = "site-admin-only" as const;
@@ -19,6 +21,7 @@ export const OPENAPI_TAG_BACKGROUND = "background" as const;
 export const OPENAPI_ENFORCED_TAGS = [
   OPENAPI_TAG_NO_AUTH,
   OPENAPI_TAG_CSRF_EXEMPT,
+  OPENAPI_TAG_BLOCK_HTML_EXEMPT,
   OPENAPI_TAG_EMAIL_VERIFIED,
   OPENAPI_TAG_MFA_REQUIRED,
   OPENAPI_TAG_SITE_ADMIN_ONLY,
@@ -49,6 +52,11 @@ export const OPENAPI_ENFORCED_TAG_CATALOG: readonly OpenApiEnforcedTagMeta[] = [
     tag: OPENAPI_TAG_CSRF_EXEMPT,
     effect: "Skip CSRF on unsafe methods (auth still applies unless no-auth)",
     enforcedBy: "@saflib/express (csrf middleware)",
+  },
+  {
+    tag: OPENAPI_TAG_BLOCK_HTML_EXEMPT,
+    effect: "Skip JSON body HTML tag blocking on the operation",
+    enforcedBy: "@saflib/express (blockHtml middleware)",
   },
   {
     tag: OPENAPI_TAG_EMAIL_VERIFIED,
