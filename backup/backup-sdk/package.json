@@ -28,7 +28,7 @@
     "@saflib/sdk": "*",
     "@saflib/backup-spec": "*",
     "@saflib/vue": "*",
-    "msw": "^2.11.3"
+    "msw": "^3.0.0"
   },
   "msw": {
     "workerDirectory": [
