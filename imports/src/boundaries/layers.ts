@@ -14,6 +14,10 @@
  * - **test-dev-only:** `test` packages are imported only from test files.
  * - **integration-internals:** an integration's client code (`client.ts`,
  *   `calls/`, `bin/`) never touches the database; that goes in `state/`.
+ * - **slice-spec:** spec, http and sdk packages pair up by directory
+ *   (`<dir>/<prefix>http` and `<dir>/<prefix>sdk` serve `<dir>/<prefix>spec`).
+ *   An http or sdk package imports operations, paths and the JSON spec only
+ *   from its own spec; other specs' `schemas/*` stay importable.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -24,7 +28,8 @@ export type LayerRule =
   | "siblings"
   | "core-offshoot"
   | "test-dev-only"
-  | "integration-internals";
+  | "integration-internals"
+  | "slice-spec";
 
 /** What each kind may import from the product (same-kind imports: see siblings). */
 export const LAYER_IMPORTS: Partial<
@@ -87,6 +92,8 @@ export interface LayerPackage {
    * framework or other products' packages are not layered.
    */
   productRoot?: string;
+  /** Absolute package directory, for pairing http and sdk packages with their spec. */
+  dir?: string;
 }
 
 export interface LayerFinding {
@@ -182,6 +189,21 @@ function finding(
   return { rule, key: `layer(${rule}): ${from} -> ${to}`, message };
 }
 
+/** Spec subpaths that are an API contract (as opposed to shared `schemas/*`). */
+const SPEC_CONTRACT_RE = /^(?:operations(?:\/|$)|paths$|json-spec$)/;
+
+/**
+ * The spec directory an http or sdk package serves: `<dir>/<prefix>http` and
+ * `<dir>/<prefix>sdk` pair with `<dir>/<prefix>spec`. Undefined when the
+ * directory name doesn't end in `http` or `sdk`.
+ */
+export function pairedSpecDir(packageDir: string): string | undefined {
+  const base = path.basename(packageDir);
+  const match = /^(.*?)(http|sdk)$/.exec(base);
+  if (!match) return undefined;
+  return path.join(path.dirname(packageDir), `${match[1]}spec`);
+}
+
 /** Core db schema index re-exporting offshoot tables (`schema`, `schemas/*`). */
 function isSchemaReexport(
   from: LayerPackage,
@@ -248,6 +270,25 @@ export function checkLayerEdge(
       to.name,
       `${from.name} (core) must not import ${to.name} (feature ${featureLabel(to)}): the core never references an offshoot. Wire it in the composition root (an app package), or move the shared code into the core.`,
     );
+  }
+
+  if (
+    (fromKind === "http" || fromKind === "sdk") &&
+    toKind === "spec" &&
+    subpath !== undefined &&
+    SPEC_CONTRACT_RE.test(subpath) &&
+    from.dir &&
+    to.dir
+  ) {
+    const paired = pairedSpecDir(from.dir);
+    if (paired && path.resolve(to.dir) !== path.resolve(paired)) {
+      return finding(
+        "slice-spec",
+        from.name,
+        to.name,
+        `${from.name} imports ${to.name}/${subpath}, another slice's API contract. An ${fromKind} package serves only the spec beside it (${path.basename(paired)}); move the operation into that spec, or the handler or request into the slice that owns the operation. Schemas (\`schemas/*\`) from other specs are fine.`,
+      );
+    }
   }
 
   if (toKind && toKind === fromKind) {
