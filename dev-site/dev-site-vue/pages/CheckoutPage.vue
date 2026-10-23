@@ -397,25 +397,13 @@
         />
       </div>
 
-      <div v-else class="checkout-unscanned">
-        <p class="checkout-unscanned__title">
-          This commit hasn’t been scanned yet
-        </p>
-        <p class="checkout-unscanned__body">
-          Scan builds the package inventory so you can browse specs, docs, and
-          issues for this checkout.
-        </p>
-        <v-btn
-          color="primary"
-          size="large"
-          variant="flat"
-          :loading="isScanning"
-          :disabled="isScanning"
-          @click="scanThisCommit"
-        >
-          Scan this commit
-        </v-btn>
-      </div>
+      <ScanCommitPanel
+        v-else
+        :subdomain="subdomain"
+        :commit-hash="checkout.hash"
+        :requested="isScanning && scanTarget === checkout.hash"
+        @scan="scanThisCommit"
+      />
     </template>
   </div>
 </template>
@@ -453,6 +441,7 @@ import {
   type ChangeKind,
 } from "../package-change-overlay";
 import PackageDirTree from "../components/PackageDirTree.vue";
+import ScanCommitPanel from "../components/ScanCommitPanel.vue";
 import PackageDocsPane from "../components/PackageDocsPane.vue";
 import PackageSecretsPane from "../components/PackageSecretsPane.vue";
 import PackageSpecPane from "../components/PackageSpecPane.vue";
@@ -993,14 +982,19 @@ const onDocNavigatePackage = (package_name: string, docPath: string) => {
   });
 };
 
+/** Commit the page last asked to scan (HEAD or the fork point). */
+const scanTarget = ref<string | null>(null);
+
 const scanThisCommit = () => {
   if (!checkout.value) return;
+  scanTarget.value = checkout.value.hash;
   scan({ commit_hash: checkout.value.hash });
 };
 
 const scanForkPoint = () => {
   const hash = checkout.value?.compare?.merge_base_hash;
   if (!hash) return;
+  scanTarget.value = hash;
   scan({ commit_hash: hash });
 };
 

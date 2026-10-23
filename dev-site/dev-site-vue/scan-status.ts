@@ -1,7 +1,17 @@
+import { reactive } from "vue";
 import type { ScanJob } from "./requests/scan-jobs.ts";
 
+/**
+ * Commits whose scan progress is shown inline on the page (the Checkout
+ * "scanning this commit" panel). The app bar leaves those jobs out.
+ */
+export const inlineScanCommits = reactive(new Set<string>());
+
 export interface ScanStatus {
+  /** Full line for the app bar, including which commit. */
   label: string;
+  /** Phase, counts and step only, for a panel that already names the commit. */
+  step: string;
   /** 0–100; ignored when `indeterminate`. */
   percent: number;
   indeterminate: boolean;
@@ -20,6 +30,7 @@ export function describeScanStatus(jobs: readonly ScanJob[]): ScanStatus | null 
     if (queued === 0) return null;
     return {
       label: `Scan queued${queued > 1 ? ` (${queued})` : ""}`,
+      step: "Queued",
       percent: 0,
       indeterminate: true,
     };
@@ -29,6 +40,7 @@ export function describeScanStatus(jobs: readonly ScanJob[]): ScanStatus | null 
   if (!p) {
     return {
       label: `Starting scan${queuedSuffix}`,
+      step: "Starting",
       percent: 0,
       indeterminate: true,
     };
@@ -39,10 +51,10 @@ export function describeScanStatus(jobs: readonly ScanJob[]): ScanStatus | null 
       ? `commit ${p.commit_index}/${p.commit_count} ${p.commit_hash.slice(0, 10)}`
       : p.commit_hash.slice(0, 10);
   const counts = p.total > 0 ? ` ${p.done}/${p.total}` : "";
+  const step = `${p.phase_label}${counts} (step ${p.phase_index}/${p.phase_count})`;
   return {
-    label:
-      `Scanning ${commit} · ${p.phase_label}${counts}` +
-      ` (step ${p.phase_index}/${p.phase_count})${queuedSuffix}`,
+    label: `Scanning ${commit} · ${step}${queuedSuffix}`,
+    step,
     percent: Math.round(p.fraction * 100),
     indeterminate: false,
   };

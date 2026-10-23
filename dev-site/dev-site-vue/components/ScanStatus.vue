@@ -18,14 +18,21 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useScanJobs } from "../requests/scan-jobs";
-import { describeScanStatus } from "../scan-status";
+import { describeScanStatus, inlineScanCommits } from "../scan-status";
 
 const props = withDefaults(defineProps<{ subdomain?: string }>(), {
   subdomain: "",
 });
 
 const { data } = useScanJobs(props.subdomain);
-const status = computed(() => describeScanStatus(data.value?.scan_jobs ?? []));
+// Jobs whose progress a page already shows inline are left out here.
+const status = computed(() =>
+  describeScanStatus(
+    (data.value?.scan_jobs ?? []).filter(
+      (job) => !job.commit_hash || !inlineScanCommits.has(job.commit_hash),
+    ),
+  ),
+);
 </script>
 
 <style scoped>

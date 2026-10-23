@@ -22,6 +22,7 @@ describe("describeScanStatus", () => {
   it("is indeterminate while only queued", () => {
     expect(describeScanStatus([job({ status: "queued" })])).toEqual({
       label: "Scan queued",
+      step: "Queued",
       percent: 0,
       indeterminate: true,
     });
@@ -49,6 +50,7 @@ describe("describeScanStatus", () => {
     expect(status).toEqual({
       label:
         "Scanning aaaaaaaaaa · Checking package issues 40/80 (step 4/5) · 1 queued",
+      step: "Checking package issues 40/80 (step 4/5)",
       percent: 73,
       indeterminate: false,
     });
