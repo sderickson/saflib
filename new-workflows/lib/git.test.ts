@@ -201,3 +201,46 @@ describe("revertUncommittedChanges", () => {
     expect(existsSync(path.join(dir, "file.ts"))).toBe(true);
   });
 });
+
+describe("commitIfDirty timings", () => {
+  it("reports each git command it ran", async () => {
+    const dir = await initRepo();
+    writeFileSync(path.join(dir, "timed.txt"), "x\n");
+    const commands: string[] = [];
+    await commitIfDirty(dir, "timed", (command, ms) => {
+      expect(ms).toBeGreaterThanOrEqual(0);
+      commands.push(command);
+    });
+    expect(commands).toEqual(["status", "add", "diff", "commit"]);
+  });
+});
+
+describe("commitIfDirty with a submodule", () => {
+  it("commits a submodule whose checked-out commit moved", async () => {
+    const innerDir = mkdtempSync(path.join(tmpdir(), "git-test-submodule-inner-"));
+    await execFileAsync("git", ["init"], { cwd: innerDir });
+    await execFileAsync("git", ["config", "user.email", "test@example.com"], { cwd: innerDir });
+    await execFileAsync("git", ["config", "user.name", "Test"], { cwd: innerDir });
+    writeFileSync(path.join(innerDir, "f.txt"), "hi\n");
+    await execFileAsync("git", ["add", "-A"], { cwd: innerDir });
+    await execFileAsync("git", ["commit", "-m", "init"], { cwd: innerDir });
+
+    const dir = await initRepo();
+    await execFileAsync(
+      "git",
+      ["-c", "protocol.file.allow=always", "submodule", "add", "-q", innerDir, "sub"],
+      { cwd: dir },
+    );
+    await execFileAsync("git", ["commit", "-m", "add submodule"], { cwd: dir });
+
+    // A new commit inside the submodule moves the gitlink the superproject records.
+    const sub = path.join(dir, "sub");
+    await execFileAsync("git", ["config", "user.email", "test@example.com"], { cwd: sub });
+    await execFileAsync("git", ["config", "user.name", "Test"], { cwd: sub });
+    writeFileSync(path.join(sub, "f.txt"), "hi\nmore\n");
+    await execFileAsync("git", ["commit", "-am", "inner change"], { cwd: sub });
+
+    expect(await commitIfDirty(dir, "bump submodule")).toBe(true);
+    expect(await log(dir)).toEqual(["bump submodule", "add submodule", "initial"]);
+  });
+});

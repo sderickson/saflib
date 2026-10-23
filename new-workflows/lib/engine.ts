@@ -334,13 +334,16 @@ async function runStep(
       startedAt: now,
     });
     try {
-      const committed = await commitIfDirty(run.cwd, commitMessage);
+      const timings: Array<{ command: string; ms: number }> = [];
+      const committed = await commitIfDirty(run.cwd, commitMessage, (command, ms) =>
+        timings.push({ command, ms }),
+      );
       if (committed) {
         commitHash = resolveRef(run.cwd, "HEAD").result ?? null;
         write({
           channel: "tool",
           level: "info",
-          content: `Committed: ${commitMessage.split("\n")[0]}`,
+          content: `Committed: ${commitMessage.split("\n")[0]} ${formatCommitTimings(timings)}`,
         });
       }
     } catch (error) {
@@ -406,4 +409,20 @@ async function runStep(
   });
 
   return reported;
+}
+
+/** Commits slower than this name their slowest git command in the log. */
+const SLOW_COMMIT_MS = 2000;
+
+/**
+ * `(0.8s)`, or `(11.2s; slowest: commit 7.9s)` for a slow commit — `commit`
+ * includes the repo's pre-commit hooks. Steps commit before the next one
+ * starts, so a slow commit reads as a slow workflow.
+ */
+export function formatCommitTimings(timings: Array<{ command: string; ms: number }>): string {
+  const total = timings.reduce((sum, t) => sum + t.ms, 0);
+  const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
+  if (total < SLOW_COMMIT_MS || timings.length === 0) return `(${seconds(total)})`;
+  const slowest = timings.reduce((a, b) => (b.ms > a.ms ? b : a));
+  return `(${seconds(total)}; slowest: ${slowest.command} ${seconds(slowest.ms)})`;
 }

@@ -72,12 +72,30 @@ async function findGitRoot(cwd: string): Promise<string | undefined> {
  * function's behavior independent of which subdirectory a workflow's `cd`
  * steps happen to have left it in.
  */
-export async function commitIfDirty(cwd: string, message: string): Promise<boolean> {
+export async function commitIfDirty(
+  cwd: string,
+  message: string,
+  /** Called with each git command's duration, so callers can report slow commits. */
+  onTiming?: (command: string, ms: number) => void,
+): Promise<boolean> {
   const root = await findGitRoot(cwd);
   if (!root) return false;
-  const status = await runGit(root, ["status", "--porcelain"]);
+  const git = async (args: string[]) => {
+    const started = Date.now();
+    try {
+      return await runGit(root, args);
+    } finally {
+      onTiming?.(args[0]!, Date.now() - started);
+    }
+  };
+  // `--ignore-submodules=dirty`: a submodule whose own working tree has
+  // changes can't be committed from here (see below), and scanning that
+  // working tree is the slowest part of status on a large checkout (several
+  // seconds over Docker Desktop's file sharing). A submodule whose checked-out
+  // commit moved still shows up, and gets staged.
+  const status = await git(["status", "--porcelain", "--ignore-submodules=dirty"]);
   if (!status.trim()) return false;
-  await runGit(root, ["add", "-A"]);
+  await git(["add", "-A"]);
   // `git add -A` can leave *nothing* actually staged even though `status`
   // reported the tree as dirty — a submodule (e.g. this monorepo's own
   // `saflib`) whose own working tree has uncommitted changes, but whose
@@ -88,10 +106,10 @@ export async function commitIfDirty(cwd: string, message: string): Promise<boole
   // with git's own "no changes added to commit". Checking what's staged
   // (rather than special-casing submodules by name/pattern) generalizes
   // to any other "reported dirty but unstageable from here" case too.
-  const staged = await runGit(root, ["diff", "--cached", "--name-only"]);
+  const staged = await git(["diff", "--cached", "--name-only"]);
   if (!staged.trim()) return false;
   try {
-    await runGit(root, ["commit", "-m", message]);
+    await git(["commit", "-m", message]);
   } catch (error) {
     // This operates repo-*wide* (see the module doc), so a genuinely
     // concurrent commit — a different run/step touching the same shared
@@ -101,7 +119,7 @@ export async function commitIfDirty(cwd: string, message: string): Promise<boole
     // pattern-match the error text: if the tree is clean now, the changes
     // this call cared about are already committed (just not by us) — a
     // benign race, not a failure worth surfacing as one.
-    const statusAfter = await runGit(root, ["status", "--porcelain"]);
+    const statusAfter = await git(["status", "--porcelain", "--ignore-submodules=dirty"]);
     if (!statusAfter.trim()) return true;
     throw error;
   }
