@@ -6,6 +6,7 @@ import { newWorkflowsHttpStorage } from "./context.ts";
 import { createWorkflowsRouter } from "./routes/workflows/index.ts";
 import { createRunsRouter } from "./routes/runs/index.ts";
 import { createPlansRouter } from "./routes/plans/index.ts";
+import { createDriveRouter } from "./routes/drive/index.ts";
 
 export type { NewWorkflowsHttpContext } from "./context.ts";
 export { newWorkflowsChangeEmitter, publishRunChanged } from "./change-emitter.ts";
@@ -84,6 +85,7 @@ export function createNewWorkflowsRouter(
   innerRouter.use(createWorkflowsRouter());
   innerRouter.use(createRunsRouter());
   innerRouter.use(createPlansRouter());
+  innerRouter.use(createDriveRouter());
   innerRouter.use(createErrorMiddleware());
 
   router.use("/api", innerRouter);

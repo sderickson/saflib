@@ -486,6 +486,155 @@
         }
       }
     },
+    "/api/runs/{runId}/drive": {
+      "post": {
+        "summary": "Have the server drive a run",
+        "description": "Starts advancing the run in the background and keeps going according to `mode` without needing a client, returning right away. Calling it for the run that's already being driven only changes the mode. Follow progress with `GET /api/drive` and the run's own events.\n",
+        "operationId": "driveWorkflowRun",
+        "x-public": true,
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "mode"
+                ],
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "step",
+                      "workflow",
+                      "plan"
+                    ],
+                    "example": "workflow"
+                  },
+                  "revert": {
+                    "type": "boolean",
+                    "description": "For the first step only — see `advanceWorkflowRun`."
+                  },
+                  "skip": {
+                    "type": "boolean",
+                    "description": "For the first step only — see `advanceWorkflowRun`."
+                  },
+                  "extraPrompt": {
+                    "type": "string",
+                    "description": "For the first step only — see `advanceWorkflowRun`."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The run is being driven.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "drive"
+                  ],
+                  "properties": {
+                    "drive": {
+                      "$ref": "#/components/schemas/workflow-drive"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A different run is being driven.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drive": {
+      "get": {
+        "summary": "Get the server's run driver",
+        "description": "Which run the server is driving (or last drove), in what mode, and the latest step outcome. Clients poll this to follow a driven run.\n",
+        "operationId": "getWorkflowDrive",
+        "x-public": true,
+        "responses": {
+          "200": {
+            "description": "The driver, absent if nothing has been driven since the server started.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "drive": {
+                      "$ref": "#/components/schemas/workflow-drive"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drive/stop": {
+      "post": {
+        "summary": "Stop driving",
+        "description": "Sets the driver's mode to `stop` and cancels the agent turn in flight for the driven run, if any. The driver goes inactive once that step returns.\n",
+        "operationId": "stopWorkflowDrive",
+        "x-public": true,
+        "responses": {
+          "200": {
+            "description": "The driver after stopping, absent if nothing was ever driven.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "drive": {
+                      "$ref": "#/components/schemas/workflow-drive"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/runs/{runId}/cancel": {
       "post": {
         "summary": "Stop the agent turn currently running for a run, if any",
@@ -969,6 +1118,12 @@
       "PlanSummary": {
         "$ref": "#/components/schemas/plan-summary"
       },
+      "WorkflowDriveMode": {
+        "$ref": "#/components/schemas/workflow-drive-mode"
+      },
+      "WorkflowDrive": {
+        "$ref": "#/components/schemas/workflow-drive"
+      },
       "workflow-summary": {
         "type": "object",
         "description": "One entry in the registered-workflow list (`GET /workflows`).",
@@ -1368,6 +1523,75 @@
           "shouldContinue": {
             "type": "boolean",
             "description": "When `status` is `ok`, whether the agent subprocess signaled it needs another turn (same semantics as a workflow prompt step).\n"
+          }
+        }
+      },
+      "workflow-drive-mode": {
+        "type": "string",
+        "description": "How far the server keeps advancing a driven run on its own: `step` runs one step, `workflow` keeps going until the run finishes (or pauses or fails), `plan` also starts and drives the next phase file in the same plan folder whenever one finishes. `stop` lets the step in flight be cancelled and advances no further.\n",
+        "enum": [
+          "stop",
+          "step",
+          "workflow",
+          "plan"
+        ],
+        "example": "workflow"
+      },
+      "workflow-drive": {
+        "type": "object",
+        "description": "The server's run driver: which run it's advancing and how far it will keep going without a client. One run is driven at a time.\n",
+        "additionalProperties": false,
+        "required": [
+          "run_id",
+          "workflow_ref",
+          "mode",
+          "active"
+        ],
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "description": "The run being driven, or the last one that was.",
+            "example": "0SG36FJe6m4W"
+          },
+          "workflow_ref": {
+            "type": "string",
+            "description": "That run's workflow id or plan file path.",
+            "example": "product/plans/notes/2026-01-01-example/phase-1.workflow.yaml"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/workflow-drive-mode"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether a step is running or about to run under this driver."
+          },
+          "last_outcome": {
+            "type": "object",
+            "description": "The most recent step outcome this driver saw. `seq` increases with every outcome, so a client can tell a new one from one it has already reacted to.\n",
+            "additionalProperties": false,
+            "required": [
+              "seq",
+              "run_id",
+              "status"
+            ],
+            "properties": {
+              "seq": {
+                "type": "integer",
+                "example": 3
+              },
+              "run_id": {
+                "type": "string",
+                "example": "0SG36FJe6m4W"
+              },
+              "status": {
+                "type": "string",
+                "description": "A `StepResult` status.",
+                "example": "success"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
           }
         }
       },

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi, onTestFinished } from "vitest";
 import { DOMWrapper, enableAutoUnmount } from "@vue/test-utils";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
@@ -7,6 +7,7 @@ import PlansPage from "./PlansPage.vue";
 import { mountTestApp } from "../test-app.ts";
 import { router } from "./test_router.ts";
 import { __resetRunOrchestratorForTests } from "../run-orchestrator.ts";
+import { fakeDriveHandlers } from "../requests/drive.fixtures.ts";
 
 const ORIGIN = "http://localhost:3000";
 
@@ -123,6 +124,9 @@ describe("PlansPage", () => {
     runsStateByFile = {};
     runsById = {};
     vi.stubGlobal("EventSource", EventSourceStub);
+    const drive = fakeDriveHandlers(ORIGIN);
+    server.use(...drive.handlers);
+    onTestFinished(drive.restore);
   });
 
   it("shows each plan's start, end, and duration from its latest runs", async () => {
@@ -317,6 +321,11 @@ describe("PlansPage", () => {
         return HttpResponse.json({ run: run2 }, { status: 201 });
       }),
     );
+
+    const drive = fakeDriveHandlers(ORIGIN, {
+      nextPlanFile: (ref) => (ref === PHASE_2_PATH ? undefined : PHASE_2_PATH),
+    });
+    server.use(...drive.handlers);
 
     await router.push({ path: "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml" });
     const wrapper = mountTestApp(PlansPage);

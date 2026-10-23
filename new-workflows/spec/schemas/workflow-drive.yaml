@@ -1,0 +1,48 @@
+type: object
+description: >
+  The server's run driver: which run it's advancing and how far it will
+  keep going without a client. One run is driven at a time.
+additionalProperties: false
+required:
+  - run_id
+  - workflow_ref
+  - mode
+  - active
+properties:
+  run_id:
+    type: string
+    description: The run being driven, or the last one that was.
+    example: "0SG36FJe6m4W"
+  workflow_ref:
+    type: string
+    description: That run's workflow id or plan file path.
+    example: "product/plans/notes/2026-01-01-example/phase-1.workflow.yaml"
+  mode:
+    $ref: "../openapi.yaml#/components/schemas/WorkflowDriveMode"
+  active:
+    type: boolean
+    description: Whether a step is running or about to run under this driver.
+  last_outcome:
+    type: object
+    description: >
+      The most recent step outcome this driver saw. `seq` increases with
+      every outcome, so a client can tell a new one from one it has
+      already reacted to.
+    additionalProperties: false
+    required:
+      - seq
+      - run_id
+      - status
+    properties:
+      seq:
+        type: integer
+        example: 3
+      run_id:
+        type: string
+        example: "0SG36FJe6m4W"
+      status:
+        type: string
+        description: A `StepResult` status.
+        example: "success"
+      message:
+        type: string

@@ -385,16 +385,6 @@ export function useCreatePlanMutation() {
   });
 }
 
-export interface AdvanceWorkflowRunVariables {
-  runId: string;
-  /** Discard uncommitted changes in the run's repo before retrying the current step. */
-  revert?: boolean;
-  /** Skip the current step entirely (commits whatever's dirty) instead of running it. */
-  skip?: boolean;
-  /** Prepended to whatever prompt this step call sends the agent. */
-  extraPrompt?: string;
-}
-
 export interface SendFreeformAgentMessageVariables {
   runId: string;
   message: string;
@@ -423,43 +413,6 @@ export function useSendFreeformAgentMessageMutation() {
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-messages", runId] });
       void prependNewerRunLogs(queryClient, runId);
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
-    },
-  });
-}
-
-export function useAdvanceWorkflowRunMutation() {
-  const client = createWorkflowsClient();
-  const queryClient = useQueryClient();
-  return useMutation<
-    NewWorkflowsResponseBody["advanceWorkflowRun"][200],
-    TanstackError,
-    string | AdvanceWorkflowRunVariables
-  >({
-    mutationFn: (vars) => {
-      const { runId, ...body } = typeof vars === "string" ? { runId: vars } : vars;
-      return handleClientMethod(
-        client.POST("/api/runs/{runId}/advance", { params: { path: { runId } }, body }),
-      );
-    },
-    // Also on *mutate* (not just success) — the server marks a run
-    // `is_advancing` synchronously as soon as the advance call starts, so
-    // refetching `workflow-runs` right away (rather than only once the
-    // whole step finishes, which can take minutes) is what makes a
-    // spinner in the nav/plans page show up promptly instead of only
-    // after the fact.
-    onMutate: () => {
-      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
-    },
-    onSettled: (_data, _error, vars) => {
-      const runId = typeof vars === "string" ? vars : vars.runId;
-      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
-      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
-    },
-    onSuccess: (_data, vars) => {
-      const runId = typeof vars === "string" ? vars : vars.runId;
-      // Merge tip-only (don't invalidate all infinite pages — that gaps
-      // older cached pages). SSE does the same during the turn.
-      void prependNewerRunLogs(queryClient, runId);
     },
   });
 }
@@ -578,5 +531,69 @@ export function usePreviewWorkflowDiffMutation() {
           body: { input, cwd, baseRunIds },
         }),
       ),
+  });
+}
+
+export type WorkflowDrive = NonNullable<NewWorkflowsResponseBody["getWorkflowDrive"][200]["drive"]>;
+export type DriveMode = NewWorkflowsRequestBody["driveWorkflowRun"]["mode"];
+
+const DRIVE_QUERY_KEY = ["new-workflows", "drive"] as const;
+
+/** How often to check on the driver. Tests shorten these. */
+export const drivePolling = {
+  /** While a run is being driven. */
+  activeMs: 1_000,
+  /** Otherwise, often enough to notice a drive started from another tab. */
+  idleMs: 5_000,
+};
+
+/** The server's run driver (see new-workflows-http's `RunDriver`). */
+export function useWorkflowDriveQuery() {
+  const client = createWorkflowsClient();
+  return useQuery<NewWorkflowsResponseBody["getWorkflowDrive"][200], TanstackError>({
+    queryKey: DRIVE_QUERY_KEY,
+    queryFn: () => handleClientMethod(client.GET("/api/drive")),
+    refetchInterval: (query) =>
+      query.state.data?.drive?.active ? drivePolling.activeMs : drivePolling.idleMs,
+  });
+}
+
+export interface DriveWorkflowRunVariables {
+  runId: string;
+  mode: DriveMode;
+  revert?: boolean;
+  skip?: boolean;
+  extraPrompt?: string;
+}
+
+export function useDriveWorkflowRunMutation() {
+  const client = createWorkflowsClient();
+  const queryClient = useQueryClient();
+  return useMutation<
+    NewWorkflowsResponseBody["driveWorkflowRun"][202],
+    TanstackError,
+    DriveWorkflowRunVariables
+  >({
+    mutationFn: ({ runId, ...body }) =>
+      handleClientMethod(
+        client.POST("/api/runs/{runId}/drive", { params: { path: { runId } }, body }),
+      ),
+    onSuccess: (data, { runId }) => {
+      queryClient.setQueryData(DRIVE_QUERY_KEY, data);
+      // The server marks the run advancing as the drive starts.
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+    },
+  });
+}
+
+export function useStopWorkflowDriveMutation() {
+  const client = createWorkflowsClient();
+  const queryClient = useQueryClient();
+  return useMutation<NewWorkflowsResponseBody["stopWorkflowDrive"][200], TanstackError, void>({
+    mutationFn: () => handleClientMethod(client.POST("/api/drive/stop")),
+    onSuccess: (data) => {
+      queryClient.setQueryData(DRIVE_QUERY_KEY, data);
+    },
   });
 }

@@ -9,6 +9,7 @@ import { mountTestApp } from "../test-app.ts";
 import { router } from "../pages/test_router.ts";
 import * as runAlerts from "../run-alerts.ts";
 import { __resetRunOrchestratorForTests } from "../run-orchestrator.ts";
+import { fakeDriveHandlers } from "../requests/drive.fixtures.ts";
 
 const ORIGIN = "http://localhost:3000";
 
@@ -206,6 +207,9 @@ describe("RunView", () => {
       { index: 1, kind: "prompt", label: "Say hello!" },
     ];
     vi.stubGlobal("EventSource", EventSourceStub);
+    const drive = fakeDriveHandlers(ORIGIN);
+    server.use(...drive.handlers);
+    onTestFinished(drive.restore);
   });
 
   it("explains that a run's logs were deleted for age", async () => {
@@ -1189,8 +1193,8 @@ describe("RunView", () => {
     await wrapper.find('[aria-label="Play current workflow"]').trigger("click");
     await vi.waitFor(() => {
       expect(wrapper.find('[aria-label="Stop"]').attributes("disabled")).toBeFalsy();
+      expect(advanceCalls).toBe(1);
     });
-    expect(advanceCalls).toBe(1);
 
     // Switching to "step" mode mid-flight is allowed (not disabled) — it
     // just changes what happens on the *next* continuation, it doesn't

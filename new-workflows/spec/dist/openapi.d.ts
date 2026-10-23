@@ -144,6 +144,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{runId}/drive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Have the server drive a run
+         * @description Starts advancing the run in the background and keeps going according to `mode` without needing a client, returning right away. Calling it for the run that's already being driven only changes the mode. Follow progress with `GET /api/drive` and the run's own events.
+         */
+        post: operations["driveWorkflowRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/drive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the server's run driver
+         * @description Which run the server is driving (or last drove), in what mode, and the latest step outcome. Clients poll this to follow a driven run.
+         */
+        get: operations["getWorkflowDrive"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/drive/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop driving
+         * @description Sets the driver's mode to `stop` and cancels the agent turn in flight for the driven run, if any. The driver goes inactive once that step returns.
+         */
+        post: operations["stopWorkflowDrive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs/{runId}/cancel": {
         parameters: {
             query?: never;
@@ -289,6 +349,8 @@ export interface components {
         FreeformAgentMessageResult: components["schemas"]["freeform-agent-message-result"];
         PlanFile: components["schemas"]["plan-file"];
         PlanSummary: components["schemas"]["plan-summary"];
+        WorkflowDriveMode: components["schemas"]["workflow-drive-mode"];
+        WorkflowDrive: components["schemas"]["workflow-drive"];
         /** @description One entry in the registered-workflow list (`GET /workflows`). */
         "workflow-summary": {
             /**
@@ -460,6 +522,41 @@ export interface components {
             message?: string;
             /** @description When `status` is `ok`, whether the agent subprocess signaled it needs another turn (same semantics as a workflow prompt step). */
             shouldContinue?: boolean;
+        };
+        /**
+         * @description How far the server keeps advancing a driven run on its own: `step` runs one step, `workflow` keeps going until the run finishes (or pauses or fails), `plan` also starts and drives the next phase file in the same plan folder whenever one finishes. `stop` lets the step in flight be cancelled and advances no further.
+         * @example workflow
+         * @enum {string}
+         */
+        "workflow-drive-mode": "stop" | "step" | "workflow" | "plan";
+        /** @description The server's run driver: which run it's advancing and how far it will keep going without a client. One run is driven at a time. */
+        "workflow-drive": {
+            /**
+             * @description The run being driven, or the last one that was.
+             * @example 0SG36FJe6m4W
+             */
+            run_id: string;
+            /**
+             * @description That run's workflow id or plan file path.
+             * @example product/plans/notes/2026-01-01-example/phase-1.workflow.yaml
+             */
+            workflow_ref: string;
+            mode: components["schemas"]["workflow-drive-mode"];
+            /** @description Whether a step is running or about to run under this driver. */
+            active: boolean;
+            /** @description The most recent step outcome this driver saw. `seq` increases with every outcome, so a client can tell a new one from one it has already reacted to. */
+            last_outcome?: {
+                /** @example 3 */
+                seq: number;
+                /** @example 0SG36FJe6m4W */
+                run_id: string;
+                /**
+                 * @description A `StepResult` status.
+                 * @example success
+                 */
+                status: string;
+                message?: string;
+            };
         };
         /**
          * @description Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. "running step 3: copy"). `agent-input`: the prompt text sent to the agent.
@@ -971,6 +1068,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    driveWorkflowRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @example workflow
+                     * @enum {string}
+                     */
+                    mode: "step" | "workflow" | "plan";
+                    /** @description For the first step only — see `advanceWorkflowRun`. */
+                    revert?: boolean;
+                    /** @description For the first step only — see `advanceWorkflowRun`. */
+                    skip?: boolean;
+                    /** @description For the first step only — see `advanceWorkflowRun`. */
+                    extraPrompt?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The run is being driven. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        drive: components["schemas"]["workflow-drive"];
+                    };
+                };
+            };
+            /** @description No run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description A different run is being driven. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getWorkflowDrive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The driver, absent if nothing has been driven since the server started. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        drive?: components["schemas"]["workflow-drive"];
+                    };
+                };
+            };
+        };
+    };
+    stopWorkflowDrive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The driver after stopping, absent if nothing was ever driven. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        drive?: components["schemas"]["workflow-drive"];
+                    };
                 };
             };
         };

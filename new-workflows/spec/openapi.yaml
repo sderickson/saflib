@@ -35,6 +35,15 @@ paths:
   /api/runs/{runId}/goto:
     post:
       $ref: "./routes/runs/goto.yaml#/gotoWorkflowRun"
+  /api/runs/{runId}/drive:
+    post:
+      $ref: "./routes/runs/drive.yaml#/driveWorkflowRun"
+  /api/drive:
+    get:
+      $ref: "./routes/drive/get.yaml#/getWorkflowDrive"
+  /api/drive/stop:
+    post:
+      $ref: "./routes/drive/stop.yaml#/stopWorkflowDrive"
   /api/runs/{runId}/cancel:
     post:
       $ref: "./routes/runs/cancel.yaml#/cancelWorkflowRun"
@@ -92,3 +101,7 @@ components:
       $ref: "./schemas/plan-file.yaml"
     PlanSummary:
       $ref: "./schemas/plan-summary.yaml"
+    WorkflowDriveMode:
+      $ref: "./schemas/workflow-drive-mode.yaml"
+    WorkflowDrive:
+      $ref: "./schemas/workflow-drive.yaml"
