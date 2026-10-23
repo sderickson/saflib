@@ -51,8 +51,12 @@ if [ -n "${DEV_SITE_WORKFLOW_WORKSPACE:-}" ]; then
   mkdir -p "$workspace_parent"
   chown node:node "$workspace_parent"
 fi
-if [ -d /home/node/.npm ]; then
-  chown node:node /home/node/.npm
-fi
+# Likewise an optional volume for Claude Code's conversations, so agent
+# sessions survive the container being recreated.
+for dir in /home/node/.npm /home/node/.claude/projects; do
+  if [ -d "$dir" ]; then
+    chown node:node "$dir"
+  fi
+done
 
 exec su node -c "cd $(pwd) && $*"

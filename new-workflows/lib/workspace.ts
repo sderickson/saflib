@@ -114,8 +114,8 @@ function git(cwd: string, args: string[], options: GitOptions = {}): Promise<str
     });
     const out: Buffer[] = [];
     const err: Buffer[] = [];
-    child.stdout.on("data", (d: Buffer) => out.push(d));
-    child.stderr.on("data", (d: Buffer) => err.push(d));
+    child.stdout!.on("data", (d: Buffer) => out.push(d));
+    child.stderr!.on("data", (d: Buffer) => err.push(d));
     child.on("error", reject);
     child.on("close", (code) => {
       const stdout = Buffer.concat(out).toString();

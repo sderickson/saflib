@@ -54,6 +54,7 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx, onRawOutpu
     let metrics: AgentTurnMetrics | undefined;
     let stderr = "";
     let resultReceived = false;
+    let resultError: AgentResultError | undefined;
     let pipeClosed = false;
     const { wasCancelled } = trackAgentProcess(ctx.runId, agent, () =>
       ctx.log({ channel: "tool", level: "info", content: "Stopping agent…" }),
@@ -61,6 +62,10 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx, onRawOutpu
 
     const maybeResolve = () => {
       if (resultReceived && pipeClosed) {
+        if (resultError) {
+          reject(resultError);
+          return;
+        }
         resolve({
           shouldContinue: true,
           sessionId: sessionId || undefined,
@@ -128,7 +133,13 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx, onRawOutpu
           }
         } else if (json.type === "result") {
           metrics = parseResultMetrics(json);
-          const content = `---------- RESULT ----------\n${json.is_error ? `Error (${json.subtype})` : "Success"}${formatResultSummary(metrics)}`;
+          const errors = resultErrors(json);
+          if (json.is_error) {
+            resultError = new AgentResultError(json.subtype, errors, { ...metrics, model }, sessionId || undefined);
+          }
+          const content =
+            `---------- RESULT ----------\n${json.is_error ? `Error (${json.subtype})` : "Success"}${formatResultSummary(metrics)}` +
+            (errors.length ? `\n${errors.join("\n")}` : "");
           ctx.log({
             channel: "agent",
             level: json.is_error ? "error" : "info",
@@ -195,6 +206,32 @@ export class AgentExitedWithoutResultError extends Error {
     this.exitCode = exitCode;
     this.stderr = stderr;
   }
+}
+
+/**
+ * The CLI finished with an error `result` (e.g. `error_during_execution`
+ * when `--resume` names a session it doesn't have, or `error_max_turns`).
+ * The turn didn't do its job, so the step mustn't count it as a success.
+ */
+export class AgentResultError extends Error {
+  readonly subtype: string | undefined;
+  readonly errors: string[];
+  readonly metrics: AgentTurnMetrics;
+  readonly sessionId: string | undefined;
+
+  constructor(subtype: unknown, errors: string[], metrics: AgentTurnMetrics, sessionId: string | undefined) {
+    const kind = typeof subtype === "string" ? subtype : "error";
+    super(`Agent turn failed (${kind})${errors.length ? `: ${errors.join("; ")}` : ""}`);
+    this.name = "AgentResultError";
+    this.subtype = typeof subtype === "string" ? subtype : undefined;
+    this.errors = errors;
+    this.metrics = metrics;
+    this.sessionId = sessionId;
+  }
+}
+
+function resultErrors(json: any): string[] {
+  return Array.isArray(json.errors) ? json.errors.filter((e: unknown) => typeof e === "string") : [];
 }
 
 function numberOrUndefined(value: unknown): number | undefined {
