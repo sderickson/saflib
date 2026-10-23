@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import type { AgentAdapter, AgentTurnMetrics } from "./types.ts";
-import { registerActiveAgentProcess, unregisterActiveAgentProcess } from "./registry.ts";
+import { trackAgentProcess } from "./registry.ts";
 import { subprocessEnv } from "../subprocess-env.ts";
 import type { ToolUseLogPayload, ToolResultLogPayload } from "./tool-log-payload.ts";
 
@@ -12,23 +12,6 @@ import type { ToolUseLogPayload, ToolResultLogPayload } from "./tool-log-payload
  * the string.
  */
 export const CANCELLED_BY_USER_MESSAGE = "Cancelled by user";
-
-/** Kills a whole detached process group (see `spawn(..., {detached: true})` below). No-op if the pid is unknown or already gone. */
-export function killProcessGroup(pid: number | undefined, signal: NodeJS.Signals): void {
-  if (!pid) return;
-  try {
-    process.kill(-pid, signal);
-  } catch {
-    // Already exited, or this platform doesn't support negative-pid group
-    // kills — falling back to the single process is still better than
-    // throwing out of a "best effort" cancel.
-    try {
-      process.kill(pid, signal);
-    } catch {
-      // Already gone.
-    }
-  }
-}
 
 /**
  * Drives the Claude Code CLI headlessly, same shape as `cursor-agent.ts`'s
@@ -61,13 +44,7 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx, onRawOutpu
       args.push("--resume", ctx.agentConfig.sessionId);
     }
 
-    // `detached: true` makes `agent` the leader of its own process group,
-    // so killing the *group* (negative pid) also reaches any Bash tool
-    // calls etc. it spawned — killing just the top-level process left
-    // those running, and since claude's own signal handling doesn't
-    // reliably exit promptly while a child is active, the Stop button
-    // could hang waiting for a `close` event that took a long time (or
-    // never came).
+    // Detached so Stop can kill the whole process group — see `trackAgentProcess`.
     const agent = spawn("claude", args, { env: subprocessEnv(), cwd: ctx.cwd, detached: true });
     agent.stdin.end();
 
@@ -78,20 +55,9 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx, onRawOutpu
     let stderr = "";
     let resultReceived = false;
     let pipeClosed = false;
-    let cancelled = false;
-
-    registerActiveAgentProcess(ctx.runId, {
-      kill: () => {
-        cancelled = true;
-        ctx.log({ channel: "tool", level: "info", content: "Stopping agent…" });
-        killProcessGroup(agent.pid, "SIGTERM");
-        // Escalate if it's still around after a grace period — some
-        // processes ignore SIGTERM outright, or take a while to unwind.
-        setTimeout(() => {
-          if (!pipeClosed) killProcessGroup(agent.pid, "SIGKILL");
-        }, 3000);
-      },
-    });
+    const { wasCancelled } = trackAgentProcess(ctx.runId, agent, () =>
+      ctx.log({ channel: "tool", level: "info", content: "Stopping agent…" }),
+    );
 
     const maybeResolve = () => {
       if (resultReceived && pipeClosed) {
@@ -179,14 +145,10 @@ export const executePromptWithClaude: AgentAdapter = async (msg, ctx, onRawOutpu
       ctx.log({ channel: "agent", level: "error", content: data.toString() });
     });
 
-    agent.on("error", (err) => {
-      unregisterActiveAgentProcess(ctx.runId);
-      reject(err);
-    });
+    agent.on("error", reject);
     agent.on("close", (code) => {
-      unregisterActiveAgentProcess(ctx.runId);
       pipeClosed = true;
-      if (cancelled) {
+      if (wasCancelled()) {
         reject(new Error(CANCELLED_BY_USER_MESSAGE));
         return;
       }
