@@ -1,11 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useQuery } from "@tanstack/vue-query";
 import type { MaybeRefOrGetter } from "vue";
 import { computed, toValue } from "vue";
 import createClient from "openapi-fetch";
 import type {
   paths,
   DevSiteResponseBody,
-  DevSiteRequestBody,
 } from "@saflib/dev-site-spec";
 import {
   TanstackError,
@@ -172,29 +171,6 @@ export function useCommitDiff(
           },
         }),
       );
-    },
-  });
-}
-
-export function useScanMutation(subdomain: string) {
-  const client = createDevSiteClient(subdomain);
-  const queryClient = useQueryClient();
-  return useMutation<
-    DevSiteResponseBody["executeScan"][200],
-    TanstackError,
-    DevSiteRequestBody["executeScan"]
-  >({
-    mutationFn: (body) => {
-      return handleClientMethod(client.POST("/api/scan", { body: body ?? {} }));
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dev-site", "commits"] });
-      queryClient.invalidateQueries({ queryKey: ["dev-site", "checkout"] });
-      queryClient.invalidateQueries({ queryKey: ["dev-site", "commit"] });
-      queryClient.invalidateQueries({
-        queryKey: ["dev-site", "commit-package"],
-      });
-      queryClient.invalidateQueries({ queryKey: ["dev-site", "diff"] });
     },
   });
 }

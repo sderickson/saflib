@@ -216,7 +216,12 @@ export async function computeCommitIssueStats(
 
   const rows: Omit<InsertPackageIssueStatsParams, "commit_hash">[] = [];
 
-  for (const pkg of packages) {
+  const reportPhase = options.reportPhase ?? (() => {});
+  reportPhase("check-issues", 0, packages.length);
+  for (const [pkgIndex, pkg] of packages.entries()) {
+    if (pkgIndex > 0 && pkgIndex % 5 === 0) {
+      reportPhase("check-issues", pkgIndex, packages.length);
+    }
     const packageRepoPath = joinRepoPath(product_root, pkg.directory);
     const packageAbsDir = roots.find((r) => r.package_name === pkg.package_name)
       ?.directory;

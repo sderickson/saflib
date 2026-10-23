@@ -361,10 +361,10 @@
     },
     "/api/scan": {
       "post": {
-        "summary": "Scan and ingest new commits",
+        "summary": "Queue a scan",
         "operationId": "executeScan",
         "x-public": true,
-        "description": "Walk git history since the last recorded commit (plus feature-branch tips) and store static-analysis snapshots. Manual trigger — no automatic poller in v1. Request body is an empty object so clients can POST JSON without special-casing.\n",
+        "description": "Queue a background job that analyzes commits and stores static-analysis snapshots: either one commit (`commit_hash`) or the newest unanalyzed mainline commits (`limit`). Returns the job immediately; poll `GET /api/scan/jobs` for progress. A request matching a job that is already queued or running returns that job.\n",
         "requestBody": {
           "required": true,
           "content": {
@@ -372,13 +372,13 @@
               "schema": {
                 "type": "object",
                 "additionalProperties": false,
-                "description": "Scan options. Empty object is fine for a full scan; `limit` caps how many new mainline commits are analyzed in this run (feature-branch tips are skipped when limit is set).\n",
+                "description": "Scan options. Empty object is fine; `limit` caps how many new mainline commits are analyzed in this job (feature-branch tips are skipped when limit is set).\n",
                 "properties": {
                   "limit": {
                     "type": "integer",
                     "minimum": 1,
                     "default": 1,
-                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commit_hash` is set.\n"
+                    "description": "Max new mainline commits to analyze in this job (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commit_hash` is set.\n"
                   },
                   "commit_hash": {
                     "type": "string",
@@ -390,62 +390,51 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Scan completed with no per-commit failures; returns which commits were ingested.",
+          "202": {
+            "description": "The queued (or already active) scan job.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "required": [
-                    "scanned",
-                    "skipped",
-                    "failed"
+                    "scan_job"
                   ],
                   "properties": {
-                    "scanned": {
-                      "type": "array",
-                      "description": "Commit hashes newly analyzed and stored.",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "skipped": {
-                      "type": "array",
-                      "description": "Commit hashes already present (no re-analysis).",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "failed": {
-                      "type": "array",
-                      "description": "Always empty on 200; non-empty failures use 500.",
-                      "items": {
-                        "type": "object",
-                        "required": [
-                          "hash",
-                          "message"
-                        ],
-                        "properties": {
-                          "hash": {
-                            "type": "string"
-                          },
-                          "message": {
-                            "type": "string"
-                          }
-                        }
-                      }
+                    "scan_job": {
+                      "$ref": "#/components/schemas/scan-job"
                     }
                   }
                 }
               }
             }
-          },
-          "500": {
-            "description": "Git plumbing failed, or one or more commits failed analysis (`SCAN_FAILED`).\n",
+          }
+        }
+      }
+    },
+    "/api/scan/jobs": {
+      "get": {
+        "summary": "List scan jobs",
+        "operationId": "listScanJobs",
+        "x-public": true,
+        "description": "Queued and running scan jobs plus the most recent finished ones, newest first. Running jobs carry `progress`. Clients poll this to show scan progress.\n",
+        "responses": {
+          "200": {
+            "description": "Scan jobs, newest first.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "type": "object",
+                  "required": [
+                    "scan_jobs"
+                  ],
+                  "properties": {
+                    "scan_jobs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/scan-job"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -1098,6 +1087,15 @@
       },
       "PreviewStepEntry": {
         "$ref": "#/components/schemas/preview-step-entry"
+      },
+      "ScanJob": {
+        "$ref": "#/components/schemas/scan-job"
+      },
+      "ScanProgress": {
+        "$ref": "#/components/schemas/scan-progress"
+      },
+      "ScanResult": {
+        "$ref": "#/components/schemas/scan-result"
       },
       "commit-ref": {
         "type": "object",
@@ -2470,6 +2468,168 @@
           "repo_path": {
             "type": "string",
             "description": "Repo-relative path for open-source links"
+          }
+        }
+      },
+      "scan-progress": {
+        "type": "object",
+        "description": "Where a running scan job is: which commit, which phase, and how far through that phase. `fraction` is the whole job's progress for a determinate bar.\n",
+        "required": [
+          "commit_hash",
+          "commit_index",
+          "commit_count",
+          "phase",
+          "phase_label",
+          "phase_index",
+          "phase_count",
+          "done",
+          "total",
+          "fraction"
+        ],
+        "properties": {
+          "commit_hash": {
+            "type": "string",
+            "description": "Commit being analyzed."
+          },
+          "commit_index": {
+            "type": "integer",
+            "description": "1-based position of this commit in the job."
+          },
+          "commit_count": {
+            "type": "integer",
+            "description": "Commits this job analyzes."
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "list-files",
+              "parse-sources",
+              "measure-packages",
+              "check-issues",
+              "save"
+            ]
+          },
+          "phase_label": {
+            "type": "string",
+            "description": "Human-readable phase name, e.g. \"Checking package issues\"."
+          },
+          "phase_index": {
+            "type": "integer",
+            "description": "1-based position of `phase` among the phases."
+          },
+          "phase_count": {
+            "type": "integer"
+          },
+          "done": {
+            "type": "integer",
+            "description": "Units done in this phase (files parsed, packages checked); 0 when not counted."
+          },
+          "total": {
+            "type": "integer",
+            "description": "Units in this phase; 0 when not counted."
+          },
+          "fraction": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Overall job progress."
+          }
+        }
+      },
+      "scan-result": {
+        "type": "object",
+        "description": "Which commits a scan job analyzed, skipped, or failed on.",
+        "required": [
+          "scanned",
+          "skipped",
+          "failed"
+        ],
+        "properties": {
+          "scanned": {
+            "type": "array",
+            "description": "Commit hashes newly analyzed and stored.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "skipped": {
+            "type": "array",
+            "description": "Commit hashes already present (no re-analysis).",
+            "items": {
+              "type": "string"
+            }
+          },
+          "failed": {
+            "type": "array",
+            "description": "Commits whose analysis failed.",
+            "items": {
+              "type": "object",
+              "required": [
+                "hash",
+                "message"
+              ],
+              "properties": {
+                "hash": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "scan-job": {
+        "type": "object",
+        "description": "A background scan. Jobs run one at a time in a worker thread; the queue lives in server memory, so a restart drops queued jobs.\n",
+        "required": [
+          "id",
+          "status",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "complete",
+              "failed"
+            ]
+          },
+          "commit_hash": {
+            "type": "string",
+            "description": "The one commit requested, when the job targets a single commit."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max new mainline commits, for history scans."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/scan-progress"
+          },
+          "result": {
+            "$ref": "#/components/schemas/scan-result"
+          },
+          "error": {
+            "type": "string",
+            "description": "Set when failed — a git error or the first commit that failed analysis."
           }
         }
       },

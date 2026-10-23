@@ -1,12 +1,13 @@
 executeScan:
-  summary: Scan and ingest new commits
+  summary: Queue a scan
   operationId: executeScan
   x-public: true
   description: >
-    Walk git history since the last recorded commit (plus feature-branch tips)
-    and store static-analysis snapshots. Manual trigger — no automatic poller
-    in v1. Request body is an empty object so clients can POST JSON without
-    special-casing.
+    Queue a background job that analyzes commits and stores static-analysis
+    snapshots: either one commit (`commit_hash`) or the newest unanalyzed
+    mainline commits (`limit`). Returns the job immediately; poll
+    `GET /api/scan/jobs` for progress. A request matching a job that is
+    already queued or running returns that job.
   requestBody:
     required: true
     content:
@@ -15,16 +16,16 @@ executeScan:
           type: object
           additionalProperties: false
           description: >
-            Scan options. Empty object is fine for a full scan; `limit` caps how
-            many new mainline commits are analyzed in this run (feature-branch
-            tips are skipped when limit is set).
+            Scan options. Empty object is fine; `limit` caps how many new
+            mainline commits are analyzed in this job (feature-branch tips are
+            skipped when limit is set).
           properties:
             limit:
               type: integer
               minimum: 1
               default: 1
               description: >
-                Max new mainline commits to analyze this run (default 1).
+                Max new mainline commits to analyze in this job (default 1).
                 Feature-branch tips are skipped when limit is set.
                 Ignored when `commit_hash` is set.
             commit_hash:
@@ -33,44 +34,14 @@ executeScan:
                 Analyze exactly this commit (if not already stored). Used by
                 Current checkout "Scan this commit".
   responses:
-    "200":
-      description: Scan completed with no per-commit failures; returns which commits were ingested.
+    "202":
+      description: The queued (or already active) scan job.
       content:
         application/json:
           schema:
             type: object
             required:
-              - scanned
-              - skipped
-              - failed
+              - scan_job
             properties:
-              scanned:
-                type: array
-                description: Commit hashes newly analyzed and stored.
-                items:
-                  type: string
-              skipped:
-                type: array
-                description: Commit hashes already present (no re-analysis).
-                items:
-                  type: string
-              failed:
-                type: array
-                description: Always empty on 200; non-empty failures use 500.
-                items:
-                  type: object
-                  required:
-                    - hash
-                    - message
-                  properties:
-                    hash:
-                      type: string
-                    message:
-                      type: string
-    "500":
-      description: >
-        Git plumbing failed, or one or more commits failed analysis (`SCAN_FAILED`).
-      content:
-        application/json:
-          schema:
-            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+              scan_job:
+                $ref: "../../schemas/scan-job.yaml"

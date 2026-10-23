@@ -116,10 +116,30 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Scan and ingest new commits
-         * @description Walk git history since the last recorded commit (plus feature-branch tips) and store static-analysis snapshots. Manual trigger — no automatic poller in v1. Request body is an empty object so clients can POST JSON without special-casing.
+         * Queue a scan
+         * @description Queue a background job that analyzes commits and stores static-analysis snapshots: either one commit (`commit_hash`) or the newest unanalyzed mainline commits (`limit`). Returns the job immediately; poll `GET /api/scan/jobs` for progress. A request matching a job that is already queued or running returns that job.
          */
         post: operations["executeScan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scan/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List scan jobs
+         * @description Queued and running scan jobs plus the most recent finished ones, newest first. Running jobs carry `progress`. Clients poll this to show scan progress.
+         */
+        get: operations["listScanJobs"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -289,6 +309,9 @@ export interface components {
         DbSchemaColumn: components["schemas"]["db-schema-column"];
         CheckoutCompare: components["schemas"]["checkout-compare"];
         PreviewStepEntry: components["schemas"]["preview-step-entry"];
+        ScanJob: components["schemas"]["scan-job"];
+        ScanProgress: components["schemas"]["scan-progress"];
+        ScanResult: components["schemas"]["scan-result"];
         /** @description A branch or tag pointer observed at scan time for a commit. */
         "commit-ref": {
             /**
@@ -745,6 +768,60 @@ export interface components {
             /** @description Repo-relative path for open-source links */
             repo_path: string;
         };
+        /** @description Where a running scan job is: which commit, which phase, and how far through that phase. `fraction` is the whole job's progress for a determinate bar. */
+        "scan-progress": {
+            /** @description Commit being analyzed. */
+            commit_hash: string;
+            /** @description 1-based position of this commit in the job. */
+            commit_index: number;
+            /** @description Commits this job analyzes. */
+            commit_count: number;
+            /** @enum {string} */
+            phase: "list-files" | "parse-sources" | "measure-packages" | "check-issues" | "save";
+            /** @description Human-readable phase name, e.g. "Checking package issues". */
+            phase_label: string;
+            /** @description 1-based position of `phase` among the phases. */
+            phase_index: number;
+            phase_count: number;
+            /** @description Units done in this phase (files parsed, packages checked); 0 when not counted. */
+            done: number;
+            /** @description Units in this phase; 0 when not counted. */
+            total: number;
+            /** @description Overall job progress. */
+            fraction: number;
+        };
+        /** @description Which commits a scan job analyzed, skipped, or failed on. */
+        "scan-result": {
+            /** @description Commit hashes newly analyzed and stored. */
+            scanned: string[];
+            /** @description Commit hashes already present (no re-analysis). */
+            skipped: string[];
+            /** @description Commits whose analysis failed. */
+            failed: {
+                hash: string;
+                message: string;
+            }[];
+        };
+        /** @description A background scan. Jobs run one at a time in a worker thread; the queue lives in server memory, so a restart drops queued jobs. */
+        "scan-job": {
+            id: string;
+            /** @enum {string} */
+            status: "queued" | "running" | "complete" | "failed";
+            /** @description The one commit requested, when the job targets a single commit. */
+            commit_hash?: string;
+            /** @description Max new mainline commits, for history scans. */
+            limit?: number;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            started_at?: string;
+            /** Format: date-time */
+            finished_at?: string;
+            progress?: components["schemas"]["scan-progress"];
+            result?: components["schemas"]["scan-result"];
+            /** @description Set when failed — a git error or the first commit that failed analysis. */
+            error?: string;
+        };
         /** @description Fork-point (merge-base of HEAD and a chosen branch) for Checkout compare mode. */
         "checkout-compare": {
             /** @description Branch/ref HEAD was compared against (e.g. `main`). */
@@ -1048,7 +1125,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commit_hash` is set.
+                     * @description Max new mainline commits to analyze in this job (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commit_hash` is set.
                      * @default 1
                      */
                     limit?: number;
@@ -1058,32 +1135,37 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Scan completed with no per-commit failures; returns which commits were ingested. */
+            /** @description The queued (or already active) scan job. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        scan_job: components["schemas"]["scan-job"];
+                    };
+                };
+            };
+        };
+    };
+    listScanJobs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Scan jobs, newest first. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @description Commit hashes newly analyzed and stored. */
-                        scanned: string[];
-                        /** @description Commit hashes already present (no re-analysis). */
-                        skipped: string[];
-                        /** @description Always empty on 200; non-empty failures use 500. */
-                        failed: {
-                            hash: string;
-                            message: string;
-                        }[];
+                        scan_jobs: components["schemas"]["scan-job"][];
                     };
-                };
-            };
-            /** @description Git plumbing failed, or one or more commits failed analysis (`SCAN_FAILED`). */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
                 };
             };
         };

@@ -1,0 +1,30 @@
+type: object
+description: Which commits a scan job analyzed, skipped, or failed on.
+required:
+  - scanned
+  - skipped
+  - failed
+properties:
+  scanned:
+    type: array
+    description: Commit hashes newly analyzed and stored.
+    items:
+      type: string
+  skipped:
+    type: array
+    description: Commit hashes already present (no re-analysis).
+    items:
+      type: string
+  failed:
+    type: array
+    description: Commits whose analysis failed.
+    items:
+      type: object
+      required:
+        - hash
+        - message
+      properties:
+        hash:
+          type: string
+        message:
+          type: string

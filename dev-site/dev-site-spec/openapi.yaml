@@ -26,6 +26,9 @@ paths:
   /api/scan:
     post:
       $ref: "./routes/scan/execute.yaml#/executeScan"
+  /api/scan/jobs:
+    get:
+      $ref: "./routes/scan/list-jobs.yaml#/listScanJobs"
   /api/checkout:
     get:
       $ref: "./routes/checkout/get.yaml#/getCheckout"
@@ -92,4 +95,10 @@ components:
       $ref: "./schemas/checkout-compare.yaml"
     PreviewStepEntry:
       $ref: "./schemas/preview-step-entry.yaml"
+    ScanJob:
+      $ref: "./schemas/scan-job.yaml"
+    ScanProgress:
+      $ref: "./schemas/scan-progress.yaml"
+    ScanResult:
+      $ref: "./schemas/scan-result.yaml"
     # END WORKFLOW AREA

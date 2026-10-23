@@ -1,0 +1,22 @@
+listScanJobs:
+  summary: List scan jobs
+  operationId: listScanJobs
+  x-public: true
+  description: >
+    Queued and running scan jobs plus the most recent finished ones, newest
+    first. Running jobs carry `progress`. Clients poll this to show scan
+    progress.
+  responses:
+    "200":
+      description: Scan jobs, newest first.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - scan_jobs
+            properties:
+              scan_jobs:
+                type: array
+                items:
+                  $ref: "../../schemas/scan-job.yaml"

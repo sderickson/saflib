@@ -430,8 +430,8 @@ import {
   useCommitPackage,
   useRepoFile,
   useRepoFiles,
-  useScanMutation,
 } from "../requests/queries";
+import { useScan } from "../requests/scan-jobs";
 import { classifyPackageKind } from "../package-kind";
 import { buildPackageDirTree, packageKindIcon } from "../package-dir-tree";
 import {
@@ -516,7 +516,6 @@ const {
   data: checkout,
   isLoading,
   error,
-  refetch,
 } = useCheckout(props.subdomain, compare_ref, head_ref);
 
 /** Prefer server-configured repo (matches analyzed git root); router prop is fallback. */
@@ -524,11 +523,9 @@ const github_repo = computed(
   () => checkout.value?.github_repo ?? props.githubRepo,
 );
 
-const {
-  mutate: scan,
-  isPending: isScanning,
-  error: scanError,
-} = useScanMutation(props.subdomain);
+// Scans run as background jobs; the app bar shows their progress. When ours
+// finishes, `useScan` refreshes the checkout query.
+const { scan, isScanning, error: scanError } = useScan(props.subdomain);
 
 const compareReady = computed(() => {
   const c = checkout.value;
@@ -998,13 +995,13 @@ const onDocNavigatePackage = (package_name: string, docPath: string) => {
 
 const scanThisCommit = () => {
   if (!checkout.value) return;
-  scan({ commit_hash: checkout.value.hash }, { onSuccess: () => refetch() });
+  scan({ commit_hash: checkout.value.hash });
 };
 
 const scanForkPoint = () => {
   const hash = checkout.value?.compare?.merge_base_hash;
   if (!hash) return;
-  scan({ commit_hash: hash }, { onSuccess: () => refetch() });
+  scan({ commit_hash: hash });
 };
 
 // Arriving via a workflow run's "Reflection" button, there's no reason to

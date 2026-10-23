@@ -32,6 +32,7 @@ import {
   sdkRequestFromSpecifier,
 } from "./classify.ts";
 import { linkTestSubjects } from "./link-test-subjects.ts";
+import type { PhaseReporter } from "./scan-progress.ts";
 
 import { getByHashes } from "@saflib/dev-site-db/queries/blob-facts/get-by-hashes";
 import { upsertMany } from "@saflib/dev-site-db/queries/blob-facts/upsert-many";
@@ -43,6 +44,8 @@ export interface AnalyzeCommitOptions {
   product_root?: string;
   /** Main branch ref for is_main_ancestor. Defaults to `main`. */
   mainRef?: string;
+  /** Scan progress hook; assemblers that only read ignore it. */
+  reportPhase?: PhaseReporter;
 }
 
 export interface AnalyzedExport {
@@ -146,6 +149,8 @@ export async function ensureBlobFacts(
   dbKey: DbKey,
   repo_root: string,
   blobHashes: string[],
+  /** Called as missing blobs are parsed (`done` of `total`). */
+  onParsed?: (done: number, total: number) => void,
 ): Promise<ReturnsError<Map<string, BlobFactEntity>, GitCommandError>> {
   const unique = [...new Set(blobHashes)];
   const cached = cachedFactsFor(dbKey);
@@ -189,6 +194,7 @@ export async function ensureBlobFacts(
     toUpsert.push(parseBlobFact(hash, source));
     if ((i + 1) % progressEvery === 0 || i + 1 === missing.length) {
       analyzeLog.info(`Parsed blobs ${i + 1}/${missing.length}`);
+      onParsed?.(i + 1, missing.length);
     }
   }
   if (toUpsert.length > 0) {
@@ -216,6 +222,8 @@ export async function analyzeCommit(
   const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
   const mainRef = options.mainRef ?? "main";
 
+  const reportPhase = options.reportPhase ?? (() => {});
+  reportPhase("list-files");
   const treeResult = listTreeCached(repo_root, commit.hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) =>
@@ -256,13 +264,16 @@ export async function analyzeCommit(
   );
 
   const sourceEntries = tree.filter((e) => isSourcePath(e.path));
+  reportPhase("parse-sources");
   const factsResult = await ensureBlobFacts(
     dbKey,
     repo_root,
     sourceEntries.map((e) => e.blobHash),
+    (done, total) => reportPhase("parse-sources", done, total),
   );
   if (factsResult.error) return { error: factsResult.error };
   const facts = factsResult.result;
+  reportPhase("measure-packages");
 
   type Agg = {
     package_name: string;

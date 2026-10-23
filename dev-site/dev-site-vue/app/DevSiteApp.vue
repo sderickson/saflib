@@ -12,6 +12,7 @@
         {{ title }}
       </v-app-bar-title>
       <v-spacer />
+      <ScanStatus />
       <v-btn
         :variant="navActive('history') ? 'tonal' : 'text'"
         :color="navActive('history') ? 'primary' : undefined"
@@ -45,6 +46,7 @@
 import { inject } from "vue";
 import { useRoute } from "vue-router";
 import AgentSettingsMenu from "../components/AgentSettingsMenu.vue";
+import ScanStatus from "../components/ScanStatus.vue";
 
 const title = inject<string>("devSiteTitle", "Dev Site");
 const route = useRoute();
