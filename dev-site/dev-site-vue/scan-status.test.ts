@@ -49,8 +49,8 @@ describe("describeScanStatus", () => {
     ]);
     expect(status).toEqual({
       label:
-        "Scanning aaaaaaaaaa · Checking package issues 40/80 (step 4/5) · 1 queued",
-      step: "Checking package issues 40/80 (step 4/5)",
+        "Scanning aaaaaaaaaa · Checking package issues 40/80 · 1 queued",
+      step: "Checking package issues 40/80",
       percent: 73,
       indeterminate: false,
     });
@@ -75,7 +75,7 @@ describe("describeScanStatus", () => {
       }),
     ]);
     expect(status?.label).toBe(
-      "Scanning commit 2/3 aaaaaaaaaa · Listing files (step 1/5)",
+      "Scanning commit 2/3 aaaaaaaaaa · Listing files",
     );
   });
 });

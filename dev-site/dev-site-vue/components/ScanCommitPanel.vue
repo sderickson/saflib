@@ -4,7 +4,7 @@
       <p class="scan-commit-panel__title">Scanning this commit</p>
       <p class="scan-commit-panel__body">{{ status.step }}</p>
       <v-progress-linear
-        class="scan-commit-panel__bar"
+        class="scan-commit-panel__bar scan-progress-bar"
         color="primary"
         height="6"
         rounded
@@ -99,6 +99,10 @@ onBeforeUnmount(() => inlineScanCommits.delete(props.commitHash));
   font-size: 0.9rem;
   line-height: 1.45;
   color: rgba(var(--v-theme-on-surface), 0.6);
+}
+/* Progress arrives every poll (~500ms); ease between values instead of jumping. */
+.scan-progress-bar :deep(.v-progress-linear__determinate) {
+  transition: width 0.6s ease-out;
 }
 .scan-commit-panel__bar {
   width: 100%;

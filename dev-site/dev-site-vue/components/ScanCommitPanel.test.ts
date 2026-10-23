@@ -59,7 +59,7 @@ describe("ScanCommitPanel", () => {
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("Scanning this commit");
     });
-    expect(wrapper.text()).toContain("Parsing source files 300/751 (step 2/5)");
+    expect(wrapper.text()).toContain("Parsing source files 300/751");
     expect(wrapper.text()).not.toContain("Scan this commit");
     const bar = wrapper.findComponent({ name: "v-progress-linear" });
     expect(bar.props("modelValue")).toBe(20);

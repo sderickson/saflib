@@ -10,7 +10,7 @@ export const inlineScanCommits = reactive(new Set<string>());
 export interface ScanStatus {
   /** Full line for the app bar, including which commit. */
   label: string;
-  /** Phase, counts and step only, for a panel that already names the commit. */
+  /** Phase and counts only, for a panel that already names the commit. */
   step: string;
   /** 0–100; ignored when `indeterminate`. */
   percent: number;
@@ -51,7 +51,8 @@ export function describeScanStatus(jobs: readonly ScanJob[]): ScanStatus | null 
       ? `commit ${p.commit_index}/${p.commit_count} ${p.commit_hash.slice(0, 10)}`
       : p.commit_hash.slice(0, 10);
   const counts = p.total > 0 ? ` ${p.done}/${p.total}` : "";
-  const step = `${p.phase_label}${counts} (step ${p.phase_index}/${p.phase_count})`;
+  // The bar shows how far along the job is; the text just names the phase.
+  const step = `${p.phase_label}${counts}`;
   return {
     label: `Scanning ${commit} · ${step}${queuedSuffix}`,
     step,

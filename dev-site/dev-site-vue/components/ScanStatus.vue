@@ -4,6 +4,7 @@
       {{ status.label }}
     </span>
     <v-progress-linear
+      class="scan-progress-bar"
       absolute
       location="bottom"
       color="primary"
@@ -36,6 +37,10 @@ const status = computed(() =>
 </script>
 
 <style scoped>
+/* Progress arrives every poll (~500ms); ease between values instead of jumping. */
+.scan-progress-bar :deep(.v-progress-linear__determinate) {
+  transition: width 0.6s ease-out;
+}
 .scan-status {
   max-width: 40vw;
   margin-right: 12px;
