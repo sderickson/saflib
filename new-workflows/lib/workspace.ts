@@ -149,6 +149,17 @@ function errorMessage(error: unknown): string {
 }
 
 /**
+ * Snapshot commits are internal plumbing (never on a branch), so they
+ * shouldn't depend on the environment having a git identity configured.
+ */
+const SNAPSHOT_IDENTITY = {
+  GIT_AUTHOR_NAME: "saf-workspace",
+  GIT_AUTHOR_EMAIL: "saf-workspace@localhost",
+  GIT_COMMITTER_NAME: "saf-workspace",
+  GIT_COMMITTER_EMAIL: "saf-workspace@localhost",
+};
+
+/**
  * A commit whose tree is `repo`'s working tree as it is right now (tracked
  * and untracked, ignored files excluded), with `HEAD` as parent — or
  * `HEAD` itself when nothing is uncommitted. Uses a scratch index, so the
@@ -170,7 +181,9 @@ export async function snapshotWorkingTree(repo: string): Promise<{ head: string;
     const headTree = (await git(repo, ["rev-parse", "HEAD^{tree}"])).trim();
     if (tree === headTree) return { head, snapshot: head };
     const snapshot = (
-      await git(repo, ["commit-tree", tree, "-p", head, "-m", "saf-workspace snapshot"])
+      await git(repo, ["commit-tree", tree, "-p", head, "-m", "saf-workspace snapshot"], {
+        env: SNAPSHOT_IDENTITY,
+      })
     ).trim();
     return { head, snapshot };
   } finally {

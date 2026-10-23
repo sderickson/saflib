@@ -234,4 +234,21 @@ describe("workflow workspace", () => {
       delete process.env.GIT_DIR;
     }
   });
+
+  it("snapshots without a git identity configured", async () => {
+    const { host, config, logs } = await setup();
+    await git(host, "config", "--unset", "user.email");
+    await git(host, "config", "--unset", "user.name");
+    writeFileSync(path.join(host, "app.txt"), "edited\n");
+    const saved = { ...process.env };
+    process.env.GIT_CONFIG_GLOBAL = "/dev/null";
+    process.env.GIT_CONFIG_NOSYSTEM = "1";
+    process.env.EMAIL = "";
+    try {
+      await syncIn(config, "run-12", logTo(logs));
+    } finally {
+      process.env = saved;
+    }
+    expect(readFileSync(path.join(config.root, "app.txt"), "utf8")).toBe("edited\n");
+  });
 });
