@@ -1,5 +1,34 @@
 # Workflow workspace: run agents in a container-local clone
 
+## Status
+
+Implemented (2026-10-23): `new-workflows/lib/workspace.ts` (sync in/out,
+path mapping), engine and direct-message integration, the router's
+`workspace` option, dev-site's `DEV_SITE_WORKFLOW_WORKSPACE`, and the
+entrypoint's volume ownership. Remaining: measure a real plan run end to end.
+
+Decisions (2026-10-23), all as recommended below:
+- Fast-forward the checkout's branch when safe, else `workflows/<run-id>`.
+- Carry the checkout's uncommitted work into runs (parity with in place).
+- Every submodule's changes come back uncommitted; none are named.
+- No view needs live mid-advance state: the dev-site diff view compares
+  committed refs only, and nothing reads the working tree during a run.
+
+Changes from the design while building it:
+- No new lock: `withRunLock` already allows one advance at a time across
+  all runs, and nested `call-workflow` advances reenter it, so sync happens
+  only around the root advance.
+- Conflicts merge file by file with `git merge-file` instead of
+  `git apply --3way`, which refuses whenever the checkout has unstaged
+  edits to a file — exactly the case it would be needed for. The
+  checkout's index is never touched by applying changes.
+- A host-set `GIT_DIR`/`GIT_WORK_TREE` (the submodule compose overlay) is
+  kept away from git commands for the clone, and from step subprocesses
+  while a workspace is active.
+- A run whose commits had to go to `workflows/<run-id>` won't advance again
+  until that branch is merged (or deleted), so later steps never lose
+  earlier ones.
+
 ## Context
 
 dev-site runs workflows in a container against the product checkout,
