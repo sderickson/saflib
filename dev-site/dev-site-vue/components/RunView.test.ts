@@ -1068,6 +1068,32 @@ describe("RunView", () => {
       resolveTurn({});
     });
 
+    it("coalesces a burst of change events into a few refetches", async () => {
+      const sse = stubRecordingEventSource();
+      const wrapper = mountRunView();
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("starting");
+      });
+      sse.fireOpen();
+
+      const fetched: string[] = [];
+      const onRequest = ({ request }: { request: Request }) => {
+        fetched.push(new URL(request.url).pathname);
+      };
+      server.events.on("request:start", onRequest);
+      onTestFinished(() => {
+        server.events.removeListener("request:start", onRequest);
+      });
+
+      // One change event per agent log line; an agent logs several a second.
+      for (let i = 0; i < 30; i++) sse.fireChange();
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const runFetches = fetched.filter((p) => /^\/api\/runs\/[^/]+$/.test(p));
+      expect(runFetches.length).toBeGreaterThanOrEqual(1);
+      expect(runFetches.length).toBeLessThanOrEqual(2);
+    });
+
     it("reconnects when the browser gives up on the event stream, and catches up on reopen", async () => {
       const sse = stubRecordingEventSource();
       const wrapper = mountRunView();
