@@ -11,7 +11,7 @@ import {
 } from "@saflib/monorepo";
 import type { ReturnsError } from "@saflib/utils";
 import type { GitCommandError } from "@saflib/git";
-import { listTree, readBlobs } from "@saflib/git";
+import { listTreeCached, readBlobsCached } from "./git-cache.ts";
 import {
   blobFactExports,
   blobFactImports,
@@ -107,7 +107,7 @@ export async function computeCommitIssueStats(
   const repo_root = options.repo_root;
   const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
 
-  const treeResult = listTree(repo_root, commit_hash);
+  const treeResult = listTreeCached(repo_root, commit_hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) =>
     underProductRoot(e.path, product_root),
@@ -116,7 +116,7 @@ export async function computeCommitIssueStats(
   const packageJsonEntries = tree.filter(
     (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
   );
-  const pkgBlobs = readBlobs(
+  const pkgBlobs = readBlobsCached(
     repo_root,
     packageJsonEntries.map((e) => e.blobHash),
   );
