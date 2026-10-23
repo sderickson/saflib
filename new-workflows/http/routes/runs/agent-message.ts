@@ -25,7 +25,9 @@ export const sendFreeformAgentMessageHandler = createHandler(async (req, res) =>
   }
 
   const stepIndex = run.current_step_index;
-  const { output, result } = sendFreeformAgentMessage(ctx.dbKey, runId, message);
+  const { output, result } = sendFreeformAgentMessage(ctx.dbKey, runId, message, {
+    workspace: ctx.workspace,
+  });
 
   for await (const chunk of output as AsyncIterable<LogChunk>) {
     await appendWorkflowLog(ctx.dbKey, {

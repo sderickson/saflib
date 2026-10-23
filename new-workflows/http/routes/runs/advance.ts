@@ -58,6 +58,7 @@ export const advanceWorkflowRunHandler = createHandler(async (req, res) => {
     revert: body.revert,
     skip: body.skip,
     extraPrompt: body.extraPrompt,
+    workspace: ctx.workspace,
   });
 
   for await (const chunk of output as AsyncIterable<LogChunk>) {

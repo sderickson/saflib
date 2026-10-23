@@ -15,6 +15,7 @@ import { summarizeStepInput } from "./describe-steps.ts";
 import { buildCommitMessage, summarizeAgentTurns } from "./commit-message.ts";
 import { loadRunChain } from "./run-chain.ts";
 import { withRunLock, RUN_LOCK_MESSAGE, getActiveLockHolder } from "./run-lock.ts";
+import { toWorkspacePath, withWorkspace, type WorkflowWorkspaceConfig } from "./workspace.ts";
 import type {
   AgentConfig,
   StepFn,
@@ -115,6 +116,12 @@ export interface AdvanceRunOptions {
   skip?: boolean;
   /** See `WorkflowContext.extraPrompt`. Ignored when `skip` is set (nothing gets prompted). */
   extraPrompt?: string;
+  /**
+   * Run the step in this workspace clone instead of in place (see
+   * `workspace.ts`). Pass it only for root advances; nested `call-workflow`
+   * advances run inside the root's sync.
+   */
+  workspace?: WorkflowWorkspaceConfig;
 }
 
 /**
@@ -135,7 +142,16 @@ export function advanceRun(
   // `run-lock.ts` for why: this system's git integration is repo-wide and
   // not safe under concurrent steps. Nested calls (a `call-workflow`
   // step's own `advanceRun` for its child) are reentrant and pass through.
-  const resultPromise = withRunLock(dbKey, runId, () => runStep(dbKey, def, runId, write, options))
+  const workspace = options?.workspace;
+  const resultPromise = withRunLock(dbKey, runId, async (): Promise<StepResult> => {
+    if (!workspace) return runStep(dbKey, def, runId, write, options);
+    try {
+      return await withWorkspace(workspace, runId, write, () => runStep(dbKey, def, runId, write, options));
+    } catch (error) {
+      // Sync in failed (the step never ran), or the step itself threw.
+      return { status: "error", message: error instanceof Error ? error.message : String(error) };
+    }
+  })
     .then((outcome): StepResult => (outcome.locked ? { status: "error", message: RUN_LOCK_MESSAGE } : outcome.result))
     .finally(end);
 
@@ -209,10 +225,12 @@ async function runStep(
   rawWrite: (chunk: Parameters<WorkflowContext["log"]>[0]) => void,
   options?: AdvanceRunOptions,
 ): Promise<StepResult> {
-  const { result: run, error: runError } = await getByIdWorkflowRun(dbKey, {
+  const { result: storedRun, error: runError } = await getByIdWorkflowRun(dbKey, {
     id: runId,
   });
   if (runError) throw runError;
+  // Run rows keep checkout paths; with a workspace active, execute in the clone.
+  const run = { ...storedRun, cwd: toWorkspacePath(storedRun.cwd) };
 
   const stepIndex = run.current_step_index;
   const step = def.steps[stepIndex];
@@ -265,8 +283,10 @@ async function runStep(
   for (const priorStep of priorSteps ?? []) {
     if (priorStep.status !== "success" || !priorStep.result) continue;
     const r = priorStep.result as { copiedFiles?: Record<string, string>; newCwd?: string };
-    if (r.copiedFiles) Object.assign(copiedFiles, r.copiedFiles);
-    if (r.newCwd) cwd = r.newCwd;
+    if (r.copiedFiles) {
+      for (const [key, file] of Object.entries(r.copiedFiles)) copiedFiles[key] = toWorkspacePath(file);
+    }
+    if (r.newCwd) cwd = toWorkspacePath(r.newCwd);
   }
   const isResume = (priorSteps ?? []).some((s) => s.step_index === stepIndex);
 

@@ -1,7 +1,7 @@
 import express, { type IRouter } from "express";
 import { createErrorMiddleware } from "@saflib/express";
 import type { DbKey } from "@saflib/drizzle";
-import type { WorkflowDefinition } from "@saflib/new-workflows";
+import type { WorkflowDefinition, WorkflowWorkspaceConfig } from "@saflib/new-workflows";
 import { newWorkflowsHttpStorage } from "./context.ts";
 import { createWorkflowsRouter } from "./routes/workflows/index.ts";
 import { createRunsRouter } from "./routes/runs/index.ts";
@@ -29,6 +29,13 @@ export interface CreateNewWorkflowsRouterOptions {
    * doesn't need them).
    */
   plansRoot?: string | (() => string);
+  /**
+   * Run workflow steps in a clone on fast local disk instead of in the
+   * checkout at `defaultCwd`, syncing in before and out after each advance
+   * (see the lib's `workspace.ts`). Same resolve-per-request shape as
+   * `defaultCwd`; resolving to `undefined` runs in place.
+   */
+  workspace?: WorkflowWorkspaceConfig | (() => WorkflowWorkspaceConfig | undefined);
 }
 
 /**
@@ -52,6 +59,10 @@ export function createNewWorkflowsRouter(
   const resolvePlansRoot: () => string | undefined =
     typeof plansRootOption === "function" ? plansRootOption : () => plansRootOption;
 
+  const workspaceOption = options.workspace;
+  const resolveWorkspace: () => WorkflowWorkspaceConfig | undefined =
+    typeof workspaceOption === "function" ? workspaceOption : () => workspaceOption;
+
   const innerRouter = express.Router();
   // Defensive, not load-bearing when mounted into a host that already
   // parses JSON globally (e.g. dev-site-http) — body-parser skips
@@ -65,6 +76,7 @@ export function createNewWorkflowsRouter(
         registry: options.registry,
         defaultCwd: resolveDefaultCwd(),
         plansRoot: resolvePlansRoot(),
+        workspace: resolveWorkspace(),
       },
       next,
     );

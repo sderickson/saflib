@@ -1,4 +1,5 @@
 import path from "node:path";
+import { toWorkspacePath } from "./workspace.ts";
 
 /**
  * Builds the commit message for one step's changes. The commit history of
@@ -151,9 +152,10 @@ function stepAction(input: CommitMessageInput): string {
 function updatedFile(input: CommitMessageInput): string | undefined {
   const filePath = input.stepResult?.filePath;
   if (input.kind !== "update" || typeof filePath !== "string") return undefined;
-  const base = input.chain[0].cwd;
+  // Root run rows keep checkout paths; step results from a workspace run hold clone paths.
+  const base = toWorkspacePath(input.chain[0].cwd);
   if (!base) return filePath;
-  const relative = path.relative(base, filePath);
+  const relative = path.relative(base, toWorkspacePath(filePath));
   return relative && !relative.startsWith("..") && !path.isAbsolute(relative) ? relative : filePath;
 }
 
