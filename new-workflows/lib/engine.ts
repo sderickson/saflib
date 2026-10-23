@@ -15,7 +15,8 @@ import { summarizeStepInput } from "./describe-steps.ts";
 import { buildCommitMessage, summarizeAgentTurns } from "./commit-message.ts";
 import { loadRunChain } from "./run-chain.ts";
 import { withRunLock, RUN_LOCK_MESSAGE, getActiveLockHolder } from "./run-lock.ts";
-import { toWorkspacePath, withWorkspace, type WorkflowWorkspaceConfig } from "./workspace.ts";
+import { withWorkspace, type WorkflowWorkspaceConfig } from "./workspace.ts";
+import { toWorkspacePath } from "./workspace-context.ts";
 import type {
   AgentConfig,
   StepFn,

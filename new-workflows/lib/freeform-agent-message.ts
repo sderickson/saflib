@@ -8,7 +8,8 @@ import type { Readable } from "node:stream";
 import { createOutputStream } from "./output.ts";
 import { runAgentTurn } from "./agents/dispatch.ts";
 import { withRunLock, RUN_LOCK_MESSAGE } from "./run-lock.ts";
-import { toWorkspacePath, withWorkspace, type WorkflowWorkspaceConfig } from "./workspace.ts";
+import { withWorkspace, type WorkflowWorkspaceConfig } from "./workspace.ts";
+import { toWorkspacePath } from "./workspace-context.ts";
 import type { WorkflowContext } from "./types.ts";
 
 /**

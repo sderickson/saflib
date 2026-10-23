@@ -1,3 +1,5 @@
+import { activeWorkspace } from "./workspace-context.ts";
+
 /**
  * Every workflow subprocess (agent CLIs, `command`/`npm-script` steps) runs
  * dev tooling directly against the checkout — typecheck, test, `npm
@@ -14,5 +16,12 @@
  */
 export function subprocessEnv(): NodeJS.ProcessEnv {
   const { NODE_ENV: _NODE_ENV, ...rest } = process.env;
+  // Inside a workflow workspace, every subprocess works on the clone. A
+  // `GIT_DIR`/`GIT_WORK_TREE` the host set for its checkout would point git
+  // (agents' own commands, step commits) back at the checkout instead.
+  if (activeWorkspace.getStore()) {
+    delete rest.GIT_DIR;
+    delete rest.GIT_WORK_TREE;
+  }
   return rest;
 }

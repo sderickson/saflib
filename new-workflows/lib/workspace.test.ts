@@ -8,11 +8,12 @@ import {
   runBranchName,
   syncIn,
   syncOut,
-  toWorkspacePath,
   withWorkspace,
   type WorkflowWorkspaceConfig,
 } from "./workspace.ts";
 import { commitIfDirty } from "./git.ts";
+import { toWorkspacePath } from "./workspace-context.ts";
+import { subprocessEnv } from "./subprocess-env.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -220,5 +221,17 @@ describe("workflow workspace", () => {
     expect(logs.some((l) => l.includes("Retrying the last sync"))).toBe(true);
     // And the workspace now carries it back in as the checkout's own change.
     expect(readFileSync(path.join(config.root, "result.txt"), "utf8")).toBe("work\n");
+  });
+
+  it("keeps the host's GIT_DIR away from subprocesses working in the clone", async () => {
+    const { config, logs } = await setup();
+    process.env.GIT_DIR = "/somewhere/else";
+    try {
+      expect(subprocessEnv().GIT_DIR).toBe("/somewhere/else");
+      const inside = await withWorkspace(config, "run-11", logTo(logs), async () => subprocessEnv().GIT_DIR);
+      expect(inside).toBeUndefined();
+    } finally {
+      delete process.env.GIT_DIR;
+    }
   });
 });

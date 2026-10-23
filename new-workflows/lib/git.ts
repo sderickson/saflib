@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { subprocessEnv } from "./subprocess-env.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -13,7 +14,7 @@ function sleep(ms: number): Promise<void> {
 async function runGit(cwd: string, args: string[]): Promise<string> {
   for (let attempt = 1; ; attempt++) {
     try {
-      const { stdout } = await execFileAsync("git", args, { cwd });
+      const { stdout } = await execFileAsync("git", args, { cwd, env: subprocessEnv() });
       return stdout;
     } catch (error) {
       const detail = gitErrorDetail(error);

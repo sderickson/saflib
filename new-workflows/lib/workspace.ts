@@ -22,13 +22,13 @@
  * scratch space. Advances are already serialized by `withRunLock`, so one
  * clone serves every run.
  */
-import { AsyncLocalStorage } from "node:async_hooks";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { copyFile, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { subprocessEnv } from "./subprocess-env.ts";
+import { activeWorkspace } from "./workspace-context.ts";
 import type { WorkflowContext } from "./types.ts";
 
 export interface WorkflowWorkspaceConfig {
@@ -53,23 +53,6 @@ const WORKSPACE_BRANCH = "saf-workspace";
 /** Branch run commits land on when the checkout's branch can't be fast-forwarded. */
 export function runBranchName(runId: string): string {
   return `workflows/${runId}`;
-}
-
-const activeWorkspace = new AsyncLocalStorage<WorkflowWorkspaceConfig>();
-
-/**
- * Maps a path under the checkout to the same path in the active workspace
- * clone. Identity when no workspace is active, or when the path is already
- * in the clone (child runs and step results store clone paths).
- */
-export function toWorkspacePath(p: string): string;
-export function toWorkspacePath(p: string | null | undefined): string | null | undefined;
-export function toWorkspacePath(p: string | null | undefined): string | null | undefined {
-  const ws = activeWorkspace.getStore();
-  if (!ws || !p) return p;
-  if (p === ws.hostRoot) return ws.root;
-  if (p.startsWith(ws.hostRoot + "/")) return ws.root + p.slice(ws.hostRoot.length);
-  return p;
 }
 
 /**
@@ -108,11 +91,25 @@ interface GitOptions {
   input?: string | Buffer;
 }
 
+/**
+ * The environment for a git command in `cwd`. A container may set
+ * `GIT_DIR`/`GIT_WORK_TREE` for the checkout (e.g. when it's a submodule
+ * whose git dir is mounted separately); those must not leak into commands
+ * for the clone or for other repos, or they'd silently act on the checkout.
+ */
+function gitEnv(cwd: string): NodeJS.ProcessEnv {
+  const env = subprocessEnv();
+  if (env.GIT_WORK_TREE && path.resolve(env.GIT_WORK_TREE) === path.resolve(cwd)) return env;
+  delete env.GIT_DIR;
+  delete env.GIT_WORK_TREE;
+  return env;
+}
+
 function git(cwd: string, args: string[], options: GitOptions = {}): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn("git", args, {
       cwd,
-      env: { ...subprocessEnv(), ...options.env },
+      env: { ...gitEnv(cwd), ...options.env },
       stdio: ["pipe", "pipe", "pipe"],
     });
     const out: Buffer[] = [];
@@ -205,7 +202,7 @@ async function listSubmodules(hostRoot: string): Promise<string[]> {
 /** `git show <rev>:<path>` as bytes, or undefined when the path doesn't exist there. */
 async function blobAt(repo: string, rev: string, file: string): Promise<Buffer | undefined> {
   const out = await new Promise<Buffer | undefined>((resolve) => {
-    const child = spawn("git", ["show", `${rev}:${file}`], { cwd: repo, env: subprocessEnv() });
+    const child = spawn("git", ["show", `${rev}:${file}`], { cwd: repo, env: gitEnv(repo) });
     const chunks: Buffer[] = [];
     child.stdout.on("data", (d: Buffer) => chunks.push(d));
     child.on("error", () => resolve(undefined));

@@ -1,5 +1,5 @@
 import path from "node:path";
-import { toWorkspacePath } from "./workspace.ts";
+import { toWorkspacePath } from "./workspace-context.ts";
 
 /**
  * Builds the commit message for one step's changes. The commit history of
