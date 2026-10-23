@@ -110,7 +110,7 @@ function git(cwd: string, args: string[], options: GitOptions = {}): Promise<str
     const child = spawn("git", args, {
       cwd,
       env: { ...gitEnv(cwd), ...options.env },
-      stdio: ["pipe", "pipe", "pipe"],
+      stdio: [options.input === undefined ? "ignore" : "pipe", "pipe", "pipe"],
     });
     const out: Buffer[] = [];
     const err: Buffer[] = [];
@@ -123,7 +123,13 @@ function git(cwd: string, args: string[], options: GitOptions = {}): Promise<str
       const detail = [stdout, Buffer.concat(err).toString()].filter((s) => s.trim()).join("\n").trim();
       reject(new Error(`git ${args.join(" ")} (in ${cwd}) failed: ${detail || `exit ${code}`}`));
     });
-    child.stdin.end(options.input ?? "");
+    if (child.stdin) {
+      // git may exit without reading all of its input (e.g. on an error).
+      // The resulting EPIPE is unhandled otherwise, and crashes the process;
+      // the exit code reported on "close" is what matters.
+      child.stdin.on("error", () => {});
+      child.stdin.end(options.input);
+    }
   });
 }
 
