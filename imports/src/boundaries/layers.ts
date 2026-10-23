@@ -286,7 +286,7 @@ export function checkLayerEdge(
         "slice-spec",
         from.name,
         to.name,
-        `${from.name} imports ${to.name}/${subpath}, another slice's API contract. An ${fromKind} package serves only the spec beside it (${path.basename(paired)}); move the operation into that spec, or the handler or request into the slice that owns the operation. Schemas (\`schemas/*\`) from other specs are fine.`,
+        `${from.name} imports ${to.name}/${subpath}, another slice's API contract. An ${fromKind} package serves only the spec beside it (${path.basename(path.dirname(paired))}/${path.basename(paired)}); move the operation into that spec, or the handler or request into the slice that owns the operation. Schemas (\`schemas/*\`) from other specs are fine.`,
       );
     }
   }
