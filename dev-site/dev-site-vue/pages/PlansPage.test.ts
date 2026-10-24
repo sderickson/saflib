@@ -293,6 +293,48 @@ describe("PlansPage", () => {
     expect(wrapper.text()).not.toContain("Open run");
   });
 
+  it("a run's change events refresh only its own file's run list", async () => {
+    const listeners: Record<string, () => void> = {};
+    vi.stubGlobal(
+      "EventSource",
+      class {
+        addEventListener(type: string, listener: () => void) {
+          listeners[type] = listener;
+        }
+        removeEventListener() {}
+        close() {}
+      },
+    );
+    runsStateByFile[PHASE_1_PATH] = [runFixture({ status: "running" })];
+    runsById["run-1"] = runFixture({ status: "running" });
+
+    await router.push({ path: "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml" });
+    const wrapper = mountTestApp(PlansPage);
+    await vi.waitFor(() => {
+      expect(wrapper.find(".v-chip").exists()).toBe(true);
+      expect(listeners.change).toBeDefined();
+    });
+    // Let the page's initial fetches finish before counting.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const listed: string[] = [];
+    const onRequest = ({ request }: { request: Request }) => {
+      const match = new URL(request.url).pathname.match(/^\/api\/workflows\/(.+)\/runs$/);
+      if (match) listed.push(decodeURIComponent(match[1]));
+    };
+    server.events.on("request:start", onRequest);
+    onTestFinished(() => {
+      server.events.removeListener("request:start", onRequest);
+    });
+
+    listeners.change();
+    await vi.waitFor(() => {
+      expect(listed).toContain(PHASE_1_PATH);
+    });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(new Set(listed)).toEqual(new Set([PHASE_1_PATH]));
+  });
+
   it("Play current plan cascades to the next phase file once this run finishes", async () => {
     const PHASE_2_PATH = "test-product/plans/notes/2026-09-16-todo-app/phase-2-backend-routes.yaml";
     runsStateByFile[PHASE_1_PATH] = [runFixture()];
