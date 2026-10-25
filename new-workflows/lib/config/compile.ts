@@ -54,20 +54,28 @@ function compileStep(
   switch (configStep.kind) {
     case "prompt":
       return withPause(
-        step<PromptStepInput, Record<string, unknown>>("prompt", runPromptStep, () => ({
-          prompt: configStep.prompt,
-        })),
+        step<PromptStepInput, Record<string, unknown>>(
+          "prompt",
+          runPromptStep,
+          () => ({ prompt: configStep.prompt, files: configStep.files }),
+          { expectedFiles: configStep.files },
+        ),
         configStep,
       );
     case "command":
       return withPause(
-        step<CommandStepInput, Record<string, unknown>>("command", runCommandStep, () => ({
-          command: configStep.command,
-          args: configStep.args,
-          ignoreError: configStep.ignoreError,
-          errorPrompt: configStep.errorPrompt,
-          forceInScript: configStep.forceInScript,
-        })),
+        step<CommandStepInput, Record<string, unknown>>(
+          "command",
+          runCommandStep,
+          () => ({
+            command: configStep.command,
+            args: configStep.args,
+            ignoreError: configStep.ignoreError,
+            errorPrompt: configStep.errorPrompt,
+            forceInScript: configStep.forceInScript,
+          }),
+          { expectedFiles: configStep.files },
+        ),
         configStep,
       );
     case "cd":
@@ -90,6 +98,7 @@ function compileStep(
             errorPrompt: configStep.errorPrompt,
             forceInScript: configStep.forceInScript,
           }),
+          { expectedFiles: configStep.files },
         ),
         configStep,
       );
@@ -108,6 +117,7 @@ function compileStep(
             targetDefinition,
             targetInput: (configStep as { input?: Record<string, unknown> }).input ?? {},
           }),
+          { expectedFiles: configStep.files },
         ),
         configStep,
       );

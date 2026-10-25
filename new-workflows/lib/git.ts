@@ -78,6 +78,12 @@ export async function commitIfDirty(
   message: string,
   /** Called with each git command's duration, so callers can report slow commits. */
   onTiming?: (command: string, ms: number) => void,
+  /**
+   * Called before committing with the staged files, relative to the repo
+   * root. Submodule pointer moves are left out: this checkout's submodules
+   * are shared with whatever else is running, so they aren't the step's.
+   */
+  onStaged?: (files: string[], repoRoot: string) => void,
 ): Promise<boolean> {
   const root = await findGitRoot(cwd);
   if (!root) return false;
@@ -107,8 +113,9 @@ export async function commitIfDirty(
   // with git's own "no changes added to commit". Checking what's staged
   // (rather than special-casing submodules by name/pattern) generalizes
   // to any other "reported dirty but unstageable from here" case too.
-  const staged = await git(["diff", "--cached", "--name-only"]);
+  const staged = await git(["diff", "--cached", "--raw", "-z"]);
   if (!staged.trim()) return false;
+  onStaged?.(parseStagedFiles(staged), root);
   try {
     await git(["commit", "-m", message]);
   } catch (error) {
@@ -125,6 +132,24 @@ export async function commitIfDirty(
     throw error;
   }
   return true;
+}
+
+/** File paths from `git diff --raw -z`, skipping submodules (mode 160000). */
+export function parseStagedFiles(raw: string): string[] {
+  const tokens = raw.split("\0").filter(Boolean);
+  const files: string[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const meta = tokens[i]!;
+    if (!meta.startsWith(":")) continue;
+    const [srcMode, dstMode, , , status = ""] = meta.slice(1).split(" ");
+    // Renames and copies list the old path, then the new one.
+    const pathCount = /^[RC]/.test(status) ? 2 : 1;
+    const paths = tokens.slice(i + 1, i + 1 + pathCount);
+    i += pathCount;
+    if (srcMode === "160000" || dstMode === "160000") continue;
+    files.push(paths[paths.length - 1]!);
+  }
+  return files;
 }
 
 /**

@@ -3,6 +3,8 @@ import { runAgentTurn } from "../agents/dispatch.ts";
 
 export interface PromptStepInput {
   prompt: string;
+  /** See `WorkflowStep.expectedFiles`. Listed after the prompt. */
+  files?: string[];
 }
 
 /**
@@ -12,7 +14,10 @@ export interface PromptStepInput {
  */
 export const runPromptStep: StepFn<PromptStepInput> = async (rawInput, ctx) => {
   const input = rawInput as PromptStepInput;
-  const prompt = ctx.extraPrompt ? `${ctx.extraPrompt}\n\n${input.prompt}` : input.prompt;
+  const body = input.files?.length
+    ? `${input.prompt}\n\n${expectedFilesNote(input.files, ctx.originalWorkingDirectory)}`
+    : input.prompt;
+  const prompt = ctx.extraPrompt ? `${ctx.extraPrompt}\n\n${body}` : body;
 
   if (ctx.mode === "dry" || ctx.mode === "checklist" || ctx.mode === "script") {
     return { status: "success" };
@@ -36,3 +41,10 @@ export const runPromptStep: StepFn<PromptStepInput> = async (rawInput, ctx) => {
   }
   return { status: "success" };
 };
+
+function expectedFilesNote(files: string[], root: string): string {
+  return `Files this step is expected to change (relative to ${root}):
+${files.map((file) => `- ${file}`).join("\n")}
+
+If you need to change other files, you can, but say which ones and why in your final message. Changes outside the plan's expected files are flagged for review.`;
+}

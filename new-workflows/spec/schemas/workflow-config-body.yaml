@@ -48,6 +48,19 @@ properties:
             prompt:
               type: string
               example: "Run the drizzle migration and confirm it applied cleanly."
+            files:
+              type: array
+              items:
+                type: string
+              description: >
+                Files this step is expected to change, as paths or globs
+                relative to the run's starting directory (for a plan, the
+                repo root). They're listed in the prompt. Together with
+                every other step's `files` they make up the run's scope:
+                once any step declares `files`, each step's commit is
+                checked against that scope, and files outside it are
+                recorded as unexpected changes.
+              example: ["product/service/spec/routes/widgets/**", "product/service/spec/openapi.yaml"]
             pauseAfter:
               type: boolean
               description: >
@@ -89,6 +102,14 @@ properties:
                 Run even in `script` mode if it would otherwise be treated as
                 a skipped validation command (typecheck/test).
               default: false
+            files:
+              type: array
+              items:
+                type: string
+              description: >
+                Files this step is expected to change, as paths or globs
+                relative to the run's starting directory. Adds to the run's
+                scope; see the prompt step.
             pauseAfter:
               type: boolean
               description: Stop auto-continue after this step succeeds. See the prompt step.
@@ -144,6 +165,14 @@ properties:
             forceInScript:
               type: boolean
               default: false
+            files:
+              type: array
+              items:
+                type: string
+              description: >
+                Files this step is expected to change, as paths or globs
+                relative to the run's starting directory. Adds to the run's
+                scope; see the prompt step.
             pauseAfter:
               type: boolean
               description: Stop auto-continue after this step succeeds. See the prompt step.
@@ -173,6 +202,14 @@ properties:
               type: object
               description: Input for the target workflow.
               additionalProperties: true
+            files:
+              type: array
+              items:
+                type: string
+              description: >
+                Files this step is expected to change, as paths or globs
+                relative to the run's starting directory. Adds to the run's
+                scope; see the prompt step.
             pauseAfter:
               type: boolean
               description: Stop auto-continue after this step succeeds. See the prompt step.

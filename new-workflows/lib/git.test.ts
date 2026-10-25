@@ -4,7 +4,7 @@ import { promisify } from "node:util";
 import { mkdtempSync, writeFileSync, existsSync, readFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { commitIfDirty, revertUncommittedChanges } from "./git.ts";
+import { commitIfDirty, parseStagedFiles, revertUncommittedChanges } from "./git.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -240,7 +240,45 @@ describe("commitIfDirty with a submodule", () => {
     writeFileSync(path.join(sub, "f.txt"), "hi\nmore\n");
     await execFileAsync("git", ["commit", "-am", "inner change"], { cwd: sub });
 
-    expect(await commitIfDirty(dir, "bump submodule")).toBe(true);
+    writeFileSync(path.join(dir, "beside.txt"), "x\n");
+    let staged: string[] | undefined;
+    expect(
+      await commitIfDirty(dir, "bump submodule", undefined, (files) => {
+        staged = files;
+      }),
+    ).toBe(true);
     expect(await log(dir)).toEqual(["bump submodule", "add submodule", "initial"]);
+    // The pointer move is committed but not reported as the step's own file.
+    expect(staged).toEqual(["beside.txt"]);
+  });
+});
+
+describe("commitIfDirty staged files", () => {
+  it("reports the staged files relative to the repo root, from any cwd", async () => {
+    const dir = await initRepo();
+    mkdirSync(path.join(dir, "pkg"));
+    writeFileSync(path.join(dir, "pkg", "a.ts"), "a\n");
+    writeFileSync(path.join(dir, "README.md"), "changed\n");
+    let reported: { files: string[]; root: string } | undefined;
+
+    await commitIfDirty(path.join(dir, "pkg"), "two files", undefined, (files, root) => {
+      reported = { files, root };
+    });
+
+    expect(reported?.files.sort()).toEqual(["README.md", "pkg/a.ts"]);
+    expect(reported?.root).toBe((await execFileAsync("git", ["rev-parse", "--show-toplevel"], { cwd: dir })).stdout.trim());
+  });
+});
+
+describe("parseStagedFiles", () => {
+  it("takes the new path of a rename and skips submodules", () => {
+    const raw = [
+      ":100644 100644 aaa bbb M", "a.ts",
+      ":100644 100644 ccc ddd R095", "old.ts", "new.ts",
+      ":160000 160000 eee fff M", "sub",
+      ":000000 100644 000 ggg A", "with space.ts",
+      "",
+    ].join("\0");
+    expect(parseStagedFiles(raw)).toEqual(["a.ts", "new.ts", "with space.ts"]);
   });
 });

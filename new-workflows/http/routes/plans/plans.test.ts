@@ -6,6 +6,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { DbKey } from "@saflib/drizzle";
 import { newWorkflowsDbManager } from "@saflib/new-workflows-db/instances";
+import {
+  createWorkflowRun,
+  createWorkflowStep,
+  updateResultWorkflowStep,
+} from "@saflib/new-workflows-db";
 import { HelloWorkflowDefinition } from "@saflib/new-workflows";
 import { createNewWorkflowsRouter } from "../../index.ts";
 
@@ -125,5 +130,57 @@ describe("plans routes", () => {
       .post(`/api/workflows/${encodeURIComponent("./some-file.ts")}/runs`)
       .send({ input: {} });
     expect(response.status).toBe(404);
+  });
+
+  it("GET /api/plans/unexpected-changes lists steps that changed files outside their run's scope", async () => {
+    async function stepWithUnexpected(workflowRef: string, files: string[] | null) {
+      const { result: run } = await createWorkflowRun(dbKey, {
+        workflow_source: "code",
+        workflow_ref: workflowRef,
+        mode: "run",
+        input: {},
+        cwd,
+        agent_config: null,
+        now: new Date(),
+      });
+      const { result: step } = await createWorkflowStep(dbKey, {
+        run_id: run!.id,
+        step_index: 3,
+        kind: "command",
+        now: new Date(),
+      });
+      await updateResultWorkflowStep(dbKey, {
+        id: step!.id,
+        status: "success",
+        result: null,
+        error: null,
+        label: "npm run test",
+        commit_hash: "abc123",
+        unexpected_files: files,
+        now: new Date(),
+      });
+      return run!.id;
+    }
+    const runId = await stepWithUnexpected("plans/2026-10-01-widgets/phase-2.workflow.yaml", [
+      "app/security/vitest.config.js",
+    ]);
+    await stepWithUnexpected("plans/2026-10-01-widgets/phase-1.workflow.yaml", null);
+    await stepWithUnexpected("other/phase-1.workflow.yaml", ["x.ts"]);
+
+    const response = await request(app).get("/api/plans/unexpected-changes");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      changes: [
+        {
+          workflow_ref: "plans/2026-10-01-widgets/phase-2.workflow.yaml",
+          run_id: runId,
+          step_index: 3,
+          label: "npm run test",
+          commit_hash: "abc123",
+          files: ["app/security/vitest.config.js"],
+        },
+      ],
+    });
   });
 });

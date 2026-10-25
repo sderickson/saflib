@@ -1063,6 +1063,48 @@
           }
         }
       }
+    },
+    "/api/plans/unexpected-changes": {
+      "get": {
+        "summary": "List unexpected changes made by plan runs",
+        "description": "For each workflow file under the plans root, the steps of its most recent run that changed files outside the run's declared scope. Runs that declare no scope aren't checked, so they never appear.\n",
+        "operationId": "listPlanUnexpectedChanges",
+        "x-public": true,
+        "responses": {
+          "200": {
+            "description": "Unexpected changes, grouped by step.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "changes"
+                  ],
+                  "properties": {
+                    "changes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/unexpected-change"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "This host hasn't configured a plans folder.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1123,6 +1165,9 @@
       },
       "WorkflowDrive": {
         "$ref": "#/components/schemas/workflow-drive"
+      },
+      "UnexpectedChange": {
+        "$ref": "#/components/schemas/unexpected-change"
       },
       "workflow-summary": {
         "type": "object",
@@ -1821,6 +1866,17 @@
                       "type": "string",
                       "example": "Run the drizzle migration and confirm it applied cleanly."
                     },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Files this step is expected to change, as paths or globs relative to the run's starting directory (for a plan, the repo root). They're listed in the prompt. Together with every other step's `files` they make up the run's scope: once any step declares `files`, each step's commit is checked against that scope, and files outside it are recorded as unexpected changes.\n",
+                      "example": [
+                        "product/service/spec/routes/widgets/**",
+                        "product/service/spec/openapi.yaml"
+                      ]
+                    },
                     "pauseAfter": {
                       "type": "boolean",
                       "description": "After this step succeeds, return `awaiting_user` so auto-continue (CLI loop, play-workflow, play-plan) stops for a person to review. The step index still advances.\n"
@@ -1874,6 +1930,13 @@
                       "type": "boolean",
                       "description": "Run even in `script` mode if it would otherwise be treated as a skipped validation command (typecheck/test).\n",
                       "default": false
+                    },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Files this step is expected to change, as paths or globs relative to the run's starting directory. Adds to the run's scope; see the prompt step.\n"
                     },
                     "pauseAfter": {
                       "type": "boolean",
@@ -1956,6 +2019,13 @@
                       "type": "boolean",
                       "default": false
                     },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Files this step is expected to change, as paths or globs relative to the run's starting directory. Adds to the run's scope; see the prompt step.\n"
+                    },
                     "pauseAfter": {
                       "type": "boolean",
                       "description": "Stop auto-continue after this step succeeds. See the prompt step."
@@ -1991,6 +2061,13 @@
                       "description": "Input for the target workflow.",
                       "additionalProperties": true
                     },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Files this step is expected to change, as paths or globs relative to the run's starting directory. Adds to the run's scope; see the prompt step.\n"
+                    },
                     "pauseAfter": {
                       "type": "boolean",
                       "description": "Stop auto-continue after this step succeeds. See the prompt step."
@@ -2002,6 +2079,53 @@
                 }
               ]
             }
+          }
+        }
+      },
+      "unexpected-change": {
+        "type": "object",
+        "description": "A step's commit that changed files outside its run's declared scope (the `files` of the run's prompt steps, plus files its copy steps wrote).\n",
+        "additionalProperties": false,
+        "required": [
+          "workflow_ref",
+          "run_id",
+          "step_index",
+          "files"
+        ],
+        "properties": {
+          "workflow_ref": {
+            "type": "string",
+            "description": "The run's workflow file, relative to the repo root.",
+            "example": "test-product/plans/2026-09-15-add-widgets/phase-2-api.workflow.yaml"
+          },
+          "run_id": {
+            "type": "string",
+            "example": "0SG36FJe6m4W"
+          },
+          "step_index": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 7
+          },
+          "label": {
+            "type": "string",
+            "description": "The step's label, as in its commit message.",
+            "example": "npm run test"
+          },
+          "commit_hash": {
+            "type": "string",
+            "description": "The commit holding the step's changes.",
+            "example": "12cd003edb9ae8411c6990e4c84984e4b9e735d7"
+          },
+          "files": {
+            "type": "array",
+            "description": "Changed files outside the run's scope, relative to the repo root.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "test-product/security/vitest.config.js"
+            ]
           }
         }
       },

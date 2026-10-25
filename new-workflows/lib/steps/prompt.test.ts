@@ -39,4 +39,18 @@ describe("runPromptStep", () => {
     expect(result.status).toBe("success");
     expect(chunks.some((c) => c.channel === "agent")).toBe(true);
   });
+
+  it("lists the step's expected files after the prompt", async () => {
+    const { ctx } = makeTestContext({ mode: "print", originalWorkingDirectory: "/repo" });
+    const result = await runPromptStep(
+      { prompt: "do something", files: ["app/spec/**", "app/spec/openapi.yaml"] },
+      ctx,
+    );
+    expect(result).toEqual({
+      status: "awaiting_prompt",
+      prompt: expect.stringContaining(
+        "do something\n\nFiles this step is expected to change (relative to /repo):\n- app/spec/**\n- app/spec/openapi.yaml",
+      ),
+    });
+  });
 });

@@ -50,6 +50,13 @@
       "when": 1792082383102,
       "tag": "0006_steady_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1792947248238,
+      "tag": "0007_abnormal_lorna_dane",
+      "breakpoints": true
     }
   ]
 }

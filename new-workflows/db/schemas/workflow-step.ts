@@ -40,6 +40,12 @@ export interface WorkflowStepEntity {
    * nothing (most command steps), failed, or predates this column.
    */
   commit_hash: string | null;
+  /**
+   * Files this step's commit changed outside its run's declared scope,
+   * relative to the repo root. Null when the run declares no scope, or the
+   * step committed nothing outside it.
+   */
+  unexpected_files: string[] | null;
   started_at: Date;
   finished_at: Date | null;
 }
@@ -61,6 +67,9 @@ export const workflowStepTable = sqliteTable(
     > | null>(),
     error: text("error"),
     commit_hash: text("commit_hash"),
+    unexpected_files: text("unexpected_files", { mode: "json" }).$type<
+      string[] | null
+    >(),
     started_at: integer("started_at", { mode: "timestamp" }).notNull(),
     finished_at: integer("finished_at", { mode: "timestamp" }),
   },

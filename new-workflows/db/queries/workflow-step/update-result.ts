@@ -18,6 +18,8 @@ export type UpdateResultWorkflowStepParams = {
   label?: string | null;
   /** See `WorkflowStepEntity.commit_hash`. Omit to leave it unchanged. */
   commit_hash?: string | null;
+  /** See `WorkflowStepEntity.unexpected_files`. Omit to leave it unchanged. */
+  unexpected_files?: string[] | null;
   now: Date;
 };
 
@@ -43,6 +45,9 @@ export const updateResultWorkflowStep = queryWrapper(
         error: params.error,
         ...(params.label !== undefined ? { label: params.label } : {}),
         ...(params.commit_hash !== undefined ? { commit_hash: params.commit_hash } : {}),
+        ...(params.unexpected_files !== undefined
+          ? { unexpected_files: params.unexpected_files }
+          : {}),
         finished_at: params.now,
       })
       .where(eq(workflowStepTable.id, params.id))

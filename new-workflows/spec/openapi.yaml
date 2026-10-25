@@ -64,6 +64,9 @@ paths:
       $ref: "./routes/plans/list.yaml#/listPlans"
     post:
       $ref: "./routes/plans/create.yaml#/createPlan"
+  /api/plans/unexpected-changes:
+    get:
+      $ref: "./routes/plans/unexpected-changes.yaml#/listPlanUnexpectedChanges"
 
 components:
   schemas:
@@ -105,3 +108,5 @@ components:
       $ref: "./schemas/workflow-drive-mode.yaml"
     WorkflowDrive:
       $ref: "./schemas/workflow-drive.yaml"
+    UnexpectedChange:
+      $ref: "./schemas/unexpected-change.yaml"

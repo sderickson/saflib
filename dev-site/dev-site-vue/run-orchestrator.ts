@@ -211,6 +211,8 @@ function createOrchestrator(): RunOrchestrator {
       // rather than on the next event-driven refresh.
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", outcome.run_id] });
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+      // The step's commit may have changed files outside the plan's scope.
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "plan-unexpected-changes"] });
 
       if (outcome.status === "done") {
         playSuccessBell();

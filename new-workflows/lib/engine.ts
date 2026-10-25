@@ -11,6 +11,7 @@ import type { DbKey, WorkflowRunEntity, WorkflowRunStatus } from "@saflib/new-wo
 import { resolveRef } from "@saflib/git";
 import { createOutputStream } from "./output.ts";
 import { commitIfDirty, revertUncommittedChanges } from "./git.ts";
+import { findUnexpectedFiles } from "./expected-files.ts";
 import { summarizeStepInput } from "./describe-steps.ts";
 import { buildCommitMessage, summarizeAgentTurns } from "./commit-message.ts";
 import { loadRunChain } from "./run-chain.ts";
@@ -40,7 +41,7 @@ export function step<Input, C>(
   kind: string,
   fn: StepFn<Input>,
   input: (arg: { context: C }) => Input,
-  options?: { pauseAfter?: boolean; pauseMessage?: string },
+  options?: { pauseAfter?: boolean; pauseMessage?: string; expectedFiles?: string[] },
 ): WorkflowStep<C> {
   return {
     kind,
@@ -48,6 +49,7 @@ export function step<Input, C>(
     run: fn as StepFn<unknown>,
     pauseAfter: options?.pauseAfter,
     pauseMessage: options?.pauseMessage,
+    expectedFiles: options?.expectedFiles,
   };
 }
 
@@ -290,6 +292,7 @@ async function runStep(
     if (r.newCwd) cwd = toWorkspacePath(r.newCwd);
   }
   const isResume = (priorSteps ?? []).some((s) => s.step_index === stepIndex);
+  const expectedFiles = def.steps.flatMap((s) => s.expectedFiles ?? []);
 
   const now = new Date();
   const { result: stepRow, error: stepCreateError } = await createWorkflowStep(
@@ -325,6 +328,7 @@ async function runStep(
         originalWorkingDirectory: run.cwd,
         agentConfig: run.agent_config ?? undefined,
         copiedFiles,
+        expectedFiles,
         skipTodos: run.skip_todos,
         isResume,
         extraPrompt: options?.skip ? undefined : options?.extraPrompt,
@@ -342,6 +346,7 @@ async function runStep(
 
   const label = summarizeStepInput(step.kind, stepInput) ?? step.kind;
   let commitHash: string | null | undefined;
+  let unexpectedFiles: string[] | null | undefined;
   if (stepResult.status === "success") {
     const commitMessage = await stepCommitMessage(dbKey, {
       run,
@@ -356,8 +361,14 @@ async function runStep(
     });
     try {
       const timings: Array<{ command: string; ms: number }> = [];
-      const committed = await commitIfDirty(run.cwd, commitMessage, (command, ms) =>
-        timings.push({ command, ms }),
+      let staged: { files: string[]; repoRoot: string } | undefined;
+      const committed = await commitIfDirty(
+        run.cwd,
+        commitMessage,
+        (command, ms) => timings.push({ command, ms }),
+        (files, repoRoot) => {
+          staged = { files, repoRoot };
+        },
       );
       if (committed) {
         commitHash = resolveRef(run.cwd, "HEAD").result ?? null;
@@ -366,6 +377,28 @@ async function runStep(
           level: "info",
           content: `Committed: ${commitMessage.split("\n")[0]} ${formatCommitTimings(timings)}`,
         });
+      }
+      if (committed && staged && expectedFiles.length > 0) {
+        const stepCopied = (stepResult.result as { copiedFiles?: Record<string, string> } | undefined)
+          ?.copiedFiles;
+        const unexpected = findUnexpectedFiles({
+          changedFiles: staged.files,
+          repoRoot: staged.repoRoot,
+          runCwd: run.cwd,
+          expectedFiles,
+          copiedFiles: [
+            ...Object.values(copiedFiles),
+            ...Object.values(stepCopied ?? {}).map((file) => toWorkspacePath(file)),
+          ],
+        });
+        if (unexpected.length > 0) {
+          unexpectedFiles = unexpected;
+          write({
+            channel: "tool",
+            level: "warn",
+            content: `Changed files outside this run's expected files:\n${unexpected.map((file) => `- ${file}`).join("\n")}`,
+          });
+        }
       }
     } catch (error) {
       // The whole revert/skip/retry recovery flow (`options.revert`,
@@ -391,6 +424,7 @@ async function runStep(
     error: stepResult.status === "error" ? stepResult.message : null,
     label,
     commit_hash: commitHash,
+    unexpected_files: unexpectedFiles,
     now: finishedAt,
   });
 

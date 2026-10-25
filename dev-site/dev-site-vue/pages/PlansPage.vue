@@ -80,6 +80,15 @@
               <div v-if="groupClock(group)" class="plans-nav__group-stats">
                 {{ groupClock(group) }}
               </div>
+              <button
+                v-if="groupUnexpected(group).length"
+                type="button"
+                class="plans-nav__unexpected"
+                @click="openUnexpected(group)"
+              >
+                <v-icon icon="mdi-alert-outline" size="x-small" />
+                {{ unexpectedLabel(groupUnexpected(group)) }}
+              </button>
               <router-link
                 v-for="file in group.files"
                 :key="file.path"
@@ -124,6 +133,12 @@
         </template>
       </ResizableColumns>
     </v-container>
+
+    <PlanUnexpectedChangesDialog
+      v-model="unexpectedOpen"
+      :plan-name="unexpectedGroup?.name ?? ''"
+      :changes="unexpectedGroup ? groupUnexpected(unexpectedGroup) : []"
+    />
 
     <v-dialog v-model="newProjectOpen" max-width="520">
       <v-card>
@@ -178,9 +193,20 @@ import {
   useWorkflowRunsQuery,
   useSiblingMostRecentRunIds,
   useLatestWorkflowRuns,
+  usePlanUnexpectedChangesQuery,
 } from "../requests/workflows-queries.ts";
 import { useCheckout, useRepoFiles } from "../requests/queries.ts";
-import { plansPrefix, fileKindOf, groupPlanFiles, planFileHref, type PlanGroup, type PlanFileEntry } from "../plan-files.ts";
+import {
+  plansPrefix,
+  fileKindOf,
+  groupPlanFiles,
+  planFileHref,
+  unexpectedChangesForGroup,
+  type PlanGroup,
+  type PlanFileEntry,
+  type UnexpectedChangeEntry,
+} from "../plan-files.ts";
+import PlanUnexpectedChangesDialog from "../components/PlanUnexpectedChangesDialog.vue";
 import { formatClockSummary, summarizeRunTimings, type RunTiming } from "../plan-run-stats.ts";
 import { useRunOrchestrator } from "../run-orchestrator.ts";
 import { getAgentCli } from "../agent-settings.ts";
@@ -368,6 +394,25 @@ function groupClock(group: PlanGroup): string | undefined {
   return summary ? formatClockSummary(summary) : undefined;
 }
 
+// --- Files each plan's runs changed outside their declared scope. ---
+const unexpectedQuery = usePlanUnexpectedChangesQuery();
+const unexpectedOpen = ref(false);
+const unexpectedGroup = ref<PlanGroup>();
+
+function groupUnexpected(group: PlanGroup): UnexpectedChangeEntry[] {
+  return unexpectedChangesForGroup(unexpectedQuery.data.value?.changes ?? [], group);
+}
+
+function unexpectedLabel(changes: UnexpectedChangeEntry[]): string {
+  const count = new Set(changes.flatMap((change) => change.files)).size;
+  return `${count} unexpected ${count === 1 ? "file" : "files"}`;
+}
+
+function openUnexpected(group: PlanGroup) {
+  unexpectedGroup.value = group;
+  unexpectedOpen.value = true;
+}
+
 function fileClock(file: PlanFileEntry): string | undefined {
   if (fileKindOf(file.name) !== "workflow") return undefined;
   const summary = summarizeRunTimings(timingsFor([file]), now.value);
@@ -466,6 +511,21 @@ const earlierPhaseRunIds = computed(
   line-height: 1.3;
   padding: 0 0.5rem 0.25rem;
   opacity: 0.65;
+}
+.plans-nav__unexpected {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  padding: 0 0.5rem 0.25rem;
+  color: rgb(var(--v-theme-warning));
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.plans-nav__unexpected:hover {
+  text-decoration: underline;
 }
 .plans-nav__file-text {
   min-width: 0;

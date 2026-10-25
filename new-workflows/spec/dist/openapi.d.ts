@@ -328,6 +328,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/plans/unexpected-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List unexpected changes made by plan runs
+         * @description For each workflow file under the plans root, the steps of its most recent run that changed files outside the run's declared scope. Runs that declare no scope aren't checked, so they never appear.
+         */
+        get: operations["listPlanUnexpectedChanges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -351,6 +371,7 @@ export interface components {
         PlanSummary: components["schemas"]["plan-summary"];
         WorkflowDriveMode: components["schemas"]["workflow-drive-mode"];
         WorkflowDrive: components["schemas"]["workflow-drive"];
+        UnexpectedChange: components["schemas"]["unexpected-change"];
         /** @description One entry in the registered-workflow list (`GET /workflows`). */
         "workflow-summary": {
             /**
@@ -660,6 +681,14 @@ export interface components {
                 kind: "prompt";
                 /** @example Run the drizzle migration and confirm it applied cleanly. */
                 prompt: string;
+                /**
+                 * @description Files this step is expected to change, as paths or globs relative to the run's starting directory (for a plan, the repo root). They're listed in the prompt. Together with every other step's `files` they make up the run's scope: once any step declares `files`, each step's commit is checked against that scope, and files outside it are recorded as unexpected changes.
+                 * @example [
+                 *       "product/service/spec/routes/widgets/**",
+                 *       "product/service/spec/openapi.yaml"
+                 *     ]
+                 */
+                files?: string[];
                 /** @description After this step succeeds, return `awaiting_user` so auto-continue (CLI loop, play-workflow, play-plan) stops for a person to review. The step index still advances. */
                 pauseAfter?: boolean;
                 /** @description Message shown when `pauseAfter` fires. */
@@ -691,6 +720,8 @@ export interface components {
                  * @default false
                  */
                 forceInScript: boolean;
+                /** @description Files this step is expected to change, as paths or globs relative to the run's starting directory. Adds to the run's scope; see the prompt step. */
+                files?: string[];
                 /** @description Stop auto-continue after this step succeeds. See the prompt step. */
                 pauseAfter?: boolean;
                 pauseMessage?: string;
@@ -724,6 +755,8 @@ export interface components {
                 errorPrompt?: string;
                 /** @default false */
                 forceInScript: boolean;
+                /** @description Files this step is expected to change, as paths or globs relative to the run's starting directory. Adds to the run's scope; see the prompt step. */
+                files?: string[];
                 /** @description Stop auto-continue after this step succeeds. See the prompt step. */
                 pauseAfter?: boolean;
                 pauseMessage?: string;
@@ -742,10 +775,41 @@ export interface components {
                 input?: {
                     [key: string]: unknown;
                 };
+                /** @description Files this step is expected to change, as paths or globs relative to the run's starting directory. Adds to the run's scope; see the prompt step. */
+                files?: string[];
                 /** @description Stop auto-continue after this step succeeds. See the prompt step. */
                 pauseAfter?: boolean;
                 pauseMessage?: string;
             })[];
+        };
+        /** @description A step's commit that changed files outside its run's declared scope (the `files` of the run's prompt steps, plus files its copy steps wrote). */
+        "unexpected-change": {
+            /**
+             * @description The run's workflow file, relative to the repo root.
+             * @example test-product/plans/2026-09-15-add-widgets/phase-2-api.workflow.yaml
+             */
+            workflow_ref: string;
+            /** @example 0SG36FJe6m4W */
+            run_id: string;
+            /** @example 7 */
+            step_index: number;
+            /**
+             * @description The step's label, as in its commit message.
+             * @example npm run test
+             */
+            label?: string;
+            /**
+             * @description The commit holding the step's changes.
+             * @example 12cd003edb9ae8411c6990e4c84984e4b9e735d7
+             */
+            commit_hash?: string;
+            /**
+             * @description Changed files outside the run's scope, relative to the repo root.
+             * @example [
+             *       "test-product/security/vitest.config.js"
+             *     ]
+             */
+            files: string[];
         };
         /**
          * @description Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.
@@ -1412,6 +1476,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description This host hasn't configured a plans folder. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listPlanUnexpectedChanges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unexpected changes, grouped by step. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        changes: components["schemas"]["unexpected-change"][];
+                    };
                 };
             };
             /** @description This host hasn't configured a plans folder. */

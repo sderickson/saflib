@@ -78,6 +78,7 @@ class EventSourceStub {
 let runsStateByFile: Record<string, unknown[]> = {};
 /** Keyed by run id — RunView fetches one run's own detail/logs/steps once it's shown inline. */
 let runsById: Record<string, unknown> = {};
+let unexpectedChanges: unknown[] = [];
 
 const handlers = [
   http.get(`${ORIGIN}/api/checkout`, () =>
@@ -107,6 +108,9 @@ const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId/logs`, () => HttpResponse.json({ logs: [] })),
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: [] })),
   http.get(`${ORIGIN}/api/workflows/:id/steps`, () => HttpResponse.json({ steps: [] })),
+  http.get(`${ORIGIN}/api/plans/unexpected-changes`, () =>
+    HttpResponse.json({ changes: unexpectedChanges }),
+  ),
 ];
 
 const PHASE_1_PATH = "test-product/plans/notes/2026-09-16-todo-app/phase-1-backend-schema.yaml";
@@ -123,6 +127,7 @@ describe("PlansPage", () => {
     __resetRunOrchestratorForTests();
     runsStateByFile = {};
     runsById = {};
+    unexpectedChanges = [];
     vi.stubGlobal("EventSource", EventSourceStub);
     const drive = fakeDriveHandlers(ORIGIN);
     server.use(...drive.handlers);
@@ -150,6 +155,39 @@ describe("PlansPage", () => {
     expect(group?.find(".plans-nav__group-stats").text()).toContain("–");
     expect(group?.text()).toContain("phase-1-backend-schema.yaml");
     expect(group?.find(".plans-nav__file-stats").text()).toContain("1h 30m");
+  });
+
+  it("flags a plan whose runs changed files outside their scope, and lists them", async () => {
+    unexpectedChanges = [
+      {
+        workflow_ref: PHASE_1_PATH,
+        run_id: "run-phase-1",
+        step_index: 6,
+        label: "npm run test",
+        commit_hash: "12cd003edb9ae8411c6990e4c84984e4b9e735d7",
+        files: ["test-product/security/vitest.config.js", "test-product/security/package.json"],
+      },
+    ];
+    await router.push({ path: "/plans" });
+    const wrapper = mountTestApp(PlansPage);
+
+    const flagFor = (name: string) =>
+      wrapper
+        .findAll(".plans-nav__group")
+        .find((el) => el.find(".plans-nav__group-name").text() === name)
+        ?.find(".plans-nav__unexpected");
+    await vi.waitFor(() => {
+      expect(flagFor("todo-app")?.text()).toContain("2 unexpected files");
+    });
+    expect(flagFor("test-this-thing")?.exists()).toBe(false);
+
+    await flagFor("todo-app")!.trigger("click");
+    await vi.waitFor(() => {
+      const dialog = document.body.textContent ?? "";
+      expect(dialog).toContain("phase-1-backend-schema.yaml");
+      expect(dialog).toContain("step 7: npm run test");
+      expect(dialog).toContain("test-product/security/vitest.config.js");
+    });
   });
 
   it("lists plan folders newest-first, with no file selected by default", async () => {

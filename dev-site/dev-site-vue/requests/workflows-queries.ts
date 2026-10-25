@@ -370,6 +370,15 @@ export function usePlansQuery() {
   });
 }
 
+/** Steps of plan runs that changed files outside their run's declared scope. */
+export function usePlanUnexpectedChangesQuery() {
+  const client = createWorkflowsClient();
+  return useQuery<NewWorkflowsResponseBody["listPlanUnexpectedChanges"][200], TanstackError>({
+    queryKey: ["new-workflows", "plan-unexpected-changes"],
+    queryFn: () => handleClientMethod(client.GET("/api/plans/unexpected-changes", {})),
+  });
+}
+
 export function useCreatePlanMutation() {
   const client = createWorkflowsClient();
   const queryClient = useQueryClient();
