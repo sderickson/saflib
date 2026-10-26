@@ -5,6 +5,8 @@ import {
   PathTraversalError,
   StorageError,
   FileNotFoundError,
+  gcsMetadataToStorageFileEntry,
+  type UploadFileResult,
 } from "@saflib/object-store";
 import { getStorage } from "./client.ts";
 import { typedEnv } from "@saflib/env";
@@ -27,7 +29,7 @@ export class GcsObjectStore extends ObjectStore {
     path: string,
     stream: Readable,
     metadata?: Record<string, string>,
-  ): Promise<ReturnsError<{ success: boolean; url?: string }>> {
+  ): Promise<ReturnsError<UploadFileResult>> {
     try {
       let objectName: string;
       try {
@@ -64,17 +66,25 @@ export class GcsObjectStore extends ObjectStore {
       const bucket = storage.bucket(this.bucketName);
       const file = bucket.file(objectName);
 
+      const gcsCustomMetadata: Record<string, string> = {
+        mimetype: uploadMetadata.mimetype,
+        filename: uploadMetadata.filename,
+        cacheTime: uploadMetadata.cacheTime,
+      };
+      for (const [key, value] of Object.entries(uploadMetadata)) {
+        if (value == null || key === "mimetype") {
+          continue;
+        }
+        gcsCustomMetadata[key] = String(value);
+      }
+
       try {
         await pipeline(
           stream,
           file.createWriteStream({
             metadata: {
               contentType: uploadMetadata.mimetype,
-              metadata: {
-                mimetype: uploadMetadata.mimetype,
-                filename: uploadMetadata.filename,
-                cacheTime: uploadMetadata.cacheTime,
-              },
+              metadata: gcsCustomMetadata,
             },
           }),
         );
@@ -89,10 +99,16 @@ export class GcsObjectStore extends ObjectStore {
         };
       }
 
+      const [gcsMeta] = await file.getMetadata();
       return {
         result: {
           success: true,
           url: file.publicUrl(),
+          storageObject: gcsMetadataToStorageFileEntry(
+            gcsMeta as Record<string, unknown>,
+            this.bucketName,
+            objectName,
+          ),
         },
       };
     } catch (error) {
@@ -109,11 +125,7 @@ export class GcsObjectStore extends ObjectStore {
 
   async listFiles(
     prefix?: string,
-  ): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
+  ): Promise<ReturnsError<import("@saflib/object-store").StorageFileEntry[]>> {
     try {
       if (typedEnv.NODE_ENV === "test") {
         return { result: [] };
@@ -123,25 +135,17 @@ export class GcsObjectStore extends ObjectStore {
       const bucket = storage.bucket(this.bucketName);
       const searchPrefix = prefix ? this.getScopedPath(prefix) : undefined;
 
-      const files: Array<{
-        path: string;
-        size?: number;
-        metadata?: Record<string, string>;
-      }> = [];
+      const files: import("@saflib/object-store").StorageFileEntry[] = [];
 
       const [objects] = await bucket.getFiles({ prefix: searchPrefix });
       for (const file of objects) {
-        const meta = file.metadata.metadata as
-          | Record<string, string>
-          | undefined;
-        files.push({
-          path: file.name,
-          size:
-            file.metadata.size !== undefined
-              ? Number(file.metadata.size)
-              : undefined,
-          metadata: meta,
-        });
+        files.push(
+          gcsMetadataToStorageFileEntry(
+            file.metadata as Record<string, unknown>,
+            this.bucketName,
+            file.name,
+          ),
+        );
       }
 
       return { result: files };

@@ -50,7 +50,9 @@ export class TestObjectStore extends ObjectStore {
     path: string,
     stream: Readable,
     metadata?: Record<string, string>,
-  ): Promise<ReturnsError<{ success: boolean; url?: string }, StorageError>> {
+  ): Promise<
+    ReturnsError<import("../ObjectStore.ts").UploadFileResult, StorageError>
+  > {
     const existingFile = this.files.find((f) => f.path === path);
     if (existingFile) {
       return {
@@ -73,6 +75,7 @@ export class TestObjectStore extends ObjectStore {
     }
 
     this.contentMap.set(path, content);
+    const now = new Date().toISOString();
     this.files.push({
       path,
       size: content.length,
@@ -83,6 +86,15 @@ export class TestObjectStore extends ObjectStore {
       result: {
         success: true,
         url: `https://mock-storage.blob.core.windows.net/test-container/${path}`,
+        storageObject: {
+          path,
+          name: path,
+          id: path,
+          size: content.length,
+          metadata,
+          updated: now,
+          timeCreated: now,
+        },
       },
     };
   }
@@ -90,15 +102,20 @@ export class TestObjectStore extends ObjectStore {
   async listFiles(
     prefix?: string,
   ): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>,
-      StorageError
-    >
+    ReturnsError<import("../ObjectStore.ts").StorageFileEntry[], StorageError>
   > {
     const filtered = prefix
       ? this.files.filter((f) => f.path.startsWith(prefix))
       : this.files;
-    return { result: filtered };
+    return {
+      result: filtered.map((f) => ({
+        path: f.path,
+        name: f.path,
+        id: f.path,
+        size: f.size,
+        metadata: f.metadata,
+      })),
+    };
   }
 
   async deleteFile(

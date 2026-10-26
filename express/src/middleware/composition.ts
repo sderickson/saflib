@@ -8,7 +8,7 @@ import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { healthRouter } from "./health.ts";
 import { makeContextMiddleware } from "./context.ts";
-import { blockHtml } from "./blockHtml.ts";
+import { makeBlockHtmlMiddleware } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
 import { noStoreCacheControl } from "./noStore.ts";
 import { makeCsrfMiddleware } from "./csrf.ts";
@@ -61,7 +61,6 @@ export const createGlobalMiddleware = (
     corsMiddleware = [];
   }
 
-  let sanitizeMiddleware: Handler[] = [blockHtml];
   return [
     ...metricsMiddleware,
     noStoreCacheControl,
@@ -71,7 +70,6 @@ export const createGlobalMiddleware = (
     everyRequestLogger,
     json(jsonLimit ? { limit: jsonLimit } : undefined),
     urlencoded({ extended: false }),
-    ...sanitizeMiddleware,
     ...corsMiddleware,
   ];
 };
@@ -114,6 +112,7 @@ export const createScopedMiddleware = (
 
   return [
     ...openApiValidatorMiddleware,
+    makeBlockHtmlMiddleware(),
     // CSRF reads `x-public` and the `csrf-exempt` tag from `req.openapi.schema`.
     makeCsrfMiddleware(),
     makeContextMiddleware(),

@@ -1,5 +1,16 @@
 import { Readable } from "stream";
 import type { ReturnsError } from "@saflib/utils";
+import type { StorageFileEntry } from "./StorageFileEntry.ts";
+
+export type { StorageFileEntry } from "./StorageFileEntry.ts";
+export { gcsMetadataToStorageFileEntry } from "./StorageFileEntry.ts";
+
+export type UploadFileResult = {
+  success: boolean;
+  url?: string;
+  /** Populated when the backend can read object metadata after upload (GCS). */
+  storageObject?: StorageFileEntry;
+};
 
 export class PathTraversalError extends Error {
   constructor(path: string) {
@@ -52,19 +63,13 @@ export abstract class ObjectStore {
     stream: Readable,
     metadata?: Record<string, string>,
   ): Promise<
-    ReturnsError<
-      { success: boolean; url?: string },
-      PathTraversalError | StorageError
-    >
+    ReturnsError<UploadFileResult, PathTraversalError | StorageError>
   >;
 
   abstract listFiles(
     prefix?: string,
   ): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>,
-      PathTraversalError | StorageError
-    >
+    ReturnsError<StorageFileEntry[], PathTraversalError | StorageError>
   >;
 
   abstract deleteFile(

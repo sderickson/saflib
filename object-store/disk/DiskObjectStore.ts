@@ -35,10 +35,10 @@ export class DiskObjectStore extends ObjectStore {
   async uploadFile(
     relativePath: string,
     stream: Readable,
-    _metadata?: Record<string, string>,
+    metadata?: Record<string, string>,
   ): Promise<
     ReturnsError<
-      { success: boolean; url?: string },
+      import("../ObjectStore.ts").UploadFileResult,
       PathTraversalError | StorageError
     >
   > {
@@ -47,10 +47,22 @@ export class DiskObjectStore extends ObjectStore {
       await mkdir(path.dirname(filePath), { recursive: true });
       const writeStream = createWriteStream(filePath, { flags: "w" });
       await pipeline(stream, writeStream);
+      const stats = await stat(filePath);
+      const now = stats.mtime.toISOString();
       return {
         result: {
           success: true,
           url: `file://${filePath}`,
+          storageObject: {
+            path: relativePath,
+            name: relativePath,
+            id: relativePath,
+            size: stats.size,
+            contentType: metadata?.mimetype,
+            metadata,
+            updated: now,
+            timeCreated: stats.birthtime.toISOString(),
+          },
         },
       };
     } catch (error) {
@@ -77,7 +89,7 @@ export class DiskObjectStore extends ObjectStore {
     prefix?: string,
   ): Promise<
     ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>,
+      import("../ObjectStore.ts").StorageFileEntry[],
       PathTraversalError | StorageError
     >
   > {
@@ -87,11 +99,7 @@ export class DiskObjectStore extends ObjectStore {
         searchPrefix = this.getScopedPath(prefix);
       }
 
-      const files: Array<{
-        path: string;
-        size?: number;
-        metadata?: Record<string, string>;
-      }> = [];
+      const files: import("../ObjectStore.ts").StorageFileEntry[] = [];
 
       const walk = async (dir: string, baseRelative: string): Promise<void> => {
         if (!existsSync(dir)) {
@@ -127,7 +135,11 @@ export class DiskObjectStore extends ObjectStore {
             const stats = await stat(fullPath);
             files.push({
               path: relativePath,
+              name: relativePath,
+              id: relativePath,
               size: stats.size,
+              updated: stats.mtime.toISOString(),
+              timeCreated: stats.birthtime.toISOString(),
             });
           }
         }
