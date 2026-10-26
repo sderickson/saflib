@@ -1,3 +1,4 @@
+import { scanJobHandlers } from "../requests/scan-jobs.fixtures.ts";
 import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
@@ -9,7 +10,6 @@ import { mountTestApp } from "../test-app.ts";
 import { summaryMetricsFixture } from "../test-fixtures.ts";
 
 type ListResponse = DevSiteResponseBody["listCommits"][200];
-type ScanResponse = DevSiteResponseBody["executeScan"][200];
 
 const mockList: ListResponse = {
   commits: [
@@ -85,19 +85,9 @@ const handlers = [
     "http://test.localhost:3000/api/checkout",
     () => HttpResponse.json(mockCheckout),
   ),
-  http.post<PathParams, { limit?: number }, ScanResponse>(
-    "http://test.localhost:3000/api/scan",
-    async ({ request }) => {
-      const body = (await request.json()) as { limit?: number };
-      return HttpResponse.json({
-        scanned: body.limit
-          ? ["cccccccccccccccccccccccccccccccccccccccc"]
-          : ["cccccccccccccccccccccccccccccccccccccccc"],
-        skipped: [],
-        failed: [],
-      });
-    },
-  ),
+  ...scanJobHandlers(() => ({
+    scanned: ["cccccccccccccccccccccccccccccccccccccccc"],
+  })),
 ];
 
 describe("TimelinePage", () => {

@@ -8,7 +8,8 @@ import {
   type SafPackageJson,
 } from "@saflib/monorepo";
 import type { ReturnsError } from "@saflib/utils";
-import { listTree, readBlobs, type GitCommandError } from "@saflib/git";
+import type { GitCommandError } from "@saflib/git";
+import { listTreeCached, readBlobsCached } from "./git-cache.ts";
 import { EXCLUDE_DIRS, packageRootsFromPackageJsonPaths } from "./classify.ts";
 
 export interface PackageManifest {
@@ -32,7 +33,7 @@ export function loadPackageManifests(
   repo_root: string,
   commit_hash: string,
 ): LoadPackageManifestsResult {
-  const treeResult = listTree(repo_root, commit_hash);
+  const treeResult = listTreeCached(repo_root, commit_hash);
   if (treeResult.error) return { error: treeResult.error };
 
   const packageJsonEntries = treeResult.result.filter((e) => {
@@ -41,7 +42,7 @@ export function loadPackageManifests(
     return e.path === "package.json" || e.path.endsWith("/package.json");
   });
 
-  const blobs = readBlobs(
+  const blobs = readBlobsCached(
     repo_root,
     packageJsonEntries.map((e) => e.blobHash),
   );

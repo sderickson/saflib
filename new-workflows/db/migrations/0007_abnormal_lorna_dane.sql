@@ -1,0 +1,1 @@
+ALTER TABLE `workflow_step` ADD `unexpected_files` text;

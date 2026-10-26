@@ -1,0 +1,67 @@
+driveWorkflowRun:
+  summary: Have the server drive a run
+  description: >
+    Starts advancing the run in the background and keeps going according
+    to `mode` without needing a client, returning right away. Calling it
+    for the run that's already being driven only changes the mode. Follow
+    progress with `GET /api/drive` and the run's own events.
+  operationId: driveWorkflowRun
+  x-public: true
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required:
+            - mode
+          properties:
+            mode:
+              type: string
+              enum: ["step", "workflow", "plan"]
+              example: "workflow"
+            revert:
+              type: boolean
+              description: For the first step only — see `advanceWorkflowRun`.
+            skip:
+              type: boolean
+              description: For the first step only — see `advanceWorkflowRun`.
+            extraPrompt:
+              type: string
+              description: For the first step only — see `advanceWorkflowRun`.
+
+  responses:
+    "202":
+      description: The run is being driven.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - drive
+            properties:
+              drive:
+                $ref: "../../openapi.yaml#/components/schemas/WorkflowDrive"
+    "404":
+      description: No run with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "409":
+      description: A different run is being driven.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

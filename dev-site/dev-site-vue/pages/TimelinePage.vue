@@ -107,7 +107,8 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useCheckout, useCommits, useScanMutation } from "../requests/queries";
+import { useCheckout, useCommits } from "../requests/queries";
+import { useScan } from "../requests/scan-jobs";
 import { commitHealth } from "../health";
 import { formatLoc } from "../format-loc";
 import DebtTrendChart from "../components/DebtTrendChart.vue";
@@ -148,14 +149,15 @@ const checkout = computed(() => checkoutData.value);
 const commits = computed(() => listData.value?.commits ?? []);
 
 const {
-  mutate: scan,
-  isPending: isScanning,
+  scan,
+  isScanning,
   error: scanError,
-  data: scanResult,
-} = useScanMutation(props.subdomain);
+  result: scanResult,
+} = useScan(props.subdomain);
 
 const runScan = () => {
-  // One commit per click — analysis is CPU-heavy; the API runs it in a worker.
+  // One commit per click — analysis is CPU-heavy; the API queues it as a
+  // background job and the app bar shows its progress.
   scan({ limit: 1 });
 };
 

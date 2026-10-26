@@ -7,6 +7,18 @@ import { prependNewerRunLogs } from "./workflows-queries.ts";
 const EVENT_SOURCE_CLOSED = 2;
 const RECONNECT_BASE_MS = 500;
 const RECONNECT_MAX_MS = 30_000;
+/** The run's own row, messages and newest logs refresh at most this often. */
+const RUN_REFRESH_MS = 500;
+/**
+ * The run's file's run list refreshes at most this often. A change event
+ * fires per log line, and the plans view holds a list query per plan file
+ * (dozens), so refetching them all per event flooded the browser's six
+ * connections to the dev-site and queued the next advance behind them.
+ * Only the run's own list is refreshed: a run's events can't change
+ * another file's runs (a new run elsewhere, e.g. the next phase, is
+ * picked up by the run orchestrator when the drive reports it).
+ */
+const RUN_LISTS_REFRESH_MS = 5_000;
 
 /**
  * Same-origin SSE (the workflows API is mounted into dev-site-http itself),
@@ -29,15 +41,33 @@ export function useRunEvents(runId: MaybeRefOrGetter<string | undefined>): void 
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
   let failures = 0;
 
-  const refresh = (id: string) => {
+  const refreshRun = throttle((id: string) => {
     queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", id] });
-    queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
     // Cheap, and a new direct message should show in the sidebar as it starts.
     queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-messages", id] });
     void prependNewerRunLogs(queryClient, id);
+  }, RUN_REFRESH_MS);
+  const refreshRunList = throttle((id: string) => {
+    const cached = queryClient.getQueryData<{ run?: { workflow_ref?: string } }>([
+      "new-workflows",
+      "run",
+      id,
+    ]);
+    const workflowRef = cached?.run?.workflow_ref;
+    queryClient.invalidateQueries({
+      queryKey: workflowRef
+        ? ["new-workflows", "workflow-runs", workflowRef]
+        : ["new-workflows", "workflow-runs"],
+    });
+  }, RUN_LISTS_REFRESH_MS);
+  const refresh = (id: string) => {
+    refreshRun(id);
+    refreshRunList(id);
   };
 
   const disconnect = () => {
+    refreshRun.cancel();
+    refreshRunList.cancel();
     clearTimeout(retryTimer);
     retryTimer = undefined;
     source?.close();
@@ -79,4 +109,39 @@ export function useRunEvents(runId: MaybeRefOrGetter<string | undefined>): void 
   );
 
   onScopeDispose(disconnect);
+}
+
+/**
+ * Calls `fn` right away, then at most once per `ms`: calls in between
+ * collapse into one trailing call with the latest argument, so the last
+ * change is never dropped.
+ */
+function throttle<T>(fn: (arg: T) => void, ms: number) {
+  let last = -Infinity;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let pending: { arg: T } | undefined;
+  const run = (arg: T) => {
+    last = Date.now();
+    fn(arg);
+  };
+  const call = (arg: T) => {
+    const wait = last + ms - Date.now();
+    if (wait <= 0 && !timer) {
+      run(arg);
+      return;
+    }
+    pending = { arg };
+    timer ??= setTimeout(() => {
+      timer = undefined;
+      const next = pending!;
+      pending = undefined;
+      run(next.arg);
+    }, Math.max(0, wait));
+  };
+  call.cancel = () => {
+    clearTimeout(timer);
+    timer = undefined;
+    pending = undefined;
+  };
+  return call;
 }

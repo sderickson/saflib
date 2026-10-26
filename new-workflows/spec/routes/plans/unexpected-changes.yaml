@@ -1,0 +1,30 @@
+listPlanUnexpectedChanges:
+  summary: List unexpected changes made by plan runs
+  description: >
+    For each workflow file under the plans root, the steps of its most
+    recent run that changed files outside the run's declared scope.
+    Runs that declare no scope aren't checked, so they never appear.
+  operationId: listPlanUnexpectedChanges
+  x-public: true
+
+  responses:
+    "200":
+      description: Unexpected changes, grouped by step.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - changes
+            properties:
+              changes:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/UnexpectedChange"
+    "500":
+      description: This host hasn't configured a plans folder.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

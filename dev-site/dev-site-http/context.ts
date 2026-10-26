@@ -7,6 +7,8 @@ export interface DevSiteHttpContext {
   repo_root: string;
   product_root: string;
   mainRef: string;
+  /** Where workflow steps run instead of in `repo_root`; see `DEV_SITE_WORKFLOW_WORKSPACE`. */
+  workflow_workspace?: string;
   /** GitHub `owner/name` for UI source/commit links. */
   github_repo?: string;
   /** On-disk sqlite path when available; undefined for `:memory:`. */

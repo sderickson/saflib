@@ -11,10 +11,13 @@ import type { DbKey, WorkflowRunEntity, WorkflowRunStatus } from "@saflib/new-wo
 import { resolveRef } from "@saflib/git";
 import { createOutputStream } from "./output.ts";
 import { commitIfDirty, revertUncommittedChanges } from "./git.ts";
+import { findUnexpectedFiles } from "./expected-files.ts";
 import { summarizeStepInput } from "./describe-steps.ts";
 import { buildCommitMessage, summarizeAgentTurns } from "./commit-message.ts";
 import { loadRunChain } from "./run-chain.ts";
 import { withRunLock, RUN_LOCK_MESSAGE, getActiveLockHolder } from "./run-lock.ts";
+import { withWorkspace, type WorkflowWorkspaceConfig } from "./workspace.ts";
+import { toWorkspacePath } from "./workspace-context.ts";
 import type {
   AgentConfig,
   StepFn,
@@ -38,7 +41,7 @@ export function step<Input, C>(
   kind: string,
   fn: StepFn<Input>,
   input: (arg: { context: C }) => Input,
-  options?: { pauseAfter?: boolean; pauseMessage?: string },
+  options?: { pauseAfter?: boolean; pauseMessage?: string; expectedFiles?: string[] },
 ): WorkflowStep<C> {
   return {
     kind,
@@ -46,6 +49,7 @@ export function step<Input, C>(
     run: fn as StepFn<unknown>,
     pauseAfter: options?.pauseAfter,
     pauseMessage: options?.pauseMessage,
+    expectedFiles: options?.expectedFiles,
   };
 }
 
@@ -115,6 +119,12 @@ export interface AdvanceRunOptions {
   skip?: boolean;
   /** See `WorkflowContext.extraPrompt`. Ignored when `skip` is set (nothing gets prompted). */
   extraPrompt?: string;
+  /**
+   * Run the step in this workspace clone instead of in place (see
+   * `workspace.ts`). Pass it only for root advances; nested `call-workflow`
+   * advances run inside the root's sync.
+   */
+  workspace?: WorkflowWorkspaceConfig;
 }
 
 /**
@@ -135,7 +145,16 @@ export function advanceRun(
   // `run-lock.ts` for why: this system's git integration is repo-wide and
   // not safe under concurrent steps. Nested calls (a `call-workflow`
   // step's own `advanceRun` for its child) are reentrant and pass through.
-  const resultPromise = withRunLock(dbKey, runId, () => runStep(dbKey, def, runId, write, options))
+  const workspace = options?.workspace;
+  const resultPromise = withRunLock(dbKey, runId, async (): Promise<StepResult> => {
+    if (!workspace) return runStep(dbKey, def, runId, write, options);
+    try {
+      return await withWorkspace(workspace, runId, write, () => runStep(dbKey, def, runId, write, options));
+    } catch (error) {
+      // Sync in failed (the step never ran), or the step itself threw.
+      return { status: "error", message: error instanceof Error ? error.message : String(error) };
+    }
+  })
     .then((outcome): StepResult => (outcome.locked ? { status: "error", message: RUN_LOCK_MESSAGE } : outcome.result))
     .finally(end);
 
@@ -209,10 +228,12 @@ async function runStep(
   rawWrite: (chunk: Parameters<WorkflowContext["log"]>[0]) => void,
   options?: AdvanceRunOptions,
 ): Promise<StepResult> {
-  const { result: run, error: runError } = await getByIdWorkflowRun(dbKey, {
+  const { result: storedRun, error: runError } = await getByIdWorkflowRun(dbKey, {
     id: runId,
   });
   if (runError) throw runError;
+  // Run rows keep checkout paths; with a workspace active, execute in the clone.
+  const run = { ...storedRun, cwd: toWorkspacePath(storedRun.cwd) };
 
   const stepIndex = run.current_step_index;
   const step = def.steps[stepIndex];
@@ -265,10 +286,13 @@ async function runStep(
   for (const priorStep of priorSteps ?? []) {
     if (priorStep.status !== "success" || !priorStep.result) continue;
     const r = priorStep.result as { copiedFiles?: Record<string, string>; newCwd?: string };
-    if (r.copiedFiles) Object.assign(copiedFiles, r.copiedFiles);
-    if (r.newCwd) cwd = r.newCwd;
+    if (r.copiedFiles) {
+      for (const [key, file] of Object.entries(r.copiedFiles)) copiedFiles[key] = toWorkspacePath(file);
+    }
+    if (r.newCwd) cwd = toWorkspacePath(r.newCwd);
   }
   const isResume = (priorSteps ?? []).some((s) => s.step_index === stepIndex);
+  const expectedFiles = def.steps.flatMap((s) => s.expectedFiles ?? []);
 
   const now = new Date();
   const { result: stepRow, error: stepCreateError } = await createWorkflowStep(
@@ -304,6 +328,7 @@ async function runStep(
         originalWorkingDirectory: run.cwd,
         agentConfig: run.agent_config ?? undefined,
         copiedFiles,
+        expectedFiles,
         skipTodos: run.skip_todos,
         isResume,
         extraPrompt: options?.skip ? undefined : options?.extraPrompt,
@@ -321,6 +346,7 @@ async function runStep(
 
   const label = summarizeStepInput(step.kind, stepInput) ?? step.kind;
   let commitHash: string | null | undefined;
+  let unexpectedFiles: string[] | null | undefined;
   if (stepResult.status === "success") {
     const commitMessage = await stepCommitMessage(dbKey, {
       run,
@@ -334,14 +360,45 @@ async function runStep(
       startedAt: now,
     });
     try {
-      const committed = await commitIfDirty(run.cwd, commitMessage);
+      const timings: Array<{ command: string; ms: number }> = [];
+      let staged: { files: string[]; repoRoot: string } | undefined;
+      const committed = await commitIfDirty(
+        run.cwd,
+        commitMessage,
+        (command, ms) => timings.push({ command, ms }),
+        (files, repoRoot) => {
+          staged = { files, repoRoot };
+        },
+      );
       if (committed) {
         commitHash = resolveRef(run.cwd, "HEAD").result ?? null;
         write({
           channel: "tool",
           level: "info",
-          content: `Committed: ${commitMessage.split("\n")[0]}`,
+          content: `Committed: ${commitMessage.split("\n")[0]} ${formatCommitTimings(timings)}`,
         });
+      }
+      if (committed && staged && expectedFiles.length > 0) {
+        const stepCopied = (stepResult.result as { copiedFiles?: Record<string, string> } | undefined)
+          ?.copiedFiles;
+        const unexpected = findUnexpectedFiles({
+          changedFiles: staged.files,
+          repoRoot: staged.repoRoot,
+          runCwd: run.cwd,
+          expectedFiles,
+          copiedFiles: [
+            ...Object.values(copiedFiles),
+            ...Object.values(stepCopied ?? {}).map((file) => toWorkspacePath(file)),
+          ],
+        });
+        if (unexpected.length > 0) {
+          unexpectedFiles = unexpected;
+          write({
+            channel: "tool",
+            level: "warn",
+            content: `Changed files outside this run's expected files:\n${unexpected.map((file) => `- ${file}`).join("\n")}`,
+          });
+        }
       }
     } catch (error) {
       // The whole revert/skip/retry recovery flow (`options.revert`,
@@ -367,6 +424,7 @@ async function runStep(
     error: stepResult.status === "error" ? stepResult.message : null,
     label,
     commit_hash: commitHash,
+    unexpected_files: unexpectedFiles,
     now: finishedAt,
   });
 
@@ -406,4 +464,20 @@ async function runStep(
   });
 
   return reported;
+}
+
+/** Commits slower than this name their slowest git command in the log. */
+const SLOW_COMMIT_MS = 2000;
+
+/**
+ * `(0.8s)`, or `(11.2s; slowest: commit 7.9s)` for a slow commit — `commit`
+ * includes the repo's pre-commit hooks. Steps commit before the next one
+ * starts, so a slow commit reads as a slow workflow.
+ */
+export function formatCommitTimings(timings: Array<{ command: string; ms: number }>): string {
+  const total = timings.reduce((sum, t) => sum + t.ms, 0);
+  const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
+  if (total < SLOW_COMMIT_MS || timings.length === 0) return `(${seconds(total)})`;
+  const slowest = timings.reduce((a, b) => (b.ms > a.ms ? b : a));
+  return `(${seconds(total)}; slowest: ${slowest.command} ${seconds(slowest.ms)})`;
 }

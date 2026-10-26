@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi, onTestFinished } from "vitest";
 import { DOMWrapper, enableAutoUnmount } from "@vue/test-utils";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
@@ -7,6 +7,7 @@ import PlansPage from "./PlansPage.vue";
 import { mountTestApp } from "../test-app.ts";
 import { router } from "./test_router.ts";
 import { __resetRunOrchestratorForTests } from "../run-orchestrator.ts";
+import { fakeDriveHandlers } from "../requests/drive.fixtures.ts";
 
 const ORIGIN = "http://localhost:3000";
 
@@ -77,6 +78,7 @@ class EventSourceStub {
 let runsStateByFile: Record<string, unknown[]> = {};
 /** Keyed by run id — RunView fetches one run's own detail/logs/steps once it's shown inline. */
 let runsById: Record<string, unknown> = {};
+let unexpectedChanges: unknown[] = [];
 
 const handlers = [
   http.get(`${ORIGIN}/api/checkout`, () =>
@@ -106,6 +108,9 @@ const handlers = [
   http.get(`${ORIGIN}/api/runs/:runId/logs`, () => HttpResponse.json({ logs: [] })),
   http.get(`${ORIGIN}/api/runs/:runId/steps`, () => HttpResponse.json({ steps: [] })),
   http.get(`${ORIGIN}/api/workflows/:id/steps`, () => HttpResponse.json({ steps: [] })),
+  http.get(`${ORIGIN}/api/plans/unexpected-changes`, () =>
+    HttpResponse.json({ changes: unexpectedChanges }),
+  ),
 ];
 
 const PHASE_1_PATH = "test-product/plans/notes/2026-09-16-todo-app/phase-1-backend-schema.yaml";
@@ -122,7 +127,11 @@ describe("PlansPage", () => {
     __resetRunOrchestratorForTests();
     runsStateByFile = {};
     runsById = {};
+    unexpectedChanges = [];
     vi.stubGlobal("EventSource", EventSourceStub);
+    const drive = fakeDriveHandlers(ORIGIN);
+    server.use(...drive.handlers);
+    onTestFinished(drive.restore);
   });
 
   it("shows each plan's start, end, and duration from its latest runs", async () => {
@@ -146,6 +155,39 @@ describe("PlansPage", () => {
     expect(group?.find(".plans-nav__group-stats").text()).toContain("–");
     expect(group?.text()).toContain("phase-1-backend-schema.yaml");
     expect(group?.find(".plans-nav__file-stats").text()).toContain("1h 30m");
+  });
+
+  it("flags a plan whose runs changed files outside their scope, and lists them", async () => {
+    unexpectedChanges = [
+      {
+        workflow_ref: PHASE_1_PATH,
+        run_id: "run-phase-1",
+        step_index: 6,
+        label: "npm run test",
+        commit_hash: "12cd003edb9ae8411c6990e4c84984e4b9e735d7",
+        files: ["test-product/security/vitest.config.js", "test-product/security/package.json"],
+      },
+    ];
+    await router.push({ path: "/plans" });
+    const wrapper = mountTestApp(PlansPage);
+
+    const flagFor = (name: string) =>
+      wrapper
+        .findAll(".plans-nav__group")
+        .find((el) => el.find(".plans-nav__group-name").text() === name)
+        ?.find(".plans-nav__unexpected");
+    await vi.waitFor(() => {
+      expect(flagFor("todo-app")?.text()).toContain("2 unexpected files");
+    });
+    expect(flagFor("test-this-thing")?.exists()).toBe(false);
+
+    await flagFor("todo-app")!.trigger("click");
+    await vi.waitFor(() => {
+      const dialog = document.body.textContent ?? "";
+      expect(dialog).toContain("phase-1-backend-schema.yaml");
+      expect(dialog).toContain("step 7: npm run test");
+      expect(dialog).toContain("test-product/security/vitest.config.js");
+    });
   });
 
   it("lists plan folders newest-first, with no file selected by default", async () => {
@@ -289,6 +331,48 @@ describe("PlansPage", () => {
     expect(wrapper.text()).not.toContain("Open run");
   });
 
+  it("a run's change events refresh only its own file's run list", async () => {
+    const listeners: Record<string, () => void> = {};
+    vi.stubGlobal(
+      "EventSource",
+      class {
+        addEventListener(type: string, listener: () => void) {
+          listeners[type] = listener;
+        }
+        removeEventListener() {}
+        close() {}
+      },
+    );
+    runsStateByFile[PHASE_1_PATH] = [runFixture({ status: "running" })];
+    runsById["run-1"] = runFixture({ status: "running" });
+
+    await router.push({ path: "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml" });
+    const wrapper = mountTestApp(PlansPage);
+    await vi.waitFor(() => {
+      expect(wrapper.find(".v-chip").exists()).toBe(true);
+      expect(listeners.change).toBeDefined();
+    });
+    // Let the page's initial fetches finish before counting.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const listed: string[] = [];
+    const onRequest = ({ request }: { request: Request }) => {
+      const match = new URL(request.url).pathname.match(/^\/api\/workflows\/(.+)\/runs$/);
+      if (match) listed.push(decodeURIComponent(match[1]));
+    };
+    server.events.on("request:start", onRequest);
+    onTestFinished(() => {
+      server.events.removeListener("request:start", onRequest);
+    });
+
+    listeners.change();
+    await vi.waitFor(() => {
+      expect(listed).toContain(PHASE_1_PATH);
+    });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(new Set(listed)).toEqual(new Set([PHASE_1_PATH]));
+  });
+
   it("Play current plan cascades to the next phase file once this run finishes", async () => {
     const PHASE_2_PATH = "test-product/plans/notes/2026-09-16-todo-app/phase-2-backend-routes.yaml";
     runsStateByFile[PHASE_1_PATH] = [runFixture()];
@@ -317,6 +401,11 @@ describe("PlansPage", () => {
         return HttpResponse.json({ run: run2 }, { status: 201 });
       }),
     );
+
+    const drive = fakeDriveHandlers(ORIGIN, {
+      nextPlanFile: (ref) => (ref === PHASE_2_PATH ? undefined : PHASE_2_PATH),
+    });
+    server.use(...drive.handlers);
 
     await router.push({ path: "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml" });
     const wrapper = mountTestApp(PlansPage);

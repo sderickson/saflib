@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { subprocessEnv } from "./subprocess-env.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -13,7 +14,7 @@ function sleep(ms: number): Promise<void> {
 async function runGit(cwd: string, args: string[]): Promise<string> {
   for (let attempt = 1; ; attempt++) {
     try {
-      const { stdout } = await execFileAsync("git", args, { cwd });
+      const { stdout } = await execFileAsync("git", args, { cwd, env: subprocessEnv() });
       return stdout;
     } catch (error) {
       const detail = gitErrorDetail(error);
@@ -72,12 +73,36 @@ async function findGitRoot(cwd: string): Promise<string | undefined> {
  * function's behavior independent of which subdirectory a workflow's `cd`
  * steps happen to have left it in.
  */
-export async function commitIfDirty(cwd: string, message: string): Promise<boolean> {
+export async function commitIfDirty(
+  cwd: string,
+  message: string,
+  /** Called with each git command's duration, so callers can report slow commits. */
+  onTiming?: (command: string, ms: number) => void,
+  /**
+   * Called before committing with the staged files, relative to the repo
+   * root. Submodule pointer moves are left out: this checkout's submodules
+   * are shared with whatever else is running, so they aren't the step's.
+   */
+  onStaged?: (files: string[], repoRoot: string) => void,
+): Promise<boolean> {
   const root = await findGitRoot(cwd);
   if (!root) return false;
-  const status = await runGit(root, ["status", "--porcelain"]);
+  const git = async (args: string[]) => {
+    const started = Date.now();
+    try {
+      return await runGit(root, args);
+    } finally {
+      onTiming?.(args[0]!, Date.now() - started);
+    }
+  };
+  // `--ignore-submodules=dirty`: a submodule whose own working tree has
+  // changes can't be committed from here (see below), and scanning that
+  // working tree is the slowest part of status on a large checkout (several
+  // seconds over Docker Desktop's file sharing). A submodule whose checked-out
+  // commit moved still shows up, and gets staged.
+  const status = await git(["status", "--porcelain", "--ignore-submodules=dirty"]);
   if (!status.trim()) return false;
-  await runGit(root, ["add", "-A"]);
+  await git(["add", "-A"]);
   // `git add -A` can leave *nothing* actually staged even though `status`
   // reported the tree as dirty — a submodule (e.g. this monorepo's own
   // `saflib`) whose own working tree has uncommitted changes, but whose
@@ -88,10 +113,11 @@ export async function commitIfDirty(cwd: string, message: string): Promise<boole
   // with git's own "no changes added to commit". Checking what's staged
   // (rather than special-casing submodules by name/pattern) generalizes
   // to any other "reported dirty but unstageable from here" case too.
-  const staged = await runGit(root, ["diff", "--cached", "--name-only"]);
+  const staged = await git(["diff", "--cached", "--raw", "-z"]);
   if (!staged.trim()) return false;
+  onStaged?.(parseStagedFiles(staged), root);
   try {
-    await runGit(root, ["commit", "-m", message]);
+    await git(["commit", "-m", message]);
   } catch (error) {
     // This operates repo-*wide* (see the module doc), so a genuinely
     // concurrent commit — a different run/step touching the same shared
@@ -101,11 +127,29 @@ export async function commitIfDirty(cwd: string, message: string): Promise<boole
     // pattern-match the error text: if the tree is clean now, the changes
     // this call cared about are already committed (just not by us) — a
     // benign race, not a failure worth surfacing as one.
-    const statusAfter = await runGit(root, ["status", "--porcelain"]);
+    const statusAfter = await git(["status", "--porcelain", "--ignore-submodules=dirty"]);
     if (!statusAfter.trim()) return true;
     throw error;
   }
   return true;
+}
+
+/** File paths from `git diff --raw -z`, skipping submodules (mode 160000). */
+export function parseStagedFiles(raw: string): string[] {
+  const tokens = raw.split("\0").filter(Boolean);
+  const files: string[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const meta = tokens[i]!;
+    if (!meta.startsWith(":")) continue;
+    const [srcMode, dstMode, , , status = ""] = meta.slice(1).split(" ");
+    // Renames and copies list the old path, then the new one.
+    const pathCount = /^[RC]/.test(status) ? 2 : 1;
+    const paths = tokens.slice(i + 1, i + 1 + pathCount);
+    i += pathCount;
+    if (srcMode === "160000" || dstMode === "160000") continue;
+    files.push(paths[paths.length - 1]!);
+  }
+  return files;
 }
 
 /**

@@ -47,7 +47,7 @@ const visual = computed<RunStatusVisual>(() => {
   const run = mostRecentRun.value;
   const isAdvancing = isRunAdvancingForDisplay(run.id, run.is_advancing, {
     activeRunId: orchestrator.activeRunId.value,
-    advancePending: orchestrator.advanceMutation.isPending.value,
+    advancePending: orchestrator.drivePending.value,
     agentMessagePendingRunId: agentMessageMutation.isPending.value
       ? agentMessageMutation.variables.value?.runId
       : undefined,

@@ -64,6 +64,11 @@ export interface WorkflowContext {
   agentConfig?: AgentConfig;
   /** Absolute paths of files copied so far in this run, keyed by template file id. */
   copiedFiles: Record<string, string>;
+  /**
+   * The run's declared scope: every step's `expectedFiles`, relative to
+   * `originalWorkingDirectory`. Empty when no step declares any.
+   */
+  expectedFiles?: string[];
   skipTodos?: boolean;
   /**
    * True when a prior attempt already ran this exact step index (the
@@ -121,6 +126,14 @@ export interface WorkflowStep<C> {
   pauseAfter?: boolean;
   /** Shown by the CLI and dev site when `pauseAfter` fires. */
   pauseMessage?: string;
+  /**
+   * Files this step is expected to change, as paths or globs relative to
+   * the run's starting directory. Every step's list together is the run's
+   * scope: when it's non-empty, each step's commit is checked against it
+   * (plus files the run's copy steps wrote), and changed files outside it
+   * are recorded on the step as `unexpected_files`.
+   */
+  expectedFiles?: string[];
 }
 
 import type { WorkflowInputSchema } from "./input-schema.ts";

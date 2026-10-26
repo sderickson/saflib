@@ -6,6 +6,7 @@ import { operationJsonSpec as getWorkflowRunOperationJsonSpec } from "@saflib/ne
 import { operationJsonSpec as advanceWorkflowRunOperationJsonSpec } from "@saflib/new-workflows-spec/operations/advanceWorkflowRun";
 import { operationJsonSpec as sendFreeformAgentMessageOperationJsonSpec } from "@saflib/new-workflows-spec/operations/sendFreeformAgentMessage";
 import { operationJsonSpec as gotoWorkflowRunOperationJsonSpec } from "@saflib/new-workflows-spec/operations/gotoWorkflowRun";
+import { operationJsonSpec as driveWorkflowRunOperationJsonSpec } from "@saflib/new-workflows-spec/operations/driveWorkflowRun";
 import { operationJsonSpec as cancelWorkflowRunOperationJsonSpec } from "@saflib/new-workflows-spec/operations/cancelWorkflowRun";
 import { operationJsonSpec as listWorkflowRunLogsOperationJsonSpec } from "@saflib/new-workflows-spec/operations/listWorkflowRunLogs";
 import { operationJsonSpec as listWorkflowRunMessagesOperationJsonSpec } from "@saflib/new-workflows-spec/operations/listWorkflowRunMessages";
@@ -14,6 +15,7 @@ import { operationJsonSpec as getWorkflowRunStepTreeOperationJsonSpec } from "@s
 import { createWorkflowRunHandler } from "./create.ts";
 import { getWorkflowRunHandler } from "./get.ts";
 import { advanceWorkflowRunHandler } from "./advance.ts";
+import { driveWorkflowRunHandler } from "./drive.ts";
 import { sendFreeformAgentMessageHandler } from "./agent-message.ts";
 import { gotoWorkflowRunHandler } from "./goto.ts";
 import { cancelWorkflowRunHandler } from "./cancel.ts";
@@ -49,6 +51,12 @@ export function createRunsRouter(): IRouter {
     "/runs/:runId/advance",
     ...createOperationScopedMiddleware(advanceWorkflowRunOperationJsonSpec),
     advanceWorkflowRunHandler,
+  );
+
+  router.post(
+    "/runs/:runId/drive",
+    ...createOperationScopedMiddleware(driveWorkflowRunOperationJsonSpec),
+    driveWorkflowRunHandler,
   );
 
   router.post(

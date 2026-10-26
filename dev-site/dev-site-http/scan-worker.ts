@@ -7,12 +7,14 @@ import { setServiceName } from "@saflib/node";
 import { GitCommandError } from "@saflib/git";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import { scanCommits, type ScanOptions, type ScanResult } from "./scan.ts";
+import type { ScanProgress } from "./scan-progress.ts";
 
-export interface ScanWorkerData extends ScanOptions {
+export interface ScanWorkerData extends Omit<ScanOptions, "onProgress"> {
   dbPath: string;
 }
 
 export type ScanWorkerMessage =
+  | { type: "progress"; progress: ScanProgress }
   | { type: "ok"; result: ScanResult }
   | {
       type: "git-error";
@@ -47,6 +49,12 @@ async function main(): Promise<void> {
       mainRef: data.mainRef,
       limit: data.limit,
       commit_hash: data.commit_hash,
+      onProgress: (progress) => {
+        parentPort!.postMessage({
+          type: "progress",
+          progress,
+        } satisfies ScanWorkerMessage);
+      },
     });
     if (error) {
       const msg: ScanWorkerMessage = {

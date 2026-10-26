@@ -1,4 +1,6 @@
+import { scanJobHandlers } from "../requests/scan-jobs.fixtures.ts";
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { enableAutoUnmount } from "@vue/test-utils";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse, type PathParams } from "msw";
@@ -8,9 +10,12 @@ import { router } from "./test_router.ts";
 import { mountTestApp } from "../test-app.ts";
 import { packageMetricsFixture } from "../test-fixtures.ts";
 
+// Unmount between tests: the test router is shared across files, and a
+// mounted page's package watcher reacts to later navigation.
+enableAutoUnmount(afterEach);
+
 type CheckoutResponse = DevSiteResponseBody["getCheckout"][200];
 type DiffResponse = DevSiteResponseBody["diffCommits"][200];
-type ScanResponse = DevSiteResponseBody["executeScan"][200];
 type PackageResponse = DevSiteResponseBody["getCommitPackage"][200];
 
 const HEAD = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -82,18 +87,10 @@ describe("CheckoutPage compare query param", () => {
       "http://test.localhost:3000/api/checkout",
       () => HttpResponse.json(checkoutFixture()),
     ),
-    http.post<PathParams, { commit_hash?: string }, ScanResponse>(
-      "http://test.localhost:3000/api/scan",
-      async ({ request }) => {
-        const body = (await request.json()) as { commit_hash?: string };
-        expect(body.commit_hash).toBe(BASE);
-        return HttpResponse.json({
-          scanned: [BASE],
-          skipped: [],
-          failed: [],
-        });
-      },
-    ),
+    ...scanJobHandlers((body) => {
+      expect(body.commit_hash).toBe(BASE);
+      return { scanned: [BASE] };
+    }),
     ...packageAndRepoHandlers,
   ]);
 
@@ -179,19 +176,11 @@ describe("CheckoutPage reflection auto-scan", () => {
           }),
         ),
     ),
-    http.post<PathParams, { commit_hash?: string }, ScanResponse>(
-      "http://test.localhost:3000/api/scan",
-      async ({ request }) => {
-        const body = (await request.json()) as { commit_hash?: string };
-        scannedHashes.push(body.commit_hash!);
-        if (body.commit_hash === BASE) mergeBaseAnalyzed = true;
-        return HttpResponse.json({
-          scanned: [body.commit_hash!],
-          skipped: [],
-          failed: [],
-        });
-      },
-    ),
+    ...scanJobHandlers((body) => {
+      scannedHashes.push(body.commit_hash!);
+      if (body.commit_hash === BASE) mergeBaseAnalyzed = true;
+      return { scanned: [body.commit_hash!] };
+    }),
     ...packageAndRepoHandlers,
   ]);
 

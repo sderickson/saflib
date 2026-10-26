@@ -35,6 +35,8 @@ export type CreateDevSiteHttpAppOptions = {
   mainRef?: string;
   /** GitHub `owner/name` for UI source/commit links. */
   github_repo?: string;
+  /** Run workflow steps in a clone at this path; see `DEV_SITE_WORKFLOW_WORKSPACE`. */
+  workflow_workspace?: string;
   /**
    * Directory of built SPA assets (Vite `dist`). When set, Express serves them
    * and falls back to `index.html` for client-side routes. API routes live under
@@ -145,6 +147,7 @@ export function createDevSiteHttpApp(
   const product_root = options.product_root ?? "";
   const mainRef = options.mainRef ?? "main";
   const github_repo = options.github_repo;
+  const workflow_workspace = options.workflow_workspace;
   const dbPath = devSiteDb.getDbPath(dbKey!);
   const jobTriggerMap = options.jobTriggerMap;
 
@@ -158,7 +161,16 @@ export function createDevSiteHttpApp(
 
   app.use((_req, _res, next) => {
     devSiteHttpStorage.run(
-      { dbKey: dbKey!, repo_root, product_root, mainRef, github_repo, dbPath, jobTriggerMap },
+      {
+        dbKey: dbKey!,
+        repo_root,
+        product_root,
+        mainRef,
+        github_repo,
+        workflow_workspace,
+        dbPath,
+        jobTriggerMap,
+      },
       () => next(),
     );
   });

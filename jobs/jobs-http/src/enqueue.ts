@@ -1,5 +1,5 @@
 import { createInternalCaller, type InternalCaller } from "@saflib/express";
-import { getSafContextWithAuth } from "@saflib/node";
+import { getSafContextWithAuth, getSafReporters } from "@saflib/node";
 import type { Job, JobsServiceRequestBody } from "@saflib/jobs-spec";
 import createError from "http-errors";
 
@@ -158,4 +158,30 @@ export async function enqueueOnBehalfOf(
     },
     options,
   );
+}
+
+/**
+ * Starts an enqueue without waiting for it, for side effects that shouldn't
+ * hold up or fail the caller (e.g. refreshing derived data after a write).
+ * A failure is reported rather than thrown: with no one awaiting it, a
+ * rejection would otherwise be unhandled, which takes the process down.
+ *
+ * `start` is any function that enqueues, so callers can pass their own
+ * wrappers that add dedupe and concurrency keys.
+ */
+export function enqueueInBackground(
+  start: () => Promise<unknown>,
+  description: string,
+): void {
+  const report = (error: unknown) => {
+    getSafReporters().logError(
+      error instanceof Error ? error : new Error(String(error)),
+      { level: "warning", extra: { description } },
+    );
+  };
+  try {
+    start().catch(report);
+  } catch (error) {
+    report(error);
+  }
 }

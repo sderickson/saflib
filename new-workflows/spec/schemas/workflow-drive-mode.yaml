@@ -1,0 +1,13 @@
+type: string
+description: >
+  How far the server keeps advancing a driven run on its own: `step` runs
+  one step, `workflow` keeps going until the run finishes (or pauses or
+  fails), `plan` also starts and drives the next phase file in the same
+  plan folder whenever one finishes. `stop` lets the step in flight be
+  cancelled and advances no further.
+enum:
+  - stop
+  - step
+  - workflow
+  - plan
+example: "workflow"

@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   summarizeContentBlock,
-  killProcessGroup,
   parseResultMetrics,
   formatResultSummary,
 } from "./claude-agent.ts";
+import { killProcessGroup } from "./registry.ts";
 
 describe("summarizeContentBlock", () => {
   it("returns text blocks verbatim", () => {

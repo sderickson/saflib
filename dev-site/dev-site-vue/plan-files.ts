@@ -91,3 +91,26 @@ export function parsePlanFilePath(
 export function planFileHref(folder: string, name: string): string {
   return `/plans/${encodeURIComponent(folder)}/${encodeURIComponent(name)}`;
 }
+
+export interface UnexpectedChangeEntry {
+  workflow_ref: string;
+  run_id: string;
+  step_index: number;
+  label?: string;
+  commit_hash?: string;
+  files: string[];
+}
+
+/** The unexpected changes made by runs of `group`'s workflow files, in file order. */
+export function unexpectedChangesForGroup<T extends UnexpectedChangeEntry>(
+  changes: readonly T[],
+  group: PlanGroup,
+): T[] {
+  const order = new Map(group.files.map((file, index) => [file.path, index]));
+  return changes
+    .filter((change) => order.has(change.workflow_ref))
+    .sort(
+      (a, b) =>
+        order.get(a.workflow_ref)! - order.get(b.workflow_ref)! || a.step_index - b.step_index,
+    );
+}

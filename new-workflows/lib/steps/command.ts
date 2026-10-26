@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import type { StepFn, WorkflowContext } from "../types.ts";
 import { runAgentTurn } from "../agents/dispatch.ts";
 import { isScriptModeValidationCommand, runCommandAsync } from "./command-runner.ts";
@@ -12,7 +14,42 @@ export interface CommandStepInput {
 }
 
 function errorMessage(input: CommandStepInput, ctx: WorkflowContext, error: Error): string {
-  return `The command \`${input.command} ${(input.args ?? []).join(" ")}\` failed.\nCWD: ${ctx.cwd}.\n${error.message}${input.errorPrompt ? `\n${input.errorPrompt}` : ""}`;
+  return `The command \`${input.command} ${(input.args ?? []).join(" ")}\` failed.\nCWD: ${ctx.cwd}.\n${error.message}\n\n${fixScopeNote(ctx)}${input.errorPrompt ? `\n${input.errorPrompt}` : ""}`;
+}
+
+/**
+ * Keeps the agent's fix to what this run broke. Without it, a failure the
+ * run didn't cause (a missing script, a flaky or already-broken test)
+ * tends to get "fixed" with new tooling or tests nobody asked for.
+ */
+function fixScopeNote(ctx: WorkflowContext): string {
+  const note =
+    "Fix only failures this run's changes caused. If a failure has nothing to do with this run, or was already failing, don't work around it (no new scripts, test setup or skipped tests): say what's wrong in your final message and leave it for a person.";
+  if (!ctx.expectedFiles?.length) return note;
+  return `${note}\nKeep fixes within the run's expected files (relative to ${ctx.originalWorkingDirectory}); changes outside them are flagged for review:\n${ctx.expectedFiles.map((file) => `- ${file}`).join("\n")}`;
+}
+
+/**
+ * `npm run <script>` in a package without that script can't be fixed by
+ * the step itself: the plan named the wrong script or package.
+ */
+function missingNpmScript(input: CommandStepInput, cwd: string): string | undefined {
+  const args = input.args ?? [];
+  if (input.command !== "npm" || (args[0] !== "run" && args[0] !== "run-script")) return undefined;
+  const script = args[1];
+  if (!script || script.startsWith("-") || args.includes("-w") || args.some((a) => a.startsWith("--workspace"))) {
+    return undefined;
+  }
+  const packageJsonPath = path.join(cwd, "package.json");
+  if (!existsSync(packageJsonPath)) return undefined;
+  try {
+    const scripts = (JSON.parse(readFileSync(packageJsonPath, "utf-8")) as { scripts?: Record<string, string> })
+      .scripts;
+    if (scripts?.[script]) return undefined;
+  } catch {
+    return undefined;
+  }
+  return `There is no "${script}" script in ${packageJsonPath}, so \`npm run ${script}\` can't pass here. Fix the workflow step (wrong script or wrong directory), then retry.`;
 }
 
 /**
@@ -30,6 +67,13 @@ export const runCommandStep: StepFn<CommandStepInput> = async (rawInput, ctx) =>
   if (ctx.mode === "dry" || ctx.mode === "checklist") {
     return { status: "success" };
   }
+  // Checked before script mode skips validation commands, so validating a
+  // plan catches a test step pointed at a package with no test script.
+  const missingScript = missingNpmScript(input, ctx.cwd);
+  if (missingScript && !input.ignoreError) {
+    return { status: "error", message: missingScript };
+  }
+
   if (
     ctx.mode === "script" &&
     !input.forceInScript &&

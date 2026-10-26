@@ -397,25 +397,13 @@
         />
       </div>
 
-      <div v-else class="checkout-unscanned">
-        <p class="checkout-unscanned__title">
-          This commit hasn’t been scanned yet
-        </p>
-        <p class="checkout-unscanned__body">
-          Scan builds the package inventory so you can browse specs, docs, and
-          issues for this checkout.
-        </p>
-        <v-btn
-          color="primary"
-          size="large"
-          variant="flat"
-          :loading="isScanning"
-          :disabled="isScanning"
-          @click="scanThisCommit"
-        >
-          Scan this commit
-        </v-btn>
-      </div>
+      <ScanCommitPanel
+        v-else
+        :subdomain="subdomain"
+        :commit-hash="checkout.hash"
+        :requested="isScanning && scanTarget === checkout.hash"
+        @scan="scanThisCommit"
+      />
     </template>
   </div>
 </template>
@@ -430,8 +418,8 @@ import {
   useCommitPackage,
   useRepoFile,
   useRepoFiles,
-  useScanMutation,
 } from "../requests/queries";
+import { useScan } from "../requests/scan-jobs";
 import { classifyPackageKind } from "../package-kind";
 import { buildPackageDirTree, packageKindIcon } from "../package-dir-tree";
 import {
@@ -453,6 +441,7 @@ import {
   type ChangeKind,
 } from "../package-change-overlay";
 import PackageDirTree from "../components/PackageDirTree.vue";
+import ScanCommitPanel from "../components/ScanCommitPanel.vue";
 import PackageDocsPane from "../components/PackageDocsPane.vue";
 import PackageSecretsPane from "../components/PackageSecretsPane.vue";
 import PackageSpecPane from "../components/PackageSpecPane.vue";
@@ -516,7 +505,6 @@ const {
   data: checkout,
   isLoading,
   error,
-  refetch,
 } = useCheckout(props.subdomain, compare_ref, head_ref);
 
 /** Prefer server-configured repo (matches analyzed git root); router prop is fallback. */
@@ -524,11 +512,9 @@ const github_repo = computed(
   () => checkout.value?.github_repo ?? props.githubRepo,
 );
 
-const {
-  mutate: scan,
-  isPending: isScanning,
-  error: scanError,
-} = useScanMutation(props.subdomain);
+// Scans run as background jobs; the app bar shows their progress. When ours
+// finishes, `useScan` refreshes the checkout query.
+const { scan, isScanning, error: scanError } = useScan(props.subdomain);
 
 const compareReady = computed(() => {
   const c = checkout.value;
@@ -996,15 +982,20 @@ const onDocNavigatePackage = (package_name: string, docPath: string) => {
   });
 };
 
+/** Commit the page last asked to scan (HEAD or the fork point). */
+const scanTarget = ref<string | null>(null);
+
 const scanThisCommit = () => {
   if (!checkout.value) return;
-  scan({ commit_hash: checkout.value.hash }, { onSuccess: () => refetch() });
+  scanTarget.value = checkout.value.hash;
+  scan({ commit_hash: checkout.value.hash });
 };
 
 const scanForkPoint = () => {
   const hash = checkout.value?.compare?.merge_base_hash;
   if (!hash) return;
-  scan({ commit_hash: hash }, { onSuccess: () => refetch() });
+  scanTarget.value = hash;
+  scan({ commit_hash: hash });
 };
 
 // Arriving via a workflow run's "Reflection" button, there's no reason to

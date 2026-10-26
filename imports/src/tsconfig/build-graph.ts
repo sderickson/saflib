@@ -250,9 +250,12 @@ export function applyCompositionRootReferences(
       const parentDir = path.dirname(node.dir);
       for (const candidate of graph.values()) {
         if (candidate.name === node.name) continue;
-        if (path.dirname(candidate.dir) === parentDir) {
-          extra.push(candidate.name);
-        }
+        if (path.dirname(candidate.dir) !== parentDir) continue;
+        const candidatePkg = JSON.parse(
+          fs.readFileSync(path.join(candidate.dir, "package.json"), "utf8"),
+        ) as { saf?: { kind?: string } };
+        if (candidatePkg.saf?.kind === "test") continue;
+        extra.push(candidate.name);
       }
     }
 

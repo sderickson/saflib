@@ -408,6 +408,7 @@ export function checkBoundaries(
       {
         name: p.name,
         kind: p.kind,
+        dir: p.dir,
         ...resolveFeature(
           p.dir,
           rootDir,

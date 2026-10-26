@@ -1,0 +1,52 @@
+type: object
+description: >
+  Where a running scan job is: which commit, which phase, and how far through
+  that phase. `fraction` is the whole job's progress for a determinate bar.
+required:
+  - commit_hash
+  - commit_index
+  - commit_count
+  - phase
+  - phase_label
+  - phase_index
+  - phase_count
+  - done
+  - total
+  - fraction
+properties:
+  commit_hash:
+    type: string
+    description: Commit being analyzed.
+  commit_index:
+    type: integer
+    description: 1-based position of this commit in the job.
+  commit_count:
+    type: integer
+    description: Commits this job analyzes.
+  phase:
+    type: string
+    enum:
+      - list-files
+      - parse-sources
+      - measure-packages
+      - check-issues
+      - save
+  phase_label:
+    type: string
+    description: Human-readable phase name, e.g. "Checking package issues".
+  phase_index:
+    type: integer
+    description: 1-based position of `phase` among the phases.
+  phase_count:
+    type: integer
+  done:
+    type: integer
+    description: Units done in this phase (files parsed, packages checked); 0 when not counted.
+  total:
+    type: integer
+    description: Units in this phase; 0 when not counted.
+  fraction:
+    type: number
+    minimum: 0
+    maximum: 1
+    description: Overall job progress.
