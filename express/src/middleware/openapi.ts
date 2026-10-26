@@ -6,6 +6,8 @@ import type {
 import type { InternalServerError } from "express-openapi-validator/dist/framework/types.ts";
 import { assertOpenApiOperationTags, type OpenApiDocument } from "@saflib/openapi";
 import { typedEnv } from "@saflib/env";
+import { safReportersStorage } from "@saflib/node";
+import type { Request } from "express";
 import multer from "multer";
 import { lenientEmailOpenApiFormat } from "./openapi-formats.ts";
 
@@ -93,8 +95,22 @@ function formatOpenApiValidationError(err: InternalServerError): string {
 }
 
 const validateResponses = {
-  onError: (err: InternalServerError, _json: unknown, _req: unknown) => {
+  onError: (err: InternalServerError, _json: unknown, req: Request) => {
     err.message = formatOpenApiValidationError(err);
+
+    // An error response whose status the spec doesn't list (an unexpected 500,
+    // a 422 from a dependency) is still the most useful thing to send. Failing
+    // validation here would replace it with Express's bare HTML 500 and lose
+    // the cause, so report the mismatch and let the original through.
+    if ((req.res?.statusCode ?? 0) >= 400) {
+      const store = safReportersStorage.getStore();
+      if (store) {
+        store.logError(err);
+      } else if (typedEnv.NODE_ENV !== "test") {
+        console.error(err.message);
+      }
+      return;
+    }
 
     if (
       typedEnv.NODE_ENV === "test" ||
