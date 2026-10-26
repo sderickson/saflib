@@ -1,0 +1,19 @@
+getWorkflowDrive:
+  summary: Get the server's run driver
+  description: >
+    Which run the server is driving (or last drove), in what mode, and the
+    latest step outcome. Clients poll this to follow a driven run.
+  operationId: getWorkflowDrive
+  x-public: true
+
+  responses:
+    "200":
+      description: The driver, absent if nothing has been driven since the server started.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              drive:
+                $ref: "../../openapi.yaml#/components/schemas/WorkflowDrive"

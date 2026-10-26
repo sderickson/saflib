@@ -87,6 +87,7 @@ Rules beyond the table (keys `layer(<rule>): from -> to`):
 - **core-offshoot** — the core never imports an offshoot, except from SPAs (which compose the client side and import offshoot SDKs directly), an offshoot's `objects` package and the core db's schema index (`schema`, `schemas/*`) re-exporting offshoot tables. Wire offshoots together in the `app` package.
 - **test-dev-only** — a `test` package is never a runtime dependency.
 - **integration-internals** — an integration package's client code (`client.ts`, `calls/`, `bin/`) imports neither a `db` package nor its own `state/`.
+- **slice-spec** — spec, http and sdk packages pair up by directory: `<dir>/<prefix>http` and `<dir>/<prefix>sdk` serve `<dir>/<prefix>spec`. An http or sdk package imports `operations/*`, `paths` and `json-spec` only from that spec; other specs' `schemas/*` stay importable, and test files are exempt.
 
 A **feature** is the first directory under the product root, the nearest ancestor that contains a `service/` folder of packages (not a package itself): `service/*`, `clients/*` and packages directly in the product root make up the core (one feature), and `<offshoot>/*` is an offshoot. Set `saf.feature` in `package.json` to override. Imports of packages outside the product (e.g. `@saflib/*`) aren't layered. Turn the layer rules off with `"layers": false` under `safImports.boundaries`.
 

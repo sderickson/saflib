@@ -519,6 +519,45 @@ describe("layer rules", () => {
     ]);
   });
 
+  it("pairs http and sdk packages with the spec beside them", () => {
+    const root = makeMonorepo({
+      "packages/service/spec": { name: "@p/spec", kind: "spec" },
+      "packages/service/http": {
+        name: "@p/http",
+        kind: "http",
+        deps: ["@p/spec"],
+        files: { "index.ts": `import "@p/spec/operations/getThing";` },
+      },
+      "packages/service/auth-spec": { name: "@p/auth-spec", kind: "spec" },
+      "packages/service/auth-sdk": {
+        name: "@p/auth-sdk",
+        kind: "sdk",
+        deps: ["@p/auth-spec", "@p/spec"],
+        files: {
+          "client.ts": `import type { paths } from "@p/auth-spec/paths";`,
+          "requests/get.ts": `import "@p/spec/operations/getThing";`,
+        },
+      },
+      "packages/forms/spec": { name: "@p/forms-spec", kind: "spec" },
+      "packages/forms/http": {
+        name: "@p/forms-http",
+        kind: "http",
+        deps: ["@p/forms-spec", "@p/spec"],
+        devDeps: [],
+        files: {
+          "index.ts": `import "@p/forms-spec/operations/listForms";`,
+          "shapes.ts": `import type { Thing } from "@p/spec/schemas/Thing";`,
+          "wrong.ts": `import "@p/spec/json-spec";`,
+          "list.test.ts": `import "@p/spec/operations/getThing";`,
+        },
+      },
+    });
+    expect(layerKeys(root)).toEqual([
+      "layer(slice-spec): @p/auth-sdk -> @p/spec",
+      "layer(slice-spec): @p/forms-http -> @p/spec",
+    ]);
+  });
+
   it("treats service/, clients/ and the product root as one core feature", () => {
     const root = makeMonorepo({
       "packages/service/vue": { name: "@p/vue", kind: "vue" },

@@ -158,19 +158,22 @@ export function useRunView(props: RunViewProps) {
   const extraPrompt = ref("");
   const directMessage = ref("");
 
-  const pauseMessage = computed(() => {
-    const fromAdvance = (
-      orchestrator.advanceMutation.data.value as { message?: string } | undefined
-    )?.message;
-    return fromAdvance || "Paused. Review the result, then continue.";
+  /** The driver's latest outcome, when it's about this run. */
+  const ownOutcome = computed(() => {
+    const outcome = orchestrator.lastOutcome.value;
+    return outcome && outcome.run_id === runId.value ? outcome : undefined;
   });
+
+  const pauseMessage = computed(
+    () => ownOutcome.value?.message || "Paused. Review the result, then continue.",
+  );
 
   const isAdvancing = computed(() => {
     const id = runId.value;
     if (!id) return false;
     return isRunAdvancingForDisplay(id, run.value?.is_advancing === true, {
       activeRunId: orchestrator.activeRunId.value,
-      advancePending: orchestrator.advanceMutation.isPending.value,
+      advancePending: orchestrator.drivePending.value,
       agentMessagePendingRunId: agentMessageMutation.isPending.value
         ? agentMessageMutation.variables.value?.runId
         : undefined,
@@ -283,10 +286,7 @@ export function useRunView(props: RunViewProps) {
   const volumeIcon = computed(() => volumeIconName(muted.value, volume.value));
 
   const failureMessage = computed(() =>
-    resolveFailureMessage(
-      (orchestrator.advanceMutation.data.value as { message?: string } | undefined)?.message,
-      logs.logs.value,
-    ),
+    resolveFailureMessage(ownOutcome.value?.message, logs.logs.value),
   );
 
   const agentMessagePending = computed(() => agentMessageMutation.isPending.value);

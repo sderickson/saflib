@@ -8,6 +8,8 @@ import type { Readable } from "node:stream";
 import { createOutputStream } from "./output.ts";
 import { runAgentTurn } from "./agents/dispatch.ts";
 import { withRunLock, RUN_LOCK_MESSAGE } from "./run-lock.ts";
+import { withWorkspace, type WorkflowWorkspaceConfig } from "./workspace.ts";
+import { toWorkspacePath } from "./workspace-context.ts";
 import type { WorkflowContext } from "./types.ts";
 
 /**
@@ -33,13 +35,15 @@ async function resolveRunWorkingDirectory(
   const { result: run, error: runError } = await getByIdWorkflowRun(dbKey, { id: runId });
   if (runError) throw runError;
 
-  let cwd = run.cwd;
+  let cwd = toWorkspacePath(run.cwd);
   const copiedFiles: Record<string, string> = {};
   for (const priorStep of priorSteps ?? []) {
     if (priorStep.status !== "success" || !priorStep.result) continue;
     const r = priorStep.result as { copiedFiles?: Record<string, string>; newCwd?: string };
-    if (r.copiedFiles) Object.assign(copiedFiles, r.copiedFiles);
-    if (r.newCwd) cwd = r.newCwd;
+    if (r.copiedFiles) {
+      for (const [key, file] of Object.entries(r.copiedFiles)) copiedFiles[key] = toWorkspacePath(file);
+    }
+    if (r.newCwd) cwd = toWorkspacePath(r.newCwd);
   }
   return { cwd, copiedFiles };
 }
@@ -90,7 +94,7 @@ async function runFreeformAgentMessage(
     dbKey,
     mode: "run",
     cwd,
-    originalWorkingDirectory: run.cwd,
+    originalWorkingDirectory: toWorkspacePath(run.cwd),
     agentConfig: run.agent_config,
     copiedFiles,
     skipTodos: run.skip_todos,
@@ -118,12 +122,22 @@ export function sendFreeformAgentMessage(
   dbKey: DbKey,
   runId: string,
   message: string,
+  /** Run the agent in this workspace clone; see `AdvanceRunOptions.workspace`. */
+  options: { workspace?: WorkflowWorkspaceConfig } = {},
 ): { output: Readable; result: Promise<FreeformAgentMessageResult> } {
   const { stream, write, end } = createOutputStream();
+  const { workspace } = options;
 
-  const resultPromise = withRunLock(dbKey, runId, () =>
-    runFreeformAgentMessage(dbKey, runId, message, write),
-  )
+  const resultPromise = withRunLock(dbKey, runId, async (): Promise<FreeformAgentMessageResult> => {
+    if (!workspace) return runFreeformAgentMessage(dbKey, runId, message, write);
+    try {
+      return await withWorkspace(workspace, runId, write, () =>
+        runFreeformAgentMessage(dbKey, runId, message, write),
+      );
+    } catch (error) {
+      return { status: "error", message: error instanceof Error ? error.message : String(error) };
+    }
+  })
     .then((outcome): FreeformAgentMessageResult =>
       outcome.locked ? { status: "error", message: RUN_LOCK_MESSAGE } : outcome.result,
     )

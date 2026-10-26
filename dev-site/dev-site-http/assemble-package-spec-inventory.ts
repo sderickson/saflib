@@ -6,7 +6,7 @@ import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/utils";
 import { classifySafPackage, parseSafPackageJson } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
-import { listTree, readBlobs } from "@saflib/git";
+import { listTreeCached, readBlobsCached } from "./git-cache.ts";
 import { blobFactImports, blobFactTestCases } from "@saflib/dev-site-db/types";
 import { ensureBlobFacts, type AnalyzeCommitOptions } from "./analyze-commit.ts";
 import {
@@ -116,7 +116,7 @@ export async function assemblePackageSpecInventory(
   const repo_root = options.repo_root;
   const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
 
-  const treeResult = listTree(repo_root, commit_hash);
+  const treeResult = listTreeCached(repo_root, commit_hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) => {
     if (!product_root) return true;
@@ -127,7 +127,7 @@ export async function assemblePackageSpecInventory(
     (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
   );
   const pkgBlobHashes = packageJsonEntries.map((e) => e.blobHash);
-  const pkgBlobs = readBlobs(repo_root, pkgBlobHashes);
+  const pkgBlobs = readBlobsCached(repo_root, pkgBlobHashes);
   if (pkgBlobs.error) return { error: pkgBlobs.error };
 
   const nameByPath = new Map<string, string>();
@@ -175,7 +175,7 @@ export async function assemblePackageSpecInventory(
     return { result: { entities: [] } };
   }
 
-  const yamlBlobs = readBlobs(
+  const yamlBlobs = readBlobsCached(
     repo_root,
     yamlEntries.map((e) => e.blobHash),
   );

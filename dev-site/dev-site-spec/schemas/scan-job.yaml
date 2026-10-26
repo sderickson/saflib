@@ -1,0 +1,40 @@
+type: object
+description: >
+  A background scan. Jobs run one at a time in a worker thread; the queue
+  lives in server memory, so a restart drops queued jobs.
+required:
+  - id
+  - status
+  - created_at
+properties:
+  id:
+    type: string
+  status:
+    type: string
+    enum:
+      - queued
+      - running
+      - complete
+      - failed
+  commit_hash:
+    type: string
+    description: The one commit requested, when the job targets a single commit.
+  limit:
+    type: integer
+    description: Max new mainline commits, for history scans.
+  created_at:
+    type: string
+    format: date-time
+  started_at:
+    type: string
+    format: date-time
+  finished_at:
+    type: string
+    format: date-time
+  progress:
+    $ref: "./scan-progress.yaml"
+  result:
+    $ref: "./scan-result.yaml"
+  error:
+    type: string
+    description: Set when failed — a git error or the first commit that failed analysis.

@@ -144,6 +144,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{runId}/drive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Have the server drive a run
+         * @description Starts advancing the run in the background and keeps going according to `mode` without needing a client, returning right away. Calling it for the run that's already being driven only changes the mode. Follow progress with `GET /api/drive` and the run's own events.
+         */
+        post: operations["driveWorkflowRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/drive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the server's run driver
+         * @description Which run the server is driving (or last drove), in what mode, and the latest step outcome. Clients poll this to follow a driven run.
+         */
+        get: operations["getWorkflowDrive"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/drive/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop driving
+         * @description Sets the driver's mode to `stop` and cancels the agent turn in flight for the driven run, if any. The driver goes inactive once that step returns.
+         */
+        post: operations["stopWorkflowDrive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs/{runId}/cancel": {
         parameters: {
             query?: never;
@@ -268,6 +328,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/plans/unexpected-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List unexpected changes made by plan runs
+         * @description For each workflow file under the plans root, the steps of its most recent run that changed files outside the run's declared scope. Runs that declare no scope aren't checked, so they never appear.
+         */
+        get: operations["listPlanUnexpectedChanges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -289,6 +369,9 @@ export interface components {
         FreeformAgentMessageResult: components["schemas"]["freeform-agent-message-result"];
         PlanFile: components["schemas"]["plan-file"];
         PlanSummary: components["schemas"]["plan-summary"];
+        WorkflowDriveMode: components["schemas"]["workflow-drive-mode"];
+        WorkflowDrive: components["schemas"]["workflow-drive"];
+        UnexpectedChange: components["schemas"]["unexpected-change"];
         /** @description One entry in the registered-workflow list (`GET /workflows`). */
         "workflow-summary": {
             /**
@@ -462,6 +545,41 @@ export interface components {
             shouldContinue?: boolean;
         };
         /**
+         * @description How far the server keeps advancing a driven run on its own: `step` runs one step, `workflow` keeps going until the run finishes (or pauses or fails), `plan` also starts and drives the next phase file in the same plan folder whenever one finishes. `stop` lets the step in flight be cancelled and advances no further.
+         * @example workflow
+         * @enum {string}
+         */
+        "workflow-drive-mode": "stop" | "step" | "workflow" | "plan";
+        /** @description The server's run driver: which run it's advancing and how far it will keep going without a client. One run is driven at a time. */
+        "workflow-drive": {
+            /**
+             * @description The run being driven, or the last one that was.
+             * @example 0SG36FJe6m4W
+             */
+            run_id: string;
+            /**
+             * @description That run's workflow id or plan file path.
+             * @example product/plans/notes/2026-01-01-example/phase-1.workflow.yaml
+             */
+            workflow_ref: string;
+            mode: components["schemas"]["workflow-drive-mode"];
+            /** @description Whether a step is running or about to run under this driver. */
+            active: boolean;
+            /** @description The most recent step outcome this driver saw. `seq` increases with every outcome, so a client can tell a new one from one it has already reacted to. */
+            last_outcome?: {
+                /** @example 3 */
+                seq: number;
+                /** @example 0SG36FJe6m4W */
+                run_id: string;
+                /**
+                 * @description A `StepResult` status.
+                 * @example success
+                 */
+                status: string;
+                message?: string;
+            };
+        };
+        /**
          * @description Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. "running step 3: copy"). `agent-input`: the prompt text sent to the agent.
          * @example tool
          * @enum {string}
@@ -563,6 +681,14 @@ export interface components {
                 kind: "prompt";
                 /** @example Run the drizzle migration and confirm it applied cleanly. */
                 prompt: string;
+                /**
+                 * @description Files this step is expected to change, as paths or globs relative to the run's starting directory (for a plan, the repo root). They're listed in the prompt. Together with every other step's `files` they make up the run's scope: once any step declares `files`, each step's commit is checked against that scope, and files outside it are recorded as unexpected changes.
+                 * @example [
+                 *       "product/service/spec/routes/widgets/**",
+                 *       "product/service/spec/openapi.yaml"
+                 *     ]
+                 */
+                files?: string[];
                 /** @description After this step succeeds, return `awaiting_user` so auto-continue (CLI loop, play-workflow, play-plan) stops for a person to review. The step index still advances. */
                 pauseAfter?: boolean;
                 /** @description Message shown when `pauseAfter` fires. */
@@ -594,6 +720,8 @@ export interface components {
                  * @default false
                  */
                 forceInScript: boolean;
+                /** @description Files this step is expected to change, as paths or globs relative to the run's starting directory. Adds to the run's scope; see the prompt step. */
+                files?: string[];
                 /** @description Stop auto-continue after this step succeeds. See the prompt step. */
                 pauseAfter?: boolean;
                 pauseMessage?: string;
@@ -627,6 +755,8 @@ export interface components {
                 errorPrompt?: string;
                 /** @default false */
                 forceInScript: boolean;
+                /** @description Files this step is expected to change, as paths or globs relative to the run's starting directory. Adds to the run's scope; see the prompt step. */
+                files?: string[];
                 /** @description Stop auto-continue after this step succeeds. See the prompt step. */
                 pauseAfter?: boolean;
                 pauseMessage?: string;
@@ -645,10 +775,41 @@ export interface components {
                 input?: {
                     [key: string]: unknown;
                 };
+                /** @description Files this step is expected to change, as paths or globs relative to the run's starting directory. Adds to the run's scope; see the prompt step. */
+                files?: string[];
                 /** @description Stop auto-continue after this step succeeds. See the prompt step. */
                 pauseAfter?: boolean;
                 pauseMessage?: string;
             })[];
+        };
+        /** @description A step's commit that changed files outside its run's declared scope (the `files` of the run's prompt steps, plus files its copy steps wrote). */
+        "unexpected-change": {
+            /**
+             * @description The run's workflow file, relative to the repo root.
+             * @example test-product/plans/2026-09-15-add-widgets/phase-2-api.workflow.yaml
+             */
+            workflow_ref: string;
+            /** @example 0SG36FJe6m4W */
+            run_id: string;
+            /** @example 7 */
+            step_index: number;
+            /**
+             * @description The step's label, as in its commit message.
+             * @example npm run test
+             */
+            label?: string;
+            /**
+             * @description The commit holding the step's changes.
+             * @example 12cd003edb9ae8411c6990e4c84984e4b9e735d7
+             */
+            commit_hash?: string;
+            /**
+             * @description Changed files outside the run's scope, relative to the repo root.
+             * @example [
+             *       "test-product/security/vitest.config.js"
+             *     ]
+             */
+            files: string[];
         };
         /**
          * @description Outcome of a single step attempt row. `running` while the step is in flight (the row is inserted before the step function is called); `success`/`error` are the two terminal outcomes for a step; `awaiting_prompt`/ `awaiting_user` mean the step handed control back to the caller without finishing — the same step index will be attempted again on the next `advance` call.
@@ -975,6 +1136,108 @@ export interface operations {
             };
         };
     };
+    driveWorkflowRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @example workflow
+                     * @enum {string}
+                     */
+                    mode: "step" | "workflow" | "plan";
+                    /** @description For the first step only — see `advanceWorkflowRun`. */
+                    revert?: boolean;
+                    /** @description For the first step only — see `advanceWorkflowRun`. */
+                    skip?: boolean;
+                    /** @description For the first step only — see `advanceWorkflowRun`. */
+                    extraPrompt?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The run is being driven. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        drive: components["schemas"]["workflow-drive"];
+                    };
+                };
+            };
+            /** @description No run with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description A different run is being driven. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getWorkflowDrive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The driver, absent if nothing has been driven since the server started. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        drive?: components["schemas"]["workflow-drive"];
+                    };
+                };
+            };
+        };
+    };
+    stopWorkflowDrive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The driver after stopping, absent if nothing was ever driven. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        drive?: components["schemas"]["workflow-drive"];
+                    };
+                };
+            };
+        };
+    };
     cancelWorkflowRun: {
         parameters: {
             query?: never;
@@ -1213,6 +1476,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description This host hasn't configured a plans folder. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listPlanUnexpectedChanges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unexpected changes, grouped by step. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        changes: components["schemas"]["unexpected-change"][];
+                    };
                 };
             };
             /** @description This host hasn't configured a plans folder. */

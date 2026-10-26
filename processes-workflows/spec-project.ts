@@ -103,6 +103,8 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
 When specifying API endpoints, follow the conventions in /saflib/openapi/docs/02-api-design.md — in particular: one URL per distinct action (don't overload endpoints), batch endpoints when child resources need to be fetched for multiple parents, and JSON object responses keyed by resource name (never a bare business object or array at the root).
 
+Fill in **Rollout** for the data and deploys that already exist: records created before this ships, old clients still calling the old API, and anything that must wait until after deploy.
+
 Do not write phase workflow files in this step.`,
       }),
       { pauseAfter: true, pauseMessage: SPEC_PAUSE_MESSAGE },
@@ -114,6 +116,10 @@ Do not write phase workflow files in this step.`,
 Read ${phaseWorkflowDocs} and follow it. Write phase-1-….workflow.yaml, phase-2-….workflow.yaml, and so on. Do not write a plan.md. Do not write an orchestrator named after the project. Do not modify phase-0-plan.workflow.yaml.
 
 Each phase file is run by a different agent, starting a fresh session with no memory of earlier phases. Group each phase around one small, coherent slice of related work, so one agent can do all of it without carrying unrelated context. Write each phase's prompts so they make sense without the earlier phases' conversations: name the files and spec sections they rely on. See "One agent per phase" in the doc above.
+
+Give every prompt step a \`files\` list of the files it's expected to change (see "Expected files" in the doc above). Changes outside them get flagged for review, so list what the step really needs, including the tests that go with it.
+
+If the spec's **Rollout** section calls for work (a backfill, a compatibility step, a cleanup after deploy), give it a phase or a step; don't leave it for after the plan.
 
 Each phase is a stopping point (typecheck and tests). One schema, route, query, handler, or view per call-workflow. cd into the target package before those calls. Use monorepo-root paths on integrations/init (\`path: <product>/service/integrations/<name>\`), not \`cd\` into the product folder alone.`,
     })),

@@ -1,7 +1,8 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 import type { AgentAdapter } from "./types.ts";
-import { AgentExitedWithoutResultError } from "./claude-agent.ts";
+import { AgentExitedWithoutResultError, CANCELLED_BY_USER_MESSAGE } from "./claude-agent.ts";
+import { trackAgentProcess } from "./registry.ts";
 import { subprocessEnv } from "../subprocess-env.ts";
 import type { ToolResultLogPayload, ToolUseLogPayload } from "./tool-log-payload.ts";
 
@@ -23,8 +24,16 @@ export const executePromptWithCursor: AgentAdapter = async (msg, ctx, onRawOutpu
       args.push("--model", "auto");
     }
 
-    const agent = spawn("cursor-agent", args, { env: subprocessEnv(), cwd: ctx.cwd });
+    // Detached so Stop can kill the whole process group — see `trackAgentProcess`.
+    const agent = spawn("cursor-agent", args, {
+      env: subprocessEnv(),
+      cwd: ctx.cwd,
+      detached: true,
+    });
     agent.stdin.end();
+    const { wasCancelled } = trackAgentProcess(ctx.runId, agent, () =>
+      ctx.log({ channel: "tool", level: "info", content: "Stopping agent…" }),
+    );
 
     let buffer = "";
     let sessionId = "";
@@ -96,6 +105,10 @@ export const executePromptWithCursor: AgentAdapter = async (msg, ctx, onRawOutpu
     agent.on("error", reject);
     agent.on("close", (code) => {
       pipeClosed = true;
+      if (wasCancelled()) {
+        reject(new Error(CANCELLED_BY_USER_MESSAGE));
+        return;
+      }
       if (!resultReceived) {
         reject(new AgentExitedWithoutResultError(code, stderr));
         return;

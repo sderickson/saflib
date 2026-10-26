@@ -9,6 +9,7 @@ import { mountTestApp } from "../test-app.ts";
 import { router } from "../pages/test_router.ts";
 import * as runAlerts from "../run-alerts.ts";
 import { __resetRunOrchestratorForTests } from "../run-orchestrator.ts";
+import { fakeDriveHandlers } from "../requests/drive.fixtures.ts";
 
 const ORIGIN = "http://localhost:3000";
 
@@ -206,6 +207,9 @@ describe("RunView", () => {
       { index: 1, kind: "prompt", label: "Say hello!" },
     ];
     vi.stubGlobal("EventSource", EventSourceStub);
+    const drive = fakeDriveHandlers(ORIGIN);
+    server.use(...drive.handlers);
+    onTestFinished(drive.restore);
   });
 
   it("explains that a run's logs were deleted for age", async () => {
@@ -1068,6 +1072,32 @@ describe("RunView", () => {
       resolveTurn({});
     });
 
+    it("coalesces a burst of change events into a few refetches", async () => {
+      const sse = stubRecordingEventSource();
+      const wrapper = mountRunView();
+      await vi.waitFor(() => {
+        expect(wrapper.text()).toContain("starting");
+      });
+      sse.fireOpen();
+
+      const fetched: string[] = [];
+      const onRequest = ({ request }: { request: Request }) => {
+        fetched.push(new URL(request.url).pathname);
+      };
+      server.events.on("request:start", onRequest);
+      onTestFinished(() => {
+        server.events.removeListener("request:start", onRequest);
+      });
+
+      // One change event per agent log line; an agent logs several a second.
+      for (let i = 0; i < 30; i++) sse.fireChange();
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const runFetches = fetched.filter((p) => /^\/api\/runs\/[^/]+$/.test(p));
+      expect(runFetches.length).toBeGreaterThanOrEqual(1);
+      expect(runFetches.length).toBeLessThanOrEqual(2);
+    });
+
     it("reconnects when the browser gives up on the event stream, and catches up on reopen", async () => {
       const sse = stubRecordingEventSource();
       const wrapper = mountRunView();
@@ -1163,8 +1193,8 @@ describe("RunView", () => {
     await wrapper.find('[aria-label="Play current workflow"]').trigger("click");
     await vi.waitFor(() => {
       expect(wrapper.find('[aria-label="Stop"]').attributes("disabled")).toBeFalsy();
+      expect(advanceCalls).toBe(1);
     });
-    expect(advanceCalls).toBe(1);
 
     // Switching to "step" mode mid-flight is allowed (not disabled) — it
     // just changes what happens on the *next* continuation, it doesn't

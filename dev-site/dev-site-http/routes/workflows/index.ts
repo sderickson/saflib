@@ -97,6 +97,12 @@ export function createWorkflowsRouter(): IRouter {
     // dev-site-http's own `repo_root` isn't known until *its* per-request
     // context is set up, so this is resolved fresh per request.
     defaultCwd: () => devSiteHttpStorage.getStore()!.repo_root,
+    workspace: () => {
+      const store = devSiteHttpStorage.getStore()!;
+      return store.workflow_workspace
+        ? { hostRoot: store.repo_root, root: store.workflow_workspace }
+        : undefined;
+    },
     plansRoot: () => {
       const store = devSiteHttpStorage.getStore()!;
       // Same `plans/notes/<date>-<name>/` layout the SPA lists and the

@@ -1,0 +1,20 @@
+stopWorkflowDrive:
+  summary: Stop driving
+  description: >
+    Sets the driver's mode to `stop` and cancels the agent turn in flight
+    for the driven run, if any. The driver goes inactive once that step
+    returns.
+  operationId: stopWorkflowDrive
+  x-public: true
+
+  responses:
+    "200":
+      description: The driver after stopping, absent if nothing was ever driven.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              drive:
+                $ref: "../../openapi.yaml#/components/schemas/WorkflowDrive"

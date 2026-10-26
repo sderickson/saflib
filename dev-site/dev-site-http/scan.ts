@@ -11,6 +11,11 @@ import { makeSubsystemReporters } from "@saflib/node";
 
 import { analyzeCommit, ANALYZER_VERSION } from "./analyze-commit.ts";
 import { computeCommitIssueStats } from "./compute-commit-issue-stats.ts";
+import {
+  makePhaseReporter,
+  type PhaseReporter,
+  type ScanProgressListener,
+} from "./scan-progress.ts";
 
 import { insert } from "@saflib/dev-site-db/queries/analyzed-commits/insert";
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
@@ -39,6 +44,8 @@ export interface ScanOptions {
    * and feature-branch tip discovery.
    */
   commit_hash?: string;
+  /** Called as each commit moves through the scan phases. */
+  onProgress?: ScanProgressListener;
 }
 
 export interface ScanFailure {
@@ -76,6 +83,7 @@ async function persistIssueStatsForCommit(
     product_root?: string;
     mainRef: string;
     packages?: Array<{ package_name: string; directory: string }>;
+    reportPhase?: PhaseReporter;
   },
 ): Promise<ReturnsError<void, GitCommandError>> {
   const stats = await computeCommitIssueStats(dbKey, commit_hash, {
@@ -83,9 +91,11 @@ async function persistIssueStatsForCommit(
     product_root: options.product_root,
     mainRef: options.mainRef,
     packages: options.packages,
+    reportPhase: options.reportPhase,
   });
   if (stats.error) return { error: stats.error };
 
+  options.reportPhase?.("save");
   await deleteIssueStats(dbKey, commit_hash);
   const rows =
     stats.result.length > 0
@@ -110,12 +120,14 @@ async function persistCommit(
     repo_root: string;
     product_root?: string;
     mainRef: string;
+    reportPhase: PhaseReporter;
   },
 ): Promise<ReturnsError<void, GitCommandError>> {
   const analyzed = await analyzeCommit(dbKey, commit, {
     repo_root: options.repo_root,
     product_root: options.product_root,
     mainRef: options.mainRef,
+    reportPhase: options.reportPhase,
   });
   if (analyzed.error) {
     return { error: analyzed.error };
@@ -148,6 +160,7 @@ async function persistCommit(
       package_name: m.package_name,
       directory: m.directory,
     })),
+    reportPhase: options.reportPhase,
   });
   if (issuePersist.error) return { error: issuePersist.error };
 
@@ -162,7 +175,11 @@ async function analyzeAndPersist(
     product_root?: string;
     mainRef: string;
   },
-  progress: { index: number; total: number },
+  progress: {
+    index: number;
+    total: number;
+    onProgress?: ScanProgressListener;
+  },
 ): Promise<ReturnsError<"scanned" | "failed", GitCommandError>> {
   const { log: scanLog } = makeSubsystemReporters("http", "scan");
   const label = `${progress.index}/${progress.total} ${shortHash(commit.hash)}`;
@@ -170,7 +187,15 @@ async function analyzeAndPersist(
     `Analyzing ${label} — ${firstLine(commit.subject || commit.hash)}`,
   );
   const started = Date.now();
-  const persisted = await persistCommit(dbKey, commit, options);
+  const reportPhase = makePhaseReporter(progress.onProgress, {
+    hash: commit.hash,
+    index: progress.index,
+    count: progress.total,
+  });
+  const persisted = await persistCommit(dbKey, commit, {
+    ...options,
+    reportPhase,
+  });
   const ms = Date.now() - started;
   if (persisted.error) {
     scanLog.warn(
@@ -247,7 +272,7 @@ export async function scanCommits(
         product_root: options.product_root,
         mainRef,
       },
-      { index: 1, total: 1 },
+      { index: 1, total: 1, onProgress: options.onProgress },
     );
     if (outcome.error) {
       failed.push({ hash: commit.hash, message: outcome.error.message });
@@ -340,7 +365,7 @@ export async function scanCommits(
         product_root: options.product_root,
         mainRef,
       },
-      { index: i + 1, total: toAnalyze.length },
+      { index: i + 1, total: toAnalyze.length, onProgress: options.onProgress },
     );
     if (outcome.error) {
       failed.push({ hash: commit.hash, message: outcome.error.message });

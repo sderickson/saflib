@@ -1,10 +1,10 @@
 import {
   isAncestor,
   listRefs,
-  listTree,
   readBlobs,
   type GitCommit,
 } from "@saflib/git";
+import { listTreeCached, readBlobsCached } from "./git-cache.ts";
 import type { DbKey } from "@saflib/drizzle";
 import type { AnalyzedCommitRef, BlobFactEntity, InsertBlobFactParams, InsertPackageMetricsParams } from "@saflib/dev-site-db/types";
 import {
@@ -32,6 +32,7 @@ import {
   sdkRequestFromSpecifier,
 } from "./classify.ts";
 import { linkTestSubjects } from "./link-test-subjects.ts";
+import type { PhaseReporter } from "./scan-progress.ts";
 
 import { getByHashes } from "@saflib/dev-site-db/queries/blob-facts/get-by-hashes";
 import { upsertMany } from "@saflib/dev-site-db/queries/blob-facts/upsert-many";
@@ -43,6 +44,8 @@ export interface AnalyzeCommitOptions {
   product_root?: string;
   /** Main branch ref for is_main_ancestor. Defaults to `main`. */
   mainRef?: string;
+  /** Scan progress hook; assemblers that only read ignore it. */
+  reportPhase?: PhaseReporter;
 }
 
 export interface AnalyzedExport {
@@ -113,6 +116,32 @@ function parseBlobFact(
 }
 
 /**
+ * Parsed blob facts already read this process, per database. A blob hash
+ * always names the same bytes and facts are only kept for the current
+ * analyzer version, so entries never go stale. Every request touches most of
+ * the tree, so this saves re-reading and re-parsing thousands of JSON rows.
+ */
+const MAX_CACHED_FACTS = 50_000;
+const factsByDb = new Map<DbKey, Map<string, BlobFactEntity>>();
+
+function cachedFactsFor(dbKey: DbKey): Map<string, BlobFactEntity> {
+  let cached = factsByDb.get(dbKey);
+  if (!cached) {
+    cached = new Map();
+    factsByDb.set(dbKey, cached);
+  }
+  return cached;
+}
+
+function rememberFact(
+  cached: Map<string, BlobFactEntity>,
+  fact: BlobFactEntity,
+): void {
+  if (cached.size >= MAX_CACHED_FACTS) cached.clear();
+  cached.set(fact.blob_hash, fact);
+}
+
+/**
  * Ensure blob_facts rows exist for the given hashes (current analyzer version).
  * Returns a map of blob_hash → fact.
  */
@@ -120,13 +149,25 @@ export async function ensureBlobFacts(
   dbKey: DbKey,
   repo_root: string,
   blobHashes: string[],
+  /** Called as missing blobs are parsed (`done` of `total`). */
+  onParsed?: (done: number, total: number) => void,
 ): Promise<ReturnsError<Map<string, BlobFactEntity>, GitCommandError>> {
   const unique = [...new Set(blobHashes)];
-  const existing = (await getByHashes(dbKey, unique)).result!;
+  const cached = cachedFactsFor(dbKey);
   const byHash = new Map<string, BlobFactEntity>();
-  for (const row of existing) {
-    if (row.analyzer_version === ANALYZER_VERSION) {
-      byHash.set(row.blob_hash, row);
+  const uncached: string[] = [];
+  for (const hash of unique) {
+    const hit = cached.get(hash);
+    if (hit) byHash.set(hash, hit);
+    else uncached.push(hash);
+  }
+  if (uncached.length > 0) {
+    const existing = (await getByHashes(dbKey, uncached)).result!;
+    for (const row of existing) {
+      if (row.analyzer_version === ANALYZER_VERSION) {
+        byHash.set(row.blob_hash, row);
+        rememberFact(cached, row);
+      }
     }
   }
 
@@ -153,12 +194,14 @@ export async function ensureBlobFacts(
     toUpsert.push(parseBlobFact(hash, source));
     if ((i + 1) % progressEvery === 0 || i + 1 === missing.length) {
       analyzeLog.info(`Parsed blobs ${i + 1}/${missing.length}`);
+      onParsed?.(i + 1, missing.length);
     }
   }
   if (toUpsert.length > 0) {
     await upsertMany(dbKey, toUpsert);
     for (const row of toUpsert) {
       byHash.set(row.blob_hash, row);
+      rememberFact(cached, row);
     }
   }
   analyzeLog.info(
@@ -179,7 +222,9 @@ export async function analyzeCommit(
   const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
   const mainRef = options.mainRef ?? "main";
 
-  const treeResult = listTree(repo_root, commit.hash);
+  const reportPhase = options.reportPhase ?? (() => {});
+  reportPhase("list-files");
+  const treeResult = listTreeCached(repo_root, commit.hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) =>
     underProductRoot(e.path, product_root),
@@ -203,7 +248,7 @@ export async function analyzeCommit(
     (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
   );
   const pkgBlobHashes = packageJsonEntries.map((e) => e.blobHash);
-  const pkgBlobs = readBlobs(repo_root, pkgBlobHashes);
+  const pkgBlobs = readBlobsCached(repo_root, pkgBlobHashes);
   if (pkgBlobs.error) return { error: pkgBlobs.error };
 
   const nameByPath = new Map<string, string>();
@@ -219,13 +264,16 @@ export async function analyzeCommit(
   );
 
   const sourceEntries = tree.filter((e) => isSourcePath(e.path));
+  reportPhase("parse-sources");
   const factsResult = await ensureBlobFacts(
     dbKey,
     repo_root,
     sourceEntries.map((e) => e.blobHash),
+    (done, total) => reportPhase("parse-sources", done, total),
   );
   if (factsResult.error) return { error: factsResult.error };
   const facts = factsResult.result;
+  reportPhase("measure-packages");
 
   type Agg = {
     package_name: string;
@@ -382,7 +430,7 @@ export async function assemblePackageSymbols(
   const repo_root = options.repo_root;
   const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
 
-  const treeResult = listTree(repo_root, commit_hash);
+  const treeResult = listTreeCached(repo_root, commit_hash);
   if (treeResult.error) return { error: treeResult.error };
   const tree = treeResult.result.filter((e) =>
     underProductRoot(e.path, product_root),
@@ -392,7 +440,7 @@ export async function assemblePackageSymbols(
     (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
   );
   const pkgBlobHashes = packageJsonEntries.map((e) => e.blobHash);
-  const pkgBlobs = readBlobs(repo_root, pkgBlobHashes);
+  const pkgBlobs = readBlobsCached(repo_root, pkgBlobHashes);
   if (pkgBlobs.error) return { error: pkgBlobs.error };
 
   const nameByPath = new Map<string, string>();

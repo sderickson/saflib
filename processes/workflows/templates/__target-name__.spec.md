@@ -62,6 +62,16 @@
 - File handling: [uploads, downloads, or user-supplied content that is rendered or executed]
 - New tests: [security specs (Playwright or integration) that should be added to cover the above]
 
+## Rollout
+
+[How this reaches production safely. Cover each point; write "None" with a reason where one doesn't apply.]
+
+- Existing data: [rows that exist before deploy and need a backfill or migration (e.g. a new table or column that existing records won't have filled in). Say how it gets filled: a migration, a one-off job, or computed on first read.]
+- Compatibility: [what happens while old and new code overlap: clients still on the old frontend calling a changed or removed endpoint, jobs queued by the old code, migrations running before the new code starts.]
+- Order: [anything that must deploy or run first, and anything that must wait until after deploy (e.g. removing an endpoint once no client uses it).]
+- Verification: [how to tell it worked after deploy: what to check, and where.]
+- Rollback: [what happens if this is reverted. Note migrations or data changes that can't be undone.]
+
 ## Future Enhancements / Out of Scope
 
 [List potential future enhancements or extensions to this feature that are out of scope for the current implementation.]

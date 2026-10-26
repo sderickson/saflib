@@ -73,4 +73,20 @@ describe("compileConfigWorkflow", () => {
     await collectOutput(output);
     expect(await result).toEqual({ status: "awaiting_user", message: "Review the spec." });
   });
+
+  it("passes steps' files through as expected files, and lists a prompt step's in its prompt", () => {
+    const { result: body, error } = validateWorkflowConfigBody({
+      name: "Scoped",
+      steps: [
+        { kind: "prompt", prompt: "Edit the spec.", files: ["app/spec/**"] },
+        { kind: "command", command: "npm", args: ["run", "generate"], files: ["app/spec/dist/**"] },
+      ],
+    });
+    expect(error).toBeUndefined();
+    const definition = compileConfigWorkflow("test/scoped", body!, {});
+    const [prompt, command] = definition.steps;
+    expect(prompt!.expectedFiles).toEqual(["app/spec/**"]);
+    expect(prompt!.input({ context: {} })).toEqual({ prompt: "Edit the spec.", files: ["app/spec/**"] });
+    expect(command!.expectedFiles).toEqual(["app/spec/dist/**"]);
+  });
 });

@@ -101,3 +101,4 @@ export {
   isExpectedPreviewSkip,
   isMechanicalPreviewFailure,
 } from "./preview/preview-failures.ts";
+export { type WorkflowWorkspaceConfig, runBranchName } from "./workspace.ts";

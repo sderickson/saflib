@@ -3,44 +3,24 @@ import type {
   ResponseBody,
   RequestBody,
 } from "@saflib/dev-site-spec/operations/executeScan";
-import createError from "http-errors";
-import { GitCommandError } from "@saflib/git";
 import { getDevSiteHttpContext } from "../../context.ts";
-import {
-  DEFAULT_HTTP_SCAN_LIMIT,
-  dispatchScan,
-} from "../../scan-dispatch.ts";
+import { enqueueScan } from "../../scan-dispatch.ts";
+import { toApiScanJob } from "./wire.ts";
 
 export const executeScanHandler = createHandler(async (req, res) => {
   const { dbKey, repo_root, product_root, mainRef, dbPath } =
     getDevSiteHttpContext();
   const body = (req.body ?? {}) as NonNullable<RequestBody["executeScan"]>;
-  const { result, error } = await dispatchScan(dbKey, {
+  const job = enqueueScan(dbKey, {
     repo_root,
     product_root,
     mainRef,
     dbPath,
-    limit: body.commit_hash ? undefined : (body.limit ?? DEFAULT_HTTP_SCAN_LIMIT),
+    limit: body.limit,
     commit_hash: body.commit_hash,
   });
-  if (error) {
-    switch (true) {
-      case error instanceof GitCommandError:
-        throw createError(500, error.message, { code: "GIT_COMMAND_FAILED" });
-      default:
-        throw error satisfies never;
-    }
-  }
-  if (result.failed.length > 0) {
-    const first = result.failed[0]!;
-    const detail =
-      result.failed.length === 1
-        ? `${first.hash.slice(0, 10)}: ${first.message}`
-        : `${result.failed.length} commits (first ${first.hash.slice(0, 10)}: ${first.message})`;
-    throw createError(500, `Scan failed for ${detail}`, {
-      code: "SCAN_FAILED",
-    });
-  }
-  const response: ResponseBody["executeScan"][200] = result;
-  res.status(200).json(response);
+  const response: ResponseBody["executeScan"][202] = {
+    scan_job: toApiScanJob(job),
+  };
+  res.status(202).json(response);
 });

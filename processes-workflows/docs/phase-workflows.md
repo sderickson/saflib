@@ -42,6 +42,23 @@ steps:
       prompt: Insert a widget row.
 ```
 
+## Expected files
+
+Give every `prompt` step a `files` list: the paths or globs it's expected to change, relative to the repo root (the run's starting directory, whatever earlier `cd` steps did). The list is added to the agent's prompt. `command`, `npm-script` and `call-workflow` steps can take `files` too, for what a generator writes or what a test step might need to fix.
+
+Every step's `files` together are the phase's scope. Once a phase declares any, each step's commit is checked against that scope plus the files the phase's copy steps wrote, and any other changed file is recorded on the step. The dev site lists those per plan as "unexpected files", so the review starts there. A file outside the scope isn't wrong, but it should be explained, and it often means scope creep or a plan that missed something.
+
+```yaml
+  - kind: prompt
+    prompt: >
+      Add a color property to the Widget schema, then regenerate dist.
+    files:
+      - product/service/spec/schemas/widget.yaml
+      - product/service/spec/dist/**
+```
+
+Declare what the step should touch, not the whole package: `product/service/http/handlers/widgets/**` rather than `product/service/http/**`. Include the tests that go with the change, since the phase's test step may need to fix them.
+
 ## Workflows to call
 
 Backend, in the usual order when all of them apply:
@@ -62,6 +79,8 @@ Use `prompt` steps for edits to files that already exist and were not created by
 ## Stopping points
 
 Each phase file should end at a place you can typecheck and test (often a `command` step running `npm run typecheck` or tests in that package). A later phase assumes earlier phases have been run.
+
+Only run a script the package actually has: check its `package.json` first. A `command` step running `npm run <script>` in a package without that script fails straight away instead of asking the agent to fix it, and `new-workflow validate` reports it. When a command fails, the agent is told to fix only what the phase broke, and to stop and report anything else rather than work around it.
 
 **Do not** add a trailing “summarize this phase” `prompt` with `pauseAfter: true` by default. That was an older pattern for manual review between files; it adds an extra agent turn and stops unattended **play-plan** runs, since every dev-site mode (play-plan included) halts at `pauseAfter`. Prefer ending on mechanical work plus typecheck.
 

@@ -41,4 +41,22 @@ if [ -d /data ]; then
   chown -R node:node /data/new-workflows
 fi
 
+# The workflow workspace (DEV_SITE_WORKFLOW_WORKSPACE, e.g. /workspace/repo)
+# and npm's cache live on named volumes too, so workflow steps get fast
+# container-local disk instead of the bind-mounted checkout. Same ownership
+# fix: only the top-level directories, since the node user creates
+# everything beneath them.
+if [ -n "${DEV_SITE_WORKFLOW_WORKSPACE:-}" ]; then
+  workspace_parent="$(dirname "$DEV_SITE_WORKFLOW_WORKSPACE")"
+  mkdir -p "$workspace_parent"
+  chown node:node "$workspace_parent"
+fi
+# Likewise an optional volume for Claude Code's conversations, so agent
+# sessions survive the container being recreated.
+for dir in /home/node/.npm /home/node/.claude/projects; do
+  if [ -d "$dir" ]; then
+    chown node:node "$dir"
+  fi
+done
+
 exec su node -c "cd $(pwd) && $*"

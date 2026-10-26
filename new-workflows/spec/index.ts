@@ -25,6 +25,8 @@ export type WorkflowStepTreeNode = components["schemas"]["WorkflowStepTreeNode"]
 export type StepResult = components["schemas"]["StepResult"];
 export type PlanFile = components["schemas"]["PlanFile"];
 export type PlanSummary = components["schemas"]["PlanSummary"];
+export type WorkflowDriveMode = components["schemas"]["WorkflowDriveMode"];
+export type WorkflowDrive = components["schemas"]["WorkflowDrive"];
 
 export {
   parseToolLogPayload,

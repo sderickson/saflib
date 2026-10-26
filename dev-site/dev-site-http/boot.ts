@@ -73,6 +73,7 @@ export async function startDevSiteService(
       mainRef: typedEnv.DEV_SITE_MAIN_REF || "main",
       staticDir: typedEnv.DEV_SITE_STATIC_DIR || undefined,
       github_repo: typedEnv.DEV_SITE_GITHUB_REPO || undefined,
+      workflow_workspace: typedEnv.DEV_SITE_WORKFLOW_WORKSPACE || undefined,
     });
 
     startExpressServer(lease.app, { port });

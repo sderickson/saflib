@@ -20,6 +20,10 @@ export interface DevSiteHttpEnvSchema extends DrizzleEnvSchema, ExpressEnvSchema
    */
   DEV_SITE_PRODUCT_ROOT?: string;
   /**
+   * Absolute path for the workflow workspace clone (e.g. /workspace/repo). When set, workflow steps run in a clone of DEV_SITE_REPO_ROOT on this path, syncing with the checkout before and after each advance, instead of running in the checkout itself. Use it when the checkout is slow to access (e.g. a Docker Desktop bind mount).
+   */
+  DEV_SITE_WORKFLOW_WORKSPACE?: string;
+  /**
    * Main branch ref used for history walks and is-main-ancestor checks.
    */
   DEV_SITE_MAIN_REF?: string;

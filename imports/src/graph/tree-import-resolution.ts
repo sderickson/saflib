@@ -84,14 +84,27 @@ export interface CreateTreeResolveImportTargetOptions {
 /**
  * Resolve import specifiers to repo-relative paths using a commit tree (no FS).
  * Handles `#` import maps, relative imports, and workspace package exports.
+ *
+ * Results are memoized: the options describe one fixed tree, and callers
+ * resolve the same imports once per package they score.
  */
 export function createTreeResolveImportTarget(
   options: CreateTreeResolveImportTargetOptions,
 ): (importerPath: string, specifier: string) => string | null {
   const { treePaths, index, importsMapByPackageDir, packageRoots } = options;
+  const names = [...index.keys()].sort((a, b) => b.length - a.length);
+  const rootByImporter = new Map<
+    string,
+    { packageName: string; directory: string }
+  >();
+  const cache = new Map<string, string | null>();
 
-  return (importerPath: string, specifier: string): string | null => {
-    const importerRoot = packageForRepoPath(importerPath, packageRoots);
+  const resolve = (importerPath: string, specifier: string): string | null => {
+    let importerRoot = rootByImporter.get(importerPath);
+    if (!importerRoot) {
+      importerRoot = packageForRepoPath(importerPath, packageRoots);
+      rootByImporter.set(importerPath, importerRoot);
+    }
 
     if (specifier.startsWith("#")) {
       const importsMap = importsMapByPackageDir.get(importerRoot.directory);
@@ -114,7 +127,6 @@ export function createTreeResolveImportTarget(
       return firstPathInTree(repoPathCandidates(normalized), treePaths);
     }
 
-    const names = [...index.keys()].sort((a, b) => b.length - a.length);
     for (const name of names) {
       if (specifier === name || specifier.startsWith(`${name}/`)) {
         const pkg = index.get(name)!;
@@ -128,6 +140,16 @@ export function createTreeResolveImportTarget(
     }
 
     return null;
+  };
+
+  return (importerPath: string, specifier: string): string | null => {
+    const key = `${importerPath}\0${specifier}`;
+    let hit = cache.get(key);
+    if (hit === undefined) {
+      hit = resolve(importerPath, specifier);
+      cache.set(key, hit);
+    }
+    return hit;
   };
 }
 

@@ -28,6 +28,7 @@ export {
 export {
   enqueue,
   enqueueOnBehalfOf,
+  enqueueInBackground,
   _resetEnqueueCallersForTests,
   type EnqueueParams,
   type EnqueueOnBehalfOfParams,

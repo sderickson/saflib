@@ -16,6 +16,7 @@ import { createDevSiteHttpApp } from "../../http.ts";
 import { releaseSlimRouteTest } from "../../testing/slim-route-test.ts";
 import type { DevSiteHttpAppLease } from "../../http.ts";
 import { devSiteDbManager } from "@saflib/dev-site-db/instances";
+import { enqueueScan, waitForScanJob } from "../../scan-dispatch.ts";
 
 function git(repo_root: string, args: string[]): string {
   return execFileSync("git", args, {
@@ -32,7 +33,7 @@ function git(repo_root: string, args: string[]): string {
   }).trim();
 }
 
-describe("POST /api/scan", () => {
+describe("scan jobs API", () => {
   let lease: DevSiteHttpAppLease;
   let repo_root: string;
   let commit_hash: string;
@@ -67,23 +68,48 @@ describe("POST /api/scan", () => {
     devSiteDbManager.clearAllTablesForTests(lease.devSiteDbKey);
   });
 
-  it("scans and returns newly ingested hashes", async () => {
-    const response = await request(lease.app)
-      .post("/api/scan")
-      .send({ limit: 5 });
+  async function scanToCompletion(body: object) {
+    const response = await request(lease.app).post("/api/scan").send(body);
+    expect(response.status).toBe(202);
+    return waitForScanJob(lease.devSiteDbKey, response.body.scan_job.id);
+  }
 
-    expect(response.status).toBe(200);
-    expect(response.body.scanned).toEqual([commit_hash]);
-    expect(response.body.skipped).toEqual([]);
-    expect(response.body.failed).toEqual([]);
+  it("queues a job that ingests new commits", async () => {
+    const job = await scanToCompletion({ limit: 5 });
+    expect(job.status).toBe("complete");
+    expect(job.result?.scanned).toEqual([commit_hash]);
+    expect(job.result?.skipped).toEqual([]);
+    expect(job.result?.failed).toEqual([]);
   });
 
-  it("skips already-scanned commits on a second call", async () => {
-    await request(lease.app).post("/api/scan").send({ limit: 5 });
-    const response = await request(lease.app).post("/api/scan").send({ limit: 5 });
+  it("skips already-scanned commits on a second job", async () => {
+    await scanToCompletion({ limit: 5 });
+    const job = await scanToCompletion({ limit: 5 });
+    expect(job.status).toBe("complete");
+    expect(job.result?.scanned).toEqual([]);
+    expect(job.result?.skipped).toEqual([commit_hash]);
+  });
+
+  it("returns the active job for a duplicate request", async () => {
+    const options = { repo_root, mainRef: "main", commit_hash };
+    const first = enqueueScan(lease.devSiteDbKey, options);
+    const second = enqueueScan(lease.devSiteDbKey, options);
+    expect(second.id).toBe(first.id);
+    await waitForScanJob(lease.devSiteDbKey, first.id);
+  });
+
+  it("lists jobs with their final progress, newest first", async () => {
+    const job = await scanToCompletion({ commit_hash });
+    const response = await request(lease.app).get("/api/scan/jobs");
     expect(response.status).toBe(200);
-    expect(response.body.scanned).toEqual([]);
-    expect(response.body.skipped).toEqual([commit_hash]);
-    expect(response.body.failed).toEqual([]);
+    const listed = response.body.scan_jobs[0];
+    expect(listed.id).toBe(job.id);
+    expect(listed.status).toBe("complete");
+    expect(listed.progress).toMatchObject({
+      commit_hash,
+      phase: "save",
+      phase_index: 5,
+      phase_count: 5,
+    });
   });
 });

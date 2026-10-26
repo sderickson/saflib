@@ -29,6 +29,8 @@ export type {
 export { createWorkflowStep } from "./queries/workflow-step/create.ts";
 export { updateResultWorkflowStep } from "./queries/workflow-step/update-result.ts";
 export { listByRunWorkflowStep } from "./queries/workflow-step/list-by-run.ts";
+export { listUnexpectedByRefPrefixWorkflowStep } from "./queries/workflow-step/list-unexpected-by-ref-prefix.ts";
+export type { UnexpectedFilesStepRow } from "./queries/workflow-step/list-unexpected-by-ref-prefix.ts";
 export { deleteFromStepWorkflowStep } from "./queries/workflow-step/delete-from-step.ts";
 export { appendWorkflowLog } from "./queries/workflow-log/append.ts";
 export { listByRunWorkflowLog } from "./queries/workflow-log/list-by-run.ts";

@@ -10,6 +10,7 @@ import type { AgentAdapter, AgentTurnResult } from "./types.ts";
 import { executePromptWithCursor } from "./cursor-agent.ts";
 import {
   AgentExitedWithoutResultError,
+  AgentResultError,
   CANCELLED_BY_USER_MESSAGE,
   executePromptWithClaude,
 } from "./claude-agent.ts";
@@ -114,7 +115,7 @@ async function invokeAndRecord(
   const finishedAt = new Date();
 
   if (sessionRun) {
-    const metrics = result?.metrics ?? {};
+    const metrics = result?.metrics ?? (error instanceof AgentResultError ? error.metrics : {});
     const errorMessage =
       error === undefined ? null : error instanceof Error ? error.message : String(error);
     const turn = await bestEffort(() =>
@@ -124,7 +125,8 @@ async function invokeAndRecord(
         session_run_id: sessionRun.id,
         cli: agentConfig.cli,
         model: metrics.model ?? null,
-        session_id: result?.sessionId ?? null,
+        session_id:
+          result?.sessionId ?? (error instanceof AgentResultError ? error.sessionId : undefined) ?? null,
         resumed_session_id: resumeSessionId ?? null,
         status:
           errorMessage === CANCELLED_BY_USER_MESSAGE
@@ -172,10 +174,12 @@ async function findSessionRun(ctx: WorkflowContext): Promise<WorkflowRunEntity |
 }
 
 function isMissingSessionError(error: unknown): boolean {
-  return (
-    error instanceof AgentExitedWithoutResultError &&
-    /no conversation found|session .*not found/i.test(error.stderr)
-  );
+  const pattern = /no conversation found|session .*not found/i;
+  // Older CLIs exit with the complaint on stderr; newer ones report it as
+  // an `error_during_execution` result.
+  if (error instanceof AgentExitedWithoutResultError) return pattern.test(error.stderr);
+  if (error instanceof AgentResultError) return error.errors.some((e) => pattern.test(e));
+  return false;
 }
 
 /** Raw output kept per turn: this much from the start, and this much from the end. */
