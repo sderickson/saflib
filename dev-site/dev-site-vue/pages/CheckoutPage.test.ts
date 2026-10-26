@@ -1,5 +1,6 @@
 import { scanJobHandlers } from "../requests/scan-jobs.fixtures.ts";
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { enableAutoUnmount } from "@vue/test-utils";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse, type PathParams } from "msw";
@@ -8,6 +9,10 @@ import CheckoutPage from "./CheckoutPage.vue";
 import { router } from "./test_router.ts";
 import { mountTestApp } from "../test-app.ts";
 import { packageMetricsFixture } from "../test-fixtures.ts";
+
+// Unmount between tests: the test router is shared across files, and a
+// mounted page's package watcher reacts to later navigation.
+enableAutoUnmount(afterEach);
 
 type CheckoutResponse = DevSiteResponseBody["getCheckout"][200];
 type DiffResponse = DevSiteResponseBody["diffCommits"][200];
