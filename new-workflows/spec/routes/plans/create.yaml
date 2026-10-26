@@ -5,6 +5,7 @@ createPlan:
     body (`fileName` defaults to `<name>.yaml`). Doesn't run it — see
     POST /workflows/{id}/runs with the returned file's `path` as `id`.
   operationId: createPlan
+  x-public: true
 
   requestBody:
     required: true

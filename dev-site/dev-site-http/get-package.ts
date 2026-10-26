@@ -178,7 +178,8 @@ export async function getCommitPackage(
   let db_inventory: PackageDbInventory | undefined;
   let spec_inventory: PackageSpecInventory | undefined;
   const isDb = kind === "db";
-  const isSpec = kind === "spec";
+  // Objects packages are components-only OpenAPI documents.
+  const isSpec = kind === "spec" || kind === "objects";
   const isHttp = kind === "http";
   const isSdk = kind === "sdk";
   const isSpa = kind === "spa";

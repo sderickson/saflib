@@ -1,5 +1,8 @@
 {
   "name": "@saflib/base-email",
+  "saf": {
+    "kind": "domain"
+  },
   "description": "Email templates for the base product",
   "private": true,
   "type": "module",

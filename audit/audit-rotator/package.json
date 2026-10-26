@@ -1,0 +1,35 @@
+{
+  "name": "@saflib/audit-rotator",
+  "description": "Seal-and-ship helpers for hash-chained audit SQLite databases",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./env": "./env.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/audit-db": "*",
+    "@saflib/drizzle": "*",
+    "@saflib/email-service": "*",
+    "@saflib/env": "*",
+    "@saflib/node": "*",
+    "@saflib/object-store": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*",
+    "@types/proper-lockfile": "^4.1.4",
+    "better-sqlite3": "12.11.1",
+    "proper-lockfile": "^4.1.2"
+  },
+  "sideEffects": false,
+  "imports": {
+    "#env.ts": "./env.ts"
+  }
+}

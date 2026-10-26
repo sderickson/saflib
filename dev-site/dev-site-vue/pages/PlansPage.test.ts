@@ -434,7 +434,7 @@ describe("PlansPage", () => {
     });
   });
 
-  it("New project writes phase-0-plan and starts it in play-plan mode", async () => {
+  it("New project writes phase-0-plan and stops at the spec review pause", async () => {
     let planBody: unknown;
     let advanceCount = 0;
     server.use(
@@ -461,10 +461,13 @@ describe("PlansPage", () => {
       ),
       http.post(`${ORIGIN}/api/runs/:runId/advance`, () => {
         advanceCount++;
-        return HttpResponse.json({
-          status: "awaiting_user",
-          message: "Spec is written. Review it, then continue.",
-        });
+        if (advanceCount === 1) {
+          return HttpResponse.json({
+            status: "awaiting_user",
+            message: "Spec is written. Review it, then continue.",
+          });
+        }
+        return HttpResponse.json({ status: "done" });
       }),
     );
 
@@ -516,6 +519,8 @@ describe("PlansPage", () => {
     await vi.waitFor(() => {
       expect(advanceCount).toBe(1);
     });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(advanceCount).toBe(1);
   });
 
 });

@@ -29,9 +29,10 @@ export type ToolLogPayload = ToolUseLogPayload | ToolResultLogPayload;
 export function parseToolLogPayload(
   content: string,
 ): ToolLogPayload | undefined {
-  if (!content.startsWith("{")) return undefined;
+  const trimmed = content.trim();
+  if (!trimmed.startsWith("{")) return undefined;
   try {
-    const parsed = JSON.parse(content);
+    const parsed = JSON.parse(trimmed);
     if (parsed?.kind === "tool_use" || parsed?.kind === "tool_result") {
       return parsed as ToolLogPayload;
     }

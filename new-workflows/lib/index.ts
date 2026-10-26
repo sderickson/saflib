@@ -8,6 +8,11 @@ export {
   isRunAdvancing,
   type AdvanceRunOptions,
 } from "./engine.ts";
+export {
+  sendFreeformAgentMessage,
+  FREEFORM_MESSAGE_MARKER,
+  type FreeformAgentMessageResult,
+} from "./freeform-agent-message.ts";
 export { stepSkipIf, isWorkflowStepSkip } from "./conditional-step.ts";
 export { commitIfDirty, revertUncommittedChanges } from "./git.ts";
 export { RUN_LOCK_MESSAGE } from "./run-lock.ts";
@@ -45,6 +50,13 @@ export {
 } from "./describe-steps.ts";
 export { cancelActiveAgentProcess } from "./agents/registry.ts";
 export { cancelRunAndDescendants } from "./cancel-run.ts";
+export {
+  pruneWorkflowHistory,
+  DEFAULT_LOG_RETENTION_DAYS,
+  DEFAULT_RAW_OUTPUT_RETENTION_DAYS,
+  type PruneWorkflowHistoryOptions,
+  type PruneWorkflowHistoryResult,
+} from "./prune-history.ts";
 export {
   parseGotoPath,
   formatGotoPath,

@@ -8,9 +8,7 @@ export function createCheckoutRouter(): IRouter {
 
   router.get(
     "/api/checkout",
-    ...createOperationScopedMiddleware(getCheckoutOperationJsonSpec, {
-      enforceAuth: false,
-    }),
+    ...createOperationScopedMiddleware(getCheckoutOperationJsonSpec),
     getCheckoutHandler,
   );
 

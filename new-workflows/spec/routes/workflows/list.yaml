@@ -5,6 +5,7 @@ listWorkflows:
     (`workflow_configs`) workflows aren't included yet — nothing creates
     them via this API surface today.
   operationId: listWorkflows
+  x-public: true
 
   responses:
     "200":

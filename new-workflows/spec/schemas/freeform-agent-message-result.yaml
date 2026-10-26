@@ -1,0 +1,18 @@
+type: object
+additionalProperties: false
+required:
+  - status
+properties:
+  status:
+    type: string
+    enum:
+      - ok
+      - error
+  message:
+    type: string
+    description: Present when `status` is `error`.
+  shouldContinue:
+    type: boolean
+    description: >
+      When `status` is `ok`, whether the agent subprocess signaled it needs
+      another turn (same semantics as a workflow prompt step).

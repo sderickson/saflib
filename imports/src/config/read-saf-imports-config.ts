@@ -58,6 +58,54 @@ export interface SafImportsRootConfig {
   /** Repo-relative env file loaded during client bundle snapshot builds. */
   devEnvFile?: string;
   sideEffectsOverrides?: SafImportsSideEffectsOverrides;
+  boundaries?: SafImportsBoundariesConfig;
+}
+
+/**
+ * A forbidden-dependency rule for `saf-imports boundaries`. Selectors are
+ * package-name globs, `dir:<repo-relative glob>`, or `kind:<saf.kind>`.
+ */
+export interface SafImportsBoundaryRule {
+  /** Short identifier shown in violation keys. */
+  name: string;
+  /** Packages the rule constrains. */
+  from: string[];
+  /** Packages they must not import. */
+  disallow: string[];
+  /** Exceptions to `disallow`. */
+  allow?: string[];
+  /**
+   * Only these parts of a disallowed package are off limits: globs over the
+   * import path within the package (`json-spec`, `operations/*`, `.` for the
+   * root). Other subpaths, and the bare dependency declaration, are allowed.
+   */
+  subpaths?: string[];
+  /** Also apply to test/tooling files (default: runtime files only). */
+  includeDev?: boolean;
+}
+
+/** Repo-root `package.json` → `safImports.boundaries`. */
+export interface SafImportsBoundariesConfig {
+  /** Repo-relative path of the accepted-violations baseline JSON. */
+  baseline?: string;
+  /**
+   * Packages whose imports are checked (same selectors as rules). Defaults to
+   * every workspace package; other packages still count as import targets.
+   */
+  scope?: string[];
+  rules?: SafImportsBoundaryRule[];
+  /** Extra regexes (package-relative paths) for test/tooling-only files. */
+  devFilePatterns?: string[];
+  /**
+   * Built-in layer rules derived from each package's `saf.kind` (see
+   * `src/boundaries/layers.ts`). On by default; `false` opts out.
+   */
+  layers?: boolean;
+  /**
+   * Flag dependencies between a product's own packages that nothing uses, or
+   * that only test/tooling files use. On by default; `false` opts out.
+   */
+  unusedDependencies?: boolean;
 }
 
 function readPackageJson(filePath: string): PackageJson & {

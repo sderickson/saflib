@@ -22,8 +22,6 @@ When run, the workflow will:
 
 - Upsert 9 templates.
 - Upsert 14 templates.
-- Upsert 15 templates.
-- Add @saflib/saflib-dossier-spec dependency to parent spec
 - Change working directory to dossier/spec
 - Run `npm install`
 - Run `npm run generate`
@@ -33,11 +31,10 @@ When run, the workflow will:
 ```bash
 Usage: npm exec saf-workflow kickoff openapi/init <name>
 
-Scaffold an offshoot OpenAPI package (and sibling test factories package) and
-   weave path $refs into the parent spec
+Scaffold an offshoot OpenAPI package and its sibling test factories package
 
 Arguments:
-  name        Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/spec and weaves path $refs into the parent openapi.yaml.
+  name        Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/spec (and {name}/test). The offshoot spec stands alone; it may reference the product spec's schemas, never the reverse.
               Example: "dossier"
 
 ```

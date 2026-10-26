@@ -5,6 +5,11 @@ export type {
   TypedAnalytics,
 } from "./types.ts";
 export { AnalyticsServiceBase } from "./AnalyticsServiceBase.ts";
+export {
+  setAnalyticsConsentResolver,
+  hasAnalyticsConsent,
+  type AnalyticsConsentResolver,
+} from "./consent.ts";
 export { makeTypedAnalytics } from "./makeTypedAnalytics.ts";
 export {
   createAnalyticsService,

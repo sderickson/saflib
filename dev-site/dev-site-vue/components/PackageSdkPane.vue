@@ -3,7 +3,14 @@
     <v-progress-linear v-if="isLoading" indeterminate class="mb-2" />
     <v-alert v-if="error" type="error" density="compact" class="mb-2">{{ error.message }}</v-alert>
 
-    <div v-if="!isLoading && !fileNav.length" class="text-body-2 text-medium-emphasis">
+    <PackageCompareSpecEmpty
+      v-if="!isLoading && !fileNav.length && compareFromHash"
+      @open-diff="emit('open-diff')"
+    />
+    <div
+      v-else-if="!isLoading && !fileNav.length"
+      class="text-body-2 text-medium-emphasis"
+    >
       No source or test modules found for this package.
     </div>
 
@@ -150,6 +157,7 @@ import PackageRouteCard, {
 } from "./PackageRouteCard.vue";
 import ResizableColumns from "./ResizableColumns.vue";
 import ChangeChip from "./ChangeChip.vue";
+import PackageCompareSpecEmpty from "./PackageCompareSpecEmpty.vue";
 
 interface SpecFileRef {
   file_path: string;
@@ -207,6 +215,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   "update:scope": [scope: TestScope];
+  "open-diff": [];
 }>();
 
 const scope = computed(() => props.scope ?? { kind: "all" as const });

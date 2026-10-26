@@ -131,7 +131,9 @@ describe("CheckoutPage compare query param", () => {
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("Reflection");
     });
-    expect(wrapper.find(".checkout-page--reflection-sheet").exists()).toBe(true);
+    expect(wrapper.find(".checkout-page--reflection-sheet").exists()).toBe(
+      true,
+    );
 
     const closeBtn = wrapper
       .findAllComponents({ name: "v-btn" })
@@ -149,7 +151,9 @@ describe("CheckoutPage compare query param", () => {
     await vi.waitFor(() => {
       expect(wrapper.text()).toContain("Scan fork point");
     });
-    expect(wrapper.find(".checkout-page--reflection-sheet").exists()).toBe(false);
+    expect(wrapper.find(".checkout-page--reflection-sheet").exists()).toBe(
+      false,
+    );
   });
 });
 
@@ -181,7 +185,11 @@ describe("CheckoutPage reflection auto-scan", () => {
         const body = (await request.json()) as { commit_hash?: string };
         scannedHashes.push(body.commit_hash!);
         if (body.commit_hash === BASE) mergeBaseAnalyzed = true;
-        return HttpResponse.json({ scanned: [body.commit_hash!], skipped: [], failed: [] });
+        return HttpResponse.json({
+          scanned: [body.commit_hash!],
+          skipped: [],
+          failed: [],
+        });
       },
     ),
     ...packageAndRepoHandlers,
@@ -215,6 +223,7 @@ describe("CheckoutPage compare package tree", () => {
       () =>
         HttpResponse.json(
           checkoutFixture({
+            github_repo: "acme/widgets",
             compare: {
               against_ref: "main",
               merge_base_hash: BASE,
@@ -298,5 +307,126 @@ describe("CheckoutPage compare package tree", () => {
       expect(wrapper.text()).toContain("+10/+5 LOC");
     });
     expect(wrapper.get(".pkg-head__name").text()).toBe("@demo/keep");
+  });
+
+  it("shows Spec and Diff tabs in compare mode", async () => {
+    await router.push({
+      path: "/checkout",
+      query: { compare: "main", package: "@demo/keep" },
+    });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => {
+      expect(wrapper.text()).toContain("Diff");
+    });
+    expect(wrapper.text()).toContain("Spec");
+  });
+});
+
+type GraphResponse = DevSiteResponseBody["getCommitPackageGraph"][200];
+
+function graphFixture(deps: string[]): GraphResponse {
+  return {
+    package_graph: {
+      hash: HEAD,
+      product_root: "",
+      packages: [
+        {
+          package_name: "@demo/keep",
+          directory: "products/keep",
+          kind: "http",
+          feature: "products",
+          core: false,
+        },
+        {
+          package_name: "@demo/db",
+          directory: "products/db",
+          kind: "db",
+          feature: "products",
+          core: false,
+        },
+      ],
+      edges: deps.map((to) => ({ from: "@demo/keep", to })),
+    },
+  };
+}
+
+describe("CheckoutPage package map button", () => {
+  stubGlobals();
+  let baseDeps: string[] = [];
+  setupMockServer([
+    http.get<PathParams, never, CheckoutResponse>(
+      "http://test.localhost:3000/api/checkout",
+      () =>
+        HttpResponse.json(
+          checkoutFixture({
+            compare: {
+              against_ref: "main",
+              merge_base_hash: BASE,
+              merge_base_analyzed: true,
+              merge_base_message: "fork parent",
+              merge_base_authored_at: "2026-01-01T00:00:00.000Z",
+              renames: [],
+            },
+          }),
+        ),
+    ),
+    http.get(
+      "http://test.localhost:3000/api/commits/:hash/package-graph",
+      ({ params }) =>
+        HttpResponse.json(
+          graphFixture(params.hash === BASE ? baseDeps : ["@demo/db"]),
+        ),
+    ),
+    http.get("http://test.localhost:3000/api/commits/:hash/diff/:other", () =>
+      HttpResponse.json({
+        commit_diff: {
+          from_hash: BASE,
+          to_hash: HEAD,
+          package_metrics: { added: [], removed: [], changed: [] },
+          exports: { added: [], removed: [] },
+          test_cases: { added: [], removed: [] },
+          db_schemas: {
+            tables: { added: [], removed: [] },
+            columns: { added: [], removed: [], changed: [] },
+          },
+        },
+      } as unknown as DiffResponse),
+    ),
+    ...packageAndRepoHandlers,
+  ]);
+
+  const hasMapButton = (wrapper: ReturnType<typeof mountTestApp>) =>
+    wrapper
+      .findAllComponents({ name: "v-btn" })
+      .some((b) => b.text() === "Package map");
+
+  it("is always offered outside compare mode", async () => {
+    await router.push({ path: "/checkout" });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => expect(hasMapButton(wrapper)).toBe(true));
+  });
+
+  it("is offered in compare mode when the package graph changed", async () => {
+    baseDeps = [];
+    await router.push({ path: "/checkout", query: { compare: "main" } });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => expect(hasMapButton(wrapper)).toBe(true));
+  });
+
+  it("is hidden in compare mode when the package graph is unchanged", async () => {
+    baseDeps = ["@demo/db"];
+    await router.push({ path: "/checkout", query: { compare: "main" } });
+    const wrapper = mountTestApp(CheckoutPage, {
+      propsData: { subdomain: "test" },
+    });
+    await vi.waitFor(() => expect(wrapper.text()).toContain("fork"));
+    await new Promise((r) => setTimeout(r, 200));
+    expect(hasMapButton(wrapper)).toBe(false);
   });
 });

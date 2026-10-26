@@ -1,6 +1,8 @@
 createBackup:
   summary: "Create a manual backup"
   operationId: "createBackup"
+  security:
+    - session: [site-admin]
 
   requestBody:
     required: false

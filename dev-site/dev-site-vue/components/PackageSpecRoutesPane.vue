@@ -3,8 +3,12 @@
     <v-progress-linear v-if="isLoading" indeterminate class="mb-2" />
     <v-alert v-if="error" type="error" density="compact" class="mb-2">{{ error.message }}</v-alert>
 
+    <PackageCompareSpecEmpty
+      v-if="!isLoading && !entities.length && compareFromHash"
+      @open-diff="emit('open-diff')"
+    />
     <div
-      v-if="!isLoading && !entities.length"
+      v-else-if="!isLoading && !entities.length"
       class="text-body-2 text-medium-emphasis"
     >
       No OpenAPI schemas or route resources found for this package.
@@ -209,6 +213,7 @@ import PackageRouteCard, {
 } from "./PackageRouteCard.vue";
 import ResizableColumns from "./ResizableColumns.vue";
 import ChangeChip from "./ChangeChip.vue";
+import PackageCompareSpecEmpty from "./PackageCompareSpecEmpty.vue";
 import { useComparedPackageDetail } from "../package-compare.ts";
 import { openSource } from "../source-links.ts";
 import { repoPathPrefix } from "../repo-paths.ts";
@@ -277,6 +282,8 @@ interface SpecEntity {
   }>;
   change?: "added" | "removed" | "modified";
 }
+
+const emit = defineEmits<{ "open-diff": [] }>();
 
 const props = defineProps<{
   subdomain: string;

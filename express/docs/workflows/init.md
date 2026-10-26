@@ -22,7 +22,7 @@ When run, the workflow will:
 
 - Upsert 6 templates.
 - Upsert 7 templates.
-- Add @saflib/saflib-dossier-http dependency to parent http
+- Add @saflib/saflib-dossier-http dependency to the composition root
 - Change working directory to dossier/http
 - Run `npm install`
 - Run `npm run typecheck`
@@ -32,11 +32,11 @@ When run, the workflow will:
 ```bash
 Usage: npm exec saf-workflow kickoff express/init <name>
 
-Scaffold an offshoot Express http package and weave its barrel router into the
-   parent http app
+Scaffold an offshoot Express http package and mount its barrel router in the
+   composition root
 
 Arguments:
-  name        Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/http and mounts its router on the parent http package.
+  name        Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/http and mounts its router in the composition root (service/monolith).
               Example: "dossier"
 
 ```

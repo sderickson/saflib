@@ -18,6 +18,12 @@ import {
 } from "../workflows/core/store.ts";
 import { buildLiveTestWorkflow } from "./live-test/build.ts";
 import {
+  LIVE_TEST_SNAPSHOT_ENV,
+  liveTestSnapshotPaths,
+  removeLiveTestSnapshot,
+  writeLiveTestSnapshot,
+} from "./live-test/snapshot.ts";
+import {
   listLiveTestSetNames,
   liveTestSets,
 } from "./live-test/sets.ts";
@@ -53,11 +59,13 @@ function cleanupLiveTestArtifacts(): void {
       "--disable-warning=ExperimentalWarning",
       cleanupScript,
     ],
-    { cwd: saflibRoot, stdio: "inherit" },
+    { cwd: saflibRoot, stdio: "inherit", env: process.env },
   );
   if (result.status !== 0) {
     console.error("Live-test cleanup failed");
   }
+  const snapshotFile = process.env[LIVE_TEST_SNAPSHOT_ENV];
+  if (snapshotFile) removeLiveTestSnapshot(snapshotFile);
 }
 
 async function main(): Promise<void> {
@@ -82,6 +90,12 @@ async function main(): Promise<void> {
   }
 
   process.chdir(saflibRoot);
+
+  // Cleanup puts these back exactly as they are now (see live-test/snapshot.ts).
+  process.env[LIVE_TEST_SNAPSHOT_ENV] = writeLiveTestSnapshot(
+    saflibRoot,
+    liveTestSnapshotPaths(saflibRoot),
+  );
 
   // Keep golden saflib/deploy/ read-only; init/add-* write here instead.
   process.env.SAF_DEPLOY_DIR = "tmp-deploy";
@@ -118,6 +132,7 @@ async function main(): Promise<void> {
   } finally {
     // Always undo saflib-root mutations (package.json workspaces, scaffold CI,
     // tmp/, unit-tests workflow area) — including when the suite fails mid-way.
+    cleanedUp = true;
     cleanupLiveTestArtifacts();
   }
 
@@ -126,8 +141,19 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err) => {
+// A failing step can surface as an uncaught exception (xstate rethrows
+// actor errors outside the run's promise), which would skip main's
+// `finally` and leave the repo mid-test. Clean up on that path too.
+let cleanedUp = false;
+function failAndCleanUp(err: unknown): never {
   console.error(err);
-  cleanupLiveTestArtifacts();
+  if (!cleanedUp) {
+    cleanedUp = true;
+    cleanupLiveTestArtifacts();
+  }
   process.exit(1);
-});
+}
+process.on("uncaughtException", failAndCleanUp);
+process.on("unhandledRejection", failAndCleanUp);
+
+main().catch(failAndCleanUp);

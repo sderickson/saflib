@@ -6,6 +6,14 @@
     "description": "Unified error capture (client, server, CSP) and admin viewing via an in-memory ring buffer."
   },
   "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
+      }
+    },
     "schemas": {
       "ReportedError": {
         "$ref": "#/components/schemas/reported-error"
@@ -81,9 +89,7 @@
       "post": {
         "summary": "Record a client-reported error",
         "operationId": "recordReportedError",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -149,9 +155,9 @@
         "summary": "Ingest a Content-Security-Policy violation report",
         "description": "Accepts a browser CSP violation payload (`application/csp-report` or JSON with a `csp-report` object), normalizes into the shared error ring buffer as `kind: csp-violation`, and returns **204**. Tagged `csrf-exempt` because the browser cannot send our double-submit CSRF header on automatic violation posts. Tagged `no-auth` because browsers cannot rely on session cookies on automatic `report-uri` posts (no-cors).\n",
         "operationId": "postCspViolationReport",
+        "x-public": true,
         "tags": [
-          "csrf-exempt",
-          "no-auth"
+          "csrf-exempt"
         ],
         "requestBody": {
           "required": true,
@@ -194,8 +200,12 @@
         "summary": "Admin-only intentional server error",
         "description": "Throws an error on the server for verifying error reporting (e.g. Sentry and the admin Errors page). Requires an authenticated site admin.\n",
         "operationId": "postAdminTestError",
-        "tags": [
-          "site-admin-only"
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
         ],
         "responses": {
           "401": {
@@ -236,9 +246,7 @@
         "summary": "List buffered reported errors",
         "description": "Development ring-buffer listing (`createDevErrorsRouter` only). Tagged `no-auth` so local dev stacks can read captured errors without a session, matching `/dev/logs`.\n",
         "operationId": "listReportedErrors",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "parameters": [
           {
             "name": "kind",
@@ -306,6 +314,81 @@
           },
           "403": {
             "description": "Forbidden — site admin required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maintenance/raise-test-error": {
+      "post": {
+        "summary": "Intentional error for end-to-end jobs chain probe",
+        "operationId": "raiseTestErrorMaintenance",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "tags": [
+          "background"
+        ],
+        "description": "Background maintenance probe: always returns HTTP 500 with `X-Jobs-Retry: never` so the job goes `dead` immediately (no retry storm) and is visible in the jobs admin UI. Invoked by the `testCronError` cron schedule (disabled outside deliberate verification) and manually by site admins. Empty body — no client fields.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Empty JSON object. No client fields; the response is unconditional.\n",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - caller is not a site admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Intentional failure for chain verification. Always includes `X-Jobs-Retry: never` so the queue marks the job `dead` without retries.\n",
+            "headers": {
+              "X-Jobs-Retry": {
+                "required": true,
+                "description": "Jobs runtime override. Always `never` for this operation — terminal even though the status is 5xx.\n",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "never"
+                  ],
+                  "example": "never"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {

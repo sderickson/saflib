@@ -147,4 +147,72 @@ describe("createPostKratosCourierHandler", () => {
       recoveryUrl: body.template_data.recovery_url,
     });
   });
+
+  function appWith(callbacks: KratosCourierCallbacks) {
+    const handler = createPostKratosCourierHandler(callbacks);
+    const app = express();
+    app.use(express.json());
+    app.use(createInternalMiddleware());
+    app.post("/email/kratos-courier", handler);
+    app.use(createErrorMiddleware());
+    return app;
+  }
+
+  const send = (app: express.Express, body: object = verificationCodeBody) =>
+    request(app)
+      .post("/email/kratos-courier")
+      .send(body)
+      .set("Content-Type", "application/json");
+
+  it("sends a redelivered message (same recipient, template and code) only once", async () => {
+    const onVerificationCodeValid = vi.fn().mockResolvedValue(undefined);
+    const app = appWith({ onVerificationCodeValid });
+
+    expect((await send(app)).status).toBe(204);
+    expect((await send(app)).status).toBe(204);
+
+    expect(onVerificationCodeValid).toHaveBeenCalledTimes(1);
+  });
+
+  it("waits for an in-progress delivery instead of sending in parallel", async () => {
+    let finish!: () => void;
+    const onVerificationCodeValid = vi.fn(
+      () => new Promise<void>((resolve) => (finish = resolve)),
+    );
+    const app = appWith({ onVerificationCodeValid });
+
+    const first = send(app).then((r) => r);
+    await vi.waitFor(() => expect(onVerificationCodeValid).toHaveBeenCalledTimes(1));
+    const second = send(app).then((r) => r);
+    finish();
+
+    expect((await first).status).toBe(204);
+    expect((await second).status).toBe(204);
+    expect(onVerificationCodeValid).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends again when the earlier attempt failed", async () => {
+    const onVerificationCodeValid = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("email provider down"))
+      .mockResolvedValue(undefined);
+    const app = appWith({ onVerificationCodeValid });
+
+    expect((await send(app)).status).toBe(500);
+    expect((await send(app)).status).toBe(204);
+    expect(onVerificationCodeValid).toHaveBeenCalledTimes(2);
+  });
+
+  it("still sends a new code to the same person", async () => {
+    const onVerificationCodeValid = vi.fn().mockResolvedValue(undefined);
+    const app = appWith({ onVerificationCodeValid });
+
+    await send(app);
+    await send(app, {
+      ...verificationCodeBody,
+      template_data: { ...verificationCodeBody.template_data, verification_code: "111111" },
+    });
+
+    expect(onVerificationCodeValid).toHaveBeenCalledTimes(2);
+  });
 });

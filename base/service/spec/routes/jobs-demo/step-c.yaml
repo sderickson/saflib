@@ -2,8 +2,9 @@ jobsDemoStepC:
   summary: Jobs demo chain step C
   description: Background terminal step that records demo chain completion.
   operationId: jobsDemoStepC
+  security:
+    - session: [site-admin]
   tags:
-    - site-admin-only
     - background
 
   requestBody:

@@ -2,7 +2,12 @@ import path from "node:path";
 import type { IRouter } from "express";
 import { newWorkflowsDbManager } from "@saflib/new-workflows-db/instances";
 import { createNewWorkflowsRouter } from "@saflib/new-workflows-http";
-import { HelloWorkflowDefinition, type WorkflowDefinition } from "@saflib/new-workflows";
+import {
+  HelloWorkflowDefinition,
+  pruneWorkflowHistory,
+  type WorkflowDefinition,
+} from "@saflib/new-workflows";
+import { makeSubsystemReporters } from "@saflib/node";
 import drizzleWorkflows from "@saflib/drizzle-workflows";
 import serviceWorkflows from "@saflib/service-workflows";
 import expressWorkflows from "@saflib/express-workflows";
@@ -56,8 +61,9 @@ let _workflowsDbKey: ReturnType<typeof newWorkflowsDbManager.connect> | undefine
 /**
  * `onDisk: true` (the default) writes into the package's own `data/`
  * folder — fine on a host checkout, but inside the docker container that
- * package dir is the bind-mounted `/repo` (see resolve-dev-site-env.sh's
- * SAFLIB_ROOT fix for the same class of problem with @saflib/templates).
+ * package dir is the bind-mounted `/repo` (see `dev-site.env` from
+ * `saf-dev-site prepare` / DEV_SITE_SAFLIB_ROOT for the same class of
+ * problem with @saflib/templates).
  * Writing a heavily-written sqlite file onto a macOS bind mount from a
  * Linux container risks the same mmap/locking trouble as sharing
  * node_modules did (see docker-entrypoint.sh) — so docker-compose points
@@ -98,4 +104,33 @@ export function createWorkflowsRouter(): IRouter {
       return path.join(store.repo_root, store.product_root, "plans", "notes");
     },
   });
+}
+
+const PRUNE_FIRST_DELAY_MS = 30_000;
+const PRUNE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Ages out old runs' logs and raw agent output (`pruneWorkflowHistory`):
+ * once shortly after startup, so it never delays the server coming up,
+ * then daily for a dev-site left running. Timers are unref'd so they
+ * never hold the process open.
+ */
+export function scheduleWorkflowHistoryPruning(): void {
+  const { log, logError } = makeSubsystemReporters("init", "prune-workflow-history");
+  const prune = async () => {
+    try {
+      const result = await pruneWorkflowHistory(getWorkflowsDbKey());
+      if (result.logRowsDeleted || result.rawRowsDeleted) {
+        log.info(
+          `Pruned workflow history: ${result.logRowsDeleted} log rows from ${result.runsPruned} runs, ${result.rawRowsDeleted} raw agent outputs${result.vacuumed ? ", vacuumed" : ""}`,
+        );
+      }
+    } catch (error) {
+      logError(error);
+    }
+  };
+  setTimeout(() => {
+    void prune();
+    setInterval(() => void prune(), PRUNE_INTERVAL_MS).unref();
+  }, PRUNE_FIRST_DELAY_MS).unref();
 }

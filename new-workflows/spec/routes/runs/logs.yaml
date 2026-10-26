@@ -1,13 +1,15 @@
 listWorkflowRunLogs:
   summary: List a run's logs
   description: >
-    Newest-first, cursor-paginated. Pass `before` (an ISO timestamp) to
-    page older history for infinite scroll; pass `since` for rows newer
-    than a known tip (e.g. after an SSE change hint). Pass `step_index`
+    Newest-first, cursor-paginated by each row's `seq` (insertion order —
+    `created_at` is only second-precision, so it can't be a cursor). Pass
+    `before_seq` to page older history for infinite scroll; pass
+    `after_seq` for rows newer than a known tip (e.g. after an SSE change hint). Pass `step_index`
     to anchor the first page at that step so a sidebar jump can load a
     window that is not the live tip. The client re-fetches rather than
     getting log content pushed over the wire.
   operationId: listWorkflowRunLogs
+  x-public: true
 
   parameters:
     - name: runId
@@ -16,20 +18,18 @@ listWorkflowRunLogs:
       schema:
         type: string
         example: "0SG36FJe6m4W"
-    - name: since
+    - name: after_seq
       in: query
       required: false
-      description: Only rows created strictly after this timestamp (newer than tip).
+      description: Only rows with `seq` greater than this (newer than tip).
       schema:
-        type: string
-        format: date-time
-    - name: before
+        type: integer
+    - name: before_seq
       in: query
       required: false
-      description: Only rows created strictly before this timestamp (older page).
+      description: Only rows with `seq` less than this (older page).
       schema:
-        type: string
-        format: date-time
+        type: integer
     - name: step_index
       in: query
       required: false
@@ -39,11 +39,19 @@ listWorkflowRunLogs:
       schema:
         type: integer
         minimum: 0
+    - name: anchor_seq
+      in: query
+      required: false
+      description: >
+        Anchor this page at the row with this `seq` (e.g. a direct message
+        from `GET /runs/{runId}/messages`), then the following `limit` rows.
+      schema:
+        type: integer
     - name: contiguous
       in: query
       required: false
       description: >
-        With `since`, return the oldest `limit` rows after the cursor
+        With `after_seq`, return the oldest `limit` rows after the cursor
         (the next page toward the present) instead of the newest ones.
       schema:
         type: boolean
@@ -77,12 +85,12 @@ listWorkflowRunLogs:
               has_more:
                 type: boolean
                 description: >
-                  True when another older page (`before` the oldest row
+                  True when another older page (`before_seq` the oldest row
                   here) may return more rows.
               has_more_newer:
                 type: boolean
                 description: >
-                  True when another newer page (`since` the newest row
+                  True when another newer page (`after_seq` the newest row
                   here, `contiguous`) may return more rows. False on the
                   live tip.
     "404":

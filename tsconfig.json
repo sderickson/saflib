@@ -26,6 +26,9 @@
       "path": "./audit/audit-http"
     },
     {
+      "path": "./audit/audit-rotator"
+    },
+    {
       "path": "./audit/audit-sdk"
     },
     {
@@ -119,6 +122,9 @@
       "path": "./base/service/http"
     },
     {
+      "path": "./base/service/http-app"
+    },
+    {
       "path": "./base/service/integrations/__integration-name__"
     },
     {
@@ -132,6 +138,9 @@
     },
     {
       "path": "./base/service/sdk"
+    },
+    {
+      "path": "./base/service/sdk-common"
     },
     {
       "path": "./base/service/spec"
@@ -165,6 +174,9 @@
     },
     {
       "path": "./deploy-cli"
+    },
+    {
+      "path": "./dev-site/dev-site-cli"
     },
     {
       "path": "./dev-site/dev-site-db"

@@ -35,11 +35,84 @@ npm exec saf-imports snapshot check --against <path>
 npm exec saf-imports spa analyze --spa <app|admin|account|auth>
 npm exec saf-imports spa measure --spa <name>
 npm exec saf-imports tsconfig sync|check|cycles|cleanup-declarations [--root <dir>]
+npm exec saf-imports boundaries [--all] [--update-baseline]
+npm exec saf-imports map [--package <name>] [--depth <n>] [--json]
 ```
+
+`map` prints the product's packages by layer and feature, with runtime lines and how many product packages each uses and is used by, plus the largest and most-shared packages. `map --package <name>` details one package: what it imports from each product package (files and subpaths), who imports it, what others import from it by subpath (its real public surface, and the parts only one consumer uses), and its runtime code by directory with each directory's product imports. Use it before moving code between packages to see where the seams are.
 
 For export coverage validation, use [saf-analyze-package](../../dev-tools/docs/package-issues.md).
 
 `measure --verbose` lists every first-party file (repo-root-relative, sorted) and external package the entry statically imports.
+
+## Package boundaries
+
+`saf-imports boundaries` checks package-level import hygiene across the workspace:
+
+- **undeclared** — a runtime file imports a workspace package that is not in `dependencies`, or a test/tooling file imports one that is in neither `dependencies` nor `devDependencies`. npm workspaces hoist every package, so these resolve anyway; they hide cycles from `tsconfig` project references.
+- **relative-escape** — a relative import (or OpenAPI `$ref`) that resolves outside its own package. Import the package by name instead (`pkg:` for `$ref`).
+- **cycle** — a cycle among runtime dependencies (declared `dependencies` plus actual runtime imports).
+- **forbidden** — a dependency that a configured rule disallows.
+- **missing-tsconfig** — a package with TypeScript sources but no `tsconfig.json`, so the root build never typechecks it.
+- **missing-kind** — a package without a known `saf.kind` (see the layer table below, plus `lib` and `other`).
+- **layer** — an import that breaks the product's layers (below).
+- **unused-dependency** — a dependency between two of the product's own packages that nothing uses (`unused: A -> B`, or `(dev)` for `devDependencies`), or a `dependencies` entry only test/tooling files use (`dev-only: A -> B`; move it to `devDependencies`). A dependency counts as used by an import, a YAML `pkg:` ref, a non-relative `imports` map target, a tsconfig `extends`, or a bin it provides appearing in an npm script. Framework packages (outside the product) aren't checked. Turn it off with `"unusedDependencies": false`.
+
+### Layers
+
+Every package declares a layer as its `saf.kind`. A package imports only the layers below it:
+
+| `saf.kind`    | May import (from the same product)                              |
+| ------------- | --------------------------------------------------------------- |
+| `app`         | anything (the composition root, e.g. `service/monolith`)        |
+| `http-app`    | `http-common`, `domain`, `integration`, `db`, `spec`, `objects` |
+| `http`        | `http-common`, `domain`, `integration`, `db`, `spec`, `objects` |
+| `http-common` | `domain`, `integration`, `db`, `spec`, `objects`                |
+| `domain`      | `integration`, `db`, `objects`                                  |
+| `integration` | `db`, `objects`                                                 |
+| `db`          | `objects`                                                       |
+| `spec`        | `objects`                                                       |
+| `objects`     | other `objects` only                                            |
+| `spa`         | `vue`, `sdk`, `sdk-common`, `spec`, `objects`                   |
+| `vue`         | `sdk`, `sdk-common`, `spec`, `objects`                          |
+| `sdk`         | `sdk-common`, `spec`, `objects`                                 |
+| `sdk-common`  | `spec`, `objects`                                               |
+| `test`        | anything, but only test files may import a `test` package       |
+
+`lib` and `other` packages aren't layered yet: they're unchecked, and every layer except `objects` may import them. Reclassify them as products migrate.
+
+Rules beyond the table (keys `layer(<rule>): from -> to`):
+
+- **siblings** — packages of the same kind in different features don't import each other; what they share moves down a layer (e.g. two `http` packages → `http-common`). An offshoot may use the core's `domain`, `integration`, `db`, `spec` and `objects` packages, never the core's `http` or `sdk`. Any `objects` package may import any other.
+- **core-offshoot** — the core never imports an offshoot, except from SPAs (which compose the client side and import offshoot SDKs directly), an offshoot's `objects` package and the core db's schema index (`schema`, `schemas/*`) re-exporting offshoot tables. Wire offshoots together in the `app` package.
+- **test-dev-only** — a `test` package is never a runtime dependency.
+- **integration-internals** — an integration package's client code (`client.ts`, `calls/`, `bin/`) imports neither a `db` package nor its own `state/`.
+
+A **feature** is the first directory under the product root, the nearest ancestor that contains a `service/` folder of packages (not a package itself): `service/*`, `clients/*` and packages directly in the product root make up the core (one feature), and `<offshoot>/*` is an offshoot. Set `saf.feature` in `package.json` to override. Imports of packages outside the product (e.g. `@saflib/*`) aren't layered. Turn the layer rules off with `"layers": false` under `safImports.boundaries`.
+
+Test and tooling files (`*.test.ts`, `*.fake(s).ts`, `*mocks.ts`, `test/`, `bin/`, `scripts/`, `*.config.*`, …) may use `devDependencies` and are left out of the runtime graph.
+
+Configure it in the repo-root `package.json`:
+
+```json
+"safImports": {
+  "boundaries": {
+    "baseline": "myproduct/import-boundaries.baseline.json",
+    "scope": ["dir:myproduct/**"],
+    "rules": [
+      {
+        "name": "integrations-no-api",
+        "from": ["dir:myproduct/service/integrations/*"],
+        "disallow": ["@myproduct/*-spec", "@myproduct/*-http"]
+      }
+    ]
+  }
+}
+```
+
+Selectors are package-name globs, `dir:<repo-relative glob>`, or `kind:<saf.kind>`. `scope` limits which packages are checked; everything is still a valid import target. Rules apply to runtime files unless `includeDev: true`.
+
+The baseline lists accepted violation keys. The check fails on violations missing from the baseline **and** on baseline entries that no longer occur, so the baseline only shrinks. After fixing violations, run `saf-imports boundaries --update-baseline`.
 
 ## Vitest reporter
 

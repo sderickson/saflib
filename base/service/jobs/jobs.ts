@@ -7,7 +7,7 @@ import {
 } from "@saflib/jobs-http";
 import { createOnDiskDbKeyAccessor } from "@saflib/drizzle";
 import { typedEnv } from "@saflib/env";
-import { jsonSpec } from "@saflib/base-spec";
+import type { OpenApiDocument } from "@saflib/openapi";
 import {
   baseServiceStorage,
   type BaseServiceContext,
@@ -48,17 +48,21 @@ const jobsDbAccessor = createOnDiskDbKeyAccessor({
 export const getBaseJobsDbKey = jobsDbAccessor.getDbKey;
 
 /**
- * Validates `baseTriggerMap` / `baseJobOperations` against the base OpenAPI spec
- * and `cron:` trigger keys against registered `baseJobs`, then starts the jobs runtime.
+ * Validates `baseTriggerMap` / `baseJobOperations` against `apiSpec` (the
+ * product's OpenAPI document, passed in by the composition root) and `cron:`
+ * trigger keys against registered `baseJobs`, then starts the jobs runtime.
  */
-export const runBaseJobs = (context: BaseServiceContext) => {
+export const runBaseJobs = (
+  context: BaseServiceContext,
+  apiSpec: OpenApiDocument,
+) => {
   return baseServiceStorage.run(context, async () => {
     validateCronTriggerKeys(baseTriggerMap, Object.keys(baseJobs));
 
     return runJobs({
       triggerMap: baseTriggerMap,
       operationConfig: baseJobOperations,
-      apiSpec: jsonSpec,
+      apiSpec,
       targetSocketPath:
         (
           typedEnv as {

@@ -18,6 +18,9 @@ paths:
       $ref: "./routes/backups/restore.yaml#/restoreBackup"
 
 components:
+  securitySchemes:
+    session:
+      $ref: "pkg:@saflib/openapi/security-schemes/session.yaml"
   schemas:
     # Add your shared schemas here
     Error:

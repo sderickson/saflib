@@ -19,7 +19,6 @@ export function createEmailsRouter(options: EmailsRouterOptions) {
 
   const scopedMiddleware = createScopedMiddleware({
     apiSpec: options.apiSpec || jsonSpec,
-    enforceAuth: false,
   });
 
   router.use("/email", scopedMiddleware);

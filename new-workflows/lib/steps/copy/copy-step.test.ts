@@ -7,6 +7,41 @@ import { makeTestContext } from "../../test-helpers.ts";
 import { makeLineReplace } from "../../templating.ts";
 
 describe("runCopyStep", () => {
+  it("honors targetBasenames to write under a different destination filename", async () => {
+    const sourceDir = mkdtempSync(path.join(tmpdir(), "copy-step-source-"));
+    const targetDir = mkdtempSync(path.join(tmpdir(), "copy-step-target-"));
+    const sourcePath = path.join(sourceDir, "weave.template.ts");
+    writeFileSync(
+      sourcePath,
+      `// BEGIN WORKFLOW AREA area FOR integrations/init
+export const x = 1;
+// END WORKFLOW AREA
+`,
+    );
+    writeFileSync(
+      path.join(targetDir, "dest.actual.ts"),
+      `// BEGIN WORKFLOW AREA area FOR integrations/init
+// END WORKFLOW AREA
+`,
+    );
+    const { ctx } = makeTestContext({ mode: "run", workflowId: "integrations/init" });
+
+    const result = await runCopyStep(
+      {
+        templateFiles: { file: sourcePath },
+        targetDir,
+        targetBasenames: { file: "dest.actual.ts" },
+      },
+      ctx,
+    );
+
+    expect(result.status).toBe("success");
+    expect(existsSync(path.join(targetDir, "weave.template.ts"))).toBe(false);
+    expect(readFileSync(path.join(targetDir, "dest.actual.ts"), "utf-8")).toContain(
+      "export const x = 1",
+    );
+  });
+
   it("copies a file, applying lineReplace and name substitutions", async () => {
     const sourceDir = mkdtempSync(path.join(tmpdir(), "copy-step-source-"));
     const targetDir = mkdtempSync(path.join(tmpdir(), "copy-step-target-"));

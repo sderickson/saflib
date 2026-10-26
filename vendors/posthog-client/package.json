@@ -10,7 +10,8 @@
     ".": "./posthog.ts",
     "./html": "./html.ts",
     "./init": "./init.ts",
-    "./env": "./env.ts"
+    "./env": "./env.ts",
+    "./session-recording": "./session-recording.ts"
   },
   "dependencies": {
     "@saflib/env": "*",
@@ -34,6 +35,7 @@
     "vue": "*"
   },
   "scripts": {
+    "test": "vitest run",
     "typecheck": "tsc -b"
   },
   "sideEffects": false

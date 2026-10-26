@@ -1,5 +1,5 @@
 import { startExpressServer } from "@saflib/express";
-import { createBaseHttpApp } from "@saflib/base-http/http";
+import { createBaseHttpApp } from "./http.ts";
 import { baseDb } from "@saflib/base-db/instances";
 import { connectBaseAuditDb } from "@saflib/base-audit";
 import { makeSubsystemReporters } from "@saflib/node";
@@ -42,7 +42,7 @@ export async function startBaseService() {
     log.info("base-cron startup complete.");
 
     log.info("Starting base-jobs runtime...");
-    await runBaseJobs(context);
+    await runBaseJobs(context, jsonSpec);
     log.info("base-jobs runtime startup complete.");
 
     log.info("Starting base-jobs app...");

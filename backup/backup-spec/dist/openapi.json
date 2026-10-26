@@ -10,6 +10,13 @@
       "get": {
         "summary": "List all backups",
         "operationId": "listBackups",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of backups",
@@ -59,6 +66,13 @@
       "post": {
         "summary": "Create a manual backup",
         "operationId": "createBackup",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
         "requestBody": {
           "required": false,
           "content": {
@@ -135,6 +149,13 @@
       "delete": {
         "summary": "Delete a manual backup",
         "operationId": "deleteBackup",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
         "parameters": [
           {
             "name": "backupId",
@@ -204,6 +225,13 @@
       "post": {
         "summary": "Restore from a backup",
         "operationId": "restoreBackup",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
         "parameters": [
           {
             "name": "backupId",
@@ -271,6 +299,14 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
+      }
+    },
     "schemas": {
       "Error": {
         "$ref": "#/components/schemas/error"

@@ -1,5 +1,8 @@
 {
   "name": "@saflib/base-links",
+  "saf": {
+    "kind": "lib"
+  },
   "description": "Links for the templates app client",
   "private": true,
   "type": "module",

@@ -40,6 +40,11 @@ export function flattenRunLogPages(
  * a full refetch of page 0 with a sliding window would leave a gap
  * between the new tip and the still-cached older pages.
  */
+/** Live tip only — sidebar anchors (a step or a message) use a fourth query-key segment. */
+export function isLiveRunLogsQueryKey(key: readonly unknown[]): boolean {
+  return key.length === 3 && key[0] === "new-workflows" && key[1] === "run-logs";
+}
+
 export async function prependNewerRunLogs(
   queryClient: QueryClient,
   runId: string,
@@ -54,18 +59,19 @@ export async function prependNewerRunLogs(
   }
   const client = createWorkflowsClient();
   for (const [key, existing] of matches) {
+    if (!isLiveRunLogsQueryKey(key)) continue;
     const first = existing?.pages[0];
     // A sidebar jump leaves a gap above the loaded window. Filling it
     // belongs to scroll-down (`contiguous`), not this tip merge.
     if (!first || first.has_more_newer) continue;
-    const tip = first.logs[0]?.created_at;
-    if (!tip) {
+    const tip = first.logs[0]?.seq;
+    if (tip === undefined) {
       await queryClient.invalidateQueries({ queryKey: key });
       continue;
     }
     const fresh = await handleClientMethod(
       client.GET("/api/runs/{runId}/logs", {
-        params: { path: { runId }, query: { since: tip, limit: 200 } },
+        params: { path: { runId }, query: { after_seq: tip, limit: 200 } },
       }),
     );
     if (fresh.logs.length === 0) continue;
@@ -82,11 +88,14 @@ export async function prependNewerRunLogs(
   }
 }
 
-/** Cursor for one logs page. `undefined` is the live tip, or a step anchor when one is selected. */
+/** Where an anchored (non-live) logs window starts: a step's first row, or a specific row. */
+export type LogAnchor = { step: number } | { seq: number };
+
+/** Cursor for one logs page. `undefined` is the live tip, or the anchor when one is selected. */
 export type LogPageParam =
   | undefined
-  | { before: string }
-  | { since: string; contiguous: true };
+  | { before_seq: number }
+  | { after_seq: number; contiguous: true };
 
 /**
  * Same-origin — the workflows API is mounted into dev-site-http itself.
@@ -156,6 +165,8 @@ export function useWorkflowRunsQuery(id: MaybeRefOrGetter<string | undefined>) {
       handleClientMethod(
         client.GET("/api/workflows/{id}/runs", { params: { path: { id: toValue(id)! } } }),
       ),
+    refetchInterval: (query) =>
+      query.state.data?.runs[0]?.is_advancing === true ? 2_000 : false,
   });
 }
 
@@ -202,13 +213,15 @@ export function useWorkflowRunQuery(runId: MaybeRefOrGetter<string | undefined>)
       handleClientMethod(
         client.GET("/api/runs/{runId}", { params: { path: { runId: toValue(runId)! } } }),
       ),
+    refetchInterval: (query) =>
+      query.state.data?.run?.is_advancing === true ? 2_000 : false,
   });
 }
 
 export function useWorkflowRunLogsQuery(
   runId: MaybeRefOrGetter<string | undefined>,
-  /** When set, the first page is the window starting at this step instead of the live tip. */
-  anchorStep: MaybeRefOrGetter<number | undefined> = undefined,
+  /** When set, the first page is the window starting at this anchor instead of the live tip. */
+  anchor: MaybeRefOrGetter<LogAnchor | undefined> = undefined,
 ) {
   const client = createWorkflowsClient();
   return useInfiniteQuery<
@@ -220,27 +233,28 @@ export function useWorkflowRunLogsQuery(
   >({
     queryKey: computed(() => {
       const id = toValue(runId);
-      const step = toValue(anchorStep);
-      return step === undefined
-        ? ["new-workflows", "run-logs", id]
-        : ["new-workflows", "run-logs", id, step];
+      const a = toValue(anchor);
+      if (!a) return ["new-workflows", "run-logs", id];
+      return ["new-workflows", "run-logs", id, "step" in a ? `step:${a.step}` : `seq:${a.seq}`];
     }),
     enabled: () => Boolean(toValue(runId)),
     initialPageParam: undefined as LogPageParam,
     queryFn: ({ pageParam }) => {
-      const step = toValue(anchorStep);
-      const anchored = pageParam === undefined && step !== undefined;
+      const a = pageParam === undefined ? toValue(anchor) : undefined;
       return handleClientMethod(
         client.GET("/api/runs/{runId}/logs", {
           params: {
             path: { runId: toValue(runId)! },
             query: {
               limit: RUN_LOGS_PAGE_SIZE,
-              ...(pageParam && "before" in pageParam ? { before: pageParam.before } : {}),
-              ...(pageParam && "since" in pageParam
-                ? { since: pageParam.since, contiguous: true }
+              ...(pageParam && "before_seq" in pageParam
+                ? { before_seq: pageParam.before_seq }
                 : {}),
-              ...(anchored ? { step_index: step } : {}),
+              ...(pageParam && "after_seq" in pageParam
+                ? { after_seq: pageParam.after_seq, contiguous: true }
+                : {}),
+              ...(a && "step" in a ? { step_index: a.step } : {}),
+              ...(a && "seq" in a ? { anchor_seq: a.seq } : {}),
             },
           },
         }),
@@ -249,12 +263,26 @@ export function useWorkflowRunLogsQuery(
     getNextPageParam: (lastPage) => {
       if (!lastPage.has_more || lastPage.logs.length === 0) return undefined;
       // Newest-first page → last row is the oldest cursor for the next older page.
-      return { before: lastPage.logs[lastPage.logs.length - 1]!.created_at };
+      return { before_seq: lastPage.logs[lastPage.logs.length - 1]!.seq };
     },
     getPreviousPageParam: (firstPage) => {
       if (!firstPage.has_more_newer || firstPage.logs.length === 0) return undefined;
-      return { since: firstPage.logs[0]!.created_at, contiguous: true as const };
+      return { after_seq: firstPage.logs[0]!.seq, contiguous: true as const };
     },
+  });
+}
+
+export function useWorkflowRunMessagesQuery(runId: MaybeRefOrGetter<string | undefined>) {
+  const client = createWorkflowsClient();
+  return useQuery<NewWorkflowsResponseBody["listWorkflowRunMessages"][200], TanstackError>({
+    queryKey: ["new-workflows", "run-messages", runId],
+    enabled: () => Boolean(toValue(runId)),
+    queryFn: () =>
+      handleClientMethod(
+        client.GET("/api/runs/{runId}/messages", {
+          params: { path: { runId: toValue(runId)! } },
+        }),
+      ),
   });
 }
 
@@ -367,6 +395,38 @@ export interface AdvanceWorkflowRunVariables {
   extraPrompt?: string;
 }
 
+export interface SendFreeformAgentMessageVariables {
+  runId: string;
+  message: string;
+}
+
+export function useSendFreeformAgentMessageMutation() {
+  const client = createWorkflowsClient();
+  const queryClient = useQueryClient();
+  return useMutation<
+    NewWorkflowsResponseBody["sendFreeformAgentMessage"][200],
+    TanstackError,
+    SendFreeformAgentMessageVariables
+  >({
+    mutationFn: ({ runId, message }) =>
+      handleClientMethod(
+        client.POST("/api/runs/{runId}/agent-message", {
+          params: { path: { runId } },
+          body: { message },
+        }),
+      ),
+    onMutate: () => {
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+    },
+    onSuccess: (_data, { runId }) => {
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-messages", runId] });
+      void prependNewerRunLogs(queryClient, runId);
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+    },
+  });
+}
+
 export function useAdvanceWorkflowRunMutation() {
   const client = createWorkflowsClient();
   const queryClient = useQueryClient();
@@ -390,21 +450,16 @@ export function useAdvanceWorkflowRunMutation() {
     onMutate: () => {
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
     },
-    onSuccess: (_data, vars) => {
+    onSettled: (_data, _error, vars) => {
       const runId = typeof vars === "string" ? vars : vars.runId;
       queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+    },
+    onSuccess: (_data, vars) => {
+      const runId = typeof vars === "string" ? vars : vars.runId;
       // Merge tip-only (don't invalidate all infinite pages — that gaps
       // older cached pages). SSE does the same during the turn.
       void prependNewerRunLogs(queryClient, runId);
-      // Also every open `workflow-runs` (list-by-file) query — e.g.
-      // `PlanNavIcon`'s and `PlansPage`'s own "most recent run" — not just
-      // this run's own detail. Without this, retrying a failed run left
-      // the nav icon and the plans page's inline run picker both showing
-      // stale pre-retry status until something else happened to refetch
-      // them; this call only knows the runId, not which workflow/file it
-      // belongs to, so invalidate the whole `workflow-runs` key prefix
-      // rather than one specific id.
-      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
     },
   });
 }
@@ -417,11 +472,17 @@ export function useAdvanceWorkflowRunMutation() {
  */
 export function useCancelWorkflowRunMutation() {
   const client = createWorkflowsClient();
+  const queryClient = useQueryClient();
   return useMutation<NewWorkflowsResponseBody["cancelWorkflowRun"][200], TanstackError, string>({
     mutationFn: (runId) =>
       handleClientMethod(
         client.POST("/api/runs/{runId}/cancel", { params: { path: { runId } } }),
       ),
+    onSuccess: (_data, runId) => {
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run", runId] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "workflow-runs"] });
+      queryClient.invalidateQueries({ queryKey: ["new-workflows", "run-logs", runId] });
+    },
   });
 }
 

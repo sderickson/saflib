@@ -3,8 +3,9 @@ jobsDemoStepB:
   description: >
     Background step that optionally fails N times (503) to demonstrate retries, then enqueues `jobsDemoStepC`.
   operationId: jobsDemoStepB
+  security:
+    - session: [site-admin]
   tags:
-    - site-admin-only
     - background
 
   requestBody:

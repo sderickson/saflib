@@ -9,12 +9,9 @@ servers:
     description: Development server
 
 components:
-  # securitySchemes: # Enabled security schemes
-  #   scopes:
-  #     type: apiKey
-  #     in: header
-  #     name: X-User-Scopes
-  #     description: Comma-separated list of user scopes
+  securitySchemes:
+    session:
+      $ref: "pkg:@saflib/openapi/security-schemes/session.yaml"
   schemas:
     JobSettings:
       $ref: "./schemas/job_settings.yaml"

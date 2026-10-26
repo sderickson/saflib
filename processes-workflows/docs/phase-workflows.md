@@ -6,6 +6,17 @@ Do **not** add a file named after the project (`<name>.workflow.yaml`). That nam
 
 There is no separate plan markdown and no generated orchestrator. The phase files are the plan. Review them in the dev site (open a phase, preview, then run one phase at a time).
 
+## One agent per phase
+
+Each phase file runs with **a new agent session**. Every agent step in the phase, including the ones inside its `call-workflow`s, shares that one session. The next phase starts fresh and knows nothing from the previous one except what's in the repo: the spec, the earlier phase files, and the code they produced.
+
+Size and group phases with that in mind:
+
+- **One coherent slice of related work per phase.** For example: one resource's table and queries, its routes and handlers, or one page with its SDK queries. The steps should build on each other, so the context an agent picks up early (the files it read, the decisions it made) helps with the later steps.
+- **Keep phases small.** A phase that touches unrelated areas or takes many agent steps fills the session with context the later steps don't need. That makes it slower and more expensive, and the agent gets less reliable. If a phase grows past roughly 8–10 agent steps, or spans more than one or two packages, split it.
+- **Don't split tightly coupled work.** If step B can't be written well without knowing how step A turned out, keep them in the same phase.
+- **Write each phase so a newcomer can run it.** Prompts should name the files and spec sections they depend on instead of saying things like "as discussed" or "the approach from phase 2". Anything a later phase must know belongs in the spec or in the code, not in an agent's memory.
+
 ## Shape
 
 One table, schema, route, handler, query, or view per `call-workflow`. `cd` into the package first. Paths in `cd` and workflow `path` inputs are relative to the monorepo root after the run's cwd is the repo root; if a previous `cd` moved into a package, later paths are relative to that package (`./schemas/foo.ts`).
@@ -50,13 +61,10 @@ Use `prompt` steps for edits to files that already exist and were not created by
 
 ## Stopping points
 
-Each phase file should end at a place you can typecheck and test. A later phase assumes earlier phases have been run. Put a short `prompt` at the end of a phase only when a person must look at the result before the next file; set `pauseAfter: true` on that step so play-workflow and play-plan stop even if they are set to continue.
+Each phase file should end at a place you can typecheck and test (often a `command` step running `npm run typecheck` or tests in that package). A later phase assumes earlier phases have been run.
 
-```yaml
-  - kind: prompt
-    pauseAfter: true
-    pauseMessage: Review the schema diff, then continue.
-    prompt: Summarize what changed in the widget table. Do not start the next phase.
-```
+**Do not** add a trailing “summarize this phase” `prompt` with `pauseAfter: true` by default. That was an older pattern for manual review between files; it adds an extra agent turn and stops unattended **play-plan** runs, since every dev-site mode (play-plan included) halts at `pauseAfter`. Prefer ending on mechanical work plus typecheck.
 
-Smoke-check a phase with `new-workflow validate` on the file path before treating it as ready to run.
+Use `pauseAfter: true` only when a step truly needs a human gate before anything else in the same file should run — for example a spec review inside `processes/spec-project`, or a one-off “run e2e on the host before merge” checkpoint. Every dev-site mode honors `pauseAfter`, including **play-plan**: it stops at the gate, and only cascades to the next `phase-*.workflow.yaml` once a phase finishes.
+
+Smoke-check a phase with `new-workflow validate <path-to-phase.yaml>` from the plan folder (or anywhere in the repo). Validate previews mechanical steps against the monorepo root at `HEAD`, preferring the working tree when a target file exists on disk. For `integrations/init`, pass `path: <product>/service/integrations/<name>` from the repo root — do not `cd` into the product folder alone (it has no `package.json`).

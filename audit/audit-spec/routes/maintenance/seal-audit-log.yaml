@@ -1,0 +1,46 @@
+sealAuditLogMaintenance:
+  summary: "Seal and ship the active audit database"
+  operationId: "sealAuditLogMaintenance"
+  security:
+    - session: [site-admin]
+  tags:
+    - background
+  description: >
+    Background maintenance: runs the same seal-and-ship pipeline as the admin
+    seal endpoint (snapshot, verify chain, compress, upload, digest email,
+    rotate). Invoked by the `sealAuditLog` cron schedule and manually by site
+    admins. Unlike admin `sealAuditLog`, a skip (empty active DB or concurrent
+    seal lock) is a **200** with `auditSealResult.status: skipped` — an
+    idempotent no-op for safe job redelivery. Empty body — no client fields.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          description: >
+            Empty JSON object. Seal options are fixed server-side; no client fields.
+          properties: {}
+  responses:
+    "200":
+      description: >
+        Seal completed (`status: sealed` with `archive`) or skipped as a
+        no-op (`status: skipped`, `reason: empty` or `in_progress`). Both are
+        successful deliveries for the job queue.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/seal-audit-log-response.yaml"
+    "401":
+      description: "Unauthorized - missing or invalid auth headers, or not logged in."
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: "Forbidden - caller is not a site admin."
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

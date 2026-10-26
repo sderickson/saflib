@@ -1,8 +1,7 @@
 previewWorkflowRunDiff:
   summary: Preview a workflow run's effect as a commit diff
   operationId: previewWorkflowRunDiff
-  tags:
-    - no-auth
+  x-public: true
   description: >
     Computes what the run's workflow (walking `copy`/`transform-file`/`cd`
     steps, recursing into `call-workflow`) would change, as a real but

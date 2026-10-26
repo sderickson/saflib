@@ -115,9 +115,46 @@ async function dispatchCallback(
   }
 }
 
+/** How long a delivered message is remembered, to drop Kratos redeliveries of it. */
+const DUPLICATE_WINDOW_MS = 15 * 60 * 1000;
+
+/** Fields that make one courier message unique: its code, or failing that its link. */
+const MESSAGE_IDENTITY_FIELDS = [
+  "verification_code",
+  "recovery_code",
+  "login_code",
+  "registration_code",
+  "verification_url",
+  "recovery_url",
+  "login_url",
+  "registration_url",
+] as const;
+
+/**
+ * Identifies one courier message, or undefined if it carries nothing unique
+ * (then it's always sent). Kratos redelivers a message it thinks failed, for
+ * example when our reply is slower than its HTTP timeout even though the
+ * email went out; a redelivery has the same recipient, template and code.
+ */
+export function courierMessageKey(
+  templateId: KratosCourierTemplateId,
+  recipient: string,
+  td: Record<string, unknown>,
+): string | undefined {
+  for (const field of MESSAGE_IDENTITY_FIELDS) {
+    const value = readString(td, field);
+    if (value) return JSON.stringify([templateId, recipient, field, value]);
+  }
+  return undefined;
+}
+
 export function createPostKratosCourierHandler(
   courierCallbacks: KratosCourierCallbacks = {},
 ) {
+  // Per handler: messages delivered (or being delivered) recently, so a
+  // redelivery waits for or reuses the first attempt instead of emailing again.
+  const recent = new Map<string, { at: number; delivery: Promise<void> }>();
+
   return createHandler(async (req, res) => {
     const { log } = getSafReporters();
     const body = req.body as KratosCourierBody;
@@ -154,11 +191,39 @@ export function createPostKratosCourierHandler(
       recipient: body.recipient,
     });
 
-    await dispatchCallback(templateId, courierCallbacks, {
+    const now = Date.now();
+    for (const [key, entry] of recent) {
+      if (now - entry.at > DUPLICATE_WINDOW_MS) recent.delete(key);
+    }
+
+    const key = courierMessageKey(templateId, body.recipient, td);
+    const earlier = key ? recent.get(key) : undefined;
+    if (earlier) {
+      try {
+        await earlier.delivery;
+        log.info(`Skipped duplicate Kratos courier delivery ${templateId}`, {
+          template_id: templateId,
+          recipient: body.recipient,
+        });
+        res.status(204).end();
+        return;
+      } catch {
+        // The first attempt failed, so this redelivery should send it.
+      }
+    }
+
+    const delivery = dispatchCallback(templateId, courierCallbacks, {
       recipient: body.recipient,
       user,
       td,
     });
+    if (key) recent.set(key, { at: now, delivery });
+    try {
+      await delivery;
+    } catch (error) {
+      if (key && recent.get(key)?.delivery === delivery) recent.delete(key);
+      throw error;
+    }
 
     res.status(204).end();
   });

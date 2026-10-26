@@ -4,6 +4,11 @@
 __operationId__:
   summary: "TODO: Brief description of what this operation does"
   operationId: "__operationId__"
+  # TODO: Set access. Session scopes: email-verified, mfa, site-admin (e.g.
+  # `- session: [email-verified, mfa]`). Public routes use `x-public: true`
+  # instead of `security`.
+  security:
+    - session: []
 
   # TODO: Update request parameters (if any)
   parameters:

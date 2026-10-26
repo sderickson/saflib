@@ -6,6 +6,7 @@ advanceWorkflowRun:
     call it again. Persists the step's output to `workflow_logs` and
     publishes a change hint on this run's SSE channel as a side effect.
   operationId: advanceWorkflowRun
+  x-public: true
 
   parameters:
     - name: runId

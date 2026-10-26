@@ -33,9 +33,7 @@ describe("createMetricsRouter", () => {
     const app = express();
     app.get(
       "/admin/metrics/snapshot",
-      ...createOperationScopedMiddleware(getMetricsSnapshotOperationJsonSpec, {
-        enforceAuth: false,
-      }),
+      ...createOperationScopedMiddleware(getMetricsSnapshotOperationJsonSpec),
       createGetMetricsSnapshotHandler({
         collectMetrics: async () => promText,
       }),

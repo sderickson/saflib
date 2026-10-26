@@ -4,11 +4,9 @@ import {
   CdStepMachine,
   defineWorkflow,
   step,
-  TransformFileStepMachine,
   type OffshootInitContext,
   resolveOffshootInitContext,
   makeOffshootLineReplace,
-  parentLayerPackageJsonPath,
 } from "@saflib/workflows";
 import { offshootStubRoot } from "@saflib/templates";
 import path from "node:path";
@@ -19,7 +17,7 @@ const input = [
   {
     name: "name",
     description:
-      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/sdk and registers it on the parent sdk package.",
+      "Kebab-case offshoot name (e.g. 'dossier'). Creates {product}/{name}/sdk. SPAs depend on it directly; the product sdk never re-exports it.",
     exampleValue: "dossier",
   },
 ] as const;
@@ -32,8 +30,7 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
 >({
   id: "sdk/init",
 
-  description:
-    "Scaffold an offshoot SDK package and register it on the parent sdk",
+  description: "Scaffold an offshoot SDK package",
 
   checklistDescription: ({ offshootPackageName }) =>
     `Init offshoot sdk ${offshootPackageName}.`,
@@ -51,6 +48,7 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     index: path.join(offshootSdkRoot, "index.ts"),
+    client: path.join(offshootSdkRoot, "client.ts"),
     packageJson: path.join(offshootSdkRoot, "package.json"),
     tsconfig: path.join(offshootSdkRoot, "tsconfig.json"),
     vitestConfig: path.join(offshootSdkRoot, "vitest.config.js"),
@@ -68,18 +66,6 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
         offshootSdk: offshootSdkRoot,
       },
       lineReplace: makeOffshootLineReplace(context),
-    })),
-
-    step(TransformFileStepMachine, ({ context }) => ({
-      filePath: parentLayerPackageJsonPath(context.parentDir),
-      description: `Add ${context.offshootPackageName} dependency to parent sdk`,
-      skipIfMissing: true,
-      transform: (content: string) => {
-        const pkg = JSON.parse(content);
-        pkg.dependencies = pkg.dependencies ?? {};
-        pkg.dependencies[context.offshootPackageName] = "*";
-        return JSON.stringify(pkg, null, 2) + "\n";
-      },
     })),
 
     step(CdStepMachine, ({ context }) => ({

@@ -1,4 +1,4 @@
-import type { IssueCountsByKind } from "@saflib/imports/issues";
+import type { IssueCountsByKind } from "@saflib/imports/issues/package-issues";
 
 /** Zeroed issue counts for test fixtures / health helpers. */
 export function emptyIssueCountsFixture(): IssueCountsByKind {

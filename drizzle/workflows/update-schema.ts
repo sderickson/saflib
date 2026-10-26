@@ -15,6 +15,13 @@ const dbRoot = path.join(templatesProductRoot, "service", "db");
 const schemaStub = path.join(dbRoot, "schemas", "__group-name__.ts");
 /** Live schema.ts — schema-exports area holds the stub; CopyStep upserts it. */
 const schemaIndexLive = path.join(dbRoot, "schema.ts");
+/** Weaves the same export into `schemas/index.ts` when the package uses that barrel for drizzle-kit. */
+const schemaRegistryWeave = path.join(
+  dbRoot,
+  "schemas",
+  "update-schema-registry",
+  "index.ts",
+);
 
 const input = [
   {
@@ -95,6 +102,17 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
         flags: { file: context.file },
       };
     }),
+
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.targetName,
+      targetDir: path.join(context.targetDir, "schemas"),
+      templateFiles: {
+        index: schemaRegistryWeave,
+      },
+      lineReplace: makeLineReplace(context),
+      flags: { file: context.file },
+      skipUnlessPathExists: path.join(context.targetDir, "schemas", "index.ts"),
+    })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "schema",

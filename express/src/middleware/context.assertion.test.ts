@@ -4,6 +4,7 @@ import { asOpenApiDocument } from "@saflib/openapi";
 import request from "supertest";
 import { getSafContext, signAssertion } from "@saflib/node";
 import { createScopedMiddleware } from "./composition.ts";
+import { makeContextMiddleware } from "./context.ts";
 import { errorHandler } from "./errors.ts";
 import { markInternal } from "../markInternal.ts";
 import { makeAssertionHeaders, makeUserHeaders } from "../vitest-helpers.ts";
@@ -26,6 +27,7 @@ const probeSpec = asOpenApiDocument({
     "/probe": {
       get: {
         operationId: "probeOperation",
+        security: [{ session: [] }],
         responses: {
           "200": {
             description: "ok",
@@ -74,7 +76,7 @@ const probeSpec = asOpenApiDocument({
     "/admin-probe": {
       get: {
         operationId: "adminProbeOperation",
-        tags: ["site-admin-only"],
+        security: [{ session: ["site-admin"] }],
         responses: {
           "200": {
             description: "ok",
@@ -126,14 +128,25 @@ function jsonResponse(status: number, body: unknown): Response {
   });
 }
 
-function makeApp(options: { enforceAuth?: boolean } = {}) {
+/** `publicProbe` serves `/probe` as `x-public` (no session required). */
+function makeApp(options: { publicProbe?: boolean } = {}) {
+  const apiSpec = options.publicProbe
+    ? asOpenApiDocument({
+        ...probeSpec,
+        paths: {
+          ...probeSpec.paths,
+          "/probe": {
+            get: {
+              ...probeSpec.paths!["/probe"]!.get!,
+              security: undefined,
+              "x-public": true,
+            },
+          },
+        },
+      })
+    : probeSpec;
   const app = express();
-  app.use(
-    createScopedMiddleware({
-      apiSpec: probeSpec,
-      enforceAuth: options.enforceAuth ?? true,
-    }),
-  );
+  app.use(createScopedMiddleware({ apiSpec }));
   app.get("/probe", (_req, res) => {
     const ctx = getSafContext();
     res.status(200).json({
@@ -222,7 +235,7 @@ describe("assertion auth path", () => {
     expect(res.body.originalRequestId).toBe("chain-root");
   });
 
-  it("enforces site-admin-only against the resolved Auth", async () => {
+  it("enforces session: [site-admin] against the resolved Auth", async () => {
     mockActiveIdentity({ id: "user-1", email: "user@example.com" });
     const app = makeApp();
     const headers = makeAssertionHeaders(
@@ -317,7 +330,7 @@ describe("assertion auth path", () => {
 
   it("ignores assertion headers on the public (un-marked) listener", async () => {
     mockActiveIdentity({ id: "user-1", email: "user@example.com" });
-    const app = makeApp({ enforceAuth: false });
+    const app = makeApp({ publicProbe: true });
     const headers = makeAssertionHeaders(
       { userId: "user-1", mfaCompleted: true },
       { operationId: "probeOperation" },
@@ -347,9 +360,9 @@ describe("assertion auth path", () => {
 
   it("defers assertion resolution until OpenAPI has bound an operationId", async () => {
     mockActiveIdentity({ id: "user-1", email: "user@example.com" });
-    // No apiSpec → no operationId on the request; early context must not 401.
+    // No OpenAPI validator → no operationId on the request; early context must not 401.
     const app = express();
-    app.use(createScopedMiddleware({ enforceAuth: false }));
+    app.use(makeContextMiddleware());
     app.get("/probe", (_req, res) => {
       const ctx = getSafContext();
       res.status(200).json({ auth: ctx.auth ?? null });

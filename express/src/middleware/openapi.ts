@@ -139,6 +139,8 @@ function buildOpenApiValidatorMiddleware(
     apiSpec: spec,
     validateRequests: true,
     validateResponses,
+    // `security` is enforced by our own per-operation middleware (security.ts).
+    validateSecurity: false,
     formats: {
       email: {
         type: "string",

@@ -9,7 +9,8 @@
     "dist/types",
     "e2e",
     "playwright-report",
-    "test-results"
+    "test-results",
+    "**/*.weave.ts"
   ],
   "compilerOptions": {
     "rootDir": ".",
@@ -19,6 +20,9 @@
     "emitDeclarationOnly": true
   },
   "references": [
+    {
+      "path": "../../__offshoot-name__/http"
+    },
     {
       "path": "../../../env"
     },
@@ -41,7 +45,13 @@
       "path": "../../../ory-kratos/ory-kratos-http"
     },
     {
+      "path": "../../../secret-store"
+    },
+    {
       "path": "../../../vendors/loki"
+    },
+    {
+      "path": "../../../vendors/sentry-node"
     },
     {
       "path": "../audit"
@@ -57,6 +67,12 @@
     },
     {
       "path": "../http"
+    },
+    {
+      "path": "../http-app"
+    },
+    {
+      "path": "../integrations/__integration-name__"
     },
     {
       "path": "../jobs"

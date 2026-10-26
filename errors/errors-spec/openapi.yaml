@@ -5,6 +5,9 @@ info:
   description: Unified error capture (client, server, CSP) and admin viewing via an in-memory ring buffer.
 
 components:
+  securitySchemes:
+    session:
+      $ref: "pkg:@saflib/openapi/security-schemes/session.yaml"
   schemas:
     ReportedError:
       $ref: "./schemas/reported-error.yaml"
@@ -24,3 +27,6 @@ paths:
   /admin/errors:
     get:
       $ref: "./routes/errors.yaml#/listReportedErrors"
+  /maintenance/raise-test-error:
+    post:
+      $ref: "./routes/maintenance/raise-test-error.yaml#/raiseTestErrorMaintenance"

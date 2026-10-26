@@ -35,6 +35,10 @@ export interface DevSiteHttpEnvSchema extends DrizzleEnvSchema, ExpressEnvSchema
    * GitHub `owner/name` for source and commit links in the UI (e.g. sderickson/saflib).
    */
   DEV_SITE_GITHUB_REPO?: string;
+  /**
+   * Comma-separated public HTTP URLs to log at startup (e.g. host port mapping or reverse-proxy URL). When unset, logs http://localhost:<port>/ from DEV_SITE_SERVICE_HTTP_HOST.
+   */
+  DEV_SITE_PUBLIC_HTTP_URL?: string;
 }
 
 /**

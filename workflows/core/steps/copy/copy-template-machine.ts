@@ -87,7 +87,7 @@ export const CopyStepMachine = setup({
 }).createMachine({
   id: "copy-template",
   description: "Copy template files and rename placeholders",
-  initial: "copy",
+  initial: "start",
   context: ({ input }) => {
     if (!input.templateFiles) {
       throw new Error("templateFiles is required");
@@ -179,6 +179,20 @@ export const CopyStepMachine = setup({
   },
 
   states: {
+    // `skipUnlessPathExists` can leave nothing to copy; `copyNextFile`
+    // throws on an empty list, so go straight to done.
+    start: {
+      always: [
+        {
+          guard: "hasMoreFiles",
+          target: "copy",
+        },
+        {
+          target: "done",
+          actions: logInfo("No template files to copy; skipping"),
+        },
+      ],
+    },
     copy: {
       invoke: {
         input: ({ context }) => {

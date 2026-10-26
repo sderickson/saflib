@@ -1,7 +1,7 @@
 {
   "name": "@saflib/base-audit",
   "saf": {
-    "kind": "lib"
+    "kind": "domain"
   },
   "description": "Audit slice for the base golden product",
   "type": "module",

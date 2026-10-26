@@ -1,5 +1,8 @@
 {
   "name": "@saflib/base-clients-common",
+  "saf": {
+    "kind": "vue"
+  },
   "description": "Shared look-and-feel and utilities for web clients",
   "private": true,
   "type": "module",
@@ -63,5 +66,8 @@
     "#utils/*": "./utils/*",
     "#vuetify-config.ts": "./vuetify-config.ts",
     "#style-imports.ts": "./style-imports.ts"
+  },
+  "devDependencies": {
+    "@saflib/playwright": "*"
   }
 }

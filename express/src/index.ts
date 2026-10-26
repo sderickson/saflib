@@ -30,8 +30,28 @@ export {
   type GlobalMiddlewareOptions,
 } from "./middleware/composition.ts";
 export { makeContextMiddleware } from "./middleware/context.ts";
-export { makeAuthMiddleware, drainRequest, type AuthMiddlewareOptions } from "./middleware/auth.ts";
+export {
+  makeAuthMiddleware,
+  drainRequest,
+  type AuthMiddlewareOptions,
+} from "./middleware/auth.ts";
 export { makeCsrfMiddleware } from "./middleware/csrf.ts";
+export {
+  compileOperationSecurity,
+  sessionSecurityResolver,
+  SESSION_SCOPE_EMAIL_VERIFIED,
+  SESSION_SCOPE_MFA,
+  SESSION_SCOPE_SITE_ADMIN,
+  type SecurityResolver,
+  type SecurityResolvers,
+} from "./middleware/security.ts";
+export {
+  makeRegisterRoute,
+  httpRouteFromOperationSpec,
+  type RegisterRoute,
+  type RegisterRouteOptions,
+  type RouteHttpMethod,
+} from "./register-route.ts";
 export { makeCsrfTokenMiddleware } from "./middleware/csrf-token.ts";
 export {
   createChangeEventMiddleware,
@@ -46,11 +66,6 @@ export { createHandler } from "./handler.ts";
 
 export { createDevLogsRouter } from "@saflib/node-log-http";
 export { createDevAnalyticsRouter } from "@saflib/analytics-http";
-export {
-  createErrorsRouter,
-  createDevErrorsRouter,
-} from "@saflib/errors-http";
-
 export {
   makeUserHeaders,
   makeAdminHeaders,
@@ -67,3 +82,10 @@ export {
 } from "./kratos-admin.ts";
 
 export { resolveAuthFromIdentityId } from "./resolveAuthFromIdentityId.ts";
+
+export {
+  createProductHttpApp,
+  type CreateProductHttpAppOptions,
+  type HttpRouterMount,
+} from "./app/create-product-http-app.ts";
+export { publicRouteMatcher } from "./app/public-routes.ts";

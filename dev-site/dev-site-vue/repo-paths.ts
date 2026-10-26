@@ -1,3 +1,12 @@
+/** Join path segments into a single repo-relative path (no leading slash). */
+export function joinRepoRelativePath(...parts: string[]): string {
+  return parts
+    .flatMap((p) => p.split("/"))
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .join("/");
+}
+
 /** Join product_root + package directory into a repo-relative path prefix. */
 export function repoPathPrefix(
   product_root: string | undefined,

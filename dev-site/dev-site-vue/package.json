@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
-    "@saflib/dev-site-http": "*",
     "@saflib/dev-site-spec": "*",
     "@saflib/imports": "*",
     "@saflib/links": "*",

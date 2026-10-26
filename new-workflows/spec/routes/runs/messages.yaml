@@ -1,0 +1,33 @@
+listWorkflowRunMessages:
+  summary: List a run's direct agent messages
+  description: >
+    The free-form messages sent to the agent with `agent-message` (not a
+    step's own prompts), oldest first. Each is the message's own
+    `agent-input` log row, so its `seq` can anchor the logs view and its
+    `step_index` says which step the run was on when it was sent.
+  operationId: listWorkflowRunMessages
+  x-public: true
+
+  parameters:
+    - name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: "0SG36FJe6m4W"
+
+  responses:
+    "200":
+      description: The run's direct messages, oldest first.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - messages
+            properties:
+              messages:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/WorkflowLogEntry"

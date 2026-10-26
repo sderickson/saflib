@@ -5,7 +5,7 @@
 import type {
   PackageDetailForIssues,
   PackageIssue,
-} from "@saflib/imports/issues";
+} from "@saflib/imports/issues/package-issues";
 
 type ApiUsedBy = {
   package_name: string;

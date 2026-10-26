@@ -11,6 +11,7 @@
         "summary": "List registered workflows",
         "description": "Code-defined workflows from the server's registry. Config-defined (`workflow_configs`) workflows aren't included yet — nothing creates them via this API surface today.\n",
         "operationId": "listWorkflows",
+        "x-public": true,
         "responses": {
           "200": {
             "description": "Registered workflows.",
@@ -42,6 +43,7 @@
         "summary": "List runs of a registered workflow or plan, newest first",
         "description": "Lets a UI show \"start a new run\" alongside \"go to an existing run\" for a workflow or plan, without having to track run ids separately.\n",
         "operationId": "listWorkflowRuns",
+        "x-public": true,
         "parameters": [
           {
             "name": "id",
@@ -82,6 +84,7 @@
       "post": {
         "summary": "Start a run of a registered workflow",
         "operationId": "createWorkflowRun",
+        "x-public": true,
         "parameters": [
           {
             "name": "id",
@@ -166,6 +169,7 @@
         "summary": "List a workflow's steps, without needing a run",
         "description": "Same shape as `getWorkflowRunSteps`, but resolved straight from the workflow definition (a registered code id, or a plan file path) rather than an existing run's `workflow_ref` — for showing the sidebar/outline before a workflow has ever been started.\n",
         "operationId": "getWorkflowSteps",
+        "x-public": true,
         "parameters": [
           {
             "name": "id",
@@ -218,6 +222,7 @@
       "get": {
         "summary": "Get a run by id",
         "operationId": "getWorkflowRun",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",
@@ -267,6 +272,7 @@
         "summary": "Run the next step of a run",
         "description": "The HTTP face of `new-workflows/lib`'s single \"run next step\" entry point — the caller (this endpoint's caller) decides whether/when to call it again. Persists the step's output to `workflow_logs` and publishes a change hint on this run's SSE channel as a side effect.\n",
         "operationId": "advanceWorkflowRun",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",
@@ -331,11 +337,75 @@
         }
       }
     },
+    "/api/runs/{runId}/agent-message": {
+      "post": {
+        "summary": "Send a one-off message to the run's agent CLI",
+        "description": "Runs a single agent turn (Claude or Cursor CLI) with the given text. Does not advance the workflow or create a step row — only appends to `workflow_logs` under the run's current step index. Uses the same run lock as `advanceWorkflowRun`.\n",
+        "operationId": "sendFreeformAgentMessage",
+        "x-public": true,
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "message"
+                ],
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Prompt text passed directly to the agent CLI for this turn.",
+                    "example": "Explain what the current step is trying to do."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Outcome of the agent turn.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/freeform-agent-message-result"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No run with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/runs/{runId}/goto": {
       "post": {
         "summary": "Seek a run to a step path",
         "description": "Jump the run (and nested `call-workflow` children along the path) so the next advance resumes at that step. Path uses slash-separated indices (e.g. `2/4`). Invalidates leaf step attempts from the target index onward. The same semantics as `new-workflow goto`.\n",
         "operationId": "gotoWorkflowRun",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",
@@ -421,6 +491,7 @@
         "summary": "Stop the agent turn currently running for a run, if any",
         "description": "Kills the in-process agent subprocess for this run (e.g. a `claude -p` call in flight from a concurrent `advance` request), if one is running. That `advance` call's own response then resolves on its own with a `status: \"error\"` outcome — this endpoint doesn't wait for it. A no-op (returns `cancelled: false`) if nothing was running, including the common race where the agent had already finished.\n",
         "operationId": "cancelWorkflowRun",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",
@@ -458,8 +529,9 @@
     "/api/runs/{runId}/logs": {
       "get": {
         "summary": "List a run's logs",
-        "description": "Newest-first, cursor-paginated. Pass `before` (an ISO timestamp) to page older history for infinite scroll; pass `since` for rows newer than a known tip (e.g. after an SSE change hint). Pass `step_index` to anchor the first page at that step so a sidebar jump can load a window that is not the live tip. The client re-fetches rather than getting log content pushed over the wire.\n",
+        "description": "Newest-first, cursor-paginated by each row's `seq` (insertion order — `created_at` is only second-precision, so it can't be a cursor). Pass `before_seq` to page older history for infinite scroll; pass `after_seq` for rows newer than a known tip (e.g. after an SSE change hint). Pass `step_index` to anchor the first page at that step so a sidebar jump can load a window that is not the live tip. The client re-fetches rather than getting log content pushed over the wire.\n",
         "operationId": "listWorkflowRunLogs",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",
@@ -471,23 +543,21 @@
             }
           },
           {
-            "name": "since",
+            "name": "after_seq",
             "in": "query",
             "required": false,
-            "description": "Only rows created strictly after this timestamp (newer than tip).",
+            "description": "Only rows with `seq` greater than this (newer than tip).",
             "schema": {
-              "type": "string",
-              "format": "date-time"
+              "type": "integer"
             }
           },
           {
-            "name": "before",
+            "name": "before_seq",
             "in": "query",
             "required": false,
-            "description": "Only rows created strictly before this timestamp (older page).",
+            "description": "Only rows with `seq` less than this (older page).",
             "schema": {
-              "type": "string",
-              "format": "date-time"
+              "type": "integer"
             }
           },
           {
@@ -501,10 +571,19 @@
             }
           },
           {
+            "name": "anchor_seq",
+            "in": "query",
+            "required": false,
+            "description": "Anchor this page at the row with this `seq` (e.g. a direct message from `GET /runs/{runId}/messages`), then the following `limit` rows.\n",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
             "name": "contiguous",
             "in": "query",
             "required": false,
-            "description": "With `since`, return the oldest `limit` rows after the cursor (the next page toward the present) instead of the newest ones.\n",
+            "description": "With `after_seq`, return the oldest `limit` rows after the cursor (the next page toward the present) instead of the newest ones.\n",
             "schema": {
               "type": "boolean"
             }
@@ -544,11 +623,11 @@
                     },
                     "has_more": {
                       "type": "boolean",
-                      "description": "True when another older page (`before` the oldest row here) may return more rows.\n"
+                      "description": "True when another older page (`before_seq` the oldest row here) may return more rows.\n"
                     },
                     "has_more_newer": {
                       "type": "boolean",
-                      "description": "True when another newer page (`since` the newest row here, `contiguous`) may return more rows. False on the live tip.\n"
+                      "description": "True when another newer page (`after_seq` the newest row here, `contiguous`) may return more rows. False on the live tip.\n"
                     }
                   }
                 }
@@ -568,11 +647,55 @@
         }
       }
     },
+    "/api/runs/{runId}/messages": {
+      "get": {
+        "summary": "List a run's direct agent messages",
+        "description": "The free-form messages sent to the agent with `agent-message` (not a step's own prompts), oldest first. Each is the message's own `agent-input` log row, so its `seq` can anchor the logs view and its `step_index` says which step the run was on when it was sent.\n",
+        "operationId": "listWorkflowRunMessages",
+        "x-public": true,
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0SG36FJe6m4W"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The run's direct messages, oldest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "messages"
+                  ],
+                  "properties": {
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/workflow-log-entry"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/runs/{runId}/steps": {
       "get": {
         "summary": "List a run's workflow steps",
         "description": "The full step list for the run's workflow definition (resolved the same way `advance` resolves it — a registered code id or a plan file path), for a sidebar/outline view. Best-effort `label` per step: the step's own rendered input where that's safe to compute without executing it, else just the step `kind`.\n",
         "operationId": "getWorkflowRunSteps",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",
@@ -625,6 +748,7 @@
         "summary": "Step tree for a run (including nested call-workflow children)",
         "description": "Indented outline of every step under this run, with slash-separated path addresses suitable for `gotoWorkflowRun`. Nested definitions appear even before a child run has been created.\n",
         "operationId": "getWorkflowRunStepTree",
+        "x-public": true,
         "parameters": [
           {
             "name": "runId",
@@ -677,6 +801,7 @@
         "summary": "List saved plans (config-defined workflow folders)",
         "description": "Scans the plans root (e.g. `test-product/plans/`) for folders holding workflow config files, newest-first.\n",
         "operationId": "listPlans",
+        "x-public": true,
         "responses": {
           "200": {
             "description": "Plans under the plans root.",
@@ -716,6 +841,7 @@
         "summary": "Save a new plan (a config-defined workflow) to the plans folder",
         "description": "Writes `<plansRoot>/<date>-<name>/<fileName>` with the given config body (`fileName` defaults to `<name>.yaml`). Doesn't run it — see POST /workflows/{id}/runs with the returned file's `path` as `id`.\n",
         "operationId": "createPlan",
+        "x-public": true,
         "requestBody": {
           "required": true,
           "content": {
@@ -834,6 +960,9 @@
       "StepResult": {
         "$ref": "#/components/schemas/step-result"
       },
+      "FreeformAgentMessageResult": {
+        "$ref": "#/components/schemas/freeform-agent-message-result"
+      },
       "PlanFile": {
         "$ref": "#/components/schemas/plan-file"
       },
@@ -951,7 +1080,8 @@
           "created_at",
           "updated_at",
           "is_advancing",
-          "was_cancelled"
+          "was_cancelled",
+          "logs_pruned_at"
         ],
         "properties": {
           "id": {
@@ -1039,6 +1169,14 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "logs_pruned_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When this run's logs were deleted for age (see `pruneHistoryWorkflowRun`). The run and its steps remain. Null while the logs are still there.\n"
           },
           "is_advancing": {
             "type": "boolean",
@@ -1209,6 +1347,30 @@
           }
         ]
       },
+      "freeform-agent-message-result": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "Present when `status` is `error`."
+          },
+          "shouldContinue": {
+            "type": "boolean",
+            "description": "When `status` is `ok`, whether the agent subprocess signaled it needs another turn (same semantics as a workflow prompt step).\n"
+          }
+        }
+      },
       "workflow-log-channel": {
         "type": "string",
         "description": "Which output channel a log line belongs to, so a renderer (CLI or web) can style/route it distinctly instead of guessing from content. `terminal`: raw stdout/stderr from a subprocess the workflow ran (vite, npm, git). `agent`: output from the coding agent (what it said, what it executed). `tool`: the workflow engine's own narration (e.g. \"running step 3: copy\"). `agent-input`: the prompt text sent to the agent.\n",
@@ -1236,17 +1398,25 @@
         "additionalProperties": false,
         "required": [
           "id",
+          "seq",
           "run_id",
           "step_index",
           "channel",
           "level",
           "content",
-          "created_at"
+          "created_at",
+          "source_run_id",
+          "source_step_index"
         ],
         "properties": {
           "id": {
             "type": "string",
             "example": "aBcD1234"
+          },
+          "seq": {
+            "type": "integer",
+            "description": "Insertion order within the log table. The total order of log rows and the pagination cursor — `created_at` is second-precision and ties.\n",
+            "example": 1042
           },
           "run_id": {
             "type": "string",
@@ -1271,6 +1441,21 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "source_run_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The run that produced this line. Differs from `run_id` when a nested `call-workflow` child produced it (its output is filed under the root run's step). Null on lines written before this was tracked.\n",
+            "example": "7fQx2LmN9pA1"
+          },
+          "source_step_index": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Step index within `source_run_id` that produced this line. Null on lines written before this was tracked.\n"
           }
         }
       },

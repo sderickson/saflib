@@ -82,7 +82,7 @@ const TestExpressWorkflowsDefinition = defineWorkflow<
 
       Expected:
       - demo/spec with users schema + list route, woven into service/spec/openapi.yaml
-      - demo/http with a users list handler, woven into service/http/http.ts`,
+      - demo/http with a users list handler, mounted in service/monolith/http.ts`,
     })),
   ],
 });

@@ -9,7 +9,7 @@ import {
   callbacks,
   makeKratosActionHandler,
 } from "@saflib/base-kratos-handlers";
-import { initializeDependencies } from "@saflib/base-service-common/dependencies";
+import { initializeDependencies } from "./dependencies.ts";
 
 validateEnv(process.env, envSchema);
 setServiceName("base");

@@ -1,11 +1,14 @@
 {
   "name": "@saflib/base-service-common",
+  "saf": {
+    "kind": "domain"
+  },
   "description": "Shared types and utilities for the base service",
   "private": true,
   "type": "module",
   "exports": {
     "./context": "./context.ts",
-    "./dependencies": "./dependencies.ts",
+    "./email": "./email.ts",
     "./env": "./env.ts"
   },
   "scripts": {
@@ -16,14 +19,12 @@
   },
   "dependencies": {
     "@saflib/audit-db": "*",
-    "@saflib/base-__integration-name__-integration": "*",
     "@saflib/base-db": "*",
     "@saflib/drizzle": "*",
     "@saflib/email-service": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/object-store": "*",
-    "@saflib/secret-store": "*",
     "@saflib/vendors-brevo": "*"
   },
   "sideEffects": false,
@@ -31,5 +32,8 @@
     "#context.ts": "./context.ts",
     "#dependencies.ts": "./dependencies.ts",
     "#env.ts": "./env.ts"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
   }
 }

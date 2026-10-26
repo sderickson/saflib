@@ -3,12 +3,13 @@
   "saf": {
     "kind": "sdk"
   },
-  "description": "Offshoot TanStack fakes for Base __offshoot-name__; woven into parent sdk",
+  "description": "Offshoot SDK for Base __offshoot-name__: its own API client, requests and fakes",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./requests/*": "./requests/*.ts"
+    "./requests/*": "./requests/*.ts",
+    "./client": "./client.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -17,6 +18,7 @@
   },
   "dependencies": {
     "@saflib/base-__offshoot-name__-spec": "*",
+    "@saflib/base-sdk-common": "*",
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*"
@@ -26,6 +28,7 @@
   },
   "sideEffects": false,
   "imports": {
-    "#requests/*": "./requests/*"
+    "#requests/*": "./requests/*",
+    "#client.ts": "./client.ts"
   }
 }

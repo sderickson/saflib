@@ -10,9 +10,7 @@
       "get": {
         "summary": "List analyzed commits (newest first)",
         "operationId": "listCommits",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Paginated list of analyzed commits with rollup summary metrics for timeline display. Does not include per-package / export / test-case inventories — fetch those via GET /commits/{hash}.\n",
         "parameters": [
           {
@@ -73,9 +71,7 @@
       "get": {
         "summary": "Get the full analysis snapshot for a commit",
         "operationId": "getCommits",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Returns commit metadata plus per-package metrics, exports, and test cases for a single analyzed commit.\n",
         "parameters": [
           {
@@ -124,9 +120,7 @@
       "get": {
         "summary": "Diff two analyzed commits",
         "operationId": "diffCommits",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Compare the analysis snapshots of two commits. `hash` is the baseline (\"before\"); `other_hash` is the comparison (\"after\"). Returns added/removed (and changed, for package metrics) inventories.\n",
         "parameters": [
           {
@@ -180,13 +174,59 @@
         }
       }
     },
+    "/api/commits/{hash}/package-graph": {
+      "get": {
+        "summary": "Product package graph at a commit",
+        "operationId": "getCommitPackageGraph",
+        "x-public": true,
+        "description": "The product's packages (kind, feature) and the runtime dependencies between them at `hash`, with layer-rule violations flagged. Reads package.json files from git, so any commit works without analysis. Used by the checkout page's package map, and in compare mode for the fork point.\n",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package graph",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "package_graph"
+                  ],
+                  "properties": {
+                    "package_graph": {
+                      "$ref": "#/components/schemas/package-graph"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown commit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/commits/{hash}/packages/{package_name}": {
       "get": {
         "summary": "Package-scoped symbols for one analyzed commit",
         "operationId": "getCommitPackage",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes db_inventory (drizzle tables + query dirs). For spec packages, also includes spec_inventory (OpenAPI schemas + REST resources). For http and sdk packages, spec_inventory is joined from a spec package this package depends on, while exports/tests remain this package's own source modules. For spa packages, spec_inventory is joined through SDK request imports so Spec can show loader routes on a component bundle. layout_issues are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on saf-dev-site issues --workdir — not on this Spec package load.\n",
         "parameters": [
           {
@@ -323,9 +363,7 @@
       "post": {
         "summary": "Scan and ingest new commits",
         "operationId": "executeScan",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Walk git history since the last recorded commit (plus feature-branch tips) and store static-analysis snapshots. Manual trigger — no automatic poller in v1. Request body is an empty object so clients can POST JSON without special-casing.\n",
         "requestBody": {
           "required": true,
@@ -419,9 +457,7 @@
       "get": {
         "summary": "Current checkout (HEAD) analysis status",
         "operationId": "getCheckout",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Also reports local branch compare candidates and the fork-point (merge-base) of HEAD vs `compare_ref` (default `main`). Used by the Current checkout UI.\n",
         "parameters": [
           {
@@ -432,6 +468,15 @@
               "type": "string"
             },
             "description": "Local branch name to take the merge-base against. Defaults to the server `main` ref.\n"
+          },
+          {
+            "name": "head_ref",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Commit/ref to report on instead of HEAD (e.g. a workflow run's `completion_hash`). When set, `branch` is null.\n"
           }
         ],
         "responses": {
@@ -528,9 +573,7 @@
       "get": {
         "summary": "List files at a commit",
         "operationId": "listRepoFiles",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Prefix matches the exact path, descendants (`docs` matches `docs/guide.md`), and files sharing the stem (`src/Foo` matches `src/Foo.ts`, `src/Foo.vue`, `src/Foo.test.ts` — not `src/FooAsync.vue`). Used for browsing docs and source without checking out.\n",
         "parameters": [
           {
@@ -642,9 +685,7 @@
       "get": {
         "summary": "Read a file at a commit",
         "operationId": "getRepoFile",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Read the UTF-8 contents of one blob at a commit by repo-relative path. Returns 404 when the path is missing at that ref.\n",
         "parameters": [
           {
@@ -713,13 +754,80 @@
         }
       }
     },
+    "/api/repo/diff": {
+      "get": {
+        "summary": "Git diff between two refs",
+        "operationId": "getRepoDiff",
+        "x-public": true,
+        "description": "Returns `git diff base...head` as UTF-8 text, optionally limited to a path prefix.\n",
+        "parameters": [
+          {
+            "name": "base",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "head",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Repo-relative pathspec (package, directory, or file prefix)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diff text",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "diff",
+                    "truncated"
+                  ],
+                  "properties": {
+                    "diff": {
+                      "type": "string"
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid refs or git error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/workflow-runs/{runId}/preview-diff": {
       "get": {
         "summary": "Preview a workflow run's effect as a commit diff",
         "operationId": "previewWorkflowRunDiff",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Computes what the run's workflow (walking `copy`/`transform-file`/`cd` steps, recursing into `call-workflow`) would change, as a real but never-persisted, never-referenced git commit — then diffs it against the repo's current commit the same way `diffCommits` diffs two real ones. Steps that genuinely need a real run (an agent turn, a shell command) are reported in `entries`, not silently skipped.\n",
         "parameters": [
           {
@@ -786,9 +894,7 @@
       "get": {
         "summary": "A workflow run's actual effect as a commit diff",
         "operationId": "reflectWorkflowRunDiff",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Diffs `base_commit_hash` (the repo's HEAD when the run started) against `completion_hash` (HEAD the moment it finished) — both real commits, so this stays correct regardless of what else has landed in the repo since, unlike comparing against the repo's live current HEAD would. For a run that hasn't finished yet, falls back to live HEAD instead — `is_final: false` on the result marks that as a still-moving view.\n",
         "parameters": [
           {
@@ -851,9 +957,7 @@
       "post": {
         "summary": "Preview a workflow's effect as a commit diff, without running it",
         "operationId": "previewWorkflowDiff",
-        "tags": [
-          "no-auth"
-        ],
+        "x-public": true,
         "description": "Same as `previewWorkflowRunDiff`, but for a workflow that's never been run at all — no `workflow_run` row required, so this works before ever clicking \"Start workflow\". `id` is the same thing `POST /api/workflows/{id}/runs` accepts (a registered workflow id, or a plan file's path); `input`/`cwd` default the same way a real run's would.\n",
         "parameters": [
           {
@@ -952,6 +1056,9 @@
       },
       "PackageMetrics": {
         "$ref": "#/components/schemas/package-metrics"
+      },
+      "PackageGraph": {
+        "$ref": "#/components/schemas/package-graph"
       },
       "ExportEntry": {
         "$ref": "#/components/schemas/export-entry"
@@ -1243,13 +1350,21 @@
             "type": "string",
             "description": "Package layer kind. From package.json saf.kind when set, otherwise inferred from a unique identifier dependency such as @saflib/drizzle (db), @saflib/express (http), @saflib/openapi (spec), @saflib/sdk (sdk), or @saflib/vue (spa).\n",
             "enum": [
-              "db",
+              "app",
+              "http-app",
               "http",
-              "spec",
-              "spa",
-              "sdk",
-              "lib",
+              "http-common",
+              "domain",
               "integration",
+              "db",
+              "spec",
+              "objects",
+              "spa",
+              "vue",
+              "sdk",
+              "sdk-common",
+              "lib",
+              "test",
               "other"
             ]
           },
@@ -1741,6 +1856,101 @@
           "test_cases",
           "db_schemas"
         ]
+      },
+      "package-graph": {
+        "type": "object",
+        "description": "The product's packages at one commit and the runtime dependencies between them, read from each package.json in git (no analysis needed). Packages outside the product root (e.g. saflib) are left out.\n",
+        "required": [
+          "hash",
+          "product_root",
+          "packages",
+          "edges"
+        ],
+        "properties": {
+          "hash": {
+            "type": "string"
+          },
+          "product_root": {
+            "type": "string",
+            "description": "Repo-relative product root (\"\" when the repo is the product)."
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "package_name",
+                "directory",
+                "kind",
+                "feature",
+                "core"
+              ],
+              "properties": {
+                "package_name": {
+                  "type": "string"
+                },
+                "directory": {
+                  "type": "string",
+                  "description": "Directory relative to the product root."
+                },
+                "kind": {
+                  "type": "string",
+                  "description": "saf.kind (or inferred kind)."
+                },
+                "feature": {
+                  "type": "string",
+                  "description": "Feature the package belongs to: its first directory under the product root, \"\" for the product root itself, or saf.feature.\n"
+                },
+                "core": {
+                  "type": "boolean",
+                  "description": "Whether the feature is part of the product's core."
+                },
+                "description": {
+                  "type": "string",
+                  "description": "The package.json `description`, when set."
+                }
+              }
+            }
+          },
+          "edges": {
+            "type": "array",
+            "description": "Runtime dependencies (package.json `dependencies`) between product packages.\n",
+            "items": {
+              "type": "object",
+              "required": [
+                "from",
+                "to"
+              ],
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "description": "Depending package name."
+                },
+                "to": {
+                  "type": "string",
+                  "description": "Dependency package name."
+                },
+                "violation": {
+                  "type": "object",
+                  "description": "Set when this dependency breaks a layer rule.",
+                  "required": [
+                    "rule",
+                    "message"
+                  ],
+                  "properties": {
+                    "rule": {
+                      "type": "string",
+                      "description": "Layer rule (order, siblings, core-offshoot, test-dev-only).\n"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "db-inventory": {
         "type": "object",

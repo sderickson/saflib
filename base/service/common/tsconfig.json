@@ -9,7 +9,8 @@
     "dist/types",
     "e2e",
     "playwright-report",
-    "test-results"
+    "test-results",
+    "**/*.weave.ts"
   ],
   "compilerOptions": {
     "rootDir": ".",
@@ -38,16 +39,10 @@
       "path": "../../../object-store"
     },
     {
-      "path": "../../../secret-store"
-    },
-    {
       "path": "../../../vendors/brevo"
     },
     {
       "path": "../db"
-    },
-    {
-      "path": "../integrations/__integration-name__"
     }
   ]
 }

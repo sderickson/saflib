@@ -13,9 +13,8 @@ Commands:
                           package's context.
   service/init-common     [deprecated] Create a shared service-common package —
                           prefer product/init
-  openapi/init            Scaffold an offshoot OpenAPI package (and sibling test
-                          factories package) and weave path $refs into the
-                          parent spec
+  openapi/init            Scaffold an offshoot OpenAPI package and its sibling
+                          test factories package
   openapi/schema          Work on an OpenAPI schema
   openapi/route           Work on an OpenAPI route
   openapi/add-event       Add a new event to an existing OpenAPI specification
@@ -28,8 +27,8 @@ Commands:
   express/add-handler     Add a route handler, group router, slim test, and
                           routers.ts mount. Run openapi/route and saf-specs
                           generate first.
-  express/init            Scaffold an offshoot Express http package and weave
-                          its barrel router into the parent http app
+  express/init            Scaffold an offshoot Express http package and mount
+                          its barrel router in the composition root
   email/add-template      Add email template infrastructure and templates to a
                           project.
   env/add-var             Add a new environment variable to the schema and
@@ -61,8 +60,7 @@ Commands:
                           stub and weave configure into service dependencies
   sentry/init             Wire up Sentry for Vue source maps and Node; align
                           CI/Docker with build secrets
-  sdk/init                Scaffold an offshoot SDK package and register it on
-                          the parent sdk
+  sdk/init                Scaffold an offshoot SDK package
   sdk/add-query           Add a new API query to the SDK
   sdk/add-mutation        Add a new API mutation to the SDK
   sdk/add-component       Create a new component in the SDK package

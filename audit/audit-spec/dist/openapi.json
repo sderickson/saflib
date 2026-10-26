@@ -6,9 +6,123 @@
     "description": "Hash-chained append-only audit log — admin browse and chain verification."
   },
   "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
+      }
+    },
     "schemas": {
       "AuditLog": {
         "$ref": "#/components/schemas/audit-log"
+      },
+      "AuditRotationStatus": {
+        "$ref": "#/components/schemas/audit-rotation-status"
+      },
+      "AuditSealResult": {
+        "$ref": "#/components/schemas/audit-seal-result"
+      },
+      "audit-seal-result": {
+        "type": "object",
+        "description": "Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `duration_ms` are present.\n",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "duration_ms"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "sealed",
+              "skipped"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "empty",
+              "in_progress"
+            ]
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "archive": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "filename",
+              "size_bytes",
+              "sha256_hex",
+              "archive_key",
+              "row_count",
+              "head_hash",
+              "tail_hash",
+              "first_ts",
+              "last_ts"
+            ],
+            "properties": {
+              "filename": {
+                "type": "string"
+              },
+              "size_bytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sha256_hex": {
+                "type": "string",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "archive_key": {
+                "type": "string",
+                "description": "Remote archive identifier (object path, bucket key, etc.)."
+              },
+              "row_count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "head_hash": {
+                "type": "string",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "tail_hash": {
+                "type": "string",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "first_ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "last_ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "branch_count": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      },
+      "seal-audit-log-response": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "audit_seal_result"
+        ],
+        "properties": {
+          "audit_seal_result": {
+            "$ref": "#/components/schemas/audit-seal-result"
+          }
+        }
       },
       "Error": {
         "$ref": "#/components/schemas/error"
@@ -137,106 +251,6 @@
           }
         }
       },
-      "audit-seal-result": {
-        "type": "object",
-        "description": "Outcome of one audit seal pipeline run. On `sealed`, `archive` carries the sealed time range plus chain/upload metadata. On `skipped`, only `status`, `reason`, and `duration_ms` are present.\n",
-        "additionalProperties": false,
-        "required": [
-          "status",
-          "duration_ms"
-        ],
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "sealed",
-              "skipped"
-            ]
-          },
-          "reason": {
-            "type": "string",
-            "enum": [
-              "empty",
-              "in_progress"
-            ]
-          },
-          "duration_ms": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "archive": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "filename",
-              "size_bytes",
-              "sha256_hex",
-              "archive_key",
-              "row_count",
-              "head_hash",
-              "tail_hash",
-              "first_ts",
-              "last_ts"
-            ],
-            "properties": {
-              "filename": {
-                "type": "string"
-              },
-              "size_bytes": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "sha256_hex": {
-                "type": "string",
-                "minLength": 64,
-                "maxLength": 64
-              },
-              "archive_key": {
-                "type": "string",
-                "description": "Remote archive identifier (object path, bucket key, etc.)."
-              },
-              "row_count": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "head_hash": {
-                "type": "string",
-                "minLength": 64,
-                "maxLength": 64
-              },
-              "tail_hash": {
-                "type": "string",
-                "minLength": 64,
-                "maxLength": 64
-              },
-              "first_ts": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "last_ts": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "branch_count": {
-                "type": "integer",
-                "minimum": 0
-              }
-            }
-          }
-        }
-      },
-      "seal-audit-log-response": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "audit_seal_result"
-        ],
-        "properties": {
-          "audit_seal_result": {
-            "$ref": "#/components/schemas/audit-seal-result"
-          }
-        }
-      },
       "audit-seal-http-500": {
         "type": "object",
         "additionalProperties": false,
@@ -268,6 +282,64 @@
             }
           }
         }
+      },
+      "audit-rotation-status": {
+        "type": "object",
+        "description": "Outcome of one audit-rotation watchdog check when the active audit DB is empty or the earliest row is within the staleness threshold. Unhealthy (stale) checks do not use this schema — they return HTTP 500.\n",
+        "additionalProperties": false,
+        "properties": {
+          "healthy": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Always `true` on 200. Present so clients can distinguish a successful check without relying solely on HTTP status.\n",
+            "example": true
+          },
+          "empty": {
+            "type": "boolean",
+            "description": "`true` when the active audit DB has no rows (nothing to age-check). `false` when at least one row exists and its age is within threshold.\n",
+            "example": false
+          },
+          "earliest_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of the oldest row in the active audit DB (`headAt`). `null` when `empty` is true.\n",
+            "example": "2026-08-06T12:00:00.000Z"
+          },
+          "age_ms": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "Milliseconds between `earliest_at` and the check time. `null` when `empty` is true. Always ≤ `threshold_ms` on a healthy response.\n",
+            "example": 3600000
+          },
+          "threshold_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Staleness threshold in milliseconds (26 hours). An `age_ms` above this value causes the operation to return 500 instead of this body.\n",
+            "example": 93600000
+          }
+        },
+        "required": [
+          "healthy",
+          "empty",
+          "earliest_at",
+          "age_ms",
+          "threshold_ms"
+        ],
+        "example": {
+          "healthy": true,
+          "empty": false,
+          "earliest_at": "2026-08-06T12:00:00.000Z",
+          "age_ms": 3600000,
+          "threshold_ms": 93600000
+        }
       }
     }
   },
@@ -277,8 +349,12 @@
         "summary": "List audit log events (admin)",
         "description": "Paginated keyset scan of the audit database, ordered by timestamp then id. `head_at` / `tail_at` describe the earliest and latest timestamps currently stored. Requires an authenticated site admin.\n",
         "operationId": "listAuditLogs",
-        "tags": [
-          "site-admin-only"
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
         ],
         "parameters": [
           {
@@ -412,8 +488,12 @@
         "summary": "Seal the active audit database (admin)",
         "description": "Snapshot the active DB, verify the hash chain, compress locally, then invoke the product's ship callback (upload + off-system seal report). Clears the active store only after ship succeeds. Requires an authenticated site admin.\n",
         "operationId": "sealAuditLog",
-        "tags": [
-          "site-admin-only"
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
         ],
         "responses": {
           "200": {
@@ -462,6 +542,149 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/audit-seal-http-500"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maintenance/seal-audit-log": {
+      "post": {
+        "summary": "Seal and ship the active audit database",
+        "operationId": "sealAuditLogMaintenance",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "tags": [
+          "background"
+        ],
+        "description": "Background maintenance: runs the same seal-and-ship pipeline as the admin seal endpoint (snapshot, verify chain, compress, upload, digest email, rotate). Invoked by the `sealAuditLog` cron schedule and manually by site admins. Unlike admin `sealAuditLog`, a skip (empty active DB or concurrent seal lock) is a **200** with `auditSealResult.status: skipped` — an idempotent no-op for safe job redelivery. Empty body — no client fields.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Empty JSON object. Seal options are fixed server-side; no client fields.\n",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seal completed (`status: sealed` with `archive`) or skipped as a no-op (`status: skipped`, `reason: empty` or `in_progress`). Both are successful deliveries for the job queue.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/seal-audit-log-response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - caller is not a site admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/maintenance/check-audit-log-rotation": {
+      "post": {
+        "summary": "Watchdog: alert if audit log rotation is stale",
+        "operationId": "checkAuditLogRotationMaintenance",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "tags": [
+          "background"
+        ],
+        "description": "Background maintenance: checks that the earliest row in the active audit DB is not older than ~26 hours (seal should have rotated sooner). Invoked by the `checkAuditLogRotation` cron schedule and manually by site admins. Empty active DB or age within threshold → 200 with `auditRotationStatus`. Stale rotation → 500 so the job retries then goes `dead` and is visible in the jobs admin UI. Empty body — no client fields.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Empty JSON object. Staleness threshold is fixed server-side; no client fields.\n",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rotation is healthy: active DB is empty or the earliest row age is within the staleness threshold.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "auditRotationStatus"
+                  ],
+                  "properties": {
+                    "auditRotationStatus": {
+                      "$ref": "#/components/schemas/audit-rotation-status"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - caller is not a site admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Watchdog tripped: earliest active audit row is older than the staleness threshold (~26h). Job queue treats this as retryable until `dead`.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
                 }
               }
             }

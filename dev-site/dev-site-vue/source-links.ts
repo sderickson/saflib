@@ -1,3 +1,5 @@
+import { sha256Hex } from "./sha256-hex.ts";
+
 /**
  * Build links to open a repo path in GitHub and/or a local IDE.
  *
@@ -64,6 +66,25 @@ export function githubCompareUrl(
   headRef: string,
 ): string {
   return `https://github.com/${github_repo}/compare/${baseRef}...${headRef}`;
+}
+
+/** Anchor for a file row on GitHub compare / PR files (SHA-256 of repo path). */
+export async function githubCompareFileDiffAnchor(
+  repoRelativePath: string,
+): Promise<string> {
+  const path = repoRelativePath.replace(/^\/+/, "");
+  return `diff-${await sha256Hex(path)}`;
+}
+
+/** Jump to one file's diff on the GitHub compare page. */
+export async function githubCompareFileUrl(
+  github_repo: string,
+  baseRef: string,
+  headRef: string,
+  repoRelativePath: string,
+): Promise<string> {
+  const anchor = await githubCompareFileDiffAnchor(repoRelativePath);
+  return `${githubCompareUrl(github_repo, baseRef, headRef)}#${anchor}`;
 }
 
 export function openSource(

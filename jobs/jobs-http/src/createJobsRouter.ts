@@ -48,7 +48,6 @@ export function createJobsRouter(
   jobsRouter.use(
     ...createScopedMiddleware({
       apiSpec: jsonSpec,
-      enforceAuth: true,
     }),
   );
 

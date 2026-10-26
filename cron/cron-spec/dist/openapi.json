@@ -12,6 +12,14 @@
     }
   ],
   "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
+      }
+    },
     "schemas": {
       "JobSettings": {
         "$ref": "#/components/schemas/job_settings"
@@ -117,13 +125,10 @@
       "get": {
         "summary": "List all cron jobs",
         "operationId": "listCronJobs",
-        "tags": [
-          "site-admin-only"
-        ],
         "security": [
           {
-            "scopes": [
-              "cron:read"
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -168,13 +173,10 @@
       "put": {
         "summary": "Update settings for a specific cron job by name",
         "operationId": "updateCronJobSettings",
-        "tags": [
-          "site-admin-only"
-        ],
         "security": [
           {
-            "scopes": [
-              "cron:write"
+            "session": [
+              "site-admin"
             ]
           }
         ],

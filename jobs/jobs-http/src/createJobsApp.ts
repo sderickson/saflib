@@ -47,7 +47,6 @@ export function createJobsApp(options: JobsServiceOptions): express.Express {
     "/jobs",
     ...createScopedMiddleware({
       apiSpec: jsonSpec,
-      enforceAuth: true,
     }),
     enqueueJobHandler,
   );

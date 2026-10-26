@@ -26,9 +26,38 @@ const integrationStubRoot = path.join(
 );
 const dependenciesLive = path.join(
   templatesProductRoot,
-  "service/common/dependencies.ts",
+  "service/monolith/dependencies.ts",
 );
-const overviewDoc = path.join(templatesSaflibRoot, "integrations", "docs", "01-overview.md");
+/** Workflow-area stubs woven into `dependencies.integrations.ts` when present. */
+const dependenciesIntegrationsWeave = path.join(
+  templatesProductRoot,
+  "service/monolith/dependencies.integrations.weave.ts",
+);
+
+/**
+ * Where the product wires integrations: the composition root
+ * (`service/monolith`), or `service/common` in products that haven't moved
+ * their `dependencies*.ts` there yet.
+ */
+export function resolveWiringDir(productRoot: string): string {
+  const monolith = path.join(productRoot, "service", "monolith");
+  const common = path.join(productRoot, "service", "common");
+  const hasWiring = (dir: string) =>
+    existsSync(path.join(dir, "dependencies.ts")) ||
+    existsSync(path.join(dir, "dependencies.integrations.ts"));
+  return hasWiring(monolith) || !hasWiring(common) ? monolith : common;
+}
+
+function resolveIntegrationsDepsPath(wiringDir: string): string | undefined {
+  const integrationsFile = path.join(wiringDir, "dependencies.integrations.ts");
+  return existsSync(integrationsFile) ? integrationsFile : undefined;
+}
+const overviewDoc = path.join(
+  templatesSaflibRoot,
+  "integrations",
+  "docs",
+  "01-overview.md",
+);
 
 /** Expected shape: `{product}/service/integrations/{name}` (relative to cwd / monorepo root). */
 const INTEGRATION_PATH_RE =
@@ -39,7 +68,12 @@ interface InitIntegrationInput {
    * Path of the new integration package from the monorepo root, e.g.
    * `power-up/service/integrations/mercury`.
    */
-  path: string;
+  path?: string;
+  /**
+   * Legacy: kebab-case integration name when the run's cwd is already the
+   * product root (e.g. after `cd daemon`). Prefer `path` for new plans.
+   */
+  name?: string;
 }
 
 interface InitIntegrationContext extends ParsePackageNameOutput {
@@ -52,10 +86,44 @@ interface InitIntegrationContext extends ParsePackageNameOutput {
   cwd: string;
 }
 
+function resolveIntegrationFromName(
+  integrationName: string,
+  cwd: string,
+): {
+  integrationName: string;
+  productRoot: string;
+  targetDir: string;
+  parentDir: string;
+} {
+  const parentDir = path.resolve(cwd, "service", "common");
+  const productRoot = path.dirname(path.dirname(parentDir));
+  return {
+    integrationName,
+    productRoot,
+    targetDir: path.join(
+      productRoot,
+      "service",
+      "integrations",
+      integrationName,
+    ),
+    parentDir,
+  };
+}
+
 function resolveIntegrationPath(
   rawPath: string,
   cwd: string,
-): { integrationName: string; productRoot: string; targetDir: string; parentDir: string } {
+): {
+  integrationName: string;
+  productRoot: string;
+  targetDir: string;
+  parentDir: string;
+} {
+  if (rawPath === undefined || rawPath === null || rawPath === "") {
+    throw new Error(
+      'integrations/init requires input.path (e.g. "daemon/service/integrations/uscis") or legacy input.name when cwd is the product root',
+    );
+  }
   const normalized = rawPath.replace(/^\.\//, "").replace(/\/$/, "");
   const match = INTEGRATION_PATH_RE.exec(normalized);
   if (!match?.groups) {
@@ -68,15 +136,50 @@ function resolveIntegrationPath(
   return {
     integrationName,
     productRoot,
-    targetDir: path.join(productRoot, "service", "integrations", integrationName),
+    targetDir: path.join(
+      productRoot,
+      "service",
+      "integrations",
+      integrationName,
+    ),
     parentDir: path.join(productRoot, "service", "common"),
   };
+}
+
+function resolveInitIntegrationLocations(
+  input: InitIntegrationInput,
+  cwd: string,
+): {
+  integrationName: string;
+  productRoot: string;
+  targetDir: string;
+  parentDir: string;
+  pathLabel: string;
+} {
+  if (input.path) {
+    const locations = resolveIntegrationPath(input.path, cwd);
+    return {
+      ...locations,
+      pathLabel: input.path.replace(/^\.\//, "").replace(/\/$/, ""),
+    };
+  }
+  if (input.name) {
+    const locations = resolveIntegrationFromName(input.name, cwd);
+    return {
+      ...locations,
+      pathLabel: path.join("service", "integrations", input.name),
+    };
+  }
+  throw new Error(
+    'integrations/init requires input.path (e.g. "daemon/service/integrations/uscis") or legacy input.name when cwd is the product root',
+  );
 }
 
 /**
  * Ported from `integrations/workflows/init-integration.ts` — scaffolds
  * `{product}/service/integrations/{name}` from the base stub and weaves
- * `configure{Name}()` into `service/common/dependencies.ts`.
+ * `configure{Name}()` into the composition root's `dependencies.ts`
+ * (`service/monolith`; `service/common` in products that haven't moved it).
  *
  * Call from the monorepo root with a full product-relative path (do not
  * `cd` into `service/common` first).
@@ -98,13 +201,17 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
         description:
           "Path of the new integration from the monorepo root, e.g. 'power-up/service/integrations/mercury'.",
       },
+      name: {
+        type: "string",
+        description:
+          "Legacy kebab-case name when cwd is already the product root (after `cd <product>`).",
+      },
     },
-    required: ["path"],
   },
 
   context: ({ input, cwd }) => {
-    const { integrationName, productRoot, targetDir, parentDir } =
-      resolveIntegrationPath(input.path, cwd);
+    const { integrationName, productRoot, targetDir, parentDir, pathLabel } =
+      resolveInitIntegrationLocations(input, cwd);
 
     let org = "saflib";
     let productName = path.basename(productRoot);
@@ -125,72 +232,104 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
       targetDir,
       parentDir,
       productRoot,
-      path: input.path.replace(/^\.\//, "").replace(/\/$/, ""),
+      path: pathLabel,
       serviceName: productName,
       cwd,
     };
   },
 
   steps: [
-    step<CopyStepInput, InitIntegrationContext>("copy", runCopyStep, ({ context }) => {
-      const baseReplace = makeLineReplace(context);
-      return {
-        templateFiles: {
-          packageJson: path.join(integrationStubRoot, "package.json"),
-          secrets: path.join(integrationStubRoot, "secrets.json"),
-          envFile: path.join(integrationStubRoot, "env.ts"),
-          client: path.join(integrationStubRoot, "client.ts"),
-          clientMocks: path.join(integrationStubRoot, "mocks/client.ts"),
-          index: path.join(integrationStubRoot, "index.ts"),
-          test: path.join(integrationStubRoot, "test/index.test.ts"),
-          tsconfig: path.join(integrationStubRoot, "tsconfig.json"),
-          vitestConfig: path.join(integrationStubRoot, "vitest.config.js"),
-          callsPing: path.join(integrationStubRoot, "calls/ping.ts"),
-          binPing: path.join(integrationStubRoot, "bin/ping.ts"),
-        },
-        name: context.integrationName,
-        targetDir: context.targetDir,
-        // Expansion stubs belong to integrations/add-call.
-        skipSourceGlobs: ["**/__target-name__*"],
-        lineReplace: (line: string) => {
-          let result = line;
-          result = result
-            .split("@saflib/base-__integration-name__-integration")
-            .join(context.packageName);
-          return baseReplace(result);
-        },
-      };
-    }),
+    step<CopyStepInput, InitIntegrationContext>(
+      "copy",
+      runCopyStep,
+      ({ context }) => {
+        const baseReplace = makeLineReplace(context);
+        return {
+          templateFiles: {
+            packageJson: path.join(integrationStubRoot, "package.json"),
+            secrets: path.join(integrationStubRoot, "secrets.json"),
+            envFile: path.join(integrationStubRoot, "env.ts"),
+            client: path.join(integrationStubRoot, "client.ts"),
+            clientMocks: path.join(integrationStubRoot, "mocks/client.ts"),
+            index: path.join(integrationStubRoot, "index.ts"),
+            test: path.join(integrationStubRoot, "test/index.test.ts"),
+            tsconfig: path.join(integrationStubRoot, "tsconfig.json"),
+            vitestConfig: path.join(integrationStubRoot, "vitest.config.js"),
+            callsPing: path.join(integrationStubRoot, "calls/ping.ts"),
+            binPing: path.join(integrationStubRoot, "bin/ping.ts"),
+          },
+          name: context.integrationName,
+          targetDir: context.targetDir,
+          // Expansion stubs belong to integrations/add-call.
+          skipSourceGlobs: ["**/__target-name__*"],
+          lineReplace: (line: string) => {
+            let result = line;
+            result = result
+              .split("@saflib/base-__integration-name__-integration")
+              .join(context.packageName);
+            return baseReplace(result);
+          },
+        };
+      },
+    ),
 
-    step<CopyStepInput, InitIntegrationContext>("copy", runCopyStep, ({ context }) => {
-      const baseReplace = makeLineReplace(context);
-      return {
-        templateFiles: {
-          dependencies: dependenciesLive,
-        },
-        name: context.integrationName,
-        targetDir: context.parentDir,
-        lineReplace: (line: string) => {
-          let result = line;
-          result = result
-            .split("@saflib/base-__integration-name__-integration")
-            .join(context.packageName);
-          return baseReplace(result);
-        },
-      };
-    }),
+    step<CopyStepInput, InitIntegrationContext>(
+      "copy",
+      runCopyStep,
+      ({ context }) => {
+        const baseReplace = makeLineReplace(context);
+        const wiringDir = resolveWiringDir(context.productRoot);
+        const integrationsDepsPath = resolveIntegrationsDepsPath(wiringDir);
+        const weaveIntoIntegrationsFile = integrationsDepsPath !== undefined;
+        const dependenciesSource = weaveIntoIntegrationsFile
+          ? dependenciesIntegrationsWeave
+          : dependenciesLive;
+        return {
+          templateFiles: {
+            dependencies: dependenciesSource,
+          },
+          name: context.integrationName,
+          targetDir: wiringDir,
+          ...(weaveIntoIntegrationsFile
+            ? {
+                targetBasenames: {
+                  dependencies: "dependencies.integrations.ts",
+                },
+              }
+            : {}),
+          lineReplace: (line: string) => {
+            let result = line;
+            result = result
+              .split("@saflib/base-__integration-name__-integration")
+              .join(context.packageName);
+            return baseReplace(result);
+          },
+        };
+      },
+    ),
 
-    step<CdStepInput, InitIntegrationContext>("cd", runCdStep, ({ context }) => ({
-      path: context.targetDir,
-    })),
+    step<CdStepInput, InitIntegrationContext>(
+      "cd",
+      runCdStep,
+      ({ context }) => ({
+        path: context.targetDir,
+      }),
+    ),
 
-    step<CommandStepInput, InitIntegrationContext>("command", runCommandStep, () => ({
-      command: "touch",
-      args: [".env"],
-    })),
+    step<CommandStepInput, InitIntegrationContext>(
+      "command",
+      runCommandStep,
+      () => ({
+        command: "touch",
+        args: [".env"],
+      }),
+    ),
 
-    step<PromptStepInput, InitIntegrationContext>("prompt", runPromptStep, ({ context }) => ({
-      prompt: `Install the SDK package for the **${context.integrationName}** integration and declare its secrets.
+    step<PromptStepInput, InitIntegrationContext>(
+      "prompt",
+      runPromptStep,
+      ({ context }) => ({
+        prompt: `Install the SDK package for the **${context.integrationName}** integration and declare its secrets.
 
 Read the overview doc first: ${overviewDoc}
 
@@ -199,49 +338,74 @@ Read the overview doc first: ${overviewDoc}
 3. Update API key / credential names in \`secrets.json\`. Rename or add entries as needed. Sentinel \`"mock"\` selects the in-memory mock client.
 4. Describe each secret clearly in its \`"description"\` field.
 5. Only add \`env.schema.json\` later if you need non-secret config (feature flags, recording mode, etc.), then run \`npm exec saf-env generate\`.`,
-    })),
+      }),
+    ),
 
-    step<CommandStepInput, InitIntegrationContext>("command", runCommandStep, () => ({
-      command: "npm",
-      args: ["exec", "saf-env", "generate"],
-    })),
+    step<CommandStepInput, InitIntegrationContext>(
+      "command",
+      runCommandStep,
+      () => ({
+        command: "npm",
+        args: ["exec", "saf-env", "generate"],
+      }),
+    ),
 
-    step<CommandStepInput, InitIntegrationContext>("command", runCommandStep, () => ({
-      command: "npm",
-      args: ["install"],
-    })),
+    step<CommandStepInput, InitIntegrationContext>(
+      "command",
+      runCommandStep,
+      () => ({
+        command: "npm",
+        args: ["install"],
+      }),
+    ),
 
-    step<UpdateStepInput, InitIntegrationContext>("update", runUpdateStep, () => ({
-      fileId: "client",
-      prompt: `Update **client.ts** to implement the integration client.
+    step<UpdateStepInput, InitIntegrationContext>(
+      "update",
+      runUpdateStep,
+      () => ({
+        fileId: "client",
+        prompt: `Update **client.ts** to implement the integration client.
 
 Read the overview doc first: ${overviewDoc}
 
 1. Import the installed SDK (if any).
 2. Keep fetching credentials via \`store.getSecretByName(...)\` and \`secrets.json\` (already wired). Update the secret name if you renamed it in \`secrets.json\`.
-3. **Do not change the configure / isMocked pattern** (test mode mocks; missing secret warns; \`"mock"\` sentinel selects mocks). See the docs for why.
+3. Follow the **configure / isMocked** pattern (\`client.real.ts\` / \`client.ts\`): \`NODE_ENV=test\` uses mocks; explicit \`"mock"\` sentinel selects mocks; **do not** implicitly mock when secrets are missing — throw with a clear error (or require explicit mock config) so production cannot boot half-configured. Split config/secret env vars (non-secret client id in \`env.schema.json\`, secret in \`secrets.json\`) when the vendor uses that shape.
 4. Define a scoped client type using \`Pick\` to select only the SDK methods this integration will use. For nested SDKs, pick from each namespace. See the docs for patterns.
 5. Implement the **mock client** in \`mocks/client.ts\` (already imported). Put all mock data and mock method implementations there — keep \`mocks/client.ts\` **SDK-free** (\`import type\` only from the vendor package). Tests import mocks via \`@<package>/mocks\`.
 6. Implement the **real client** by initialising the SDK (or fetch wrapper) and casting it to the scoped type.
 7. Update the export name and types.`,
-    })),
+      }),
+    ),
 
-    step<UpdateStepInput, InitIntegrationContext>("update", runUpdateStep, () => ({
-      fileId: "callsPing",
-      prompt: `Update **calls/ping.ts** to make a real read-only API call through the scoped client.
+    step<UpdateStepInput, InitIntegrationContext>(
+      "update",
+      runUpdateStep,
+      () => ({
+        fileId: "callsPing",
+        prompt: `Update **calls/ping.ts** to make a real read-only API call through the scoped client.
 
 Replace the placeholder implementation with a call to a safe SDK method (list, get, search — not create/update/delete). The function should import the client from \`../client.ts\` and return the API response.`,
-    })),
+      }),
+    ),
 
-    step<CommandStepInput, InitIntegrationContext>("command", runCommandStep, () => ({
-      command: "npm",
-      args: ["run", "typecheck"],
-    })),
+    step<CommandStepInput, InitIntegrationContext>(
+      "command",
+      runCommandStep,
+      () => ({
+        command: "npm",
+        args: ["run", "typecheck"],
+      }),
+    ),
 
-    step<CommandStepInput, InitIntegrationContext>("command", runCommandStep, () => ({
-      command: "npm",
-      args: ["run", "test"],
-    })),
+    step<CommandStepInput, InitIntegrationContext>(
+      "command",
+      runCommandStep,
+      () => ({
+        command: "npm",
+        args: ["run", "test"],
+      }),
+    ),
   ],
 });
 

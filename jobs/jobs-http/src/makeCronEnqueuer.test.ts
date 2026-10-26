@@ -36,7 +36,8 @@ const productSpec = asOpenApiDocument({
     "/maintenance/purge-claude-files": {
       post: {
         operationId: "purgeClaudeFilesMaintenance",
-        tags: ["background", "site-admin-only"],
+        tags: ["background"],
+        security: [{ session: ["site-admin"] }],
         responses: { "200": { description: "ok" } },
       },
     },

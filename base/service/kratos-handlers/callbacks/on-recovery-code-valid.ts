@@ -1,6 +1,6 @@
 import { getSafReporters } from "@saflib/node";
 import { passwordReset } from "@saflib/base-email/emails/password-reset";
-import { getEmailClient } from "@saflib/base-service-common/dependencies";
+import { getEmailClient } from "@saflib/base-service-common/email";
 import type { RecoveryCodeValidPayload } from "@saflib/ory-kratos-http";
 
 const emailFrom = "Base <noreply@saflib.com>";

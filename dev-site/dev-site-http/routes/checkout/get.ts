@@ -9,16 +9,19 @@ export const getCheckoutHandler = createHandler(async (req, res) => {
   const { dbKey, repo_root, product_root, mainRef } = getDevSiteHttpContext();
   const compare_ref =
     typeof req.query.compare_ref === "string" ? req.query.compare_ref : undefined;
+  const head_ref =
+    typeof req.query.head_ref === "string" ? req.query.head_ref : undefined;
   const { result, error } = await getCheckoutStatus(dbKey, {
     repo_root,
     product_root,
     mainRef,
     compare_ref,
+    head_ref,
   });
   if (error) {
     switch (true) {
       case error instanceof GitCommandError:
-        if (compare_ref?.trim()) {
+        if (compare_ref?.trim() || head_ref?.trim()) {
           throw createError(400, error.message, {
             code: "COMPARE_REF_NOT_FOUND",
           });

@@ -22,6 +22,9 @@
   ],
   "references": [
     {
+      "path": "../../../errors/errors-vue"
+    },
+    {
       "path": "../../../links"
     },
     {
@@ -32,9 +35,6 @@
     },
     {
       "path": "../../../vue"
-    },
-    {
-      "path": "../../service/sdk"
     },
     {
       "path": "../common"

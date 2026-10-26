@@ -1,4 +1,6 @@
+import { randomUUID } from "node:crypto";
 import { getSafContext, getSafReporters } from "@saflib/node";
+import { hasAnalyticsConsent } from "./consent.ts";
 import type { SafContext } from "@saflib/node";
 import type { AnalyticsService, CommonEvent, IdentifyProps } from "./types.ts";
 
@@ -40,7 +42,11 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
         "Analytics capture requires SafContext.auth.userId (authenticated request).",
       );
     }
-    const distinctId = String(userId).trim();
+    // A user who hasn't agreed to analytics still counts toward product
+    // events, but anonymously: a fresh id per event (nothing links events to
+    // each other or to the user) and no PostHog person profile.
+    const consented = hasAnalyticsConsent(String(userId).trim());
+    const distinctId = consented ? String(userId).trim() : randomUUID();
     const fromContext = this.getCapturePropertiesFromSafContext(ctx);
     const fromEnvelope: Record<string, unknown> = {};
     const putEnvelope = (key: string, value: string | undefined) => {
@@ -51,12 +57,16 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
     putEnvelope("client", event.client);
     putEnvelope("view", event.view);
     putEnvelope("component", event.component);
+    const fromConsent: Record<string, unknown> = consented
+      ? {}
+      : { $process_person_profile: false };
     const mergedContext =
       event.context === undefined &&
       Object.keys(fromContext).length === 0 &&
-      Object.keys(fromEnvelope).length === 0
+      Object.keys(fromEnvelope).length === 0 &&
+      Object.keys(fromConsent).length === 0
         ? undefined
-        : { ...fromContext, ...fromEnvelope, ...event.context };
+        : { ...fromContext, ...fromEnvelope, ...event.context, ...fromConsent };
 
     this.emitCapture({
       distinctId,

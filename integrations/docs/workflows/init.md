@@ -38,7 +38,7 @@ When run, the workflow will:
 Usage: npm exec saf-workflow kickoff integrations/init <name>
 
 Initialize a third-party integration from the base stub and weave configure into
-   service dependencies
+   service/common dependencies (dependencies.integrations.ts when present)
 
 Arguments:
   name        Kebab-case integration name (e.g. 'stripe'). Creates service/integrations/{name} and weaves configure into common/dependencies.

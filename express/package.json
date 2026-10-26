@@ -15,7 +15,6 @@
     "@ory/client": "^1.22.37",
     "@saflib/analytics-http": "*",
     "@saflib/env": "*",
-    "@saflib/errors-http": "*",
     "@saflib/node": "*",
     "@saflib/node-log-http": "*",
     "@saflib/notify": "*",
@@ -48,7 +47,8 @@
     "./workflows": "./workflows/index.ts",
     "./resolveAuthFromIdentityId": "./src/resolveAuthFromIdentityId.ts",
     "./kratos-admin": "./src/kratos-admin.ts",
-    "./env": "./env.ts"
+    "./env": "./env.ts",
+    "./test": "./src/test/route-test-app.ts"
   },
   "sideEffects": false
 }

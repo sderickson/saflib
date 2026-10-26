@@ -150,6 +150,10 @@ export function packageKindIcon(kind: PackageKind | undefined): string {
       return "mdi-library-shelves";
     case "integration":
       return "mdi-connection";
+    case "objects":
+      return "mdi-shape-outline";
+    case "test":
+      return "mdi-test-tube";
     default:
       return "mdi-folder-outline";
   }

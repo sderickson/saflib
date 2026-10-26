@@ -1,5 +1,8 @@
 {
   "name": "@saflib/base-__static-subdomain-name__-static",
+  "saf": {
+    "kind": "other"
+  },
   "description": "Static __subdomain-name__ site for Base using VitePress + Vuetify",
   "type": "module",
   "scripts": {
@@ -10,7 +13,6 @@
   },
   "dependencies": {
     "@saflib/base-clients-common": "*",
-    "@saflib/base-links": "*",
     "@saflib/links": "*",
     "@saflib/sdk": "*",
     "@saflib/vite": "*",

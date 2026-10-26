@@ -1,5 +1,8 @@
 {
   "name": "@saflib/base-kratos-handlers",
+  "saf": {
+    "kind": "domain"
+  },
   "description": "Shared Kratos webhook handlers for base (email courier callbacks + action handler)",
   "type": "module",
   "exports": {
@@ -12,6 +15,7 @@
     "@saflib/ory-kratos-http": "*"
   },
   "devDependencies": {
+    "@saflib/email-service": "*",
     "@saflib/monorepo": "*",
     "vitest": "*"
   },

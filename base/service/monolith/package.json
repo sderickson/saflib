@@ -1,19 +1,27 @@
 {
   "name": "@saflib/base-monolith",
+  "saf": {
+    "kind": "app"
+  },
   "type": "module",
   "scripts": {
     "typecheck": "tsc -b",
-    "start": "node --experimental-strip-types --disable-warning=ExperimentalWarning ./run.ts"
+    "start": "node --experimental-strip-types --disable-warning=ExperimentalWarning ./run.ts",
+    "test": "vitest run"
   },
   "exports": {
     "./env": "./env.ts",
+    "./http": "./http.ts",
     "./run": "./run.ts"
   },
   "dependencies": {
+    "@saflib/base-__integration-name__-integration": "*",
+    "@saflib/base-__offshoot-name__-http": "*",
     "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",
     "@saflib/base-http": "*",
+    "@saflib/base-http-app": "*",
     "@saflib/base-jobs": "*",
     "@saflib/base-kratos-handlers": "*",
     "@saflib/base-service-common": "*",
@@ -25,10 +33,15 @@
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/ory-kratos-http": "*",
-    "@saflib/vendors-loki": "*"
+    "@saflib/secret-store": "*",
+    "@saflib/vendors-loki": "*",
+    "@saflib/vendors-sentry-node": "*"
   },
   "sideEffects": false,
   "imports": {
     "#env.ts": "./env.ts"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
   }
 }

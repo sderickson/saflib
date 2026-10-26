@@ -1,5 +1,6 @@
 get__OffshootName__Health:
   operationId: get__OffshootName__Health
+  x-public: true
   summary: Health check for the __offshoot-name__ offshoot
   responses:
     "200":

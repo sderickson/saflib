@@ -77,6 +77,11 @@ export interface GetCheckoutOptions {
   mainRef: string;
   /** Local branch/ref to merge-base against; defaults to `mainRef`. */
   compare_ref?: string;
+  /**
+   * Commit to report on instead of the live `HEAD` — e.g. a workflow run's
+   * `completion_hash`, so its reflection isn't polluted by later commits.
+   */
+  head_ref?: string;
 }
 
 function buildCompareCandidates(
@@ -96,10 +101,11 @@ function buildCompareCandidates(
 async function resolveCompare(
   dbKey: DbKey,
   options: GetCheckoutOptions,
+  head: string,
 ): Promise<ReturnsError<CheckoutCompare | undefined, GitCommandError>> {
   const explicit = options.compare_ref?.trim() ?? "";
   const against_ref = explicit || options.mainRef;
-  const mb = mergeBase(options.repo_root, "HEAD", against_ref);
+  const mb = mergeBase(options.repo_root, head, against_ref);
   if (mb.error) {
     if (explicit) return { error: mb.error };
     return { result: undefined };
@@ -121,7 +127,7 @@ async function resolveCompare(
   }
 
   const existing = await getByHash(dbKey, tip.hash);
-  const renamed = listRenames(options.repo_root, mb.result, "HEAD");
+  const renamed = listRenames(options.repo_root, mb.result, head);
   return {
     result: {
       against_ref,
@@ -142,12 +148,18 @@ export async function getCheckoutStatus(
   options: GetCheckoutOptions,
 ): Promise<ReturnsError<CheckoutStatus, GetCheckoutError>> {
   const product_root = (options.product_root ?? "").replace(/^\/+|\/+$/g, "");
-  const head = resolveRef(options.repo_root, "HEAD");
+  const explicitHead = options.head_ref?.trim() || undefined;
+  const head = resolveRef(options.repo_root, explicitHead ?? "HEAD");
   if (head.error) return { error: head.error };
 
-  const branchRes = currentBranch(options.repo_root);
-  if (branchRes.error) return { error: branchRes.error };
-  const branch = branchRes.result;
+  // A pinned commit isn't "on" the current branch — report it detached so
+  // source links and diffs use the hash rather than the moving branch tip.
+  let branch: string | null = null;
+  if (!explicitHead) {
+    const branchRes = currentBranch(options.repo_root);
+    if (branchRes.error) return { error: branchRes.error };
+    branch = branchRes.result;
+  }
 
   const refsRes = listRefs(options.repo_root);
   if (refsRes.error) return { error: refsRes.error };
@@ -175,7 +187,7 @@ export async function getCheckoutStatus(
     };
   }
 
-  const compareRes = await resolveCompare(dbKey, options);
+  const compareRes = await resolveCompare(dbKey, options, head.result);
   if (compareRes.error) return { error: compareRes.error };
   const compare = compareRes.result;
 

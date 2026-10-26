@@ -1,22 +1,11 @@
 import { createHandler } from "@saflib/express";
 import type { BackupServiceResponseBody } from "@saflib/backup-spec";
 import createError from "http-errors";
-import { getSafContextWithAuth } from "@saflib/node";
 import type { ObjectStore } from "@saflib/object-store";
 import { mapObjectStoreFileToBackup } from "./_helpers.ts";
 
 export const createListHandler = (objectStore: ObjectStore) => {
   return createHandler(async (_req, res) => {
-    const { auth } = getSafContextWithAuth();
-
-    if (!auth.isAdmin) {
-      const errorResponse: BackupServiceResponseBody["listBackups"][403] = {
-        message: "Forbidden - admin access required",
-        code: "FORBIDDEN",
-      };
-      res.status(403).json(errorResponse);
-      return;
-    }
 
     const { result: files, error } = await objectStore.listFiles();
 

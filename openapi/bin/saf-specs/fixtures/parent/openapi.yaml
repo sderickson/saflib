@@ -26,3 +26,5 @@ components:
       properties:
         widget:
           $ref: "pkg:@fixture/offshoot-spec/openapi.yaml#/components/schemas/Widget"
+        gadget:
+          $ref: "pkg:@fixture/offshoot-spec/openapi.yaml#/components/schemas/Gadget"
