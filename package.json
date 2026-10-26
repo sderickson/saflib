@@ -41,7 +41,7 @@
     "@vue/reactivity": "3.5.20",
     "@vue/runtime-core": "3.5.20",
     "@vue/runtime-dom": "3.5.20",
-    "@vue/server-renderer": "3.5.20",
+    "@vue/server-renderer": "3.5.42",
     "@vue/shared": "3.5.20",
     "@types/node": "^24.3.0",
     "typescript": "~6.0.0",
