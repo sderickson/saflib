@@ -45,15 +45,18 @@ describe("blockHtml", () => {
   it("rejects script and attributed tags", () => {
     expect(runBlockHtml({ title: "<script>x</script>" }).json).toEqual({
       error: "HTML is not allowed",
+      code: "HTML_NOT_ALLOWED",
     });
     expect(runBlockHtml({ title: '<br onclick="x">' }).json).toEqual({
       error: "HTML is not allowed",
+      code: "HTML_NOT_ALLOWED",
     });
   });
 
   it("rejects non-br tags", () => {
     expect(runBlockHtml({ note: "<div>text</div>" }).json).toEqual({
       error: "HTML is not allowed",
+      code: "HTML_NOT_ALLOWED",
     });
   });
 });

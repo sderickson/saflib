@@ -48,3 +48,14 @@ export const showInfo = (message: string) => {
   if (info.value.indexOf(message) !== -1) return;
   info.value.push(message);
 };
+
+export const warnings = ref<string[]>([]);
+
+/**
+ * Something the user should know about that isn't a failure, e.g. a save that
+ * succeeded but changed some of what they entered.
+ */
+export const showWarning = (message: string) => {
+  if (warnings.value.indexOf(message) !== -1) return;
+  warnings.value.push(message);
+};

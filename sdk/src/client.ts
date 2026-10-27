@@ -1,4 +1,5 @@
-import { QueryClient } from "@tanstack/vue-query";
+import { MutationCache, QueryClient } from "@tanstack/vue-query";
+import type { Mutation } from "@tanstack/vue-query";
 import createClient from "openapi-fetch";
 import { getProtocol, getHost } from "@saflib/links";
 import { TanstackError } from "./errors.ts";
@@ -64,10 +65,38 @@ export const createSafClient = <Q extends {}>(
 };
 
 /**
+ * Set `meta: { [SILENCE_ERROR_SNACKBAR]: true }` on a mutation that renders its
+ * own error (e.g. inline in a dialog) so the global error handler skips it.
+ */
+export const SILENCE_ERROR_SNACKBAR = "silenceErrorSnackbar" as const;
+
+/** Options for {@link createTanstackQueryClient}. */
+export interface CreateTanstackQueryClientOptions {
+  /**
+   * Called when any mutation fails, unless the mutation sets
+   * `meta[SILENCE_ERROR_SNACKBAR]`. `createVueApp` uses this to show every
+   * mutation error in the snackbar.
+   */
+  onMutationError?: (
+    error: unknown,
+    mutation: Mutation<unknown, unknown, unknown, unknown>,
+  ) => void;
+}
+
+/**
  * Creates a Tanstack Query client with default timeout and retry settings. It has a staleTime of 10 seconds, so that requests made from different parts of the page during a page load don't trigger multiple requests. It also doesn't retry for status codes that are unlikely to be fixed by retrying, such as 401, 402, 403, 404, 500, and network errors.
  */
-export const createTanstackQueryClient = () => {
+export const createTanstackQueryClient = (
+  options: CreateTanstackQueryClientOptions = {},
+) => {
+  const { onMutationError } = options;
   return new QueryClient({
+    mutationCache: new MutationCache({
+      onError: (error, _variables, _context, mutation) => {
+        if (mutation.meta?.[SILENCE_ERROR_SNACKBAR] === true) return;
+        onMutationError?.(error, mutation);
+      },
+    }),
     defaultOptions: {
       queries: {
         staleTime: 1000 * 10,

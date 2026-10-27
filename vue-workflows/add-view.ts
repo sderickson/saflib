@@ -178,6 +178,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<AddViewInput, AddView
       * Take the data from the loader, assert that it's loaded, and render the page.
       * Do not add any sort of loading state or skeleton; that's the job of the "Async" component (and \`AsyncPage\` for query errors). Sub-components should receive **values to render** (e.g. lists, labels), not query \`isPending\`/\`isError\` or raw query objects—unless you have deliberately split loading (JIT) and documented it.
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.
+      * Every error must reach the user. Failed mutations show in the snackbar automatically (\`createVueApp\` routes them to \`showError\` from "@saflib/vue"), so never swallow one with an empty catch. For other failures (validation, client-side work), call \`showError\`/\`showInfo\` yourself. If the page renders a mutation's error inline instead, set \`meta: { [SILENCE_ERROR_SNACKBAR]: true }\` (from "@saflib/sdk") on that mutation.
       * Import and use the "useReverseT" function from this SPA's \`i18n\` package export (not a relative \`../i18n\`), and use t(strings.key) instead of strings.key for all text. If copy needs runtime values, use vue-i18n placeholders in the string (\`{name}\`, not \`{{name}}\`) and call \`t(strings.key, { name: value })\` — see **Interpolation** in ${i18nDoc}.
 
       For more information, see ${componentsDoc} and ${i18nDoc}.`,
