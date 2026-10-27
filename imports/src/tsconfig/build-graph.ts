@@ -76,7 +76,12 @@ export function isGitIgnoredPackageDirectory(packageDir: string): boolean {
 
 /**
  * Batch `git check-ignore` for many package dirs under one repo root.
- * Returns absolute paths that are ignored. One spawn instead of one per package.
+ * Returns absolute paths that are ignored. One spawn per repository instead
+ * of one per package.
+ *
+ * Paths inside a git submodule (e.g. a vendored `saflib/`) are checked by
+ * that submodule's repository: `git check-ignore` exits with an error for the
+ * whole batch if any path is inside a submodule.
  */
 export function listGitIgnoredPackageDirectories(
   rootDir: string,
@@ -88,30 +93,59 @@ export function listGitIgnoredPackageDirectories(
     if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) {
       continue;
     }
-    relToAbs.set(rel, abs);
+    relToAbs.set(rel.split(path.sep).join("/"), abs);
   }
   if (relToAbs.size === 0) {
     return new Set();
   }
 
-  const result = spawnSync("git", ["check-ignore", "--stdin"], {
-    cwd: rootDir,
-    input: [...relToAbs.keys()].join("\n") + "\n",
-    encoding: "utf8",
-  });
-  // status 0 = some ignored; 1 = none ignored; other = not a git repo / error
-  if (result.status !== 0 && result.status !== 1) {
-    return new Set();
+  // Longest first, so a nested submodule wins over its parent.
+  const submodules = listSubmodulePaths(rootDir).sort(
+    (a, b) => b.length - a.length,
+  );
+  const byRepo = new Map<string, Map<string, string>>(); // repo rel → (path in repo → abs)
+  for (const [rel, abs] of relToAbs) {
+    const sub = submodules.find((s) => rel === s || rel.startsWith(`${s}/`));
+    const repo = sub ?? "";
+    const inRepo = sub ? rel.slice(sub.length + 1) : rel;
+    if (inRepo === "") continue; // the submodule root itself is a repo, not ignored
+    if (!byRepo.has(repo)) byRepo.set(repo, new Map());
+    byRepo.get(repo)!.set(inRepo, abs);
   }
 
   const ignored = new Set<string>();
-  for (const rel of (result.stdout ?? "").split("\n")) {
-    const trimmed = rel.trim();
-    if (!trimmed) continue;
-    const abs = relToAbs.get(trimmed);
-    if (abs) ignored.add(abs);
+  for (const [repo, paths] of byRepo) {
+    const result = spawnSync("git", ["check-ignore", "--stdin"], {
+      cwd: path.join(rootDir, repo),
+      input: [...paths.keys()].join("\n") + "\n",
+      encoding: "utf8",
+    });
+    // status 0 = some ignored; 1 = none ignored; other = not a git repo / error
+    if (result.status !== 0 && result.status !== 1) continue;
+    for (const line of (result.stdout ?? "").split("\n")) {
+      const abs = paths.get(line.trim());
+      if (abs) ignored.add(abs);
+    }
   }
   return ignored;
+}
+
+/** Repo-relative paths of the git submodules under `rootDir` (gitlinks). */
+function listSubmodulePaths(rootDir: string): string[] {
+  const result = spawnSync("git", ["ls-files", "--stage"], {
+    cwd: rootDir,
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  if (result.status !== 0) return [];
+  const paths: string[] = [];
+  for (const line of (result.stdout ?? "").split("\n")) {
+    // "<mode> <object> <stage>\t<path>"; mode 160000 is a submodule.
+    if (!line.startsWith("160000 ")) continue;
+    const tab = line.indexOf("\t");
+    if (tab !== -1) paths.push(line.slice(tab + 1));
+  }
+  return paths;
 }
 
 function isUnderDir(dir: string, parentDir: string): boolean {

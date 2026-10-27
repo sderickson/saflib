@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   buildReferenceGraph,
   isGitIgnoredPackageDirectory,
+  listGitIgnoredPackageDirectories,
   workspaceDepsOf,
 } from "./build-graph.ts";
 
@@ -96,5 +97,57 @@ describe("workspaceDepsOf", () => {
       packages,
     );
     expect(deps).toEqual(["@saflib/utils"]);
+  });
+});
+
+describe("listGitIgnoredPackageDirectories", () => {
+  const tempDirs: string[] = [];
+  afterEach(() => {
+    while (tempDirs.length > 0) {
+      fs.rmSync(tempDirs.pop()!, { recursive: true, force: true });
+    }
+  });
+
+  const git = (cwd: string, ...args: string[]) =>
+    spawnSync(
+      "git",
+      [
+        "-c",
+        "user.email=t@example.com",
+        "-c",
+        "user.name=t",
+        "-c",
+        "protocol.file.allow=always",
+        ...args,
+      ],
+      { cwd, encoding: "utf8" },
+    );
+
+  it("still finds ignored dirs when some paths are inside a submodule", () => {
+    // A library repo that becomes a submodule, with its own ignored dir.
+    const lib = fs.mkdtempSync(path.join(os.tmpdir(), "saf-sublib-"));
+    tempDirs.push(lib);
+    git(lib, "init");
+    fs.writeFileSync(path.join(lib, ".gitignore"), "/cache/\n");
+    fs.mkdirSync(path.join(lib, "pkg"));
+    fs.writeFileSync(path.join(lib, "pkg", "package.json"), "{}");
+    git(lib, "add", ".");
+    git(lib, "commit", "-m", "init");
+
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "saf-subroot-"));
+    tempDirs.push(root);
+    git(root, "init");
+    fs.writeFileSync(path.join(root, ".gitignore"), "/cache/\n");
+    git(root, "submodule", "add", lib, "lib");
+    for (const dir of ["cache", "app", "lib/cache"]) {
+      fs.mkdirSync(path.join(root, dir), { recursive: true });
+    }
+
+    const dirs = ["cache", "app", "lib/pkg", "lib/cache"].map((d) =>
+      path.join(root, d),
+    );
+    expect(listGitIgnoredPackageDirectories(root, dirs)).toEqual(
+      new Set([path.join(root, "cache"), path.join(root, "lib/cache")]),
+    );
   });
 });
