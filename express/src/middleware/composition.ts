@@ -14,6 +14,7 @@ import { noStoreCacheControl } from "./noStore.ts";
 import { makeCsrfMiddleware } from "./csrf.ts";
 import { makeCsrfTokenMiddleware } from "./csrf-token.ts";
 import multer from "multer";
+import { cleanupUploadedFiles } from "./multer.ts";
 import { compileOperationSecurity, type SecurityResolvers } from "./security.ts";
 
 /**
@@ -111,6 +112,7 @@ export const createScopedMiddleware = (
   }) as unknown as Handler[];
 
   return [
+    ...(fileUploader ? [cleanupUploadedFiles] : []),
     ...openApiValidatorMiddleware,
     makeBlockHtmlMiddleware(),
     // CSRF reads `x-public` and the `csrf-exempt` tag from `req.openapi.schema`.
