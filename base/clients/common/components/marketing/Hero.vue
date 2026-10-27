@@ -22,15 +22,15 @@
 
       <div class="mkt-hero__actions d-flex flex-wrap ga-3">
         <v-btn
-          v-if="mounted && resolvedCtaHref"
+          v-if="mounted"
           color="primary"
           variant="flat"
           size="x-large"
           rounded="0"
           class="mkt-hero__btn mkt-btn-industrial"
-          :href="resolvedCtaHref"
+          :href="cta.href.value"
         >
-          {{ ctaLabel ?? "Get started" }}
+          {{ cta.label.value }}
           <template #append>
             <v-icon size="20">mdi-arrow-right</v-icon>
           </template>
@@ -52,9 +52,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import { linkToHrefWithHost } from "@saflib/links";
-import { authLinks } from "@saflib/ory-kratos-sdk/links";
+import { onMounted, ref } from "vue";
+import { useSessionCta } from "./useSessionCta.ts";
 
 const props = withDefaults(
   defineProps<{
@@ -62,7 +61,10 @@ const props = withDefaults(
     subtitle?: string;
     eyebrow?: string;
     ctaLabel?: string;
+    /** Overrides the default: registration when signed out, the app when signed in. */
     ctaHref?: string;
+    /** Label used instead of `ctaLabel` when signed in and `ctaHref` isn't set. */
+    signedInCtaLabel?: string;
     secondaryHref?: string;
     secondaryLabel?: string;
     variant?: "default" | "compact";
@@ -70,8 +72,10 @@ const props = withDefaults(
   { variant: "default" },
 );
 
-const defaultCtaHref = linkToHrefWithHost(authLinks.newRegistration);
-const resolvedCtaHref = computed(() => props.ctaHref ?? defaultCtaHref);
+const cta = useSessionCta(props, {
+  signedOut: "Get started",
+  signedIn: props.signedInCtaLabel,
+});
 
 const mounted = ref(false);
 onMounted(() => {

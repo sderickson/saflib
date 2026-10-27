@@ -13,7 +13,7 @@
           :key="`${link.subdomain}:${link.path}`"
           variant="text"
           class="text-uppercase font-weight-regular"
-          :href="toHref(link)"
+          :href="toHref(link, link.options)"
         >
           {{ link.name }}
         </v-btn>
@@ -42,7 +42,7 @@
         :key="link.name"
         :title="link.name"
         class="text-uppercase text-center py-4"
-        :href="toHref(link)"
+        :href="toHref(link, link.options)"
       />
     </v-navigation-drawer>
 
@@ -142,7 +142,7 @@ const toHref = (link: Link, options?: LinkOptions) => {
   return linkToHrefWithHost(link, options);
 };
 
-type LinkWithName = Link & { name: string };
+type LinkWithName = Link & { name: string; options?: LinkOptions };
 
 const logoLink = computed<Link>(() =>
   isLoggedIn.value ? appLinks.home : { subdomain: "root", path: "/" },
@@ -150,9 +150,17 @@ const logoLink = computed<Link>(() =>
 
 const navLinks = computed<LinkWithName[]>(() => {
   if (!isLoggedIn.value) {
+    // Land in the app after signing in, not on a "you're logged in" page.
+    const options = {
+      params: { return_to: linkToHrefWithHost(appLinks.home) },
+    };
     return [
-      { ...authLinks.newLogin, name: base_layout.nav_login },
-      { ...authLinks.newRegistration, name: base_layout.nav_sign_up },
+      { ...authLinks.newLogin, name: base_layout.nav_login, options },
+      {
+        ...authLinks.newRegistration,
+        name: base_layout.nav_sign_up,
+        options,
+      },
     ];
   }
 
