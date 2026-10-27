@@ -14,6 +14,7 @@ import { noStoreCacheControl } from "./noStore.ts";
 import { makeCsrfMiddleware } from "./csrf.ts";
 import { makeCsrfTokenMiddleware } from "./csrf-token.ts";
 import multer from "multer";
+import { cleanupUploadedFiles } from "./multer.ts";
 import { compileOperationSecurity, type SecurityResolvers } from "./security.ts";
 
 /**
@@ -97,8 +98,33 @@ export const createOperationScopedMiddleware = (
 ): Handler[] => createScopedMiddleware({ ...options, apiSpec });
 
 /**
+ * express-openapi-validator's chain runs multer in a step with this name, after
+ * route matching (`req.openapi`) and before request validation.
+ */
+const MULTIPART_STEP = "multipartMiddleware";
+
+/**
+ * Split the validator chain at its multipart step so access checks can run
+ * between route matching and body parsing. Throws at mount time if the step
+ * is missing (e.g. a validator upgrade renamed it), rather than silently
+ * parsing uploads before auth again.
+ */
+export function splitAtMultipart(chain: Handler[]): [Handler[], Handler[]] {
+  const index = chain.findIndex((handler) => handler.name === MULTIPART_STEP);
+  if (index === -1) {
+    throw new Error(
+      `createScopedMiddleware: OpenAPI validator has no "${MULTIPART_STEP}" step; cannot check access before parsing uploads`,
+    );
+  }
+  return [chain.slice(0, index), chain.slice(index)];
+}
+
+/**
  * Middleware which should only be applied to a subset of routes in an express server.
  * This middleware all depends on the OpenAPI spec for those routes.
+ *
+ * With `fileUploader`, CSRF, context, and security run before multer parses
+ * the body, so a rejected request never writes its upload to disk.
  */
 export const createScopedMiddleware = (
   options: ScopedMiddlewareOptions,
@@ -110,14 +136,31 @@ export const createScopedMiddleware = (
     fileUploader,
   }) as unknown as Handler[];
 
-  return [
-    ...openApiValidatorMiddleware,
-    makeBlockHtmlMiddleware(),
+  const accessChecks: Handler[] = [
     // CSRF reads `x-public` and the `csrf-exempt` tag from `req.openapi.schema`.
     makeCsrfMiddleware(),
     makeContextMiddleware(),
     unsafeRequestLogger,
     ...compileOperationSecurity(apiSpec, securityResolvers),
+  ];
+
+  if (fileUploader) {
+    const [matchRoute, parseAndValidate] = splitAtMultipart(
+      openApiValidatorMiddleware,
+    );
+    return [
+      cleanupUploadedFiles,
+      ...matchRoute,
+      ...accessChecks,
+      ...parseAndValidate,
+      makeBlockHtmlMiddleware(),
+    ];
+  }
+
+  return [
+    ...openApiValidatorMiddleware,
+    makeBlockHtmlMiddleware(),
+    ...accessChecks,
   ];
 };
 

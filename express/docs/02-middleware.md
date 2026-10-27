@@ -24,6 +24,7 @@ Auth assumes a reverse proxy (typically Caddy `forward_auth`) has already verifi
 
 ## Scoped
 
+- **Upload ordering** — with `fileUploader`, CSRF, context, and auth run after route matching but before multer parses the body, so rejected requests never write their upload to disk. Temp files from uploads rejected later (validation, handler errors) are deleted once the response finishes.
 - **OpenAPI validation** — request/response validation via `express-openapi-validator`; attaches `req.openapi`
 - **CSRF** — double-submit token check on unsafe methods (skips `x-public` operations and the `csrf-exempt` tag)
 - **Context** — populates `@saflib/node` AsyncLocalStorage for handlers and loggers
