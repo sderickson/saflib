@@ -11,17 +11,20 @@ import {
   buildSettingsUpdateBodyFromFormData,
   formDataFromsettingsForm,
   settingsFlowHasLinkedTotp,
+  settingsFlowHasLinkedWebAuthn,
 } from "./Settings.logic.ts";
 import { settings_page as pageStrings } from "./Settings.strings.ts";
 
 /**
- * Submit profile / password / TOTP updates for the active settings flow.
+ * Submit profile / password / TOTP / WebAuthn updates for the active settings flow.
  */
 export function useSettingsFlow(
   flowId: MaybeRefOrGetter<string>,
   options?: {
     /** Fired after a successful TOTP link (not unlink). */
     onTotpLinked?: () => void;
+    /** Fired after a second-factor WebAuthn key is registered (not removed). */
+    onWebAuthnLinked?: () => void;
     /** Restart the browser settings flow after a CSRF mismatch on submit. */
     onCsrfViolation?: () => void;
   },
@@ -63,6 +66,13 @@ export function useSettingsFlow(
         settingsFlowHasLinkedTotp(updated.flow)
       ) {
         options?.onTotpLinked?.();
+      }
+      if (
+        updated instanceof SettingsFlowUpdated &&
+        String(fd.get("webauthn_register") ?? "").trim() &&
+        settingsFlowHasLinkedWebAuthn(updated.flow)
+      ) {
+        options?.onWebAuthnLinked?.();
       }
     } catch (e) {
       if (

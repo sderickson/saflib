@@ -5,6 +5,8 @@ export const settings_tabs = {
   general: "Profile",
   password: "Password",
   totp: "Authenticator app (TOTP)",
+  webauthn: "Security keys & passkeys",
+  mfa: "Multi-factor authentication",
   passkey: "Passkeys",
   sessions: "Sessions",
   /** `aria-label` for the settings section nav (sidebar). */
@@ -39,4 +41,16 @@ export const settings_group_empty = {
   no_password_fields: "Password update is not available for this account.",
   no_totp_fields: "Authenticator app setup is not available for this account.",
   no_passkey_fields: "Passkey management is not available for this account.",
+  no_webauthn_fields:
+    "Security key and passkey setup is not available for this account.",
+};
+
+/** Subheadings for the combined `mfa` settings section. */
+export const settings_mfa = {
+  totp_heading: "Authenticator app",
+  totp_description:
+    "Enter a one-time code from an authenticator app when you sign in.",
+  webauthn_heading: "Security key or passkey",
+  webauthn_description:
+    "After your password, confirm sign-in with a hardware security key or a passkey saved on this device or in your password manager.",
 };

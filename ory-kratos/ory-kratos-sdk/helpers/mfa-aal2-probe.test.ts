@@ -91,3 +91,17 @@ describe("sessionSatisfiesMfa", () => {
     expect(sessionSatisfiesMfa(undefined)).toBe(false);
   });
 });
+
+describe("aal2LoginFlowHasMfaMethods (second-factor WebAuthn)", () => {
+  it("is true when only a security key / passkey trigger is offered", () => {
+    // Kratos v26 AAL2 login nodes for an identity whose only MFA method is webauthn.
+    expect(
+      aal2LoginFlowHasMfaMethods([
+        inputNode("csrf_token", "hidden"),
+        inputNode("identifier", "hidden"),
+        inputNode("webauthn_login", "hidden"),
+        inputNode("webauthn_login_trigger", "button"),
+      ]),
+    ).toBe(true);
+  });
+});

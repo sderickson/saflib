@@ -96,6 +96,51 @@
                 @submit="submitSettingsForm"
               />
             </v-window-item>
+            <v-window-item v-if="showWebAuthnSection" value="webauthn">
+              <SettingsGroupUi
+                :flow="flow"
+                group="webauthn"
+                :submitting="submitting"
+                id-prefix="settings-webauthn"
+                :message-filter="settingsMessageFilter"
+                @submit="submitSettingsForm"
+              />
+            </v-window-item>
+            <v-window-item value="mfa">
+              <section v-if="hasTotpSettings" class="mb-8">
+                <h2 class="text-h6 mb-1">{{ t(mfaStrings.totp_heading) }}</h2>
+                <p class="text-body-2 text-medium-emphasis mb-4">
+                  {{ t(mfaStrings.totp_description) }}
+                </p>
+                <SettingsGroupUi
+                  :flow="flow"
+                  group="totp"
+                  :submitting="submitting"
+                  id-prefix="settings-mfa-totp"
+                  :message-filter="mfaMessageFilter('totp')"
+                  @submit="(form, submitter) => submitMfaGroup('totp', form, submitter)"
+                />
+              </section>
+              <section v-if="hasWebAuthnSettings">
+                <h2 class="text-h6 mb-1">
+                  {{ t(mfaStrings.webauthn_heading) }}
+                </h2>
+                <p class="text-body-2 text-medium-emphasis mb-4">
+                  {{ t(mfaStrings.webauthn_description) }}
+                </p>
+                <SettingsGroupUi
+                  :flow="flow"
+                  group="webauthn"
+                  :submitting="submitting"
+                  id-prefix="settings-mfa-webauthn"
+                  :message-filter="mfaMessageFilter('webauthn')"
+                  @submit="
+                    (form, submitter) =>
+                      submitMfaGroup('webauthn', form, submitter)
+                  "
+                />
+              </section>
+            </v-window-item>
             <v-window-item value="sessions">
               <v-alert
                 v-if="sessionsBanner"
@@ -247,10 +292,12 @@ import {
   KRATOS_SETTINGS_PASSWORD_RECOVERY_MESSAGE_ID,
   parseSettingsTabQuery,
   settingsFlowHasLinkedTotp,
+  settingsFlowHasLinkedWebAuthn,
   settingsFlowHasPasswordRecoveryMessage,
   type SettingsTabQueryValue,
 } from "./Settings.logic.ts";
 import {
+  settings_mfa as mfaStrings,
   settings_password_recovery as passwordRecoveryStrings,
   settings_sessions as sessionsStrings,
   settings_tabs as tabs,
@@ -276,6 +323,8 @@ const props = withDefaults(
     flowCreatePath?: string;
     /** Called when TOTP is already linked or after a successful link (embedded hosts use this to advance onboarding). */
     onTotpLinked?: () => void;
+    /** Called when a second-factor WebAuthn key is already registered or after one is added. */
+    onWebAuthnLinked?: () => void;
   }>(),
   {
     embedded: false,
@@ -422,6 +471,16 @@ function notifyTotpLinked() {
   props.onTotpLinked();
 }
 
+const webAuthnLinkedNotified = ref(false);
+
+function notifyWebAuthnLinked() {
+  if (!props.onWebAuthnLinked || webAuthnLinkedNotified.value) {
+    return;
+  }
+  webAuthnLinkedNotified.value = true;
+  props.onWebAuthnLinked();
+}
+
 function restartSettingsFlowAfterCsrfViolation() {
   void queryClient.invalidateQueries({ queryKey: ["kratos"] });
   void router.replace({
@@ -433,17 +492,23 @@ function restartSettingsFlowAfterCsrfViolation() {
 const { submitting, submitError, clearSubmitError, submitSettingsForm } =
   useSettingsFlow(flowIdForSubmit, {
     onTotpLinked: notifyTotpLinked,
+    onWebAuthnLinked: notifyWebAuthnLinked,
     onCsrfViolation: restartSettingsFlowAfterCsrfViolation,
   });
 
-/** If TOTP is already linked when the flow loads, notify the host once. */
+/** If an MFA method is already linked when the flow loads, notify the host once. */
 watch(
   flow,
   (next) => {
-    if (!next || !settingsFlowHasLinkedTotp(next)) {
+    if (!next) {
       return;
     }
-    notifyTotpLinked();
+    if (settingsFlowHasLinkedTotp(next)) {
+      notifyTotpLinked();
+    }
+    if (settingsFlowHasLinkedWebAuthn(next)) {
+      notifyWebAuthnLinked();
+    }
   },
   { immediate: true },
 );
@@ -453,6 +518,14 @@ const suppressFlowLevelKratosMessages = ref(false);
 
 const hasTotpSettings = computed(() =>
   Boolean(flow.value?.ui.nodes.some((node) => node.group === "totp")),
+);
+
+const hasWebAuthnSettings = computed(() =>
+  Boolean(flow.value?.ui.nodes.some((node) => node.group === "webauthn")),
+);
+
+const showWebAuthnSection = computed(
+  () => hasWebAuthnSettings.value || props.section === "webauthn",
 );
 
 /** Keep the TOTP panel mounted when a host forces `section=totp` so we show
@@ -467,6 +540,11 @@ const sidebarItems = computed((): { value: SettingsSectionTab; title: string }[]
     { value: "email", title: t(tabs.email), show: true },
     { value: "password", title: t(tabs.password), show: true },
     { value: "totp", title: t(tabs.totp), show: hasTotpSettings.value },
+    {
+      value: "webauthn",
+      title: t(tabs.webauthn),
+      show: hasWebAuthnSettings.value,
+    },
     { value: "sessions", title: t(tabs.sessions), show: true },
   ];
   return items.filter((i) => i.show).map(({ value, title }) => ({ value, title }));
@@ -492,6 +570,36 @@ const settingsMessageFilter = computed(
     };
   },
 );
+
+type MfaGroup = "totp" | "webauthn";
+
+/** Which `mfa`-section group was submitted last; flow-level banners belong to that group only. */
+const mfaSubmittedGroup = ref<MfaGroup | null>(null);
+
+function submitMfaGroup(
+  group: MfaGroup,
+  form: HTMLFormElement,
+  submitter: HTMLElement | null,
+) {
+  mfaSubmittedGroup.value = group;
+  return submitSettingsForm(form, submitter);
+}
+
+/**
+ * The `mfa` section renders TOTP and WebAuthn from one flow, so each would repeat Kratos's
+ * flow-level messages (“saved”). Show them in the submitted group, or the first one shown.
+ */
+function mfaMessageFilter(group: MfaGroup) {
+  return (msg: UiText, ctx: KratosFlowUiMessageFilterContext): boolean => {
+    if (ctx.kind === "flow") {
+      const owner =
+        mfaSubmittedGroup.value ??
+        (hasTotpSettings.value ? "totp" : "webauthn");
+      if (owner !== group) return false;
+    }
+    return settingsMessageFilter.value(msg, ctx);
+  };
+}
 
 function asSectionTab(
   value: SettingsTabQueryValue | undefined,
@@ -528,15 +636,19 @@ watch(
     const fromQueryTab = asSectionTab(fromQuery ?? undefined);
     if (!fromQueryTab) return;
     if (fromQueryTab === "totp" && !hasTotpSettings.value) return;
+    if (fromQueryTab === "webauthn" && !hasWebAuthnSettings.value) return;
     tab.value = fromQueryTab;
   },
   { immediate: true },
 );
 
-watch([tab, hasTotpSettings, () => props.section], () => {
-  // Never steal a host-forced totp section; only fall back in free-nav mode.
-  if (props.section === "totp") return;
+watch([tab, hasTotpSettings, hasWebAuthnSettings, () => props.section], () => {
+  // Never steal a host-forced section; only fall back in free-nav mode.
+  if (props.section) return;
   if (tab.value === "totp" && !hasTotpSettings.value) tab.value = "profile";
+  if (tab.value === "webauthn" && !hasWebAuthnSettings.value) {
+    tab.value = "profile";
+  }
 });
 
 watch(tab, (next, prev) => {
