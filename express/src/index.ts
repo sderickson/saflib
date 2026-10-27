@@ -73,6 +73,10 @@ export {
 } from "./vitest-helpers.ts";
 
 export { noStoreCacheControl } from "./middleware/noStore.ts";
+export {
+  HTML_NOT_ALLOWED_CODE,
+  valueContainsDisallowedHtml,
+} from "./middleware/blockHtml.ts";
 
 export {
   kratosAdminBaseUrl,

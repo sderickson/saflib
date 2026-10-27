@@ -22,6 +22,14 @@
   </v-snackbar-queue>
   <v-snackbar-queue
     location="top"
+    v-model="warnings"
+    color="warning"
+    prepend-icon="$warning"
+    :timeout="-1"
+    closable
+  ></v-snackbar-queue>
+  <v-snackbar-queue
+    location="top"
     v-model="info"
     color="white"
     prepend-icon="$success"
@@ -34,6 +42,7 @@
 import {
   errors,
   info,
+  warnings,
   type ErrorSnackbarAction,
   type ErrorSnackbarQueueItem,
 } from "@saflib/vue";
