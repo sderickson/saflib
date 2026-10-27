@@ -4,6 +4,7 @@ import { kratos_recovery_flow } from "./pages/recovery/RecoveryFlowForm.strings.
 import { recovery_intro } from "./pages/recovery/RecoveryIntro.strings.ts";
 import {
   settings_group_empty,
+  settings_mfa,
   settings_page,
   settings_password_recovery,
   settings_sessions,
@@ -34,6 +35,7 @@ export const auth_strings = {
   recovery_intro,
   settings_group_empty,
   settings_intro,
+  settings_mfa,
   settings_page,
   settings_password_recovery,
   settings_sessions,

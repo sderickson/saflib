@@ -98,8 +98,23 @@ selfservice:
       enabled: true
       config:
         issuer: Base (Dev)
+    # Security key / passkey as a second factor (AAL2). Separate from the
+    # `passkey` method, which is a first factor.
+    webauthn:
+      enabled: true
+      config:
+        passwordless: false
+        rp:
+          display_name: Base (Dev)
+          id: docker.localhost
+          origins:
+            - http://auth.docker.localhost
+            - http://account.docker.localhost
 
 session:
+  # Absolute lifetime: a full sign-in (password + MFA) is required at least
+  # this often. No sliding extension, so a stolen cookie cannot be kept alive.
+  lifespan: 336h
   whoami:
     required_aal: aal1
   cookie:

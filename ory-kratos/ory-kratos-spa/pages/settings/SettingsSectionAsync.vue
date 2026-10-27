@@ -24,7 +24,8 @@ import type { SettingsTabQueryValue } from "./Settings.logic.ts";
 const props = defineProps<{
   /**
    * Account (or host) settings section to show. Maps to former settings `tab=` values
-   * (`profile` | `email` | `password` | `totp` | `sessions`).
+   * (`profile` | `email` | `password` | `totp` | `webauthn` | `sessions`), plus `mfa`, which
+   * shows TOTP and second-factor WebAuthn together.
    * Profile and email both use the Kratos `profile` group with trait filtering.
    */
   section: SettingsTabQueryValue;
@@ -32,10 +33,15 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   "totp-linked": [];
+  "webauthn-linked": [];
 }>();
 
 function emitTotpLinked() {
   emit("totp-linked");
+}
+
+function emitWebAuthnLinked() {
+  emit("webauthn-linked");
 }
 
 const route = useRoute();
@@ -56,6 +62,7 @@ const settingsPageProps = computed(() => ({
   embedded: true,
   flowCreatePath: settingsPath.value,
   onTotpLinked: emitTotpLinked,
+  onWebAuthnLinked: emitWebAuthnLinked,
 }));
 
 const SettingsSectionCreate = defineAsyncComponent(

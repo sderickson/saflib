@@ -30,6 +30,8 @@ const SETTINGS_TAB_QUERY_VALUES = [
   "email",
   "password",
   "totp",
+  "webauthn",
+  "mfa",
   "passkey",
   "sessions",
 ] as const;
@@ -126,10 +128,18 @@ export function dedupeKratosProfileTraitNodes(nodes: readonly UiNode[]): UiNode[
   });
 }
 
+/** Kratos settings groups rendered by {@link settingsNodesForGroup}. */
+export type SettingsNodeGroup =
+  | "profile"
+  | "password"
+  | "totp"
+  | "webauthn"
+  | "passkey";
+
 /** Nodes for one settings group (e.g. profile / password), plus shared CSRF from `default`. */
 export function settingsNodesForGroup(
   flow: SettingsFlow,
-  group: "profile" | "password" | "totp" | "passkey",
+  group: SettingsNodeGroup,
 ): UiNode[] {
   const g = group;
   const filtered = flow.ui.nodes.filter((node) => {
@@ -140,7 +150,7 @@ export function settingsNodesForGroup(
     )
       return false;
     if (node.group === g) return true;
-    if (node.type === "script" && g === "passkey") {
+    if (node.type === "script" && (g === "passkey" || g === "webauthn")) {
       const ng = node.group ?? "default";
       // Kratos often sends webauthn.js as `group: webauthn` on settings (not default/passkey).
       return ng === "default" || ng === "passkey" || ng === "webauthn";
@@ -251,6 +261,15 @@ export function buildSettingsUpdateBodyFromFormData(
       method = "passkey";
     }
   }
+  // Second-factor WebAuthn: Ory fills hidden `webauthn_register` after the ceremony; remove is a lone
+  // submit `webauthn_remove` carrying the credential id. Neither sends `method`.
+  if (
+    !method &&
+    (String(fd.get("webauthn_register") ?? "").trim() ||
+      String(fd.get("webauthn_remove") ?? "").trim())
+  ) {
+    method = "webauthn";
+  }
   // TOTP unlink uses submit `totp_unlink` only (no hidden `method`; profile/password use submit name=method).
   if (!method && String(fd.get("totp_unlink") ?? "").trim()) {
     method = "totp";
@@ -285,4 +304,12 @@ export function settingsFlowHasLinkedTotp(flow: SettingsFlow): boolean {
     }
   }
   return false;
+}
+
+/** True when the settings flow lists at least one second-factor WebAuthn key (remove control present). */
+export function settingsFlowHasLinkedWebAuthn(flow: SettingsFlow): boolean {
+  return flow.ui.nodes.some(
+    (node) =>
+      isKratosInputNode(node) && node.attributes.name === "webauthn_remove",
+  );
 }

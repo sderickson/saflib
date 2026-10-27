@@ -6,6 +6,7 @@ import {
   dedupeKratosProfileTraitNodes,
   parseSettingsTabQuery,
   settingsFlowHasLinkedTotp,
+  settingsFlowHasLinkedWebAuthn,
   settingsFlowHasPasswordRecoveryMessage,
   settingsFlowShouldFetch,
   settingsNodesForGroup,
@@ -103,6 +104,84 @@ describe("buildSettingsUpdateBodyFromFormData", () => {
       csrf_token: "tok",
       passkey_remove: "cred-id-123",
     });
+  });
+
+  it("infers webauthn method after Ory fills webauthn_register (second-factor key)", () => {
+    const fd = new FormData();
+    fd.set("csrf_token", "tok");
+    fd.set("webauthn_register_displayname", "YubiKey");
+    fd.set("webauthn_register", '{"id":"abc"}');
+    expect(buildSettingsUpdateBodyFromFormData(fd)).toEqual({
+      method: "webauthn",
+      csrf_token: "tok",
+      webauthn_register_displayname: "YubiKey",
+      webauthn_register: '{"id":"abc"}',
+    });
+  });
+
+  it("infers webauthn method when only webauthn_remove is set", () => {
+    const fd = new FormData();
+    fd.set("csrf_token", "tok");
+    fd.set("webauthn_register", "");
+    fd.set("webauthn_remove", "cred-hex");
+    expect(buildSettingsUpdateBodyFromFormData(fd)).toMatchObject({
+      method: "webauthn",
+      webauthn_remove: "cred-hex",
+    });
+  });
+
+  it("does not infer webauthn from an empty hidden webauthn_register", () => {
+    const fd = new FormData();
+    fd.set("csrf_token", "tok");
+    fd.set("webauthn_register", "");
+    expect(() => buildSettingsUpdateBodyFromFormData(fd)).toThrow(
+      "Unsupported settings method in form",
+    );
+  });
+});
+
+describe("settingsNodesForGroup (webauthn)", () => {
+  it("includes webauthn inputs, the webauthn script, and CSRF only", () => {
+    const flow = {
+      ui: {
+        nodes: [
+          {
+            type: "input",
+            group: "default",
+            attributes: { node_type: "input", name: "csrf_token", type: "hidden", value: "c" },
+            meta: {},
+            messages: [],
+          },
+          {
+            type: "input",
+            group: "webauthn",
+            attributes: { node_type: "input", name: "webauthn_register_trigger", type: "button", onclickTrigger: "oryWebAuthnRegistration" },
+            meta: {},
+            messages: [],
+          },
+          {
+            type: "script",
+            group: "webauthn",
+            attributes: { node_type: "script", id: "webauthn_script", src: "/.well-known/ory/webauthn.js" },
+            meta: {},
+            messages: [],
+          },
+          {
+            type: "input",
+            group: "totp",
+            attributes: { node_type: "input", name: "totp_code", type: "text" },
+            meta: {},
+            messages: [],
+          },
+        ],
+      },
+    } as unknown as SettingsFlow;
+    const names = settingsNodesForGroup(flow, "webauthn").map((n) =>
+      n.type === "script"
+        ? "script"
+        : (n.attributes as { name: string }).name,
+    );
+    expect(names).toEqual(["csrf_token", "webauthn_register_trigger", "script"]);
   });
 });
 
@@ -480,6 +559,8 @@ describe("parseSettingsTabQuery", () => {
     expect(parseSettingsTabQuery("profile")).toBe("profile");
     expect(parseSettingsTabQuery("password")).toBe("password");
     expect(parseSettingsTabQuery(" email ")).toBe("email");
+    expect(parseSettingsTabQuery("webauthn")).toBe("webauthn");
+    expect(parseSettingsTabQuery("mfa")).toBe("mfa");
   });
 });
 
@@ -516,5 +597,37 @@ describe("settingsFlowHasLinkedTotp", () => {
       },
     } as SettingsFlow;
     expect(settingsFlowHasLinkedTotp(flow)).toBe(false);
+  });
+});
+
+describe("settingsFlowHasLinkedWebAuthn", () => {
+  it("is true when a webauthn_remove control is present", () => {
+    const flow = {
+      ui: {
+        nodes: [
+          {
+            type: "input",
+            group: "webauthn",
+            attributes: { node_type: "input", name: "webauthn_remove", type: "submit", value: "cred" },
+          },
+        ],
+      },
+    } as SettingsFlow;
+    expect(settingsFlowHasLinkedWebAuthn(flow)).toBe(true);
+  });
+
+  it("is false when only registration controls are present", () => {
+    const flow = {
+      ui: {
+        nodes: [
+          {
+            type: "input",
+            group: "webauthn",
+            attributes: { node_type: "input", name: "webauthn_register_trigger", type: "button" },
+          },
+        ],
+      },
+    } as SettingsFlow;
+    expect(settingsFlowHasLinkedWebAuthn(flow)).toBe(false);
   });
 });

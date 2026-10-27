@@ -88,8 +88,27 @@ selfservice:
   methods:
     password:
       enabled: true
+    totp:
+      enabled: true
+      config:
+        issuer: __product-name__ (Prod Local)
+    # Security key / passkey as a second factor (AAL2). Separate from the
+    # `passkey` method, which is a first factor.
+    webauthn:
+      enabled: true
+      config:
+        passwordless: false
+        rp:
+          display_name: __product-name__ (Prod Local)
+          id: docker.localhost
+          origins:
+            - http://auth.docker.localhost
+            - http://account.docker.localhost
 
 session:
+  # Absolute lifetime: a full sign-in (password + MFA) is required at least
+  # this often. No sliding extension, so a stolen cookie cannot be kept alive.
+  lifespan: 336h
   cookie:
     domain: .docker.localhost
     same_site: Lax

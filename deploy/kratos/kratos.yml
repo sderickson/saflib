@@ -88,8 +88,27 @@ selfservice:
   methods:
     password:
       enabled: true
+    totp:
+      enabled: true
+      config:
+        issuer: __product-name__
+    # Security key / passkey as a second factor (AAL2). Separate from the
+    # `passkey` method, which is a first factor.
+    webauthn:
+      enabled: true
+      config:
+        passwordless: false
+        rp:
+          display_name: __product-name__
+          id: __domain-name__
+          origins:
+            - https://auth.__domain-name__
+            - https://account.__domain-name__
 
 session:
+  # Absolute lifetime: a full sign-in (password + MFA) is required at least
+  # this often. No sliding extension, so a stolen cookie cannot be kept alive.
+  lifespan: 336h
   cookie:
     domain: .__domain-name__
     same_site: Lax

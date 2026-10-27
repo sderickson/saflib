@@ -66,3 +66,18 @@ describe("loginPasskeyInIdentifier", () => {
     expect(filtered.some((n) => isPasskeyLoginTriggerButton(n))).toBe(false);
   });
 });
+
+describe("second-factor WebAuthn (AAL2 login)", () => {
+  // Node shape from Kratos v26 `login/browser?aal=aal2` with a webauthn MFA key enrolled.
+  const aal2Nodes = [
+    input("csrf_token", "hidden"),
+    input("identifier", "hidden"),
+    input("webauthn_login", "hidden", "webauthn"),
+    input("webauthn_login_trigger", "button", "webauthn"),
+  ];
+
+  it("keeps the standalone key button because the identifier is hidden", () => {
+    expect(shouldMergePasskeyTriggerIntoIdentifier(true, aal2Nodes)).toBe(false);
+    expect(filterOutMergedLoginTriggerButton(true, aal2Nodes)).toHaveLength(4);
+  });
+});

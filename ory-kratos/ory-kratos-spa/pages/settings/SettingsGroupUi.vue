@@ -6,7 +6,9 @@
     :submitting="submitting"
     :id-prefix="idPrefix"
     :message-filter="messageFilter"
-    :intercept-ory-programmatic-submit="group === 'passkey'"
+    :intercept-ory-programmatic-submit="
+      group === 'passkey' || group === 'webauthn'
+    "
     :identity-passkey-display-fallback="identityPasskeyDisplayFallback"
     @submit="onSubmit"
   />
@@ -27,12 +29,13 @@ import {
   settingsNodesForProfileFields,
   settingsNodesHaveVisibleInputs,
   type ProfileSettingsFields,
+  type SettingsNodeGroup,
 } from "./Settings.logic.ts";
 
 const props = withDefaults(
   defineProps<{
     flow: SettingsFlow;
-    group: "profile" | "password" | "totp" | "passkey";
+    group: SettingsNodeGroup;
     submitting: boolean;
     idPrefix: string;
     /**
@@ -63,7 +66,9 @@ const emptyCopy = computed(() =>
       ? strings.no_password_fields
       : props.group === "totp"
         ? strings.no_totp_fields
-        : strings.no_passkey_fields,
+        : props.group === "webauthn"
+          ? strings.no_webauthn_fields
+          : strings.no_passkey_fields,
 );
 
 const nodes = computed(() => {
