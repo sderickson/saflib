@@ -52,6 +52,8 @@
         block
         size="large"
         variant="tonal"
+        :name="node.attributes.name"
+        :value="(node.attributes as { value?: string }).value ?? undefined"
         :disabled="submitting"
         @click="runKratosWebAuthnInputClick(node)"
       >

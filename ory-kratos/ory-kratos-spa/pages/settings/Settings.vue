@@ -117,8 +117,8 @@
                   group="totp"
                   :submitting="submitting"
                   id-prefix="settings-mfa-totp"
-                  :message-filter="settingsMessageFilter"
-                  @submit="submitSettingsForm"
+                  :message-filter="mfaMessageFilter('totp')"
+                  @submit="(form, submitter) => submitMfaGroup('totp', form, submitter)"
                 />
               </section>
               <section v-if="hasWebAuthnSettings">
@@ -133,8 +133,11 @@
                   group="webauthn"
                   :submitting="submitting"
                   id-prefix="settings-mfa-webauthn"
-                  :message-filter="settingsMessageFilter"
-                  @submit="submitSettingsForm"
+                  :message-filter="mfaMessageFilter('webauthn')"
+                  @submit="
+                    (form, submitter) =>
+                      submitMfaGroup('webauthn', form, submitter)
+                  "
                 />
               </section>
             </v-window-item>
@@ -567,6 +570,36 @@ const settingsMessageFilter = computed(
     };
   },
 );
+
+type MfaGroup = "totp" | "webauthn";
+
+/** Which `mfa`-section group was submitted last; flow-level banners belong to that group only. */
+const mfaSubmittedGroup = ref<MfaGroup | null>(null);
+
+function submitMfaGroup(
+  group: MfaGroup,
+  form: HTMLFormElement,
+  submitter: HTMLElement | null,
+) {
+  mfaSubmittedGroup.value = group;
+  return submitSettingsForm(form, submitter);
+}
+
+/**
+ * The `mfa` section renders TOTP and WebAuthn from one flow, so each would repeat Kratos's
+ * flow-level messages (“saved”). Show them in the submitted group, or the first one shown.
+ */
+function mfaMessageFilter(group: MfaGroup) {
+  return (msg: UiText, ctx: KratosFlowUiMessageFilterContext): boolean => {
+    if (ctx.kind === "flow") {
+      const owner =
+        mfaSubmittedGroup.value ??
+        (hasTotpSettings.value ? "totp" : "webauthn");
+      if (owner !== group) return false;
+    }
+    return settingsMessageFilter.value(msg, ctx);
+  };
+}
 
 function asSectionTab(
   value: SettingsTabQueryValue | undefined,
