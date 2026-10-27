@@ -62,14 +62,11 @@ defineProps<{
 // TODO: Add component-specific functions here
 // TODO: Add mutations (not queries!) here if they are needed for the component
 
-// For mutations, handle errors like so:
+// Mutation errors show in the app's snackbar automatically (see createVueApp).
+// Don't catch them just to call showError. Only if this component renders the
+// error itself (e.g. inline in a form), silence the snackbar for it:
 /*
-import { showError } from "@saflib/vue";
-import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
-if (error instanceof TanstackError) {
-  showError(getTanstackErrorMessage(error));
-} else {
-  showError(error instanceof Error ? error.message : "Unknown error");
-}
+import { SILENCE_ERROR_SNACKBAR } from "@saflib/sdk";
+useMutation({ mutationFn, meta: { [SILENCE_ERROR_SNACKBAR]: true } });
 */
 </script>

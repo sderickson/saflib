@@ -25,6 +25,8 @@ export function getTanstackErrorMessage(
 ): string {
   if (!error) return "";
   switch (error.status) {
+    case 0:
+      return "Network Error - Could not reach the server, check your connection";
     case 400:
       return "Bad Request - The request was invalid or malformed";
     case 401:
@@ -35,6 +37,10 @@ export function getTanstackErrorMessage(
       return "Not Found - The requested resource was not found";
     case 409:
       return "Conflict - The request conflicts with the current state of the resource";
+    case 413:
+      return "Too Large - The request was too large for the server to accept";
+    case 422:
+      return "Unprocessable - The request could not be completed with these values";
     case 429:
       return "Too Many Requests - Rate limit exceeded, please try again later";
     default:

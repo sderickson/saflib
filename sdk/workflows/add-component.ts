@@ -150,7 +150,7 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       * Do not use any custom styles; use Vuetify components and styling exclusively.
       * Use Vuetify skeletons for loading states.
       * If this is a form, don't use inputs for any uneditable fields. If this is not a form component, don't use input components at all!
-      * If the component uses mutations, make sure to use "showError" for network errors.`,
+      * Mutation errors already show in the app's snackbar (createVueApp wires every failed mutation to "showError"). Don't swallow them with an empty catch. If the component renders the error itself, set \`meta: { [SILENCE_ERROR_SNACKBAR]: true }\` (from "@saflib/sdk") on that mutation so the user doesn't see it twice.`,
     })),
 
     step(

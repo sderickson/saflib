@@ -110,6 +110,17 @@ _[Template file](https://github.com/sderickson/saflib/blob/main/vue/workflows/te
 
 Because the async component ensures the page component doesn't render until the data is fetched, the page component can assume the data is available and render it. It doesn't need to worry about checking for errors or handling loading states, and can instead focus on the happy path.
 
+### Errors: Every Failure Reaches the User
+
+A request that fails silently is worse than one that fails loudly. SAF covers the common cases by default:
+
+- **Page loads**: `AsyncPage` renders an error state when a loader query fails.
+- **Mutations**: `createVueApp` routes every failed mutation to `showError` from `@saflib/vue`, which the layout's `SnackbarQueue` renders. The message comes from `getTanstackErrorMessage` (by HTTP status), not the untranslated server message.
+
+So don't `try { await mutateAsync() } catch {}` just to keep going; let the error stop the flow, and the snackbar explains it. For failures that aren't mutations (client-side validation, file reading, etc.), call `showError` or `showInfo` yourself.
+
+When a component renders a mutation's error itself, for example inline in a dialog, set `meta: { [SILENCE_ERROR_SNACKBAR]: true }` (from `@saflib/sdk`) on that mutation so it isn't shown twice.
+
 ### Strings: Localization and Testability
 
 _[Template file](../workflows/template/__subdomain-name__/__group-name__/__TargetName__.strings.ts)_

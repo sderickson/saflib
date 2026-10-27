@@ -1,4 +1,8 @@
-import { createTanstackQueryClient } from "@saflib/sdk";
+import {
+  createTanstackQueryClient,
+  getTanstackErrorMessage,
+  TanstackError,
+} from "@saflib/sdk";
 import { createApp, type Component } from "vue";
 import { createVuetify, type VuetifyOptions } from "vuetify";
 import {
@@ -9,6 +13,7 @@ import type { Router } from "vue-router";
 import { createI18n } from "vue-i18n";
 import { type I18nMessages } from "./strings.ts";
 import { aliases, mdi } from "vuetify/iconsets/mdi-svg";
+import { showError } from "./snackbar.ts";
 import {
   asyncPageErrorKey,
   mfaRequiredHrefKey,
@@ -51,6 +56,7 @@ const defaultVuetifyConfig: VuetifyOptions = {
  * - Tanstack Query
  * - Vue I18n
  *
+ * Mutation errors are shown in the snackbar by default.
  */
 export const createVueApp = (
   Application: Component,
@@ -76,7 +82,11 @@ export const createVueApp = (
     app.provide(mfaRequiredHrefKey, mfaRequiredHref);
   }
 
-  const queryClient = createTanstackQueryClient();
+  // Every failed mutation shows in the snackbar (`SnackbarQueue` in the layout)
+  // unless it opts out with `meta: { [SILENCE_ERROR_SNACKBAR]: true }`.
+  const queryClient = createTanstackQueryClient({
+    onMutationError: (error) => showError(getMutationErrorMessage(error)),
+  });
   const options: VueQueryPluginOptions = {
     enableDevtoolsV6Plugin: true,
     queryClient,
@@ -111,3 +121,8 @@ export const createVueApp = (
   app.mount("#app");
   return app;
 };
+
+function getMutationErrorMessage(error: unknown): string {
+  if (error instanceof TanstackError) return getTanstackErrorMessage(error);
+  return "Unknown Error - An unexpected error occurred";
+}
