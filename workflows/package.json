@@ -23,7 +23,7 @@
     "@saflib/templates": "*",
     "@saflib/utils": "*",
     "commander": "^15.0.0",
-    "minimatch": "^10.2.6",
+    "minimatch": "^11.0.0",
     "xstate": "^5.19.3"
   },
   "devDependencies": {
