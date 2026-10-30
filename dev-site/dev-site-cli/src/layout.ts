@@ -14,6 +14,12 @@ export interface DevLayout {
   containerSaflibRoot: string;
   /** When set, compose should apply the submodule git-dir overlay. */
   gitDirMount?: string;
+  /**
+   * When the repo checkout is a linked git worktree: the main repository's `.git`
+   * directory. The checkout's `.git` file points into it by absolute host path, so
+   * compose mounts it at that same path for git to work inside the site container.
+   */
+  worktreeGitCommonDir?: string;
 }
 
 /**
@@ -45,7 +51,7 @@ export function resolveDevLayout(devDir: string): DevLayout {
   let gitDirMount: string | undefined;
   if (
     repoMount === saflibRoot &&
-    isSaflibGitfile(path.join(saflibRoot, ".git"))
+    isGitfile(path.join(saflibRoot, ".git"))
   ) {
     const candidate = path.join(
       path.dirname(saflibRoot),
@@ -63,10 +69,29 @@ export function resolveDevLayout(devDir: string): DevLayout {
     productRoot,
     containerSaflibRoot,
     gitDirMount,
+    worktreeGitCommonDir: resolveWorktreeGitCommonDir(repoMount),
   };
 }
 
-function isSaflibGitfile(gitPath: string): boolean {
+/**
+ * For a linked worktree (`.git` is a file pointing at `<main>/.git/worktrees/<name>`),
+ * returns the main repository's `.git` directory; otherwise undefined.
+ */
+export function resolveWorktreeGitCommonDir(
+  checkoutRoot: string,
+): string | undefined {
+  const gitPath = path.join(checkoutRoot, ".git");
+  if (!isGitfile(gitPath)) return undefined;
+  const gitDir = path.resolve(
+    checkoutRoot,
+    readFileSync(gitPath, "utf8").slice("gitdir:".length).trim(),
+  );
+  const commonDirFile = path.join(gitDir, "commondir");
+  if (!existsSync(commonDirFile)) return undefined;
+  return path.resolve(gitDir, readFileSync(commonDirFile, "utf8").trim());
+}
+
+function isGitfile(gitPath: string): boolean {
   if (!existsSync(gitPath)) return false;
   try {
     const content = readFileSync(gitPath, "utf8");

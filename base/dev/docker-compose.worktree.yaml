@@ -1,0 +1,9 @@
+# Worktree overlay (added by saf-dev-site when this checkout is a linked git worktree).
+# The checkout's .git file points into the main repository's .git by absolute host
+# path, and a submodule's git metadata points back at the checkout by its host path.
+# Mount both at those same paths so git works in the site container, submodules too.
+services:
+  site:
+    volumes:
+      - ${DEV_SITE_GIT_COMMON_DIR}:${DEV_SITE_GIT_COMMON_DIR}
+      - ${DEV_SITE_REPO_MOUNT}:${DEV_SITE_REPO_MOUNT}

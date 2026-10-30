@@ -99,11 +99,6 @@ function toProductMonorepoDevCompose(
     `      - ../../saflib/:/app/saflib/`,
     `      - ../../${productName}/service/sdk/:/app/${productName}/service/sdk/`,
   ].join("\n");
-  const monolithMounts = [
-    `      - ../../${productName}/service/db/data:/app/${productName}/service/db/data`,
-    `      - ../../${productName}/service/cron/data:/app/${productName}/service/cron/data`,
-    `      - ../../${productName}/service/jobs/data:/app/${productName}/service/jobs/data`,
-  ].join("\n");
 
   let out = content.replace(
     /volumes:\n(?:[ \t]*#[^\n]*\n)*[ \t]*- \.\.\/\.\.:\/app\n[ \t]*- \/app\/node_modules\n([ \t]*command: npm run dev)/,
@@ -113,7 +108,8 @@ function toProductMonorepoDevCompose(
     new RegExp(
       `(  ${productName}-monolith:[\\s\\S]*?volumes:\\n)(?:[ \\t]*#[^\\n]*\\n)*[ \\t]*- \\.\\.\\/\\.\\.:\\/app\\n[ \\t]*- \\/app\\/node_modules\\n`,
     ),
-    `$1${monolithMounts}\n`,
+    // The monolith runs its built image; its data mounts are named volumes, kept as is.
+    "$1",
   );
   out = out.replace(
     /(dockerfile:\s*)dev-site\/dev-site-docker\/Dockerfile/g,
