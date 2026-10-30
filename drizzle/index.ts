@@ -6,6 +6,14 @@ export {
 
 export { DbManager } from "./instances.ts";
 export {
+  checkMigrationHistory,
+  MigrationHistoryError,
+  readSquashManifest,
+  SQUASH_MANIFEST_PATH,
+  type SquashManifest,
+  type SquashRecord,
+} from "./migration-history.ts";
+export {
   createOnDiskDbKeyAccessor,
   packageSqlitePath,
   type CreateOnDiskDbKeyAccessorOptions,
