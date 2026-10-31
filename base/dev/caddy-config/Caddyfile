@@ -35,10 +35,11 @@ http://account.docker.localhost {
 	}
 }
 
-# Built (static) saflib dev-site: Express API + SPA on one port.
+# Built (static) saflib dev-site: Express API + SPA on one port. Runs as its
+# own stack (`npm run dev-site`), published on the host's port 3099.
 http://dev.docker.localhost {
 	import security-headers
-	reverse_proxy site:3099 {
+	reverse_proxy host.docker.internal:3099 {
 		import reverse_proxy_common
 	}
 }

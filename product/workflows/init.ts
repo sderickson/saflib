@@ -84,32 +84,27 @@ const SOURCE_PACKAGE_PREFIX = `@saflib/${SOURCE_PRODUCT_NAME}`;
 const SOURCE_DOMAIN = "example.com";
 
 /**
- * Rewrite saflib-root volume mounts (`../..:/app` + anonymous node_modules)
- * to the product-beside-saflib shape (product clients/sdk + `saflib/`).
- * Context stays `../..` (product monorepo root). Also point the site Dockerfile
- * at `saflib/dev-site/...` and drop a hardcoded DEV_SITE_STATIC_DIR so the
- * image ENV from `saf-docker generate` wins.
+ * Adapt the golden dev compose files from the saflib-root layout to the
+ * product-beside-saflib one. The `../..:/app` mounts stay (that's the product
+ * monorepo root, with saflib under it), but saflib's own tooling and its
+ * standalone node_modules now live under /app/saflib. Also point the site
+ * Dockerfile at `saflib/dev-site/...` and drop a hardcoded DEV_SITE_STATIC_DIR
+ * so the image ENV from `saf-docker generate` wins.
  */
-function toProductMonorepoDevCompose(
-  content: string,
-  productName: string,
-): string {
-  const productMounts = [
-    `      - ../../${productName}/clients/:/app/${productName}/clients/`,
-    `      - ../../saflib/:/app/saflib/`,
-    `      - ../../${productName}/service/sdk/:/app/${productName}/service/sdk/`,
-  ].join("\n");
-
+function toProductMonorepoDevCompose(content: string): string {
   let out = content.replace(
-    /volumes:\n(?:[ \t]*#[^\n]*\n)*[ \t]*- \.\.\/\.\.:\/app\n[ \t]*- \/app\/node_modules\n([ \t]*command: npm run dev)/,
-    `volumes:\n${productMounts}\n$1`,
+    /\/app\/docker\/dev\/install-node-modules\.ts/g,
+    "/app/saflib/docker/dev/install-node-modules.ts",
+  );
+  // saflib/node_modules is for developing saflib standalone; mask it so
+  // neither the container nor the host sees the other's install.
+  out = out.replace(
+    /^([ \t]*)- node_modules:\/app\/node_modules\n/gm,
+    "$&$1- saflib_node_modules:/app/saflib/node_modules\n",
   );
   out = out.replace(
-    new RegExp(
-      `(  ${productName}-monolith:[\\s\\S]*?volumes:\\n)(?:[ \\t]*#[^\\n]*\\n)*[ \\t]*- \\.\\.\\/\\.\\.:\\/app\\n[ \\t]*- \\/app\\/node_modules\\n`,
-    ),
-    // The monolith runs its built image; its data mounts are named volumes, kept as is.
-    "$1",
+    /^(  node_modules:\n    name: ([^\n]*)-node-modules\n)/m,
+    "$1  saflib_node_modules:\n    name: $2-saflib-node-modules\n",
   );
   out = out.replace(
     /(dockerfile:\s*)dev-site\/dev-site-docker\/Dockerfile/g,
@@ -510,9 +505,20 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         "dev",
         "docker-compose.yaml",
       ),
-      description: "Rewrite base/dev compose volumes for product monorepo layout",
+      description: "Rewrite base/dev compose for product monorepo layout",
       transform: (content: string) =>
-        toProductMonorepoDevCompose(content, context.productName),
+        toProductMonorepoDevCompose(content),
+    })),
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(
+        context.cwd,
+        context.productName,
+        "dev",
+        "docker-compose.dev-site.yaml",
+      ),
+      description: "Rewrite base/dev dev-site compose for product monorepo layout",
+      transform: (content: string) =>
+        toProductMonorepoDevCompose(content),
     })),
     // Product scaffold may include repo-root CI; never keep them in @saflib/saflib.
     step(

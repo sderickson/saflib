@@ -8,8 +8,8 @@
   "scripts": {
     "typecheck": "tsc -b",
     "build": "saf-docker build --compose docker-compose.yaml",
-    "dev": "saf-docker build --compose docker-compose.yaml && saf-dev-site sync-node-modules && saf-dev-site compose up -V",
-    "up": "saf-docker build --compose docker-compose.yaml && saf-dev-site sync-node-modules && saf-dev-site compose up --detach -V",
+    "dev": "saf-docker build --compose docker-compose.yaml && saf-dev-site compose up --remove-orphans",
+    "up": "saf-docker build --compose docker-compose.yaml && saf-dev-site compose up --detach --remove-orphans",
     "prune": "saf-docker prune",
     "down": "saf-docker generate && saf-dev-site compose --no-prepare down",
     "dev-site": "saf-docker build @saflib/dev-site-docker && saf-dev-site compose --dev-site up -V",

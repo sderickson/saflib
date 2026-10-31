@@ -15,9 +15,9 @@ describe("resolveComposeInvocation worktree overlay", () => {
     vol.reset();
   });
 
-  const devFiles = (root: string) => ({
+  const devFiles = (root: string, stack = "services:\n  site:\n    image: x\n") => ({
     [`${root}/saflib/base/.gitkeep`]: "",
-    [`${root}/my-product/dev/docker-compose.yaml`]: "",
+    [`${root}/my-product/dev/docker-compose.yaml`]: stack,
     [`${root}/my-product/dev/${WORKTREE_OVERLAY_FILE}`]: "",
   });
 
@@ -35,6 +35,23 @@ describe("resolveComposeInvocation worktree overlay", () => {
         resolveComposeInvocation("/feature/my-product/dev", kind).composeFiles,
       ).toContain(WORKTREE_OVERLAY_FILE);
     }
+  });
+
+  it("leaves the overlay out of a stack without the site service", () => {
+    vol.fromJSON(
+      {
+        "/main/.git/worktrees/feature/commondir": "../..\n",
+        "/feature/.git": "gitdir: /main/.git/worktrees/feature\n",
+        ...devFiles("/feature", "services:\n  caddy:\n    image: x\n"),
+      },
+      "/",
+    );
+    expect(
+      resolveComposeInvocation("/feature/my-product/dev", "stack").composeFiles,
+    ).toEqual(["docker-compose.yaml"]);
+    expect(
+      resolveComposeInvocation("/feature/my-product/dev", "dev-site").composeFiles,
+    ).toContain(WORKTREE_OVERLAY_FILE);
   });
 
   it("leaves the overlay out of a main checkout", () => {

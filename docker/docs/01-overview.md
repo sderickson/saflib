@@ -70,6 +70,19 @@ After a (non-dry) run, `build` cleans up: it untags older `in-<hash>` versions o
 
 `saf-docker inputs [refs…] [-v]` prints a build's inputs and hash, and warns about gitignored files that reach the build context without being hashed (fix those with `.dockerignore`). `saf-docker skip-rate` estimates from git history how often each build would be skipped.
 
+## Dev stacks
+
+Dev stacks (`<product>/dev/docker-compose.yaml`) run Node services from source instead of from images, so editing code never triggers a rebuild:
+
+- One small image per dev package, `builds/node` (`<org>-<product>-dev-node`), holds just Node and the pinned npm, with no source or `node_modules`. It only rebuilds when that template changes.
+- The repo root is bind-mounted at `/app`. `node_modules` is a named volume, so the host's macOS builds never reach the containers. In a product repo, `saflib/node_modules` (saflib's own standalone install) is masked with a volume too.
+- A one-shot `deps` service runs `saflib/docker/dev/install-node-modules.ts`. It runs `npm ci` only when the lockfile, root `package.json`, Node or npm version changed since the last install into the volume, then exits. Adding a dependency needs no image rebuild. The other Node services wait for it (`service_completed_successfully`).
+- The monolith runs under `node --watch`, restarting whenever a file it imports changes, saflib included. The clients run Vite's dev server.
+- `npm run dev` runs `docker compose up` in the foreground without `-V`. Ctrl-C stops the containers and the next run starts the same ones again. Compose only recreates a container when its image or config changed.
+- The dev-site runs as its own stack (`npm run dev-site`) rather than as part of `npm run dev`. Caddy reaches it on the host's port 3099.
+
+`npm ci` clears `node_modules` in every workspace directory, and those are bind-mounted, so the `deps` service also clears any workspace-level `node_modules` on the host. A product's own lockfile normally creates none (apart from the masked `saflib/node_modules`). The script warns about stray ones it finds while skipping an install, since Node in the container resolves them before `/app/node_modules`.
+
 ## Build info at runtime
 
 `/etc/saf/build.json` records the build ref, input hash, platform, time, upstream refs, and the commits the image was **built from**: `{ root, saflib }`, suffixed `-dirty` if its inputs had uncommitted changes. Since images are only rebuilt when their inputs change, these may be older than the deployed commit.

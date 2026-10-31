@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:labs
+
+# Runtime for the dev stack's Node services (deps, monolith, clients). Holds no
+# source or node_modules: source is bind-mounted and the deps service installs
+# node_modules into a named volume, so this image only changes with Node/npm.
+FROM node:24-slim
+
+RUN npm install -g npm@11.14.1
+
+WORKDIR /app

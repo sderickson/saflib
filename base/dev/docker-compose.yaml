@@ -2,7 +2,8 @@ name: saflib-base-dev
 
 # Dev stack for the base product (sibling of saflib library packages).
 # Compose / build context is the saflib monorepo root (`../..` from this directory).
-# product/init rewrites the `../..:/app` volume to product + saflib mounts.
+# Source is bind-mounted at /app; nothing is copied into images, so code changes
+# need no rebuild. product/init adds the product layout's saflib/node_modules mask.
 #
 # Dev data (SQLite databases, Kratos) lives in named volumes with fixed names, never
 # in host folders under the checkout. Every checkout of the repo, including git
@@ -13,7 +14,6 @@ services:
   caddy:
     depends_on:
       - clients
-      - site
     image: saflib-base-dev:latest
     build:
       context: ../..
@@ -22,37 +22,69 @@ services:
       - ./env.caddy
     ports:
       - 80:80
+    # The dev-site runs as its own stack (`npm run dev-site`) on host port 3099.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./caddy-config:/etc/caddy/
       - ./caddy-config/evil:/etc/caddy/evil:ro
       - caddy_data:/data
       - caddy_config:/config
 
-  clients:
-    image: saflib-base-clients:latest
+  # Installs node_modules into the shared volume when the lockfile changed
+  # (no image rebuild needed), then exits. The Node services wait for it.
+  deps:
+    image: saflib-base-dev-node:latest
     build:
       context: ../..
-      dockerfile: ./base/clients/build/Dockerfile
+      dockerfile: ./base/dev/builds/node/Dockerfile
+    command:
+      - node
+      - --experimental-strip-types
+      - --disable-warning=ExperimentalWarning
+      - /app/docker/dev/install-node-modules.ts
+    volumes: &node-volumes
+      # Source is bind-mounted; node_modules stays in a Linux-only named volume
+      # (the host's macOS builds would shadow it otherwise).
+      - ../..:/app
+      - node_modules:/app/node_modules
+      - npm_cache:/root/.npm
+
+  clients:
+    image: saflib-base-dev-node:latest
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+    working_dir: /app/base/clients/build
     env_file:
       - ./env.dev
-    volumes:
-      # Entire saflib monorepo at /app (packages are siblings of base/, not under /app/saflib).
-      # Named volume keeps the image's Linux node_modules (host bind would overwrite with Darwin).
-      - ../..:/app
-      - clients_node_modules:/app/node_modules
+    volumes: *node-volumes
     command: npm run dev
 
   base-monolith:
-    image: saflib-base-monolith:latest
+    image: saflib-base-dev-node:latest
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+    working_dir: /app/base/service/monolith
+    # Same env defaults the deploy image applies (see its Dockerfile).
+    entrypoint: ["sh", "/app/deploy/scripts/apply-env-defaults.sh"]
+    environment:
+      - SAF_ENV_DEFAULTS=/app/deploy/__product-name__/env.defaults
+    # Restarts when any file it imports changes (service code and saflib alike).
+    command:
+      - node
+      - --watch
+      - --experimental-strip-types
+      - --disable-warning=ExperimentalWarning
+      - ./run.ts
     volumes:
       - ../..:/app
-      - monolith_node_modules:/app/node_modules
+      - node_modules:/app/node_modules
+      - npm_cache:/root/.npm
       - db_data:/app/base/service/db/data
       - cron_data:/app/base/service/cron/data
       - jobs_data:/app/base/service/jobs/data
-    build:
-      context: ../..
-      dockerfile: base/service/monolith/Dockerfile
     env_file:
       - ./env.dev
       - ./.env
@@ -94,72 +126,15 @@ services:
       - kratos_data:/var/lib/sqlite
       - ./kratos:/etc/config/kratos
 
-  site:
-    image: saflib-dev-site:latest
-    build:
-      context: ../..
-      dockerfile: dev-site/dev-site-docker/Dockerfile
-    ports:
-      - "3099:3099"
-    environment:
-      NODE_ENV: production
-      TZ: UTC
-      DEPLOYMENT_NAME: development
-      DOMAIN: localhost
-      PROTOCOL: http
-      CLIENT_SUBDOMAINS: ""
-      ADMIN_EMAILS: "admin@saflib.com"
-      ALLOW_DB_CREATION: "true"
-      DEV_SITE_SERVICE_HTTP_HOST: "0.0.0.0:3099"
-      DEV_SITE_REPO_ROOT: /repo
-      SAFLIB_ROOT: ${DEV_SITE_SAFLIB_ROOT:-/repo/saflib}
-      DEV_SITE_PRODUCT_ROOT: ${DEV_SITE_PRODUCT_ROOT:-base}
-      DEV_SITE_MAIN_REF: main
-      DEV_SITE_DB_PATH: /data/dev-site.sqlite
-      # Named volume (new_workflows_data below), not the /repo bind mount —
-      # see routes/workflows/index.ts for why: a heavily-written sqlite file
-      # on a macOS bind mount from a Linux container risks the same
-      # mmap/locking trouble sharing node_modules did.
-      NEW_WORKFLOWS_DB_PATH: /data/new-workflows/local.sqlite
-      # DEV_SITE_STATIC_DIR comes from the image ENV (saf-docker generate).
-      DEV_SITE_GITHUB_REPO: sderickson/saflib
-      # Forwarded from the host (`saf-dev-site prepare` → dev-site.env) so workflow
-      # step commits (@saflib/new-workflows's `commitIfDirty`) succeed as
-      # the container's `node` user, which has no git identity of its own.
-      GIT_AUTHOR_NAME: ${GIT_AUTHOR_NAME:-}
-      GIT_AUTHOR_EMAIL: ${GIT_AUTHOR_EMAIL:-}
-      GIT_COMMITTER_NAME: ${GIT_COMMITTER_NAME:-}
-      GIT_COMMITTER_EMAIL: ${GIT_COMMITTER_EMAIL:-}
-      # Force file-backed auth for cursor-agent (no Keychain in Linux).
-      AGENT_CLI_CREDENTIAL_STORE: file
-    volumes:
-      # Read-write: workflow "update" steps (see @saflib/new-workflows) edit
-      # files here directly, same repo checkout the host sees.
-      - ${DEV_SITE_REPO_MOUNT:-../..}:/repo
-      # Isolated from the host: a Linux npm install inside the container
-      # (e.g. an agent fixing a missing package) must never touch the
-      # host's own native bindings, and vice versa. docker-entrypoint.sh
-      # seeds/updates this on every start.
-      - repo_node_modules:/repo/node_modules
-      - dev_site_data:/data
-      # Workflow-run history (@saflib/new-workflows-db) — persists across
-      # container restarts without ever touching the host filesystem.
-      - new_workflows_data:/data/new-workflows
-      # Host's Claude Code OAuth session (see resolve-claude-credentials.sh).
-      # Read-write so the container's own token refresh writes back to it.
-      - ./.claude-credentials.json:/home/node/.claude/.credentials.json
-      # Host's Cursor Agent login (see resolve-cursor-credentials.sh).
-      - ./.cursor-auth.json:/home/node/.config/cursor/auth.json
-
 volumes:
   caddy_data:
     name: saflib-base-dev-caddy-data
   caddy_config:
     name: saflib-base-dev-caddy-config
-  clients_node_modules:
-    name: saflib-base-dev-clients-node-modules
-  monolith_node_modules:
-    name: saflib-base-dev-monolith-node-modules
+  node_modules:
+    name: saflib-base-dev-node-modules
+  npm_cache:
+    name: saflib-base-dev-npm-cache
   kratos_home:
     name: saflib-base-dev-kratos-home
   kratos_data:
@@ -170,10 +145,3 @@ volumes:
     name: saflib-base-dev-cron-data
   jobs_data:
     name: saflib-base-dev-jobs-data
-  # Same name as docker-compose.dev-site.yaml's, so both stacks share it.
-  dev_site_data:
-    name: saflib-base-dev-site-data
-  repo_node_modules:
-    name: saflib-base-dev-repo-node-modules
-  new_workflows_data:
-    name: saflib-base-dev-new-workflows-data
