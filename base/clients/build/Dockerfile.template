@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:labs
-FROM node:24-slim AS builder
+FROM node:26-slim AS builder
 
 RUN npm install -g npm@11.14.1
 

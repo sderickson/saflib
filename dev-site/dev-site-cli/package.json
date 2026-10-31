@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@saflib/vitest": "*",
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.0.0",
     "memfs": "^4.17.0"
   },
   "sideEffects": false
