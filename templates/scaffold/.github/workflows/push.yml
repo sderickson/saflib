@@ -1,5 +1,5 @@
 # Build production images and push to GHCR. Intended to move from pull_request
-# (for validation) to push on merge to main once Watchtower + remote deploy are wired.
+# (for validation) to push on merge to main once remote deploy is wired.
 
 name: Push images to GHCR
 
