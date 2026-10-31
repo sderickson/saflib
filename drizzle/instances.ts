@@ -9,7 +9,7 @@ import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { randomUUID } from "crypto";
 import { Readable } from "node:stream";
-import { reconcileSquashedMigrations } from "./reconcile-squashed-migrations.ts";
+import { checkMigrationHistory } from "./migration-history.ts";
 
 /**
  * A class which mainly manages "connections" to the sqlite3 database and drizzle
@@ -118,7 +118,7 @@ export class DbManager<S extends Schema, C extends Config> {
     const foreignKeysBefore = sqlite.pragma("foreign_keys", { simple: true });
     sqlite.pragma("foreign_keys = OFF");
     try {
-      reconcileSquashedMigrations(sqlite, migrationsPath, {
+      checkMigrationHistory(sqlite, migrationsPath, {
         info: (message) => log.info(message),
         warn: (message) => log.info(message),
       });

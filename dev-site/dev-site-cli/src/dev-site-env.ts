@@ -32,6 +32,13 @@ export function writeDevSiteEnv(devDir: string): void {
     `GIT_COMMITTER_EMAIL=${gitAuthorEmail}`,
   ];
 
+  if (layout.worktreeGitCommonDir) {
+    lines.push(`DEV_SITE_GIT_COMMON_DIR=${layout.worktreeGitCommonDir}`);
+    console.error(
+      `dev-site: worktree; mounting git dir ${layout.worktreeGitCommonDir}`,
+    );
+  }
+
   if (layout.gitDirMount) {
     lines.push(`DEV_SITE_GIT_DIR_MOUNT=${layout.gitDirMount}`);
     console.error(

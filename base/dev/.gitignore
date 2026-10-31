@@ -1,5 +1,6 @@
-dev-site-data/*
-!dev-site-data/.gitkeep
 dev-site.env
 .claude-credentials.json
 .cursor-auth.json
+# Host data folders from before dev data moved to named volumes.
+dev-site-data/
+kratos/data/

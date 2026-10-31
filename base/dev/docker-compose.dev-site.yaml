@@ -47,7 +47,7 @@ services:
       # host's own native bindings, and vice versa. docker-entrypoint.sh
       # seeds/updates this on every start.
       - repo_node_modules:/repo/node_modules
-      - ./dev-site-data:/data
+      - dev_site_data:/data
       # Workflow-run history (@saflib/new-workflows-db) — persists across
       # container restarts without ever touching the host filesystem.
       - new_workflows_data:/data/new-workflows
@@ -57,6 +57,9 @@ services:
       - ./.cursor-auth.json:/home/node/.config/cursor/auth.json
 
 volumes:
+  # Same name as docker-compose.yaml's, so both stacks share it.
+  dev_site_data:
+    name: saflib-base-dev-site-data
   repo_node_modules:
     name: saflib-base-dev-site-repo-node-modules
   new_workflows_data:

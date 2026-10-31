@@ -3,6 +3,12 @@ name: saflib-base-dev
 # Dev stack for the base product (sibling of saflib library packages).
 # Compose / build context is the saflib monorepo root (`../..` from this directory).
 # product/init rewrites the `../..:/app` volume to product + saflib mounts.
+#
+# Dev data (SQLite databases, Kratos) lives in named volumes with fixed names, never
+# in host folders under the checkout. Every checkout of the repo, including git
+# worktrees, then runs against the same data, and SQLite stays off Docker Desktop's
+# macOS file share (its WAL mmaps -shm, which that share handles badly). The fixed
+# project `name` means one stack runs at a time, so there is only ever one writer.
 services:
   caddy:
     depends_on:
@@ -41,9 +47,9 @@ services:
     volumes:
       - ../..:/app
       - monolith_node_modules:/app/node_modules
-      - ../../base/service/db/data:/app/base/service/db/data
-      - ../../base/service/cron/data:/app/base/service/cron/data
-      - ../../base/service/jobs/data:/app/base/service/jobs/data
+      - db_data:/app/base/service/db/data
+      - cron_data:/app/base/service/cron/data
+      - jobs_data:/app/base/service/jobs/data
     build:
       context: ../..
       dockerfile: base/service/monolith/Dockerfile
@@ -70,7 +76,7 @@ services:
     volumes:
       # Persists SQLite (identities, sessions, flows) across container restarts
       - kratos_home:/home/ory
-      - ./kratos/data:/var/lib/sqlite
+      - kratos_data:/var/lib/sqlite
       - ./kratos:/etc/config/kratos
 
   kratos:
@@ -85,7 +91,7 @@ services:
       - ./env.kratos.config
     volumes:
       - kratos_home:/home/ory
-      - ./kratos/data:/var/lib/sqlite
+      - kratos_data:/var/lib/sqlite
       - ./kratos:/etc/config/kratos
 
   site:
@@ -135,7 +141,7 @@ services:
       # host's own native bindings, and vice versa. docker-entrypoint.sh
       # seeds/updates this on every start.
       - repo_node_modules:/repo/node_modules
-      - ./dev-site-data:/data
+      - dev_site_data:/data
       # Workflow-run history (@saflib/new-workflows-db) — persists across
       # container restarts without ever touching the host filesystem.
       - new_workflows_data:/data/new-workflows
@@ -156,6 +162,17 @@ volumes:
     name: saflib-base-dev-monolith-node-modules
   kratos_home:
     name: saflib-base-dev-kratos-home
+  kratos_data:
+    name: saflib-base-dev-kratos-data
+  db_data:
+    name: saflib-base-dev-db-data
+  cron_data:
+    name: saflib-base-dev-cron-data
+  jobs_data:
+    name: saflib-base-dev-jobs-data
+  # Same name as docker-compose.dev-site.yaml's, so both stacks share it.
+  dev_site_data:
+    name: saflib-base-dev-site-data
   repo_node_modules:
     name: saflib-base-dev-repo-node-modules
   new_workflows_data:

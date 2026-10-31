@@ -1,64 +1,46 @@
 # Squashing Migrations
 
-Over time the `migrations/` folder grows — mostly from per-migration snapshot JSON under `meta/`. Drizzle Kit has no first-class squash command, but you can reset to a single baseline migration without wiping existing databases.
+Over time the `migrations/` folder grows — mostly from per-migration snapshot JSON under `meta/`. Drizzle Kit has no squash command, so `@saflib/drizzle` provides one: `saf-drizzle squash` replaces every migration with a single baseline generated from the current schema, and records the squash so existing databases keep working.
 
-`DbManager` runs [`reconcileSquashedMigrations`](../reconcile-squashed-migrations.ts) before `migrate()`. That helper detects when the journal was reset while a DB still has old `__drizzle_migrations` rows, and rewrites history to match the new journal so the baseline is not re-applied on top of an existing schema.
+## How startup checks migration history
+
+`DbManager` runs [`checkMigrationHistory`](../migration-history.ts) before `migrate()`. It compares the database's `__drizzle_migrations` rows with the journal (`meta/_journal.json`):
+
+- **Every applied migration is in the journal.** Normal case: Drizzle applies whatever is pending.
+- **Some applied migrations are not in the journal, and a recorded squash replaced them.** The squash is listed in `meta/squash.json`, its baseline is in the journal, and the database had applied every migration it replaced. The check rewrites `__drizzle_migrations` to mark the baseline as applied without re-running its SQL. Migrations added after the squash then run as usual.
+- **Anything else stops startup** with a `MigrationHistoryError` that names the migrations involved:
+  - applied migrations the code does not know about, e.g. a dev database migrated by another branch;
+  - a squash the database was behind on, since marking the baseline applied would skip schema it never got;
+  - a pending migration older than the newest applied one, which Drizzle would otherwise skip silently. This also usually means another branch migrated the database.
+
+The check is exact: a squash is only recognized when it was recorded deliberately.
 
 ## When to squash
 
-- Prod (and any shared environments) are caught up on the current head migration.
+- Prod (and any shared environments) are caught up on the current head migration. Any database that is behind will refuse to start after the squash.
 - You're fine with stale local DBs being wiped and recreated if someone is behind.
 - You accept that one-off **data** backfills in old SQL (e.g. `UPDATE … SET …`) will not be replayed on **new** databases — only schema from the current Drizzle definitions is regenerated. Bake important defaults into the schema if new installs need them.
 
 ## Steps
 
-Work from the db package (e.g. `service/db`).
+Work from the db package (where `drizzle.config.ts` is, e.g. `service/db`).
 
-1. **Backup** any on-disk DB you care about keeping:
+1. **Back up** any on-disk DB you care about keeping.
 
-   ```bash
-   cp data/db-<deployment>.sqlite data/db-<deployment>.pre-squash-backup.sqlite
-   ```
-
-2. **Delete** the migrations folder entirely (not just the SQL files — an empty `meta/` without `_journal.json` confuses `drizzle-kit generate`):
+2. **Squash:**
 
    ```bash
-   rm -rf migrations
+   npx saf-drizzle squash
    ```
 
-3. **Regenerate** a single baseline from the current schema:
+   This deletes `migrations/`, runs `drizzle-kit generate` for one `0000_….sql` baseline, and writes `migrations/meta/squash.json` with the baseline and the migrations it replaced. Pass `--migrations <dir>` if your drizzle config's `out` is not `migrations`.
 
-   ```bash
-   npm run generate
-   ```
+3. **Verify an existing DB** — restart the app or `npm run dev`. Expect a log about marking the baseline as applied, then a clean migrate. App tables and row counts should be unchanged; `__drizzle_migrations` should contain one row matching the baseline's journal `when`.
 
-   You should get one `migrations/0000_….sql` plus `meta/_journal.json` and `meta/0000_snapshot.json`.
+4. **Verify a fresh DB** — delete (or point at a new) sqlite file, connect again, and confirm the baseline creates the full schema.
 
-4. **Verify an existing DB** — connect the same way the app does (or restart `npm run dev`). Expect a log about squashed history being rewritten, then a clean migrate. App tables and row counts should be unchanged; `__drizzle_migrations` should contain one row matching the new journal `when`.
+5. **Ship** the migrations folder, including `meta/squash.json`. Existing environments reconcile on first boot; brand-new environments just run the baseline. Keep `squash.json` in the repo: it is how startup tells a squash apart from unknown migrations.
 
-5. **Verify a fresh DB** — delete (or point at a new) sqlite file, connect again, and confirm the baseline creates the full schema.
+## Recovering from a refused startup
 
-6. **Ship** the deleted old migrations, the new baseline, and the `@saflib/drizzle` reconcile change together. Existing environments reconcile on first boot; brand-new environments just run the baseline.
-
-## How reconcile decides
-
-It rewrites `__drizzle_migrations` only when **all** of these are true:
-
-- The migrations table already has rows.
-- Some applied `created_at` values are **not** in the current journal (`when`s) — orphan history from before the squash.
-- Some journal entries are missing from applied history.
-- The DB already has application tables (not only `__drizzle_migrations`).
-
-Otherwise it no-ops: fresh installs and normal incremental migrations behave as before.
-
-Drizzle itself decides what to run by comparing each journal entry's `when` to the latest `__drizzle_migrations.created_at`. After a squash without reconcile, a new baseline's `when` is newer than old history, so Drizzle would try to execute the full `CREATE TABLE` SQL and fail. Reconcile prevents that.
-
-## Local recovery
-
-If something goes wrong and you kept a backup:
-
-```bash
-cp data/db-<deployment>.pre-squash-backup.sqlite data/db-<deployment>.sqlite
-```
-
-Or delete the sqlite file and let `ALLOW_DB_CREATION=true` recreate from the baseline.
+If startup reports unknown or skipped migrations on a dev database, it was most likely migrated by another branch. Either check out that branch, restore a copy of the database from before it ran, or delete the database and let `ALLOW_DB_CREATION=true` recreate it from the migrations.

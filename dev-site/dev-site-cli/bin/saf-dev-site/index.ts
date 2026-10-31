@@ -5,6 +5,7 @@ import { setupContext } from "@saflib/commander";
 import { addPrepareCommand } from "./prepare.ts";
 import { addComposeCommand } from "./compose.ts";
 import { addSyncNodeModulesCommand } from "./sync-node-modules.ts";
+import { addVolumeCommand } from "./volume.ts";
 
 const program = new Command()
   .name("saf-dev-site")
@@ -15,6 +16,7 @@ const program = new Command()
 addPrepareCommand(program);
 addSyncNodeModulesCommand(program);
 addComposeCommand(program);
+addVolumeCommand(program);
 
 setupContext({ serviceName: "saf-dev-site" }, () => {
   program.parseAsync(process.argv).catch((error: unknown) => {

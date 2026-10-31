@@ -60,4 +60,33 @@ describe("resolveDevLayout", () => {
     const layout = resolveDevLayout(`${saflib}/base/dev`);
     expect(layout.gitDirMount).toBe(`${parent}/.git/modules/saflib`);
   });
+
+  it("finds the main .git for a linked worktree checkout", () => {
+    vol.fromJSON(
+      {
+        "/main/.git/HEAD": "ref: refs/heads/main\n",
+        "/main/.git/worktrees/feature/commondir": "../..\n",
+        "/feature/.git": "gitdir: /main/.git/worktrees/feature\n",
+        "/feature/saflib/base/.gitkeep": "",
+        "/feature/my-product/dev/docker-compose.yaml": "",
+      },
+      "/",
+    );
+    const layout = resolveDevLayout("/feature/my-product/dev");
+    expect(layout.worktreeGitCommonDir).toBe("/main/.git");
+  });
+
+  it("leaves worktreeGitCommonDir unset for a main checkout", () => {
+    vol.fromJSON(
+      {
+        "/main/.git/HEAD": "ref: refs/heads/main\n",
+        "/main/saflib/base/.gitkeep": "",
+        "/main/my-product/dev/docker-compose.yaml": "",
+      },
+      "/",
+    );
+    expect(
+      resolveDevLayout("/main/my-product/dev").worktreeGitCommonDir,
+    ).toBeUndefined();
+  });
 });
