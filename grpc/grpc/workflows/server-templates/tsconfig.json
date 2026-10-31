@@ -5,10 +5,10 @@
       "path": "../.."
     },
     {
-      "path": "../../../../base/service/common"
+      "path": "../../../../base/product/service/common"
     },
     {
-      "path": "../../../../base/service/db"
+      "path": "../../../../base/product/service/db"
     },
     {
       "path": "../proto-templates"

@@ -9,7 +9,7 @@ import {
 } from "./generate-exports.ts";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const clientsCommonDir = path.resolve(dirname, "../../../base/clients/common");
+const clientsCommonDir = path.resolve(dirname, "../../../base/product/clients/common");
 
 describe("leafExportRemapDiffs", () => {
   it("allows Vue SFC export aliases", () => {
@@ -45,10 +45,10 @@ describe("collectPublicExportRepoPaths", () => {
   it("includes explicit Vue export targets", () => {
     const paths = collectPublicExportRepoPaths(
       clientsCommonDir,
-      "saflib/base/clients/common",
+      "saflib/base/product/clients/common",
     );
     expect(paths).toContain(
-      "saflib/base/clients/common/components/base-layout/BaseLayout.vue",
+      "saflib/base/product/clients/common/components/base-layout/BaseLayout.vue",
     );
   });
 });

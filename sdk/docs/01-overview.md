@@ -2,7 +2,7 @@
 
 `@saflib/sdk` is the **platform library** for TanStack Query clients, MSW fakes, and shared Vue components tied to an OpenAPI contract. SPAs import the SDK for making calls to the service backend.
 
-Layout and naming for service packages are in [monorepo — `service/`](../../monorepo/docs/01-overview.md#service). The golden product SDK is [`base/service/sdk`](https://github.com/sderickson/saflib/blob/main/base/service/sdk/).
+Layout and naming for service packages are in [monorepo — `service/`](../../monorepo/docs/01-overview.md#service). The golden product SDK is [`base/product/service/sdk`](https://github.com/sderickson/saflib/blob/main/base/product/service/sdk/).
 
 Use [sdk/add-query](./workflows/add-query.md) and [sdk/add-mutation](./workflows//add-mutation.md) to create TanStack functions, and [sdk/add-component](./workflows/add-component.md) for standalone components.
 

@@ -1,0 +1,87 @@
+{
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist/types",
+    "e2e",
+    "playwright-report",
+    "test-results",
+    "**/*.weave.ts"
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "outDir": "./dist/types",
+    "noEmit": false,
+    "emitDeclarationOnly": true
+  },
+  "references": [
+    {
+      "path": "../../__offshoot-name__/http"
+    },
+    {
+      "path": "../../../../env"
+    },
+    {
+      "path": "../../../../errors/errors-service"
+    },
+    {
+      "path": "../../../../express"
+    },
+    {
+      "path": "../../../../jobs/jobs-http"
+    },
+    {
+      "path": "../../../../monorepo"
+    },
+    {
+      "path": "../../../../node"
+    },
+    {
+      "path": "../../../../ory-kratos/ory-kratos-http"
+    },
+    {
+      "path": "../../../../secret-store"
+    },
+    {
+      "path": "../../../../vendors/loki"
+    },
+    {
+      "path": "../../../../vendors/sentry-node"
+    },
+    {
+      "path": "../audit"
+    },
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../cron"
+    },
+    {
+      "path": "../db"
+    },
+    {
+      "path": "../http"
+    },
+    {
+      "path": "../http-app"
+    },
+    {
+      "path": "../integrations/__integration-name__"
+    },
+    {
+      "path": "../jobs"
+    },
+    {
+      "path": "../kratos-handlers"
+    },
+    {
+      "path": "../spec"
+    }
+  ]
+}

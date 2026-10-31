@@ -263,14 +263,6 @@ function restoreNonProductBaseLiterals(line: string): string {
   return result;
 }
 
-/** Product monorepos embed saflib as a submodule beside the product tree. */
-function rewriteSaflibRelativeTsconfigPaths(line: string): string {
-  return line.replace(
-    /"\.\.\/\.\.\/\.\.\/(?!saflib\/)(vue\/)/g,
-    '"../../../saflib/$1',
-  );
-}
-
 function finishProductInitLineReplace(
   out: string,
   context: InitProductWorkflowContext,
@@ -312,6 +304,12 @@ function finishProductInitLineReplace(
   result = result.split(dockerFrom).join(dockerTo);
   result = result.split(SOURCE_DOMAIN).join(context.domainName);
 
+  // The golden product lives at base/product (beside base/platform).
+  result = result.replace(
+    new RegExp(`(?<![\\w.@])${SOURCE_PRODUCT_NAME}/product(?![\\w-])`, "g"),
+    context.productName,
+  );
+
   // Path / token renames — avoid bare "base" (database, based, …).
   result = result.replaceAll(
     `/${SOURCE_PRODUCT_NAME}/`,
@@ -342,10 +340,6 @@ function finishProductInitLineReplace(
   );
 
   result = restoreNonProductBaseLiterals(result);
-  if (context.embeddedProductMonorepo) {
-    result = rewriteSaflibRelativeTsconfigPaths(result);
-  }
-
   return result;
 }
 
@@ -435,9 +429,9 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       lineReplace: makeProductInitLineReplace(context),
       // Keep expansion stubs (__subdomain-name__, __group-name__, …) in base only.
       // Both globs: dir trees (`__/…`) and stub filenames (`__…__-links.ts`).
-      // Suite docs under base/docs are for the golden template itself — products
+      // Suite docs under base/product/docs are for the golden template itself — products
       // should not inherit them.
-      skipSourceGlobs: ["**/__*__/**", "**/__*__*", "**/base/docs/**"],
+      skipSourceGlobs: ["**/__*__/**", "**/__*__*", "**/base/product/docs/**"],
     })),
     // lineReplace drops stub `"path"` lines but can leave empty `{ }` objects in
     // multi-line tsconfig references; strip those before npm install / saf-imports.
@@ -448,6 +442,17 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         "--disable-warning=ExperimentalWarning",
         path.join(import.meta.dirname, "strip-stub-tsconfig-refs.ts"),
         path.join(context.cwd, context.productName),
+      ],
+    })),
+    // Relative paths out of the product still have the golden tree's depth.
+    step(CommandStepMachine, ({ context }) => ({
+      command: "node",
+      args: [
+        "--experimental-strip-types",
+        "--disable-warning=ExperimentalWarning",
+        path.join(import.meta.dirname, "fix-product-relative-paths.ts"),
+        path.join(context.cwd, context.productName),
+        context.embeddedProductMonorepo ? "1" : "0",
       ],
     })),
     step(
@@ -505,7 +510,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         "dev",
         "docker-compose.yaml",
       ),
-      description: "Rewrite base/dev compose for product monorepo layout",
+      description: "Rewrite base/product/dev compose for product monorepo layout",
       transform: (content: string) =>
         toProductMonorepoDevCompose(content),
     })),
@@ -516,7 +521,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         "dev",
         "docker-compose.dev-site.yaml",
       ),
-      description: "Rewrite base/dev dev-site compose for product monorepo layout",
+      description: "Rewrite base/product/dev dev-site compose for product monorepo layout",
       transform: (content: string) =>
         toProductMonorepoDevCompose(content),
     })),

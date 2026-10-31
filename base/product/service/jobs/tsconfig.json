@@ -1,0 +1,44 @@
+{
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "references": [
+    {
+      "path": "../../../../drizzle"
+    },
+    {
+      "path": "../../../../env"
+    },
+    {
+      "path": "../../../../jobs/jobs-db"
+    },
+    {
+      "path": "../../../../jobs/jobs-http"
+    },
+    {
+      "path": "../../../../openapi"
+    },
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../cron"
+    }
+  ],
+  "compilerOptions": {
+    "outDir": "./dist/types",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "rootDir": "."
+  },
+  "exclude": [
+    "node_modules",
+    "dist/types",
+    "e2e",
+    "playwright-report",
+    "test-results"
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ]
+}

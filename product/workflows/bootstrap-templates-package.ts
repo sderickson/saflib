@@ -4,7 +4,7 @@
  * Do not re-run without updating destinations to that layout.
  *
  * Vue client stubs (`common`, `__static-subdomain-name__`, SPA/e2e) now live under
- * `saflib/base/clients/`; paths below that still point at `vue/workflows/template`
+ * `saflib/base/product/clients/`; paths below that still point at `vue/workflows/template`
  * are historical and may no longer exist on disk.
  */
 import {

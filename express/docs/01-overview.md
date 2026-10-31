@@ -6,7 +6,7 @@ These docs explain how consumers of `@saflib/express` should use this library wi
 
 ## Package structure and integration
 
-See [base](https://github.com/sderickson/saflib/tree/main/base/service). A product's HTTP code is split three ways:
+See [base](https://github.com/sderickson/saflib/tree/main/base/product/service). A product's HTTP code is split three ways:
 
 - **Feature http packages** (`service/http`, `<offshoot>/http`, kind `http`) each export one router (`createBaseRouter()`, `create<Offshoot>Router()`) built from their handler groups.
 - **The `http-app` package** (`service/http-app`, kind `http-app`) builds the app shell with `createProductHttpApp`: global middleware, the service context, the auth gate, the audit recorder, and platform routers (audit, jobs, cron) after the feature routers.

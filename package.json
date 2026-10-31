@@ -56,6 +56,6 @@
     "./../ory-kratos/ory-kratos-sdk/index.ts",
     "./../ory-kratos/ory-kratos-sdk/vitest.config.js",
     "./../ory-kratos/ory-kratos-sdk/vue-query-register.ts",
-    "./base/service/sdk/client.ts"
+    "./base/product/service/sdk/client.ts"
   ]
 }

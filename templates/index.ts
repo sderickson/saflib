@@ -13,14 +13,17 @@ const saflibRoot = process.env.SAFLIB_ROOT?.trim() || path.resolve(templatesPack
 /** Root of the `@saflib/templates` package (path helpers only). */
 export { templatesPackageRoot };
 
-/** Saflib monorepo root (parent of `base/`, `deploy/`, library packages). */
+/** Saflib monorepo root (parent of `base/`, library packages). */
 export const templatesSaflibRoot = saflibRoot;
 
+/** Golden templates: `base/product` and `base/platform`, side by side. */
+export const templatesBaseRoot = path.join(saflibRoot, "base");
+
 /**
- * Golden product tree (`clients`, `service`, `dev`, `plans`).
+ * Golden product tree (`clients`, `service`, `dev`, `deploy`).
  * product/init copies this to `<productName>/`.
  */
-export const templatesProductRoot = path.join(saflibRoot, "base");
+export const templatesProductRoot = path.join(templatesBaseRoot, "product");
 
 /** Deploy tree copied to `./deploy` by product/init (or `$SAF_DEPLOY_DIR`). */
 export const templatesDeployRoot = path.join(saflibRoot, "deploy");

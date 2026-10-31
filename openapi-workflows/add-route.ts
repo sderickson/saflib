@@ -179,7 +179,7 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
 
 ## Audit map (when this route matters)
 
-Routes are **not** audited by default. If this operation is security- or compliance-relevant, add an entry to the product audit map (e.g. \`saflib/base/service/audit/audit-map.ts\` or \`<product>/service/audit/audit-map.ts\`).
+Routes are **not** audited by default. If this operation is security- or compliance-relevant, add an entry to the product audit map (e.g. \`saflib/base/product/service/audit/audit-map.ts\` or \`<product>/service/audit/audit-map.ts\`).
 
 **Key format:** \`"${context.method.toUpperCase()} ${context.urlPath.replace(/\{([^}]+)\}/g, ":$1")}"\` — method in caps, Express-style \`:param\` segments (not \`{param}\`).
 

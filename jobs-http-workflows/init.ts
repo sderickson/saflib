@@ -63,7 +63,7 @@ function makeJobsInitLineReplace(context: JobsInitWorkflowContext) {
  * prompts, same step order, running on the new sqlite-backed engine
  * instead of XState.
  *
- * Jobs are folded into the golden product (`base/service/jobs` + concrete
+ * Jobs are folded into the golden product (`base/product/service/jobs` + concrete
  * http/monolith wiring). This workflow ensures the jobs package is present
  * — it does not re-weave parent http/monolith.
  */

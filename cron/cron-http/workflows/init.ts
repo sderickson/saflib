@@ -55,7 +55,7 @@ function makeCronInitLineReplace(context: CronInitWorkflowContext) {
 }
 
 /**
- * Cron is folded into the golden product (`base/service/cron` + concrete http/monolith wiring).
+ * Cron is folded into the golden product (`base/product/service/cron` + concrete http/monolith wiring).
  * This workflow ensures the cron package is present — it does not re-weave parent http/monolith.
  */
 export const CronInitWorkflowDefinition = defineWorkflow<

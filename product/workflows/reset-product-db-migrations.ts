@@ -4,7 +4,7 @@
  * clean baseline from the product's real schemas only (drizzle recreates the
  * journal).
  *
- * Golden `base/service/db/migrations` includes stub tables
+ * Golden `base/product/service/db/migrations` includes stub tables
  * (`__group_name___table`, `__offshoot_name___table`). Those schema files are
  * skipped on product/init, but the migration history is not — so the first
  * `drizzle/update-schema` generate asks interactively whether a new table was

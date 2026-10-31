@@ -5,7 +5,7 @@
       "path": "../.."
     },
     {
-      "path": "../../../../base/service/common"
+      "path": "../../../../base/product/service/common"
     },
     {
       "path": "../../../../env"

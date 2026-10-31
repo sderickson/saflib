@@ -2,7 +2,7 @@
 
 `@saflib/vite` does not declare its own `env.schema.json`. [`typedEnv`](../ref/env/variables/typedEnv.md) casts `process.env` to [`ViteEnvSchema`](../ref/env/interfaces/ViteEnvSchema.md), which extends the core schema from [`@saflib/env`](../../../env/docs/env/index.md).
 
-Client **build** packages validate env at config load time (see [`base/clients/build/vite.config.ts`](https://github.com/sderickson/saflib/blob/main/base/clients/build/vite.config.ts)) using a combined schema from dependencies.
+Client **build** packages validate env at config load time (see [`base/product/clients/build/vite.config.ts`](https://github.com/sderickson/saflib/blob/main/base/product/clients/build/vite.config.ts)) using a combined schema from dependencies.
 
 ## Variables used by `makeConfig`
 

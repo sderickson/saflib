@@ -53,100 +53,100 @@
       "path": "./backup/backup-spec"
     },
     {
-      "path": "./base/__offshoot-name__/db"
+      "path": "./base/product/__offshoot-name__/db"
     },
     {
-      "path": "./base/__offshoot-name__/http"
+      "path": "./base/product/__offshoot-name__/http"
     },
     {
-      "path": "./base/__offshoot-name__/sdk"
+      "path": "./base/product/__offshoot-name__/sdk"
     },
     {
-      "path": "./base/__offshoot-name__/spec"
+      "path": "./base/product/__offshoot-name__/spec"
     },
     {
-      "path": "./base/__offshoot-name__/test"
+      "path": "./base/product/__offshoot-name__/test"
     },
     {
-      "path": "./base/clients/__static-subdomain-name__"
+      "path": "./base/product/clients/__static-subdomain-name__"
     },
     {
-      "path": "./base/clients/__subdomain-name__"
+      "path": "./base/product/clients/__subdomain-name__"
     },
     {
-      "path": "./base/clients/account"
+      "path": "./base/product/clients/account"
     },
     {
-      "path": "./base/clients/admin"
+      "path": "./base/product/clients/admin"
     },
     {
-      "path": "./base/clients/app"
+      "path": "./base/product/clients/app"
     },
     {
-      "path": "./base/clients/auth"
+      "path": "./base/product/clients/auth"
     },
     {
-      "path": "./base/clients/common"
+      "path": "./base/product/clients/common"
     },
     {
-      "path": "./base/clients/links"
+      "path": "./base/product/clients/links"
     },
     {
-      "path": "./base/clients/root"
+      "path": "./base/product/clients/root"
     },
     {
-      "path": "./base/dev"
+      "path": "./base/product/dev"
     },
     {
-      "path": "./base/lib/__package-name__"
+      "path": "./base/product/lib/__package-name__"
     },
     {
-      "path": "./base/security"
+      "path": "./base/product/security"
     },
     {
-      "path": "./base/service/audit"
+      "path": "./base/product/service/audit"
     },
     {
-      "path": "./base/service/common"
+      "path": "./base/product/service/common"
     },
     {
-      "path": "./base/service/cron"
+      "path": "./base/product/service/cron"
     },
     {
-      "path": "./base/service/db"
+      "path": "./base/product/service/db"
     },
     {
-      "path": "./base/service/email"
+      "path": "./base/product/service/email"
     },
     {
-      "path": "./base/service/http"
+      "path": "./base/product/service/http"
     },
     {
-      "path": "./base/service/http-app"
+      "path": "./base/product/service/http-app"
     },
     {
-      "path": "./base/service/integrations/__integration-name__"
+      "path": "./base/product/service/integrations/__integration-name__"
     },
     {
-      "path": "./base/service/jobs"
+      "path": "./base/product/service/jobs"
     },
     {
-      "path": "./base/service/kratos-handlers"
+      "path": "./base/product/service/kratos-handlers"
     },
     {
-      "path": "./base/service/monolith"
+      "path": "./base/product/service/monolith"
     },
     {
-      "path": "./base/service/sdk"
+      "path": "./base/product/service/sdk"
     },
     {
-      "path": "./base/service/sdk-common"
+      "path": "./base/product/service/sdk-common"
     },
     {
-      "path": "./base/service/spec"
+      "path": "./base/product/service/spec"
     },
     {
-      "path": "./base/service/test"
+      "path": "./base/product/service/test"
     },
     {
       "path": "./commander"

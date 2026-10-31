@@ -35,11 +35,11 @@ export const SAFLIB_RESTORE_PATHS = [
 const PARENT_RESTORE_PATHS = ["package.json", "package-lock.json", "tsconfig.json"] as const;
 
 export function clientAppTsconfigPaths(saflibRoot: string): string[] {
-  const clientsDir = path.join(saflibRoot, "base/clients");
+  const clientsDir = path.join(saflibRoot, "base/product/clients");
   if (!existsSync(clientsDir)) return [];
   return readdirSync(clientsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .map((entry) => path.join("base/clients", entry.name, "tsconfig.app.json"))
+    .map((entry) => path.join("base/product/clients", entry.name, "tsconfig.app.json"))
     .filter((rel) => existsSync(path.join(saflibRoot, rel)));
 }
 

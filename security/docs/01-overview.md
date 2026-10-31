@@ -7,10 +7,10 @@
 | Layer                    | Location                                                                                                                                                                    | Owns                                                                                                                  |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | **Tools**                | `@saflib/security` (this package)                                                                                                                                           | Playwright config factories, CSRF/cookie/header/CORS helpers, env presets                                             |
-| **Golden product suite** | [`base/security/`](https://github.com/sderickson/saflib/blob/main/base/security/) (copied to `{product}/security/` by [product/init](../../product/docs/workflows/init.md)) | Playwright specs wired to base SPAs/API, starter [`threat-model.md`](../../base/security/threat-model.md), CI scripts |
+| **Golden product suite** | [`base/product/security/`](https://github.com/sderickson/saflib/blob/main/base/product/security/) (copied to `{product}/security/` by [product/init](../../product/docs/workflows/init.md)) | Playwright specs wired to base SPAs/API, starter [`threat-model.md`](../../base/product/security/threat-model.md), CI scripts |
 | **Product suite**        | `{product}/security/`                                                                                                                                                       | Specs for your routes, threat model you maintain, Caddy/deploy hardening                                              |
 
-Golden products ship `base/security/` out of the box. **Product owners** extend specs and maintain the threat model as surface area grows; helpers here stay stable across products.
+Golden products ship `base/product/security/` out of the box. **Product owners** extend specs and maintain the threat model as surface area grows; helpers here stay stable across products.
 
 External scanners (ZAP, testssl.sh, nmap, Trivy) and host runbooks stay in the **product** `security/` folder — document your approach in `{product}/security/pen-testing-tools.md` alongside the Playwright suite.
 
@@ -35,7 +35,7 @@ These extend [@saflib/playwright](../../playwright/docs/01-overview.md) (health 
 
 ## Quick start
 
-Golden reference: [`base/security/`](https://github.com/sderickson/saflib/blob/main/base/security/).
+Golden reference: [`base/product/security/`](https://github.com/sderickson/saflib/blob/main/base/product/security/).
 
 After initializing your product, run against a running dev stack (`{product}/dev` or deploy prod-local):
 
@@ -63,11 +63,11 @@ export default createSecurityCanaryPlaywrightConfig({
 });
 ```
 
-Create a dedicated test user and set `SECURITY_CANARY_KRATOS_EMAIL` and `SECURITY_CANARY_KRATOS_PASSWORD` in CI secrets for login-based canary specs. Run with `npm run test:e2e:canary` (see [`base/security/package.json`](https://github.com/sderickson/saflib/blob/main/base/security/package.json)).
+Create a dedicated test user and set `SECURITY_CANARY_KRATOS_EMAIL` and `SECURITY_CANARY_KRATOS_PASSWORD` in CI secrets for login-based canary specs. Run with `npm run test:e2e:canary` (see [`base/product/security/package.json`](https://github.com/sderickson/saflib/blob/main/base/product/security/package.json)).
 
 ## Extending for your product
 
-1. Copy spec **patterns** from [`base/security/test/`](https://github.com/sderickson/saflib/blob/main/base/security/test/) — adapt routes, fixtures, and SPA subdomains.
-2. Colocate fixtures with the specs they exercise (see [`base/security/fixtures/`](https://github.com/sderickson/saflib/blob/main/base/security/fixtures/)).
+1. Copy spec **patterns** from [`base/product/security/test/`](https://github.com/sderickson/saflib/blob/main/base/product/security/test/) — adapt routes, fixtures, and SPA subdomains.
+2. Colocate fixtures with the specs they exercise (see [`base/product/security/fixtures/`](https://github.com/sderickson/saflib/blob/main/base/product/security/fixtures/)).
 3. Update `{product}/security/threat-model.md` — list shipped controls and owner responsibilities.
 4. Wire CI to run `playwright test` on PRs when http/clients/Caddy change.

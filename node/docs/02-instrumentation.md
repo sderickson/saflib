@@ -99,6 +99,6 @@ Beyond these basic RED metrics, SAF application code does not currently provide 
 
 ## Testing Observability in Development
 
-SAF comes with a suite of simple observability tools for use in development. When running the dev server and the repo is set up the way [base](../../base/docs/01-overview.md) is, you can go to the admin SPA and view logs, metrics, errors, and events that have occurred since the server was started. These are kept in memory, and their interfaces included, only in development. This way you don't need to run an entire observability stack or rely on keys to actual services in order to use or develop product or engineering instrumentation.
+SAF comes with a suite of simple observability tools for use in development. When running the dev server and the repo is set up the way [base](../../base/product/docs/01-overview.md) is, you can go to the admin SPA and view logs, metrics, errors, and events that have occurred since the server was started. These are kept in memory, and their interfaces included, only in development. This way you don't need to run an entire observability stack or rely on keys to actual services in order to use or develop product or engineering instrumentation.
 
 Server logs are also integrated into the Vue developer tools. Winston logs are mostly filtered out of the terminal in development to avoid noise, so to make them easily accessible (along with any metadata sent with the log message), you can open the vue dev tools on any page and access Winston logs through one of the tabs.

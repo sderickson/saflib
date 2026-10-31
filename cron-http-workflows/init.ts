@@ -59,7 +59,7 @@ function makeCronInitLineReplace(context: CronInitWorkflowContext) {
  * prompts, same step order, running on the new sqlite-backed engine
  * instead of XState.
  *
- * Cron is folded into the golden product (`base/service/cron` + concrete
+ * Cron is folded into the golden product (`base/product/service/cron` + concrete
  * http/monolith wiring). This workflow ensures the cron package is present
  * — it does not re-weave parent http/monolith.
  */

@@ -2,7 +2,7 @@
 
 `@saflib/vite` provides shared [Vite](https://vite.dev/) configuration for SAF **multi-SPA client build** packages — one Vite app that builds every subdomain SPA in a product's `clients/` tree.
 
-Golden reference: [`base/clients/build/vite.config.ts`](https://github.com/sderickson/saflib/blob/main/base/clients/build/vite.config.ts) (`@saflib/base-clients`). Individual SPA packages under `clients/{subdomain}/` export `main()` entrypoints consumed by that build package; see [@saflib/vue](../../vue/docs/01-overview.md).
+Golden reference: [`base/product/clients/build/vite.config.ts`](https://github.com/sderickson/saflib/blob/main/base/product/clients/build/vite.config.ts) (`@saflib/base-clients`). Individual SPA packages under `clients/{subdomain}/` export `main()` entrypoints consumed by that build package; see [@saflib/vue](../../vue/docs/01-overview.md).
 
 Code reference: [`docs/ref/`](./ref/index.md).
 
@@ -41,7 +41,7 @@ Other defaults:
 - **`server.fs.allow`**: `monorepoRoot` so Docker and local dev can read `saflib/` and product packages
 - **`sourcemap`**: `true` by default; set `false` for production deploys that must not serve public maps
 
-Pass extra Vite plugins (e.g. [`htmlHeaderPlugin`](https://github.com/sderickson/saflib/blob/main/base/clients/build/vite/html-header-plugin.ts)) via `plugins`. Merge product-specific `define` blocks with `mergeConfig` as in the base build config.
+Pass extra Vite plugins (e.g. [`htmlHeaderPlugin`](https://github.com/sderickson/saflib/blob/main/base/product/clients/build/vite/html-header-plugin.ts)) via `plugins`. Merge product-specific `define` blocks with `mergeConfig` as in the base build config.
 
 ## Relationship to other packages
 

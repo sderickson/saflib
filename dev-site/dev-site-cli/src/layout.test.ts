@@ -36,13 +36,13 @@ describe("resolveDevLayout", () => {
     const saflib = "/saflib";
     vol.fromJSON(
       {
-        [`${saflib}/base/dev/docker-compose.yaml`]: "",
+        [`${saflib}/base/product/dev/docker-compose.yaml`]: "",
       },
       "/",
     );
-    const layout = resolveDevLayout(`${saflib}/base/dev`);
+    const layout = resolveDevLayout(`${saflib}/base/product/dev`);
     expect(layout.repoMount).toBe(saflib);
-    expect(layout.productRoot).toBe("base");
+    expect(layout.productRoot).toBe("base/product");
     expect(layout.containerSaflibRoot).toBe("/repo");
   });
 
@@ -51,13 +51,13 @@ describe("resolveDevLayout", () => {
     const saflib = path.join(parent, "saflib");
     vol.fromJSON(
       {
-        [`${saflib}/base/dev/docker-compose.yaml`]: "",
+        [`${saflib}/base/product/dev/docker-compose.yaml`]: "",
         [`${saflib}/.git`]: "gitdir: ../.git/modules/saflib\n",
         [`${parent}/.git/modules/saflib/HEAD`]: "ref: refs/heads/main\n",
       },
       "/",
     );
-    const layout = resolveDevLayout(`${saflib}/base/dev`);
+    const layout = resolveDevLayout(`${saflib}/base/product/dev`);
     expect(layout.gitDirMount).toBe(`${parent}/.git/modules/saflib`);
   });
 

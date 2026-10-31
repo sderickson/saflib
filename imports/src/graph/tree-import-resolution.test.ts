@@ -8,35 +8,35 @@ import type { PackageIndex } from "../types.ts";
 describe("collectPublicExportPathsFromTree", () => {
   it("includes pattern export targets such as SDK requests/*", () => {
     const treePaths = new Set([
-      "base/service/sdk/requests/admin/mocks.ts",
-      "base/service/sdk/requests/admin/index.fakes.ts",
-      "base/service/sdk/client.ts",
+      "base/product/service/sdk/requests/admin/mocks.ts",
+      "base/product/service/sdk/requests/admin/index.fakes.ts",
+      "base/product/service/sdk/client.ts",
     ]);
     const paths = collectPublicExportPathsFromTree(
-      "base/service/sdk",
+      "base/product/service/sdk",
       {
         "./client": "./client.ts",
         "./requests/*": "./requests/*.ts",
       },
       treePaths,
     );
-    expect(paths).toContain("base/service/sdk/requests/admin/mocks.ts");
-    expect(paths).toContain("base/service/sdk/requests/admin/index.fakes.ts");
-    expect(paths).toContain("base/service/sdk/client.ts");
+    expect(paths).toContain("base/product/service/sdk/requests/admin/mocks.ts");
+    expect(paths).toContain("base/product/service/sdk/requests/admin/index.fakes.ts");
+    expect(paths).toContain("base/product/service/sdk/client.ts");
   });
 });
 
 describe("createTreeResolveImportTarget", () => {
   it("resolves # import maps within a package", () => {
     const treePaths = new Set([
-      "base/clients/common/components/base-layout/BaseLayout.vue",
-      "base/clients/common/composables/useSiteAdmin.ts",
+      "base/product/clients/common/components/base-layout/BaseLayout.vue",
+      "base/product/clients/common/composables/useSiteAdmin.ts",
     ]);
     const index: PackageIndex = new Map([
       [
         "@saflib/base-clients-common",
         {
-          dir: "base/clients/common",
+          dir: "base/product/clients/common",
           exports: { "./composables/*": "./composables/*.ts" },
         },
       ],
@@ -46,23 +46,23 @@ describe("createTreeResolveImportTarget", () => {
       index,
       importsMapByPackageDir: new Map([
         [
-          "base/clients/common",
+          "base/product/clients/common",
           { "#composables/useSiteAdmin.ts": "./composables/useSiteAdmin.ts" },
         ],
       ]),
       packageRoots: [
         {
           packageName: "@saflib/base-clients-common",
-          directory: "base/clients/common",
+          directory: "base/product/clients/common",
         },
       ],
     });
 
     expect(
       resolve(
-        "base/clients/common/components/base-layout/BaseLayout.vue",
+        "base/product/clients/common/components/base-layout/BaseLayout.vue",
         "#composables/useSiteAdmin.ts",
       ),
-    ).toBe("base/clients/common/composables/useSiteAdmin.ts");
+    ).toBe("base/product/clients/common/composables/useSiteAdmin.ts");
   });
 });

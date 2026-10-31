@@ -25,7 +25,7 @@ describe("shouldSkipSourcePath", () => {
   it("skips saf-workflow-status files under any package", () => {
     expect(
       shouldSkipSourcePath(
-        "/repo/base/clients/admin/saf-workflow-status.json",
+        "/repo/base/product/clients/admin/saf-workflow-status.json",
         skipInput(),
       ),
     ).toBe(true);
@@ -39,7 +39,7 @@ describe("shouldSkipSourcePath", () => {
 
   it("does not skip ordinary source files", () => {
     expect(
-      shouldSkipSourcePath("/repo/base/clients/admin/router.ts", skipInput()),
+      shouldSkipSourcePath("/repo/base/product/clients/admin/router.ts", skipInput()),
     ).toBe(false);
   });
 });

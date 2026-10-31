@@ -7,7 +7,7 @@ Handler tests should exercise the HTTP API per [best practices](../../best-pract
 Do **not** build the full monolith app for every handler test.
 
 1. Mount the production **group router** from `handlers/<group>/index.ts` (e.g. `createTodosRouter`).
-2. Use the slim harness from `@…-http/test/slim-route-test` (`acquireRouterSlimRouteTest`, `releaseSlimRouteTest`). See [base HTTP](https://github.com/sderickson/saflib/tree/main/base/service/http/test).
+2. Use the slim harness from `@…-http/test/slim-route-test` (`acquireRouterSlimRouteTest`, `releaseSlimRouteTest`). See [base HTTP](https://github.com/sderickson/saflib/tree/main/base/product/service/http/test).
 3. Use `beforeAll` / `afterAll` — not `beforeEach` — so OpenAPI middleware is not re-installed per test.
 4. Set identity-shaped headers with `makeUserHeaders` or `makeAdminHeaders` from `@saflib/express`.
 5. Call `releaseSlimRouteTest(ctx.lease)` in `afterAll` to disconnect the test database.
@@ -59,7 +59,7 @@ Use the composition root's `create…HttpApp()` (every production mount) only in
 
 ### Gotchas
 
-- **Mount order** — Platform routers (`createCronRouter`, etc.) end with a catch-all **404**. Product routers registered after them never run. Symptom: integration test returns **404** for a route that works in a slim handler test. Fix: ensure product mounts are listed before platform terminators in `http.ts` (see [base HTTP](https://github.com/sderickson/saflib/tree/main/base/service/http)).
+- **Mount order** — Platform routers (`createCronRouter`, etc.) end with a catch-all **404**. Product routers registered after them never run. Symptom: integration test returns **404** for a route that works in a slim handler test. Fix: ensure product mounts are listed before platform terminators in `http.ts` (see [base HTTP](https://github.com/sderickson/saflib/tree/main/base/product/service/http)).
 - **Auth** — Most operations need `makeUserHeaders()` or `makeAdminHeaders()`. Admin-only operations declare `security: [{ session: [site-admin] }]` (which also requires verified email / MFA).
 - **Public routes** — `x-public: true` operations skip scoped auth when the path is also listed in `isPublicMonolithRoute` (keep in sync with Caddy `@public_monolith`).
 - **CSRF** — Validation is skipped when `NODE_ENV=test`, so handler tests do not need CSRF tokens.

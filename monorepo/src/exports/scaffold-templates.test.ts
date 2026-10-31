@@ -15,10 +15,10 @@ function readTemplatePackageJson(relativePath: string) {
 describe("scaffold template import-graph defaults", () => {
   // Golden product packages under saflib/base (former workflows/templates).
   const patternExportTemplates = [
-    "base/service/sdk/package.json",
-    "base/service/db/package.json",
-    "base/service/http/package.json",
-    "base/clients/common/package.json",
+    "base/product/service/sdk/package.json",
+    "base/product/service/db/package.json",
+    "base/product/service/http/package.json",
+    "base/product/clients/common/package.json",
   ];
 
   for (const templatePath of patternExportTemplates) {
@@ -34,24 +34,24 @@ describe("scaffold template import-graph defaults", () => {
   }
 
   it("sdk package marks client.ts as side-effectful", () => {
-    const pkg = readTemplatePackageJson("base/service/sdk/package.json");
+    const pkg = readTemplatePackageJson("base/product/service/sdk/package.json");
     expect(pkg.sideEffects).toEqual(["./client.ts"]);
   });
 
   it("vue client build package marks CSS as side-effectful", () => {
-    const pkg = readTemplatePackageJson("base/clients/build/package.json");
+    const pkg = readTemplatePackageJson("base/product/clients/build/package.json");
     expect(pkg.sideEffects).toEqual(["**/*.css", "**/*.scss"]);
   });
 
   it("openapi spec package exposes dist fragment patterns", () => {
-    const pkg = readTemplatePackageJson("base/service/spec/package.json");
+    const pkg = readTemplatePackageJson("base/product/service/spec/package.json");
     expect(pkg.exports?.["./operations/*"]).toBeDefined();
     expect(pkg.exports?.["./schemas/*"]).toBeDefined();
   });
 
   it("integrations stub exports mocks subpath", () => {
     const pkg = readTemplatePackageJson(
-      "base/service/integrations/__integration-name__/package.json",
+      "base/product/service/integrations/__integration-name__/package.json",
     );
     expect(pkg.exports?.["./mocks"]).toBe("./mocks/client.ts");
     expect(pkg.sideEffects).toBe(false);

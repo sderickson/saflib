@@ -142,7 +142,7 @@ describe("makeProductInitLineReplace", () => {
 
   it("strips unresolved stub path segments from Dockerfile COPY lines", () => {
     const line =
-      "COPY --parents ./package.json ./saflib/base/service/integrations/__integration-name__/package.json ./saflib/templates/package.json ./";
+      "COPY --parents ./package.json ./saflib/base/product/service/integrations/__integration-name__/package.json ./saflib/templates/package.json ./";
     const out = replace(line);
     expect(out).toContain("./package.json");
     expect(out).toContain("saflib/templates/package.json");
@@ -213,18 +213,22 @@ describe("makeProductInitLineReplace", () => {
   });
 
   it("preserves shared tsconfig preset filenames when renaming the product", () => {
+    // Relative depth is fixed after the copy (fix-product-relative-paths).
     expect(
-      replace('    "../../../vue/tsconfig.app.base.json"'),
-    ).toBe('    "../../../saflib/vue/tsconfig.app.base.json"');
+      replace('    "../../../../vue/tsconfig.app.base.json"'),
+    ).toBe('    "../../../../vue/tsconfig.app.base.json"');
   });
 
-  it("keeps saflib/vue paths literal when init runs inside @saflib/saflib", () => {
-    const standalone = makeProductInitLineReplace(
-      testContext({ embeddedProductMonorepo: false }),
+  it("maps golden base/product paths to the product", () => {
+    expect(replace("      dockerfile: ./base/product/dev/builds/node/Dockerfile")).toBe(
+      "      dockerfile: ./tmp/dev/builds/node/Dockerfile",
     );
-    expect(
-      standalone('    "../../../vue/tsconfig.app.base.json"'),
-    ).toBe('    "../../../vue/tsconfig.app.base.json"');
+    expect(replace("    working_dir: /app/base/product/service/monolith")).toBe(
+      "    working_dir: /app/tmp/service/monolith",
+    );
+    expect(replace("      DEV_SITE_PRODUCT_ROOT: ${DEV_SITE_PRODUCT_ROOT:-base/product}")).toBe(
+      "      DEV_SITE_PRODUCT_ROOT: ${DEV_SITE_PRODUCT_ROOT:-tmp}",
+    );
   });
 
   it("does not rewrite tsconfig.base.json preset paths", () => {

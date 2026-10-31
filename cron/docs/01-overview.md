@@ -11,7 +11,7 @@ Use [add-cron-job](../cron-http/docs/workflows/add-job.md) to add a new cron job
 
 ## Package structure and integration
 
-See [base](https://github.com/sderickson/saflib/tree/main/base/service/cron), which defines cron jobs. The expected way to integrate these into your service is:
+See [base](https://github.com/sderickson/saflib/tree/main/base/product/service/cron), which defines cron jobs. The expected way to integrate these into your service is:
 
 - Have the monolith run cron jobs as part of its startup process.
 - Add the cron job router to the HTTP express server for administration.

@@ -1,0 +1,76 @@
+{
+  "extends": [
+    "../../../../vue/tsconfig.app.base.json"
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "outDir": "./dist/types",
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "rootDir": ".",
+    "types": [
+      "vite/client"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "e2e",
+    "playwright.config.ts",
+    "dist/types",
+    "playwright-report",
+    "test-results"
+  ],
+  "references": [
+    {
+      "path": "../../../../analytics/analytics-vue"
+    },
+    {
+      "path": "../../../../audit/audit-vue"
+    },
+    {
+      "path": "../../../../cron/cron-vue"
+    },
+    {
+      "path": "../../../../email/email-vue"
+    },
+    {
+      "path": "../../../../errors/errors-vue"
+    },
+    {
+      "path": "../../../../jobs/jobs-vue"
+    },
+    {
+      "path": "../../../../links"
+    },
+    {
+      "path": "../../../../node-log/node-log-vue"
+    },
+    {
+      "path": "../../../../node-metrics/node-metrics-vue"
+    },
+    {
+      "path": "../../../../ory-kratos/ory-kratos-sdk"
+    },
+    {
+      "path": "../../../../ory-kratos/ory-kratos-spa"
+    },
+    {
+      "path": "../../../../vue"
+    },
+    {
+      "path": "../../service/sdk"
+    },
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../links"
+    }
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.vue",
+    "**/*.json"
+  ]
+}

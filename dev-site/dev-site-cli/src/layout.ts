@@ -23,7 +23,7 @@ export interface DevLayout {
 }
 
 /**
- * Detect monorepo (product beside saflib/) vs saflib-repo (base/dev) layout.
+ * Detect monorepo (product beside saflib/) vs saflib-repo (base/product/dev) layout.
  */
 export function resolveDevLayout(devDir: string): DevLayout {
   const absoluteDevDir = path.resolve(devDir);
@@ -39,9 +39,10 @@ export function resolveDevLayout(devDir: string): DevLayout {
     saflibRoot = path.join(repoMount, "saflib");
     productRoot = path.basename(productParent);
   } else {
-    saflibRoot = path.resolve(absoluteDevDir, "../..");
+    // saflib's golden product: <saflib>/base/product/dev
+    saflibRoot = path.resolve(absoluteDevDir, "../../..");
     repoMount = saflibRoot;
-    productRoot = "base";
+    productRoot = "base/product";
   }
 
   const containerSaflibRoot = existsSync(path.join(repoMount, "saflib"))

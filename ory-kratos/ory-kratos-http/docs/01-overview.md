@@ -14,7 +14,7 @@ Browser flows and session state live in [`@saflib/ory-kratos-sdk`](../../ory-kra
 
 ## Integration
 
-Product code supplies `KratosCourierCallbacks` and `KratosActionHandler` implementations — see [`base/service/kratos-handlers`](https://github.com/sderickson/saflib/blob/main/base/service/kratos-handlers/) for the reference wiring with `@saflib/base-email`.
+Product code supplies `KratosCourierCallbacks` and `KratosActionHandler` implementations — see [`base/product/service/kratos-handlers`](https://github.com/sderickson/saflib/blob/main/base/product/service/kratos-handlers/) for the reference wiring with `@saflib/base-email`.
 
 ```ts
 import { startOryKratosService } from "@saflib/ory-kratos-http";

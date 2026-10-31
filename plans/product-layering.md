@@ -23,7 +23,7 @@
 ## Context
 
 SAF products are workspace monorepos of small packages (`db`, `spec`, `http`,
-`sdk`, `spa`, `integration`, …), and offshoots (`base/__offshoot-name__/{db,http,sdk,spec,test}`)
+`sdk`, `spa`, `integration`, …), and offshoots (`base/product/__offshoot-name__/{db,http,sdk,spec,test}`)
 add sibling feature stacks. Nothing says which packages may import which.
 
 A large product showed what goes wrong as it grows and splits into offshoots.
@@ -39,8 +39,8 @@ came back as a cycle, and each cycle was dodged instead of fixed:
 
 The base template itself has the shape that causes this:
 
-- **`base/service/http/http.ts` mounts offshoot routers.** The product's feature http package is also the composition root, so offshoots can never import shared HTTP code from it. *(Fixed 2026-10-18: `service/monolith/http.ts` mounts them.)*
-- **`base/service/common` depends on integration packages.** Its context types the integration clients, and `dependencies.ts` constructs them. So `service-common` is both the lowest shared library and the dependency-wiring layer.
+- **`base/product/service/http/http.ts` mounts offshoot routers.** The product's feature http package is also the composition root, so offshoots can never import shared HTTP code from it. *(Fixed 2026-10-18: `service/monolith/http.ts` mounts them.)*
+- **`base/product/service/common` depends on integration packages.** Its context types the integration clients, and `dependencies.ts` constructs them. So `service-common` is both the lowest shared library and the dependency-wiring layer.
 - **Offshoot SDKs can't import the shared client.** It lives in the product's core `sdk`, and that package re-exports the offshoot SDKs, so a static import would form a cycle.
 
 ## Design
@@ -147,7 +147,7 @@ It never constructs clients or wires dependencies; the composition root does tha
   - the API client factory and tenant header;
   - shared query-key factories;
   - the cache constants and the vue-query `Register` declaration.
-- [x] Offshoot SDK template imports `sdk-common` statically; delete the bind pattern from `base/__offshoot-name__/sdk`. Each SDK (core and offshoot) has its own `client.ts`: `createApiClient<paths>()` from `sdk-common`, typed by its own spec.
+- [x] Offshoot SDK template imports `sdk-common` statically; delete the bind pattern from `base/product/__offshoot-name__/sdk`. Each SDK (core and offshoot) has its own `client.ts`: `createApiClient<paths>()` from `sdk-common`, typed by its own spec.
 - [x] ~~Product `sdk` re-exports `sdk-common` for SPA convenience.~~ Not needed: SPAs use each SDK's requests, and `sdk-common`'s `Register` declaration reaches them through the clients. `sdk` never re-exports offshoot SDKs: SPAs depend on them directly, and `sdk/init` no longer adds the offshoot SDK to the core `sdk`.
 
 ### Phase 6 — Templates and workflows

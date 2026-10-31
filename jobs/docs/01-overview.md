@@ -14,7 +14,7 @@ Use [jobs/init](../jobs-http/docs/workflows/init.md) to scaffold the product job
 
 ## Package structure and integration
 
-See [base](https://github.com/sderickson/saflib/tree/main/base/service/jobs).
+See [base](https://github.com/sderickson/saflib/tree/main/base/product/service/jobs).
 
 | Concern            | Pattern                                                                                      |
 | ------------------ | -------------------------------------------------------------------------------------------- |

@@ -58,7 +58,7 @@ function makeJobsInitLineReplace(context: JobsInitWorkflowContext) {
 }
 
 /**
- * Jobs are folded into the golden product (`base/service/jobs` + concrete http/monolith wiring).
+ * Jobs are folded into the golden product (`base/product/service/jobs` + concrete http/monolith wiring).
  * This workflow ensures the jobs package is present — it does not re-weave parent http/monolith.
  */
 export const JobsInitWorkflowDefinition = defineWorkflow<

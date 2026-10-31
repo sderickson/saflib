@@ -6,7 +6,7 @@ Use [integrations/init](./workflows/init.md) to create a new service integration
 
 ## Package structure and integration
 
-See [base](https://github.com/sderickson/saflib/tree/main/base/service/integrations/__integration-name__).
+See [base](https://github.com/sderickson/saflib/tree/main/base/product/service/integrations/__integration-name__).
 
 Integration packages live under `{product}/service/integrations/{name}/` alongside other service packages. They are **libraries** — they do not listen on a port or run as workers. Name packages after the vendor (`stripe`, `sendgrid`) to make clear what services your product integrates with.
 
