@@ -14,7 +14,7 @@ import { isEmbeddedProductMonorepo } from "@saflib/monorepo";
 import { kebabCaseToPascalCase, kebabCaseToSnakeCase } from "@saflib/utils";
 import {
   templatesProductRoot,
-  templatesDeployRoot,
+  templatesPlatformRoot,
   templatesScaffoldRoot,
   resolveDeployDir,
   getDeployDirName,
@@ -76,6 +76,8 @@ export interface InitProductWorkflowContext extends ParsePackageNameOutput {
   productOnly: boolean;
   /** True when init cwd is a product root with a nested `saflib/` workspace. */
   embeddedProductMonorepo: boolean;
+  /** The repo already has a platform deploy (edge + Kratos); only add the product. */
+  platformExists: boolean;
 }
 
 /** Frozen golden-product name under saflib (`saflib/base`). */
@@ -304,7 +306,12 @@ function finishProductInitLineReplace(
   result = result.split(dockerFrom).join(dockerTo);
   result = result.split(SOURCE_DOMAIN).join(context.domainName);
 
-  // The golden product lives at base/product (beside base/platform).
+  // Golden templates: base/platform → the repo's platform deploy dir, and
+  // base/product → the product.
+  result = result.replace(
+    /(?<![\w.@])base\/platform(?![\w-])/g,
+    getDeployDirName(),
+  );
   result = result.replace(
     new RegExp(`(?<![\\w.@])${SOURCE_PRODUCT_NAME}/product(?![\\w-])`, "g"),
     context.productName,
@@ -368,6 +375,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       domainName: input.domain,
       productOnly: input.productOnly ?? false,
       embeddedProductMonorepo: isEmbeddedProductMonorepo(input.cwd),
+      platformExists: existsSync(path.join(resolveDeployDir(input.cwd), "package.json")),
     };
   },
 
@@ -455,31 +463,18 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         context.embeddedProductMonorepo ? "1" : "0",
       ],
     })),
+    // The platform deploy (edge + Kratos) is shared by every product; create it
+    // only for the repo's first product. Each product's own deploy came with
+    // the product copy above (<product>/deploy).
     step(
       CopyStepMachine,
-      ({ context }) => {
-        const deployTarget = resolveDeployDir(context.cwd);
-        // checklist/dry never write; keep the step for checklist text.
-        // script/print/run must not upsert onto the golden deploy tree.
-        if (
-          path.resolve(templatesDeployRoot) === path.resolve(deployTarget) &&
-          context.runMode !== "checklist" &&
-          context.runMode !== "dry"
-        ) {
-          throw new Error(
-            `Refusing to upsert deploy onto its own golden tree (${deployTarget}). ` +
-              `Set SAF_DEPLOY_DIR to a disposable directory (e.g. tmp-deploy) when ` +
-              `running product/init from the saflib repo root.`,
-          );
-        }
-        return {
-          name: context.productName,
-          targetDir: deployTarget,
-          templateFiles: { deploy: templatesDeployRoot },
-          lineReplace: makeProductInitLineReplace(context),
-        };
-      },
-      { skipIf: ({ context }) => context.productOnly },
+      ({ context }) => ({
+        name: context.productName,
+        targetDir: resolveDeployDir(context.cwd),
+        templateFiles: { deploy: templatesPlatformRoot },
+        lineReplace: makeProductInitLineReplace(context),
+      }),
+      { skipIf: ({ context }) => context.productOnly || context.platformExists },
     ),
     step(
       CopyStepMachine,
@@ -551,18 +546,21 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         command: "mv",
         args: [
           path.join(
-            resolveDeployDir(context.cwd),
+            context.cwd,
+            context.productName,
+            "deploy",
             "remote-assets",
             `env.${context.productName}.secrets`,
           ),
           path.join(
-            resolveDeployDir(context.cwd),
+            context.cwd,
+            context.productName,
+            "deploy",
             "remote-assets",
             `.env.${context.productName}.secrets`,
           ),
         ],
       }),
-      { skipIf: ({ context }) => context.productOnly },
     ),
     step(CdStepMachine, ({ context }) => ({
       // Nested monorepos (host product → saflib): install at the outermost
@@ -697,7 +695,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       () => ({
         path: `./${getDeployDirName()}`,
       }),
-      { skipIf: ({ context }) => context.productOnly },
+      { skipIf: ({ context }) => context.productOnly || context.platformExists },
     ),
     step(
       CommandStepMachine,
@@ -705,7 +703,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         command: "npm",
         args: ["run", "regen-kratos-secrets"],
       }),
-      { skipIf: ({ context }) => context.productOnly },
+      { skipIf: ({ context }) => context.productOnly || context.platformExists },
     ),
     step(
       CommandStepMachine,
@@ -713,7 +711,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         command: "npm",
         args: ["run", "generate"],
       }),
-      { skipIf: ({ context }) => context.productOnly },
+      { skipIf: ({ context }) => context.productOnly || context.platformExists },
     ),
   ],
 });

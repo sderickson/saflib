@@ -23,10 +23,10 @@
   },
   "references": [
     {
-      "path": "../deploy-cli"
+      "path": "../../deploy-cli"
     },
     {
-      "path": "../docker"
+      "path": "../../docker"
     }
   ]
 }

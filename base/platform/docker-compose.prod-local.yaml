@@ -1,3 +1,5 @@
+# Platform stack, locally. Product prod-local stacks join its edge network and
+# register their routes with `saf-deploy register-sites --local`.
 services:
   caddy:
     extends:
@@ -5,17 +7,6 @@ services:
       service: caddy
     env_file: !override
       - ./env.caddy.prod-local
-
-  # BEGIN WORKFLOW AREA monolith FOR product/init
-  __product-name__-monolith:
-    extends:
-      file: remote-assets/docker-compose.prod.yaml
-      service: __product-name__-monolith
-    volumes: !override []
-    env_file: !override
-      - ./env.__product-name__.prod-local
-
-  # END WORKFLOW AREA
 
   kratos-migrate:
     extends:
@@ -39,10 +30,16 @@ services:
       - ./kratos-prod-local/data:/var/lib/sqlite
       - ./kratos-prod-local:/etc/config/kratos
 
+networks:
+  edge:
+    name: __organization-name__-edge
+
 volumes:
   caddy_data:
-    name: __product-name__-prod-local-caddy-data
+    name: __organization-name__-prod-local-caddy-data
   caddy_config:
-    name: __product-name__-prod-local-caddy-config
+    name: __organization-name__-prod-local-caddy-config
+  caddy_sites:
+    name: __organization-name__-prod-local-caddy-sites
   kratos_home:
-    name: __product-name__-prod-local-kratos-home
+    name: __organization-name__-prod-local-kratos-home

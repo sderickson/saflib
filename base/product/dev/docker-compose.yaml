@@ -68,9 +68,9 @@ services:
         condition: service_completed_successfully
     working_dir: /app/base/product/service/monolith
     # Same env defaults the deploy image applies (see its Dockerfile).
-    entrypoint: ["sh", "/app/deploy/scripts/apply-env-defaults.sh"]
+    entrypoint: ["sh", "/app/base/product/deploy/scripts/apply-env-defaults.sh"]
     environment:
-      - SAF_ENV_DEFAULTS=/app/deploy/__product-name__/env.defaults
+      - SAF_ENV_DEFAULTS=/app/base/product/deploy/env.defaults
     # Restarts when any file it imports changes (service code and saflib alike).
     command:
       - node

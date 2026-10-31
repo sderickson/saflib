@@ -25,21 +25,27 @@ export const templatesBaseRoot = path.join(saflibRoot, "base");
  */
 export const templatesProductRoot = path.join(templatesBaseRoot, "product");
 
-/** Deploy tree copied to `./deploy` by product/init (or `$SAF_DEPLOY_DIR`). */
-export const templatesDeployRoot = path.join(saflibRoot, "deploy");
+/**
+ * Platform deploy (edge Caddy + Kratos), copied to `./deploy` (or
+ * `$SAF_DEPLOY_DIR`) by product/init when the repo doesn't have one yet.
+ * Each product's own deploy is part of {@link templatesProductRoot}.
+ */
+export const templatesPlatformRoot = path.join(templatesBaseRoot, "platform");
+
+/** @deprecated Prefer {@link templatesPlatformRoot}. */
+export const templatesDeployRoot = templatesPlatformRoot;
 
 /**
  * Runtime deploy directory name relative to the workflow cwd.
  * Defaults to `deploy`. Set `SAF_DEPLOY_DIR` (e.g. `tmp-deploy`) when the
- * cwd is the saflib repo itself so product/init and add-* do not upsert into
- * the golden {@link templatesDeployRoot}.
+ * cwd is the saflib repo itself, to keep a scratch platform deploy apart.
  */
 export function getDeployDirName(): string {
   const override = process.env.SAF_DEPLOY_DIR?.trim();
   return override && override.length > 0 ? override : "deploy";
 }
 
-/** Absolute path to the active deploy tree under `cwd`. */
+/** Absolute path to the platform deploy under `cwd`. */
 export function resolveDeployDir(cwd: string): string {
   return path.join(cwd, getDeployDirName());
 }
@@ -73,7 +79,7 @@ export const packageStubRoot = path.join(
 
 /**
  * @deprecated Prefer {@link templatesProductRoot} — init now copies product,
- * deploy, and scaffold as separate roots.
+ * platform, and scaffold as separate roots.
  */
 export const templatesCopyRoot = templatesProductRoot;
 

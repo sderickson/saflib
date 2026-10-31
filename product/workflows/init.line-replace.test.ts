@@ -18,6 +18,7 @@ function testContext(
     packageName: "PACKAGE_NAME_UNUSED",
     serviceName: "tmp",
     embeddedProductMonorepo: true,
+    platformExists: false,
     ...overrides,
   };
 }

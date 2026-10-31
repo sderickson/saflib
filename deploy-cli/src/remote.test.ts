@@ -264,6 +264,25 @@ esac
       );
     });
 
+    it("fills in placeholders from the route's env, preferring prod-local locally", () => {
+      route("{$DOMAIN} {$CORS} {$EDGE_ONLY}\n");
+      const caddy = path.join(deployDir, "remote-assets", "caddy");
+      writeFileSync(
+        path.join(caddy, "acme.env"),
+        '# comment\nDOMAIN=acme.com\nCORS="^https://(a|b)\\.acme\\.com$"\n',
+      );
+      writeFileSync(path.join(caddy, "acme.prod-local.env"), "DOMAIN=acme.localhost\n");
+      register();
+      expect(readFileSync(path.join(sites, "acme.Caddyfile"), "utf8")).toBe(
+        "acme.localhost {$CORS} {$EDGE_ONLY}\n",
+      );
+      rmSync(path.join(caddy, "acme.prod-local.env"));
+      register();
+      expect(readFileSync(path.join(sites, "acme.Caddyfile"), "utf8")).toBe(
+        "acme.com ^https://(a|b)\\.acme\\.com$ {$EDGE_ONLY}\n",
+      );
+    });
+
     it("removes a first-time route the edge rejects", () => {
       route("bogus\n");
       expect(register).toThrow();

@@ -1,15 +1,13 @@
 {
-  "name": "@__organization-name__/deploy",
-  "description": "Docker compose setup for building and deploying __Organization Name__ products to __domain-name__",
-  "bin": {
-    "run-clean-slate": "./run-prod-local.ts"
+  "name": "@saflib/base-deploy",
+  "saf": {
+    "kind": "other"
   },
+  "description": "Deploy for the base product: its monolith and web container. Joins the platform's (deploy/) edge network and registers its routes with the edge.",
   "type": "module",
   "scripts": {
-    "typecheck": "tsc -b",
-    "regen-kratos-secrets": "NODE_OPTIONS='--experimental-strip-types --disable-warning=ExperimentalWarning' node ./regen-kratos-secrets.ts",
     "generate": "saf-docker generate",
-    "prod-local": ". ./env.remote && CONTAINER_REGISTRY=$CONTAINER_REGISTRY docker compose -f docker-compose.prod-local.yaml up",
+    "prod-local": ". ./env.remote && CONTAINER_REGISTRY=$CONTAINER_REGISTRY docker compose -f docker-compose.prod-local.yaml up --detach && saf-deploy register-sites --local",
     "build": "saf-deploy build",
     "build:native": "saf-deploy build --platform native",
     "status": "saf-deploy status",
@@ -22,7 +20,8 @@
     "remote-undeploy": "saf-deploy down",
     "remote-logs": "saf-deploy logs",
     "remote-purge": "saf-deploy purge",
-    "full-deploy": "saf-deploy release"
+    "full-deploy": "saf-deploy release",
+    "prod-local:down": "docker compose -f docker-compose.prod-local.yaml down"
   },
   "dependencies": {
     "@saflib/deploy-cli": "*",

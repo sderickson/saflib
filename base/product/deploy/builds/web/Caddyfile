@@ -1,0 +1,61 @@
+# Serves the product's static files behind the platform's edge, which
+# terminates TLS, adds security headers and proxies here with the Host intact.
+{
+	admin off
+	auto_https off
+}
+
+(spa) {
+	encode gzip
+	root * /srv{args[0]}
+	@assets path /assets/*
+	header @assets >Cache-Control "public, max-age=31536000, immutable"
+	file_server {
+		pass_thru
+	}
+	@non-file expression path_regexp('^[^.]*$')
+	handle @non-file {
+		header >Cache-Control "no-cache, no-store, must-revalidate"
+		try_files {args[1]}
+	}
+}
+
+(static-site) {
+	encode gzip
+	root * /srv{args[0]}
+	file_server {
+		pass_thru
+	}
+}
+
+http://{$DOMAIN} {
+	import static-site /__product-name__-root
+}
+
+http://auth.{$DOMAIN} {
+	import spa /__product-name__-clients /auth/index.html
+}
+
+http://app.{$DOMAIN} {
+	import spa /__product-name__-clients /app/index.html
+}
+
+http://admin.{$DOMAIN} {
+	import spa /__product-name__-clients /admin/index.html
+}
+
+http://account.{$DOMAIN} {
+	import spa /__product-name__-clients /account/index.html
+}
+
+# BEGIN WORKFLOW AREA client-subdomains FOR vue/add-spa
+http://__subdomain-name__.{$DOMAIN} {
+	import spa /__product-name__-clients /__subdomain-name__/index.html
+}
+# END WORKFLOW AREA
+
+# BEGIN WORKFLOW AREA static-subdomains FOR vue/add-static-site
+http://__static-subdomain-name__.{$DOMAIN} {
+	import static-site /__product-name__-__static-subdomain-name__
+}
+# END WORKFLOW AREA

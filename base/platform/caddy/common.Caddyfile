@@ -3,12 +3,14 @@ http://caddy:2020 {
 	metrics
 }
 
-# For old URLs, or domains you don't want people to use (such as "www")
-# set the env variable DOMAIN_REDIRECTS. This snippet won't work unless
-# a domain is given so even if you don't want to redirect, you need to
-# set the env variable.
+# Shared snippets for every deploy's routes (products register theirs into
+# sites/). Product-specific values (domains, CSP) live in each product's own
+# routes, so nothing here reads product env.
+
+# For old URLs, or domains you don't want people to use (such as "www").
+# args[0]: the origin to redirect to (e.g. https://example.com).
 (redirect) {
-	redir {$PROTOCOL}://{args[0]}{uri} permanent
+	redir {args[0]}{uri} permanent
 }
 
 # Caddy is the source of request IDs for API requests.
@@ -16,32 +18,8 @@ http://caddy:2020 {
 	header_up X-Request-ID {http.request.uuid}
 }
 
-# Used for SPA clients accessible to all users
-(spa) {
-	encode gzip
-	root * /srv{args[0]}
-	@assets path /assets/*
-	header @assets >Cache-Control "public, max-age=31536000, immutable"
-	file_server {
-		pass_thru
-	}
-	@non-file expression path_regexp('^[^.]*$')
-	handle @non-file {
-		header >Cache-Control "no-cache, no-store, must-revalidate"
-		try_files {args[1]}
-	}
-}
-
-# Used for SPA clients accessible to all users
-(static-site) {
-	encode gzip
-	root * /srv{args[0]}
-	file_server {
-		pass_thru
-	}
-}
-
 # Shared edge headers for HTML sites (marketing + SPAs). Not for api.* / kratos.* .
+# Products add a CSP on top (see their routes).
 # > prefix: defer until response is written (needed after file_server / try_files).
 # HSTS: @https when TLS terminates at Caddy; @https_cf when a proxy sends X-Forwarded-Proto.
 (html-edge-headers) {
@@ -61,28 +39,8 @@ http://caddy:2020 {
 	header @https_cf >Strict-Transport-Security "max-age=31536000; includeSubDomains"
 }
 
-# SPAs: style-src needs 'unsafe-inline' for Vue/Vuetify runtime-injected styles.
-# Prefer bundled PostHog (`initPostHogIfConfigured`) over inline snippets so
-# script-src can omit 'unsafe-inline'. MDI should ship from the app bundle.
-# Google Fonts: html-header-plugin / VitePress head load Roboto from fonts.googleapis.com.
-# CSP_CONNECT_SRC / CSP_SCRIPT_SRC_EXTRA / CSP_REPORT_URI from env (see env.caddy.prod-local).
-(security-headers-spa) {
-	import html-edge-headers
-	header >Content-Security-Policy "default-src 'self'; script-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://static.cloudflareinsights.com {$CSP_SCRIPT_SRC_EXTRA}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' {$CSP_CONNECT_SRC}; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; frame-src 'self' blob:; worker-src 'self' blob:; report-uri {$CSP_REPORT_URI}"
-}
-
-# Marketing root (VitePress 2): site metadata is an external module chunk.
-# Products should set appearance: false and strip the mac-os probe so this
-# policy needs no script-src 'unsafe-inline'. style-src still needs it for Vue.
-(security-headers-marketing) {
-	import html-edge-headers
-	header >Content-Security-Policy "default-src 'self'; script-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' {$CSP_CONNECT_SRC}; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; frame-src 'self' blob:; worker-src 'self' blob:; report-uri {$CSP_REPORT_URI}"
-}
-
-# Backward-compatible alias.
-(security-headers) {
-	import security-headers-spa
-}
+# Each product's routes define their own Content-Security-Policy snippets
+# (they need the product's own API / Kratos origins) on top of html-edge-headers.
 
 # api.* / kratos.* — JSON APIs (no HTML CSP).
 (transport-security) {
@@ -98,7 +56,6 @@ http://caddy:2020 {
 
 # CORS: add response headers and handle OPTIONS preflight in Caddy so the backend never sees OPTIONS.
 # args[0]: RE2 pattern matching allowed Origin header values (full origins).
-# Set DOMAIN in env; import as: import cors {$DOMAIN}.
 (cors) {
 	@cors_origin_ok header_regexp Origin {args[0]}
 	@options method OPTIONS

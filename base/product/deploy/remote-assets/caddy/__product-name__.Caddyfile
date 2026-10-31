@@ -1,0 +1,90 @@
+# This product's routes on the platform's edge. Registered by this deploy
+# (`saf-deploy up`), which fills in {$...} from __product-name__.env (or
+# __product-name__.prod-local.env with --local). Generic snippets
+# (html-edge-headers, transport-security, cors, kratos-api-proxy, redirect)
+# come from the edge's common.Caddyfile.
+
+# SPAs: style-src needs 'unsafe-inline' for Vue/Vuetify runtime-injected styles.
+# Prefer bundled PostHog (`initPostHogIfConfigured`) over inline snippets so
+# script-src can omit 'unsafe-inline'. MDI should ship from the app bundle.
+(__product-name__-security-headers-spa) {
+	import html-edge-headers
+	header >Content-Security-Policy "default-src 'self'; script-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://static.cloudflareinsights.com {$CSP_SCRIPT_SRC_EXTRA}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' {$CSP_CONNECT_SRC}; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; frame-src 'self' blob:; worker-src 'self' blob:; report-uri {$CSP_REPORT_URI}"
+}
+
+# Marketing root (VitePress 2): set appearance: false and strip the mac-os
+# probe so this policy needs no script-src 'unsafe-inline'.
+(__product-name__-security-headers-marketing) {
+	import html-edge-headers
+	header >Content-Security-Policy "default-src 'self'; script-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' {$CSP_CONNECT_SRC}; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; frame-src 'self' blob:; worker-src 'self' blob:; report-uri {$CSP_REPORT_URI}"
+}
+
+# Client subdomains (served by the web container)
+
+{$PROTOCOL}://{$DOMAIN} {
+	import __product-name__-security-headers-marketing
+	reverse_proxy __product-name__-web:80
+}
+
+{$PROTOCOL}://auth.{$DOMAIN} {
+	import __product-name__-security-headers-spa
+	reverse_proxy __product-name__-web:80
+}
+
+{$PROTOCOL}://app.{$DOMAIN} {
+	import __product-name__-security-headers-spa
+	reverse_proxy __product-name__-web:80
+}
+
+{$PROTOCOL}://admin.{$DOMAIN} {
+	import __product-name__-security-headers-spa
+	reverse_proxy __product-name__-web:80
+}
+
+{$PROTOCOL}://account.{$DOMAIN} {
+	import __product-name__-security-headers-spa
+	reverse_proxy __product-name__-web:80
+}
+
+# BEGIN WORKFLOW AREA client-subdomains FOR vue/add-spa
+{$PROTOCOL}://__subdomain-name__.{$DOMAIN} {
+	import __product-name__-security-headers-spa
+	reverse_proxy __product-name__-web:80
+}
+# END WORKFLOW AREA
+
+# BEGIN WORKFLOW AREA static-subdomains FOR vue/add-static-site
+{$PROTOCOL}://__static-subdomain-name__.{$DOMAIN} {
+	import __product-name__-security-headers-spa
+	reverse_proxy __product-name__-web:80
+}
+# END WORKFLOW AREA
+
+# API subdomain
+# Public monolith paths skip Kratos forward_auth (health, CSP ingest, marketing unsubscribe).
+
+{$PROTOCOL}://api.{$DOMAIN} {
+	import transport-security
+	import cors {$CORS_ORIGINS}
+	@public_monolith path /health /csp-violations /user-configs/unsubscribe-marketing
+	handle @public_monolith {
+		reverse_proxy __product-name__-monolith:3001 {
+			import reverse_proxy_common
+		}
+	}
+	import kratos-api-proxy __product-name__-monolith:3001
+}
+
+# Kratos public API (the platform's Kratos, on the edge network)
+
+{$PROTOCOL}://kratos.{$DOMAIN} {
+	import transport-security
+	import cors {$CORS_ORIGINS}
+	reverse_proxy kratos:4433 {
+		import reverse_proxy_common
+	}
+}
+
+{$DOMAIN_REDIRECTS} {
+	import redirect {$PROTOCOL}://{$DOMAIN}
+}

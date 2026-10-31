@@ -12,13 +12,14 @@ import path from "node:path";
 import {
   caddyDev,
   clientsRoot,
-  deployProductCaddy,
-  deployTemplatesRoot,
+  deployEdgeRoutes,
+  deployWebCaddy,
+  deployWebDockerfile,
   linksIndex,
   linksStub,
   makeBasePackageLineReplace,
-  skipIfMissingDeploy,
-  resolveDeployDir,
+  skipIfMissingProductDeploy,
+  productDeployDir,
   devRoot,
 } from "./shared.ts";
 
@@ -29,13 +30,6 @@ const staticSubdomainDir = path.join(
 const devDockerfile = path.join(devRoot, "Dockerfile.template");
 // Image builds are discovered by `saf-docker build`; only the Caddy templates
 // that assemble static sites need the new site added.
-const deployCaddyBuild = ["builds", "caddy"];
-const deployCaddyDockerfile = path.join(
-  deployTemplatesRoot,
-  ...deployCaddyBuild,
-  "Dockerfile.template",
-);
-
 const input = [
   {
     name: "productName",
@@ -156,28 +150,52 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       CopyStepMachine,
       ({ context }) => ({
         name: context.serviceName,
-        targetDir: path.join(resolveDeployDir(context.cwd), ...deployCaddyBuild),
+        targetDir: path.join(
+          productDeployDir(context.cwd, context.productName),
+          "builds",
+          "web",
+        ),
         templateFiles: {
-          deployCaddyDockerfile,
+          deployWebDockerfile,
         },
         lineReplace: makeBasePackageLineReplace(context),
       }),
-      {
-        skipIf: skipIfMissingDeploy(...deployCaddyBuild, "Dockerfile.template"),
-      },
+      { skipIf: skipIfMissingProductDeploy("builds", "web", "Dockerfile.template") },
+    ),
+
+    // Upsert the host into the product's deploy (edge routes + web container).
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
+        name: context.serviceName,
+        targetDir: path.join(
+          productDeployDir(context.cwd, context.productName),
+          "remote-assets",
+          "caddy",
+        ),
+        templateFiles: {
+          deployEdgeRoutes,
+        },
+        lineReplace: makeBasePackageLineReplace(context),
+      }),
+      { skipIf: skipIfMissingProductDeploy("remote-assets", "caddy") },
     ),
 
     step(
       CopyStepMachine,
       ({ context }) => ({
         name: context.serviceName,
-        targetDir: path.join(resolveDeployDir(context.cwd), "caddy"),
+        targetDir: path.join(
+          productDeployDir(context.cwd, context.productName),
+          "builds",
+          "web",
+        ),
         templateFiles: {
-          deployProductCaddy,
+          deployWebCaddy,
         },
         lineReplace: makeBasePackageLineReplace(context),
       }),
-      { skipIf: skipIfMissingDeploy("caddy") },
+      { skipIf: skipIfMissingProductDeploy("builds", "web", "Caddyfile") },
     ),
 
     step(CdStepMachine, ({ context }) => ({

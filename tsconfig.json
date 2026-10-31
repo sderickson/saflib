@@ -170,7 +170,7 @@
       "path": "./cron/cron-vue"
     },
     {
-      "path": "./deploy"
+      "path": "./base/platform"
     },
     {
       "path": "./deploy-cli"

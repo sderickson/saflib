@@ -19,13 +19,13 @@ import {
   appendCommaSeparatedEnvValue,
   caddyDev,
   clientsRoot,
-  deployProductCaddy,
+  deployEdgeRoutes,
+  deployWebCaddy,
   linksIndex,
   linksStub,
   makeBasePackageLineReplace,
-  skipIfMissingDeploy,
-  resolveDeployDir,
-  getDeployDirName,
+  skipIfMissingProductDeploy,
+  productDeployDir,
 } from "./shared.ts";
 
 const subdomainDir = path.join(clientsRoot, "__subdomain-name__");
@@ -132,17 +132,31 @@ export const AddSpaWorkflowDefinition = defineWorkflow<AddSpaInput, AddSpaWorkfl
       lineReplace: makeBasePackageLineReplace(context),
     })),
 
-    // Upsert SPA host into deploy product Caddyfile when deploy/ exists.
+    // Upsert the host into the product's deploy (edge routes + web container).
     stepSkipIf<CopyStepInput, AddSpaWorkflowContext>(
-      skipIfMissingDeploy("caddy"),
+      skipIfMissingProductDeploy("remote-assets", "caddy"),
       "copy",
       runCopyStep,
       ({ context }) => ({
         templateFiles: {
-          deployProductCaddy,
+          deployEdgeRoutes,
         },
         name: context.serviceName,
-        targetDir: path.join(resolveDeployDir(context.cwd), "caddy"),
+        targetDir: path.join(productDeployDir(context.cwd, context.productName), "remote-assets", "caddy"),
+        lineReplace: makeBasePackageLineReplace(context),
+      }),
+    ),
+
+    stepSkipIf<CopyStepInput, AddSpaWorkflowContext>(
+      skipIfMissingProductDeploy("builds", "web", "Caddyfile"),
+      "copy",
+      runCopyStep,
+      ({ context }) => ({
+        templateFiles: {
+          deployWebCaddy,
+        },
+        name: context.serviceName,
+        targetDir: path.join(productDeployDir(context.cwd, context.productName), "builds", "web"),
         lineReplace: makeBasePackageLineReplace(context),
       }),
     ),
@@ -162,9 +176,9 @@ export const AddSpaWorkflowDefinition = defineWorkflow<AddSpaInput, AddSpaWorkfl
       "transform-file",
       runTransformFileStep,
       ({ context }) => ({
-        filePath: path.join(resolveDeployDir(context.cwd), `env.${context.productName}.prod-local`),
+        filePath: path.join(productDeployDir(context.cwd, context.productName), "env.monolith.prod-local"),
         skipIfMissing: true,
-        description: `Add ${context.subdomainName} to CLIENT_SUBDOMAINS in ${getDeployDirName()}/env.${context.productName}.prod-local`,
+        description: `Add ${context.subdomainName} to CLIENT_SUBDOMAINS in ${context.productName}/deploy/env.monolith.prod-local`,
         transform: (content: string) =>
           appendCommaSeparatedEnvValue(content, "CLIENT_SUBDOMAINS", context.subdomainName),
       }),

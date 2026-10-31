@@ -1,0 +1,23 @@
+# The product's stack, locally. Start the platform's prod-local first (deploy/,
+# it owns the edge network and Caddy); `npm run prod-local` then registers this
+# product's routes there.
+services:
+  __product-name__-monolith:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: __product-name__-monolith
+    volumes: !override []
+    env_file: !override
+      - ./env.monolith.prod-local
+
+  __product-name__-web:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: __product-name__-web
+    env_file: !override
+      - ./env.web.prod-local
+
+networks:
+  edge:
+    name: __organization-name__-edge
+    external: true

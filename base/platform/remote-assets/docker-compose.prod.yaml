@@ -6,12 +6,17 @@ x-logging: &default-logging
     max-size: "10m"
     max-file: "3"
 
+# Platform deploy: the edge (Caddy) and identity (Kratos). Each product deploys
+# separately (<product>/deploy), joins the `edge` network and registers its
+# routes with the edge (`saf-deploy up`).
 services:
   caddy:
     logging: *default-logging
     cap_add:
       - NET_ADMIN
     image: $CONTAINER_REGISTRY/__organization-name__-caddy:latest
+    # Fixed name: product deploys register their routes with it (SAF_EDGE_CONTAINER).
+    container_name: __organization-name__-edge
     ports:
       - "80:80"
       - "443:443"
@@ -19,33 +24,13 @@ services:
     environment:
       - DISABLE_VITE_DEV_SERVER=#
     volumes:
+      - caddy_sites:/etc/caddy/sites
       - caddy_data:/data
       - caddy_config:/config
+    networks:
+      - default
+      - edge
     restart: unless-stopped
-
-  # BEGIN WORKFLOW AREA monolith FOR product/init
-  __product-name__-monolith:
-    logging: *default-logging
-    image: $CONTAINER_REGISTRY/__organization-name__-__product-name__-monolith:latest
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
-    memswap_limit: 2G
-    volumes:
-      - /opt/__product-name__/cron:/app/__product-name__/service/cron/data
-      - /opt/__product-name__/db:/app/__product-name__/service/db/data
-      - /opt/__product-name__/identity:/app/__product-name__/service/identity/data
-      - /opt/__product-name__/identity-http:/app/saflib/identity/identity-http/data
-    build:
-      context: ../..
-      dockerfile: __product-name__/service/monolith/Dockerfile
-    env_file:
-      - ./.env.__product-name__.secrets
-  # END WORKFLOW AREA
 
   kratos-migrate:
     logging: *default-logging
@@ -82,6 +67,10 @@ services:
     volumes:
       - kratos_home:/home/ory
       - /opt/kratos/data:/var/lib/sqlite
+    # On the edge network so product services reach its admin API (kratos:4434).
+    networks:
+      - default
+      - edge
     restart: unless-stopped
 
   node_exporter:
@@ -97,10 +86,17 @@ services:
       - "--path.rootfs=/rootfs"
       - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)"
 
+networks:
+  edge:
+    name: __organization-name__-edge
+
 volumes:
   caddy_data:
-    name: __product-name__-prod-caddy-data
+    name: __organization-name__-prod-caddy-data
   caddy_config:
-    name: __product-name__-prod-caddy-config
+    name: __organization-name__-prod-caddy-config
+  # Product routes (<product>.Caddyfile), registered by each product's deploy.
+  caddy_sites:
+    name: __organization-name__-caddy-sites
   kratos_home:
-    name: __product-name__-prod-kratos-home
+    name: __organization-name__-prod-kratos-home

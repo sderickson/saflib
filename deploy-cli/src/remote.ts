@@ -72,6 +72,7 @@ export function localPayload(config: DeployConfig, script: string): string {
   const env = {
     ...config.env,
     REMOTE_ASSETS_FOLDER_PATH: path.join(config.deployDir, "remote-assets"),
+    SAF_DEPLOY_LOCAL: "1",
   };
   const lines: string[] = [];
   for (const [key, value] of Object.entries(env)) {
