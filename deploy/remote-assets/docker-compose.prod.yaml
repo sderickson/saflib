@@ -22,8 +22,6 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     restart: unless-stopped
-    labels:
-      com.centurylinklabs.watchtower.enable: "true"
 
   # BEGIN WORKFLOW AREA monolith FOR product/init
   __product-name__-monolith:
@@ -47,8 +45,6 @@ services:
       dockerfile: __product-name__/service/monolith/Dockerfile
     env_file:
       - ./.env.__product-name__.secrets
-    labels:
-      com.centurylinklabs.watchtower.enable: "true"
   # END WORKFLOW AREA
 
   kratos-migrate:
@@ -100,21 +96,6 @@ services:
       - "--path.sysfs=/host/sys"
       - "--path.rootfs=/rootfs"
       - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)"
-
-  watchtower:
-    logging: *default-logging
-    image: containrrr/watchtower:1.7.1
-    command:
-      # Poll every 60 seconds so local "push new :latest" tests are fast.
-      - "--interval=60"
-      # Only update containers explicitly opted-in via the enable label.
-      - "--label-enable"
-      - "--cleanup"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      # GHCR auth: assume docker login has written credentials to ~/.docker/config.json on the host.
-      - ${HOME}/.docker/config.json:/config.json:ro
-    restart: unless-stopped
 
 volumes:
   caddy_data:

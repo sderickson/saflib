@@ -6,7 +6,7 @@ import {
 } from "vue-router";
 import { adminLinks } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
-import { isDevelopmentDeployment } from "@saflib/vue";
+import { isDevelopmentDeployment, scrollBehavior } from "@saflib/vue";
 import { CronJobsAsync } from "@saflib/cron-vue";
 import { JobsAsync } from "@saflib/jobs-vue";
 import { SentEmailsAsync } from "@saflib/email-vue";
@@ -78,5 +78,6 @@ export const createAdminRouter = (options?: {
   return createRouter({
     history: options?.history ?? createWebHistory("/"),
     routes,
+    scrollBehavior,
   });
 };

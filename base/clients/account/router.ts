@@ -6,6 +6,7 @@ import {
 } from "vue-router";
 import { accountLinks } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
+import { scrollBehavior } from "@saflib/vue";
 import VerifyEmailAsync from "./pages/email-verification/VerifyEmailAsync.vue";
 import EmailVerificationFlowAsync from "./pages/email-verification/EmailVerificationFlowAsync.vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
@@ -88,5 +89,6 @@ export const createAccountRouter = (options?: {
   return createRouter({
     history: options?.history ?? createWebHistory("/"),
     routes,
+    scrollBehavior,
   });
 };
