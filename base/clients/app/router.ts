@@ -6,6 +6,7 @@ import {
 } from "vue-router";
 import { appLinks } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
+import { scrollBehavior } from "@saflib/vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
@@ -26,5 +27,6 @@ export const createAppRouter = (options?: {
   return createRouter({
     history: options?.history ?? createWebHistory("/"),
     routes,
+    scrollBehavior,
   });
 };

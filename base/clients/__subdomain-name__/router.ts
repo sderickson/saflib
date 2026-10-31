@@ -6,6 +6,7 @@ import {
 } from "vue-router";
 import { __subdomainName__Links } from "@saflib/base-links";
 import { PageNotFound } from "@saflib/vue/components";
+import { scrollBehavior } from "@saflib/vue";
 import HomePage from "./pages/home/HomePage.vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
@@ -31,5 +32,6 @@ export const create__SubdomainName__Router = (options?: {
   return createRouter({
     history: options?.history ?? createWebHistory("/"),
     routes,
+    scrollBehavior,
   });
 };
