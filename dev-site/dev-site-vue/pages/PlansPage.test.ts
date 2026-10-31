@@ -111,6 +111,10 @@ const handlers = [
   http.get(`${ORIGIN}/api/plans/unexpected-changes`, () =>
     HttpResponse.json({ changes: unexpectedChanges }),
   ),
+  // The page polls the driver while mounted. Each test's fakeDriveHandlers
+  // override this, but those are reset after the test, and a poll still in
+  // flight at teardown would otherwise be an unhandled request.
+  http.get(`${ORIGIN}/api/drive`, () => HttpResponse.json({})),
 ];
 
 const PHASE_1_PATH = "test-product/plans/notes/2026-09-16-todo-app/phase-1-backend-schema.yaml";
