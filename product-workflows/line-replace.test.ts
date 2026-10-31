@@ -3,7 +3,8 @@ import {
   isSkippedStubRefLine,
   makeProductInitLineReplace,
   type InitProductWorkflowContext,
-} from "./init.ts";
+  skipGoldenStubPath,
+} from "./shared.ts";
 
 /** Minimal context for product/init line-replace unit tests. */
 function testContext(
@@ -236,5 +237,21 @@ describe("makeProductInitLineReplace", () => {
     expect(replace('  "extends": "../monorepo/tsconfig.base.json"')).toBe(
       '  "extends": "../monorepo/tsconfig.base.json"',
     );
+  });
+});
+
+describe("skipGoldenStubPath", () => {
+  const golden = "/saflib/base/product";
+  it("skips expansion stubs, in directories and filenames", () => {
+    expect(skipGoldenStubPath(`${golden}/clients/__subdomain-name__/main.ts`)).toBe(true);
+    expect(skipGoldenStubPath(`${golden}/clients/links/__subdomain-name__-links.ts`)).toBe(true);
+    expect(skipGoldenStubPath(`${golden}/service/spec/events/__target_name__.yaml`)).toBe(true);
+    expect(skipGoldenStubPath(`${golden}/docs/01-overview.md`)).toBe(true);
+  });
+
+  it("keeps product-named files", () => {
+    expect(skipGoldenStubPath(`${golden}/deploy/remote-assets/caddy/__product-name__.Caddyfile`)).toBe(false);
+    expect(skipGoldenStubPath(`${golden}/deploy/remote-assets/env.__product-name__.secrets`)).toBe(false);
+    expect(skipGoldenStubPath(`${golden}/service/db/schema.ts`)).toBe(false);
   });
 });

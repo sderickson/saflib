@@ -374,6 +374,9 @@
       "path": "./processes-workflows"
     },
     {
+      "path": "./product-workflows"
+    },
+    {
       "path": "./product"
     },
     {

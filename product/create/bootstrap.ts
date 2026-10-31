@@ -34,6 +34,15 @@ function defaultLog(message: string): void {
   console.log(message);
 }
 
+/** Runs the new-engine product/init (mechanical steps only). */
+export function productInitCommand(productName: string, domain: string): string {
+  return [
+    "npm exec new-workflow -- run-scripts product/init",
+    `--name=${shellQuote(productName)}`,
+    `--domain=${shellQuote(domain)}`,
+  ].join(" ");
+}
+
 export function shellQuote(value: string): string {
   return `"${value.replace(/"/g, '\\"')}"`;
 }
@@ -92,7 +101,7 @@ export function existingSaflibMessage(
     "",
     "Use the existing product/init workflow from the monorepo root instead:",
     "",
-    `  npm exec saf-workflow kickoff product/init ${productName} ${domain}`,
+    `  ${productInitCommand(productName, domain)}`,
     "",
     "See saflib/getting-started.md and saflib/product/docs/workflows/init.md for details.",
   ].join("\n");
@@ -381,14 +390,7 @@ export function runBootstrap(options: BootstrapOptions): void {
   runCommand("npm rebuild better-sqlite3", { cwd });
 
   log(`Running product/init for "${options.productName}"…`);
-  runCommand(
-    [
-      "npm exec saf-workflow kickoff product/init",
-      shellQuote(options.productName),
-      shellQuote(options.domain),
-    ].join(" "),
-    { cwd },
-  );
+  runCommand(productInitCommand(options.productName, options.domain), { cwd });
 
   log("Bootstrap complete.");
 }

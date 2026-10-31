@@ -1,0 +1,31 @@
+{
+  "name": "@saflib/product-workflows",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "New-engine (sqlite-backed) product/init: creates a product (and a repo's platform deploy) from the golden templates.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./shared": "./shared.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/new-workflows": "*",
+    "@saflib/new-workflows-db": "*",
+    "@saflib/templates": "*",
+    "@saflib/utils": "*"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

@@ -22,7 +22,7 @@ Portable subset of threat-model controls:
 
 | Area                                                          | Where                                                                     |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| TLS / HSTS, CSP, CORS allowlist, `-Server`                    | Caddy snippets in `base/product/dev/caddy-config` and `saflib/deploy/caddy`       |
+| TLS / HSTS, CSP, CORS allowlist, `-Server`                    | Caddy snippets in `base/product/dev/caddy-config`, `base/platform/caddy` and `base/product/deploy/remote-assets/caddy` |
 | CSRF double-submit, authz tags, MFA hooks, OpenAPI validation | `@saflib/express`                                                         |
 | CSP violation ingest → unified errors buffer                  | `@saflib/errors-http` (`POST /csp-violations`, `x-public` + `csrf-exempt`) |
 | Playwright regression                                         | This package (`npm run test:e2e` against `base/product/dev`)                      |
