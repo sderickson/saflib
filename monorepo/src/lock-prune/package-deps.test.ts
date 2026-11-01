@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { buildPackageIndex } from "@saflib/imports";
 import {
   findCompetingDependencies,
+  findPlatformOverrideDrift,
   syncPlatformOverrides,
 } from "./package-deps.ts";
 import { readPlatformContract } from "./platform.ts";
@@ -53,7 +54,9 @@ describe("findCompetingDependencies", () => {
       }),
     });
 
-    expect(findCompetingDependencies(root, buildPackageIndex(root))).toEqual([]);
+    expect(findCompetingDependencies(root, buildPackageIndex(root))).toEqual(
+      [],
+    );
   });
 
   it("flags competing deps on the product root even when another package shares its name", () => {
@@ -83,6 +86,69 @@ describe("findCompetingDependencies", () => {
       productSpec: "8.1.5",
       packageJsonPath: join(root, "package.json"),
     });
+  });
+});
+
+describe("findCompetingDependencies with a saflib lockfile", () => {
+  it("allows a product range that includes the version saflib installs", () => {
+    const root = loadProductFixture({
+      "/product/saflib/vue/package.json": JSON.stringify({
+        name: "@saflib/vue",
+        dependencies: { "@mdi/js": "7.4.47" },
+      }),
+      "/product/saflib/package-lock.json": JSON.stringify({
+        lockfileVersion: 3,
+        packages: { "node_modules/@mdi/js": { version: "7.4.47" } },
+      }),
+      "/product/package.json": JSON.stringify({
+        name: "@product/root",
+        dependencies: { "@mdi/js": "^7.4.47", marked: "~1.2.0" },
+      }),
+    });
+
+    expect(findCompetingDependencies(root, buildPackageIndex(root))).toEqual(
+      [],
+    );
+  });
+
+  it("flags a product range that excludes the version saflib installs", () => {
+    const root = loadProductFixture({
+      "/product/saflib/vue/package.json": JSON.stringify({
+        name: "@saflib/vue",
+        dependencies: { "@mdi/js": "^7.4.0" },
+      }),
+      "/product/saflib/package-lock.json": JSON.stringify({
+        lockfileVersion: 3,
+        packages: { "node_modules/@mdi/js": { version: "7.4.47" } },
+      }),
+      "/product/package.json": JSON.stringify({
+        name: "@product/root",
+        dependencies: { "@mdi/js": "^6.0.0" },
+      }),
+    });
+
+    expect(
+      findCompetingDependencies(root, buildPackageIndex(root)),
+    ).toMatchObject([{ dependency: "@mdi/js", saflibSpecs: ["7.4.47"] }]);
+  });
+});
+
+describe("findPlatformOverrideDrift", () => {
+  it("compares nested overrides by value", () => {
+    const root = loadProductFixture({
+      "/product/saflib/package.json": JSON.stringify({
+        name: "@saflib/saflib",
+        overrides: { editorconfig: { commander: "^15.0.0" } },
+      }),
+      "/product/package.json": JSON.stringify({
+        name: "@product/root",
+        overrides: { editorconfig: { commander: "^15.0.0" } },
+      }),
+    });
+
+    expect(
+      findPlatformOverrideDrift(root, readPlatformContract(root)),
+    ).toBeNull();
   });
 });
 

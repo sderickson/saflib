@@ -1,5 +1,10 @@
 import type { LockPruneIssue } from "./types.ts";
 
+/** Overrides can nest (`{ "editorconfig": { "commander": "^15" } }`). */
+function formatOverride(value: unknown): string {
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+
 export function formatIssue(issue: LockPruneIssue): string[] {
   switch (issue.kind) {
     case "hoisting-hazard":
@@ -9,7 +14,7 @@ export function formatIssue(issue: LockPruneIssue): string[] {
       ];
     case "competing-dependency":
       return [
-        `product declares ${issue.dependency}@${issue.productSpec} but saflib owns ${issue.saflibSpecs.join(", ")}.`,
+        `product declares ${issue.dependency}@${issue.productSpec}, which can't include the ${issue.saflibSpecs.join(", ")} saflib installs (npm would need a second copy).`,
         `  package: ${issue.packageName}`,
         `  file: ${issue.packageJsonPath}`,
         `  field: ${issue.field}`,
@@ -35,13 +40,14 @@ export function formatIssue(issue: LockPruneIssue): string[] {
       ];
     case "platform-override-sync":
       return [
-        "product root overrides drift from saflib platform pins.",
+        "product root overrides differ from saflib's (yours to keep or change).",
         ...Object.entries(issue.missing).map(
-          ([name, version]) => `  add override: ${name}@${version}`,
+          ([name, version]) =>
+            `  add override: ${name}@${formatOverride(version)}`,
         ),
         ...Object.entries(issue.changed).map(
           ([name, change]) =>
-            `  update override: ${name}@${change.from} -> ${change.to}`,
+            `  update override: ${name}@${formatOverride(change.from)} -> ${formatOverride(change.to)}`,
         ),
       ];
   }
