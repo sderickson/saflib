@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { accountLinks } from "@saflib/base-links";
 import {
   TanstackError,
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
@@ -48,7 +49,8 @@ describe("access-error.logic", () => {
 
   it("builds verify-email href with return_to", () => {
     const href = baseVerifyEmailHref("http://app.docker.localhost/home");
-    expect(href).toContain("/verify-email");
+    // A satellite links to its identity owner's page, so compare paths.
+    expect(href).toContain(accountLinks.verifyEmail!.path);
     expect(href).toContain(
       "return_to=http%3A%2F%2Fapp.docker.localhost%2Fhome",
     );
@@ -56,7 +58,7 @@ describe("access-error.logic", () => {
 
   it("builds mfa setup href with return_to", () => {
     const href = baseMfaSetupHref("http://admin.docker.localhost/cron");
-    expect(href).toContain("/mfa");
+    expect(href).toContain(accountLinks.mfa!.path);
     expect(href).toContain(
       "return_to=http%3A%2F%2Fadmin.docker.localhost%2Fcron",
     );

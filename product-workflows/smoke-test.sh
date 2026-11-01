@@ -3,8 +3,9 @@
 #
 # Bootstraps a throwaway product repo from this saflib checkout the way
 # saf-create does (copying the working tree instead of cloning, like
-# product/create/repro-local.sh), adds a second product to exercise the
-# "platform already exists" path, then checks the result: typecheck, unit
+# product/create/repro-local.sh), adds a second product as a satellite of
+# the first (the "platform already exists" path and --identity), then checks
+# the result: the satellite's shape, typecheck, unit
 # tests, docker build inputs, every deploy's compose config, and (unless
 # SMOKE_SKIP_EDGE=1) both products registering their routes with a running
 # platform edge.
@@ -33,7 +34,8 @@ import { runBootstrap } from '${SAFLIB_ROOT}/product/create/bootstrap.ts';
 runBootstrap({
   cwd: '${WORK}',
   productName: '${FIRST}',
-  domain: '${FIRST}.example.com',
+  // Not under example.com: product/init rewrites the template's example.com.
+  domain: '${FIRST}.test',
   organizationName: '${FIRST}',
   saflibRef: 'HEAD',
   runCommand: (command, { cwd }) => {
@@ -50,8 +52,8 @@ runBootstrap({
 });
 "
 
-step "Adding a second product (${SECOND}) to the existing platform"
-npm exec new-workflow -- run-scripts product/init --name="${SECOND}" --domain="${SECOND}.example.com"
+step "Adding a second product (${SECOND}) as a satellite of ${FIRST}"
+npm exec new-workflow -- run-scripts product/init --name="${SECOND}" --identity="${FIRST}"
 
 step "Checking the layout"
 for path in deploy/package.json "${FIRST}/deploy/package.json" "${SECOND}/deploy/package.json" \
@@ -62,6 +64,22 @@ done
 if grep -rn --include='*' -l -E '__product-name__|base/product|base/platform' "${FIRST}" "${SECOND}" deploy \
   --exclude-dir=node_modules --exclude-dir=dist 2>/dev/null; then
   echo "unreplaced template references (above)" >&2
+  exit 1
+fi
+
+step "Satellite shape"
+# ${SECOND} uses ${FIRST}'s sign-in and account sites and lives under its domain.
+for path in "${SECOND}/clients/auth" "${SECOND}/clients/account" "${SECOND}/service/kratos-handlers"; do
+  [ ! -e "${path}" ] || { echo "a satellite shouldn't have ${path}" >&2; exit 1; }
+done
+grep -q "from \"@${FIRST}/${FIRST}-links\"" "${SECOND}/clients/links/index.ts" \
+  || { echo "${SECOND}'s links don't use ${FIRST}'s sign-in" >&2; exit 1; }
+grep -q "^DOMAIN=${FIRST}.test$" "${SECOND}/deploy/remote-assets/caddy/${SECOND}.env" \
+  || { echo "${SECOND}'s routes aren't under ${FIRST}'s domain" >&2; exit 1; }
+grep -q "https://app.${SECOND}.${FIRST}.test/" deploy/kratos/kratos.yml \
+  || { echo "the platform's Kratos doesn't allow ${SECOND}'s hosts" >&2; exit 1; }
+if grep -q "kratos.{\$DOMAIN}" "${SECOND}/deploy/remote-assets/caddy/${SECOND}.Caddyfile"; then
+  echo "a satellite shouldn't route kratos.; its owner's platform does" >&2
   exit 1
 fi
 
@@ -89,6 +107,8 @@ export CONTAINER_REGISTRY=smoke.local
 for dir in deploy "${FIRST}/deploy" "${SECOND}/deploy"; do
   (cd "${dir}" && docker compose -f docker-compose.prod-local.yaml config -q && echo "ok ${dir}")
 done
+# The satellite's dev stack includes its owner's.
+(cd "${SECOND}/dev" && touch .env && docker compose config -q && echo "ok ${SECOND}/dev (with ${FIRST}'s dev stack)")
 
 if [ "${SMOKE_SKIP_EDGE:-}" = 1 ]; then
   echo "Skipping the edge check (SMOKE_SKIP_EDGE=1)."

@@ -1,5 +1,5 @@
 import path from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import {
   defineWorkflow,
   step,
@@ -16,6 +16,7 @@ import {
   type TransformFileStepInput,
 } from "@saflib/new-workflows";
 import { isEmbeddedProductMonorepo } from "@saflib/monorepo";
+import { readOwner } from "./make-satellite.ts";
 import {
   templatesProductRoot,
   templatesPlatformRoot,
@@ -35,10 +36,16 @@ import {
 interface InitProductInput {
   /** Product name in kebab-case (e.g. `notes`). */
   name: string;
-  /** The product's domain (e.g. `notes.example.com`). */
-  domain: string;
+  /** The product's domain (e.g. `notes.example.com`). Satellites derive it from their owner. */
+  domain?: string;
   /** Copy only the product tree (skip the platform deploy and repo scaffold). */
   productOnly?: boolean;
+  /**
+   * `own` (default): the product has its own sign-in and account sites.
+   * Another product's name: the product is a satellite that uses that
+   * product's sign-in, under its domain.
+   */
+  identity?: string;
 }
 
 interface InitProductContext extends InitProductWorkflowContext {
@@ -46,6 +53,8 @@ interface InitProductContext extends InitProductWorkflowContext {
   cwd: string;
   /** Outermost workspace root (where installs run when saflib is nested). */
   installRoot: string;
+  /** The identity owner's name for a satellite; undefined when self-contained. */
+  identityOwner?: string;
 }
 
 type C = InitProductContext;
@@ -69,12 +78,19 @@ const skipPlatformCopy = ({ context }: { context: C }) =>
   context.productOnly || context.platformExists;
 
 const skipScaffold = ({ context }: { context: C }) =>
-  context.productOnly || existsSync(path.join(context.cwd, ".github", "workflows"));
+  context.productOnly ||
+  existsSync(path.join(context.cwd, ".github", "workflows"));
 
 const skipKratosSecrets = ({ context }: { context: C }) =>
   context.productOnly ||
   !context.platformExists ||
-  existsSync(path.join(resolveDeployDir(context.cwd), "remote-assets", ".env.kratos.secrets"));
+  existsSync(
+    path.join(
+      resolveDeployDir(context.cwd),
+      "remote-assets",
+      ".env.kratos.secrets",
+    ),
+  );
 
 // Same check the dev stack's `deps` service runs: every workspace package
 // resolves each dependency to one copy at the root.
@@ -92,10 +108,14 @@ const checkDependencyAlignment = path.join(
  * product, `base/platform` becomes the shared platform deploy (`deploy/`: edge
  * Caddy + Kratos) and the repo scaffold (CI, root configs) is applied.
  */
-export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>({
+export const InitProductWorkflowDefinition = defineWorkflow<
+  InitProductInput,
+  C
+>({
   id: "product/init",
 
-  description: "Create a new product (and, for a repo's first product, its platform deploy)",
+  description:
+    "Create a new product (and, for a repo's first product, its platform deploy)",
 
   inputSchema: {
     type: "object",
@@ -113,12 +133,29 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
         description:
           "Copy only the product tree (skip the platform deploy and repo scaffold). Used by CI smoke tests.",
       },
+      identity: {
+        type: "string",
+        description:
+          "own (default): the product has its own sign-in and account sites. Another product's name: a satellite that uses that product's sign-in, under its domain.",
+      },
     },
-    required: ["name", "domain"],
+    required: ["name"],
   },
 
   context: ({ input, cwd }) => {
     const packageInfo = parsePackageName(getPackageName(cwd));
+    const identityOwner =
+      input.identity && input.identity !== "own" ? input.identity : undefined;
+    const domain =
+      input.domain ??
+      (identityOwner
+        ? `${input.name}.${readOwner(cwd, identityOwner).domain}`
+        : undefined);
+    if (!domain) {
+      throw new Error(
+        "product/init needs --domain for a product with its own sign-in.",
+      );
+    }
     return {
       cwd,
       installRoot: findOutermostWorkspaceRoot(cwd),
@@ -127,34 +164,45 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
       organizationName: packageInfo.organizationName,
       packageName: "PACKAGE_NAME_UNUSED",
       serviceName: input.name,
-      domainName: input.domain,
+      domainName: domain,
+      identityOwner,
       productOnly: input.productOnly ?? false,
       embeddedProductMonorepo: isEmbeddedProductMonorepo(cwd),
-      platformExists: existsSync(path.join(resolveDeployDir(cwd), "package.json")),
+      platformExists: existsSync(
+        path.join(resolveDeployDir(cwd), "package.json"),
+      ),
     };
   },
 
   steps: [
-    step<TransformFileStepInput, C>("transform-file", runTransformFileStep, ({ context }) => ({
-      filePath: path.join(context.cwd, "package.json"),
-      description: `Add ${context.productName}/** and ${getDeployDirName()}/** workspaces, and scope saf-imports boundaries to the product`,
-      transform: (content: string) => {
-        const pkg = JSON.parse(content);
-        pkg.workspaces = Array.from(
-          new Set([...pkg.workspaces, `${context.productName}/**`, `${getDeployDirName()}/**`]),
-        ).sort();
-        // `saf-imports boundaries` (run in CI) checks the product's packages;
-        // saflib's own packages are import targets only.
-        pkg.safImports ??= {};
-        pkg.safImports.boundaries ??= {};
-        pkg.safImports.boundaries.scope ??= [];
-        const productScope = `dir:${context.productName}/**`;
-        if (!pkg.safImports.boundaries.scope.includes(productScope)) {
-          pkg.safImports.boundaries.scope.push(productScope);
-        }
-        return JSON.stringify(pkg, null, 2) + "\n";
-      },
-    })),
+    step<TransformFileStepInput, C>(
+      "transform-file",
+      runTransformFileStep,
+      ({ context }) => ({
+        filePath: path.join(context.cwd, "package.json"),
+        description: `Add ${context.productName}/** and ${getDeployDirName()}/** workspaces, and scope saf-imports boundaries to the product`,
+        transform: (content: string) => {
+          const pkg = JSON.parse(content);
+          pkg.workspaces = Array.from(
+            new Set([
+              ...pkg.workspaces,
+              `${context.productName}/**`,
+              `${getDeployDirName()}/**`,
+            ]),
+          ).sort();
+          // `saf-imports boundaries` (run in CI) checks the product's packages;
+          // saflib's own packages are import targets only.
+          pkg.safImports ??= {};
+          pkg.safImports.boundaries ??= {};
+          pkg.safImports.boundaries.scope ??= [];
+          const productScope = `dir:${context.productName}/**`;
+          if (!pkg.safImports.boundaries.scope.includes(productScope)) {
+            pkg.safImports.boundaries.scope.push(productScope);
+          }
+          return JSON.stringify(pkg, null, 2) + "\n";
+        },
+      }),
+    ),
 
     step<CommandStepInput, C>("command", runCommandStep, () => ({
       command: "npm",
@@ -175,7 +223,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
     // Dropped stub `"path"` lines can leave empty `{ }` objects in tsconfig
     // references; strip those before npm install / saf-imports.
     step<CommandStepInput, C>("command", runCommandStep, ({ context }) =>
-      nodeScript("strip-stub-tsconfig-refs.ts", path.join(context.cwd, context.productName)),
+      nodeScript(
+        "strip-stub-tsconfig-refs.ts",
+        path.join(context.cwd, context.productName),
+      ),
     ),
 
     // Relative paths out of the product still have the golden tree's depth.
@@ -187,48 +238,119 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
       ),
     ),
 
-    stepSkipIf<CopyStepInput, C>(skipPlatformCopy, "copy", runCopyStep, ({ context }) => ({
-      templateFiles: { deploy: templatesPlatformRoot },
-      name: context.productName,
-      targetDir: resolveDeployDir(context.cwd),
-      lineReplace: makeProductInitLineReplace(context),
-    })),
+    stepSkipIf<CopyStepInput, C>(
+      skipPlatformCopy,
+      "copy",
+      runCopyStep,
+      ({ context }) => ({
+        templateFiles: { deploy: templatesPlatformRoot },
+        name: context.productName,
+        targetDir: resolveDeployDir(context.cwd),
+        lineReplace: makeProductInitLineReplace(context),
+      }),
+    ),
 
-    stepSkipIf<CopyStepInput, C>(skipScaffold, "copy", runCopyStep, ({ context }) => ({
-      templateFiles: { scaffold: templatesScaffoldRoot },
-      name: context.productName,
-      targetDir: context.cwd,
-      lineReplace: makeProductInitLineReplace(context),
-    })),
-
-    step<TransformFileStepInput, C>("transform-file", runTransformFileStep, ({ context }) => ({
-      filePath: path.join(context.cwd, "vitest.config.ts"),
-      skipIfMissing: true,
-      description: `Add ${context.productName} vitest projects to root vitest.config.ts`,
-      transform: (content: string) => {
-        const projectLine = `      "${context.productName}/**/vitest.config.{ts,js,mts,mjs}",`;
-        if (content.includes(projectLine)) return content;
-        return content.replace(
-          /(\/\/ BEGIN WORKFLOW AREA test-product-dependencies FOR product\/init\n)/,
-          `$1${projectLine}\n`,
+    // Products deploy to the platform's server and registry.
+    step<TransformFileStepInput, C>(
+      "transform-file",
+      runTransformFileStep,
+      ({ context }) => {
+        const platformEnv = path.join(
+          resolveDeployDir(context.cwd),
+          "env.remote",
         );
+        return {
+          filePath: path.join(
+            context.cwd,
+            context.productName,
+            "deploy",
+            "env.remote",
+          ),
+          description:
+            "Use the platform deploy's server and container registry",
+          transform: (content: string) => {
+            if (!existsSync(platformEnv)) return content;
+            const platform = readFileSync(platformEnv, "utf8");
+            let next = content;
+            for (const key of ["SSH_HOSTNAME", "CONTAINER_REGISTRY"]) {
+              const line = new RegExp(`^${key}=.*$`, "m").exec(platform)?.[0];
+              if (line)
+                next = next.replace(new RegExp(`^${key}=.*$`, "m"), line);
+            }
+            return next;
+          },
+        };
       },
-    })),
+    ),
 
-    step<TransformFileStepInput, C>("transform-file", runTransformFileStep, ({ context }) => ({
-      filePath: path.join(context.cwd, context.productName, "dev", "docker-compose.yaml"),
-      description: "Rewrite the dev compose for the product monorepo layout",
-      transform: toProductMonorepoDevCompose,
-    })),
+    stepSkipIf<CopyStepInput, C>(
+      skipScaffold,
+      "copy",
+      runCopyStep,
+      ({ context }) => ({
+        templateFiles: { scaffold: templatesScaffoldRoot },
+        name: context.productName,
+        targetDir: context.cwd,
+        lineReplace: makeProductInitLineReplace(context),
+      }),
+    ),
 
-    step<TransformFileStepInput, C>("transform-file", runTransformFileStep, ({ context }) => ({
-      filePath: path.join(context.cwd, context.productName, "dev", "docker-compose.dev-site.yaml"),
-      description: "Rewrite the dev-site compose for the product monorepo layout",
-      transform: toProductMonorepoDevCompose,
-    })),
+    step<TransformFileStepInput, C>(
+      "transform-file",
+      runTransformFileStep,
+      ({ context }) => ({
+        filePath: path.join(context.cwd, "vitest.config.ts"),
+        skipIfMissing: true,
+        description: `Add ${context.productName} vitest projects to root vitest.config.ts`,
+        transform: (content: string) => {
+          const projectLine = `      "${context.productName}/**/vitest.config.{ts,js,mts,mjs}",`;
+          if (content.includes(projectLine)) return content;
+          return content.replace(
+            /(\/\/ BEGIN WORKFLOW AREA test-product-dependencies FOR product\/init\n)/,
+            `$1${projectLine}\n`,
+          );
+        },
+      }),
+    ),
+
+    step<TransformFileStepInput, C>(
+      "transform-file",
+      runTransformFileStep,
+      ({ context }) => ({
+        filePath: path.join(
+          context.cwd,
+          context.productName,
+          "dev",
+          "docker-compose.yaml",
+        ),
+        description: "Rewrite the dev compose for the product monorepo layout",
+        transform: toProductMonorepoDevCompose,
+      }),
+    ),
+
+    step<TransformFileStepInput, C>(
+      "transform-file",
+      runTransformFileStep,
+      ({ context }) => ({
+        filePath: path.join(
+          context.cwd,
+          context.productName,
+          "dev",
+          "docker-compose.dev-site.yaml",
+        ),
+        description:
+          "Rewrite the dev-site compose for the product monorepo layout",
+        transform: toProductMonorepoDevCompose,
+      }),
+    ),
 
     step<CommandStepInput, C>("command", runCommandStep, ({ context }) => {
-      const remoteAssets = path.join(context.cwd, context.productName, "deploy", "remote-assets");
+      const remoteAssets = path.join(
+        context.cwd,
+        context.productName,
+        "deploy",
+        "remote-assets",
+      );
       return {
         command: "mv",
         args: [
@@ -238,9 +360,27 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
       };
     }),
 
+    // A satellite drops its own sign-in and account sites and moves under its
+    // identity owner's domain.
+    stepSkipIf<CommandStepInput, C>(
+      ({ context }) => !context.identityOwner,
+      "command",
+      runCommandStep,
+      ({ context }) =>
+        nodeScript(
+          "make-satellite.ts",
+          context.cwd,
+          context.productName,
+          context.identityOwner!,
+          path.relative(context.cwd, resolveDeployDir(context.cwd)),
+        ),
+    ),
+
     // Nested monorepos (product repo → saflib): install at the outermost
     // workspace root so the new product's packages are linked.
-    step<CdStepInput, C>("cd", runCdStep, ({ context }) => ({ path: context.installRoot })),
+    step<CdStepInput, C>("cd", runCdStep, ({ context }) => ({
+      path: context.installRoot,
+    })),
 
     step<CommandStepInput, C>("command", runCommandStep, () => ({
       command: "npm",
@@ -250,7 +390,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
     // Refresh env.ts under the new product only (stub packages were omitted
     // from the copy); workspace-wide generate-all would rewrite other packages.
     step<CommandStepInput, C>("command", runCommandStep, ({ context }) =>
-      nodeScript("regenerate-product-env.ts", path.join(context.cwd, context.productName)),
+      nodeScript(
+        "regenerate-product-env.ts",
+        path.join(context.cwd, context.productName),
+      ),
     ),
 
     step<CommandStepInput, C>("command", runCommandStep, ({ context }) => ({
@@ -258,7 +401,9 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
       args: [path.join(context.cwd, context.productName, "dev", ".env")],
     })),
 
-    step<CdStepInput, C>("cd", runCdStep, ({ context }) => ({ path: context.cwd })),
+    step<CdStepInput, C>("cd", runCdStep, ({ context }) => ({
+      path: context.cwd,
+    })),
 
     step<CommandStepInput, C>("command", runCommandStep, () => ({
       command: "npm",
@@ -285,7 +430,9 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
 
     // The product's packages were copied after the first install; refresh so
     // their own devDependencies (e.g. openapi-typescript on spec) are linked.
-    step<CdStepInput, C>("cd", runCdStep, ({ context }) => ({ path: context.installRoot })),
+    step<CdStepInput, C>("cd", runCdStep, ({ context }) => ({
+      path: context.installRoot,
+    })),
 
     step<CommandStepInput, C>("command", runCommandStep, () => ({
       command: "npm",
@@ -304,19 +451,34 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
 
     // The copy skips dist/; generate OpenAPI types/JSON for each spec package.
     step<CommandStepInput, C>("command", runCommandStep, ({ context }) =>
-      nodeScript("generate-product-specs.ts", path.join(context.cwd, context.productName)),
+      nodeScript(
+        "generate-product-specs.ts",
+        path.join(context.cwd, context.productName),
+      ),
     ),
 
-    stepSkipIf<CdStepInput, C>(skipKratosSecrets, "cd", runCdStep, ({ context }) => ({
-      path: resolveDeployDir(context.cwd),
-    })),
+    stepSkipIf<CdStepInput, C>(
+      skipKratosSecrets,
+      "cd",
+      runCdStep,
+      ({ context }) => ({
+        path: resolveDeployDir(context.cwd),
+      }),
+    ),
 
-    stepSkipIf<CommandStepInput, C>(skipKratosSecrets, "command", runCommandStep, () => ({
-      command: "npm",
-      args: ["run", "regen-kratos-secrets"],
-    })),
+    stepSkipIf<CommandStepInput, C>(
+      skipKratosSecrets,
+      "command",
+      runCommandStep,
+      () => ({
+        command: "npm",
+        args: ["run", "regen-kratos-secrets"],
+      }),
+    ),
 
-    step<CdStepInput, C>("cd", runCdStep, ({ context }) => ({ path: context.cwd })),
+    step<CdStepInput, C>("cd", runCdStep, ({ context }) => ({
+      path: context.cwd,
+    })),
 
     step<CommandStepInput, C>("command", runCommandStep, () => ({
       command: "npm",

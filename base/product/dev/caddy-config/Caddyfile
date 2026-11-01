@@ -1,4 +1,5 @@
 import common.Caddyfile
+import /etc/caddy-sites/*.Caddyfile
 
 # Client subdomains → vite dev server
 

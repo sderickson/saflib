@@ -28,6 +28,9 @@ services:
     volumes:
       - ./caddy-config:/etc/caddy/
       - ./caddy-config/evil:/etc/caddy/evil:ro
+      # Satellite products' routes: a satellite's dev stack includes this one
+      # and points SAF_DEV_SITES at its own sites/ (see product/init --identity).
+      - ${SAF_DEV_SITES:-./sites}:/etc/caddy-sites:ro
       - caddy_data:/data
       - caddy_config:/config
 
