@@ -1,5 +1,8 @@
 # Platform stack, locally. Product prod-local stacks join its edge network and
 # register their routes with `saf-deploy register-sites --local`.
+# Own project name: every deploy folder is called deploy, which would put all
+# the local stacks in one compose project.
+name: __organization-name__-platform-prod-local
 services:
   caddy:
     extends:

@@ -1,6 +1,9 @@
 # The product's stack, locally. Start the platform's prod-local first (deploy/,
 # it owns the edge network and Caddy); `npm run prod-local` then registers this
 # product's routes there.
+# Own project name: every deploy folder is called deploy, which would put all
+# the local stacks in one compose project.
+name: __product-name__-prod-local
 services:
   __product-name__-monolith:
     extends:
