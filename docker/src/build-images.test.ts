@@ -54,8 +54,15 @@ class FakeDocker implements DockerExecutor {
     this.calls.push(`pull ${ref}`);
     this.local.add(ref);
   }
+  /** Refs whose next N pushes fail, like a registry refusing a first push. */
+  failPushes = new Map<string, number>();
   async push(ref: string) {
     this.calls.push(`push ${ref}`);
+    const failures = this.failPushes.get(ref) ?? 0;
+    if (failures > 0) {
+      this.failPushes.set(ref, failures - 1);
+      throw new Error("docker push failed (exit 1): denied");
+    }
     this.remote.add(ref);
   }
   async listImages() {
@@ -244,6 +251,32 @@ describe("buildImages", () => {
       `push reg.io/team/x-base:${tag}`,
       "push reg.io/team/x-base:latest",
     ]);
+  });
+
+  it("retries a push the registry refuses at first", async () => {
+    const [plan] = await run({ dryRun: true, selected: [builds[0]] });
+    docker.failPushes.set(`reg.io/x-base:${plan.tag}`, 2);
+    const [base] = await run({
+      registry: "reg.io",
+      push: true,
+      selected: [builds[0]],
+      pushRetryDelayMs: 0,
+    });
+    expect(base.outcome).toBe("built");
+    expect(docker.remote).toContain(`reg.io/x-base:${base.tag}`);
+  });
+
+  it("fails after repeated push refusals", async () => {
+    const [plan] = await run({ dryRun: true, selected: [builds[0]] });
+    docker.failPushes.set(`reg.io/x-base:${plan.tag}`, 3);
+    const [base] = await run({
+      registry: "reg.io",
+      push: true,
+      selected: [builds[0]],
+      pushRetryDelayMs: 0,
+    });
+    expect(base.outcome).toBe("failed");
+    expect(base.error).toContain("denied");
   });
 
   it("also tags local images with their registry names", async () => {

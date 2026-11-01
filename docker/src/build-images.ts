@@ -126,7 +126,16 @@ export interface BuildImagesOptions {
   onEvent?: (event: BuildEvent) => void;
   /** Time the caller already spent preparing (reported in `checked`). */
   prepareMs?: number;
+  /** Wait before retrying a failed push, times the attempt number (default 3s). */
+  pushRetryDelayMs?: number;
 }
+
+/**
+ * Attempts per `docker push`. A registry sometimes refuses the first push to a
+ * repository that doesn't exist yet (GHCR answers "denied") and accepts the
+ * same push moments later.
+ */
+const PUSH_ATTEMPTS = 3;
 
 const PLATFORM_ALIASES: Record<string, string> = {
   amd64: "linux/amd64",
@@ -334,9 +343,22 @@ export async function buildImages(
         for (const t of tags) await executor.tag(local, remote(build.image, t));
       }
     };
+    const pushWithRetry = async (ref: string) => {
+      for (let attempt = 1; ; attempt++) {
+        try {
+          await executor.push(ref);
+          return;
+        } catch (error) {
+          if (attempt >= PUSH_ATTEMPTS) throw error;
+          await new Promise((r) =>
+            setTimeout(r, (options.pushRetryDelayMs ?? 3000) * attempt),
+          );
+        }
+      }
+    };
     const publish = async () => {
       if (!options.push) return;
-      for (const t of tags) await executor.push(remote(build.image, t));
+      for (const t of tags) await pushWithRetry(remote(build.image, t));
     };
 
     const action = actionOf.get(build.ref)!;
