@@ -86,7 +86,7 @@ services:
 
   node_exporter:
     logging: *default-logging
-    image: prom/node-exporter:v1.11.1
+    image: prom/node-exporter:v1.12.1
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
