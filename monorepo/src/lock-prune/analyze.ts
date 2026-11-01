@@ -6,13 +6,9 @@ import { isEmbeddedProductMonorepo, readPlatformContract } from "./platform.ts";
 import {
   findCompetingDependencies,
   findPlatformOverrideDrift,
-  findRedundantDependencies,
 } from "./package-deps.ts";
 import { findHoistingHazards, findUnhoistedRegistryDependencies } from "./hoist.ts";
-import {
-  findLockfileVersionSkew,
-  findPlatformAlignmentGaps,
-} from "./align.ts";
+import { findLockfileVersionSkew } from "./align.ts";
 import { findStaleLockfileEntries } from "./stale.ts";
 import { readPackageLock } from "./lockfile-ops.ts";
 
@@ -31,7 +27,6 @@ export function analyzeProductLockPrune(rootDir: string): LockPruneAnalysis {
       saflibDir,
       lockfilePath,
       issues: [],
-      warnings: [],
     };
   }
 
@@ -39,39 +34,11 @@ export function analyzeProductLockPrune(rootDir: string): LockPruneAnalysis {
   const packageIndex = buildPackageIndex(rootDir);
   const lockfile = readPackageLock(lockfilePath);
 
-  const redundant = findRedundantDependencies(rootDir, packageIndex);
-  const fixableRedundant = findRedundantDependencies(rootDir, packageIndex, {
-    fixableOnly: true,
-  });
-  const warnings = redundant.filter(
-    (issue) =>
-      !fixableRedundant.some(
-        (fixable) =>
-          fixable.packageJsonPath === issue.packageJsonPath &&
-          fixable.dependency === issue.dependency &&
-          fixable.field === issue.field,
-      ),
-  );
-
-  const alignmentGaps = findPlatformAlignmentGaps(lockfile, platform);
-  const nestedSkew = findLockfileVersionSkew(lockfile, platform);
-  // Deduplicate: prefer the canonical align-key issue from gaps.
-  const gapKeys = new Set(
-    alignmentGaps.map(
-      (issue) => `${issue.dependency}:${issue.productAlignKey}`,
-    ),
-  );
-  const uniqueNestedSkew = nestedSkew.filter(
-    (issue) => !gapKeys.has(`${issue.dependency}:${issue.productAlignKey}`),
-  );
-
   const issues: LockPruneIssue[] = [
-    ...fixableRedundant,
     ...findCompetingDependencies(rootDir, packageIndex, platform),
     ...findHoistingHazards(rootDir),
     ...findUnhoistedRegistryDependencies(lockfile, platform),
-    ...alignmentGaps,
-    ...uniqueNestedSkew,
+    ...findLockfileVersionSkew(lockfile, platform),
   ];
 
   const overrideDrift = findPlatformOverrideDrift(rootDir, platform);
@@ -85,6 +52,5 @@ export function analyzeProductLockPrune(rootDir: string): LockPruneAnalysis {
     saflibDir,
     lockfilePath,
     issues,
-    warnings,
   };
 }

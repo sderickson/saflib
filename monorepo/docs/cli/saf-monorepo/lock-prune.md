@@ -3,12 +3,13 @@
 ```
 Usage: saf-monorepo lock-prune [options]
 
-Prune stale product lockfile entries and verify embedded saflib workspace
-hygiene.
+Report product/saflib workspace issues in an embedded product repo. --fix
+repairs lockfile bookkeeping (stale entries, misplaced hoists); everything else
+is reported for you to decide on.
 
 Options:
   --root <dir>  product monorepo root (default: auto-detect)
-  -y, --yes     apply fixes without prompting
-  --check       report issues and exit without applying fixes
+  --fix         repair the fixable issues
+  -y, --yes     same as --fix (kept for existing preinstall hooks)
   -h, --help    display help for command
 ```

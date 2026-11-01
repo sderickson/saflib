@@ -5,16 +5,15 @@ export const addLockPruneCommand = (program: Command) => {
   program
     .command("lock-prune")
     .description(
-      "Prune stale product lockfile entries and verify embedded saflib workspace hygiene.",
+      "Report product/saflib workspace issues in an embedded product repo. --fix repairs lockfile bookkeeping (stale entries, misplaced hoists); everything else is reported for you to decide on.",
     )
     .option("--root <dir>", "product monorepo root (default: auto-detect)")
-    .option("-y, --yes", "apply fixes without prompting")
-    .option("--check", "report issues and exit without applying fixes")
-    .action(async (options: { root?: string; yes?: boolean; check?: boolean }) => {
+    .option("--fix", "repair the fixable issues")
+    .option("-y, --yes", "same as --fix (kept for existing preinstall hooks)")
+    .action(async (options: { root?: string; fix?: boolean; yes?: boolean }) => {
       const exitCode = await runLockPrune({
         rootDir: options.root,
-        yes: options.yes,
-        check: options.check,
+        fix: options.fix || options.yes,
       });
       process.exit(exitCode);
     });

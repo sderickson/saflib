@@ -76,10 +76,15 @@ const skipKratosSecrets = ({ context }: { context: C }) =>
   !context.platformExists ||
   existsSync(path.join(resolveDeployDir(context.cwd), "remote-assets", ".env.kratos.secrets"));
 
-const lockPrune = ({ context }: { context: C }): CommandStepInput => ({
-  command: "npm",
-  args: ["exec", "saf-monorepo", "--", "lock-prune", "--yes", "--root", context.installRoot],
-});
+// Same check the dev stack's `deps` service runs: every workspace package
+// resolves each dependency to one copy at the root.
+const checkDependencyAlignment = path.join(
+  import.meta.dirname,
+  "..",
+  "docker",
+  "dev",
+  "check-dependency-alignment.ts",
+);
 
 /**
  * Creates a product from the golden templates: `base/product` becomes
@@ -146,11 +151,6 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
         const productScope = `dir:${context.productName}/**`;
         if (!pkg.safImports.boundaries.scope.includes(productScope)) {
           pkg.safImports.boundaries.scope.push(productScope);
-        }
-        pkg.scripts ??= {};
-        if (context.embeddedProductMonorepo) {
-          pkg.scripts.preinstall ??=
-            "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes";
         }
         return JSON.stringify(pkg, null, 2) + "\n";
       },
@@ -242,13 +242,6 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
     // workspace root so the new product's packages are linked.
     step<CdStepInput, C>("cd", runCdStep, ({ context }) => ({ path: context.installRoot })),
 
-    stepSkipIf<CommandStepInput, C>(
-      ({ context }) => !isEmbeddedProductMonorepo(context.installRoot),
-      "command",
-      runCommandStep,
-      lockPrune,
-    ),
-
     step<CommandStepInput, C>("command", runCommandStep, () => ({
       command: "npm",
       args: ["install"],
@@ -294,16 +287,19 @@ export const InitProductWorkflowDefinition = defineWorkflow<InitProductInput, C>
     // their own devDependencies (e.g. openapi-typescript on spec) are linked.
     step<CdStepInput, C>("cd", runCdStep, ({ context }) => ({ path: context.installRoot })),
 
-    stepSkipIf<CommandStepInput, C>(
-      ({ context }) => !isEmbeddedProductMonorepo(context.installRoot),
-      "command",
-      runCommandStep,
-      lockPrune,
-    ),
-
     step<CommandStepInput, C>("command", runCommandStep, () => ({
       command: "npm",
       args: ["install"],
+    })),
+
+    step<CommandStepInput, C>("command", runCommandStep, ({ context }) => ({
+      command: "node",
+      args: [
+        "--experimental-strip-types",
+        "--disable-warning=ExperimentalWarning",
+        checkDependencyAlignment,
+        context.installRoot,
+      ],
     })),
 
     // The copy skips dist/; generate OpenAPI types/JSON for each spec package.

@@ -7,7 +7,6 @@ import type {
   PackageJsonDeps,
   PlatformContract,
   PlatformOverrideSyncIssue,
-  RedundantDependencyIssue,
 } from "./types.ts";
 import { DEP_FIELDS } from "./types.ts";
 import { readPlatformContract } from "./platform.ts";
@@ -99,14 +98,6 @@ function specsMatchForPlatform(
   return false;
 }
 
-function isDeployPackage(packageJsonPath: string, rootDir: string): boolean {
-  const rel = path
-    .relative(rootDir, packageJsonPath)
-    .split(path.sep)
-    .join("/");
-  return rel === "deploy/package.json" || rel.startsWith("deploy/");
-}
-
 function collectProductPackageDirs(
   rootDir: string,
   packageIndex: ReturnType<typeof buildPackageIndex>,
@@ -168,44 +159,6 @@ export function findCompetingDependencies(
   );
 }
 
-export function findRedundantDependencies(
-  rootDir: string,
-  packageIndex: ReturnType<typeof buildPackageIndex>,
-  options: { fixableOnly?: boolean } = {},
-): RedundantDependencyIssue[] {
-  const saflibSpecs = buildSaflibSpecs(rootDir, packageIndex);
-  const issues: RedundantDependencyIssue[] = [];
-
-  for (const packageDir of collectProductPackageDirs(rootDir, packageIndex)) {
-    const packageJsonPath = path.join(packageDir, "package.json");
-    if (options.fixableOnly && isDeployPackage(packageJsonPath, rootDir)) {
-      continue;
-    }
-    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps & {
-      name?: string;
-    };
-    for (const { field, name, spec } of collectDependencySpecs(pkg)) {
-      if (isProductOwnedDependencyName(name, spec)) continue;
-      const ownedSpecs = saflibSpecs.get(name);
-      if (!ownedSpecs?.has(spec)) continue;
-      issues.push({
-        kind: "redundant-dependency",
-        packageJsonPath,
-        packageName: pkg.name ?? packageJsonPath,
-        field,
-        dependency: name,
-        spec,
-      });
-    }
-  }
-
-  return issues.sort(
-    (a, b) =>
-      a.dependency.localeCompare(b.dependency) ||
-      a.packageJsonPath.localeCompare(b.packageJsonPath),
-  );
-}
-
 export function findPlatformOverrideDrift(
   rootDir: string,
   platform: PlatformContract,
@@ -255,21 +208,6 @@ export function syncPlatformOverrides(
   productPkg.overrides = nextOverrides;
   writeFileSync(productPkgPath, `${JSON.stringify(productPkg, null, 2)}\n`);
   return applied;
-}
-
-export function removeDeclaredDependency(
-  packageJsonPath: string,
-  field: DepField,
-  dependency: string,
-): void {
-  const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps;
-  const fieldDeps = pkg[field];
-  if (!fieldDeps?.[dependency]) return;
-  delete fieldDeps[dependency];
-  if (Object.keys(fieldDeps).length === 0) {
-    delete pkg[field];
-  }
-  writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`);
 }
 
 export function listInstalledPackageNames(nodeModulesDir: string): Set<string> {

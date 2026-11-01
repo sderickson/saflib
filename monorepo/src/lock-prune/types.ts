@@ -43,15 +43,6 @@ export interface CompetingDependencyIssue {
   saflibSpecs: string[];
 }
 
-export interface RedundantDependencyIssue {
-  kind: "redundant-dependency";
-  packageJsonPath: string;
-  packageName: string;
-  field: DepField;
-  dependency: string;
-  spec: string;
-}
-
 export interface StaleLockfileIssue {
   kind: "stale-lockfile";
   lockfilePath: string;
@@ -90,7 +81,6 @@ export interface PlatformOverrideSyncIssue {
 export type LockPruneIssue =
   | HoistingHazardIssue
   | CompetingDependencyIssue
-  | RedundantDependencyIssue
   | StaleLockfileIssue
   | UnhoistedRegistryDependencyIssue
   | LockfileVersionSkewIssue
@@ -108,13 +98,23 @@ export interface LockPruneAnalysis {
   saflibDir: string;
   lockfilePath: string;
   issues: LockPruneIssue[];
-  /** Deploy-package redundant deps — reported but not auto-removed. */
-  warnings: RedundantDependencyIssue[];
 }
 
 export interface LockPruneOptions {
   rootDir?: string;
-  yes?: boolean;
-  check?: boolean;
-  confirm?: (message: string) => Promise<boolean>;
+  /** Apply the fixable issues' fixes (see `isFixableIssue`). */
+  fix?: boolean;
+}
+
+/**
+ * Issues `--fix` repairs: lockfile bookkeeping that doesn't change which
+ * versions anything resolves to. The rest are reported for a person to decide
+ * on, since "fixing" them means overriding the product's own choices.
+ */
+export function isFixableIssue(issue: LockPruneIssue): boolean {
+  return (
+    issue.kind === "stale-lockfile" ||
+    issue.kind === "hoisting-hazard" ||
+    issue.kind === "unhoisted-registry-dependency"
+  );
 }

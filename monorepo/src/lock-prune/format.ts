@@ -7,13 +7,6 @@ export function formatIssue(issue: LockPruneIssue): string[] {
         `${issue.peer} is only installed under saflib/node_modules but is a peer of root-hoisted ${issue.requiredBy}.`,
         `  move lockfile entry: ${issue.saflibLockfileKey} -> ${issue.rootLockfileKey}`,
       ];
-    case "redundant-dependency":
-      return [
-        `product redundantly declares ${issue.dependency}@${issue.spec} (saflib already owns it).`,
-        `  package: ${issue.packageName}`,
-        `  file: ${issue.packageJsonPath}`,
-        `  field: ${issue.field}`,
-      ];
     case "competing-dependency":
       return [
         `product declares ${issue.dependency}@${issue.productSpec} but saflib owns ${issue.saflibSpecs.join(", ")}.`,
@@ -37,10 +30,8 @@ export function formatIssue(issue: LockPruneIssue): string[] {
     case "lockfile-version-skew":
       return [
         `${issue.dependency} is ${issue.productVersion} in the product lockfile but ${issue.platformVersion} in saflib/package-lock.json.`,
-        `  align lock entry: ${issue.productAlignKey} <- ${issue.platformLockfileKey}@${issue.platformVersion}`,
-        ...(issue.productLockfileKey !== issue.productAlignKey
-          ? [`  remove nested lock entry: ${issue.productLockfileKey}`]
-          : []),
+        `  product lock entry: ${issue.productLockfileKey}`,
+        `  saflib lock entry: ${issue.platformLockfileKey}`,
       ];
     case "platform-override-sync":
       return [

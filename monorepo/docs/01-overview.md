@@ -9,7 +9,7 @@ Use this package's `saf-monorepo` command for formatting and [lockfile managemen
 ## What this package provides
 
 - Shared presets each workspace package extends: [`tsconfig.json`](./ref/index.md), [`eslint.config.js`](./ref/index.md)
-- [Version management](./02-version-management.md) — platform vs product dependency ownership, lock-prune, and install hygiene
+- [Version management](./02-version-management.md) — who sets dependency versions, the alignment check, and lock-prune
 - Workflows: [add-package](./workflows/add-package.md), [add-export](./workflows/add-export.md)
 - CLIs: [saf-monorepo](./cli/saf-monorepo.md) (`format`, `lock-prune`), [saf-ts-run](./cli/saf-ts-run.md)
 - Layout and inventory APIs: package kind classification, `exports`/`imports` helpers, root-file allowlists, workspace context ([code reference](./ref/index.md))

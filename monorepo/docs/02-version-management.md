@@ -1,18 +1,18 @@
 # Version management
 
-SAF product monorepos combine **your product packages** (`{product}/**`) with the **platform submodule** (`saflib/**`) in one npm workspace. Registry dependencies — Vue, TanStack Query, Vite, MSW, and everything else from npm — are owned by the platform. Products declare `@saflib/*` and `@{org}/*` workspace links; they should not maintain a parallel copy of the platform's third-party dependency graph.
+SAF product monorepos combine **your product packages** (`{product}/**`) with the **platform submodule** (`saflib/**`) in one npm workspace with one lockfile. The goal is that every package, product or platform, resolves each registry dependency (Vue, TanStack Query, Vite, MSW, …) to **one copy at the root**.
 
-This document explains who owns which versions, how npm installs them, and how [`saf-monorepo lock-prune`](./cli/saf-monorepo/lock-prune.md) keeps product repos aligned with the platform.
+This document explains who sets which versions, how npm installs them, and the two tools that check the result: the [dependency alignment check](#dependency-alignment-check), which fails when a package would be installed twice, and [`saf-monorepo lock-prune`](./cli/saf-monorepo/lock-prune.md), which reports drift from the platform.
 
 ## Platform vs product
 
 | Layer            | Examples                                          | Version ownership                                                                                                                                        |
 | ---------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Platform**     | `saflib/vue`, `saflib/sdk`, `saflib/openapi`      | Registry semver ranges in each package's `package.json`; hard pins in `saflib/package.json` `overrides`; resolved versions in `saflib/package-lock.json` |
-| **Product**      | `{product}/clients/app`, `{product}/service/http` | `@saflib/*` and `@{org}/{product}-*` workspace deps (`"*"`). Avoid redeclaring registry packages the platform already uses.                              |
-| **Product root** | top-level `package.json`                          | Workspace list, shared dev tooling (`vitest`, `vue-tsc`), and **platform overrides synced from saflib**                                                  |
+| **Product**      | `{product}/clients/app`, `{product}/service/http` | `@saflib/*` and `@{org}/{product}-*` workspace deps (`"*"`), plus every registry package the package imports, with a range compatible with the platform's |
+| **Product root** | top-level `package.json`                          | Workspace list, shared dev tooling (`vitest`, `vue-tsc`), and `overrides` (seeded from saflib's at bootstrap; the product's to change)                    |
 
-The platform submodule is the contract. When you bump `saflib/`, you adopt whatever registry versions that commit tested against — not a one-time copy made at bootstrap.
+The platform submodule sets the versions saflib was tested against. A product should stay compatible with them (ranges that overlap, so npm can install one copy), but the product root decides its own pins.
 
 ## One install root
 
@@ -38,13 +38,13 @@ Important implications:
 
 ## Sources of truth
 
-lock-prune reads three platform sources when aligning a product repo:
+lock-prune compares a product repo against three platform sources:
 
 ### 1. `saflib/**/package.json` dependency fields
 
 Every platform package's `dependencies`, `devDependencies`, and `optionalDependencies` on registry packages form the set of third-party packages the platform uses and the semver ranges it declares.
 
-Product packages should **not** redeclare these unless they introduce a dependency the platform does not use at all.
+A product package that imports one of these declares it too, with a range that overlaps the platform's.
 
 ### 2. `saflib/package.json` `overrides`
 
@@ -63,112 +63,72 @@ Hard pins npm must enforce across the whole tree — versions npm cannot reliabl
 }
 ```
 
-`overrides` in a workspace member's `package.json` **do not apply** to the product root install. lock-prune **syncs** platform overrides into the product root `package.json` on each run so the product tree actually uses the same pins.
+`overrides` in a workspace member's `package.json` **do not apply** to the product root install. Bootstrap copies saflib's overrides into a new product root; after that they're the product's. lock-prune reports where they differ from saflib's, so you can decide whether to follow.
 
 ### 3. `saflib/package-lock.json` resolved versions
 
-When the platform lock resolves `@tanstack/vue-query` to `5.85.9` but the product lock has `5.102.8` nested under `saflib/sdk/node_modules/`, that is **version skew**. lock-prune removes the stale nested entry so the next `npm install` resolves to the platform version.
+When the platform lock resolves `@tanstack/vue-query` to `5.85.9` but the product lock has `5.102.8` nested under `saflib/sdk/node_modules/`, that is **version skew**, and lock-prune reports it. The nested copy also fails the dependency alignment check.
 
 ## What product packages should declare
 
-**Declare:**
+Each package declares what it imports:
 
-- `@saflib/*` workspace packages your code imports
+- `@saflib/*` workspace packages
 - `@{org}/{product}-*` workspace packages (your product's own packages)
-- Registry packages **unique to your product** that no platform package uses
+- Registry packages it imports directly, even when a platform package also uses them
 
-**Do not declare** (platform already owns them):
+Declaring what you import matters beyond style: a production Docker build stages only the image's own packages and their declared dependencies, so a package that relies on some other workspace package declaring its dependency builds locally and fails in the image.
 
-- `vue`, `vue-router`, `vuetify`, `@tanstack/vue-query`
-- `@vue/tsconfig`, `vite-plugin-vuetify`, `msw`, `http-errors`
-- Other registry deps already present in the saflib dependency graph
+Prefer `@saflib/vue`, `@saflib/sdk`, `@saflib/vite`, `@saflib/vitepress`, and similar workspace entry points where they cover what you need.
 
-Golden product templates under `saflib/base/` follow this rule. If `product/init` copies a redundant declaration, lock-prune removes it.
+## Dependency alignment check
 
-Use `@saflib/vue`, `@saflib/sdk`, `@saflib/vite`, `@saflib/vitepress`, and similar workspace entry points — not the underlying registry packages those packages wrap.
+`saflib/docker/dev/check-dependency-alignment.ts` fails if the lockfile installs any package below a workspace directory instead of once at the root, and shows which packages want which versions:
+
+```bash
+node --experimental-strip-types saflib/docker/dev/check-dependency-alignment.ts
+```
+
+It runs before every dev-stack install (the `deps` service) and at the end of `product/init`. To fix a report, align the version ranges or add an `overrides` entry in the product root `package.json`, then `npm install`. A copy at the root's own version only comes from editing the lockfile; delete those entries and reinstall.
 
 ## lock-prune
 
-[`saf-monorepo lock-prune`](./cli/saf-monorepo/lock-prune.md) is the enforcement tool. It **aligns** the product lock to the platform lock (or fails in `--check`):
+[`saf-monorepo lock-prune`](./cli/saf-monorepo/lock-prune.md) reports product/platform drift and exits non-zero when it finds any. It changes nothing unless you pass `--fix`, and even then only repairs lockfile bookkeeping:
 
-| Issue                                                          | Fix                                                     |
-| -------------------------------------------------------------- | ------------------------------------------------------- |
-| Redundant product dep                                          | Remove from product `package.json`                      |
-| Competing product dep (wrong semver vs platform)               | Remove from product `package.json`                      |
-| Hoisting hazard (peer only under `saflib/node_modules`)        | Move lockfile entry to root `node_modules/`             |
-| Unhoisted registry dep (not an intentional platform nest)      | Hoist lockfile entry to root `node_modules/`             |
-| Missing/wrong intentional nested install (e.g. `vitepress/node_modules/esbuild`) | Copy that package tree from `saflib/package-lock.json` into `saflib/<path>/` |
-| Exact override root pin drift (e.g. `vite@8.0.13`)             | Copy platform root package tree into product lock        |
-| Nested lockfile version skew vs platform                       | Copy platform tree to the align key; drop leftover skew  |
-| Platform override drift                                        | Merge `saflib/package.json` overrides into product root |
-| Stale lockfile workspace paths                                 | Remove dead entries from `package-lock.json`            |
+| Issue                                                     | With `--fix`                                 |
+| --------------------------------------------------------- | -------------------------------------------- |
+| Stale lockfile workspace paths                            | Removes dead entries from `package-lock.json` |
+| Hoisting hazard (peer only under `saflib/node_modules`)   | Moves the lockfile entry to root `node_modules/` |
+| Unhoisted registry dep (locked only under a saflib path)  | Hoists the lockfile entry to root `node_modules/` |
+| Competing product dep (range that doesn't overlap saflib's) | Reported only                              |
+| Nested lockfile version skew vs platform                  | Reported only                                |
+| Override drift vs `saflib/package.json`                   | Reported only                                |
 
-`--check` exits non-zero whenever any of the above issues are present (deploy-package redundant deps remain warnings only).
+After `--fix`, run **`npm install` at the product root** to refresh `node_modules/`.
 
-After lock-prune modifies `package.json` or `package-lock.json`, run **`npm install` at the product root** to refresh `node_modules/`.
+Nothing runs lock-prune automatically. Earlier product repos may still have a `preinstall` hook that runs `saflib/monorepo/bin/lock-prune-run.ts --yes`; that now applies only the fixes above, and the hook can be removed.
 
-Implementation lives under `saflib/monorepo/src/lock-prune/` (`analyze`, `align`, `apply`, …).
-
-### Automatic runs
-
-Product repos created with [`saf-create`](../../product/docs/01-overview.md) run lock-prune:
-
-1. **`preinstall`** on every `npm install` (via the saflib submodule CLI path — no prior install required)
-2. **Bootstrap**, before the first `npm install`
-3. **`product/init`**, before and after product workspaces are added
-
-### Manual use
-
-```bash
-npm run lock-prune              # interactive
-npm run lock-prune -- -y        # apply fixes
-npm run lock-prune -- --check   # CI: report issues, exit non-zero
-npm install                     # refresh node_modules after fixes
-```
-
-Deploy workspaces are reported as warnings only; all other product workspaces (including client SPAs) are auto-fixed with `--yes`.
-
-## Common failure: missing transitive deps
-
-Symptom: TypeScript reports `Cannot find module '@tanstack/vue-query'` (or similar) from a file under `saflib/`, even though `@saflib/sdk` lists it as a dependency.
-
-Typical causes:
-
-1. **Product lockfile has nested entries** (`saflib/sdk/node_modules/foo`) that npm never materializes on disk in a hoisted install.
-2. **Version skew** caused npm to skip installing a package during peer resolution.
-3. **Product packages compete with platform semver**, pulling a different resolution than saflib tested.
-
-Fix:
-
-```bash
-npm run lock-prune -- -y
-npm install
-```
-
-Do not add root anchor deps, `legacy-peer-deps`, or duplicate registry declarations on product packages — align the graph instead.
+Implementation lives under `saflib/monorepo/src/lock-prune/`.
 
 ## Updating the platform
 
 When you bump the `saflib/` submodule:
 
 1. Pull or checkout the new submodule commit.
-2. Run `npm run lock-prune -- -y` at the product root.
-3. Run `npm install`.
+2. Run `npm install` at the product root.
+3. Run the dependency alignment check, and `npm exec saf-monorepo -- lock-prune` to see where the product differs from the new platform versions.
 4. Run `npm run typecheck` and fix any product code breaks from intentional platform changes.
-
-lock-prune re-syncs overrides and prunes skewed lock entries against the **current** submodule — you do not need to re-bootstrap or hand-copy platform config.
 
 ## Design principles
 
-1. **Platform owns registry versions.** Products own workspace wiring and product-specific packages.
-2. **One lockfile, one `node_modules` root.** No nested install roots inside `saflib/` in product repos.
-3. **Align, don't override locally.** Prefer lock-prune + platform pins over per-product `.npmrc` workarounds.
-4. **Declare what you import from npm directly.** Inside saflib, packages that import a registry module should list it in their own `package.json`. Products should reach registry code through `@saflib/*` workspace packages instead.
-5. **Ongoing sync, not copy-once.** Bootstrap and init kick off alignment; `preinstall` keeps it current as saflib moves.
+1. **One lockfile, one `node_modules` root, one copy of each package.** No nested install roots inside `saflib/` in product repos.
+2. **Platform sets tested versions; products stay compatible.** Products choose their own pins and overrides, within ranges npm can share with the platform.
+3. **Declare what you import.** Every package, product or platform, lists the registry packages it imports, so each Docker image's staged install is complete.
+4. **Check, don't rewrite.** Tools report misalignment and leave version decisions to people; automatic fixes are limited to lockfile bookkeeping.
 
 ## Related docs
 
 - [Overview](./01-overview.md) — workspace layout and package conventions
-- [lock-prune CLI](./cli/saf-monorepo/lock-prune.md) — flags and issue types
+- [lock-prune CLI](./cli/saf-monorepo/lock-prune.md) — flags
 - [product/init](../../product/docs/workflows/init.md) — scaffolding a new product
 - [saf-create / bootstrap](../../product/docs/01-overview.md) — new monorepo setup

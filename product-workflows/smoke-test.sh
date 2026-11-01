@@ -65,6 +65,14 @@ if grep -rn --include='*' -l -E '__product-name__|base/product|base/platform' "$
   exit 1
 fi
 
+step "Dependency alignment"
+# product/init runs this too; repeated here so CI reports it by name.
+node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/docker/dev/check-dependency-alignment.ts
+if grep -q '"preinstall"' package.json; then
+  echo "package.json has a preinstall hook; product repos shouldn't get one" >&2
+  exit 1
+fi
+
 step "Typecheck"
 npm run typecheck
 

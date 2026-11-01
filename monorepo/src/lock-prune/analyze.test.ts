@@ -5,7 +5,7 @@ import { loadProductFixture, useProductFixtureLifecycle } from "./test-helpers.t
 useProductFixtureLifecycle();
 
 describe("analyzeProductLockPrune", () => {
-  it("collects redundant, competing, hoisting, and stale lockfile issues", () => {
+  it("collects competing, hoisting, and stale lockfile issues", () => {
     const root = loadProductFixture({
       "/product/package.json": JSON.stringify({
         name: "@product/root",
@@ -39,7 +39,6 @@ describe("analyzeProductLockPrune", () => {
 
     const analysis = analyzeProductLockPrune(root);
     expect(analysis.issues.map((issue) => issue.kind)).toEqual([
-      "redundant-dependency",
       "competing-dependency",
       "hoisting-hazard",
       "stale-lockfile",

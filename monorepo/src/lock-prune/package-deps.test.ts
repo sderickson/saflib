@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import { buildPackageIndex } from "@saflib/imports";
 import {
   findCompetingDependencies,
-  findRedundantDependencies,
   syncPlatformOverrides,
 } from "./package-deps.ts";
 import { readPlatformContract } from "./platform.ts";
@@ -14,31 +13,6 @@ import {
 } from "./test-helpers.ts";
 
 useProductFixtureLifecycle();
-
-describe("findRedundantDependencies", () => {
-  it("flags redundant product deps that match saflib-owned versions", () => {
-    const root = loadProductFixture({
-      "/product/saflib/sdk/package.json": JSON.stringify({
-        name: "@saflib/sdk",
-        dependencies: { "openapi-fetch": "^0.17.0" },
-      }),
-      "/product/package.json": JSON.stringify({
-        name: "@product/root",
-        devDependencies: {
-          "openapi-fetch": "^0.17.0",
-        },
-      }),
-    });
-
-    expect(findRedundantDependencies(root, buildPackageIndex(root))).toEqual([
-      expect.objectContaining({
-        kind: "redundant-dependency",
-        dependency: "openapi-fetch",
-        spec: "^0.17.0",
-      }),
-    ]);
-  });
-});
 
 describe("findCompetingDependencies", () => {
   it("flags product deps that compete with saflib-owned versions", () => {

@@ -150,9 +150,6 @@ export function formatCollisionWarning(paths: string[], cwd: string): string {
   ].join("\n");
 }
 
-const LOCK_PRUNE_CMD =
-  "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes";
-
 export function buildRootPackageJson(
   organizationName: string,
 ): PackageJsonShape {
@@ -169,7 +166,6 @@ export function buildRootPackageJson(
       "lint:fix": "eslint --fix .",
       format: "prettier --write .",
       typecheck: "NODE_OPTIONS='--max-old-space-size=8192' vue-tsc -b",
-      preinstall: LOCK_PRUNE_CMD,
     },
     workspaces: ["deploy/**", "saflib/**"],
     engines: {
@@ -378,7 +374,6 @@ export function runBootstrap(options: BootstrapOptions): void {
 
   log("Installing npm dependencies (workspace link pass)…");
   runCommand("npm install --ignore-scripts", { cwd });
-  runCommand(LOCK_PRUNE_CMD, { cwd });
 
   log("Installing npm dependencies…");
   runCommand("npm install", { cwd });
