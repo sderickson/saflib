@@ -51,12 +51,29 @@ export function packageHasEnvFiles(packageDir: string): boolean {
 }
 
 /**
- * Direct env-parent packages for `extends` / combined-schema closure: the
- * nearest workspace dependencies that have `env.ts` / `env.schema.json`. A
- * dependency without env files is looked through, so its own env parents
- * (e.g. a db package's `@saflib/drizzle`) still count.
+ * Direct env-parent packages for `env.ts`'s `extends`: the package's declared
+ * workspace dependencies that have `env.ts` / `env.schema.json`. `env.ts`
+ * imports their types, so only declared dependencies qualify.
  */
 export function getDirectEnvParents(
+  packageName: packageName,
+  context: MonorepoContext,
+): packageName[] {
+  return (context.workspaceDependencyGraph[packageName] ?? [])
+    .filter((dependency) => {
+      const packagePath = context.monorepoPackageDirectories[dependency];
+      return packagePath !== undefined && packageHasEnvFiles(packagePath);
+    })
+    .sort();
+}
+
+/**
+ * Env parents for the combined schema's closure: the nearest workspace
+ * dependencies that have env files. A dependency without env files is looked
+ * through, so its own env parents (e.g. a db package's `@saflib/drizzle`) still
+ * count at runtime.
+ */
+export function getEnvParentsThroughDependencies(
   packageName: packageName,
   context: MonorepoContext,
 ): packageName[] {
@@ -102,7 +119,7 @@ export function getEnvParentClosure(
       return;
     }
     visited.add(pkgName);
-    for (const parent of getDirectEnvParents(pkgName, context)) {
+    for (const parent of getEnvParentsThroughDependencies(pkgName, context)) {
       walk(parent);
     }
   }
