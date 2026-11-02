@@ -5,28 +5,28 @@ dsn: sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc&_journal_mode=WAL&_bus
 
 serve:
   public:
-    base_url: http://kratos.docker.localhost/
+    base_url: http://kratos.__product-name__.docker.localhost/
     cors:
       enabled: false
   admin:
     base_url: http://kratos:4434/
 
 selfservice:
-  default_browser_return_url: http://auth.docker.localhost/
+  default_browser_return_url: http://auth.__product-name__.docker.localhost/
 
   # Only apex and product hosts (no subdomain wildcard — T-9 open redirect).
   allowed_return_urls:
-    - http://docker.localhost/
-    - http://app.docker.localhost/
-    - http://admin.docker.localhost/
-    - http://auth.docker.localhost/
-    - http://account.docker.localhost/
+    - http://__product-name__.docker.localhost/
+    - http://app.__product-name__.docker.localhost/
+    - http://admin.__product-name__.docker.localhost/
+    - http://auth.__product-name__.docker.localhost/
+    - http://account.__product-name__.docker.localhost/
 
   flows:
     registration:
       enabled: true
       style: unified
-      ui_url: http://auth.docker.localhost/registration
+      ui_url: http://auth.__product-name__.docker.localhost/registration
       after:
         password:
           hooks:
@@ -42,7 +42,7 @@ selfservice:
                   ignore: true
 
     login:
-      ui_url: http://auth.docker.localhost/login
+      ui_url: http://auth.__product-name__.docker.localhost/login
       after:
         hooks:
           - *kratos_action_webhook
@@ -52,13 +52,13 @@ selfservice:
 
     recovery:
       enabled: true
-      ui_url: http://auth.docker.localhost/recovery
+      ui_url: http://auth.__product-name__.docker.localhost/recovery
       after:
         hooks:
           - *kratos_action_webhook
 
     settings:
-      ui_url: http://auth.docker.localhost/settings
+      ui_url: http://auth.__product-name__.docker.localhost/settings
       after:
         profile:
           hooks:
@@ -78,11 +78,11 @@ selfservice:
 
     logout:
       after:
-        default_browser_return_url: http://auth.docker.localhost/
+        default_browser_return_url: http://auth.__product-name__.docker.localhost/
 
     verification:
       enabled: true
-      ui_url: http://auth.docker.localhost/verification
+      ui_url: http://auth.__product-name__.docker.localhost/verification
       use: code
 
   methods:
@@ -100,17 +100,17 @@ selfservice:
         passwordless: false
         rp:
           display_name: __product-name__ (Prod Local)
-          id: docker.localhost
+          id: __product-name__.docker.localhost
           origins:
-            - http://auth.docker.localhost
-            - http://account.docker.localhost
+            - http://auth.__product-name__.docker.localhost
+            - http://account.__product-name__.docker.localhost
 
 session:
   # Absolute lifetime: a full sign-in (password + MFA) is required at least
   # this often. No sliding extension, so a stolen cookie cannot be kept alive.
   lifespan: 336h
   cookie:
-    domain: .docker.localhost
+    domain: .__product-name__.docker.localhost
     same_site: Lax
 
 identity:

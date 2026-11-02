@@ -165,6 +165,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       packageName: "PACKAGE_NAME_UNUSED",
       serviceName: input.name,
       domainName: domain,
+      escapedDomainName: domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
       identityOwner,
       productOnly: input.productOnly ?? false,
       embeddedProductMonorepo: isEmbeddedProductMonorepo(cwd),

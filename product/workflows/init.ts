@@ -69,6 +69,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       packageName: "PACKAGE_NAME_UNUSED",
       serviceName: input.name,
       domainName: input.domain,
+      escapedDomainName: input.domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
       productOnly: input.productOnly ?? false,
       embeddedProductMonorepo: isEmbeddedProductMonorepo(input.cwd),
       platformExists: existsSync(path.join(resolveDeployDir(input.cwd), "package.json")),

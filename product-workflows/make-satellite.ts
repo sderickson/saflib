@@ -512,11 +512,10 @@ export function makeSatellite(options: SatelliteOptions): void {
 
   // Edge routes and the web container: only this product's own sites.
   const routes = at("deploy/remote-assets/caddy", `${name}.Caddyfile`);
-  for (const sub of ["auth", "account", "kratos"]) {
+  for (const sub of ["auth", "account"]) {
     removeSiteBlock(routes, `{$PROTOCOL}://${sub}.{$DOMAIN}`);
   }
   removeSiteBlock(routes, "{$DOMAIN_REDIRECTS}");
-  edit(routes, /^# Kratos public API.*\n+/m, "");
   edit(
     routes,
     "{$PROTOCOL}://{$DOMAIN} {",

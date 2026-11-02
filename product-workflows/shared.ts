@@ -63,6 +63,8 @@ export function findOutermostWorkspaceRoot(start: string): string {
 export interface InitProductWorkflowContext extends ParsePackageNameOutput {
   productName: string;
   domainName: string;
+  /** `domainName` escaped for a regex (`__escaped-domain-name__`, e.g. in CORS patterns). */
+  escapedDomainName: string;
   productOnly: boolean;
   /** True when init cwd is a product root with a nested `saflib/` workspace. */
   embeddedProductMonorepo: boolean;

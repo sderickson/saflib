@@ -1,0 +1,12 @@
+# The Kratos public API, on the identity domain. The platform runs Kratos, so it
+# owns this route; products (including satellites) use it rather than routing
+# kratos. themselves. Registered by this deploy (`saf-deploy up`), which fills
+# in {$...} from kratos.env (or kratos.prod-local.env with --local).
+
+{$PROTOCOL}://kratos.{$DOMAIN} {
+	import transport-security
+	import cors {$CORS_ORIGINS}
+	reverse_proxy kratos:4433 {
+		import reverse_proxy_common
+	}
+}

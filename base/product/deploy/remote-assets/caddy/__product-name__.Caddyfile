@@ -75,16 +75,6 @@
 	import kratos-api-proxy __product-name__-monolith:3001
 }
 
-# Kratos public API (the platform's Kratos, on the edge network)
-
-{$PROTOCOL}://kratos.{$DOMAIN} {
-	import transport-security
-	import cors {$CORS_ORIGINS}
-	reverse_proxy kratos:4433 {
-		import reverse_proxy_common
-	}
-}
-
 {$DOMAIN_REDIRECTS} {
 	import redirect {$PROTOCOL}://{$DOMAIN}
 }

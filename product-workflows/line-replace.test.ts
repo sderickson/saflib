@@ -13,6 +13,7 @@ function testContext(
   return {
     productName: "tmp",
     domainName: "temporary.com",
+    escapedDomainName: "temporary\\.com",
     productOnly: true,
     organizationName: "saflib",
     sharedPackagePrefix: "@saflib/tmp",

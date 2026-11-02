@@ -115,7 +115,7 @@ if [ "${SMOKE_SKIP_EDGE:-}" = 1 ]; then
   exit 0
 fi
 
-step "Registering both products' routes with the platform edge"
+step "Registering the platform's and both products' routes with the edge"
 edge_image=$(cd deploy && docker compose -f docker-compose.prod-local.yaml config --images | grep caddy)
 npx saf-docker build "@${FIRST}/deploy/builds/caddy" --platform native
 docker tag "${edge_image#smoke.local/}" "${edge_image}"
@@ -130,8 +130,9 @@ edge_compose() { (cd "${WORK}/deploy" && docker compose -f docker-compose.prod-l
 cleanup() { edge_compose down -v > /dev/null 2>&1 || true; }
 trap cleanup EXIT
 edge_compose up -d caddy
-for product in "${FIRST}" "${SECOND}"; do
-  (cd "${product}/deploy" && npx saf-deploy register-sites --local)
+# The platform's own route (the Kratos public API), then both products'.
+for dir in deploy "${FIRST}/deploy" "${SECOND}/deploy"; do
+  (cd "${dir}" && npx saf-deploy register-sites --local)
 done
 # A broken route is rejected and rolled back, leaving the edge serving.
 echo "this is not caddyfile syntax {" >> "${SECOND}/deploy/remote-assets/caddy/${SECOND}.Caddyfile"
