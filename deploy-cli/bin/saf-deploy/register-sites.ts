@@ -9,12 +9,17 @@ export const addRegisterSitesCommand = (program: Command) => {
     .description(
       "Copy remote-assets/caddy/*.Caddyfile into the platform's edge Caddy (SAF_EDGE_CONTAINER) and reload it. `up` and `release` do this already.",
     )
-    .option("--local", "Register with the local Docker's edge (prod-local) instead of the server's")
+    .option(
+      "--local",
+      "Register with the local Docker's edge (prod-local) instead of the server's",
+    )
     .action(
       action(async (options: { local?: boolean }) => {
         const config = loadDeployConfig();
         const script = readRemoteScript("register-sites");
-        await (options.local ? runLocal(config, script) : runRemote(config, script));
+        await (options.local
+          ? runLocal(config, script)
+          : runRemote(config, script));
       }),
     );
 };

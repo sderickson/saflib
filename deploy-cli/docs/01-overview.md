@@ -21,7 +21,18 @@ Run `saf-deploy` from the product's **deploy package** (npm scripts do this). It
   - `REMOTE_ASSETS_FOLDER_PATH`: where `remote-assets/` is unpacked and compose runs
   - `REMOTE_SUDO` (optional): `0` to not `sudo -i` on the server. Privileged steps then use `sudo` when not root.
   - `SAF_EDGE_CONTAINER` (product deploys): the platform's edge container, which `remote-assets/caddy/*.Caddyfile` routes are registered with.
-- `remote-assets/docker-compose.prod.yaml`: the production stack. Its `$CONTAINER_REGISTRY/<image>` services decide **which images are built and pushed**; there are no image lists to maintain.
+- `remote-assets/docker-compose.prod.yaml`: the production stack. Its `$CONTAINER_REGISTRY/<image>` services (and the blue-green file's) decide **which images are built and pushed**; there are no image lists to maintain.
+- `remote-assets/docker-compose.blue-green.yaml` (optional, product deploys): services deployed blue-green; see below.
+
+## Blue-green deploys
+
+Services in a product's `docker-compose.blue-green.yaml` deploy with no downtime. They run as two compose projects, `<deploy>-blue` and `<deploy>-green` (`<deploy>` is the server folder's name), and only the live color gets traffic.
+
+- Each service's container is named `<service>-${SAF_COLOR}` and has a healthcheck. Routes reach it by that name: `reverse_proxy recipes-web-{$SAF_COLOR}:80`, with `{$SAF_COLOR}` filled in at registration.
+- `up` starts the idle color and waits for it to turn healthy (`SAF_HEALTH_TIMEOUT`, default 60s), else removes it and fails with the live color untouched. Then it brings up the rest of the stack, switches routes to the new color (`caddy reload`, so in-flight requests finish), and watches it (`SAF_WATCH_SECONDS`, default 60s). If it turns unhealthy, routes switch back and the new color is removed. Otherwise the old color is removed.
+- The live color is recorded on the server in `.saf-deploy/<deploy>/live` beside the assets folder (`sync` replaces the folder itself), and counts only while its containers run.
+- `up --local` runs the same flow against the local Docker, beside a running prod-local stack (which runs blue), using `docker-compose.blue-green.prod-local.yaml` in the deploy package when there is one.
+- Only for product deploys: the platform's edge and Kratos aren't duplicated.
 
 ## Commands
 
@@ -31,10 +42,11 @@ Run `saf-deploy` from the product's **deploy package** (npm scripts do this). It
 | `push`        | `push`                  | `build`, then push every tag; already-pushed images are only retagged.                                                                                                                                                                                                             |
 | `status`      | `status`                | What `build` would do.                                                                                                                                                                                                                                                             |
 | `sync`        | `sync`                  | Zip `remote-assets/`, upload it, unpack it with rsync (keeps bind-mount inodes).                                                                                                                                                                                                   |
-| `pull`        | `remote-pull`           | On the server, pull the prod compose file's `$CONTAINER_REGISTRY` images.                                                                                                                                                                                                          |
-| `up`          | `remote-deploy`         | `docker compose up -d --force-recreate --remove-orphans`, then prune, then `register-sites`.                                                                                                                                                                                       |
+| `pull`        | `remote-pull`           | On the server, pull the prod (and blue-green) compose files' `$CONTAINER_REGISTRY` images.                                                                                                                                                                                                          |
+| `up [--local]` | `remote-deploy`        | Blue-green services first (see above), then `docker compose up -d --force-recreate --remove-orphans` of the rest, `register-sites`, the watch window, and prune. `--local` runs the blue-green part beside prod-local. |
+| `live [--local]` |                      | Which blue-green color is live, and each color's containers. |
 | `register-sites [--local]` | `prod-local` (with `--local`) | Copy `remote-assets/caddy/*.Caddyfile` (placeholders filled from the matching `.env`) into the edge and reload it. If the edge rejects them, this deploy's previous routes are restored. `--local` targets a prod-local edge on the local Docker. |
-| `down`        | `remote-undeploy`       | `docker compose down`.                                                                                                                                                                                                                                                             |
+| `down`        | `remote-undeploy`       | `docker compose down`, and both blue-green colors.                                                                                                                                                                                                                                                             |
 | `logs`        | `remote-logs`           | Follow the stack's logs.                                                                                                                                                                                                                                                           |
 | `setup`       | `remote-setup`          | Install Docker if missing; start it.                                                                                                                                                                                                                                               |
 | `purge`       | `remote-purge`          | Uninstall Docker.                                                                                                                                                                                                                                                                  |

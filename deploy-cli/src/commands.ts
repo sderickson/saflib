@@ -25,7 +25,7 @@ export async function buildProductionImages(
   console.log(`Container registry: ${registry}`);
   const { ok } = await runImageBuild({
     cwd: config.deployDir,
-    composeFiles: [config.composeFile],
+    composeFiles: config.composeFiles,
     platform: options.platform,
     registry,
     push: options.push,

@@ -56,14 +56,19 @@ export function selectBuilds(all: Build[], selection: BuildSelection): Build[] {
     if (under.length === 0) throw new Error(`No builds under ${dir}`);
     under.forEach((b) => selected.set(b.ref, b));
   }
-  for (const file of composeFiles) {
-    const images = new Set(
+  // Compose files are checked together: a deploy's main file can be empty
+  // when everything it runs is in its blue-green file.
+  const composeImages = new Set(
+    composeFiles.flatMap((file) =>
       composeImageNames(readFileSync(path.resolve(cwd, file), "utf8")),
+    ),
+  );
+  const fromCompose = all.filter((b) => composeImages.has(b.image));
+  if (composeFiles.length > 0 && fromCompose.length === 0) {
+    throw new Error(
+      `No builds produce an image used in ${composeFiles.join(", ")}`,
     );
-    const used = all.filter((b) => images.has(b.image));
-    if (used.length === 0)
-      throw new Error(`No builds produce an image used in ${file}`);
-    used.forEach((b) => selected.set(b.ref, b));
   }
+  fromCompose.forEach((b) => selected.set(b.ref, b));
   return [...selected.values()];
 }

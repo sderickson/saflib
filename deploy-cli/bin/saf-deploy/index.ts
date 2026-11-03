@@ -15,6 +15,7 @@ import { addPurgeCommand } from "./purge.ts";
 import { addExecCommand } from "./exec.ts";
 import { addReleaseCommand } from "./release.ts";
 import { addRegisterSitesCommand } from "./register-sites.ts";
+import { addLiveCommand } from "./live.ts";
 // END WORKFLOW AREA
 
 const program = new Command()
@@ -37,6 +38,7 @@ addPurgeCommand(program);
 addExecCommand(program);
 addReleaseCommand(program);
 addRegisterSitesCommand(program);
+addLiveCommand(program);
 // END WORKFLOW AREA
 
 setupContext({ serviceName: "saf-deploy" }, () => {

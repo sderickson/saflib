@@ -1,9 +1,12 @@
 # Pull this product's images (those from $CONTAINER_REGISTRY in the prod
-# compose file). Third-party images are left to `docker compose up`.
+# compose file and, if there is one, the blue-green one). Third-party images
+# are left to `docker compose up`.
 cd "$REMOTE_ASSETS_FOLDER_PATH"
-images=$(docker_cmd compose -f docker-compose.prod.yaml config --images | grep "^$CONTAINER_REGISTRY/" || true)
+files="-f docker-compose.prod.yaml"
+[ ! -f docker-compose.blue-green.yaml ] || files="$files -f docker-compose.blue-green.yaml"
+images=$(docker_cmd compose $files config --images | grep "^$CONTAINER_REGISTRY/" | sort -u || true)
 if [ -z "$images" ]; then
-  echo "No $CONTAINER_REGISTRY images in docker-compose.prod.yaml"
+  echo "No $CONTAINER_REGISTRY images in the compose files"
   exit 0
 fi
 for image in $images; do

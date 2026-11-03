@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { requireRemote, type DeployConfig } from "./config.ts";
@@ -13,7 +13,9 @@ export type RemoteScript =
   | "logs"
   | "purge"
   | "extract-assets"
-  | "register-sites";
+  | "register-sites"
+  | "live"
+  | "sites";
 
 const SCRIPTS_DIR = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -21,14 +23,43 @@ const SCRIPTS_DIR = path.join(
   "remote-scripts",
 );
 
+/** Scripts that use sites.sh's functions (route registration, blue-green). */
+const NEEDS_SITES = new Set<RemoteScript>([
+  "up",
+  "down",
+  "register-sites",
+  "live",
+]);
+
 export function readRemoteScript(name: RemoteScript): string {
-  return readFileSync(path.join(SCRIPTS_DIR, `${name}.sh`), "utf8");
+  const script = readFileSync(path.join(SCRIPTS_DIR, `${name}.sh`), "utf8");
+  return NEEDS_SITES.has(name)
+    ? `${readFileSync(path.join(SCRIPTS_DIR, "sites.sh"), "utf8")}\n${script}`
+    : script;
+}
+
+/**
+ * The deploy's name (the server folder's basename, e.g. `recipes`), which
+ * names its blue-green compose projects. Local runs point
+ * REMOTE_ASSETS_FOLDER_PATH elsewhere, so it's passed explicitly.
+ */
+function deployNameEnv(config: DeployConfig): Record<string, string> {
+  const folder = config.env.REMOTE_ASSETS_FOLDER_PATH;
+  const env: Record<string, string> = folder
+    ? { SAF_DEPLOY_NAME: path.basename(folder) }
+    : {};
+  // Blue-green timing can be set per run, e.g. SAF_WATCH_SECONDS=120.
+  for (const key of ["SAF_HEALTH_TIMEOUT", "SAF_WATCH_SECONDS"]) {
+    const value = process.env[key];
+    if (value) env[key] = value;
+  }
+  return env;
 }
 
 /** Single-quotes a value for bash. */
-/** `up`, then register the deploy's edge routes (no-op without remote-assets/caddy/). */
+/** `up`, which registers the deploy's edge routes (no-op without remote-assets/caddy/). */
 export function upScript(): string {
-  return `${readRemoteScript("up")}\n${readRemoteScript("register-sites")}`;
+  return readRemoteScript("up");
 }
 
 export function shellQuote(value: string): string {
@@ -49,14 +80,18 @@ export function remotePayload(
 ): string {
   const lines: string[] = [];
   if (config.env.REMOTE_SUDO !== "0") lines.push("sudo -i");
-  for (const [key, value] of Object.entries({ ...config.env, ...extraEnv })) {
+  for (const [key, value] of Object.entries({
+    ...config.env,
+    ...deployNameEnv(config),
+    ...extraEnv,
+  })) {
     lines.push(`export ${key}=${shellQuote(value)}`);
   }
   lines.push('SUDO=$([ "$(id -u)" = 0 ] || echo sudo)');
   lines.push(
     "docker_cmd() {",
     '  if [ "$(id -u)" = 0 ]; then docker "$@";',
-    '  else sudo CONTAINER_REGISTRY="$CONTAINER_REGISTRY" docker "$@"; fi',
+    '  else sudo CONTAINER_REGISTRY="$CONTAINER_REGISTRY" SAF_COLOR="${SAF_COLOR:-}" docker "$@"; fi',
     "}",
   );
   lines.push("set -e", script);
@@ -69,10 +104,20 @@ export function remotePayload(
  * pointing at this deploy package's own remote-assets/.
  */
 export function localPayload(config: DeployConfig, script: string): string {
+  // Blue-green services locally: a prod-local overlay beside remote-assets/
+  // (e.g. with prod-local env files), when the deploy has one.
+  const blueGreenOverlay = path.join(
+    config.deployDir,
+    "docker-compose.blue-green.prod-local.yaml",
+  );
   const env = {
     ...config.env,
+    ...deployNameEnv(config),
     REMOTE_ASSETS_FOLDER_PATH: path.join(config.deployDir, "remote-assets"),
     SAF_DEPLOY_LOCAL: "1",
+    ...(existsSync(blueGreenOverlay)
+      ? { SAF_BLUE_GREEN_COMPOSE: blueGreenOverlay }
+      : {}),
   };
   const lines: string[] = [];
   for (const [key, value] of Object.entries(env)) {

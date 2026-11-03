@@ -4,6 +4,10 @@ import path from "node:path";
 /** Production compose file, relative to the deploy package. */
 export const PROD_COMPOSE_FILE = "remote-assets/docker-compose.prod.yaml";
 
+/** Services deployed blue-green (optional), relative to the deploy package. */
+export const BLUE_GREEN_COMPOSE_FILE =
+  "remote-assets/docker-compose.blue-green.yaml";
+
 /**
  * A product's deploy settings: the deploy package directory (holding
  * `env.remote` and `remote-assets/`) plus the values from `env.remote`.
@@ -16,6 +20,8 @@ export interface DeployConfig {
   containerRegistry?: string;
   /** Absolute path of the production compose file. */
   composeFile: string;
+  /** Absolute paths of every compose file whose images the deploy runs. */
+  composeFiles: string[];
 }
 
 /** Parses `KEY=value` lines (comments and blanks skipped, quotes stripped). */
@@ -46,6 +52,9 @@ export function loadDeployConfig(
     env,
     containerRegistry,
     composeFile: path.join(deployDir, PROD_COMPOSE_FILE),
+    composeFiles: [PROD_COMPOSE_FILE, BLUE_GREEN_COMPOSE_FILE]
+      .map((file) => path.join(deployDir, file))
+      .filter((file, i) => i === 0 || existsSync(file)),
   };
 }
 
