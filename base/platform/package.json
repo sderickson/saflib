@@ -1,0 +1,33 @@
+{
+  "name": "@__organization-name__/deploy",
+  "saf": {
+    "kind": "other"
+  },
+  "description": "Platform deploy for __Organization Name__ products: the edge (Caddy) and identity (Kratos). Products deploy separately from <product>/deploy.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -b",
+    "regen-kratos-secrets": "NODE_OPTIONS='--experimental-strip-types --disable-warning=ExperimentalWarning' node ./regen-kratos-secrets.ts",
+    "generate": "saf-docker generate",
+    "prod-local": ". ./env.remote && CONTAINER_REGISTRY=$CONTAINER_REGISTRY docker compose -f docker-compose.prod-local.yaml up --detach && saf-deploy register-sites --local",
+    "build": "saf-deploy build",
+    "build:native": "saf-deploy build --platform native",
+    "status": "saf-deploy status",
+    "push": "saf-deploy push",
+    "sync": "saf-deploy sync",
+    "exec-remote": "saf-deploy exec",
+    "remote-setup": "saf-deploy setup",
+    "remote-pull": "saf-deploy pull",
+    "remote-deploy": "saf-deploy up",
+    "remote-undeploy": "saf-deploy down",
+    "remote-logs": "saf-deploy logs",
+    "remote-purge": "saf-deploy purge",
+    "full-deploy": "saf-deploy release",
+    "prod-local:down": "docker compose -f docker-compose.prod-local.yaml down"
+  },
+  "dependencies": {
+    "@saflib/deploy-cli": "*",
+    "@saflib/docker": "*"
+  },
+  "sideEffects": false
+}

@@ -22,6 +22,7 @@
   "dependencies": {
     "@saflib/commander": "*",
     "@saflib/monorepo": "*",
+    "@saflib/product-workflows": "*",
     "@saflib/templates": "*",
     "@saflib/utils": "*",
     "@saflib/workflows": "*"

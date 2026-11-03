@@ -7,7 +7,6 @@ import type {
   PackageJsonDeps,
   PlatformContract,
   PlatformOverrideSyncIssue,
-  RedundantDependencyIssue,
 } from "./types.ts";
 import { DEP_FIELDS } from "./types.ts";
 import { readPlatformContract } from "./platform.ts";
@@ -66,45 +65,65 @@ function buildSaflibSpecs(
   return saflibSpecs;
 }
 
-function buildCanonicalRegistrySpecs(
-  rootDir: string,
-  packageIndex: ReturnType<typeof buildPackageIndex>,
+type Version = [number, number, number];
+
+function parseVersion(text: string): Version | undefined {
+  const match = /^v?(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(text.trim());
+  return match ? [Number(match[1]), Number(match[2]), Number(match[3])] : undefined;
+}
+
+function compareVersions(a: Version, b: Version): number {
+  return a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+}
+
+/**
+ * Whether `version` satisfies `spec`, for the spec forms products commonly
+ * use (exact, `^`, `~`, `>=`, `*`). Undefined when the spec is anything else,
+ * so callers can stay quiet rather than guess.
+ */
+function specIncludes(spec: string, version: Version): boolean | undefined {
+  const trimmed = spec.trim();
+  if (trimmed === "*" || trimmed === "" || trimmed === "latest") return true;
+  const operator = /^(\^|~|>=)?/.exec(trimmed)![0];
+  const base = parseVersion(trimmed.slice(operator.length));
+  if (!base) return undefined;
+  const cmp = compareVersions(version, base);
+  if (operator === "") return cmp === 0;
+  if (cmp < 0) return false;
+  if (operator === ">=") return true;
+  if (operator === "~") return version[0] === base[0] && version[1] === base[1];
+  // ^: same leftmost non-zero component.
+  if (base[0] !== 0) return version[0] === base[0];
+  if (base[1] !== 0) return version[0] === 0 && version[1] === base[1];
+  return version[0] === 0 && version[1] === 0 && version[2] === base[2];
+}
+
+function specBase(spec: string): Version | undefined {
+  return parseVersion(spec.trim().replace(/^(\^|~|>=)/, ""));
+}
+
+/**
+ * Whether two specs can share a version, judged by whether either includes
+ * the other's base version. Undefined when either can't be judged.
+ */
+function specsOverlap(a: string, b: string): boolean | undefined {
+  const baseA = specBase(a);
+  const baseB = specBase(b);
+  if (!baseA || !baseB) return undefined;
+  const aIncludesB = specIncludes(a, baseB);
+  const bIncludesA = specIncludes(b, baseA);
+  if (aIncludesB === undefined || bIncludesA === undefined) return undefined;
+  return aIncludesB || bIncludesA;
+}
+
+/** The version saflib installs: its exact override pin, else its lockfile's. */
+function platformVersion(
+  name: string,
   platform: PlatformContract,
-): Map<string, string> {
-  const saflibSpecs = buildSaflibSpecs(rootDir, packageIndex);
-  const canonical = new Map<string, string>();
-
-  for (const [name] of saflibSpecs) {
-    if (platform.overrides[name]) {
-      canonical.set(name, platform.overrides[name]);
-    } else if (platform.resolvedVersions.has(name)) {
-      canonical.set(name, platform.resolvedVersions.get(name)!);
-    }
-  }
-
-  for (const [name, specs] of saflibSpecs) {
-    if (canonical.has(name)) continue;
-    canonical.set(name, [...specs].sort()[0]!);
-  }
-
-  return canonical;
-}
-
-function specsMatchForPlatform(
-  productSpec: string,
-  canonicalSpec: string,
-): boolean {
-  if (productSpec === canonicalSpec) return true;
-  if (productSpec === "*" || productSpec.startsWith("workspace:")) return true;
-  return false;
-}
-
-function isDeployPackage(packageJsonPath: string, rootDir: string): boolean {
-  const rel = path
-    .relative(rootDir, packageJsonPath)
-    .split(path.sep)
-    .join("/");
-  return rel === "deploy/package.json" || rel.startsWith("deploy/");
+): string | undefined {
+  const override = platform.overrides[name];
+  if (typeof override === "string" && parseVersion(override)) return override;
+  return platform.resolvedVersions.get(name);
 }
 
 function collectProductPackageDirs(
@@ -119,17 +138,17 @@ function collectProductPackageDirs(
   return [...dirs];
 }
 
+/**
+ * Product dependencies whose range can't include the version saflib installs,
+ * so npm would need a second copy. Ranges that overlap are fine: products
+ * declare what they import.
+ */
 export function findCompetingDependencies(
   rootDir: string,
   packageIndex: ReturnType<typeof buildPackageIndex>,
   platform: PlatformContract = readPlatformContract(rootDir),
 ): CompetingDependencyIssue[] {
   const saflibSpecs = buildSaflibSpecs(rootDir, packageIndex);
-  const canonicalSpecs = buildCanonicalRegistrySpecs(
-    rootDir,
-    packageIndex,
-    platform,
-  );
   const issues: CompetingDependencyIssue[] = [];
 
   for (const packageDir of collectProductPackageDirs(rootDir, packageIndex)) {
@@ -141,10 +160,13 @@ export function findCompetingDependencies(
       if (isProductOwnedDependencyName(name, spec)) continue;
       const ownedSpecs = saflibSpecs.get(name);
       if (!ownedSpecs) continue;
-      const canonicalSpec = canonicalSpecs.get(name);
-      const matchesCanonical =
-        !canonicalSpec || specsMatchForPlatform(spec, canonicalSpec);
-      if (ownedSpecs.has(spec) && matchesCanonical) continue;
+      const installed = platformVersion(name, platform);
+      const parsed = installed ? parseVersion(installed) : undefined;
+      // Without a saflib lockfile entry, compare against saflib's ranges.
+      const competes = parsed
+        ? specIncludes(spec, parsed) === false
+        : [...ownedSpecs].every((owned) => specsOverlap(spec, owned) === false);
+      if (!competes) continue;
       issues.push({
         kind: "competing-dependency",
         packageJsonPath,
@@ -152,49 +174,7 @@ export function findCompetingDependencies(
         field,
         dependency: name,
         productSpec: spec,
-        saflibSpecs: [
-          ...new Set(
-            canonicalSpec ? [canonicalSpec, ...ownedSpecs] : [...ownedSpecs],
-          ),
-        ].sort(),
-      });
-    }
-  }
-
-  return issues.sort(
-    (a, b) =>
-      a.dependency.localeCompare(b.dependency) ||
-      a.packageJsonPath.localeCompare(b.packageJsonPath),
-  );
-}
-
-export function findRedundantDependencies(
-  rootDir: string,
-  packageIndex: ReturnType<typeof buildPackageIndex>,
-  options: { fixableOnly?: boolean } = {},
-): RedundantDependencyIssue[] {
-  const saflibSpecs = buildSaflibSpecs(rootDir, packageIndex);
-  const issues: RedundantDependencyIssue[] = [];
-
-  for (const packageDir of collectProductPackageDirs(rootDir, packageIndex)) {
-    const packageJsonPath = path.join(packageDir, "package.json");
-    if (options.fixableOnly && isDeployPackage(packageJsonPath, rootDir)) {
-      continue;
-    }
-    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps & {
-      name?: string;
-    };
-    for (const { field, name, spec } of collectDependencySpecs(pkg)) {
-      if (isProductOwnedDependencyName(name, spec)) continue;
-      const ownedSpecs = saflibSpecs.get(name);
-      if (!ownedSpecs?.has(spec)) continue;
-      issues.push({
-        kind: "redundant-dependency",
-        packageJsonPath,
-        packageName: pkg.name ?? packageJsonPath,
-        field,
-        dependency: name,
-        spec,
+        saflibSpecs: installed ? [installed] : [...ownedSpecs].sort(),
       });
     }
   }
@@ -221,7 +201,9 @@ export function findPlatformOverrideDrift(
   for (const [name, version] of Object.entries(platform.overrides)) {
     if (productOverrides[name] === undefined) {
       missing[name] = version;
-    } else if (productOverrides[name] !== version) {
+    } else if (
+      JSON.stringify(productOverrides[name]) !== JSON.stringify(version)
+    ) {
       changed[name] = { from: productOverrides[name], to: version };
     }
   }
@@ -255,21 +237,6 @@ export function syncPlatformOverrides(
   productPkg.overrides = nextOverrides;
   writeFileSync(productPkgPath, `${JSON.stringify(productPkg, null, 2)}\n`);
   return applied;
-}
-
-export function removeDeclaredDependency(
-  packageJsonPath: string,
-  field: DepField,
-  dependency: string,
-): void {
-  const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJsonDeps;
-  const fieldDeps = pkg[field];
-  if (!fieldDeps?.[dependency]) return;
-  delete fieldDeps[dependency];
-  if (Object.keys(fieldDeps).length === 0) {
-    delete pkg[field];
-  }
-  writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`);
 }
 
 export function listInstalledPackageNames(nodeModulesDir: string): Set<string> {

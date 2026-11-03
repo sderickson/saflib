@@ -1,0 +1,9 @@
+import common.Caddyfile
+# Product routes, registered by each product's own deploy (`saf-deploy up`).
+import sites/*.Caddyfile
+
+# Playwright security suite: probe host outside the product cookie/eTLD+1 surface.
+http://evil.localhost {
+	root * /etc/caddy/evil
+	file_server
+}

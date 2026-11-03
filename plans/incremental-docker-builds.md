@@ -31,7 +31,7 @@ haven't changed.
 
 Goal: build images per **build ref**, tie each image to the exact content it
 was built from, and only rebuild when something the image depends on has
-changed. Benefits dev (`base/dev/build-images.sh`), CI, and deploy
+changed. Benefits dev (`base/product/dev/build-images.sh`), CI, and deploy
 (`deploy/local-scripts/build.sh` + `push.sh`).
 
 Separately (not this plan): reduce dev restarts with watch mode
@@ -63,7 +63,7 @@ Separately (not this plan): reduce dev restarts with watch mode
   - `vendors/sentry-node/vite-build.ts` (Sentry release name).
 - Build order is hand-written in bash with parallel `&`/`wait` and
   workflow-managed `BEGIN WORKFLOW AREA` blocks:
-  - `base/dev/build-images.sh`: static-root, static sites, monolith, clients,
+  - `base/product/dev/build-images.sh`: static-root, static sites, monolith, clients,
     and dev-site in parallel, then the caddy image
     (`FROM saflib-base-static-root:latest`).
   - `deploy/local-scripts/build.sh` (supports `native`/`amd64`), then
@@ -80,7 +80,7 @@ is answered by comparing **content**, not walking history. Git already
 content-hashes every directory:
 
 ```
-git rev-parse HEAD:base/service/monolith   # tree hash of that dir at HEAD
+git rev-parse HEAD:base/product/service/monolith   # tree hash of that dir at HEAD
 ```
 
 For each build ref we compute an **input hash** = sha256 over a sorted,
@@ -433,7 +433,7 @@ product's dependency or workspace changes must not rebuild another's images.
   can't reach. Example: one product's monolith drops from 830 to 736 packages,
   because its root's dependencies on `@saflib/vue` and its deploy package
   installed their trees into every image.
-- Real `docker build` of `base/service/monolith` and `base/clients/root`.
+- Real `docker build` of `base/product/service/monolith` and `base/product/clients/root`.
   Inside the monolith, all 219 workspace production dependencies resolve
   (only test fixtures don't, and they never did). Inside static-root,
   `npm run build` (Vite, native Rollup binaries) succeeds.
@@ -501,7 +501,7 @@ whoever continues:
 - **Decision:** saflib's existing package-root templates were *not* moved into
   `builds/` (that would churn compose files, workflows and product init for no
   gain). `builds/` is used where a package has several builds (deploy).
-- `base/dev/Dockerfile.template` names its static-site upstreams with markers;
+- `base/product/dev/Dockerfile.template` names its static-site upstreams with markers;
   dev compose's caddy image is now the derived `saflib-base-dev`.
   `dev-site/dev-site-docker/build.json` keeps the published `saflib-dev-site`.
 
@@ -526,7 +526,7 @@ whoever continues:
   input tags the build **pulled** instead of rebuilding.
 
 **Phase 6, scripts and workflows**
-- `base/dev/package.json`: `build`/`dev`/`up` run
+- `base/product/dev/package.json`: `build`/`dev`/`up` run
   `saf-docker build --dir .. @saflib/dev-site-docker` (in a product, `..` is
   the product dir); `dev-site` builds before `compose up` instead of
   `--build`. `build-images.sh` is deleted.
@@ -584,7 +584,7 @@ saflib fixes found by this migration:
 - New `--compose <file>` selector (builds whose image a compose file uses):
   the right selection for dev. `--dir ..` also picked up unused standalone
   service images (`recipes-service` no longer builds on `node:alpine3.19`).
-  saflib's `base/dev` scripts use it too.
+  saflib's `base/product/dev` scripts use it too.
 - When pushing, registry hits are no longer pulled just because a
   downstream build exists; they're pulled lazily only when a build that
   actually runs needs them (outcome `in-registry`).
@@ -697,7 +697,7 @@ repos done; lessons below are what generalized):
 - `cd monorepo && npm test && npm run typecheck`
 - `cd node && npm test && npm run typecheck`
 - Manual, dev: run `saf-docker build --all` twice. The second run builds
-  nothing. Edit a file in `base/service/monolith`, and only monolith and its
+  nothing. Edit a file in `base/product/service/monolith`, and only monolith and its
   downstream images rebuild. Edit a file only the clients use, and monolith is
   skipped.
 - Manual, deploy: `saf-docker status --registry …` after a no-op commit shows

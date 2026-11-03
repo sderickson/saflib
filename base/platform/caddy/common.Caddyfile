@@ -1,0 +1,117 @@
+# Have Caddy serve prometheus metrics
+http://caddy:2020 {
+	metrics
+}
+
+# Shared snippets for every deploy's routes (products register theirs into
+# sites/). Product-specific values (domains, CSP) live in each product's own
+# routes, so nothing here reads product env.
+
+# For old URLs, or domains you don't want people to use (such as "www").
+# args[0]: the origin to redirect to (e.g. https://example.com).
+(redirect) {
+	redir {args[0]}{uri} permanent
+}
+
+# Caddy is the source of request IDs for API requests.
+(reverse_proxy_common) {
+	header_up X-Request-ID {http.request.uuid}
+}
+
+# Shared edge headers for HTML sites (marketing + SPAs). Not for api.* / kratos.* .
+# Products add a CSP on top (see their routes).
+# > prefix: defer until response is written (needed after file_server / try_files).
+# HSTS: @https when TLS terminates at Caddy; @https_cf when a proxy sends X-Forwarded-Proto.
+(html-edge-headers) {
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		Cross-Origin-Embedder-Policy "unsafe-none"
+		Cross-Origin-Resource-Policy "same-origin"
+		-Server
+	}
+	@https tls
+	@https_cf header X-Forwarded-Proto https
+	header @https >Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	header @https_cf >Strict-Transport-Security "max-age=31536000; includeSubDomains"
+}
+
+# Each product's routes define their own Content-Security-Policy snippets
+# (they need the product's own API / Kratos origins) on top of html-edge-headers.
+
+# api.* / kratos.* — JSON APIs (no HTML CSP).
+(transport-security) {
+	header {
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+	@https tls
+	@https_cf header X-Forwarded-Proto https
+	header @https >Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	header @https_cf >Strict-Transport-Security "max-age=31536000; includeSubDomains"
+}
+
+# CORS: add response headers and handle OPTIONS preflight in Caddy so the backend never sees OPTIONS.
+# args[0]: RE2 pattern matching allowed Origin header values (full origins).
+(cors) {
+	@cors_origin_ok header_regexp Origin {args[0]}
+	@options method OPTIONS
+	handle @options {
+		handle @cors_origin_ok {
+			header {
+				Vary Origin
+				Cross-Origin-Resource-Policy "cross-origin"
+				Access-Control-Allow-Origin "{http.request.header.Origin}"
+				Access-Control-Allow-Credentials "true"
+				Access-Control-Expose-Headers "Authorization"
+				Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+				Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Last-Event-ID"
+				Access-Control-Max-Age "600"
+			}
+			respond 204
+		}
+		respond 204
+	}
+	header {
+		Vary Origin
+		Cross-Origin-Resource-Policy "cross-origin"
+		Access-Control-Allow-Credentials "true"
+		Access-Control-Expose-Headers "Authorization"
+	}
+	header @cors_origin_ok Access-Control-Allow-Origin "{http.request.header.Origin}"
+}
+
+# Recipes API (and similar): probe Kratos /sessions/whoami; copy identity on 2xx, but never short-circuit the client on 401.
+# args[0]: target service host (e.g. monolith:3002)
+(kratos-api-proxy) {
+	handle /health {
+		reverse_proxy {args[0]} {
+			import reverse_proxy_common
+		}
+	}
+
+	handle {
+		reverse_proxy kratos:4433 {
+			method GET
+			rewrite /sessions/whoami
+			header_up X-Request-ID {http.request.uuid}
+			header_up X-Forwarded-Method {http.request.method}
+			header_up X-Forwarded-Uri {http.request.uri}
+
+			@kratos_session_ok status 2xx
+			handle_response @kratos_session_ok {
+				request_header X-Kratos-Authenticated-Identity-Id {rp.header.X-Kratos-Authenticated-Identity-Id}
+			}
+
+			@kratos_session_unauthorized status 401
+			handle_response @kratos_session_unauthorized {
+			}
+		}
+		reverse_proxy {args[0]} {
+			import reverse_proxy_common
+		}
+	}
+}

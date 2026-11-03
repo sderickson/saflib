@@ -6,6 +6,9 @@ import {
   makeLineReplace,
 } from "./steps/copy/templating.ts";
 
+/** saflib's root (this file is saflib/workflows/core/offshoot.ts). */
+const SAFLIB_ROOT = path.resolve(import.meta.dirname, "..", "..");
+
 export type OffshootLayer = "db" | "spec" | "http" | "sdk" | "test";
 
 export type OffshootInitContext = {
@@ -90,11 +93,15 @@ export function resolveOffshootInitContext(opts: {
  */
 export function makeOffshootLineReplace(context: OffshootInitContext) {
   const placeholderReplace = makeLineReplace(context);
+  // The golden offshoot layers sit four levels below saflib's root
+  // (base/product/__offshoot-name__/<layer>), so their refs to saflib packages
+  // start "../../../../". Point those at saflib from where the layer lands.
+  const toSaflib = path.relative(context.targetDir, SAFLIB_ROOT) || ".";
   const productPascal = kebabCaseToPascalCase(context.productName);
   const offshootPascal = kebabCaseToPascalCase(context.offshootName);
 
   return (line: string) => {
-    let out = line;
+    let out = line.split('"../../../../').join(`"${toSaflib}/`);
     // Package names before placeholder replace (tokens still present).
     out = out
       .split("@saflib/base-__offshoot-name__-db")

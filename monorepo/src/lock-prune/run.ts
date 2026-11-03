@@ -1,19 +1,16 @@
-import { createInterface } from "node:readline/promises";
 import path from "node:path";
-import { stdin as input, stdout as output } from "node:process";
 import { findMonorepoRoot } from "@saflib/imports";
-import type { LockPruneOptions } from "./types.ts";
+import { isFixableIssue, type LockPruneOptions } from "./types.ts";
 import { analyzeProductLockPrune } from "./analyze.ts";
 import { applyLockPruneFixes } from "./apply.ts";
 import { formatIssue } from "./format.ts";
 
-async function defaultConfirm(message: string): Promise<boolean> {
-  const rl = createInterface({ input, output });
-  const answer = await rl.question(`${message} [y/N] `);
-  rl.close();
-  return /^y(es)?$/i.test(answer.trim());
-}
-
+/**
+ * Reports product/saflib workspace issues. With `fix`, repairs the fixable
+ * ones (lockfile bookkeeping) and exits 0; without it, exits 1 if there are
+ * any issues. Issues that would mean overriding the product's own dependency
+ * choices are only ever reported.
+ */
 export async function runLockPrune(
   options: LockPruneOptions = {},
 ): Promise<number> {
@@ -22,7 +19,7 @@ export async function runLockPrune(
   );
   const analysis = analyzeProductLockPrune(rootDir);
 
-  if (analysis.issues.length === 0 && analysis.warnings.length === 0) {
+  if (analysis.issues.length === 0) {
     console.log("No product/saflib workspace issues found.");
     return 0;
   }
@@ -30,47 +27,40 @@ export async function runLockPrune(
   console.log(`Checked ${analysis.rootDir}`);
   console.log("");
 
-  if (analysis.warnings.length > 0) {
-    console.log("Warnings (not auto-fixed for deploy packages):");
-    for (const warning of analysis.warnings) {
-      console.log(
-        `  ${warning.dependency}@${warning.spec} in ${warning.packageJsonPath} is redundant (saflib already owns it).`,
-      );
-    }
+  const fixable = analysis.issues.filter(isFixableIssue);
+  const reportOnly = analysis.issues.filter((issue) => !isFixableIssue(issue));
+
+  if (reportOnly.length > 0) {
+    console.log("To review (not changed automatically):");
     console.log("");
-  }
-
-  if (analysis.issues.length === 0) {
-    return 0;
-  }
-
-  for (const issue of analysis.issues) {
-    for (const line of formatIssue(issue)) {
-      console.log(line);
+    for (const issue of reportOnly) {
+      for (const line of formatIssue(issue)) console.log(line);
+      console.log("");
     }
-    console.log("");
   }
 
-  if (options.check) {
-    console.log("Check mode: no changes made.");
+  if (fixable.length > 0) {
+    console.log(options.fix ? "Fixing:" : "Fixable with --fix:");
+    console.log("");
+    for (const issue of fixable) {
+      for (const line of formatIssue(issue)) console.log(line);
+      console.log("");
+    }
+  }
+
+  if (!options.fix) {
     return 1;
   }
 
-  const confirm = options.confirm ?? defaultConfirm;
-  const shouldFix =
-    options.yes === true ||
-    (await confirm("Apply fixes for the issues above?"));
-
-  if (!shouldFix) {
-    console.log("No changes made.");
-    return 1;
-  }
-
-  const applied = applyLockPruneFixes(analysis);
+  const applied = applyLockPruneFixes({ ...analysis, issues: fixable });
   for (const line of applied) {
     console.log(`fixed: ${line}`);
   }
-  console.log("");
-  console.log("Run `npm install` from the product root to refresh node_modules.");
+  if (applied.length > 0) {
+    console.log("");
+    console.log(
+      "Run `npm install` from the product root to refresh node_modules.",
+    );
+  }
   return 0;
 }

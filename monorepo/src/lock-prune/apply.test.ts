@@ -11,7 +11,7 @@ import {
 useProductFixtureLifecycle();
 
 describe("applyLockPruneFixes", () => {
-  it("removes redundant and competing deps and updates the lockfile", () => {
+  it("repairs the lockfile and leaves package.json dependencies alone", () => {
     loadProductFixture({
       "/product/package.json": JSON.stringify({
         name: "@product/root",
@@ -48,8 +48,8 @@ describe("applyLockPruneFixes", () => {
     const rootPkg = JSON.parse(readProductFile("package.json")) as {
       devDependencies?: Record<string, string>;
     };
-    expect(rootPkg.devDependencies?.["better-sqlite3"]).toBeUndefined();
-    expect(rootPkg.devDependencies?.vitest).toBeUndefined();
+    expect(rootPkg.devDependencies?.["better-sqlite3"]).toBe("12.11.1");
+    expect(rootPkg.devDependencies?.vitest).toBe("^5.0.0");
 
     const lockfile = JSON.parse(readProductFile("package-lock.json")) as {
       packages: Record<string, unknown>;

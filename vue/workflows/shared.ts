@@ -7,9 +7,6 @@ import {
 } from "@saflib/utils";
 import {
   templatesProductRoot,
-  templatesDeployRoot,
-  resolveDeployDir,
-  getDeployDirName,
 } from "@saflib/templates";
 
 export const clientsRoot = path.join(templatesProductRoot, "clients");
@@ -25,23 +22,29 @@ export const devRoot = path.join(templatesProductRoot, "dev");
 export const caddyDev = path.join(devRoot, "caddy-config", "Caddyfile");
 
 /**
- * Deploy template tree at `saflib/deploy/` (`templatesDeployRoot`).
+ * The product's own deploy template (`base/product/deploy`): its edge routes
+ * and web container. Older products without a per-product deploy skip these.
  */
-export const deployTemplatesRoot = templatesDeployRoot;
+export const productDeployTemplatesRoot = path.join(templatesProductRoot, "deploy");
 
-export const deployProductCaddy = path.join(
-  deployTemplatesRoot,
-  "caddy",
-  "__product-name__.Caddyfile",
-);
+/** The product's routes on the platform's edge. */
+export const deployEdgeRoutes = path.join(productDeployTemplatesRoot, "remote-assets", "caddy", "__product-name__.Caddyfile");
 
-/** Skip a step when the active deploy tree (see `SAF_DEPLOY_DIR`) is missing a path. */
-export function skipIfMissingDeploy(...relParts: string[]) {
-  return <C extends { cwd: string }>({ context }: { context: C }) =>
-    !existsSync(path.join(resolveDeployDir(context.cwd), ...relParts));
+/** The product web container's Caddyfile and image. */
+export const deployWebCaddy = path.join(productDeployTemplatesRoot, "builds", "web", "Caddyfile");
+export const deployWebDockerfile = path.join(productDeployTemplatesRoot, "builds", "web", "Dockerfile.template");
+
+/** The product's deploy directory in the repo (`<product>/deploy`). */
+export function productDeployDir(cwd: string, productName: string): string {
+  return path.join(cwd, productName, "deploy");
 }
 
-export { resolveDeployDir, getDeployDirName };
+/** Skip a step when the product's deploy (`<product>/deploy`) is missing a path. */
+export function skipIfMissingProductDeploy(...relParts: string[]) {
+  return <C extends { cwd: string; productName: string }>({ context }: { context: C }): boolean =>
+    !existsSync(path.join(productDeployDir(context.cwd, context.productName), ...relParts));
+}
+
 
 /**
  * Append `value` to a `KEY=a,b,c` line if missing. Leaves other lines unchanged.

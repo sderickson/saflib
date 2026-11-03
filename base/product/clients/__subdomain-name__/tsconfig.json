@@ -1,0 +1,29 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "../../../../links"
+    },
+    {
+      "path": "../../../../ory-kratos/ory-kratos-sdk"
+    },
+    {
+      "path": "../../../../vue"
+    },
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../links"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ],
+  "compilerOptions": {
+    "composite": true
+  }
+}

@@ -1,0 +1,48 @@
+# Platform stack, locally. Product prod-local stacks join its edge network and
+# register their routes with `saf-deploy register-sites --local`.
+# Own project name: every deploy folder is called deploy, which would put all
+# the local stacks in one compose project.
+name: __organization-name__-platform-prod-local
+services:
+  caddy:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: caddy
+    env_file: !override
+      - ./env.caddy.prod-local
+
+  kratos-migrate:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: kratos-migrate
+    volumes: !override
+      - kratos_home:/home/ory
+      - ./kratos-prod-local/data:/var/lib/sqlite
+      - ./kratos-prod-local:/etc/config/kratos
+
+  kratos:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: kratos
+    command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
+    env_file: !override
+      - ./env.kratos.config.prod-local
+      - ./env.kratos.prod-local
+    volumes: !override
+      - kratos_home:/home/ory
+      - ./kratos-prod-local/data:/var/lib/sqlite
+      - ./kratos-prod-local:/etc/config/kratos
+
+networks:
+  edge:
+    name: __organization-name__-edge
+
+volumes:
+  caddy_data:
+    name: __organization-name__-prod-local-caddy-data
+  caddy_config:
+    name: __organization-name__-prod-local-caddy-config
+  caddy_sites:
+    name: __organization-name__-prod-local-caddy-sites
+  kratos_home:
+    name: __organization-name__-prod-local-kratos-home

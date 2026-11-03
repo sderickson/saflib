@@ -10,8 +10,10 @@ Options:
 
 Commands:
   format <filename>     Format a file with Prettier
-  lock-prune [options]  Prune stale product lockfile entries and verify embedded
-                        saflib workspace hygiene.
+  lock-prune [options]  Report product/saflib workspace issues in an embedded
+                        product repo. --fix repairs lockfile bookkeeping (stale
+                        entries, misplaced hoists); everything else is reported
+                        for you to decide on.
   help [command]        display help for command
 ```
 

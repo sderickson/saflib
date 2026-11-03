@@ -260,7 +260,7 @@ describe("export patterns", () => {
     const index = buildPackageIndex(root);
     const from = path.join(
       root,
-      "base/service/http/handlers/foo/handler.ts",
+      "base/product/service/http/handlers/foo/handler.ts",
     );
     const result = resolveSpecifier(
       "@saflib/base-http/handlers/__group-name__/index",

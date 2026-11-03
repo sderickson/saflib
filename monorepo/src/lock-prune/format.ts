@@ -1,5 +1,10 @@
 import type { LockPruneIssue } from "./types.ts";
 
+/** Overrides can nest (`{ "editorconfig": { "commander": "^15" } }`). */
+function formatOverride(value: unknown): string {
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+
 export function formatIssue(issue: LockPruneIssue): string[] {
   switch (issue.kind) {
     case "hoisting-hazard":
@@ -7,16 +12,9 @@ export function formatIssue(issue: LockPruneIssue): string[] {
         `${issue.peer} is only installed under saflib/node_modules but is a peer of root-hoisted ${issue.requiredBy}.`,
         `  move lockfile entry: ${issue.saflibLockfileKey} -> ${issue.rootLockfileKey}`,
       ];
-    case "redundant-dependency":
-      return [
-        `product redundantly declares ${issue.dependency}@${issue.spec} (saflib already owns it).`,
-        `  package: ${issue.packageName}`,
-        `  file: ${issue.packageJsonPath}`,
-        `  field: ${issue.field}`,
-      ];
     case "competing-dependency":
       return [
-        `product declares ${issue.dependency}@${issue.productSpec} but saflib owns ${issue.saflibSpecs.join(", ")}.`,
+        `product declares ${issue.dependency}@${issue.productSpec}, which can't include the ${issue.saflibSpecs.join(", ")} saflib installs (npm would need a second copy).`,
         `  package: ${issue.packageName}`,
         `  file: ${issue.packageJsonPath}`,
         `  field: ${issue.field}`,
@@ -37,20 +35,19 @@ export function formatIssue(issue: LockPruneIssue): string[] {
     case "lockfile-version-skew":
       return [
         `${issue.dependency} is ${issue.productVersion} in the product lockfile but ${issue.platformVersion} in saflib/package-lock.json.`,
-        `  align lock entry: ${issue.productAlignKey} <- ${issue.platformLockfileKey}@${issue.platformVersion}`,
-        ...(issue.productLockfileKey !== issue.productAlignKey
-          ? [`  remove nested lock entry: ${issue.productLockfileKey}`]
-          : []),
+        `  product lock entry: ${issue.productLockfileKey}`,
+        `  saflib lock entry: ${issue.platformLockfileKey}`,
       ];
     case "platform-override-sync":
       return [
-        "product root overrides drift from saflib platform pins.",
+        "product root overrides differ from saflib's (yours to keep or change).",
         ...Object.entries(issue.missing).map(
-          ([name, version]) => `  add override: ${name}@${version}`,
+          ([name, version]) =>
+            `  add override: ${name}@${formatOverride(version)}`,
         ),
         ...Object.entries(issue.changed).map(
           ([name, change]) =>
-            `  update override: ${name}@${change.from} -> ${change.to}`,
+            `  update override: ${name}@${formatOverride(change.from)} -> ${formatOverride(change.to)}`,
         ),
       ];
   }

@@ -14,13 +14,13 @@ import {
   appendCommaSeparatedEnvValue,
   caddyDev,
   clientsRoot,
-  deployProductCaddy,
+  deployEdgeRoutes,
+  deployWebCaddy,
   linksIndex,
   linksStub,
   makeBasePackageLineReplace,
-  skipIfMissingDeploy,
-  resolveDeployDir,
-  getDeployDirName,
+  skipIfMissingProductDeploy,
+  productDeployDir,
 } from "./shared.ts";
 
 const subdomainDir = path.join(clientsRoot, "__subdomain-name__");
@@ -134,18 +134,39 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       lineReplace: makeBasePackageLineReplace(context),
     })),
 
-    // Upsert SPA host into deploy product Caddyfile when deploy/ exists.
+    // Upsert the host into the product's deploy (edge routes + web container).
     step(
       CopyStepMachine,
       ({ context }) => ({
         name: context.serviceName,
-        targetDir: path.join(resolveDeployDir(context.cwd), "caddy"),
+        targetDir: path.join(
+          productDeployDir(context.cwd, context.productName),
+          "remote-assets",
+          "caddy",
+        ),
         templateFiles: {
-          deployProductCaddy,
+          deployEdgeRoutes,
         },
         lineReplace: makeBasePackageLineReplace(context),
       }),
-      { skipIf: skipIfMissingDeploy("caddy") },
+      { skipIf: skipIfMissingProductDeploy("remote-assets", "caddy") },
+    ),
+
+    step(
+      CopyStepMachine,
+      ({ context }) => ({
+        name: context.serviceName,
+        targetDir: path.join(
+          productDeployDir(context.cwd, context.productName),
+          "builds",
+          "web",
+        ),
+        templateFiles: {
+          deployWebCaddy,
+        },
+        lineReplace: makeBasePackageLineReplace(context),
+      }),
+      { skipIf: skipIfMissingProductDeploy("builds", "web", "Caddyfile") },
     ),
 
     step(TransformFileStepMachine, ({ context }) => ({
@@ -166,11 +187,11 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
 
     step(TransformFileStepMachine, ({ context }) => ({
       filePath: path.join(
-        resolveDeployDir(context.cwd),
-        `env.${context.productName}.prod-local`,
+        productDeployDir(context.cwd, context.productName),
+        "env.monolith.prod-local",
       ),
       skipIfMissing: true,
-      description: `Add ${context.subdomainName} to CLIENT_SUBDOMAINS in ${getDeployDirName()}/env.${context.productName}.prod-local`,
+      description: `Add ${context.subdomainName} to CLIENT_SUBDOMAINS in ${context.productName}/deploy/env.monolith.prod-local`,
       transform: (content: string) =>
         appendCommaSeparatedEnvValue(
           content,

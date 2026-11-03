@@ -1,6 +1,6 @@
 # Overview
 
-`@saflib/product` provides scaffolding and setup automation for **creating a new SAF product** from the golden template in [`@saflib/base`](../../base/docs/01-overview.md). It is not product runtime code — only tooling registered with [`saf-workflow`](../../workflows-cli/docs/cli/saf-workflow.md) plus the `saf-create` bootstrap CLI.
+`@saflib/product` provides scaffolding and setup automation for **creating a new SAF product** from the golden template in [`@saflib/base`](../../base/product/docs/01-overview.md). It is not product runtime code — only tooling registered with [`saf-workflow`](../../workflows-cli/docs/cli/saf-workflow.md) plus the `saf-create` bootstrap CLI.
 
 ## New monorepo
 
@@ -14,7 +14,7 @@ From a monorepo root that already has `saflib/` (alongside the product tree):
 npm exec saf-workflow kickoff product/init <name> <domain> [--productOnly]
 ```
 
-This copies `base` into `{name}/` (skipping suite docs under `base/docs/`), rewrites package names and paths, adds the product to root workspaces, runs install, and bootstraps env, tsconfig, and database migrations. See [init workflow docs](./workflows/init.md) for the full checklist.
+This copies `base` into `{name}/` (skipping suite docs under `base/product/docs/`), rewrites package names and paths, adds the product to root workspaces, runs install, and bootstraps env, tsconfig, and database migrations. See [init workflow docs](./workflows/init.md) for the full checklist.
 
 To exercise bootstrap and init against a local saflib checkout (without GitHub), see [local init testing](./02-local-init-testing.md).
 

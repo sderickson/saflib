@@ -7,7 +7,7 @@ import { templatesProductRoot } from "@saflib/templates";
  * Guardrails for expansion stubs in the golden product at `saflib/base`.
  *
  * Checklist / live-test cover workflow mechanics. This catches stubs deleted or
- * live workflow areas emptied so base/dev no longer exercises expansion points.
+ * live workflow areas emptied so base/product/dev no longer exercises expansion points.
  */
 const stubPaths = [
   "service/spec/routes/__group-name__/__target-name__.yaml",

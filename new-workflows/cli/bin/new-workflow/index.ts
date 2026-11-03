@@ -47,6 +47,7 @@ import {
   InitCommonWorkflowDefinition,
 } from "@saflib/service-workflows";
 import { SpecProjectWorkflowDefinition } from "@saflib/processes-workflows";
+import { InitProductWorkflowDefinition } from "@saflib/product-workflows";
 import { runNewWorkflowCli } from "../../index.ts";
 
 /**
@@ -80,6 +81,7 @@ const registry = [
   ServiceAddStoreWorkflowDefinition,
   InitCommonWorkflowDefinition,
   SpecProjectWorkflowDefinition,
+  InitProductWorkflowDefinition,
 ];
 
 setServiceName("new-workflow");

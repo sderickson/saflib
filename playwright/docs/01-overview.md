@@ -2,7 +2,7 @@
 
 `@saflib/playwright` provides shared [Playwright](https://playwright.dev/) utilities for SAF products: typed string locators aligned with Vue copy, screenshot helpers for journey review, Vuetify conveniences, and a default config SPA packages extend.
 
-E2E specs live in each client SPA under `e2e/` (see [@saflib/vue — `e2e/`](../../vue/docs/01-overview.md#e2e)). Product layout and client packages are described in [base](../../base/docs/01-overview.md).
+E2E specs live in each client SPA under `e2e/` (see [@saflib/vue — `e2e/`](../../vue/docs/01-overview.md#e2e)). Product layout and client packages are described in [base](../../base/product/docs/01-overview.md).
 
 ## Writing tests
 
@@ -29,9 +29,9 @@ Entrypoint: `@saflib/playwright` and `@saflib/playwright/playwright.config`.
 
 ## Integration
 
-**SPA packages** — each `{product}/clients/{spa}/` holds `e2e/**/*.spec.ts` and a `playwright.config.ts` that re-exports the shared default (see [`base/clients/common/playwright.config.ts`](https://github.com/sderickson/saflib/blob/main/base/clients/common/playwright.config.ts)). Set `DOMAIN` and `PROTOCOL` for the stack under test (local dev uses `docker.localhost` / `http`).
+**SPA packages** — each `{product}/clients/{spa}/` holds `e2e/**/*.spec.ts` and a `playwright.config.ts` that re-exports the shared default (see [`base/product/clients/common/playwright.config.ts`](https://github.com/sderickson/saflib/blob/main/base/product/clients/common/playwright.config.ts)). Set `DOMAIN` and `PROTOCOL` for the stack under test (local dev uses `docker.localhost` / `http`).
 
-**Fixtures** — page-level Playwright fixtures (`PageName.fixture.ts`) are scaffolded by [vue/add-view](../../vue/docs/workflows/add-view.md). Cross-SPA flows compose fixtures from `@saflib/ory-kratos-spa/fixtures`, product `common/fixtures`, and page fixtures (example: [`base/clients/admin/e2e`](https://github.com/sderickson/saflib/blob/main/base/clients/admin/e2e/admin-navigation.spec.ts)).
+**Fixtures** — page-level Playwright fixtures (`PageName.fixture.ts`) are scaffolded by [vue/add-view](../../vue/docs/workflows/add-view.md). Cross-SPA flows compose fixtures from `@saflib/ory-kratos-spa/fixtures`, product `common/fixtures`, and page fixtures (example: [`base/product/clients/admin/e2e`](https://github.com/sderickson/saflib/blob/main/base/product/clients/admin/e2e/admin-navigation.spec.ts)).
 
 **Security e2e** — HTTP/browser security specs in `@saflib/base-security` use `createSecurityPlaywrightConfig` from `@saflib/security/playwright/config` (see [@saflib/security](../../security/docs/01-overview.md)), not this package's SPA default.
 

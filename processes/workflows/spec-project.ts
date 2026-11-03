@@ -105,7 +105,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
       * If the section says "None", skip this step.
       * Otherwise, update the threat model so that it reflects the feature as specified: add new public routes to the public API surface list, add new authz tags or roles to the controls table, add new data flows and integrations, and add any new security specs to the spec map or owner responsibilities. Match the document's existing structure and tone; do not restructure it.
-      * If the threat model file does not exist, create a minimal one modeled on /saflib/base/security/threat-model.md and tell the user.
+      * If the threat model file does not exist, create a minimal one modeled on /saflib/base/product/security/threat-model.md and tell the user.
 
       The goal is that the threat model is updated *before* implementation starts, so the plan and workflows that follow can reference it.`,
     })),

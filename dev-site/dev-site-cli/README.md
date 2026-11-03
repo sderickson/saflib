@@ -5,12 +5,12 @@ agent credentials) and runs the right `docker compose` invocation for the full
 stack or standalone dev-site.
 
 Run commands from your product’s `dev/` directory (e.g. `my-product/dev`), or
-pass `--cwd`. The reference layout is [`saflib/base/dev`](../../base/dev) when
+pass `--cwd`. The reference layout is [`saflib/base/product/dev`](../../base/product/dev) when
 working inside the saflib repo itself.
 
 ## Typical `package.json` scripts
 
-Copy from [`saflib/base/dev/package.json`](../../base/dev/package.json). Omit
+Copy from [`saflib/base/product/dev/package.json`](../../base/product/dev/package.json). Omit
 `saf-dev-site sync-node-modules` from `dev`/`up` if you do not use saf-docker
 named `node_modules` volumes:
 
@@ -51,12 +51,12 @@ worktree), creates an empty `.env` if there is none, and passes `env.dev` /
 | `saf-dev-site volume export <volume> <dir>` | Copy a named volume into a host folder, e.g. to open a database with `sqlite3` or keep a backup |
 
 Agent credentials and layout detection are documented in
-[`saflib/base/docs/02-claude-agent-in-docker.md`](../../base/docs/02-claude-agent-in-docker.md).
+[`saflib/base/product/docs/02-claude-agent-in-docker.md`](../../base/product/docs/02-claude-agent-in-docker.md).
 
 ## Dev data and git worktrees
 
 Dev data (SQLite databases, Kratos, uploaded files) lives in named Docker volumes
-with fixed names (see [`saflib/base/dev/docker-compose.yaml`](../../base/dev/docker-compose.yaml)),
+with fixed names (see [`saflib/base/product/dev/docker-compose.yaml`](../../base/product/dev/docker-compose.yaml)),
 not in folders under the checkout. So:
 
 - **Every checkout shares one set of dev data.** Running `npm run dev` from a git

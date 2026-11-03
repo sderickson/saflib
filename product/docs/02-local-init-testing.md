@@ -39,7 +39,7 @@ Example:
 cd "${TMPDIR:-/tmp}/saf-bootstrap-test-initdoc"
 ```
 
-Bootstrap takes about one to two minutes (platform override sync, two `npm install` passes, lock-prune, and the full `product/init` workflow).
+Bootstrap takes about one to two minutes (platform override sync, two `npm install` passes, and the full `product/init` workflow).
 
 ## Verify the result
 

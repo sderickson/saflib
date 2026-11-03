@@ -26,7 +26,7 @@ When run, the workflow will:
 - Run `node --experimental-strip-types --disable-warning=ExperimentalWarning workflows/strip-stub-tsconfig-refs.ts foo`
 - Upsert 422 templates.
 - Upsert 435 templates.
-- Rewrite base/dev compose volumes for product monorepo layout
+- Rewrite base/product/dev compose volumes for product monorepo layout
 - Run `mv deploy/remote-assets/env.foo.secrets deploy/remote-assets/.env.foo.secrets`
 - Change working directory to ../..
 - Run `npm exec saf-monorepo -- lock-prune --yes --root .`

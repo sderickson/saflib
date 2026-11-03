@@ -6,7 +6,12 @@ import {
   imageOptions,
   type ImageCommandOptions,
 } from "../../src/commands.ts";
-import { readRemoteScript, runRemote, syncAssets } from "../../src/remote.ts";
+import {
+  readRemoteScript,
+  runRemote,
+  syncAssets,
+  upScript,
+} from "../../src/remote.ts";
 
 export const addReleaseCommand = (program: Command) => {
   imageOptions(
@@ -25,7 +30,7 @@ export const addReleaseCommand = (program: Command) => {
       console.log("\n== pull");
       await runRemote(config, readRemoteScript("pull"));
       console.log("\n== up");
-      await runRemote(config, readRemoteScript("up"));
+      await runRemote(config, upScript());
     }),
   );
 };

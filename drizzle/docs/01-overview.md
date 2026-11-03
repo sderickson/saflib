@@ -6,7 +6,7 @@ These docs explain how consumers of `@saflib/drizzle` should use this library wi
 
 ## Package structure and integration
 
-See [base](https://github.com/sderickson/saflib/tree/main/base/service/db). Database packages are mainly used by their adjacent http packages, though other service packages may do so as well. This is a pattern used throughout SAF in order to keep a strong separation of concerns; SQL queries and schemas on one side, HTTP contracts on the other.
+See [base](https://github.com/sderickson/saflib/tree/main/base/product/service/db). Database packages are mainly used by their adjacent http packages, though other service packages may do so as well. This is a pattern used throughout SAF in order to keep a strong separation of concerns; SQL queries and schemas on one side, HTTP contracts on the other.
 
 ## Why Drizzle
 

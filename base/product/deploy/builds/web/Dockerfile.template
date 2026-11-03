@@ -1,0 +1,27 @@
+# The product's static sites: the marketing root, static subdomains and the
+# SPAs. The platform's edge proxies the product's hosts here (see
+# remote-assets/caddy/__product-name__.Caddyfile).
+FROM #{ image @saflib/base-root-static }# AS root-builder
+RUN npm run build
+
+# BEGIN WORKFLOW AREA build-static-sites FOR vue/add-static-site
+FROM #{ image @saflib/base-__static-subdomain-name__-static }# AS static-subdomain-name-static-builder
+RUN npm run build
+# END WORKFLOW AREA
+
+FROM #{ image @saflib/base-clients }# AS clients-builder
+COPY ./base/product/deploy/env.monolith.prod-local /app/env.clients
+RUN export $(grep -v "^#" /app/env.clients | xargs) && DOMAIN=${DOMAIN} CLIENT_SUBDOMAINS=${CLIENT_SUBDOMAINS} npm run build
+
+FROM caddy:2.11.3-alpine
+RUN apk upgrade --no-cache && rm -rf /var/cache/apk/*
+
+COPY --from=root-builder /app/base/product/clients/root/.vitepress/dist /srv/__product-name__-root
+
+# BEGIN WORKFLOW AREA copy-static-sites FOR vue/add-static-site
+COPY --from=static-subdomain-name-static-builder /app/base/product/clients/__static-subdomain-name__/.vitepress/dist /srv/__product-name__-__static-subdomain-name__
+# END WORKFLOW AREA
+
+COPY --from=clients-builder /app/base/product/clients/build/dist /srv/__product-name__-clients
+
+COPY ./base/product/deploy/builds/web/Caddyfile /etc/caddy/Caddyfile

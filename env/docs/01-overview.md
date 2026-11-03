@@ -21,7 +21,7 @@ All env variables should be declared in an owning package's `env.schema.json` fi
 }
 ```
 
-These declarations are used to generate `env.ts` files so variables can be typed, and `env.schema.combined.json` so variables used by an application can be validated on startup, like [in the base application's `run.ts`](https://github.com/sderickson/saflib/blob/bc7f5cfc49d860a51877f577643998e058b77746/base/service/monolith/run.ts).
+These declarations are used to generate `env.ts` files so variables can be typed, and `env.schema.combined.json` so variables used by an application can be validated on startup, like [in the base application's `run.ts`](https://github.com/sderickson/saflib/blob/bc7f5cfc49d860a51877f577643998e058b77746/base/product/service/monolith/run.ts).
 
 ## Core Env Variables
 

@@ -12,7 +12,12 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { loadDeployConfig, parseEnvFile, requireRemote } from "./config.ts";
-import { readRemoteScript, remotePayload } from "./remote.ts";
+import {
+  localPayload,
+  readRemoteScript,
+  remotePayload,
+  upScript,
+} from "./remote.ts";
 
 /** Runs a payload the way the server would (`bash -s`), locally. */
 function runLocally(payload: string, env: Record<string, string> = {}): string {
@@ -186,6 +191,112 @@ exec "$@"
     expect(existsSync(path.join(upload, "a.zip"))).toBe(false);
   });
 
+  describe("register-sites", () => {
+    let sites: string;
+    let deployDir: string;
+    let bin: string;
+
+    /**
+     * Fake docker standing in for the edge container: its /etc/caddy/sites is
+     * a local dir, and `caddy reload` fails if any route contains "bogus".
+     */
+    beforeEach(() => {
+      sites = path.join(dir, "sites");
+      deployDir = path.join(dir, "deploy");
+      bin = path.join(dir, "bin");
+      mkdirSync(sites);
+      mkdirSync(path.join(deployDir, "remote-assets", "caddy"), {
+        recursive: true,
+      });
+      mkdirSync(bin);
+      writeFileSync(
+        path.join(bin, "docker"),
+        `#!/bin/bash
+SITES="${sites}"
+case "$1" in
+  inspect) exit 0 ;;
+  cp) cp "$2" "$SITES/\${3##*/}" ;;
+  exec)
+    shift 2
+    if [ "$1" = caddy ]; then ! grep -q bogus "$SITES"/*.Caddyfile; exit $?; fi
+    args=(); for a in "$@"; do args+=("$(printf %s "$a" | sed "s#/etc/caddy/sites#$SITES#g")"); done
+    "\${args[@]}" ;;
+esac
+`,
+      );
+      chmodSync(path.join(bin, "docker"), 0o755);
+    });
+
+    const register = () =>
+      runLocally(
+        localPayload(
+          {
+            deployDir,
+            env: { SAF_EDGE_CONTAINER: "edge" },
+            composeFile: "",
+          },
+          readRemoteScript("register-sites"),
+        ),
+        { PATH: `${bin}:${process.env.PATH}` },
+      );
+    const route = (content: string) =>
+      writeFileSync(
+        path.join(deployDir, "remote-assets", "caddy", "acme.Caddyfile"),
+        content,
+      );
+
+    it("copies the deploy's routes into the edge", () => {
+      route("good\n");
+      register();
+      expect(readFileSync(path.join(sites, "acme.Caddyfile"), "utf8")).toBe(
+        "good\n",
+      );
+      expect(existsSync(path.join(sites, "acme.Caddyfile.bak"))).toBe(false);
+    });
+
+    it("restores the previous routes when the edge rejects the new ones", () => {
+      route("good\n");
+      register();
+      route("bogus\n");
+      expect(register).toThrow();
+      expect(readFileSync(path.join(sites, "acme.Caddyfile"), "utf8")).toBe(
+        "good\n",
+      );
+    });
+
+    it("fills in placeholders from the route's env, preferring prod-local locally", () => {
+      route("{$DOMAIN} {$CORS} {$EDGE_ONLY}\n");
+      const caddy = path.join(deployDir, "remote-assets", "caddy");
+      writeFileSync(
+        path.join(caddy, "acme.env"),
+        '# comment\nDOMAIN=acme.com\nCORS="^https://(a|b)\\.acme\\.com$"\n',
+      );
+      writeFileSync(path.join(caddy, "acme.prod-local.env"), "DOMAIN=acme.localhost\n");
+      register();
+      expect(readFileSync(path.join(sites, "acme.Caddyfile"), "utf8")).toBe(
+        "acme.localhost {$CORS} {$EDGE_ONLY}\n",
+      );
+      rmSync(path.join(caddy, "acme.prod-local.env"));
+      register();
+      expect(readFileSync(path.join(sites, "acme.Caddyfile"), "utf8")).toBe(
+        "acme.com ^https://(a|b)\\.acme\\.com$ {$EDGE_ONLY}\n",
+      );
+    });
+
+    it("removes a first-time route the edge rejects", () => {
+      route("bogus\n");
+      expect(register).toThrow();
+      expect(existsSync(path.join(sites, "acme.Caddyfile"))).toBe(false);
+    });
+  });
+
+  it("up registers edge routes after bringing the stack up", () => {
+    const script = upScript();
+    expect(script.indexOf("compose -f docker-compose.prod.yaml up")).toBeLessThan(
+      script.indexOf("caddy reload"),
+    );
+  });
+
   it("every bundled script parses", () => {
     for (const name of [
       "setup",
@@ -195,6 +306,7 @@ exec "$@"
       "logs",
       "purge",
       "extract-assets",
+      "register-sites",
     ] as const) {
       execFileSync("bash", ["-n"], { input: readRemoteScript(name) });
     }

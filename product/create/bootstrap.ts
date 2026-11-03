@@ -34,6 +34,15 @@ function defaultLog(message: string): void {
   console.log(message);
 }
 
+/** Runs the new-engine product/init (mechanical steps only). */
+export function productInitCommand(productName: string, domain: string): string {
+  return [
+    "npm exec new-workflow -- run-scripts product/init",
+    `--name=${shellQuote(productName)}`,
+    `--domain=${shellQuote(domain)}`,
+  ].join(" ");
+}
+
 export function shellQuote(value: string): string {
   return `"${value.replace(/"/g, '\\"')}"`;
 }
@@ -92,7 +101,7 @@ export function existingSaflibMessage(
     "",
     "Use the existing product/init workflow from the monorepo root instead:",
     "",
-    `  npm exec saf-workflow kickoff product/init ${productName} ${domain}`,
+    `  ${productInitCommand(productName, domain)}`,
     "",
     "See saflib/getting-started.md and saflib/product/docs/workflows/init.md for details.",
   ].join("\n");
@@ -141,9 +150,6 @@ export function formatCollisionWarning(paths: string[], cwd: string): string {
   ].join("\n");
 }
 
-const LOCK_PRUNE_CMD =
-  "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes";
-
 export function buildRootPackageJson(
   organizationName: string,
 ): PackageJsonShape {
@@ -160,7 +166,6 @@ export function buildRootPackageJson(
       "lint:fix": "eslint --fix .",
       format: "prettier --write .",
       typecheck: "NODE_OPTIONS='--max-old-space-size=8192' vue-tsc -b",
-      preinstall: LOCK_PRUNE_CMD,
     },
     workspaces: ["deploy/**", "saflib/**"],
     engines: {
@@ -369,7 +374,6 @@ export function runBootstrap(options: BootstrapOptions): void {
 
   log("Installing npm dependencies (workspace link pass)…");
   runCommand("npm install --ignore-scripts", { cwd });
-  runCommand(LOCK_PRUNE_CMD, { cwd });
 
   log("Installing npm dependencies…");
   runCommand("npm install", { cwd });
@@ -381,14 +385,7 @@ export function runBootstrap(options: BootstrapOptions): void {
   runCommand("npm rebuild better-sqlite3", { cwd });
 
   log(`Running product/init for "${options.productName}"…`);
-  runCommand(
-    [
-      "npm exec saf-workflow kickoff product/init",
-      shellQuote(options.productName),
-      shellQuote(options.domain),
-    ].join(" "),
-    { cwd },
-  );
+  runCommand(productInitCommand(options.productName, options.domain), { cwd });
 
   log("Bootstrap complete.");
 }

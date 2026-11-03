@@ -1,6 +1,6 @@
 # Requests
 
-SDK packages usually mostly consist of TanStack wrappers around API requests. [Base](https://github.com/sderickson/saflib/tree/main/base/service/sdk/requests/__group-name__) defines the normal structure of both queries and mutations, refer to that for details.
+SDK packages usually mostly consist of TanStack wrappers around API requests. [Base](https://github.com/sderickson/saflib/tree/main/base/product/service/sdk/requests/__group-name__) defines the normal structure of both queries and mutations, refer to that for details.
 
 Put each request in `requests/<group>/`, where `<group>` is the plural collection name from the URL (`requests/recipes/list.ts` for `GET /recipes`). Use that same folder under spec `routes/` and http `handlers/`.
 

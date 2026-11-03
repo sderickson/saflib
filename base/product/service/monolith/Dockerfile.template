@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:labs
+FROM node:24-slim
+
+RUN npm install -g npm@11.14.1
+
+WORKDIR /app
+
+#{ copy_packages }#
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
+#{ copy_src }#
+
+WORKDIR /app/base/product/service/monolith
+
+# Env defaults from the product's own deploy (deploy/env.defaults).
+COPY ./base/product/deploy/env.defaults /etc/__product-name__/env.defaults
+COPY ./base/product/deploy/scripts/apply-env-defaults.sh /usr/local/bin/apply-env-defaults.sh
+RUN chmod +x /usr/local/bin/apply-env-defaults.sh
+
+ENTRYPOINT ["/usr/local/bin/apply-env-defaults.sh"]
+CMD ["npm", "start"]

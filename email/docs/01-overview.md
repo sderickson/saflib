@@ -4,7 +4,7 @@ The email suite provides a consistent structure for email templates, an `EmailSe
 
 ## Package structure and integration
 
-See [base](https://github.com/sderickson/saflib/tree/main/base/service/email), which defines product email templates (`@saflib/base-email`). The expected way to integrate these into your service is:
+See [base](https://github.com/sderickson/saflib/tree/main/base/product/service/email), which defines product email templates (`@saflib/base-email`). The expected way to integrate these into your service is:
 
 - Implement or resolve an `EmailService` and call `sendEmail` from your handlers.
 - Mount `createEmailsRouter` from `@saflib/email-service` on your API in development so sent emails can be inspected.

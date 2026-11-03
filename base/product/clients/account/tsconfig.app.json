@@ -1,0 +1,58 @@
+{
+  "extends": [
+    "../../../../vue/tsconfig.app.base.json"
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "outDir": "./dist/types",
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "rootDir": ".",
+    "types": [
+      "vite/client"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "e2e",
+    "playwright.config.ts",
+    "dist/types",
+    "playwright-report",
+    "test-results"
+  ],
+  "references": [
+    {
+      "path": "../../../../errors/errors-vue"
+    },
+    {
+      "path": "../../../../links"
+    },
+    {
+      "path": "../../../../ory-kratos/ory-kratos-sdk"
+    },
+    {
+      "path": "../../../../ory-kratos/ory-kratos-spa"
+    },
+    {
+      "path": "../../../../sdk"
+    },
+    {
+      "path": "../../../../vue"
+    },
+    {
+      "path": "../../service/sdk"
+    },
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../links"
+    }
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.vue",
+    "**/*.json"
+  ]
+}

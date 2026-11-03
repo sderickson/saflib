@@ -25,7 +25,7 @@ Domain and protocol come from the browser on the frontend, or from the `DOMAIN` 
 
 ## Package structure and integration
 
-See [base](https://github.com/sderickson/saflib/tree/main/base/clients/links). Each SPA has a `{subdomain}-links.ts` file with a typed `LinkMap` of its pages. The expected way to integrate these into your application is:
+See [base](https://github.com/sderickson/saflib/tree/main/base/product/clients/links). Each SPA has a `{subdomain}-links.ts` file with a typed `LinkMap` of its pages. The expected way to integrate these into your application is:
 
 - Import link paths in the SPA router so routes and navigation stay aligned.
 - Have other SPAs, Playwright tests, and server-side code (such as emails) import and use links rather than hard-coding the urls.

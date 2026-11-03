@@ -133,7 +133,7 @@ describe("buildRootPackageJson", () => {
 describe("existingSaflibMessage", () => {
   it("points users at product/init", () => {
     expect(existingSaflibMessage("demo", "example.com")).toContain(
-      "npm exec saf-workflow kickoff product/init demo example.com",
+      "npm exec new-workflow -- run-scripts product/init --name=\"demo\" --domain=\"example.com\"",
     );
   });
 });
@@ -227,11 +227,10 @@ describe("runBootstrap", () => {
       `git submodule add "https://github.com/sderickson/saflib.git" saflib`,
       'git -C saflib checkout "main"',
       "npm install --ignore-scripts",
-      "node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/monorepo/bin/lock-prune-run.ts --yes",
       "npm install",
       "npm approve-scripts better-sqlite3",
       "npm rebuild better-sqlite3",
-      'npm exec saf-workflow kickoff product/init "demo" "example.com"',
+      'npm exec new-workflow -- run-scripts product/init --name="demo" --domain="example.com"',
     ]);
     expect(existsSync(join(cwd, ".gitignore"))).toBe(true);
     const pkg = JSON.parse(

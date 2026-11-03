@@ -31,6 +31,17 @@ function useWorktreeOverlay(devDir: string, isWorktree: boolean): boolean {
 }
 
 /** Compose `-f` / `--env-file` lists for a product dev directory. */
+/**
+ * The submodule and worktree overlays only patch the dev-site `site` service.
+ * Dev stacks that run the dev-site separately (`--dev-site`) don't define it,
+ * and an overlay would then declare a `site` with no image.
+ */
+function stackDefinesSite(devDir: string): boolean {
+  const composePath = path.join(devDir, "docker-compose.yaml");
+  if (!existsSync(composePath)) return false;
+  return /^  site:\s*$/m.test(readFileSync(composePath, "utf8"));
+}
+
 export function resolveComposeInvocation(
   devDir: string,
   kind: ComposeStackKind,
@@ -56,11 +67,13 @@ export function resolveComposeInvocation(
   }
 
   const composeFiles = ["docker-compose.yaml"];
-  if (useSubmoduleOverlay) {
-    composeFiles.push("docker-compose.submodule.yaml");
-  }
-  if (worktreeOverlay) {
-    composeFiles.push(WORKTREE_OVERLAY_FILE);
+  if (stackDefinesSite(cwd)) {
+    if (useSubmoduleOverlay) {
+      composeFiles.push("docker-compose.submodule.yaml");
+    }
+    if (worktreeOverlay) {
+      composeFiles.push(WORKTREE_OVERLAY_FILE);
+    }
   }
   return {
     cwd,

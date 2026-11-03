@@ -1,0 +1,26 @@
+name: Product init
+
+# End-to-end check of the new-engine product/init and the deploy templates:
+# bootstraps a throwaway product repo from this checkout (the way saf-create
+# does), adds a second product to its platform, then typechecks, tests and
+# validates every deploy, including both products registering their routes
+# with a running platform edge. See product-workflows/smoke-test.sh.
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7
+        with:
+          node-version: 24
+
+      - name: Run product/init smoke test
+        run: product-workflows/smoke-test.sh "${{ runner.temp }}/saf-product-smoke"

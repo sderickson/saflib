@@ -10,7 +10,6 @@ export type {
   PackageLock,
   PlatformContract,
   PlatformOverrideSyncIssue,
-  RedundantDependencyIssue,
   StaleLockfileIssue,
   UnhoistedRegistryDependencyIssue,
 } from "./types.ts";
@@ -21,19 +20,11 @@ export {
   readPlatformContract,
 } from "./platform.ts";
 
-export {
-  alignSkewedLockfileEntries,
-  findLockfileVersionSkew,
-  findPlatformAlignmentGaps,
-  findRootLockfileVersionSkew,
-  listPlatformAlignTargets,
-  removeNestedLockfileEntries,
-} from "./align.ts";
+export { findLockfileVersionSkew } from "./align.ts";
 
 export {
   findCompetingDependencies,
   findPlatformOverrideDrift,
-  findRedundantDependencies,
   syncPlatformOverrides,
 } from "./package-deps.ts";
 
@@ -49,6 +40,7 @@ export {
   pruneStaleLockfileEntries,
 } from "./stale.ts";
 
+export { isFixableIssue } from "./types.ts";
 export { analyzeProductLockPrune } from "./analyze.ts";
 export { applyLockPruneFixes } from "./apply.ts";
 export { runLockPrune } from "./run.ts";

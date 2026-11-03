@@ -29,4 +29,4 @@ Use the workflow [vue/add-spa](./workflows/add-spa.md) to create a new SPA or [v
 
 ## SPA package structure
 
-Golden reference: [`base/clients/app/`](https://github.com/sderickson/saflib/blob/main/base/clients/app/).
+Golden reference: [`base/product/clients/app/`](https://github.com/sderickson/saflib/blob/main/base/product/clients/app/).

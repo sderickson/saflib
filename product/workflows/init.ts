@@ -7,49 +7,25 @@ import {
   CdStepMachine,
   getPackageName,
   parsePackageName,
-  makeLineReplace,
-  type ParsePackageNameOutput,
 } from "@saflib/workflows";
 import { isEmbeddedProductMonorepo } from "@saflib/monorepo";
-import { kebabCaseToPascalCase, kebabCaseToSnakeCase } from "@saflib/utils";
+import {
+  findOutermostWorkspaceRoot,
+  makeProductInitLineReplace,
+  productScriptsDir,
+  skipGoldenStubPath,
+  toProductMonorepoDevCompose,
+  type InitProductWorkflowContext,
+} from "@saflib/product-workflows/shared";
 import {
   templatesProductRoot,
-  templatesDeployRoot,
+  templatesPlatformRoot,
   templatesScaffoldRoot,
   resolveDeployDir,
   getDeployDirName,
 } from "@saflib/templates";
 import path from "node:path";
-import { existsSync, readFileSync } from "node:fs";
-
-/**
- * Walk up from `start` and return the outermost directory whose package.json
- * declares `workspaces`. Nested installs (e.g. saflib inside a host monorepo) must
- * run `npm install` at that root so new product packages get linked.
- */
-export function findOutermostWorkspaceRoot(start: string): string {
-  let dir = path.resolve(start);
-  let found = dir;
-  while (true) {
-    const pkgPath = path.join(dir, "package.json");
-    if (existsSync(pkgPath)) {
-      try {
-        const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as {
-          workspaces?: unknown;
-        };
-        if (Array.isArray(pkg.workspaces) && pkg.workspaces.length > 0) {
-          found = dir;
-        }
-      } catch {
-        // ignore invalid package.json
-      }
-    }
-    const parent = path.dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  return found;
-}
+import { existsSync } from "node:fs";
 
 const input = [
   {
@@ -69,290 +45,6 @@ const input = [
       "Copy only the golden product tree (skip deploy/scaffold/kratos). Used by CI smoke tests.",
   },
 ] as const;
-
-export interface InitProductWorkflowContext extends ParsePackageNameOutput {
-  productName: string;
-  domainName: string;
-  productOnly: boolean;
-  /** True when init cwd is a product root with a nested `saflib/` workspace. */
-  embeddedProductMonorepo: boolean;
-}
-
-/** Frozen golden-product name under saflib (`saflib/base`). */
-const SOURCE_PRODUCT_NAME = "base";
-const SOURCE_PACKAGE_PREFIX = `@saflib/${SOURCE_PRODUCT_NAME}`;
-const SOURCE_DOMAIN = "example.com";
-
-/**
- * Rewrite saflib-root volume mounts (`../..:/app` + anonymous node_modules)
- * to the product-beside-saflib shape (product clients/sdk + `saflib/`).
- * Context stays `../..` (product monorepo root). Also point the site Dockerfile
- * at `saflib/dev-site/...` and drop a hardcoded DEV_SITE_STATIC_DIR so the
- * image ENV from `saf-docker generate` wins.
- */
-function toProductMonorepoDevCompose(
-  content: string,
-  productName: string,
-): string {
-  const productMounts = [
-    `      - ../../${productName}/clients/:/app/${productName}/clients/`,
-    `      - ../../saflib/:/app/saflib/`,
-    `      - ../../${productName}/service/sdk/:/app/${productName}/service/sdk/`,
-  ].join("\n");
-
-  let out = content.replace(
-    /volumes:\n(?:[ \t]*#[^\n]*\n)*[ \t]*- \.\.\/\.\.:\/app\n[ \t]*- \/app\/node_modules\n([ \t]*command: npm run dev)/,
-    `volumes:\n${productMounts}\n$1`,
-  );
-  out = out.replace(
-    new RegExp(
-      `(  ${productName}-monolith:[\\s\\S]*?volumes:\\n)(?:[ \\t]*#[^\\n]*\\n)*[ \\t]*- \\.\\.\\/\\.\\.:\\/app\\n[ \\t]*- \\/app\\/node_modules\\n`,
-    ),
-    // The monolith runs its built image; its data mounts are named volumes, kept as is.
-    "$1",
-  );
-  out = out.replace(
-    /(dockerfile:\s*)dev-site\/dev-site-docker\/Dockerfile/g,
-    "$1saflib/dev-site/dev-site-docker/Dockerfile",
-  );
-  out = out.replace(
-    /^[ \t]*DEV_SITE_STATIC_DIR:[^\n]*\n/gm,
-    "",
-  );
-  return out;
-}
-
-/**
- * Live-host lines that still point at expansion stubs skipped by
- * skipSourceGlobs (paths matching __stub-name__). Dropping them keeps
- * package.json / tsconfig / schema barrels valid after stub packages/files
- * themselves are omitted.
- */
-export function isSkippedStubRefLine(line: string): boolean {
-  if (!/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(line)) return false;
-  // package.json dependency on a skipped stub package
-  if (/^\s*"@[^"]*__[^"]*"\s*:/.test(line)) return true;
-  // tsconfig project reference (single- or multi-line `"path"` entry)
-  if (/"path"\s*:\s*"[^"]*__[^"]*"/.test(line)) return true;
-  if (/^\s*\{\s*"path"\s*:\s*"[^"]*__[^"]*"\s*\}\s*,?\s*$/.test(line)) {
-    return true;
-  }
-  // JS/TS import/export of skipped stub modules (e.g. schemas/__group-name__.ts).
-  // Require `from` so Caddy `import __product-name__.Caddyfile` is not dropped.
-  if (
-    /^\s*(export|import)\b/.test(line) &&
-    /\bfrom\s+['"][^'"]*__[^'"]*['"]/.test(line)
-  ) {
-    return true;
-  }
-  return false;
-}
-
-export function makeProductInitLineReplace(context: InitProductWorkflowContext) {
-  const placeholderReplace = makeLineReplace(context);
-  const dockerFrom = `saflib-${SOURCE_PRODUCT_NAME}`;
-  const dockerTo = `${context.organizationName}-${context.productName}`;
-  const pascal = kebabCaseToPascalCase(context.productName);
-  const snakeUpper = kebabCaseToSnakeCase(context.productName).toUpperCase();
-  const sourcePascal = kebabCaseToPascalCase(SOURCE_PRODUCT_NAME);
-  const sourceSnakeUpper =
-    kebabCaseToSnakeCase(SOURCE_PRODUCT_NAME).toUpperCase();
-
-  return (line: string) => {
-    // Drop the co-located SPA stub from CLIENT_SUBDOMAINS before placeholder
-    // replace (init has no subdomainName; add-spa appends real names later).
-    let prepared = line;
-    if (/^\s*CLIENT_SUBDOMAINS=/.test(prepared)) {
-      prepared = prepared.replace(/,__subdomain-name__/g, "");
-    }
-
-    // Vite define — looks like a placeholder but is a framework constant.
-    if (prepared.includes("__VUE_PROD_DEVTOOLS__")) {
-      return finishProductInitLineReplace(prepared, context, {
-        dockerFrom,
-        dockerTo,
-        pascal,
-        snakeUpper,
-        sourcePascal,
-        sourceSnakeUpper,
-      });
-    }
-
-    if (isSkippedStubRefLine(prepared)) {
-      return "";
-    }
-
-    // Generated Dockerfiles list stub package paths for base's own builds;
-    // drop segments whose placeholders are unknown to this context so
-    // makeLineReplace does not warn — but keep paths that only use known
-    // tokens (e.g. __product-name__) so they can be interpolated.
-    if (/^\s*COPY\b/.test(prepared)) {
-      prepared = prepared
-        .split(/\s+/)
-        .filter((tok) => {
-          if (!/__[a-zA-Z][a-zA-Z0-9_-]*__/.test(tok)) return true;
-          try {
-            placeholderReplace(tok);
-            return true;
-          } catch (error) {
-            if (
-              error instanceof Error &&
-              error.message.startsWith("Missing replacement")
-            ) {
-              return false;
-            }
-            throw error;
-          }
-        })
-        .join(" ");
-      // Stub-only COPY lines can collapse to `COPY` / `COPY --from=…` with no
-      // sources left — drop them rather than emitting invalid Dockerfiles.
-      if (/^\s*COPY(?:\s+--\S+)*\s*$/.test(prepared)) {
-        return "";
-      }
-    }
-
-    // Unknown __tokens__ in comments / SQL stay literal when not dropped above —
-    // product/init has no integrationName/groupName/etc. Stub migrations are
-    // wiped and regenerated after install (see reset-product-db-migrations).
-    let out: string;
-    try {
-      out = placeholderReplace(prepared);
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message.startsWith("Missing replacement")
-      ) {
-        out = prepared;
-      } else {
-        throw error;
-      }
-    }
-
-    return finishProductInitLineReplace(out, context, {
-      dockerFrom,
-      dockerTo,
-      pascal,
-      snakeUpper,
-      sourcePascal,
-      sourceSnakeUpper,
-    });
-  };
-}
-
-const TSCONFIG_PRESET_FILENAMES = [
-  "tsconfig.app.base.json",
-  "tsconfig.base.json",
-] as const;
-
-/** Literals that contain `base-` / bare `base` but are not the golden product name. */
-const NON_PRODUCT_BASE_LITERALS = ["base-uri", ...TSCONFIG_PRESET_FILENAMES] as const;
-
-/** Keep shared tsconfig preset names and CSP `base-uri` literal when renaming. */
-function protectNonProductBaseLiterals(line: string): string {
-  let result = line;
-  for (const literal of NON_PRODUCT_BASE_LITERALS) {
-    result = result.replaceAll(literal, `__SAF_${literal.replaceAll(".", "_").replaceAll("-", "_")}__`);
-  }
-  return result;
-}
-
-function restoreNonProductBaseLiterals(line: string): string {
-  let result = line;
-  for (const literal of NON_PRODUCT_BASE_LITERALS) {
-    result = result.replaceAll(
-      `__SAF_${literal.replaceAll(".", "_").replaceAll("-", "_")}__`,
-      literal,
-    );
-  }
-  return result;
-}
-
-/** Product monorepos embed saflib as a submodule beside the product tree. */
-function rewriteSaflibRelativeTsconfigPaths(line: string): string {
-  return line.replace(
-    /"\.\.\/\.\.\/\.\.\/(?!saflib\/)(vue\/)/g,
-    '"../../../saflib/$1',
-  );
-}
-
-function finishProductInitLineReplace(
-  out: string,
-  context: InitProductWorkflowContext,
-  names: {
-    dockerFrom: string;
-    dockerTo: string;
-    pascal: string;
-    snakeUpper: string;
-    sourcePascal: string;
-    sourceSnakeUpper: string;
-  },
-): string {
-  const {
-    dockerFrom,
-    dockerTo,
-    pascal,
-    snakeUpper,
-    sourcePascal,
-    sourceSnakeUpper,
-  } = names;
-
-  const prepared = protectNonProductBaseLiterals(out);
-
-  // Preserve the thin @saflib/templates package name / path (do not treat
-  // "templates" lines as exempt from /base/ → /product/ path renames —
-  // monolith Dockerfiles mention both).
-  const preserveTemplates =
-    prepared.includes("@saflib/templates") ||
-    prepared.includes("saflib/templates/");
-
-  let result = preserveTemplates
-    ? prepared
-    : prepared.split(SOURCE_PACKAGE_PREFIX).join(context.sharedPackagePrefix);
-  // Only the deploy package itself — not e.g. `@saflib/deploy-cli`.
-  result = result.replace(
-    /@saflib\/deploy(?![\w-])/g,
-    `@${context.organizationName}/deploy`,
-  );
-  result = result.split(dockerFrom).join(dockerTo);
-  result = result.split(SOURCE_DOMAIN).join(context.domainName);
-
-  // Path / token renames — avoid bare "base" (database, based, …).
-  result = result.replaceAll(
-    `/${SOURCE_PRODUCT_NAME}/`,
-    `/${context.productName}/`,
-  );
-  result = result.replaceAll(
-    `./${SOURCE_PRODUCT_NAME}/`,
-    `./${context.productName}/`,
-  );
-  result = result.replaceAll(
-    `${SOURCE_PRODUCT_NAME}-`,
-    `${context.productName}-`,
-  );
-  result = result.replaceAll(
-    `/${SOURCE_PRODUCT_NAME}-`,
-    `/${context.productName}-`,
-  );
-  result = result.replaceAll(`${sourceSnakeUpper}_`, `${snakeUpper}_`);
-  result = result.replaceAll(sourcePascal, pascal);
-
-  result = result.replace(
-    new RegExp(`\\b${SOURCE_PRODUCT_NAME}\\b`, "g"),
-    context.productName,
-  );
-  result = result.replace(
-    new RegExp(`\\b${sourceSnakeUpper}\\b`, "g"),
-    snakeUpper,
-  );
-
-  result = restoreNonProductBaseLiterals(result);
-  if (context.embeddedProductMonorepo) {
-    result = rewriteSaflibRelativeTsconfigPaths(result);
-  }
-
-  return result;
-}
 
 export const InitProductWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -377,8 +69,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       packageName: "PACKAGE_NAME_UNUSED",
       serviceName: input.name,
       domainName: input.domain,
+      escapedDomainName: input.domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
       productOnly: input.productOnly ?? false,
       embeddedProductMonorepo: isEmbeddedProductMonorepo(input.cwd),
+      platformExists: existsSync(path.join(resolveDeployDir(input.cwd), "package.json")),
     };
   },
 
@@ -440,9 +134,9 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       lineReplace: makeProductInitLineReplace(context),
       // Keep expansion stubs (__subdomain-name__, __group-name__, …) in base only.
       // Both globs: dir trees (`__/…`) and stub filenames (`__…__-links.ts`).
-      // Suite docs under base/docs are for the golden template itself — products
+      // Suite docs under base/product/docs are for the golden template itself — products
       // should not inherit them.
-      skipSourceGlobs: ["**/__*__/**", "**/__*__*", "**/base/docs/**"],
+      skipSourcePath: skipGoldenStubPath,
     })),
     // lineReplace drops stub `"path"` lines but can leave empty `{ }` objects in
     // multi-line tsconfig references; strip those before npm install / saf-imports.
@@ -451,35 +145,33 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: [
         "--experimental-strip-types",
         "--disable-warning=ExperimentalWarning",
-        path.join(import.meta.dirname, "strip-stub-tsconfig-refs.ts"),
+        path.join(productScriptsDir, "strip-stub-tsconfig-refs.ts"),
         path.join(context.cwd, context.productName),
       ],
     })),
+    // Relative paths out of the product still have the golden tree's depth.
+    step(CommandStepMachine, ({ context }) => ({
+      command: "node",
+      args: [
+        "--experimental-strip-types",
+        "--disable-warning=ExperimentalWarning",
+        path.join(productScriptsDir, "fix-product-relative-paths.ts"),
+        path.join(context.cwd, context.productName),
+        context.embeddedProductMonorepo ? "1" : "0",
+      ],
+    })),
+    // The platform deploy (edge + Kratos) is shared by every product; create it
+    // only for the repo's first product. Each product's own deploy came with
+    // the product copy above (<product>/deploy).
     step(
       CopyStepMachine,
-      ({ context }) => {
-        const deployTarget = resolveDeployDir(context.cwd);
-        // checklist/dry never write; keep the step for checklist text.
-        // script/print/run must not upsert onto the golden deploy tree.
-        if (
-          path.resolve(templatesDeployRoot) === path.resolve(deployTarget) &&
-          context.runMode !== "checklist" &&
-          context.runMode !== "dry"
-        ) {
-          throw new Error(
-            `Refusing to upsert deploy onto its own golden tree (${deployTarget}). ` +
-              `Set SAF_DEPLOY_DIR to a disposable directory (e.g. tmp-deploy) when ` +
-              `running product/init from the saflib repo root.`,
-          );
-        }
-        return {
-          name: context.productName,
-          targetDir: deployTarget,
-          templateFiles: { deploy: templatesDeployRoot },
-          lineReplace: makeProductInitLineReplace(context),
-        };
-      },
-      { skipIf: ({ context }) => context.productOnly },
+      ({ context }) => ({
+        name: context.productName,
+        targetDir: resolveDeployDir(context.cwd),
+        templateFiles: { deploy: templatesPlatformRoot },
+        lineReplace: makeProductInitLineReplace(context),
+      }),
+      { skipIf: ({ context }) => context.productOnly || context.platformExists },
     ),
     step(
       CopyStepMachine,
@@ -510,9 +202,20 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         "dev",
         "docker-compose.yaml",
       ),
-      description: "Rewrite base/dev compose volumes for product monorepo layout",
+      description: "Rewrite base/product/dev compose for product monorepo layout",
       transform: (content: string) =>
-        toProductMonorepoDevCompose(content, context.productName),
+        toProductMonorepoDevCompose(content),
+    })),
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(
+        context.cwd,
+        context.productName,
+        "dev",
+        "docker-compose.dev-site.yaml",
+      ),
+      description: "Rewrite base/product/dev dev-site compose for product monorepo layout",
+      transform: (content: string) =>
+        toProductMonorepoDevCompose(content),
     })),
     // Product scaffold may include repo-root CI; never keep them in @saflib/saflib.
     step(
@@ -540,18 +243,21 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         command: "mv",
         args: [
           path.join(
-            resolveDeployDir(context.cwd),
+            context.cwd,
+            context.productName,
+            "deploy",
             "remote-assets",
             `env.${context.productName}.secrets`,
           ),
           path.join(
-            resolveDeployDir(context.cwd),
+            context.cwd,
+            context.productName,
+            "deploy",
             "remote-assets",
             `.env.${context.productName}.secrets`,
           ),
         ],
       }),
-      { skipIf: ({ context }) => context.productOnly },
     ),
     step(CdStepMachine, ({ context }) => ({
       // Nested monorepos (host product → saflib): install at the outermost
@@ -591,7 +297,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: [
         "--experimental-strip-types",
         "--disable-warning=ExperimentalWarning",
-        path.join(import.meta.dirname, "regenerate-product-env.ts"),
+        path.join(productScriptsDir, "regenerate-product-env.ts"),
         path.join(context.originalWorkingDirectory, context.productName),
       ],
     })),
@@ -626,7 +332,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: [
         "--experimental-strip-types",
         "--disable-warning=ExperimentalWarning",
-        path.join(import.meta.dirname, "reset-product-db-migrations.ts"),
+        path.join(productScriptsDir, "reset-product-db-migrations.ts"),
         path.join(
           context.originalWorkingDirectory,
           context.productName,
@@ -677,7 +383,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: [
         "--experimental-strip-types",
         "--disable-warning=ExperimentalWarning",
-        path.join(import.meta.dirname, "generate-product-specs.ts"),
+        path.join(productScriptsDir, "generate-product-specs.ts"),
         path.join(context.originalWorkingDirectory, context.productName),
       ],
     })),
@@ -686,7 +392,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       () => ({
         path: `./${getDeployDirName()}`,
       }),
-      { skipIf: ({ context }) => context.productOnly },
+      { skipIf: ({ context }) => context.productOnly || context.platformExists },
     ),
     step(
       CommandStepMachine,
@@ -694,7 +400,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         command: "npm",
         args: ["run", "regen-kratos-secrets"],
       }),
-      { skipIf: ({ context }) => context.productOnly },
+      { skipIf: ({ context }) => context.productOnly || context.platformExists },
     ),
     step(
       CommandStepMachine,
@@ -702,7 +408,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         command: "npm",
         args: ["run", "generate"],
       }),
-      { skipIf: ({ context }) => context.productOnly },
+      { skipIf: ({ context }) => context.productOnly || context.platformExists },
     ),
   ],
 });

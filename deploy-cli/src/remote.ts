@@ -6,7 +6,14 @@ import { requireRemote, type DeployConfig } from "./config.ts";
 
 /** Scripts this package runs on the server (`remote-scripts/*.sh`). */
 export type RemoteScript =
-  "setup" | "pull" | "up" | "down" | "logs" | "purge" | "extract-assets";
+  | "setup"
+  | "pull"
+  | "up"
+  | "down"
+  | "logs"
+  | "purge"
+  | "extract-assets"
+  | "register-sites";
 
 const SCRIPTS_DIR = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -19,6 +26,11 @@ export function readRemoteScript(name: RemoteScript): string {
 }
 
 /** Single-quotes a value for bash. */
+/** `up`, then register the deploy's edge routes (no-op without remote-assets/caddy/). */
+export function upScript(): string {
+  return `${readRemoteScript("up")}\n${readRemoteScript("register-sites")}`;
+}
+
 export function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
@@ -49,6 +61,32 @@ export function remotePayload(
   );
   lines.push("set -e", script);
   return lines.join("\n") + "\n";
+}
+
+/**
+ * Like {@link remotePayload}, for running a server script against the local
+ * Docker (e.g. a prod-local stack): no sudo, and REMOTE_ASSETS_FOLDER_PATH
+ * pointing at this deploy package's own remote-assets/.
+ */
+export function localPayload(config: DeployConfig, script: string): string {
+  const env = {
+    ...config.env,
+    REMOTE_ASSETS_FOLDER_PATH: path.join(config.deployDir, "remote-assets"),
+    SAF_DEPLOY_LOCAL: "1",
+  };
+  const lines: string[] = [];
+  for (const [key, value] of Object.entries(env)) {
+    lines.push(`export ${key}=${shellQuote(value)}`);
+  }
+  lines.push("SUDO=", 'docker_cmd() { docker "$@"; }', "set -e", script);
+  return lines.join("\n") + "\n";
+}
+
+export async function runLocal(
+  config: DeployConfig,
+  script: string,
+): Promise<void> {
+  await run("bash", ["-s"], { input: localPayload(config, script) });
 }
 
 export function run(

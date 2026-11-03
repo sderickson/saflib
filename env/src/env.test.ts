@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { mkdirSync, mkdtempSync, writeFileSync } from "fs";
+import { tmpdir } from "os";
+import path from "path";
+import type { MonorepoContext } from "@saflib/monorepo/workspace";
 import {
+  getDirectEnvParents,
+  getEnvParentsThroughDependencies,
   envSchemaTypeName,
   envTypeImportPath,
   kebabCaseToPascalCase,
@@ -82,9 +88,7 @@ describe("makeEnvParserSnippet", () => {
     expect(snippet).toContain(
       "as unknown as Base__integrationName__IntegrationEnvSchema;",
     );
-    expect(snippet).not.toContain(
-      "Base_IntegrationName__IntegrationEnvSchema",
-    );
+    expect(snippet).not.toContain("Base_IntegrationName__IntegrationEnvSchema");
   });
 
   it("emits an empty extending interface when there are no local props", async () => {
@@ -128,5 +132,70 @@ describe("makeEnvParserSnippet", () => {
     expect(snippet).toContain("export interface EnvEnvSchema {");
     expect(snippet).not.toMatch(/export interface EnvEnvSchema extends/);
     expect(snippet).toContain("DOMAIN:");
+  });
+});
+
+describe("getEnvParentsThroughDependencies", () => {
+  function makeContext(
+    graph: Record<string, string[]>,
+    withEnvFiles: string[],
+  ): MonorepoContext {
+    const root = mkdtempSync(path.join(tmpdir(), "saf-env-parents-"));
+    const directories: Record<string, string> = {};
+    for (const name of Object.keys(graph)) {
+      const dir = path.join(root, name.replace("/", "__"));
+      mkdirSync(dir);
+      if (withEnvFiles.includes(name)) {
+        writeFileSync(path.join(dir, "env.schema.json"), "{}");
+      }
+      directories[name] = dir;
+    }
+    return {
+      workspaceDependencyGraph: graph,
+      monorepoPackageDirectories: directories,
+    } as unknown as MonorepoContext;
+  }
+
+  it("looks through dependencies without env files", () => {
+    const context = makeContext(
+      {
+        "@x/monolith": ["@x/service", "@x/db"],
+        "@x/service": ["@x/db"],
+        "@x/db": ["@x/drizzle"],
+        "@x/drizzle": [],
+      },
+      ["@x/monolith", "@x/service", "@x/drizzle"],
+    );
+    expect(getEnvParentsThroughDependencies("@x/monolith", context)).toEqual([
+      "@x/drizzle",
+      "@x/service",
+    ]);
+  });
+
+  it("env.ts extends only declared dependencies", () => {
+    const context = makeContext(
+      {
+        "@x/monolith": ["@x/service", "@x/db"],
+        "@x/service": ["@x/db"],
+        "@x/db": ["@x/drizzle"],
+        "@x/drizzle": [],
+      },
+      ["@x/monolith", "@x/service", "@x/drizzle"],
+    );
+    expect(getDirectEnvParents("@x/monolith", context)).toEqual(["@x/service"]);
+  });
+
+  it("stops at the nearest dependency with env files", () => {
+    const context = makeContext(
+      {
+        "@x/app": ["@x/service"],
+        "@x/service": ["@x/drizzle"],
+        "@x/drizzle": [],
+      },
+      ["@x/service", "@x/drizzle"],
+    );
+    expect(getEnvParentsThroughDependencies("@x/app", context)).toEqual([
+      "@x/service",
+    ]);
   });
 });

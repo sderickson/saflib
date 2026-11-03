@@ -207,7 +207,7 @@ As the application quickly grows, you don't need to slow down or rebuild or rest
 
 **Example application:**
 
-- [@saflib/base](./base/docs/01-overview.md) and related workflow tools minimize barrel imports.
+- [@saflib/base](./base/product/docs/01-overview.md) and related workflow tools minimize barrel imports.
 - tsconfigs include `composite: true` to allow for more efficient builds and type checking.
 - [saf-analyze-package](./dev-tools/docs/cli/saf-analyze-package.md) provides static analysis which surface issues and dead code.
 
