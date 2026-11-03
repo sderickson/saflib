@@ -15,6 +15,7 @@ export type RemoteScript =
   | "extract-assets"
   | "register-sites"
   | "live"
+  | "rollback"
   | "sites";
 
 const SCRIPTS_DIR = path.join(
@@ -29,6 +30,7 @@ const NEEDS_SITES = new Set<RemoteScript>([
   "down",
   "register-sites",
   "live",
+  "rollback",
 ]);
 
 export function readRemoteScript(name: RemoteScript): string {
@@ -60,6 +62,12 @@ function deployNameEnv(config: DeployConfig): Record<string, string> {
 /** `up`, which registers the deploy's edge routes (no-op without remote-assets/caddy/). */
 export function upScript(): string {
   return readRemoteScript("up");
+}
+
+/** `rollback`'s setup, then `up` with the previous images pinned. */
+export function rollbackScript(): string {
+  const up = readFileSync(path.join(SCRIPTS_DIR, "up.sh"), "utf8");
+  return `${readRemoteScript("rollback")}\n${up}`;
 }
 
 export function shellQuote(value: string): string {

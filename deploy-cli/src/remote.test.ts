@@ -341,6 +341,7 @@ esac
       "extract-assets",
       "register-sites",
       "live",
+      "rollback",
       "sites",
     ] as const) {
       execFileSync("bash", ["-n"], { input: readRemoteScript(name) });

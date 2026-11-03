@@ -46,6 +46,10 @@ Commands:
                             reload it. `up` and `release` do this already.
   live [options]            Show which blue-green color is live and the state of
                             each color's containers.
+  rollback [options]        Run the blue-green services' previous images again
+                            (recorded by the last successful `up`), with the
+                            same health gate and watch as a deploy. The rest of
+                            the stack is left alone.
   help [command]            display help for command
 ```
 
@@ -55,6 +59,7 @@ Commands:
 - [push](./saf-deploy/push.md)
 - [status](./saf-deploy/status.md)
 - [sync](./saf-deploy/sync.md)
+- [rollback](./saf-deploy/rollback.md)
 - [setup](./saf-deploy/setup.md)
 - [pull](./saf-deploy/pull.md)
 - [up](./saf-deploy/up.md)

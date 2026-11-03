@@ -106,7 +106,10 @@ bg_enabled() { [ -f "$(bg_file)" ]; }
 other_color() { if [ "$1" = blue ]; then echo green; else echo blue; fi; }
 
 bg_compose() {
-  SAF_COLOR="$1" docker_cmd compose -p "$(deploy_name)-$1" -f "$(bg_file)" "${@:2}"
+  files=(-f "$(bg_file)")
+  # A rollback pins each service to the image it ran before (see bg_record).
+  [ -z "${SAF_BG_OVERRIDE:-}" ] || files+=(-f "$SAF_BG_OVERRIDE")
+  SAF_COLOR="$1" docker_cmd compose -p "$(deploy_name)-$1" "${files[@]}" "${@:2}"
 }
 
 bg_services() { bg_compose blue config --services; }
@@ -141,10 +144,33 @@ bg_healthy() {
   done
 }
 
-# Removes a color's containers, whichever compose project started them.
+# Removes a color's containers, whichever compose project started them. They
+# get SIGTERM first and up to 30s (SAF_STOP_TIMEOUT) to finish in-flight work.
 bg_remove() {
+  for service in $(bg_services); do
+    docker_cmd stop -t "${SAF_STOP_TIMEOUT:-30}" "$service-$1" > /dev/null 2>&1 || true
+  done
   bg_compose "$1" down --remove-orphans > /dev/null 2>&1 || true
   for service in $(bg_services); do
     docker_cmd rm -f "$service-$1" > /dev/null 2>&1 || true
   done
+}
+
+# Records the images a color runs as a compose override, so `saf-deploy
+# rollback` can run them again: the registry digest when there is one (it
+# still pulls after :latest moves on), else the local image ID.
+bg_record() {
+  out="$(state_dir)/previous.yaml"
+  mkdir -p "$(state_dir)"
+  {
+    echo "# Images the $1 color ran, written by saf-deploy up for saf-deploy rollback."
+    echo "services:"
+    for service in $(bg_services); do
+      id=$(docker_cmd inspect -f '{{.Image}}' "$service-$1" 2>/dev/null) || continue
+      ref=$(docker_cmd image inspect -f '{{if .RepoDigests}}{{index .RepoDigests 0}}{{end}}' "$id" 2>/dev/null || true)
+      echo "  $service:"
+      echo "    image: ${ref:-$id}"
+    done
+  } > "$out.tmp"
+  mv "$out.tmp" "$out"
 }

@@ -6,8 +6,12 @@
 cd "$REMOTE_ASSETS_FOLDER_PATH"
 
 up_main() {
-  # Nothing to do when everything deploys blue-green.
-  [ -n "$(docker_cmd compose -f docker-compose.prod.yaml config --services)" ] || return 0
+  # When everything deploys blue-green, only clear out containers the main
+  # project used to run (e.g. before the services moved to blue-green).
+  if [ -z "$(docker_cmd compose -f docker-compose.prod.yaml config --services)" ]; then
+    docker_cmd compose -f docker-compose.prod.yaml down --remove-orphans
+    return 0
+  fi
   # Force recreate so bind mounts (e.g. ./kratos) reattach after sync replaces
   # directory trees. Without this, long-lived containers keep stale mount inodes
   # and fail with missing config files like identity.schema.json.
@@ -17,7 +21,7 @@ up_main() {
 # A first deploy brings the main stack up before the colors: it may create
 # what they need (e.g. the platform's edge network), and nothing is live yet.
 main_up_first=""
-if [ "${SAF_DEPLOY_LOCAL:-}" != 1 ] && [ -z "$(docker_cmd compose -f docker-compose.prod.yaml ps -q)" ]; then
+if [ "${SAF_DEPLOY_LOCAL:-}" != 1 ] && [ -z "${SAF_SKIP_MAIN:-}" ] && [ -z "$(docker_cmd compose -f docker-compose.prod.yaml ps -q)" ]; then
   up_main
   main_up_first=1
 fi
@@ -36,7 +40,7 @@ if bg_enabled; then
   fi
 fi
 
-if [ "${SAF_DEPLOY_LOCAL:-}" != 1 ] && [ -z "$main_up_first" ]; then
+if [ "${SAF_DEPLOY_LOCAL:-}" != 1 ] && [ -z "${SAF_SKIP_MAIN:-}" ] && [ -z "$main_up_first" ]; then
   up_main
 fi
 
@@ -62,7 +66,8 @@ if [ -n "$new" ]; then
   mkdir -p "$(state_dir)"
   echo "$new" > "$(state_dir)/live"
   if [ -n "$live" ] && [ "$live" != "$new" ]; then
-    echo "Removing the $live color."
+    bg_record "$live"
+    echo "Removing the $live color (its images are recorded for saf-deploy rollback)."
     bg_remove "$live"
   fi
   echo "The $new color is live."
