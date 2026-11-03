@@ -16,6 +16,11 @@ export interface JobSetting {
   enabled_by: string | null;
   last_run_at: Date | null;
   last_run_status: (typeof lastRunStatusEnum)[number] | null;
+  /**
+   * The latest schedule tick a process claimed (see `claimTick`), so a tick
+   * runs once when two processes (e.g. both blue-green colors) fire it.
+   */
+  last_tick_at: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -29,6 +34,7 @@ export const jobSettings = sqliteTable("job_settings", {
   last_run_status: text("last_run_status", {
     enum: lastRunStatusEnum,
   }), // Nullable status enum
+  last_tick_at: integer("last_tick_at", { mode: "timestamp" }), // Nullable timestamp
   created_at: integer("created_at", { mode: "timestamp" }).notNull(),
   updated_at: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
