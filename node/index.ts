@@ -6,6 +6,7 @@ export * from "./src/errors.ts";
 export * from "./src/metrics.ts";
 export * from "./src/types.ts";
 export * from "./src/signAssertion.ts";
+export * from "./src/shutdown.ts";
 export {
   configureInternalAssertionKeys,
   SAF_INTERNAL_ASSERTION_KEYS_NAME,

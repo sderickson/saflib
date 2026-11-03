@@ -4,6 +4,7 @@ import {
   generateRequestId,
   getServiceName,
   makeSubsystemReporters,
+  onShutdown,
   safContextStorage,
   safReportersStorage,
   type SafContext,
@@ -447,7 +448,7 @@ export async function runJobs(
 
   log.info("Jobs service startup complete.");
 
-  return {
+  const handle: JobsRuntimeHandle = {
     wake,
     stop: async () => {
       if (stopped) {
@@ -465,6 +466,9 @@ export async function runJobs(
       log.info("Jobs service stopped.");
     },
   };
+  // On SIGTERM, stop claiming and let running jobs finish.
+  onShutdown("jobs", handle.stop);
+  return handle;
 }
 
 /** @internal test helper — clear module wake registration. */
