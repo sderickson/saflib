@@ -1,0 +1,23 @@
+# The product's blue-green services for `saf-deploy up --local`, beside a
+# running prod-local stack (`npm run prod-local`, which runs blue): prod-local
+# env files and no host data volumes.
+services:
+  __product-name__-monolith:
+    extends:
+      file: remote-assets/docker-compose.blue-green.yaml
+      service: __product-name__-monolith
+    volumes: !override []
+    env_file: !override
+      - ./env.monolith.prod-local
+
+  __product-name__-web:
+    extends:
+      file: remote-assets/docker-compose.blue-green.yaml
+      service: __product-name__-web
+    env_file: !override
+      - ./env.web.prod-local
+
+networks:
+  edge:
+    name: __organization-name__-edge
+    external: true

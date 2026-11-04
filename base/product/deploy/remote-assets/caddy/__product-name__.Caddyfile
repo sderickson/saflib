@@ -23,40 +23,40 @@
 
 {$PROTOCOL}://{$DOMAIN} {
 	import __product-name__-security-headers-marketing
-	reverse_proxy __product-name__-web:80
+	reverse_proxy __product-name__-web-{$SAF_COLOR}:80
 }
 
 {$PROTOCOL}://auth.{$DOMAIN} {
 	import __product-name__-security-headers-spa
-	reverse_proxy __product-name__-web:80
+	reverse_proxy __product-name__-web-{$SAF_COLOR}:80
 }
 
 {$PROTOCOL}://app.{$DOMAIN} {
 	import __product-name__-security-headers-spa
-	reverse_proxy __product-name__-web:80
+	reverse_proxy __product-name__-web-{$SAF_COLOR}:80
 }
 
 {$PROTOCOL}://admin.{$DOMAIN} {
 	import __product-name__-security-headers-spa
-	reverse_proxy __product-name__-web:80
+	reverse_proxy __product-name__-web-{$SAF_COLOR}:80
 }
 
 {$PROTOCOL}://account.{$DOMAIN} {
 	import __product-name__-security-headers-spa
-	reverse_proxy __product-name__-web:80
+	reverse_proxy __product-name__-web-{$SAF_COLOR}:80
 }
 
 # BEGIN WORKFLOW AREA client-subdomains FOR vue/add-spa
 {$PROTOCOL}://__subdomain-name__.{$DOMAIN} {
 	import __product-name__-security-headers-spa
-	reverse_proxy __product-name__-web:80
+	reverse_proxy __product-name__-web-{$SAF_COLOR}:80
 }
 # END WORKFLOW AREA
 
 # BEGIN WORKFLOW AREA static-subdomains FOR vue/add-static-site
 {$PROTOCOL}://__static-subdomain-name__.{$DOMAIN} {
 	import __product-name__-security-headers-spa
-	reverse_proxy __product-name__-web:80
+	reverse_proxy __product-name__-web-{$SAF_COLOR}:80
 }
 # END WORKFLOW AREA
 
@@ -68,11 +68,11 @@
 	import cors {$CORS_ORIGINS}
 	@public_monolith path /health /csp-violations /user-configs/unsubscribe-marketing
 	handle @public_monolith {
-		reverse_proxy __product-name__-monolith:3001 {
+		reverse_proxy __product-name__-monolith-{$SAF_COLOR}:3001 {
 			import reverse_proxy_common
 		}
 	}
-	import kratos-api-proxy __product-name__-monolith:3001
+	import kratos-api-proxy __product-name__-monolith-{$SAF_COLOR}:3001
 }
 
 {$DOMAIN_REDIRECTS} {
