@@ -50,8 +50,8 @@ function deployNameEnv(config: DeployConfig): Record<string, string> {
   const env: Record<string, string> = folder
     ? { SAF_DEPLOY_NAME: path.basename(folder) }
     : {};
-  // Blue-green timing can be set per run, e.g. SAF_WATCH_SECONDS=120.
-  for (const key of ["SAF_HEALTH_TIMEOUT", "SAF_WATCH_SECONDS"]) {
+  // Blue-green timing can be set per run, e.g. SAF_HEALTH_TIMEOUT=120.
+  for (const key of ["SAF_HEALTH_TIMEOUT"]) {
     const value = process.env[key];
     if (value) env[key] = value;
   }

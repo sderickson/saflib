@@ -1,8 +1,7 @@
 # Brings the deploy up (prefixed with sites.sh). With a
 # docker-compose.blue-green.yaml, its services deploy blue-green: the idle
-# color starts and must turn healthy (SAF_HEALTH_TIMEOUT, default 60s) before
-# routes switch to it, then must stay healthy (SAF_WATCH_SECONDS, default 60s)
-# or routes switch back. The old color is removed after a successful deploy.
+# color starts, and as soon as it's healthy (waiting up to SAF_HEALTH_TIMEOUT,
+# default 60s) routes switch to it and the old color is removed.
 cd "$REMOTE_ASSETS_FOLDER_PATH"
 
 up_main() {
@@ -47,22 +46,6 @@ fi
 register_sites "$new"
 
 if [ -n "$new" ]; then
-  echo "Watching the $new color for ${SAF_WATCH_SECONDS:-60}s…"
-  waited=0
-  while [ "$waited" -lt "${SAF_WATCH_SECONDS:-60}" ]; do
-    if ! bg_healthy "$new"; then
-      if [ -n "$live" ]; then
-        echo "The $new color turned unhealthy; switching back to $live." >&2
-        register_sites "$live"
-        bg_remove "$new"
-      else
-        echo "The $new color turned unhealthy, and there's no previous color to switch back to." >&2
-      fi
-      exit 1
-    fi
-    sleep 5
-    waited=$((waited + 5))
-  done
   mkdir -p "$(state_dir)"
   echo "$new" > "$(state_dir)/live"
   if [ -n "$live" ] && [ "$live" != "$new" ]; then

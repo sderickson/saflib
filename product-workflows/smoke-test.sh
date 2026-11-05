@@ -150,7 +150,7 @@ docker exec "${edge}" caddy validate --config /etc/caddy/Caddyfile --adapter cad
 
 step "Blue-green deploys of ${FIRST}: switch, health gate, rollback"
 (cd "${FIRST}/deploy" && npx saf-deploy build --platform native)
-bg() { (cd "${FIRST}/deploy" && SAF_WATCH_SECONDS="${SAF_WATCH_SECONDS:-10}" npx saf-deploy "$@" --local); }
+bg() { (cd "${FIRST}/deploy" && npx saf-deploy "$@" --local); }
 live_is() {
   # Captured first: with pipefail, grep -q exiting early would fail the pipe.
   live=$(cd "${FIRST}/deploy" && npx saf-deploy live --local)

@@ -30,9 +30,8 @@ Commands:
                             (docker compose up -d --force-recreate), then
                             register its edge routes. Services in
                             remote-assets/docker-compose.blue-green.yaml deploy
-                            blue-green: the new color must turn healthy before
-                            routes switch to it, and stay healthy or routes
-                            switch back.
+                            blue-green: routes switch to the new color as soon
+                            as it's healthy, and the old color is removed.
   down                      Stop the production stack on the server.
   logs                      Follow the production stack's logs on the server.
   purge                     Uninstall Docker from the server.
@@ -48,8 +47,8 @@ Commands:
                             each color's containers.
   rollback [options]        Run the blue-green services' previous images again
                             (recorded by the last successful `up`), with the
-                            same health gate and watch as a deploy. The rest of
-                            the stack is left alone.
+                            same health gate as a deploy. The rest of the stack
+                            is left alone.
   help [command]            display help for command
 ```
 
@@ -59,13 +58,14 @@ Commands:
 - [push](./saf-deploy/push.md)
 - [status](./saf-deploy/status.md)
 - [sync](./saf-deploy/sync.md)
-- [rollback](./saf-deploy/rollback.md)
 - [setup](./saf-deploy/setup.md)
 - [pull](./saf-deploy/pull.md)
 - [up](./saf-deploy/up.md)
 - [down](./saf-deploy/down.md)
-- [live](./saf-deploy/live.md)
 - [logs](./saf-deploy/logs.md)
 - [purge](./saf-deploy/purge.md)
 - [exec](./saf-deploy/exec.md)
 - [release](./saf-deploy/release.md)
+- [register-sites](./saf-deploy/register-sites.md)
+- [live](./saf-deploy/live.md)
+- [rollback](./saf-deploy/rollback.md)

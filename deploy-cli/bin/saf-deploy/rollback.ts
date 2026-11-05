@@ -7,7 +7,7 @@ export const addRollbackCommand = (program: Command) => {
   program
     .command("rollback")
     .description(
-      "Run the blue-green services' previous images again (recorded by the last successful `up`), with the same health gate and watch as a deploy. The rest of the stack is left alone.",
+      "Run the blue-green services' previous images again (recorded by the last successful `up`), with the same health gate as a deploy. The rest of the stack is left alone.",
     )
     .option(
       "--local",

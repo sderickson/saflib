@@ -7,7 +7,7 @@ export const addUpCommand = (program: Command) => {
   program
     .command("up")
     .description(
-      "Start or update the production stack on the server (docker compose up -d --force-recreate), then register its edge routes. Services in remote-assets/docker-compose.blue-green.yaml deploy blue-green: the new color must turn healthy before routes switch to it, and stay healthy or routes switch back.",
+      "Start or update the production stack on the server (docker compose up -d --force-recreate), then register its edge routes. Services in remote-assets/docker-compose.blue-green.yaml deploy blue-green: routes switch to the new color as soon as it's healthy, and the old color is removed.",
     )
     .option(
       "--local",
