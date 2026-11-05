@@ -19,7 +19,7 @@
     "@saflib/utils": "*",
     "@tanstack/vue-query": "^5.85.9",
     "openapi-fetch": "^0.17.0",
-    "path-to-regexp": "^8.0.0"
+    "path-to-regexp": "^9.0.0"
   },
   "scripts": {
     "test": "vitest run",
