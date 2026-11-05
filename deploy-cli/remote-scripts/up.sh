@@ -31,7 +31,7 @@ if bg_enabled; then
   live=$(live_color)
   new=$(other_color "${live:-green}")
   echo "Starting the $new color (live: ${live:-none})…"
-  if ! bg_compose "$new" up -d --force-recreate --wait --wait-timeout "${SAF_HEALTH_TIMEOUT:-60}"; then
+  if ! bg_compose "$new" up -d --force-recreate || ! bg_wait_healthy "$new" "${SAF_HEALTH_TIMEOUT:-60}"; then
     echo "The $new color didn't turn healthy; removing it. ${live:+The $live color is still live.}" >&2
     bg_compose "$new" logs --tail 50 >&2 || true
     bg_remove "$new"

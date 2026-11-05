@@ -144,6 +144,20 @@ bg_healthy() {
   done
 }
 
+# Waits up to $2 seconds for bg_healthy. Checked here rather than with
+# `compose up --wait`, which some compose versions end successfully on timeout.
+bg_wait_healthy() {
+  deadline=$(( $(date +%s) + $2 ))
+  until bg_healthy "$1" 2>/dev/null; do
+    if [ "$(date +%s)" -ge "$deadline" ]; then
+      echo "Not healthy after $2s:" >&2
+      bg_healthy "$1"
+      return 1
+    fi
+    sleep 1
+  done
+}
+
 # Removes a color's containers, whichever compose project started them. They
 # get SIGTERM first and up to 30s (SAF_STOP_TIMEOUT) to finish in-flight work.
 bg_remove() {
