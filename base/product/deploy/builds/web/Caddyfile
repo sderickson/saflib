@@ -59,3 +59,8 @@ http://__static-subdomain-name__.{$DOMAIN} {
 	import static-site /__product-name__-__static-subdomain-name__
 }
 # END WORKFLOW AREA
+
+# Health check for the container (docker-compose.blue-green.yaml).
+http://localhost {
+	respond /health 200
+}

@@ -7,6 +7,7 @@ import {
   safContextStorage,
   safReportersStorage,
   makeSubsystemReporters,
+  onShutdown,
   type SafContext,
   type SafReporters,
   getServiceName,
@@ -14,7 +15,13 @@ import {
 
 import type { CronEnqueuer, JobConfig, JobsMap } from "./types.ts";
 import type { DbKey } from "@saflib/drizzle";
-import { JobSettingNotFoundError, getByName, setEnabled, setLastRunStatus } from "@saflib/cron-db";
+import {
+  JobSettingNotFoundError,
+  claimTick,
+  getByName,
+  setEnabled,
+  setLastRunStatus,
+} from "@saflib/cron-db";
 import { cronMetric, type CronLabels } from "./metrics.ts";
 
 async function executeJobWithHandling(
@@ -129,6 +136,22 @@ export const startJobs = async (
               );
               return;
             }
+            // Another process (e.g. the other blue-green color) may fire the
+            // same tick; only the one that claims it runs it. Ticks fire on
+            // second boundaries, so the second identifies the tick.
+            const tickAt = new Date(Math.floor(Date.now() / 1000) * 1000);
+            const { result: claimed, error: claimError } = await claimTick(
+              dbKey,
+              jobName,
+              tickAt,
+            );
+            if (claimError) {
+              logError(claimError);
+              return;
+            }
+            if (!claimed) {
+              return;
+            }
 
             await executeJobWithHandling(
               jobName,
@@ -145,5 +168,9 @@ export const startJobs = async (
       }),
     );
   }
+  // On SIGTERM, stop firing (a blue-green deploy's other color takes over).
+  onShutdown("cron", () => {
+    for (const job of jobs) void job.stop();
+  });
   return jobs;
 };

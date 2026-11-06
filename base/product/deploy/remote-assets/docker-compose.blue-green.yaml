@@ -1,0 +1,61 @@
+# The product's services, deployed blue-green (`saf-deploy up`): each runs as
+# __product-name__-blue or __product-name__-green, and the edge routes to the live color's
+# containers (`<service>-${SAF_COLOR}`, see caddy/__product-name__.Caddyfile). A new color
+# must pass its healthcheck before routes switch to it, and the old one gets
+# SIGTERM and time to finish in-flight work.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  __product-name__-monolith:
+    logging: *default-logging
+    image: $CONTAINER_REGISTRY/saflib-base-monolith:latest
+    container_name: __product-name__-monolith-${SAF_COLOR:-blue}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    memswap_limit: 2G
+    volumes:
+      - /opt/__product-name__/cron:/app/__product-name__/service/cron/data
+      - /opt/__product-name__/db:/app/__product-name__/service/db/data
+      - /opt/__product-name__/identity:/app/__product-name__/service/identity/data
+      - /opt/__product-name__/identity-http:/app/saflib/identity/identity-http/data
+    env_file:
+      - ./.env.__product-name__.secrets
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    networks:
+      - edge
+
+  __product-name__-web:
+    logging: *default-logging
+    image: $CONTAINER_REGISTRY/saflib-base-deploy-web:latest
+    container_name: __product-name__-web-${SAF_COLOR:-blue}
+    restart: unless-stopped
+    env_file:
+      - ./env.web
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - edge
+
+networks:
+  edge:
+    name: __organization-name__-edge
+    external: true

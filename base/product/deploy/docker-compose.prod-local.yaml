@@ -7,7 +7,7 @@ name: __product-name__-prod-local
 services:
   __product-name__-monolith:
     extends:
-      file: remote-assets/docker-compose.prod.yaml
+      file: remote-assets/docker-compose.blue-green.yaml
       service: __product-name__-monolith
     volumes: !override []
     env_file: !override
@@ -15,7 +15,7 @@ services:
 
   __product-name__-web:
     extends:
-      file: remote-assets/docker-compose.prod.yaml
+      file: remote-assets/docker-compose.blue-green.yaml
       service: __product-name__-web
     env_file: !override
       - ./env.web.prod-local

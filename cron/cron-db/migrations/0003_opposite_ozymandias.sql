@@ -1,0 +1,1 @@
+ALTER TABLE `job_settings` ADD `last_tick_at` integer;

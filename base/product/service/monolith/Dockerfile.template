@@ -17,4 +17,6 @@ COPY ./base/product/deploy/scripts/apply-env-defaults.sh /usr/local/bin/apply-en
 RUN chmod +x /usr/local/bin/apply-env-defaults.sh
 
 ENTRYPOINT ["/usr/local/bin/apply-env-defaults.sh"]
-CMD ["npm", "start"]
+# node itself (not npm start) so it gets SIGTERM and shuts down gracefully:
+# a blue-green deploy stops the old color that way.
+CMD ["node", "--experimental-strip-types", "./run.ts"]

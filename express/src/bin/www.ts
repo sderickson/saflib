@@ -14,6 +14,7 @@
 import fs from "node:fs";
 import http from "node:http";
 import type { Express } from "express";
+import { onShutdown } from "@saflib/node";
 import { markInternal } from "../markInternal.ts";
 
 /**
@@ -136,25 +137,19 @@ export const startExpressServer = (
     (s): s is http.Server => s != null,
   );
 
-  // Handle graceful shutdown
-  // TODO: move server shutdown out of express server
-  process.on("SIGTERM", () => {
-    console.log("SIGTERM signal received: closing HTTP server");
-    let remaining = servers.length;
-    if (remaining === 0) {
-      process.exit(0);
-      return;
-    }
-    for (const s of servers) {
-      s.close(() => {
-        remaining -= 1;
-        if (remaining === 0) {
-          console.log("HTTP server closed");
-          process.exit(0);
-        }
-      });
-    }
-  });
+  // Graceful shutdown (with the jobs runtime and cron, see @saflib/node's
+  // onShutdown): stop accepting connections, let in-flight requests finish.
+  onShutdown("http", () =>
+    Promise.all(
+      servers.map(
+        (s) =>
+          new Promise<void>((resolve) => {
+            s.close(() => resolve());
+            s.closeIdleConnections();
+          }),
+      ),
+    ).then(() => console.log("HTTP server closed")),
+  );
 
   return {
     server,

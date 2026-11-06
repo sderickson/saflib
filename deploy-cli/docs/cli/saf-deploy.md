@@ -7,33 +7,49 @@ Build, push and deploy a SAF product's production stack. Run from the deploy
 package (env.remote + remote-assets/).
 
 Options:
-  -h, --help         display help for command
+  -h, --help                display help for command
 
 Commands:
-  build [options]    Build the images remote-assets/docker-compose.prod.yaml
-                     runs (and their upstream builds), skipping unchanged ones
-                     and reusing registry copies.
-  push [options]     Build (if needed) and push the production images to
-                     CONTAINER_REGISTRY; images already pushed are only
-                     retagged.
-  status [options]   Show which production images would be built, pulled from
-                     the registry, or are up to date.
-  sync               Upload remote-assets/ (compose file, config) to
-                     REMOTE_ASSETS_FOLDER_PATH on the server.
-  setup              Install Docker on the server if needed and make sure it's
-                     running.
-  pull               Pull this product's images (those from CONTAINER_REGISTRY
-                     in the prod compose file) on the server.
-  up                 Start or update the production stack on the server (docker
-                     compose up -d --force-recreate).
-  down               Stop the production stack on the server.
-  logs               Follow the production stack's logs on the server.
-  purge              Uninstall Docker from the server.
-  exec [file]        Run a shell script on the server with env.remote's values
-                     exported (reads the script from [file] or stdin).
-  release [options]  Full deploy: push images, sync remote-assets, pull images
-                     on the server, and bring the stack up.
-  help [command]     display help for command
+  build [options]           Build the images
+                            remote-assets/docker-compose.prod.yaml runs (and
+                            their upstream builds), skipping unchanged ones and
+                            reusing registry copies.
+  push [options]            Build (if needed) and push the production images to
+                            CONTAINER_REGISTRY; images already pushed are only
+                            retagged.
+  status [options]          Show which production images would be built, pulled
+                            from the registry, or are up to date.
+  sync                      Upload remote-assets/ (compose file, config) to
+                            REMOTE_ASSETS_FOLDER_PATH on the server.
+  setup                     Install Docker on the server if needed and make sure
+                            it's running.
+  pull                      Pull this product's images (those from
+                            CONTAINER_REGISTRY in the prod compose file) on the
+                            server.
+  up [options]              Start or update the production stack on the server
+                            (docker compose up -d --force-recreate), then
+                            register its edge routes. Services in
+                            remote-assets/docker-compose.blue-green.yaml deploy
+                            blue-green: routes switch to the new color as soon
+                            as it's healthy, and the old color is removed.
+  down                      Stop the production stack on the server.
+  logs                      Follow the production stack's logs on the server.
+  purge                     Uninstall Docker from the server.
+  exec [file]               Run a shell script on the server with env.remote's
+                            values exported (reads the script from [file] or
+                            stdin).
+  release [options]         Full deploy: push images, sync remote-assets, pull
+                            images on the server, and bring the stack up.
+  register-sites [options]  Copy remote-assets/caddy/*.Caddyfile into the
+                            platform's edge Caddy (SAF_EDGE_CONTAINER) and
+                            reload it. `up` and `release` do this already.
+  live [options]            Show which blue-green color is live and the state of
+                            each color's containers.
+  rollback [options]        Run the blue-green services' previous images again
+                            (recorded by the last successful `up`), with the
+                            same health gate as a deploy. The rest of the stack
+                            is left alone.
+  help [command]            display help for command
 ```
 
 ## Subcommands
@@ -50,3 +66,6 @@ Commands:
 - [purge](./saf-deploy/purge.md)
 - [exec](./saf-deploy/exec.md)
 - [release](./saf-deploy/release.md)
+- [register-sites](./saf-deploy/register-sites.md)
+- [live](./saf-deploy/live.md)
+- [rollback](./saf-deploy/rollback.md)

@@ -74,6 +74,7 @@ describe("remotePayload", () => {
     deployDir: "/x",
     env,
     composeFile: "/x/remote-assets/docker-compose.prod.yaml",
+    composeFiles: ["/x/remote-assets/docker-compose.prod.yaml"],
   });
 
   it("starts with sudo -i unless REMOTE_SUDO=0", () => {
@@ -141,6 +142,7 @@ exec "$@"
             REMOTE_ASSETS_FOLDER_PATH: dir,
           },
           composeFile: "",
+          composeFiles: [],
         },
         readRemoteScript("pull"),
       ),
@@ -176,6 +178,7 @@ exec "$@"
             REMOTE_ASSETS_FOLDER_PATH: assets,
           },
           composeFile: "",
+          composeFiles: [],
         },
         readRemoteScript("extract-assets"),
         { ZIP_NAME: "a.zip" },
@@ -215,6 +218,8 @@ exec "$@"
 SITES="${sites}"
 case "$1" in
   inspect) exit 0 ;;
+  compose) echo acme-web ;;
+  ps) [ -f "$SITES/../running-\${4##*-}" ] && echo container-id ;;
   cp) cp "$2" "$SITES/\${3##*/}" ;;
   exec)
     shift 2
@@ -234,6 +239,7 @@ esac
             deployDir,
             env: { SAF_EDGE_CONTAINER: "edge" },
             composeFile: "",
+            composeFiles: [],
           },
           readRemoteScript("register-sites"),
         ),
@@ -271,7 +277,10 @@ esac
         path.join(caddy, "acme.env"),
         '# comment\nDOMAIN=acme.com\nCORS="^https://(a|b)\\.acme\\.com$"\n',
       );
-      writeFileSync(path.join(caddy, "acme.prod-local.env"), "DOMAIN=acme.localhost\n");
+      writeFileSync(
+        path.join(caddy, "acme.prod-local.env"),
+        "DOMAIN=acme.localhost\n",
+      );
       register();
       expect(readFileSync(path.join(sites, "acme.Caddyfile"), "utf8")).toBe(
         "acme.localhost {$CORS} {$EDGE_ONLY}\n",
@@ -280,6 +289,30 @@ esac
       register();
       expect(readFileSync(path.join(sites, "acme.Caddyfile"), "utf8")).toBe(
         "acme.com ^https://(a|b)\\.acme\\.com$ {$EDGE_ONLY}\n",
+      );
+    });
+
+    it("names the live blue-green color in routes", () => {
+      route("reverse_proxy acme-web-{$SAF_COLOR}:80\n");
+      writeFileSync(
+        path.join(deployDir, "remote-assets", "docker-compose.blue-green.yaml"),
+        "services: {}\n",
+      );
+      const state = path.join(deployDir, ".saf-deploy", "remote-assets");
+      mkdirSync(state, { recursive: true });
+      writeFileSync(path.join(state, "live"), "green\n");
+      // The recorded color, when its containers run…
+      writeFileSync(path.join(dir, "running-green$"), "");
+      register();
+      expect(readFileSync(path.join(sites, "acme.Caddyfile"), "utf8")).toBe(
+        "reverse_proxy acme-web-green:80\n",
+      );
+      // …else whichever color's containers do.
+      rmSync(path.join(dir, "running-green$"));
+      writeFileSync(path.join(dir, "running-blue$"), "");
+      register();
+      expect(readFileSync(path.join(sites, "acme.Caddyfile"), "utf8")).toBe(
+        "reverse_proxy acme-web-blue:80\n",
       );
     });
 
@@ -292,9 +325,9 @@ esac
 
   it("up registers edge routes after bringing the stack up", () => {
     const script = upScript();
-    expect(script.indexOf("compose -f docker-compose.prod.yaml up")).toBeLessThan(
-      script.indexOf("caddy reload"),
-    );
+    expect(
+      script.indexOf("compose -f docker-compose.prod.yaml up"),
+    ).toBeLessThan(script.indexOf('register_sites "$new"'));
   });
 
   it("every bundled script parses", () => {
@@ -307,6 +340,9 @@ esac
       "purge",
       "extract-assets",
       "register-sites",
+      "live",
+      "rollback",
+      "sites",
     ] as const) {
       execFileSync("bash", ["-n"], { input: readRemoteScript(name) });
     }

@@ -127,7 +127,12 @@ services:
     ports: !reset []
 EOF
 edge_compose() { (cd "${WORK}/deploy" && docker compose -f docker-compose.prod-local.yaml -f "${WORK}/edge-no-ports.yaml" "$@"); }
-cleanup() { edge_compose down -v > /dev/null 2>&1 || true; }
+cleanup() {
+  for color in blue green; do
+    docker rm -f "${FIRST}-monolith-${color}" "${FIRST}-web-${color}" > /dev/null 2>&1 || true
+  done
+  edge_compose down -v > /dev/null 2>&1 || true
+}
 trap cleanup EXIT
 edge_compose up -d caddy
 # The platform's own route (the Kratos public API), then both products'.
@@ -142,5 +147,49 @@ if (cd "${SECOND}/deploy" && npx saf-deploy register-sites --local); then
 fi
 edge=$(edge_compose ps -q caddy)
 docker exec "${edge}" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+step "Blue-green deploys of ${FIRST}: switch, health gate, rollback"
+(cd "${FIRST}/deploy" && npx saf-deploy build --platform native)
+bg() { (cd "${FIRST}/deploy" && npx saf-deploy "$@" --local); }
+live_is() {
+  # Captured first: with pipefail, grep -q exiting early would fail the pipe.
+  live=$(cd "${FIRST}/deploy" && npx saf-deploy live --local)
+  grep -q "^Live color: $1$" <<< "${live}" \
+    || { echo "expected ${FIRST}'s live color to be $1:" >&2; echo "${live}" >&2; exit 1; }
+}
+# Requests through the edge, by host, as a browser would make them.
+probe() {
+  docker exec "${edge}" wget -q -O /dev/null --header "Host: $1.${FIRST}.docker.localhost" "http://localhost$2"
+}
+bg up
+live_is blue
+probe app / && probe api /health
+# Switch to green while requests keep coming; none may fail.
+failures="${WORK}/probe-failures"
+: > "${failures}"
+(while [ ! -f "${WORK}/probe-stop" ]; do
+  probe app / || echo app >> "${failures}"
+  probe api /health || echo api >> "${failures}"
+  sleep 0.2
+done) &
+bg up
+touch "${WORK}/probe-stop"
+wait
+live_is green
+if [ -s "${failures}" ]; then
+  echo "requests failed during the switch: $(sort "${failures}" | uniq -c | tr '\n' ' ')" >&2
+  exit 1
+fi
+# A color that doesn't turn healthy in time is removed; green stays live.
+if SAF_HEALTH_TIMEOUT=1 bg up; then
+  echo "a deploy that never turned healthy succeeded" >&2
+  exit 1
+fi
+live_is green
+probe app /
+# Roll back to the images blue ran.
+bg rollback
+live_is blue
+probe app / && probe api /health
 
 step "Smoke test passed"
