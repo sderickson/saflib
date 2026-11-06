@@ -4,13 +4,13 @@
 
 ## What this package provides
 
-- **`configureSentry()`** — idempotent startup helper; registers `SentryErrorService` when `SENTRY_DSN` is set (skipped for missing/`mock` DSN)
+- **`configureSentry()`** — idempotent startup helper; registers `SentryErrorService` when `SENTRY_DSN` is set (skipped for missing/`mock` DSN, in which case `@sentry/node` is never loaded)
 - **`SentryErrorService`** — implements `ErrorService`; forwards reported errors to Sentry and hooks `@saflib/node` error collectors
 - **`resetErrorsForTests`** — clears the configured service in tests
 
 ## Integration
 
-Call `configureSentry()` at process startup **before** servers start, after `setServiceName`. In development use [`configureMockErrors()`](../../../errors/docs/01-overview.md) from `@saflib/errors-service` instead.
+Call (and await) `configureSentry()` at process startup **before** servers start, after `setServiceName`. In development use [`configureMockErrors()`](../../../errors/docs/01-overview.md) from `@saflib/errors-service` instead.
 
 Environment (see `env.schema.json`):
 
