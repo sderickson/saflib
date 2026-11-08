@@ -79,6 +79,22 @@ describe("fullDocumentForValidation", () => {
     expect(Object.keys(a.paths ?? {})).toEqual(["/a"]);
   });
 
+  it("is undefined when the document refs another file", () => {
+    // e.g. a template's placeholder route, whose file doesn't exist: the
+    // whole document can't be resolved, though each real slice can.
+    const withStub: OpenApiDoc = {
+      ...bundled,
+      paths: {
+        ...bundled.paths,
+        __path__: {
+          get: { $ref: "./routes/__name__.yaml#/__operationId__" },
+        } as never,
+      },
+    };
+    const a = sliceOperationById(withStub, "getA");
+    expect(fullDocumentForValidation(a)).toBeUndefined();
+  });
+
   it("is undefined for a document that isn't a slice", () => {
     expect(fullDocumentForValidation(bundled)).toBeUndefined();
   });
