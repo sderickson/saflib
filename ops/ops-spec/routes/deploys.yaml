@@ -1,0 +1,58 @@
+listOpsDeploys:
+  summary: Current build, recent deploys, and restart count
+  description: >
+    `current` is this process's boot. `deploys` are boots that started a new
+    build, newest first. `boots_last_24h` counts every process start (deploys
+    and restarts) in the last day; a high number with few deploys suggests a
+    crash loop.
+  operationId: listOpsDeploys
+  security:
+    - ops-token: [ "ops:read" ]
+  parameters:
+    - name: limit
+      in: query
+      required: false
+      description: Maximum deploys to return (default 20, max 100).
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+  responses:
+    "200":
+      description: Deploy history.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ current, deploys, boots_last_24h ]
+            properties:
+              current:
+                oneOf:
+                  - $ref: "../schemas/ops-boot.yaml"
+                  - type: "null"
+                description: Null only if this process's boot could not be recorded.
+              deploys:
+                type: array
+                items:
+                  $ref: "../schemas/ops-boot.yaml"
+              boots_last_24h:
+                type: integer
+    "401":
+      description: Missing, malformed, unknown, revoked or expired token.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: The token lacks the required scope.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "429":
+      description: Rate limited.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

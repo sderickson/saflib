@@ -9,6 +9,8 @@ import {
   type OpsTokenResolverOptions,
 } from "./auth/ops-token-resolver.ts";
 import { processCheck } from "./health/builtin-checks.ts";
+import { recordCurrentBoot } from "./boot.ts";
+import type { BuildInfo } from "@saflib/node/git-hashes";
 import type { HealthCheck } from "./health/types.ts";
 
 export interface OpsRouterOptions {
@@ -23,6 +25,8 @@ export interface OpsRouterOptions {
   healthChecks?: HealthCheck[];
   /** Rate limit settings for ops-token requests. */
   rateLimits?: OpsTokenResolverOptions;
+  /** Build metadata override (tests); defaults to the image's `/etc/saf/build.json`. */
+  buildInfo?: BuildInfo;
 }
 
 /**
@@ -54,6 +58,8 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
   const context = {
     dbKey,
     healthChecks: [processCheck(), ...(options.healthChecks ?? [])],
+    // Each router creation is one process start in production.
+    currentBoot: recordCurrentBoot(dbKey, options.buildInfo),
   };
   const resolver = createOpsTokenSecurityResolver(() => dbKey, options.rateLimits);
 

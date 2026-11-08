@@ -43,3 +43,44 @@ export const opsTokens = sqliteTable("ops_tokens", {
 });
 
 export type OpsTokenTest1 = Expect<Equal<OpsToken, typeof opsTokens.$inferSelect>>;
+
+/**
+ * One process start. Rows whose build differs from the previous start for the
+ * same service are deploys (`new_build`); the rest are restarts.
+ */
+export interface OpsBoot {
+  id: string;
+  service_name: string;
+  started_at: Date;
+  /** Blue-green color (`SAF_COLOR`), when set. */
+  color: string | null;
+  /** From the image's `/etc/saf/build.json`; null outside built images. */
+  build_ref: string | null;
+  image: string | null;
+  input_hash: string | null;
+  commit_root: string | null;
+  commit_saflib: string | null;
+  dirty: boolean | null;
+  built_at: Date | null;
+  node_version: string;
+  new_build: boolean;
+}
+
+export const opsBoots = sqliteTable("ops_boots", {
+  id: text("id").primaryKey(),
+  service_name: text("service_name").notNull(),
+  // Millisecond resolution: restarts can land within the same second.
+  started_at: integer("started_at", { mode: "timestamp_ms" }).notNull(),
+  color: text("color"),
+  build_ref: text("build_ref"),
+  image: text("image"),
+  input_hash: text("input_hash"),
+  commit_root: text("commit_root"),
+  commit_saflib: text("commit_saflib"),
+  dirty: integer("dirty", { mode: "boolean" }),
+  built_at: integer("built_at", { mode: "timestamp" }),
+  node_version: text("node_version").notNull(),
+  new_build: integer("new_build", { mode: "boolean" }).notNull(),
+});
+
+export type OpsBootTest1 = Expect<Equal<OpsBoot, typeof opsBoots.$inferSelect>>;

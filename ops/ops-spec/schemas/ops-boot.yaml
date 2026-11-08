@@ -1,0 +1,50 @@
+type: object
+description: >
+  One process start. `new_build` marks deploys (the build differs from the
+  previous start of the same service); the rest are restarts. Build fields
+  come from the image's build metadata and are null outside built images.
+required:
+  - id
+  - service_name
+  - started_at
+  - color
+  - build_ref
+  - image
+  - input_hash
+  - commit_root
+  - commit_saflib
+  - dirty
+  - built_at
+  - node_version
+  - new_build
+properties:
+  id:
+    type: string
+  service_name:
+    type: string
+  started_at:
+    type: string
+    format: date-time
+  color:
+    type: [ string, "null" ]
+    description: Blue-green color, when deployed that way.
+  build_ref:
+    type: [ string, "null" ]
+  image:
+    type: [ string, "null" ]
+  input_hash:
+    type: [ string, "null" ]
+  commit_root:
+    type: [ string, "null" ]
+    description: Product repo commit the image was built from (`-dirty` suffix if inputs had uncommitted changes).
+  commit_saflib:
+    type: [ string, "null" ]
+  dirty:
+    type: [ boolean, "null" ]
+  built_at:
+    type: [ string, "null" ]
+    format: date-time
+  node_version:
+    type: string
+  new_build:
+    type: boolean

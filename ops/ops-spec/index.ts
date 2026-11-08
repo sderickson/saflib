@@ -16,6 +16,7 @@ export type { paths };
 export type OpsHealth = components["schemas"]["OpsHealth"];
 export type OpsHealthCheck = components["schemas"]["OpsHealthCheck"];
 export type OpsTokenResponse = components["schemas"]["OpsToken"];
+export type OpsBootResponse = components["schemas"]["OpsBoot"];
 
 /** Response bodies for ops API routes, by operationId and status. */
 export type OpsResponseBody = ExtractResponseBody<operations>;

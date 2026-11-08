@@ -29,6 +29,9 @@
       "OpsToken": {
         "$ref": "#/components/schemas/ops-token"
       },
+      "OpsBoot": {
+        "$ref": "#/components/schemas/ops-boot"
+      },
       "Error": {
         "$ref": "#/components/schemas/error"
       },
@@ -115,6 +118,94 @@
             "type": "string",
             "description": "A human-readable description of the error.",
             "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "ops-boot": {
+        "type": "object",
+        "description": "One process start. `new_build` marks deploys (the build differs from the previous start of the same service); the rest are restarts. Build fields come from the image's build metadata and are null outside built images.\n",
+        "required": [
+          "id",
+          "service_name",
+          "started_at",
+          "color",
+          "build_ref",
+          "image",
+          "input_hash",
+          "commit_root",
+          "commit_saflib",
+          "dirty",
+          "built_at",
+          "node_version",
+          "new_build"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "color": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Blue-green color, when deployed that way."
+          },
+          "build_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "input_hash": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "commit_root": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Product repo commit the image was built from (`-dirty` suffix if inputs had uncommitted changes)."
+          },
+          "commit_saflib": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dirty": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "built_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "node_version": {
+            "type": "string"
+          },
+          "new_build": {
+            "type": "boolean"
           }
         }
       },
@@ -216,6 +307,103 @@
                   "properties": {
                     "health": {
                       "$ref": "#/components/schemas/ops-health"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/deploys": {
+      "get": {
+        "summary": "Current build, recent deploys, and restart count",
+        "description": "`current` is this process's boot. `deploys` are boots that started a new build, newest first. `boots_last_24h` counts every process start (deploys and restarts) in the last day; a high number with few deploys suggests a crash loop.\n",
+        "operationId": "listOpsDeploys",
+        "security": [
+          {
+            "ops-token": [
+              "ops:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum deploys to return (default 20, max 100).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deploy history.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "current",
+                    "deploys",
+                    "boots_last_24h"
+                  ],
+                  "properties": {
+                    "current": {
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/ops-boot"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Null only if this process's boot could not be recorded."
+                    },
+                    "deploys": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ops-boot"
+                      }
+                    },
+                    "boots_last_24h": {
+                      "type": "integer"
                     }
                   }
                 }

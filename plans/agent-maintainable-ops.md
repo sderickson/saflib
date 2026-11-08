@@ -652,8 +652,11 @@ Slices:
       checks, admin token routes); mounted in the base http-app
       (`base-ops`, `deferAuth`, Caddy `/ops/*` matcher, audit entries for
       token create/revoke). Done 2026-11-08.
-- [ ] **1b.** Build manifest written at image build; `GET /ops/deploys`;
-      `saf_build_info`
+- [x] **1b.** Build manifest written at image build; `GET /ops/deploys`;
+      `saf_build_info`. Done 2026-11-08. The manifest already existed
+      (`/etc/saf/build.json` from `saf-docker build`). Each process start is
+      recorded as a boot; boots with a changed build are deploys. The full
+      lockfile resolution is left for Phase 8.
 - [ ] **1c.** Health checks from existing suites (audit rotation, dead jobs,
       backup age); audit-log ops calls
 - [ ] **1d.** Admin UI page for tokens; CLI to mint and revoke tokens

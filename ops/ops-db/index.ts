@@ -23,8 +23,19 @@ export type { FindActiveByHashResult } from "./queries/ops-tokens/find-active-by
 export type { ListTokensResult } from "./queries/ops-tokens/list-tokens.ts";
 export type { RevokeTokenResult } from "./queries/ops-tokens/revoke-token.ts";
 export type { TouchLastUsedResult } from "./queries/ops-tokens/touch-last-used.ts";
+export { recordBoot } from "./queries/ops-boots/record-boot.ts";
+export { listBoots, countBootsSince } from "./queries/ops-boots/list-boots.ts";
+export type {
+  RecordBootParams,
+  RecordBootResult,
+} from "./queries/ops-boots/record-boot.ts";
+export type {
+  ListBootsParams,
+  ListBootsResult,
+  CountBootsSinceResult,
+} from "./queries/ops-boots/list-boots.ts";
 export { opsTokenScopes } from "./schema.ts";
-export type { OpsToken, OpsTokenScope } from "./schema.ts";
+export type { OpsBoot, OpsToken, OpsTokenScope } from "./schema.ts";
 
 import { opsDbManager } from "./instances.ts";
 

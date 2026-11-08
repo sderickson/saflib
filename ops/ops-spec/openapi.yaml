@@ -26,6 +26,8 @@ components:
       $ref: "./schemas/ops-health-check.yaml"
     OpsToken:
       $ref: "./schemas/ops-token.yaml"
+    OpsBoot:
+      $ref: "./schemas/ops-boot.yaml"
     Error:
       $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
@@ -33,6 +35,9 @@ paths:
   /ops/health:
     get:
       $ref: "./routes/health.yaml#/getOpsHealth"
+  /ops/deploys:
+    get:
+      $ref: "./routes/deploys.yaml#/listOpsDeploys"
   /admin/ops-tokens:
     get:
       $ref: "./routes/tokens.yaml#/listOpsTokens"

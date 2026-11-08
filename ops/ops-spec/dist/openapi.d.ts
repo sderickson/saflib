@@ -26,6 +26,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/deploys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current build, recent deploys, and restart count
+         * @description `current` is this process's boot. `deploys` are boots that started a new build, newest first. `boots_last_24h` counts every process start (deploys and restarts) in the last day; a high number with few deploys suggests a crash loop.
+         */
+        get: operations["listOpsDeploys"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/ops-tokens": {
         parameters: {
             query?: never;
@@ -71,6 +91,7 @@ export interface components {
         OpsHealth: components["schemas"]["ops-health"];
         OpsHealthCheck: components["schemas"]["ops-health-check"];
         OpsToken: components["schemas"]["ops-token"];
+        OpsBoot: components["schemas"]["ops-boot"];
         Error: _Ext1_Error;
         /** @description One health check's latest result. */
         "ops-health-check": {
@@ -96,6 +117,26 @@ export interface components {
             checks: components["schemas"]["ops-health-check"][];
         };
         error: _Ext0_error;
+        /** @description One process start. `new_build` marks deploys (the build differs from the previous start of the same service); the rest are restarts. Build fields come from the image's build metadata and are null outside built images. */
+        "ops-boot": {
+            id: string;
+            service_name: string;
+            /** Format: date-time */
+            started_at: string;
+            /** @description Blue-green color, when deployed that way. */
+            color: string | null;
+            build_ref: string | null;
+            image: string | null;
+            input_hash: string | null;
+            /** @description Product repo commit the image was built from (`-dirty` suffix if inputs had uncommitted changes). */
+            commit_root: string | null;
+            commit_saflib: string | null;
+            dirty: boolean | null;
+            /** Format: date-time */
+            built_at: string | null;
+            node_version: string;
+            new_build: boolean;
+        };
         /** @description An ops token's metadata. The secret itself is never returned after creation. */
         "ops-token": {
             id: string;
@@ -143,6 +184,61 @@ export interface operations {
                 content: {
                     "application/json": {
                         health: components["schemas"]["ops-health"];
+                    };
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listOpsDeploys: {
+        parameters: {
+            query?: {
+                /** @description Maximum deploys to return (default 20, max 100). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deploy history. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Null only if this process's boot could not be recorded. */
+                        current: components["schemas"]["ops-boot"] | null;
+                        deploys: components["schemas"]["ops-boot"][];
+                        boots_last_24h: number;
                     };
                 };
             };

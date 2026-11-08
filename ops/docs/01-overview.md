@@ -2,7 +2,7 @@
 
 `ops` is the **agent-facing ops API** for SAF products: a small set of read-mostly endpoints, authenticated by a machine token, that let a maintenance agent (or a human with `curl`) check on a running product without a user session, a dashboard, or database access.
 
-It is being built in phases; see [`plans/agent-maintainable-ops.md`](../../plans/agent-maintainable-ops.md). Today it provides ops tokens and health checks. Logs, issues, metrics, audit, alerts, and dependency status follow.
+It is being built in phases; see [`plans/agent-maintainable-ops.md`](../../plans/agent-maintainable-ops.md). Today it provides ops tokens, health checks, and deploy history. Logs, issues, metrics, audit, alerts, and dependency status follow.
 
 ## Packages
 
@@ -48,6 +48,14 @@ const myCheck: HealthCheck = {
   run: async () => ({ status: "ok", summary: "last backup 3h ago", observed: { age_hours: 3 } }),
 };
 ```
+
+## Deploys
+
+Each time the ops router is created (once per process), it records a **boot** in `ops-db` from the image's build metadata (`/etc/saf/build.json`, written by `saf-docker build`): build ref, image, input hash, root and saflib commits, build time, Node version, and blue-green color. A boot whose build differs from the previous one is a **deploy**; the rest are restarts.
+
+`GET /ops/deploys` returns this process's boot, recent deploys, and `boots_last_24h`. Many boots with few deploys suggests a crash loop.
+
+The same build is published to Prometheus as `saf_build_info{service_name, build_ref, commit_root, commit_saflib} 1`, so graphs can mark deploys.
 
 ## Untrusted content
 
