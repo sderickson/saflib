@@ -2,6 +2,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createOnDiskDbKeyAccessor } from "@saflib/drizzle";
 import { addTransport } from "@saflib/node";
+import {
+  createRedactionIssueRecorder,
+  currentVersion,
+  issuesDb,
+  startIssueRetention,
+} from "@saflib/errors-db";
+import { createErrorService, setErrorService } from "@saflib/errors-service";
 import { createPersistentLogTransport, logsDb } from "@saflib/node-log-db";
 import { opsDb } from "@saflib/ops-db";
 import {
@@ -33,12 +40,40 @@ const logsDbAccessor = createOnDiskDbKeyAccessor({
 /** Opaque key for `@saflib/node-log-db` (persisted, redacted logs). */
 export const getBaseLogsDbKey = logsDbAccessor.getDbKey;
 
+const issuesDbAccessor = createOnDiskDbKeyAccessor({
+  packageUrl: import.meta.url,
+  filePrefix: "issues-db",
+  connect: issuesDb.connect,
+});
+
+/** Opaque key for `@saflib/errors-db` (grouped errors and warnings). */
+export const getBaseIssuesDbKey = issuesDbAccessor.getDbKey;
+
+/**
+ * Record server errors/warnings and client/CSP reports as grouped issues
+ * (`GET /ops/issues`). Call once at startup, before any other error
+ * service is configured (e.g. `configureMockErrors`, which then no-ops).
+ */
+export function configureBaseIssues() {
+  setErrorService(createErrorService({ type: "sqlite", getDbKey: getBaseIssuesDbKey }));
+  startIssueRetention(getBaseIssuesDbKey);
+}
+
 /**
  * Persist this process's logs (redacted, searchable, retained 14 days / 512 MB)
  * for `GET /ops/logs`. Call once at startup, after `setServiceName`.
  */
 export function enableBasePersistentLogs() {
-  addTransport(createPersistentLogTransport({ getDbKey: getBaseLogsDbKey }));
+  addTransport(
+    createPersistentLogTransport({
+      getDbKey: getBaseLogsDbKey,
+      // A log call that leaks a secret or PII becomes a warn issue to fix.
+      onRedaction: createRedactionIssueRecorder({
+        getDbKey: getBaseIssuesDbKey,
+        version: currentVersion(),
+      }),
+    }),
+  );
 }
 
 export interface CreateBaseOpsRouterOptions {
@@ -56,6 +91,7 @@ export function createBaseOpsRouter(options: CreateBaseOpsRouterOptions = {}) {
   return createOpsRouter({
     dbKey: getBaseOpsDbKey(),
     logsDbKey: getBaseLogsDbKey(),
+    issuesDbKey: getBaseIssuesDbKey(),
     healthChecks: [diskCheck({ path: dataDir }), ...(options.healthChecks ?? [])],
   });
 }

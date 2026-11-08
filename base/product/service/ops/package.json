@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@saflib/drizzle": "*",
+    "@saflib/errors-db": "*",
+    "@saflib/errors-service": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/node-log-db": "*",

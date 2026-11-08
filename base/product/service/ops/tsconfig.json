@@ -5,6 +5,8 @@
     { "path": "../../../../monorepo" },
     { "path": "../../../../node" },
     { "path": "../../../../ops/ops-db" },
+    { "path": "../../../../errors/errors-db" },
+    { "path": "../../../../errors/errors-service" },
     { "path": "../../../../node-log/node-log-db" },
     { "path": "../../../../ops/ops-http" }
   ],
