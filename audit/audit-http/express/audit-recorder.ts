@@ -17,9 +17,23 @@ export interface HttpAuditRecorderLocals {
   __httpAuditRecorderSkip?: boolean;
 }
 
+/** A non-user caller (machine credential) to attribute an audit row to. */
+export type AuditMachineActor = {
+  /** Stored as `auth_method`, e.g. `ops_token`. */
+  authMethod: string;
+  /** Stored as `actor_user_id`, prefixed by kind, e.g. `ops_token:<id>`. */
+  actorId: string;
+};
+
 export type AuditRecorderOptions = {
   getAuditDbKey: () => DbKey | undefined;
   auditMap: Readonly<Record<string, AuditMapEntry>>;
+  /**
+   * Attribute requests without a user session to a machine credential (read
+   * from what its security resolver left on `res.locals`). Consulted only
+   * when there is no `auth.userId`.
+   */
+  resolveMachineActor?: (res: Response) => AuditMachineActor | undefined;
 };
 
 export type AuditRecorder = {
@@ -161,6 +175,20 @@ export function createAuditRecorder(
 
   const getAuditDbKey = options.getAuditDbKey;
 
+  function resolveActor(
+    saf: SafContext,
+    res: Response,
+  ): { authMethod: string; actorUserId: string | null } {
+    if (saf.auth?.userId) {
+      return { authMethod: "kratos_session", actorUserId: saf.auth.userId };
+    }
+    const machine = options.resolveMachineActor?.(res);
+    if (machine) {
+      return { authMethod: machine.authMethod, actorUserId: machine.actorId };
+    }
+    return { authMethod: "none", actorUserId: null };
+  }
+
   async function emitOneRow(
     auditDbKey: DbKey,
     saf: SafContext,
@@ -168,6 +196,7 @@ export function createAuditRecorder(
       ts: Date;
       outcome: AuditOutcome;
       authMethod: string;
+      actorUserId: string | null;
       eventType: string;
       resourceType: string;
       resourceId: string | undefined;
@@ -183,7 +212,7 @@ export function createAuditRecorder(
       await appendAuditEvent(auditDbKey, {
         ts: args.ts,
         source: "http",
-        actor_user_id: saf.auth?.userId ?? null,
+        actor_user_id: args.actorUserId,
         auth_method: args.authMethod,
         request_id: saf.requestId ?? null,
         client_ip: saf.clientIp ?? null,
@@ -202,7 +231,7 @@ export function createAuditRecorder(
         route_pattern: logContext.routePattern,
         status_code: logContext.statusCode,
         request_id: saf.requestId ?? null,
-        actor_user_id: saf.auth?.userId ?? null,
+        actor_user_id: args.actorUserId,
       });
     } catch (err) {
       const { log, logError } = getSafReporters();
@@ -244,7 +273,7 @@ export function createAuditRecorder(
 
     const startedAt = recorderLocals(res).auditRequestStartedAt ?? Date.now();
     const outcome = outcomeForEntry(entry, failClosedOptions.responseStatusCode);
-    const authMethod = saf.auth?.userId ? "kratos_session" : "none";
+    const { authMethod, actorUserId } = resolveActor(saf, res);
     const ts = new Date();
     const durationMs = Date.now() - startedAt;
     const pathParams = (req.params ?? {}) as Record<string, string>;
@@ -270,6 +299,7 @@ export function createAuditRecorder(
           ts,
           outcome,
           authMethod,
+          actorUserId,
           eventType: entry.eventType,
           resourceType: entry.resourceType,
           resourceId: primaryId,
@@ -289,6 +319,7 @@ export function createAuditRecorder(
             ts,
             outcome,
             authMethod,
+            actorUserId,
             eventType: entry.eventType,
             resourceType: rt,
             resourceId: undefined,
@@ -338,7 +369,7 @@ export function createAuditRecorder(
         return;
       }
       const outcome = outcomeForEntry(entry, res.statusCode);
-      const authMethod = saf.auth?.userId ? "kratos_session" : "none";
+      const { authMethod, actorUserId } = resolveActor(saf, res);
       const ts = new Date();
       const durationMs = Date.now() - startedAt;
       // Express clears `req.params` once a request leaves its router (e.g. an
@@ -366,6 +397,7 @@ export function createAuditRecorder(
             ts,
             outcome,
             authMethod,
+            actorUserId,
             eventType: entry.eventType,
             resourceType: entry.resourceType,
             resourceId: primaryId,
@@ -381,6 +413,7 @@ export function createAuditRecorder(
               ts,
               outcome,
               authMethod,
+              actorUserId,
               eventType: entry.eventType,
               resourceType: rt,
               resourceId: undefined,

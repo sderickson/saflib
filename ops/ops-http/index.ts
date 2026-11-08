@@ -2,6 +2,7 @@ export { createApp, createOpsRouter, isOpsApiRequest } from "./http.ts";
 export type { OpsRouterOptions } from "./http.ts";
 export {
   createOpsTokenSecurityResolver,
+  opsMachineActor,
   type OpsCaller,
   type OpsTokenResolverOptions,
 } from "./auth/ops-token-resolver.ts";

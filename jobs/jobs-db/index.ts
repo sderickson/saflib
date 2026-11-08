@@ -20,4 +20,5 @@ export { listRunningJobsJob } from "./queries/job/list-running.ts";
 export { deleteExpiredTerminalJob } from "./queries/job/delete-expired-terminal.ts";
 export { countByOriginalRequestIdJob } from "./queries/job/count-by-original-request-id.ts";
 export { countByStatusJob } from "./queries/job/count-by-status.ts";
+export { countDeadSinceJob } from "./queries/job/count-dead-since.ts";
 // END WORKFLOW AREA

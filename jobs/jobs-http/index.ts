@@ -44,3 +44,5 @@ export {
 } from "./src/makeCronEnqueuer.ts";
 export { mapJobToWire } from "./src/mapJob.ts";
 export { jobsServiceStorage, type JobsServiceContext } from "./src/context.ts";
+
+export { createJobsHealthCheck } from "./src/health-check.ts";

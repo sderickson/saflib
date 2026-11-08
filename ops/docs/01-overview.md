@@ -20,6 +20,7 @@ The base product wires these through `@saflib/base-ops` (`base/product/service/o
 - Only the SHA-256 is stored. The plaintext is returned once, by `POST /admin/ops-tokens`.
 - Scopes: `ops:read` (every GET) and `ops:triage` (issue status changes and alert acknowledgement, once those exist).
 - Optional expiry; revocation is permanent. Creating and revoking tokens is audit-logged.
+- Ops API reads are audit-logged against the token: `auth_method: ops_token`, `actor_user_id: ops_token:<id>` (via `opsMachineActor`, passed to `createAuditRecorder({ resolveMachineActor })`). `GET /ops/health` is not audited, since uptime checks poll it.
 - Requests are rate limited per token (default 120/min), and failed authentications per client IP (default 20/min).
 
 ```bash
@@ -40,7 +41,13 @@ Built-ins from `@saflib/ops-http`:
 - `diskCheck({ path })`: free space on the volume holding `path`. Warns under 20% free, fails under 10%.
 - `probeCheck(name, fn)`: wraps any probe, e.g. `SELECT 1` against a database.
 
-Products and suites add their own by passing `healthChecks` to `createBaseOpsRouter` / `createOpsRouter`:
+Suites export checks for their own state (the `HealthCheck` type lives in `@saflib/node`, so suites don't depend on ops):
+
+- `createAuditRotationHealthCheck` (`@saflib/audit-http/express/audit-rotation-health-check`): the oldest active audit row; warns past 25h, fails past 26h (the rotation watchdog's limit).
+- `createJobsHealthCheck` (`@saflib/jobs-http`): warns if any job went dead in the last 24h; reports queue depth.
+- `createCronHealthCheck` (`@saflib/cron-http`): warns if an enabled cron job's last run failed or timed out.
+
+The base product registers all of these plus `base-db`. Products and suites add their own by passing `healthChecks` to `createBaseOpsRouter` / `createOpsRouter`:
 
 ```ts
 const myCheck: HealthCheck = {

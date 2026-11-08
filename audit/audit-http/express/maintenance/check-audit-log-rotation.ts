@@ -6,7 +6,8 @@ import type { DbKey } from "@saflib/drizzle";
 import { getSafReporters } from "@saflib/node";
 import { mapAuditRotationStatus } from "./helpers.ts";
 
-const ROTATION_STALE_THRESHOLD_MS = 26 * 60 * 60 * 1000;
+/** The seal should rotate the active DB daily; older than this is stale. */
+export const ROTATION_STALE_THRESHOLD_MS = 26 * 60 * 60 * 1000;
 
 export function createCheckAuditLogRotationMaintenanceHandler(options: {
   getAuditDbKey: () => DbKey;

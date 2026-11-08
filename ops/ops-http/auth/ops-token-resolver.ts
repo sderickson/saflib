@@ -120,3 +120,15 @@ export function createOpsTokenSecurityResolver(
     },
   };
 }
+
+/**
+ * For `createAuditRecorder({ resolveMachineActor })`: attributes ops API
+ * requests to their token (`auth_method: ops_token`,
+ * `actor_user_id: ops_token:<id>`).
+ */
+export function opsMachineActor(
+  res: Response,
+): { authMethod: string; actorId: string } | undefined {
+  const caller = res.locals.opsToken as OpsCaller | undefined;
+  return caller ? { authMethod: "ops_token", actorId: `ops_token:${caller.id}` } : undefined;
+}
