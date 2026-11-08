@@ -21,6 +21,7 @@ export type OpsLogEntryResponse = components["schemas"]["OpsLogEntry"];
 export type OpsLogTemplateResponse = components["schemas"]["OpsLogTemplate"];
 export type OpsIssueResponse = components["schemas"]["OpsIssue"];
 export type OpsIssueOccurrenceResponse = components["schemas"]["OpsIssueOccurrence"];
+export type OpsDigest = components["schemas"]["OpsDigest"];
 
 /** Response bodies for ops API routes, by operationId and status. */
 export type OpsResponseBody = ExtractResponseBody<operations>;

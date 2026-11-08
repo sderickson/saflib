@@ -36,6 +36,8 @@ components:
       $ref: "./schemas/ops-issue.yaml"
     OpsIssueOccurrence:
       $ref: "./schemas/ops-issue-occurrence.yaml"
+    OpsDigest:
+      $ref: "./schemas/ops-digest.yaml"
     Error:
       $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
@@ -43,6 +45,9 @@ paths:
   /ops/health:
     get:
       $ref: "./routes/health.yaml#/getOpsHealth"
+  /ops/digest:
+    get:
+      $ref: "./routes/digest.yaml#/getOpsDigest"
   /ops/deploys:
     get:
       $ref: "./routes/deploys.yaml#/listOpsDeploys"

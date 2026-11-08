@@ -1,0 +1,85 @@
+type: object
+required: [ since, generated_at, summary, health, deploys, issues, logs ]
+properties:
+  since:
+    type: string
+    format: date-time
+  generated_at:
+    type: string
+    format: date-time
+  summary:
+    type: object
+    required: [ needs_attention, health_status, new_issues, regressed_issues, open_issues, new_log_templates, deploys, boots ]
+    properties:
+      needs_attention:
+        type: boolean
+      health_status:
+        type: string
+        enum: [ ok, warn, fail ]
+      new_issues:
+        type: integer
+      regressed_issues:
+        type: integer
+      open_issues:
+        type: integer
+        description: Open or regressed issues seen in the window.
+      new_log_templates:
+        type: integer
+      deploys:
+        type: integer
+      boots:
+        type: integer
+        description: Process starts in the window (deploys and restarts).
+  health:
+    type: object
+    required: [ status, failing ]
+    properties:
+      status:
+        type: string
+        enum: [ ok, warn, fail ]
+      failing:
+        type: array
+        description: Checks that are warn or fail.
+        items:
+          $ref: "./ops-health-check.yaml"
+  deploys:
+    type: array
+    description: Deploys (new builds) started in the window, newest first.
+    items:
+      $ref: "./ops-boot.yaml"
+  issues:
+    oneOf:
+      - type: object
+        required: [ new, regressed, top ]
+        properties:
+          new:
+            type: array
+            description: First seen in the window, busiest first (up to 10).
+            items:
+              $ref: "./ops-issue.yaml"
+          regressed:
+            type: array
+            description: Resolved issues that came back in the window (up to 10).
+            items:
+              $ref: "./ops-issue.yaml"
+          top:
+            type: array
+            description: Open or regressed issues with the most occurrences in the window (up to 10).
+            items:
+              $ref: "./ops-issue.yaml"
+      - type: "null"
+  logs:
+    oneOf:
+      - type: object
+        required: [ level_counts, new_templates ]
+        properties:
+          level_counts:
+            type: object
+            additionalProperties:
+              type: integer
+          new_templates:
+            type: array
+            description: Message shapes first seen in the window, busiest first (up to 10).
+            items:
+              $ref: "./ops-log-template.yaml"
+      - type: "null"

@@ -13,15 +13,15 @@
   `2026-11-07-self-telemetry`; outer repo branch of the same name). Deploy
   hub, mint a token with `npm run ops-tokens -- create` in the container, and
   `curl /ops/health`. Phase 2 (persistent logs) is also code-complete; the
-  same deploy enables it. Next: Phase 3 (issues and first digest), and the
-  recipes wiring left over from Phase 1.
+  same deploy enables it, as does Phase 3 (issues and digest). Next: Phase 4
+  (agent trial against hub), and the recipes wiring left over from Phase 1.
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
 | 0 | Spikes: Prometheus footprint, graph rendering, Mermaid on GitHub | done (droplet run and embed tests moved to Phase 5) |
 | 1 | Ops token, `/ops` spec skeleton, `/ops/health`, build manifest and deploy markers | code done; deploy pending |
 | 2 | Persistent logs: SQLite store, write-time redaction, message templates, log endpoints | done (deploy pending) |
-| 3 | Issues: persistent grouped errors *and* warnings, resolve/ignore; first digest | todo |
+| 3 | Issues: persistent grouped errors *and* warnings, resolve/ignore; first digest | done except source maps (deploy pending) |
 | 4 | Agent trial: CLI/skill plus a daily scheduled agent on one product | todo |
 | 5 | Prometheus: per-host stack, standard histograms, query proxy, graph snapshots | todo |
 | 6 | Alerting: rules, Alertmanager to Slack and email, dead man's switch, external checks | todo |
@@ -710,14 +710,25 @@ Slices:
 
 ### Phase 3: Issues and first digest
 
-- [ ] `errors-db` SQLite `ErrorService` with levels, fingerprints, groups,
-      occurrences, status transitions and regression detection
-- [ ] Route `warn` calls into issues (opt-in helper such as `reportWarning`,
-      plus automatic for rate-limit and retry-exhausted paths in saflib)
-- [ ] Server-side source map resolution for client errors
-- [ ] Issue endpoints, including resolve/ignore/reopen (`ops:triage`)
-- [ ] Issue metrics exported to `prom-client`
-- [ ] `GET /ops/digest` v1 (issues and logs)
+- [x] **3a.** `errors-db`: issue groups (warn/error/fatal), fingerprints
+      (explicit, then stack, then message shape), status lifecycle with
+      regression detection and expiring ignores, capped redacted
+      occurrences, hourly counts, retention, metrics. `@saflib/node` gains
+      `fingerprint` and `reportWarning`.
+- [x] **3b.** Routing: `SqliteErrorService` (base) and the issue collector
+      alongside Sentry (hub); log redactions become `log.redaction` warn
+      issues; automatic warnings for dead jobs and ops rate limits.
+- [x] **3c.** Issue endpoints, including resolve/ignore/reopen
+      (`ops:triage`), audited in base.
+- [x] **3d.** `GET /ops/digest` v1 (health, deploys, issues, logs,
+      `needs_attention`).
+- [ ] **Deferred: server-side source map resolution for client errors.**
+      It needs build changes first: Vite `sourcemap: "hidden"` for the
+      SPAs, shipping the maps into the API image (not served publicly),
+      and a resolver (e.g. `source-map-js`) keyed by asset URL. Until then,
+      client stacks group by minified frame (bundle hashes are stripped, so
+      groups survive deploys) but aren't readable. Hub's client errors
+      still go to Sentry.
 
 ### Phase 4: Agent trial
 

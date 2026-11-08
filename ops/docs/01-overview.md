@@ -2,7 +2,7 @@
 
 `ops` is the **agent-facing ops API** for SAF products: a small set of read-mostly endpoints, authenticated by a machine token, that let a maintenance agent (or a human with `curl`) check on a running product without a user session, a dashboard, or database access.
 
-It is being built in phases; see [`plans/agent-maintainable-ops.md`](../../plans/agent-maintainable-ops.md). Today it provides ops tokens, health checks, deploy history, and persisted logs. Logs, issues, metrics, audit, alerts, and dependency status follow.
+It is being built in phases; see [`plans/agent-maintainable-ops.md`](../../plans/agent-maintainable-ops.md). Today it provides ops tokens, health checks, deploy history, persisted logs, grouped issues, and a digest. Logs, issues, metrics, audit, alerts, and dependency status follow.
 
 ## Packages
 
@@ -87,6 +87,21 @@ Products opt in with `enableBasePersistentLogs()` (or their equivalent) at start
 - Search uses SQLite FTS5. Free text is matched word by word as literals.
 
 `GET /ops/logs` filters by time, minimum level, service, request id, template and text, newest first with cursor paging. `GET /ops/logs/templates` lists templates active in a window (default 24h), busiest first; `only_new=true` returns only templates first seen in the window, the "new behavior" signal. Message, fields, template text and sample lines are returned under `untrusted`.
+
+## Issues
+
+`@saflib/errors-db` groups errors **and warnings** into issues:
+
+- **Sources:** server reports through a node error collector (`createIssueCollector`, which runs alongside vendor collectors such as Sentry); client and CSP reports through the SQLite `ErrorService`; leaking log lines through `createRedactionIssueRecorder` (`log.redaction:<kind>:<template>`, throttled). Built-in warnings: jobs that go dead (`jobs.dead:<operation>`), ops token rate limits and failed-auth limits. Use `reportWarning(message, { fingerprint })` from `@saflib/node` for your own.
+- **Grouping:** an explicit `fingerprint` if given; else the error name plus our own top stack frames (library frames, line numbers and bundle hashes dropped); else the message shape.
+- **Lifecycle:** `open` → `resolved` / `ignored` (optionally until a time). A resolved issue seen again becomes `regressed`; an expired ignore reopens. Levels escalate (warn → error).
+- **Storage:** the newest 20 occurrences per issue (redacted), hourly counts for window queries, retention for stale closed issues.
+
+Endpoints: `GET /ops/issues` (status/level/kind; `new`, `regressed`; `sort=window_count`), `GET /ops/issues/:id`, `GET /ops/issues/:id/occurrences`, and `POST /ops/issues/:id/{resolve,ignore,reopen}` with `ops:triage` (recorded as `ops_token:<id>`).
+
+## Digest
+
+`GET /ops/digest?since=` (default 24h) is the agent's first call: health failures, deploys and restarts, new / regressed / busiest issues, new log templates and level counts. `summary.needs_attention` is false when health is ok and nothing new or regressed needs a look (new info-level templates don't count), so a scheduled run can stop early. Sections for stores a product hasn't enabled are null.
 
 ## Untrusted content
 

@@ -2,6 +2,7 @@ import express from "express";
 import { createScopedMiddleware, type SecurityResolver } from "@saflib/express";
 import { jsonSpec } from "@saflib/ops-spec";
 import { getOpsHealthHandler } from "./get-ops-health.ts";
+import { getOpsDigestHandler } from "./get-ops-digest.ts";
 import { listOpsDeploysHandler } from "./list-ops-deploys.ts";
 import { listOpsLogsHandler } from "./list-ops-logs.ts";
 import { listOpsLogTemplatesHandler } from "./list-ops-log-templates.ts";
@@ -27,6 +28,7 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
     }),
   );
   router.get("/ops/health", getOpsHealthHandler);
+  router.get("/ops/digest", getOpsDigestHandler);
   router.get("/ops/deploys", listOpsDeploysHandler);
   router.get("/ops/logs", listOpsLogsHandler);
   router.get("/ops/logs/templates", listOpsLogTemplatesHandler);

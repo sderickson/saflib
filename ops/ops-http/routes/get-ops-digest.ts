@@ -1,0 +1,87 @@
+import { createHandler } from "@saflib/express";
+import type { OpsDigest, OpsResponseBody } from "@saflib/ops-spec";
+import { countBootsSince, listBoots } from "@saflib/ops-db";
+import { listIssues } from "@saflib/errors-db";
+import { countLogsByLevel, listTemplates } from "@saflib/node-log-db";
+import { throwError } from "@saflib/utils";
+import { opsServiceStorage } from "../context.ts";
+import { runHealthChecks } from "../health/run-health-checks.ts";
+import { mapIssue, mapLogTemplate, mapOpsBoot, queryDate } from "./_helpers.ts";
+
+const DAY_MS = 86_400_000;
+const TOP = 10;
+
+export const getOpsDigestHandler = createHandler(async function (req, res) {
+  const { dbKey, logsDbKey, issuesDbKey, healthChecks, currentBoot } = opsServiceStorage.getStore()!;
+  const since = queryDate(req.query.since) ?? new Date(Date.now() - DAY_MS);
+  await currentBoot;
+
+  const [health, recentDeploys, boots] = await Promise.all([
+    runHealthChecks(healthChecks),
+    throwError(listBoots(dbKey, { newBuildsOnly: true, limit: 50 })),
+    throwError(countBootsSince(dbKey, since)),
+  ]);
+  const deploys = recentDeploys.filter((b) => b.started_at >= since);
+
+  let issues: OpsDigest["issues"] = null;
+  let newIssueCount = 0;
+  let regressedCount = 0;
+  let openCount = 0;
+  if (issuesDbKey) {
+    const [fresh, regressed, top, open] = await Promise.all([
+      throwError(listIssues(issuesDbKey, { windowSince: since, newInWindow: true, sort: "window_count", limit: 200 })),
+      throwError(listIssues(issuesDbKey, { windowSince: since, regressedInWindow: true, sort: "window_count", limit: 200 })),
+      throwError(
+        listIssues(issuesDbKey, { windowSince: since, statuses: ["open", "regressed"], seenInWindow: true, sort: "window_count", limit: TOP }),
+      ),
+      throwError(
+        listIssues(issuesDbKey, { windowSince: since, statuses: ["open", "regressed"], seenInWindow: true, limit: 200 }),
+      ),
+    ]);
+    // Ignored issues don't need attention even when new.
+    const freshActive = fresh.issues.filter((i) => i.status !== "ignored");
+    newIssueCount = freshActive.length;
+    regressedCount = regressed.issues.length;
+    openCount = open.issues.length;
+    issues = {
+      new: freshActive.slice(0, TOP).map(mapIssue),
+      regressed: regressed.issues.slice(0, TOP).map(mapIssue),
+      top: top.issues.map(mapIssue),
+    };
+  }
+
+  let logs: OpsDigest["logs"] = null;
+  let newTemplateCount = 0;
+  let newSevereTemplates = 0;
+  if (logsDbKey) {
+    const [levelCounts, templates] = await Promise.all([
+      throwError(countLogsByLevel(logsDbKey, since)),
+      throwError(listTemplates(logsDbKey, { since, onlyNew: true, limit: 200 })),
+    ]);
+    newTemplateCount = templates.length;
+    newSevereTemplates = templates.filter((t) => t.level === "error" || t.level === "warn").length;
+    logs = { level_counts: levelCounts, new_templates: templates.slice(0, TOP).map(mapLogTemplate) };
+  }
+
+  const digest: OpsDigest = {
+    since: since.toISOString(),
+    generated_at: new Date().toISOString(),
+    summary: {
+      needs_attention:
+        health.status !== "ok" || newIssueCount > 0 || regressedCount > 0 || newSevereTemplates > 0,
+      health_status: health.status,
+      new_issues: newIssueCount,
+      regressed_issues: regressedCount,
+      open_issues: openCount,
+      new_log_templates: newTemplateCount,
+      deploys: deploys.length,
+      boots,
+    },
+    health: { status: health.status, failing: health.checks.filter((c) => c.status !== "ok") },
+    deploys: deploys.map(mapOpsBoot),
+    issues,
+    logs,
+  };
+  const response: OpsResponseBody["getOpsDigest"][200] = { digest };
+  res.status(200).json(response);
+});

@@ -105,6 +105,15 @@ describe("persistent log transport", () => {
     expect(sameShape.entries).toHaveLength(5);
   });
 
+  it("counts lines by level in a window", async () => {
+    child("a").info("one");
+    child("a").warn("two");
+    child("a").warn("three");
+    transport.flush();
+    const { countLogsByLevel } = await import("./index.ts");
+    expect(await throwError(countLogsByLevel(dbKey, new Date(Date.now() - 60_000)))).toEqual({ info: 1, warn: 2 });
+  });
+
   it("tracks templates with window counts and flags new ones", async () => {
     const before = new Date(Date.now() - 1000);
     child("a").info("job 1 done");

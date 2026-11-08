@@ -9,6 +9,7 @@ export {
 } from "./transport.ts";
 export { pruneLogs, usedBytes, type PruneResult, type RetentionOptions } from "./retention.ts";
 export { listLogs, toFtsQuery, type ListLogsParams, type ListLogsResult } from "./queries/list-logs.ts";
+export { countLogsByLevel, type CountLogsByLevelResult } from "./queries/count-by-level.ts";
 export {
   listTemplates,
   type ListTemplatesParams,
