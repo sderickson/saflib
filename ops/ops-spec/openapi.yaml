@@ -48,6 +48,9 @@ paths:
   /ops/logs/templates:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogTemplates"
+  /admin/logs:
+    get:
+      $ref: "./routes/logs.yaml#/listAdminLogs"
   /admin/ops-tokens:
     get:
       $ref: "./routes/tokens.yaml#/listOpsTokens"

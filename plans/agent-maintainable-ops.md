@@ -12,13 +12,15 @@
 - **Next action:** review the Phase 1 commits (saflib branch
   `2026-11-07-self-telemetry`; outer repo branch of the same name). Deploy
   hub, mint a token with `npm run ops-tokens -- create` in the container, and
-  `curl /ops/health`. Then start Phase 2 (persistent logs).
+  `curl /ops/health`. Phase 2 (persistent logs) is also code-complete; the
+  same deploy enables it. Next: Phase 3 (issues and first digest), and the
+  recipes wiring left over from Phase 1.
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
 | 0 | Spikes: Prometheus footprint, graph rendering, Mermaid on GitHub | done (droplet run and embed tests moved to Phase 5) |
 | 1 | Ops token, `/ops` spec skeleton, `/ops/health`, build manifest and deploy markers | code done; deploy pending |
-| 2 | Persistent logs: SQLite store, write-time redaction, message templates, log endpoints | in progress (2a-2c done) |
+| 2 | Persistent logs: SQLite store, write-time redaction, message templates, log endpoints | done (deploy pending) |
 | 3 | Issues: persistent grouped errors *and* warnings, resolve/ignore; first digest | todo |
 | 4 | Agent trial: CLI/skill plus a daily scheduled agent on one product | todo |
 | 5 | Prometheus: per-host stack, standard histograms, query proxy, graph snapshots | todo |
@@ -698,9 +700,10 @@ Slices:
 - [x] **2c.** `GET /ops/logs`, `GET /ops/logs/templates` (free text under
       `untrusted`; audited), wired into base (`enableBasePersistentLogs`)
       and hub.
-- [ ] **2d.** The admin log page works in production (site-admin route
-      backed by `node-log-db`; `node-log-vue` switches from the dev ring
-      buffer).
+- [x] **2d.** The admin log page works in production: `GET /admin/logs`
+      (site-admin, audited in base) plus an `ops-vue` Logs page (filters,
+      load more, plain-text rendering of untrusted messages) in the base and
+      hub admins. The dev ring-buffer page stays as a dev-only "Live logs".
 - [ ] *(Follow-up idea)* Generalize the FTS5 pattern into a saflib helper for
       product search (FTS table + trigger migration template, safe query
       builder, bm25 weights, snippet/highlight).

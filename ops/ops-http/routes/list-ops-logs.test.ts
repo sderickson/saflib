@@ -4,6 +4,7 @@ import winston from "winston";
 import type express from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { createToken, opsDb } from "@saflib/ops-db";
+import { makeAdminHeaders, makeUserHeaders } from "@saflib/express";
 import {
   createPersistentLogTransport,
   logsDb,
@@ -78,6 +79,14 @@ describe("ops log endpoints", () => {
     const noLogs = createApp({ dbKey: opsKey });
     await request(noLogs).get("/ops/logs").set(auth).expect(404);
     await request(noLogs).get("/ops/logs/templates").set(auth).expect(404);
+  });
+
+  it("serves the same logs to site admins at /admin/logs, not to tokens", async () => {
+    await request(app).get("/admin/logs").expect(401);
+    await request(app).get("/admin/logs").set(makeUserHeaders()).expect(403);
+    await request(app).get("/admin/logs").set(auth).expect(401);
+    const res = await request(app).get("/admin/logs?q=imported").set(makeAdminHeaders()).expect(200);
+    expect(res.body.logs).toHaveLength(2);
   });
 
   it("validates query params", async () => {

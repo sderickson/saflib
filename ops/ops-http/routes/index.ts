@@ -22,6 +22,8 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.get("/ops/deploys", listOpsDeploysHandler);
   router.get("/ops/logs", listOpsLogsHandler);
   router.get("/ops/logs/templates", listOpsLogTemplatesHandler);
+  // Same query as /ops/logs, behind a site-admin session for the admin SPA.
+  router.get("/admin/logs", listOpsLogsHandler);
   router.get("/admin/ops-tokens", listOpsTokensHandler);
   router.post("/admin/ops-tokens", createOpsTokenHandler);
   router.post("/admin/ops-tokens/:id/revoke", revokeOpsTokenHandler);

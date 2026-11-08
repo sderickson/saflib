@@ -38,8 +38,8 @@ export interface OpsRouterOptions {
  * True for requests the ops API authenticates itself (`/ops/*`, by ops
  * token). Products pass this as `deferAuth` to `createProductHttpApp` so the
  * global session gate lets them through to the operation's own `security`.
- * Token admin routes (`/admin/ops-tokens`) are NOT deferred: they use the
- * session like any other admin route.
+ * Admin routes (`/admin/ops-tokens`, `/admin/logs`) are NOT deferred: they
+ * use the session like any other admin route.
  */
 export function isOpsApiRequest(req: Request): boolean {
   return req.path === "/ops" || req.path.startsWith("/ops/");
@@ -49,6 +49,7 @@ function isOpsPath(path: string): boolean {
   return (
     path === "/ops" ||
     path.startsWith("/ops/") ||
+    path === "/admin/logs" ||
     path === "/admin/ops-tokens" ||
     path.startsWith("/admin/ops-tokens/")
   );
