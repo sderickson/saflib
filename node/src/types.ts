@@ -127,6 +127,12 @@ export interface ErrorReportOptions {
   // default: error
   level?: ErrorLevels;
   extra?: Record<string, unknown>;
+  /**
+   * Groups reports into one issue regardless of message or stack, e.g.
+   * `jobs.dead:sendEmail`. Without it, issue trackers group by stack (or,
+   * for warnings without a useful stack, by message shape).
+   */
+  fingerprint?: string;
 }
 
 /**
@@ -151,6 +157,8 @@ export interface ErrorCollectorParam {
   level: ErrorLevels;
   extra: Record<string, unknown>;
   tags: Record<string, string | undefined>;
+  /** See {@link ErrorReportOptions.fingerprint}. */
+  fingerprint?: string;
 }
 
 /**
