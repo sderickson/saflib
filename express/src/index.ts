@@ -38,6 +38,7 @@ export {
 export { makeCsrfMiddleware } from "./middleware/csrf.ts";
 export {
   compileOperationSecurity,
+  isSessionlessOperation,
   sessionSecurityResolver,
   SESSION_SCOPE_EMAIL_VERIFIED,
   SESSION_SCOPE_MFA,

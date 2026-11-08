@@ -169,6 +169,7 @@ describe("CSRF validator middleware", () => {
   it.each([
     ["tagged csrf-exempt", { tags: ["csrf-exempt"] }],
     ["marked x-public", { "x-public": true }],
+    ["secured only by a standalone scheme", { security: [{ "ops-token": ["ops:triage"] }] }],
   ])("bypasses csrf for routes %s", async (_label, schema) => {
     const app = express();
     app.use((req, _res, next) => {
@@ -183,6 +184,22 @@ describe("CSRF validator middleware", () => {
 
     const response = await request(app).post("/contact");
     expect(response.status).toBe(200);
+  });
+
+  it("still enforces csrf when any requirement includes session", async () => {
+    const app = express();
+    app.use((req, _res, next) => {
+      req.openapi = { schema: { security: [{ session: [], team: [] }] } } as any;
+      next();
+    });
+    app.use(makeCsrfTokenMiddleware());
+    app.use(makeCsrfMiddleware());
+    app.post("/team-thing", (_req, res) => {
+      res.status(200).json({ ok: true });
+    });
+
+    const response = await request(app).post("/team-thing");
+    expect(response.status).toBe(403);
   });
 
   it("bypasses csrf for safe methods", async () => {

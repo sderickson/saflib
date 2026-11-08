@@ -58,6 +58,23 @@ const teamResolver: SecurityResolver = {
   ],
 };
 
+/** Standalone machine-credential resolver: a bearer token, no session. */
+const machineResolver: SecurityResolver = {
+  scopes: ["read"],
+  standalone: true,
+  middleware: () => [
+    (req, res, next) => {
+      const header = req.header("authorization");
+      if (header !== "Bearer good") {
+        res.status(401).json({ message: "bad token" });
+        return;
+      }
+      res.locals.machine = "good";
+      next();
+    },
+  ],
+};
+
 function appFor(operation: Record<string, unknown>) {
   const app = express();
   const registerRoute = makeRegisterRoute({
@@ -192,6 +209,37 @@ describe("makeRegisterRoute with OpenAPI security", () => {
     expect(owner.body).toEqual({ team: "owned" });
 
     expect((await request(app).get("/public")).status).toBe(200);
+  });
+
+  it("accepts a standalone scheme without a session and runs only it", async () => {
+    const app = express();
+    const registerRoute = makeRegisterRoute({
+      securityResolvers: { machine: machineResolver },
+    });
+    registerRoute(
+      app,
+      opSpec({ security: [{ machine: ["read"] }] }),
+      (_req, res) => {
+        res.status(200).json({ machine: res.locals.machine ?? null });
+      },
+    );
+    app.use(errorHandler);
+
+    await request(app).get("/things/1").expect(401);
+    const ok = await request(app)
+      .get("/things/1")
+      .set("authorization", "Bearer good")
+      .expect(200);
+    expect(ok.body).toEqual({ machine: "good" });
+  });
+
+  it.each([
+    [{ security: [{ session: [], machine: [] }] }, /standalone scheme "machine" must be the only scheme/],
+    [{ security: [{ machine: ["write"] }] }, /unknown scope "write" for scheme "machine"/],
+  ])("fails closed for misused standalone schemes: %j", (operation, message) => {
+    expect(() =>
+      compileOperationSecurity(opSpec(operation), { machine: machineResolver }),
+    ).toThrow(message);
   });
 
   it("rejects multi-operation specs with an undeclared operation at mount time", () => {

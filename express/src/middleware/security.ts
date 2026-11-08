@@ -16,6 +16,14 @@ import { makeAuthMiddleware } from "./auth.ts";
 export interface SecurityResolver {
   /** Every scope this scheme understands; unknown scopes fail at mount time. */
   scopes: readonly string[];
+  /**
+   * The scheme authenticates the caller on its own, without a user session
+   * (a machine credential such as an ops bearer token). A standalone scheme
+   * must be the only scheme in its requirement; every other requirement must
+   * include `session`. Operations secured only by standalone schemes skip
+   * CSRF, since no cookie authenticates them.
+   */
+  standalone?: boolean;
   middleware: (scopes: string[]) => Handler[];
 }
 
@@ -104,8 +112,17 @@ function compileRequirement(
   const schemes = Object.keys(requirement).sort((a, b) =>
     a === "session" ? -1 : b === "session" ? 1 : 0,
   );
-  if (!schemes.includes("session")) {
-    fail("authenticated requirements must include the `session` scheme");
+  const standalone = schemes.find((scheme) => allResolvers[scheme]?.standalone);
+  if (standalone) {
+    if (schemes.length > 1) {
+      fail(
+        `standalone scheme "${standalone}" must be the only scheme in its requirement`,
+      );
+    }
+  } else if (!schemes.includes("session")) {
+    fail(
+      "authenticated requirements must include the `session` scheme (or one standalone scheme)",
+    );
   }
 
   return schemes.flatMap((scheme) => {
@@ -194,6 +211,26 @@ export function compileOperationSecurity(
     chain(req, res, next);
   };
   return [dispatcher];
+}
+
+/**
+ * True when the matched operation declares `security` and none of its
+ * requirements includes `session`, i.e. it is secured by a standalone
+ * (machine credential) scheme. Mount-time compilation rejects any other
+ * session-less requirement, so this never matches an unsecured route.
+ */
+export function isSessionlessOperation(schema: object | undefined): boolean {
+  const security = (schema as Record<string, unknown> | undefined)?.security;
+  return (
+    Array.isArray(security) &&
+    security.length > 0 &&
+    security.every(
+      (requirement) =>
+        typeof requirement === "object" &&
+        requirement !== null &&
+        !Object.prototype.hasOwnProperty.call(requirement, "session"),
+    )
+  );
 }
 
 /** True when the matched operation is marked `x-public: true`. */

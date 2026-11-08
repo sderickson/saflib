@@ -4,7 +4,7 @@ import {
   OPENAPI_TAG_CSRF_EXEMPT,
 } from "@saflib/openapi";
 import { isInternalRequest } from "../markInternal.ts";
-import { isPublicOperation } from "./security.ts";
+import { isPublicOperation, isSessionlessOperation } from "./security.ts";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -16,6 +16,8 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
  * otherwise `x-public` / `csrf-exempt` cannot be trusted.
  *
  * Skips `x-public` operations (no session to protect).
+ * Skips operations secured only by standalone schemes (bearer machine
+ * credentials; no cookie authenticates them).
  * Skips `csrf-exempt` for browser-initiated posts that cannot attach our token
  * (e.g. Content-Security-Policy violation reports).
  * Skips internal-listener traffic (assertion-authenticated unix socket); CSRF
@@ -48,6 +50,7 @@ export const makeCsrfMiddleware = (): Handler => {
     const tags = req.openapi.schema.tags;
     if (
       isPublicOperation(req.openapi.schema) ||
+      isSessionlessOperation(req.openapi.schema) ||
       tags?.includes(OPENAPI_TAG_CSRF_EXEMPT)
     ) {
       return next();
