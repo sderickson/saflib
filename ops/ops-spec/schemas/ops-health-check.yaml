@@ -1,0 +1,24 @@
+type: object
+description: One health check's latest result.
+required:
+  - name
+  - status
+  - summary
+properties:
+  name:
+    type: string
+    description: Stable identifier, e.g. `disk`, `db`, `process`.
+  status:
+    type: string
+    enum: [ ok, warn, fail ]
+  summary:
+    type: string
+    description: One line for humans and agents, e.g. "21% free on /app/data".
+  observed:
+    type: object
+    description: Numbers behind the status, for comparing over time.
+    additionalProperties:
+      type: [ number, string, boolean, "null" ]
+  duration_ms:
+    type: number
+    description: How long the check took.

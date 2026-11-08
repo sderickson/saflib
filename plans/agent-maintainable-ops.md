@@ -618,13 +618,45 @@ configuration, not rewriting code.
 
 ### Phase 1: Ops token, health, manifest
 
-- [ ] `ops-token` security scheme, token table, admin and CLI management,
-      scopes, rate limit, audit of ops calls
-- [ ] `ops-spec` / `ops-http` skeleton mounted in the base monolith
-- [ ] Build manifest written at image build; `GET /ops/deploys`;
+**Design notes (2026-11-08):**
+
+- **Machine security schemes in `@saflib/express`.**
+  - Today every authenticated requirement must include `session`.
+    `SecurityResolver` gains `standalone: true` for credential schemes that
+    authenticate on their own.
+  - A requirement is either `session` (plus optional companion schemes) or
+    exactly one standalone scheme. Never both.
+  - CSRF skips operations whose requirement has no `session`, since there's
+    no cookie to protect.
+  - The global session gate defers `/ops/*` via `deferAuth`, so the
+    operation's own `security` decides.
+- **Token format and storage.**
+  - Format: `safops_` + 32 random bytes in base64url.
+  - Stored as SHA-256. That's enough for high-entropy random tokens; no
+    password KDF is needed.
+  - The first 8 characters after the prefix are kept for display.
+  - Fields: name, scopes (JSON), `created_by`, `expires_at`, `last_used_at`
+    (throttled updates), `revoked_at`.
+  - The DB is its own SQLite file (`ops-db`, the same pattern as `cron-db`),
+    so the product compose needs one more volume.
+- **Admin routes** live at `/admin/ops-tokens` (session `site-admin`), so
+  they're outside the deferred `/ops/*` prefix.
+- **Rate limit:** an in-memory fixed window per token (and per IP for failed
+  auth). One process per color, so in-memory is enough.
+
+Slices:
+
+- [ ] **1a.** Machine schemes in express (standalone resolvers, CSRF,
+      tests); `ops-db` (token table and queries); `ops-spec`; `ops-http`
+      (token resolver, rate limit, `/ops/health` with disk, DB and process
+      checks, admin token routes); mounted in the base http-app
+- [ ] **1b.** Build manifest written at image build; `GET /ops/deploys`;
       `saf_build_info`
-- [ ] `GET /ops/health` with the checks that already exist (audit rotation,
-      jobs, backup age, disk)
+- [ ] **1c.** Health checks from existing suites (audit rotation, dead jobs,
+      backup age); audit-log ops calls
+- [ ] **1d.** Admin UI page for tokens; CLI to mint and revoke tokens
+- [ ] **1e.** Wire into hub: volume mount, Caddy unchanged (forward-auth
+      doesn't block); deploy
 
 ### Phase 2: Persistent logs
 

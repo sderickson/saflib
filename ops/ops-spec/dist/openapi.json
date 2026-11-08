@@ -1,0 +1,519 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Ops API",
+    "version": "1.0.0",
+    "description": "Agent-facing operational telemetry for a SAF product (health, and later logs, issues, metrics, audit, alerts, dependencies), read with an ops token. Plus site-admin routes for managing those tokens. Free text that originated outside the app is always returned under an `untrusted` key.\n"
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
+      },
+      "ops-token": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Machine credential for the ops API (`Authorization: Bearer safops_…`). Not tied to a user. Scopes: `ops:read` (every GET), `ops:triage` (issue status changes, alert acknowledgement).\n"
+      }
+    },
+    "schemas": {
+      "OpsHealth": {
+        "$ref": "#/components/schemas/ops-health"
+      },
+      "OpsHealthCheck": {
+        "$ref": "#/components/schemas/ops-health-check"
+      },
+      "OpsToken": {
+        "$ref": "#/components/schemas/ops-token"
+      },
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "ops-health-check": {
+        "type": "object",
+        "description": "One health check's latest result.",
+        "required": [
+          "name",
+          "status",
+          "summary"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Stable identifier, e.g. `disk`, `db`, `process`."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "warn",
+              "fail"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "description": "One line for humans and agents, e.g. \"21% free on /app/data\"."
+          },
+          "observed": {
+            "type": "object",
+            "description": "Numbers behind the status, for comparing over time.",
+            "additionalProperties": {
+              "type": [
+                "number",
+                "string",
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "duration_ms": {
+            "type": "number",
+            "description": "How long the check took."
+          }
+        }
+      },
+      "ops-health": {
+        "type": "object",
+        "description": "Aggregate health. `status` is the worst of the checks (`fail` > `warn` > `ok`).\n",
+        "required": [
+          "status",
+          "checked_at",
+          "checks"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "warn",
+              "fail"
+            ]
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ops-health-check"
+            }
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "ops-token": {
+        "type": "object",
+        "description": "An ops token's metadata. The secret itself is never returned after creation.",
+        "required": [
+          "id",
+          "name",
+          "token_prefix",
+          "scopes",
+          "created_by",
+          "created_at",
+          "expires_at",
+          "last_used_at",
+          "revoked_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "token_prefix": {
+            "type": "string",
+            "description": "First characters after `safops_`, to recognize which token is which."
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ops:read",
+                "ops:triage"
+              ]
+            }
+          },
+          "created_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Kratos identity id of the admin who created it."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "last_used_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Updated at most once a minute."
+          },
+          "revoked_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/ops/health": {
+      "get": {
+        "summary": "Aggregate health checks",
+        "description": "Runs every registered health check (disk, database, process, and any the product adds) and returns each result plus the worst status. Responds 200 even when checks fail; the body says what is wrong.\n",
+        "operationId": "getOpsHealth",
+        "security": [
+          {
+            "ops-token": [
+              "ops:read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Health check results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "health"
+                  ],
+                  "properties": {
+                    "health": {
+                      "$ref": "#/components/schemas/ops-health"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops-tokens": {
+      "get": {
+        "summary": "List ops tokens (admin)",
+        "operationId": "listOpsTokens",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every token, newest first, including revoked and expired ones.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ops_tokens"
+                  ],
+                  "properties": {
+                    "ops_tokens": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ops-token"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a site admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create an ops token (admin)",
+        "description": "Mints a token. The plaintext `token` is in this response only; it cannot be retrieved again.\n",
+        "operationId": "createOpsToken",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "scopes"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ops:read",
+                        "ops:triage"
+                      ]
+                    }
+                  },
+                  "expires_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time",
+                    "description": "Optional expiry; omit or null for no expiry."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The new token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ops_token",
+                    "token"
+                  ],
+                  "properties": {
+                    "ops_token": {
+                      "$ref": "#/components/schemas/ops-token"
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "The secret, `safops_…`. Shown once."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request (e.g. expiry in the past).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a site admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops-tokens/{id}/revoke": {
+      "post": {
+        "summary": "Revoke an ops token (admin)",
+        "operationId": "revokeOpsToken",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Empty JSON object.",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The revoked token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ops_token"
+                  ],
+                  "properties": {
+                    "ops_token": {
+                      "$ref": "#/components/schemas/ops-token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a site admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No token with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Already revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

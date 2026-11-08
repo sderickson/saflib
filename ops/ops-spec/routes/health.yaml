@@ -1,0 +1,38 @@
+getOpsHealth:
+  summary: Aggregate health checks
+  description: >
+    Runs every registered health check (disk, database, process, and any the
+    product adds) and returns each result plus the worst status. Responds 200
+    even when checks fail; the body says what is wrong.
+  operationId: getOpsHealth
+  security:
+    - ops-token: [ "ops:read" ]
+  responses:
+    "200":
+      description: Health check results.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ health ]
+            properties:
+              health:
+                $ref: "../schemas/ops-health.yaml"
+    "401":
+      description: Missing, malformed, unknown, revoked or expired token.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: The token lacks the required scope.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "429":
+      description: Rate limited.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
