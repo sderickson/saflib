@@ -11,7 +11,7 @@ It is being built in phases; see [`plans/agent-maintainable-ops.md`](../../plans
 | `@saflib/ops-db`   | Hashed machine tokens: mint, look up, list, revoke, throttled last-used                         |
 | `@saflib/ops-spec` | OpenAPI contract: `/ops/*` (ops token) and `/admin/ops-tokens` (site admin)                     |
 | `@saflib/ops-http` | `ops-token` security resolver, rate limits, health check runner and built-in checks, router     |
-| `@saflib/ops-vue`  | Admin page for listing, creating (secret shown once) and revoking tokens                        |
+| `@saflib/ops-vue`  | Admin page for listing, creating (secret shown once) and revoking tokens. Calls `api.<domain>` by default; `configureOpsVue({ apiSubdomain })` points it elsewhere |
 
 The base product wires these through `@saflib/base-ops` (`base/product/service/ops`), which owns the on-disk ops database and the default health checks.
 

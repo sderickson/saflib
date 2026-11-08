@@ -118,3 +118,25 @@ describe("OpsTokensAsync", () => {
     wrapper.unmount();
   });
 });
+
+describe("configureOpsVue", () => {
+  stubGlobals();
+  const seen: string[] = [];
+  setupMockServer([
+    http.get("http://hub.localhost:3000/admin/ops-tokens", ({ request }) => {
+      seen.push(request.url);
+      return HttpResponse.json({ ops_tokens: [] });
+    }),
+  ]);
+
+  it("sends requests to the configured API subdomain", async () => {
+    const { configureOpsVue, getClient } = await import("../client.ts");
+    configureOpsVue({ apiSubdomain: "hub" });
+    try {
+      await getClient().GET("/admin/ops-tokens", {});
+      expect(seen).toEqual(["http://hub.localhost:3000/admin/ops-tokens"]);
+    } finally {
+      configureOpsVue({ apiSubdomain: "api" });
+    }
+  });
+});

@@ -674,8 +674,12 @@ Slices:
 - [x] **1e.** Wire into hub: volume mount, Caddy unchanged (forward-auth
       doesn't block). Done 2026-11-08 in the outer repo: `hub/service/ops`
       (`@sderickson/hub-ops`), mounted in `hub-http`, `/opt/hub/ops`
-      volume. Hub has no session gate, audit suite or admin SPA, so its ops
-      reads aren't audited and tokens come from the CLI.
+      volume. Hub has no session gate or audit suite, so its ops reads aren't
+      audited. The ops tokens page is in hub's existing admin SPA, which uses
+      `configureOpsVue({ apiSubdomain: "hub" })` because hub's API is at
+      `hub.<domain>`.
+- [ ] **Recipes:** wire `recipes-ops` + `deferAuth` into its http-app (the
+      same shape as base) and add the ops tokens page to its admin SPA.
 - [ ] **Deploy hub and smoke-test** (needs the human: deploys are
       outward-facing).
 
@@ -724,7 +728,12 @@ Slices:
       GitHub PR body and in Slack; Mermaid `xychart-beta` on GitHub
 - [ ] Standard histogram bucket sets (finer latency buckets, status
       classes), with saflib subsystems instrumented
-- [ ] `/ops/metrics/*` proxy with limits
+- [ ] `/ops/metrics/*` proxy with limits. **Per-app isolation:** Prometheus
+      is shared per host, so the proxy must inject the app's own label
+      matcher (e.g. `service_name="recipes"`) into every selector before
+      forwarding, so one app's token can't read another app's series. Use
+      `prom-label-proxy` or equivalent PromQL rewriting; never pass raw
+      queries through. Graph links get the same enforcement.
 - [ ] Graph links: signed-GET rendering with lazy `object-store` caching
       (or the POST snapshot fallback, per Phase 0); `saf-ops graph`
 - [ ] Digest gains error-rate and p95 comparisons
