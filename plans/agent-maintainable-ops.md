@@ -6,13 +6,14 @@
 
 ## Status
 
-- **Phase:** not started (plan drafted)
+- **Phase:** 1 (ops token, health, manifest)
 - **Last updated:** 2026-11-08
-- **Next action:** Phase 0 spikes: measure the footprint of Prometheus, Alertmanager and node_exporter on the current droplet; choose how graphs are rendered; check that GitHub renders Mermaid `xychart-beta`.
+- **Next action:** Phase 1. Start with the `ops` suite skeleton and the
+  `ops-token` security scheme.
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
-| 0 | Spikes: Prometheus footprint, graph rendering, Mermaid on GitHub | todo |
+| 0 | Spikes: Prometheus footprint, graph rendering, Mermaid on GitHub | done (droplet run and embed tests moved to Phase 5) |
 | 1 | Ops token, `/ops` spec skeleton, `/ops/health`, build manifest and deploy markers | todo |
 | 2 | Persistent logs: SQLite store, write-time redaction, message templates, log endpoints | todo |
 | 3 | Issues: persistent grouped errors *and* warnings, resolve/ignore; first digest | todo |
@@ -131,7 +132,17 @@ pulls together endpoints that are backed by other suites' stores. Mounted at
     possible.
 - Not tied to a user session, and grants nothing outside `/ops`.
 - Rate limited. Every ops API call is itself audit-logged.
-- Optional: Caddy can restrict `/ops` to an IP allowlist or Tailscale.
+- **Reachability:** `/ops` is public, protected by the token and rate
+  limits, so agents in GitHub Actions or the cloud can reach it without
+  joining a private network. Caddy can still restrict it to an IP allowlist
+  or Tailscale per product.
+
+**Tailscale** is part of the setup, for everything that isn't `/ops`:
+
+- Prometheus and Alertmanager UIs are reachable only on the tailnet, so the
+  Prometheus `/graph` deep links work for the human.
+- Cross-host scraping, when monitoring moves to its own machine.
+- Optionally, SSH and deploys over the tailnet, so public port 22 can close.
 
 **Endpoints (first cut):**
 
@@ -246,8 +257,16 @@ Run real Prometheus, one per host, in the platform compose file:
 
 - Prometheus scrapes app containers and node_exporter over the internal
   network. It is never exposed publicly.
-- Retention: 30 days, with a size cap. Expected footprint is roughly
-  100–250 MB of RAM for a few thousand series. Phase 0 confirms this.
+- **Scrape interval: 60s.** We'd rather have fine histogram buckets than fine
+  time resolution. Consequences:
+  - `rate()` and `increase()` windows must be at least `[4m]`; the standard
+    queries use `[5m]`.
+  - Alert `for:` durations should be at least 2–3 minutes.
+- Retention: 30 days, with a size cap. Phase 0 measured about 95 MiB of RAM
+  for Prometheus at 16k series.
+- **Disk estimate:** at 16k series and 15s, about 120 MB/day. At 60s, with
+  the histogram series roughly 1.7x larger from finer buckets, it's about
+  45 MB/day, or around 1.4 GB for 30 days.
 - Alertmanager (around 30 MB) and node_exporter (around 15 MB) run alongside.
   cAdvisor is skipped unless container-level metrics prove necessary (it's the
   heaviest exporter).
@@ -261,6 +280,11 @@ Run real Prometheus, one per host, in the platform compose file:
   - Job and cron duration
   - Outbound integration call duration
   - Email send duration
+- **Finer buckets than today.** Phase 0 found that the current
+  `[0.003, 0.03, 0.1, 0.3, 1.5, 10]` makes p95 meaningless.
+  - Latency histograms use about 12 buckets, roughly 1-2.5-5 steps:
+    `0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30`.
+  - Pay for them by grouping `status_code` into classes (2xx/3xx/4xx/5xx).
 - Use classic histograms (what `prom-client` supports).
 - The ops skill documents the standard queries, for example
   `histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_bucket[5m])))`.
@@ -539,17 +563,58 @@ configuration, not rewriting code.
 
 ### Phase 0: Spikes
 
-- [ ] Run Prometheus, Alertmanager and node_exporter on the current hub
-      droplet. Record RAM, CPU and disk after 48 hours. Decide whether it's
-      one stack per host (assumed) or something else.
-- [ ] Prototype rendering a PromQL `query_range` result to SVG and PNG (line
-      and heatmap). Pick a library.
-- [ ] Check that a signed-GET graph URL embeds in a GitHub PR body (through
-      GitHub's image proxy) and previews in Slack.
-- [ ] Check that GitHub renders Mermaid `xychart-beta` in PR bodies and
-      comments.
-- [ ] Decide where `/ops` is reachable from: public behind the token, or also
-      IP- or Tailscale-restricted.
+- [x] Local footprint baseline (2026-11-08). Prometheus v3.5 + Alertmanager
+      + node_exporter in Docker, scraping 4 synthetic SAF-shaped apps
+      (`prom-client` defaults, plus an express-prom-bundle-shaped histogram
+      across 120 routes) at 15s:
+      - About 16k head series in total: 13.3k from the apps, 1.4k from
+        node_exporter, 0.6k from Prometheus itself.
+      - Memory: Prometheus about 80 MiB (cgroup; process RSS about 140 MB),
+        Alertmanager about 19 MiB, node_exporter about 12 MiB. CPU under 1%.
+      - Disk is extrapolated, not measured (assuming about 1.3 bytes per
+        sample): roughly 120 MB/day at 16k series and 15s, so about 3.5 GB
+        for 30 days. A 30s scrape interval or fewer histogram series halves
+        it. Keep `retention.size` as a backstop.
+      - The real hub will have fewer series (only routes that actually get
+        hit).
+- [x] Local re-check after about 45 minutes: Prometheus 95 MiB,
+      Alertmanager 21 MiB, node_exporter 15 MiB.
+- [ ] ~~Run on the hub droplet for 48 hours~~ → moved to Phase 5, measured
+      as part of the real deploy.
+- [x] Prototype rendering a PromQL `query_range` result to SVG and PNG (line
+      and heatmap). Pick a library. (2026-11-08)
+      - **Library:** Vega-Lite to Vega `toSVG()` (headless, no canvas), then
+        `@resvg/resvg-js` for PNG. Dependencies add about 41 MB to
+        node_modules, including a 3.4 MB native resvg binary per platform.
+        This is acceptable for an optional `ops-graphs` package.
+        Alternative: a small hand-rolled SVG renderer if the dependency
+        weight matters.
+      - **Speed:** query about 20–40 ms, SVG about 10–30 ms, PNG about
+        150 ms (2x scale).
+      - **Fonts:** the first PNG took about 1.4 s while loading system fonts.
+        Production images are `node:24-slim` and have *no* system fonts, so
+        bundle one font file, pass it via `fontFiles`, and turn off
+        `loadSystemFonts`.
+      - **Signed GET:** the prototype server minted HMAC-signed URLs over
+        `q, start, end, kind, w, h, title`. Changing the query or widening
+        the range returns 403. Responses are `immutable`-cacheable.
+      - **Heatmap:** de-cumulate the `le` buckets per timestamp, draw a rect
+        per step (`x`/`x2`), and use an ordinal latency axis.
+      - **Polish for later:** render the time axis in UTC and label it, and
+        cap the number of series shown in the legend.
+      - **Finding: SAF's default histogram buckets are too coarse for p95.**
+        `metricHistogramDefaultBuckets` /
+        express-prom-bundle use `[0.003, 0.03, 0.1, 0.3, 1.5, 10]`.
+        `histogram_quantile` interpolates linearly inside the 0.3–1.5 bucket,
+        so p95 drew as a flat, meaningless line at about 1.35 s. Phase 5
+        should switch to finer buckets (for example Prometheus's defaults,
+        0.005–10 in 11 steps). To pay for the extra buckets, group
+        `status_code` into classes (2xx/4xx/5xx).
+- [ ] ~~Embed tests (signed-GET image in GitHub and Slack; Mermaid
+      `xychart-beta`)~~ → moved to Phase 5. They need a public URL.
+- [x] `/ops` reachability: public behind the token and rate limits.
+      Tailscale covers the monitoring UIs, cross-host scraping, and
+      optionally SSH (see *The ops API*).
 
 ### Phase 1: Ops token, health, manifest
 
@@ -598,8 +663,14 @@ configuration, not rewriting code.
 ### Phase 5: Prometheus
 
 - [ ] Per-host Prometheus and node_exporter in the platform compose
-      (`hub/deploy`), with retention and size cap
-- [ ] Standard histogram bucket sets, with saflib subsystems instrumented
+      (`hub/deploy`), with a 60s scrape interval, retention and size cap.
+      Record RAM, CPU and disk after 48 hours (carried over from Phase 0).
+- [ ] Tailscale on the hosts; Prometheus and Alertmanager UIs reachable on
+      the tailnet only; optionally move SSH and deploys onto the tailnet
+- [ ] Embed tests (carried over from Phase 0): a signed-GET graph in a
+      GitHub PR body and in Slack; Mermaid `xychart-beta` on GitHub
+- [ ] Standard histogram bucket sets (finer latency buckets, status
+      classes), with saflib subsystems instrumented
 - [ ] `/ops/metrics/*` proxy with limits
 - [ ] Graph links: signed-GET rendering with lazy `object-store` caching
       (or the POST snapshot fallback, per Phase 0); `saf-ops graph`
@@ -679,3 +750,8 @@ configuration, not rewriting code.
 - **2026-11-08:** Monitoring (Prometheus and Alertmanager) is designed to run
   on the app host or a separate machine via configured URLs; when to split is
   decided later.
+- **2026-11-08:** Phase 0 done. Vega-Lite + resvg for graphs, with signed
+  GETs confirmed. Prometheus scrapes every 60s, trading time resolution for
+  finer histogram buckets (about 12 latency buckets, status classes).
+  `/ops` is public behind the token. Tailscale is in scope for monitoring
+  UIs, cross-host scraping and (optionally) SSH.
