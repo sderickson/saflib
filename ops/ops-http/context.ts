@@ -7,6 +7,8 @@ import type { HealthCheck } from "./health/types.ts";
 export interface OpsServiceContext {
   dbKey: DbKey;
   healthChecks: HealthCheck[];
+  /** The persisted logs database, when the product enables it. */
+  logsDbKey?: DbKey;
   /** This process's boot record, once written. */
   currentBoot: Promise<OpsBoot | undefined>;
 }

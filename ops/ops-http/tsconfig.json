@@ -5,6 +5,7 @@
     { "path": "../../express" },
     { "path": "../../node" },
     { "path": "../ops-db" },
+    { "path": "../../node-log/node-log-db" },
     { "path": "../ops-spec" },
     { "path": "../../utils" }
   ],

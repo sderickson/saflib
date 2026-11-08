@@ -20,6 +20,7 @@
     "@saflib/express": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
+    "@saflib/node-log-db": "*",
     "@saflib/ops-db": "*",
     "@saflib/ops-spec": "*",
     "@saflib/utils": "*",

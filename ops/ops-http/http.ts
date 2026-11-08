@@ -25,6 +25,11 @@ export interface OpsRouterOptions {
   healthChecks?: HealthCheck[];
   /** Rate limit settings for ops-token requests. */
   rateLimits?: OpsTokenResolverOptions;
+  /**
+   * The persisted logs database (`@saflib/node-log-db`). When omitted, the
+   * log endpoints respond 404.
+   */
+  logsDbKey?: DbKey;
   /** Build metadata override (tests); defaults to the image's `/etc/saf/build.json`. */
   buildInfo?: BuildInfo;
 }
@@ -58,6 +63,7 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
   const context = {
     dbKey,
     healthChecks: [processCheck(), ...(options.healthChecks ?? [])],
+    logsDbKey: options.logsDbKey,
     // Each router creation is one process start in production.
     currentBoot: recordCurrentBoot(dbKey, options.buildInfo),
   };

@@ -28,6 +28,10 @@ components:
       $ref: "./schemas/ops-token.yaml"
     OpsBoot:
       $ref: "./schemas/ops-boot.yaml"
+    OpsLogEntry:
+      $ref: "./schemas/ops-log-entry.yaml"
+    OpsLogTemplate:
+      $ref: "./schemas/ops-log-template.yaml"
     Error:
       $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
@@ -38,6 +42,12 @@ paths:
   /ops/deploys:
     get:
       $ref: "./routes/deploys.yaml#/listOpsDeploys"
+  /ops/logs:
+    get:
+      $ref: "./routes/logs.yaml#/listOpsLogs"
+  /ops/logs/templates:
+    get:
+      $ref: "./routes/logs.yaml#/listOpsLogTemplates"
   /admin/ops-tokens:
     get:
       $ref: "./routes/tokens.yaml#/listOpsTokens"
