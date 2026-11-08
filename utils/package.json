@@ -10,7 +10,8 @@
     ".": "./index.ts",
     "./returns-error": "./returns-error.ts",
     "./auth-error-codes": "./auth-error-codes.ts",
-    "./telemetry-sanitize": "./telemetrySanitize.ts"
+    "./telemetry-sanitize": "./telemetrySanitize.ts",
+    "./redact": "./redact.ts"
   },
   "scripts": {
     "test": "vitest run",
