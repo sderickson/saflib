@@ -3,7 +3,7 @@ import {
   setErrorService,
   resetErrorServiceForTests,
 } from "@saflib/errors-service";
-import { SentryErrorService, type SentryErrorServiceOptions } from "./SentryErrorService.ts";
+import type { SentryErrorServiceOptions } from "./SentryErrorService.ts";
 import { typedEnv } from "./env.ts";
 
 export type ConfigureSentryOptions = SentryErrorServiceOptions;
@@ -11,10 +11,14 @@ export type ConfigureSentryOptions = SentryErrorServiceOptions;
 /**
  * Wire Sentry as the process-level error service when `SENTRY_DSN` is set.
  * Skips when the DSN is missing or `"mock"`. Idempotent — subsequent calls are no-ops.
+ * `@sentry/node` (~20MB and most of a second to load) is only imported when
+ * Sentry is actually configured.
  *
  * For local development, use `@saflib/errors-service` `configureMockErrors()` instead.
  */
-export function configureSentry(options: ConfigureSentryOptions = {}): void {
+export async function configureSentry(
+  options: ConfigureSentryOptions = {},
+): Promise<void> {
   if (hasErrorService()) {
     return;
   }
@@ -24,6 +28,7 @@ export function configureSentry(options: ConfigureSentryOptions = {}): void {
     return;
   }
 
+  const { SentryErrorService } = await import("./SentryErrorService.ts");
   setErrorService(new SentryErrorService(options));
 }
 

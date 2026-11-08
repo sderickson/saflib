@@ -12,4 +12,8 @@ export {
   resetErrorsForTests,
   type ConfigureSentryOptions,
 } from "./configureSentry.ts";
-export { SentryErrorService, type SentryErrorServiceOptions } from "./SentryErrorService.ts";
+// Type only: importing the class would load @sentry/node (see configureSentry).
+export type {
+  SentryErrorService,
+  SentryErrorServiceOptions,
+} from "./SentryErrorService.ts";

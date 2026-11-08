@@ -53,6 +53,9 @@
       "path": "./backup/backup-spec"
     },
     {
+      "path": "./base/platform"
+    },
+    {
       "path": "./base/product/__offshoot-name__/db"
     },
     {
@@ -170,9 +173,6 @@
       "path": "./cron/cron-vue"
     },
     {
-      "path": "./base/platform"
-    },
-    {
       "path": "./deploy-cli"
     },
     {
@@ -264,6 +264,9 @@
     },
     {
       "path": "./grpc/grpc/workflows/server-templates"
+    },
+    {
+      "path": "./html-sanitizer"
     },
     {
       "path": "./imports"
@@ -374,10 +377,10 @@
       "path": "./processes-workflows"
     },
     {
-      "path": "./product-workflows"
+      "path": "./product"
     },
     {
-      "path": "./product"
+      "path": "./product-workflows"
     },
     {
       "path": "./sdk"

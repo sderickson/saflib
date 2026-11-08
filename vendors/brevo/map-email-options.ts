@@ -1,6 +1,26 @@
 import { promises as fs } from "fs";
-import type { SendTransacEmailRequest } from "@getbrevo/brevo/transactionalEmails";
 import type { EmailOptions } from "@saflib/email-service";
+
+interface BrevoContact {
+  email: string;
+  name?: string;
+}
+
+/**
+ * The body of Brevo's [send a transactional email](https://developers.brevo.com/reference/send-transac-email)
+ * request (`POST /v3/smtp/email`), for the fields saflib uses.
+ */
+export interface SendTransacEmailRequest {
+  sender: BrevoContact;
+  to: BrevoContact[];
+  cc?: BrevoContact[];
+  bcc?: BrevoContact[];
+  replyTo?: BrevoContact;
+  subject?: string;
+  htmlContent?: string;
+  textContent?: string;
+  attachment?: { name: string; content?: string; url?: string }[];
+}
 
 function mapRecipientList(
   field:
@@ -41,7 +61,7 @@ function mapRecipientList(
 /**
  * Parse `from` like nodemailer: string (bare email or `"Name" <email>`) or Address object.
  */
-export function mapSender(from: EmailOptions["from"]): SendTransacEmailRequest.Sender {
+export function mapSender(from: EmailOptions["from"]): BrevoContact {
   if (from == null) {
     throw new Error(
       "Brevo transactional email requires `from` (sender). Set `EmailOptions.from`.",
@@ -52,7 +72,7 @@ export function mapSender(from: EmailOptions["from"]): SendTransacEmailRequest.S
     const angle = trimmed.match(/^(.+)<([^>]+)>$/);
     if (angle) {
       const email = angle[2]!.trim();
-      const name = angle[1]!.replace(/^["']|["']$/g, "").trim();
+      const name = angle[1]!.trim().replace(/^["']|["']$/g, "").trim();
       return { email, name: name || undefined };
     }
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
@@ -71,11 +91,11 @@ export function mapSender(from: EmailOptions["from"]): SendTransacEmailRequest.S
 
 function mapReplyTo(
   replyTo: EmailOptions["reply_to"],
-): SendTransacEmailRequest.ReplyTo | undefined {
+): BrevoContact | undefined {
   if (replyTo == null) return undefined;
   if (typeof replyTo === "string") {
     const m = mapSender(replyTo);
-    return { email: m.email!, name: m.name };
+    return { email: m.email, name: m.name };
   }
   if (typeof replyTo === "object" && "address" in replyTo && replyTo.address) {
     return {

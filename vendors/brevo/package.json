@@ -16,7 +16,6 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@getbrevo/brevo": "^6.0.0",
     "@saflib/email-service": "*",
     "@saflib/node": "*",
     "@saflib/secret-store": "*"
