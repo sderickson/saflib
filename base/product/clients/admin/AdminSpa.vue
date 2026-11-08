@@ -10,6 +10,7 @@ const adminSidebarLinks = [
   { ...adminLinks.cronJobs, name: "Cron" },
   { ...adminLinks.jobs, name: "Jobs" },
   { ...adminLinks.audit, name: "Audit" },
+  { ...adminLinks.opsTokens, name: "Ops tokens" },
 ];
 
 const devObservabilitySidebarLinks = computed(() => {

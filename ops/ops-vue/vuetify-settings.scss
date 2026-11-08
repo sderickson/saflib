@@ -1,0 +1,16 @@
+/* Vuetify Sass variable overrides (vite-plugin-vuetify `styles.configFile`).
+ *
+ * Prefer product clients/build/vuetify-settings.scss for real theming.
+ * This package is mounted inside a host SPA — leave empty unless this package
+ * is built as its own Vite app.
+ *
+ * Defaults live next to each component under node_modules, e.g.:
+ *   node_modules/vuetify/lib/components/VBtn/_variables.scss
+ *
+ * CSS selector overrides: vuetify-overrides.scss (host design system).
+ * Non-Vuetify utilities: globals.scss (host design system).
+ */
+
+@use "vuetify/settings" with (
+  $body-font-family: "Montserrat"
+);

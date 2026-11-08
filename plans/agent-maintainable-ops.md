@@ -664,7 +664,10 @@ Slices:
       does. Ops reads are audited against the token through a new
       `resolveMachineActor` hook on the audit recorder; `/ops/health` is
       exempt because uptime checks poll it.
-- [ ] **1d.** Admin UI page for tokens; CLI to mint and revoke tokens
+- [x] **1d.** Admin UI page for tokens; CLI to mint and revoke tokens.
+      Done 2026-11-08: `ops-vue` (list, create showing the secret once,
+      revoke) on the base admin SPA at `/ops-tokens`; `ops-tokens` CLI in
+      `base-ops` for bootstrap and break-glass.
 - [ ] **1e.** Wire into hub: volume mount, Caddy unchanged (forward-auth
       doesn't block); deploy
 

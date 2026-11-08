@@ -14,6 +14,7 @@ import { ProductEventsAsync } from "@saflib/analytics-vue";
 import { MetricsAsync } from "@saflib/node-metrics-vue";
 import { ErrorsAsync } from "@saflib/errors-vue";
 import { AuditLogsAsync } from "@saflib/audit-vue";
+import { OpsTokensAsync } from "@saflib/ops-vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
 import UsersAsync from "./pages/users/UsersAsync.vue";
 import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
@@ -70,6 +71,10 @@ export const createAdminRouter = (options?: {
     {
       path: adminLinks.audit.path,
       component: AuditLogsAsync,
+    },
+    {
+      path: adminLinks.opsTokens.path,
+      component: OpsTokensAsync,
     },
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
     // END WORKFLOW AREA

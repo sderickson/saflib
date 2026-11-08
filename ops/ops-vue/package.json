@@ -1,0 +1,20 @@
+{
+  "name": "@saflib/ops-vue",
+  "description": "Admin frontend for ops tokens (machine credentials for the ops API)",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/ops-spec": "*",
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*",
+    "@tanstack/vue-query": "*"
+  },
+  "sideEffects": false
+}

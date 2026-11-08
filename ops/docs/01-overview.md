@@ -11,6 +11,7 @@ It is being built in phases; see [`plans/agent-maintainable-ops.md`](../../plans
 | `@saflib/ops-db`   | Hashed machine tokens: mint, look up, list, revoke, throttled last-used                         |
 | `@saflib/ops-spec` | OpenAPI contract: `/ops/*` (ops token) and `/admin/ops-tokens` (site admin)                     |
 | `@saflib/ops-http` | `ops-token` security resolver, rate limits, health check runner and built-in checks, router     |
+| `@saflib/ops-vue`  | Admin page for listing, creating (secret shown once) and revoking tokens                        |
 
 The base product wires these through `@saflib/base-ops` (`base/product/service/ops`), which owns the on-disk ops database and the default health checks.
 
@@ -22,6 +23,17 @@ The base product wires these through `@saflib/base-ops` (`base/product/service/o
 - Optional expiry; revocation is permanent. Creating and revoking tokens is audit-logged.
 - Ops API reads are audit-logged against the token: `auth_method: ops_token`, `actor_user_id: ops_token:<id>` (via `opsMachineActor`, passed to `createAuditRecorder({ resolveMachineActor })`). `GET /ops/health` is not audited, since uptime checks poll it.
 - Requests are rate limited per token (default 120/min), and failed authentications per client IP (default 20/min).
+
+Create tokens from the admin SPA's **Ops tokens** page, or, to bootstrap (or revoke in an emergency), with the CLI inside the monolith container:
+
+```bash
+cd /app/<product>/service/ops
+npm run ops-tokens -- create --name "maintenance agent" --scope ops:read ops:triage --expires-in-days 90
+npm run ops-tokens -- list
+npm run ops-tokens -- revoke <id>
+```
+
+CLI changes are logged but not audit-logged (no signed-in admin). Then:
 
 ```bash
 curl -H "Authorization: Bearer $SAF_OPS_TOKEN" https://api.example.com/ops/health
