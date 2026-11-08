@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { sliceOperation, type OpenApiDoc } from "./slice-operation.ts";
+import {
+  fullDocumentForValidation,
+  sliceOperation,
+  sliceOperationById,
+  type OpenApiDoc,
+} from "./slice-operation.ts";
 
 const bundled: OpenApiDoc = {
   openapi: "3.1.0",
@@ -55,5 +60,26 @@ describe("sliceOperation security", () => {
       responses: {},
     });
     expect(slice.components!.securitySchemes).toBeUndefined();
+  });
+});
+
+describe("fullDocumentForValidation", () => {
+  it("gives every slice of a document the same private copy of it", () => {
+    const a = sliceOperationById(bundled, "getA");
+    const b = sliceOperationById(bundled, "postB");
+    const full = fullDocumentForValidation(a);
+    expect(full).toEqual(bundled);
+    expect(full).not.toBe(bundled);
+    expect(fullDocumentForValidation(b)).toBe(full);
+  });
+
+  it("leaves the slice's own content unchanged", () => {
+    const a = sliceOperationById(bundled, "getA");
+    expect(Object.keys(JSON.parse(JSON.stringify(a)))).toEqual(Object.keys(a));
+    expect(Object.keys(a.paths ?? {})).toEqual(["/a"]);
+  });
+
+  it("is undefined for a document that isn't a slice", () => {
+    expect(fullDocumentForValidation(bundled)).toBeUndefined();
   });
 });

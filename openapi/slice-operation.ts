@@ -170,11 +170,35 @@ export function sliceOperation(
   };
 }
 
+const SLICE_SOURCE = Symbol.for("@saflib/openapi/slice-source");
+const validationCopies = new WeakMap<object, object>();
+
+/**
+ * The complete document a {@link sliceOperationById} slice was cut from, as
+ * one private copy per document (so validators may annotate it without
+ * touching the original). Lets every route cut from one document share a
+ * single request validator: building a validator is expensive, so one per
+ * route made startup slow. Undefined for documents that aren't slices.
+ */
+export function fullDocumentForValidation<T extends object>(
+  slice: T,
+): T | undefined {
+  const source = (slice as Record<symbol, object | undefined>)[SLICE_SOURCE];
+  if (!source) return undefined;
+  let copy = validationCopies.get(source);
+  if (!copy) {
+    copy = structuredClone(source);
+    validationCopies.set(source, copy);
+  }
+  return copy as T;
+}
+
 /**
  * {@link sliceOperation} by operation id: the one-operation document a route
  * validates against, cut from the package's complete OpenAPI document. The
  * result is a deep copy: validators may annotate the document they are given,
- * and slices of one document must not share objects.
+ * and slices of one document must not share objects. It remembers the
+ * document it came from (see {@link fullDocumentForValidation}).
  */
 export function sliceOperationById<T extends object>(
   document: T,
@@ -187,7 +211,9 @@ export function sliceOperationById<T extends object>(
   if (!entry) {
     throw new Error(`Unknown operationId ${operationId}`);
   }
-  return structuredClone(
+  const slice = structuredClone(
     sliceOperation(doc, entry.pathKey, entry.method, operationId),
-  ) as unknown as T;
+  );
+  Object.defineProperty(slice, SLICE_SOURCE, { value: document });
+  return slice as unknown as T;
 }
