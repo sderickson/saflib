@@ -86,6 +86,123 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List issues
+         * @description Defaults to everything, most recently seen first. Typical agent queries: `status=open&status=regressed&sort=window_count` (what's hurting now), `new=true` (first seen in the window), `regressed=true` (came back in the window). The window starts at `since` (default 24 hours ago).
+         */
+        get: operations["listOpsIssues"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/issues/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an issue */
+        get: operations["getOpsIssue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/issues/{id}/occurrences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recent occurrences of an issue
+         * @description Newest first; the newest 20 are kept per issue.
+         */
+        get: operations["listOpsIssueOccurrences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/issues/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve an issue
+         * @description Marks it fixed. If it occurs again it becomes `regressed`.
+         */
+        post: operations["resolveOpsIssue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/issues/{id}/ignore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ignore an issue
+         * @description Silences it, forever or until `until`, after which a new occurrence reopens it.
+         */
+        post: operations["ignoreOpsIssue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/issues/{id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reopen an issue
+         * @description Sets it back to `open`.
+         */
+        post: operations["reopenOpsIssue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/logs": {
         parameters: {
             query?: never;
@@ -154,6 +271,8 @@ export interface components {
         OpsBoot: components["schemas"]["ops-boot"];
         OpsLogEntry: components["schemas"]["ops-log-entry"];
         OpsLogTemplate: components["schemas"]["ops-log-template"];
+        OpsIssue: components["schemas"]["ops-issue"];
+        OpsIssueOccurrence: components["schemas"]["ops-issue-occurrence"];
         Error: _Ext1_Error;
         /** @description One health check's latest result. */
         "ops-health-check": {
@@ -239,6 +358,55 @@ export interface components {
             untrusted: {
                 template: string;
                 sample_message: string | null;
+            };
+        };
+        /** @description A group of occurrences of one error or warning. `open` and `regressed` need attention. `untrusted.title` comes from the first occurrence's message (redacted) and may contain outside content. */
+        "ops-issue": {
+            id: string;
+            fingerprint: string;
+            /** @enum {string} */
+            level: "warn" | "error" | "fatal";
+            /** @description `server`, `client`, `csp`, `redaction` (a log call leaking a secret or PII), or `test`. */
+            kind: string;
+            service_name: string | null;
+            operation_name: string | null;
+            /** Format: date-time */
+            first_seen: string;
+            /** Format: date-time */
+            last_seen: string;
+            count: number;
+            /** @description Occurrences in the requested window (hour resolution); 0 when not computed. */
+            window_count: number;
+            first_seen_version: string | null;
+            last_seen_version: string | null;
+            /** @enum {string} */
+            status: "open" | "resolved" | "ignored" | "regressed";
+            status_note: string | null;
+            /** Format: date-time */
+            status_changed_at: string | null;
+            /** @description `ops_token:<id>`, a user id, or `system`. */
+            status_changed_by: string | null;
+            resolved_in_version: string | null;
+            /** Format: date-time */
+            ignored_until: string | null;
+            untrusted: {
+                title: string;
+            };
+        };
+        /** @description One recent occurrence (redacted). Everything under `untrusted` may contain outside content. */
+        "ops-issue-occurrence": {
+            id: number;
+            /** Format: date-time */
+            ts: string;
+            /** @description Correlate with `GET /ops/logs?request_id=`. */
+            request_id: string | null;
+            version: string | null;
+            untrusted: {
+                message: string;
+                stack: string | null;
+                fields: {
+                    [key: string]: unknown;
+                } | null;
             };
         };
         /** @description An ops token's metadata. The secret itself is never returned after creation. */
@@ -492,6 +660,404 @@ export interface operations {
                 };
             };
             /** @description Logs are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listOpsIssues: {
+        parameters: {
+            query?: {
+                status?: ("open" | "resolved" | "ignored" | "regressed")[];
+                level?: ("warn" | "error" | "fatal")[];
+                kind?: string[];
+                since?: string;
+                /** @description Only issues first seen in the window. */
+                new?: boolean;
+                /** @description Only issues that regressed in the window. */
+                regressed?: boolean;
+                sort?: "last_seen" | "first_seen" | "count" | "window_count";
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Issues. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        issues: components["schemas"]["ops-issue"][];
+                        next_cursor: string | null;
+                    };
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Unknown issue, or issues are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getOpsIssue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The issue. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        issue: components["schemas"]["ops-issue"];
+                    };
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Unknown issue, or issues are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listOpsIssueOccurrences: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Occurrences. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        occurrences: components["schemas"]["ops-issue-occurrence"][];
+                    };
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Unknown issue, or issues are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    resolveOpsIssue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Why, e.g. "fixed in PR */
+                    note?: string;
+                    /** @description Commit or release containing the fix. */
+                    resolved_in_version?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The issue. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        issue: components["schemas"]["ops-issue"];
+                    };
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Unknown issue, or issues are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    ignoreOpsIssue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Why, e.g. "fixed in PR */
+                    note?: string;
+                    /** Format: date-time */
+                    until?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The issue. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        issue: components["schemas"]["ops-issue"];
+                    };
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Unknown issue, or issues are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    reopenOpsIssue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Why, e.g. "fixed in PR */
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The issue. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        issue: components["schemas"]["ops-issue"];
+                    };
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Unknown issue, or issues are not enabled for this product. */
             404: {
                 headers: {
                     [name: string]: unknown;

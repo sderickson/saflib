@@ -38,6 +38,12 @@
       "OpsLogTemplate": {
         "$ref": "#/components/schemas/ops-log-template"
       },
+      "OpsIssue": {
+        "$ref": "#/components/schemas/ops-issue"
+      },
+      "OpsIssueOccurrence": {
+        "$ref": "#/components/schemas/ops-issue-occurrence"
+      },
       "Error": {
         "$ref": "#/components/schemas/error"
       },
@@ -360,6 +366,202 @@
                   "string",
                   "null"
                 ]
+              }
+            }
+          }
+        }
+      },
+      "ops-issue": {
+        "type": "object",
+        "description": "A group of occurrences of one error or warning. `open` and `regressed` need attention. `untrusted.title` comes from the first occurrence's message (redacted) and may contain outside content.\n",
+        "required": [
+          "id",
+          "fingerprint",
+          "level",
+          "kind",
+          "service_name",
+          "operation_name",
+          "first_seen",
+          "last_seen",
+          "count",
+          "window_count",
+          "first_seen_version",
+          "last_seen_version",
+          "status",
+          "status_note",
+          "status_changed_at",
+          "status_changed_by",
+          "resolved_in_version",
+          "ignored_until",
+          "untrusted"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "warn",
+              "error",
+              "fatal"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "description": "`server`, `client`, `csp`, `redaction` (a log call leaking a secret or PII), or `test`."
+          },
+          "service_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "operation_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "window_count": {
+            "type": "integer",
+            "description": "Occurrences in the requested window (hour resolution); 0 when not computed."
+          },
+          "first_seen_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_seen_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "resolved",
+              "ignored",
+              "regressed"
+            ]
+          },
+          "status_note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status_changed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "status_changed_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`ops_token:<id>`, a user id, or `system`."
+          },
+          "resolved_in_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ignored_until": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "untrusted": {
+            "type": "object",
+            "required": [
+              "title"
+            ],
+            "properties": {
+              "title": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "ops-issue-occurrence": {
+        "type": "object",
+        "description": "One recent occurrence (redacted). Everything under `untrusted` may contain outside content.",
+        "required": [
+          "id",
+          "ts",
+          "request_id",
+          "version",
+          "untrusted"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Correlate with `GET /ops/logs?request_id=`."
+          },
+          "version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "untrusted": {
+            "type": "object",
+            "required": [
+              "message",
+              "stack",
+              "fields"
+            ],
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "stack": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fields": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": true
               }
             }
           }
@@ -879,6 +1081,703 @@
           },
           "404": {
             "description": "Logs are not enabled for this product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/issues": {
+      "get": {
+        "summary": "List issues",
+        "description": "Defaults to everything, most recently seen first. Typical agent queries: `status=open&status=regressed&sort=window_count` (what's hurting now), `new=true` (first seen in the window), `regressed=true` (came back in the window). The window starts at `since` (default 24 hours ago).\n",
+        "operationId": "listOpsIssues",
+        "security": [
+          {
+            "ops-token": [
+              "ops:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "resolved",
+                  "ignored",
+                  "regressed"
+                ]
+              }
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "warn",
+                  "error",
+                  "fatal"
+                ]
+              }
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 32
+              }
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "new",
+            "in": "query",
+            "required": false,
+            "description": "Only issues first seen in the window.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "regressed",
+            "in": "query",
+            "required": false,
+            "description": "Only issues that regressed in the window.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "last_seen",
+                "first_seen",
+                "count",
+                "window_count"
+              ],
+              "default": "last_seen"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 16
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Issues.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "issues",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ops-issue"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown issue, or issues are not enabled for this product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/issues/{id}": {
+      "get": {
+        "summary": "Get an issue",
+        "operationId": "getOpsIssue",
+        "security": [
+          {
+            "ops-token": [
+              "ops:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The issue.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "issue"
+                  ],
+                  "properties": {
+                    "issue": {
+                      "$ref": "#/components/schemas/ops-issue"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown issue, or issues are not enabled for this product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/issues/{id}/occurrences": {
+      "get": {
+        "summary": "Recent occurrences of an issue",
+        "description": "Newest first; the newest 20 are kept per issue.",
+        "operationId": "listOpsIssueOccurrences",
+        "security": [
+          {
+            "ops-token": [
+              "ops:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Occurrences.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "occurrences"
+                  ],
+                  "properties": {
+                    "occurrences": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ops-issue-occurrence"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown issue, or issues are not enabled for this product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/issues/{id}/resolve": {
+      "post": {
+        "summary": "Resolve an issue",
+        "description": "Marks it fixed. If it occurs again it becomes `regressed`.\n",
+        "operationId": "resolveOpsIssue",
+        "security": [
+          {
+            "ops-token": [
+              "ops:triage"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "description": "Why, e.g. \"fixed in PR"
+                  },
+                  "resolved_in_version": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": "Commit or release containing the fix."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The issue.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "issue"
+                  ],
+                  "properties": {
+                    "issue": {
+                      "$ref": "#/components/schemas/ops-issue"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown issue, or issues are not enabled for this product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/issues/{id}/ignore": {
+      "post": {
+        "summary": "Ignore an issue",
+        "description": "Silences it, forever or until `until`, after which a new occurrence reopens it.\n",
+        "operationId": "ignoreOpsIssue",
+        "security": [
+          {
+            "ops-token": [
+              "ops:triage"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "description": "Why, e.g. \"fixed in PR"
+                  },
+                  "until": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The issue.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "issue"
+                  ],
+                  "properties": {
+                    "issue": {
+                      "$ref": "#/components/schemas/ops-issue"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown issue, or issues are not enabled for this product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/issues/{id}/reopen": {
+      "post": {
+        "summary": "Reopen an issue",
+        "description": "Sets it back to `open`.\n",
+        "operationId": "reopenOpsIssue",
+        "security": [
+          {
+            "ops-token": [
+              "ops:triage"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "description": "Why, e.g. \"fixed in PR"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The issue.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "issue"
+                  ],
+                  "properties": {
+                    "issue": {
+                      "$ref": "#/components/schemas/ops-issue"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown issue, or issues are not enabled for this product.",
             "content": {
               "application/json": {
                 "schema": {

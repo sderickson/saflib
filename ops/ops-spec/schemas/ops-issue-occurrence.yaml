@@ -1,0 +1,25 @@
+type: object
+description: One recent occurrence (redacted). Everything under `untrusted` may contain outside content.
+required: [ id, ts, request_id, version, untrusted ]
+properties:
+  id:
+    type: integer
+  ts:
+    type: string
+    format: date-time
+  request_id:
+    type: [ string, "null" ]
+    description: Correlate with `GET /ops/logs?request_id=`.
+  version:
+    type: [ string, "null" ]
+  untrusted:
+    type: object
+    required: [ message, stack, fields ]
+    properties:
+      message:
+        type: string
+      stack:
+        type: [ string, "null" ]
+      fields:
+        type: [ object, "null" ]
+        additionalProperties: true

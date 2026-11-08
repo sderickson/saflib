@@ -1,0 +1,58 @@
+type: object
+description: >
+  A group of occurrences of one error or warning. `open` and `regressed`
+  need attention. `untrusted.title` comes from the first occurrence's message
+  (redacted) and may contain outside content.
+required: [ id, fingerprint, level, kind, service_name, operation_name, first_seen, last_seen, count, window_count, first_seen_version, last_seen_version, status, status_note, status_changed_at, status_changed_by, resolved_in_version, ignored_until, untrusted ]
+properties:
+  id:
+    type: string
+  fingerprint:
+    type: string
+  level:
+    type: string
+    enum: [ warn, error, fatal ]
+  kind:
+    type: string
+    description: "`server`, `client`, `csp`, `redaction` (a log call leaking a secret or PII), or `test`."
+  service_name:
+    type: [ string, "null" ]
+  operation_name:
+    type: [ string, "null" ]
+  first_seen:
+    type: string
+    format: date-time
+  last_seen:
+    type: string
+    format: date-time
+  count:
+    type: integer
+  window_count:
+    type: integer
+    description: Occurrences in the requested window (hour resolution); 0 when not computed.
+  first_seen_version:
+    type: [ string, "null" ]
+  last_seen_version:
+    type: [ string, "null" ]
+  status:
+    type: string
+    enum: [ open, resolved, ignored, regressed ]
+  status_note:
+    type: [ string, "null" ]
+  status_changed_at:
+    type: [ string, "null" ]
+    format: date-time
+  status_changed_by:
+    type: [ string, "null" ]
+    description: "`ops_token:<id>`, a user id, or `system`."
+  resolved_in_version:
+    type: [ string, "null" ]
+  ignored_until:
+    type: [ string, "null" ]
+    format: date-time
+  untrusted:
+    type: object
+    required: [ title ]
+    properties:
+      title:
+        type: string

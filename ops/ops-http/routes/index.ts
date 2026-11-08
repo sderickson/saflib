@@ -5,6 +5,14 @@ import { getOpsHealthHandler } from "./get-ops-health.ts";
 import { listOpsDeploysHandler } from "./list-ops-deploys.ts";
 import { listOpsLogsHandler } from "./list-ops-logs.ts";
 import { listOpsLogTemplatesHandler } from "./list-ops-log-templates.ts";
+import {
+  getOpsIssueHandler,
+  ignoreOpsIssueHandler,
+  listOpsIssueOccurrencesHandler,
+  listOpsIssuesHandler,
+  reopenOpsIssueHandler,
+  resolveOpsIssueHandler,
+} from "./issues.ts";
 import { listOpsTokensHandler } from "./list-ops-tokens.ts";
 import { createOpsTokenHandler } from "./create-ops-token.ts";
 import { revokeOpsTokenHandler } from "./revoke-ops-token.ts";
@@ -22,6 +30,12 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.get("/ops/deploys", listOpsDeploysHandler);
   router.get("/ops/logs", listOpsLogsHandler);
   router.get("/ops/logs/templates", listOpsLogTemplatesHandler);
+  router.get("/ops/issues", listOpsIssuesHandler);
+  router.get("/ops/issues/:id", getOpsIssueHandler);
+  router.get("/ops/issues/:id/occurrences", listOpsIssueOccurrencesHandler);
+  router.post("/ops/issues/:id/resolve", resolveOpsIssueHandler);
+  router.post("/ops/issues/:id/ignore", ignoreOpsIssueHandler);
+  router.post("/ops/issues/:id/reopen", reopenOpsIssueHandler);
   // Same query as /ops/logs, behind a site-admin session for the admin SPA.
   router.get("/admin/logs", listOpsLogsHandler);
   router.get("/admin/ops-tokens", listOpsTokensHandler);

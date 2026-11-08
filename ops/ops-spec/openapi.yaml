@@ -32,6 +32,10 @@ components:
       $ref: "./schemas/ops-log-entry.yaml"
     OpsLogTemplate:
       $ref: "./schemas/ops-log-template.yaml"
+    OpsIssue:
+      $ref: "./schemas/ops-issue.yaml"
+    OpsIssueOccurrence:
+      $ref: "./schemas/ops-issue-occurrence.yaml"
     Error:
       $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
@@ -48,6 +52,24 @@ paths:
   /ops/logs/templates:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogTemplates"
+  /ops/issues:
+    get:
+      $ref: "./routes/issues.yaml#/listOpsIssues"
+  /ops/issues/{id}:
+    get:
+      $ref: "./routes/issues.yaml#/getOpsIssue"
+  /ops/issues/{id}/occurrences:
+    get:
+      $ref: "./routes/issues.yaml#/listOpsIssueOccurrences"
+  /ops/issues/{id}/resolve:
+    post:
+      $ref: "./routes/issues.yaml#/resolveOpsIssue"
+  /ops/issues/{id}/ignore:
+    post:
+      $ref: "./routes/issues.yaml#/ignoreOpsIssue"
+  /ops/issues/{id}/reopen:
+    post:
+      $ref: "./routes/issues.yaml#/reopenOpsIssue"
   /admin/logs:
     get:
       $ref: "./routes/logs.yaml#/listAdminLogs"

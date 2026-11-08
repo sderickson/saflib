@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@saflib/drizzle": "*",
+    "@saflib/errors-db": "*",
     "@saflib/express": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",

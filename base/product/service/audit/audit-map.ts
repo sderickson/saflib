@@ -43,4 +43,29 @@ export const baseAuditMap: Record<string, AuditMapEntry> = {
     eventType: "ops_api.log_templates.read",
     resourceType: "ops_api",
   },
+  "GET /ops/issues": {
+    eventType: "ops_api.issues.read",
+    resourceType: "ops_api",
+  },
+  "GET /ops/issues/:id": {
+    eventType: "ops_api.issue.read",
+    resourceType: "issue",
+  },
+  "GET /ops/issues/:id/occurrences": {
+    eventType: "ops_api.issue_occurrences.read",
+    resourceType: "issue",
+  },
+  // Triage (ops:triage): the only writes an ops token can make.
+  "POST /ops/issues/:id/resolve": {
+    eventType: "ops_api.issue.resolve",
+    resourceType: "issue",
+  },
+  "POST /ops/issues/:id/ignore": {
+    eventType: "ops_api.issue.ignore",
+    resourceType: "issue",
+  },
+  "POST /ops/issues/:id/reopen": {
+    eventType: "ops_api.issue.reopen",
+    resourceType: "issue",
+  },
 };
