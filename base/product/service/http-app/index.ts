@@ -11,6 +11,7 @@ import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 import { baseDb, baseDbManager } from "@saflib/base-db/instances";
 import { createBaseOpsRouter, isOpsApiRequest } from "@saflib/base-ops";
 import { probeCheck } from "@saflib/ops-http";
+import { createAuditRotationHealthCheck } from "@saflib/audit-http/express/audit-rotation-health-check";
 import {
   baseAuditRecorderMiddleware,
   createBaseAuditRouter,
@@ -20,9 +21,9 @@ import {
   type BaseServiceContextOptions,
   makeContext,
 } from "@saflib/base-service-common/context";
-import { createCronRouter } from "@saflib/cron-http";
+import { createCronHealthCheck, createCronRouter } from "@saflib/cron-http";
 import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
-import { createJobsRouter } from "@saflib/jobs-http";
+import { createJobsHealthCheck, createJobsRouter } from "@saflib/jobs-http";
 import { getBaseJobsDbKey } from "@saflib/base-jobs";
 import { createMetricsRouter } from "@saflib/node-metrics-http";
 
@@ -90,6 +91,9 @@ export function buildBaseHttpApp(
           probeCheck("base-db", async () => {
             baseDbManager.get(dbKey)!.$client.prepare("select 1").get();
           }),
+          createAuditRotationHealthCheck({ getAuditDbKey: () => context.auditDbKey }),
+          createJobsHealthCheck({ getDbKey: getBaseJobsDbKey }),
+          createCronHealthCheck({ getDbKey: getBaseCronDbKey }),
         ],
       }),
       createBaseAuditRouter(),

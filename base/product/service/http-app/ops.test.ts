@@ -9,12 +9,18 @@ import { buildBaseHttpApp, type BaseHttpAppLease } from "./index.ts";
 
 describe("ops API in the base app", () => {
   let lease: BaseHttpAppLease;
+  let prevDeploymentName: string | undefined;
 
   beforeAll(() => {
+    // Audit rows store DEPLOYMENT_NAME (non-null `env`); production always sets it.
+    prevDeploymentName = process.env.DEPLOYMENT_NAME;
+    process.env.DEPLOYMENT_NAME = "base-ops-test";
     lease = buildBaseHttpApp({ mounts: [], isPublicRoute: () => false });
   });
   afterAll(() => {
     baseDb.disconnect(lease.baseDbKey);
+    if (prevDeploymentName === undefined) delete process.env.DEPLOYMENT_NAME;
+    else process.env.DEPLOYMENT_NAME = prevDeploymentName;
   });
 
   it("defers /ops/* past the session gate to the ops-token scheme", async () => {
@@ -32,9 +38,34 @@ describe("ops API in the base app", () => {
       .set("authorization", `Bearer ${token}`)
       .expect(200);
     const names = res.body.health.checks.map((c: { name: string }) => c.name);
-    expect(names).toEqual(expect.arrayContaining(["process", "disk", "base-db"]));
+    expect(names).toEqual(
+      expect.arrayContaining(["process", "disk", "base-db", "audit-rotation", "jobs", "cron"]),
+    );
     const db = res.body.health.checks.find((c: { name: string }) => c.name === "base-db");
     expect(db.status).toBe("ok");
+  });
+
+  it("audits ops reads against the token, not a user", async () => {
+    const { token, opsToken } = await throwError(
+      createToken(getBaseOpsDbKey(), { name: "audited", scopes: ["ops:read"], createdBy: null }),
+    );
+    await request(lease.app)
+      .get("/ops/deploys")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    // The recorder appends on response finish.
+    await new Promise((resolve) => setImmediate(resolve));
+    const logs = await request(lease.app)
+      .get("/audit-logs")
+      .set(makeAdminHeaders())
+      .expect(200);
+    const row = logs.body.audit_logs.find(
+      (r: { event_type: string }) => r.event_type === "ops_api.deploys.read",
+    );
+    expect(row).toMatchObject({
+      auth_method: "ops_token",
+      actor_user_id: `ops_token:${opsToken.id}`,
+    });
   });
 
   it("keeps token admin behind the session gate", async () => {

@@ -24,4 +24,10 @@ export const baseAuditMap: Record<string, AuditMapEntry> = {
     eventType: "ops_token.revoke",
     resourceType: "ops_token",
   },
+  // Ops API reads, attributed to the token (actor `ops_token:<id>`).
+  // `GET /ops/health` is deliberately not audited: uptime checks poll it.
+  "GET /ops/deploys": {
+    eventType: "ops_api.deploys.read",
+    resourceType: "ops_api",
+  },
 };

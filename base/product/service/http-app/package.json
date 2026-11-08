@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@saflib/analytics-http": "*",
+    "@saflib/audit-http": "*",
     "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",

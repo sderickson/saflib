@@ -657,8 +657,13 @@ Slices:
       (`/etc/saf/build.json` from `saf-docker build`). Each process start is
       recorded as a boot; boots with a changed build are deploys. The full
       lockfile resolution is left for Phase 8.
-- [ ] **1c.** Health checks from existing suites (audit rotation, dead jobs,
-      backup age); audit-log ops calls
+- [x] **1c.** Health checks from existing suites (audit rotation, dead jobs,
+      backup age); audit-log ops calls. Done 2026-11-08: audit rotation, jobs
+      (dead in 24h), cron (failing schedules). Backup age is skipped because
+      the base product doesn't run the backup suite; add it when a product
+      does. Ops reads are audited against the token through a new
+      `resolveMachineActor` hook on the audit recorder; `/ops/health` is
+      exempt because uptime checks poll it.
 - [ ] **1d.** Admin UI page for tokens; CLI to mint and revoke tokens
 - [ ] **1e.** Wire into hub: volume mount, Caddy unchanged (forward-auth
       doesn't block); deploy

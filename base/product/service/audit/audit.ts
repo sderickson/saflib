@@ -6,6 +6,7 @@ import {
   baseServiceStorage,
   type BaseServiceContext,
 } from "@saflib/base-service-common/context";
+import { opsMachineActor } from "@saflib/ops-http";
 import { baseAuditMap } from "./audit-map.ts";
 
 const auditDbAccessor = createOnDiskDbKeyAccessor({
@@ -24,6 +25,8 @@ function resolveAuditDbKeyFromContext(): DbKey | undefined {
 export const baseAuditRecorder = createAuditRecorder({
   getAuditDbKey: resolveAuditDbKeyFromContext,
   auditMap: baseAuditMap,
+  // Ops API calls carry an ops token, not a session.
+  resolveMachineActor: opsMachineActor,
 });
 
 export function baseAuditRecorderMiddleware() {

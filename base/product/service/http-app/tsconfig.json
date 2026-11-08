@@ -2,6 +2,9 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
+      "path": "../../../../audit/audit-http"
+    },
+    {
       "path": "../../../../analytics/analytics-http"
     },
     {
