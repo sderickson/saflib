@@ -4,9 +4,10 @@ import {
   collectOpenApiRouteKeys,
 } from "@saflib/audit-http/express/audit-map-assertions";
 import { jsonSpec } from "@saflib/base-spec";
+import { jsonSpec as opsJsonSpec } from "@saflib/ops-spec";
 import { baseAuditMap } from "./audit-map.ts";
 
-const specRouteKeys = collectOpenApiRouteKeys([jsonSpec]);
+const specRouteKeys = collectOpenApiRouteKeys([jsonSpec, opsJsonSpec]);
 
 describe("baseAuditMap", () => {
   it("matches OpenAPI routes with valid keys and unique event types", () => {

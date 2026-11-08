@@ -1,0 +1,28 @@
+{
+  "name": "@saflib/base-ops",
+  "saf": {
+    "kind": "domain"
+  },
+  "description": "Ops API for the base product: ops-db on disk, health checks, router",
+  "type": "module",
+  "exports": {
+    ".": "./ops.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/drizzle": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "@saflib/ops-db": "*",
+    "@saflib/ops-http": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}

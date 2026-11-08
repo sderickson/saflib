@@ -646,10 +646,12 @@ configuration, not rewriting code.
 
 Slices:
 
-- [ ] **1a.** Machine schemes in express (standalone resolvers, CSRF,
+- [x] **1a.** Machine schemes in express (standalone resolvers, CSRF,
       tests); `ops-db` (token table and queries); `ops-spec`; `ops-http`
       (token resolver, rate limit, `/ops/health` with disk, DB and process
       checks, admin token routes); mounted in the base http-app
+      (`base-ops`, `deferAuth`, Caddy `/ops/*` matcher, audit entries for
+      token create/revoke). Done 2026-11-08.
 - [ ] **1b.** Build manifest written at image build; `GET /ops/deploys`;
       `saf_build_info`
 - [ ] **1c.** Health checks from existing suites (audit rotation, dead jobs,

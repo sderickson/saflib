@@ -19,6 +19,7 @@
     "@saflib/base-cron": "*",
     "@saflib/base-db": "*",
     "@saflib/base-jobs": "*",
+    "@saflib/base-ops": "*",
     "@saflib/base-service-common": "*",
     "@saflib/cron-http": "*",
     "@saflib/drizzle": "*",
@@ -30,9 +31,12 @@
     "@saflib/monorepo": "*",
     "@saflib/node-log-http": "*",
     "@saflib/node-metrics-http": "*",
+    "@saflib/ops-http": "*",
     "@saflib/vendors-brevo": "*"
   },
   "devDependencies": {
+    "@saflib/ops-db": "*",
+    "@saflib/utils": "*",
     "@saflib/vitest": "*",
     "supertest": "^7.0.0"
   },

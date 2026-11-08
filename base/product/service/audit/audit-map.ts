@@ -15,4 +15,13 @@ export const baseAuditMap: Record<string, AuditMapEntry> = {
     eventType: "user_config.marketing_unsubscribe",
     resourceType: "user_config",
   },
+  // Ops tokens (@saflib/ops-spec): machine credentials for the ops API.
+  "POST /admin/ops-tokens": {
+    eventType: "ops_token.create",
+    resourceType: "ops_token",
+  },
+  "POST /admin/ops-tokens/:id/revoke": {
+    eventType: "ops_token.revoke",
+    resourceType: "ops_token",
+  },
 };

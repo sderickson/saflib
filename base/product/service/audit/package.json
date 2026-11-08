@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@saflib/base-spec": "*",
+    "@saflib/ops-spec": "*",
     "@saflib/vitest": "*"
   },
   "sideEffects": false

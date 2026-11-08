@@ -35,6 +35,9 @@
       "path": "../../../../node-metrics/node-metrics-http"
     },
     {
+      "path": "../../../../ops/ops-http"
+    },
+    {
       "path": "../../../../vendors/brevo"
     },
     {
@@ -51,6 +54,9 @@
     },
     {
       "path": "../jobs"
+    },
+    {
+      "path": "../ops"
     }
   ],
   "compilerOptions": {
