@@ -18,7 +18,7 @@
 | ----- | ----------- | ----- |
 | 0 | Spikes: Prometheus footprint, graph rendering, Mermaid on GitHub | done (droplet run and embed tests moved to Phase 5) |
 | 1 | Ops token, `/ops` spec skeleton, `/ops/health`, build manifest and deploy markers | code done; deploy pending |
-| 2 | Persistent logs: SQLite store, write-time redaction, message templates, log endpoints | todo |
+| 2 | Persistent logs: SQLite store, write-time redaction, message templates, log endpoints | in progress (2a-2c done) |
 | 3 | Issues: persistent grouped errors *and* warnings, resolve/ignore; first digest | todo |
 | 4 | Agent trial: CLI/skill plus a daily scheduled agent on one product | todo |
 | 5 | Prometheus: per-host stack, standard histograms, query proxy, graph snapshots | todo |
@@ -685,15 +685,25 @@ Slices:
 
 ### Phase 2: Persistent logs
 
-- [ ] Redaction format (key names, value patterns, URL stripping, IP
-      truncation) that masks values and raises `log.redaction:<kind>` warn
-      issues, plus tests. The issues land once Phase 3 exists; until then,
-      count detections in a metric.
-- [ ] `node-log-db`: store, batched writer, overflow counter, rotation and
-      size cap, FTS5
-- [ ] Template normalization and the `templates` table
-- [ ] `GET /ops/logs`, `GET /ops/logs/templates`; the admin log page works in
-      production
+- [x] **2a.** Redaction (`@saflib/utils/redact`): key names, value patterns,
+      URL stripping, IP truncation. Masks values and reports detections.
+      Until Phase 3, detections go to `saf_log_redactions_total{kind}` and
+      the transport's `onRedaction` hook; Phase 3 turns them into
+      `log.redaction:<kind>` warn issues.
+- [x] **2b.** `node-log-db`: store, batched writer, overflow/reentrancy
+      counters, retention by age/size/stale templates, FTS5 (external
+      content plus triggers), template normalization and the
+      `log_templates` table. WAL plus busy_timeout, since both blue-green
+      colors write to one file.
+- [x] **2c.** `GET /ops/logs`, `GET /ops/logs/templates` (free text under
+      `untrusted`; audited), wired into base (`enableBasePersistentLogs`)
+      and hub.
+- [ ] **2d.** The admin log page works in production (site-admin route
+      backed by `node-log-db`; `node-log-vue` switches from the dev ring
+      buffer).
+- [ ] *(Follow-up idea)* Generalize the FTS5 pattern into a saflib helper for
+      product search (FTS table + trigger migration template, safe query
+      builder, bm25 weights, snippet/highlight).
 
 ### Phase 3: Issues and first digest
 

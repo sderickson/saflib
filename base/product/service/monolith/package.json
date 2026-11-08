@@ -24,6 +24,7 @@
     "@saflib/base-http-app": "*",
     "@saflib/base-jobs": "*",
     "@saflib/base-kratos-handlers": "*",
+    "@saflib/base-ops": "*",
     "@saflib/base-service-common": "*",
     "@saflib/base-spec": "*",
     "@saflib/env": "*",

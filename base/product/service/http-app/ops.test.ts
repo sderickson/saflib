@@ -68,6 +68,17 @@ describe("ops API in the base app", () => {
     });
   });
 
+  it("serves persisted logs from the product's logs database", async () => {
+    const { token } = await throwError(
+      createToken(getBaseOpsDbKey(), { name: "logs", scopes: ["ops:read"], createdBy: null }),
+    );
+    const res = await request(lease.app)
+      .get("/ops/logs?level=error")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+    expect(res.body).toEqual({ logs: [], next_cursor: null });
+  });
+
   it("keeps token admin behind the session gate", async () => {
     await request(lease.app).get("/admin/ops-tokens").expect(401);
     await request(lease.app).get("/admin/ops-tokens").set(makeAdminHeaders()).expect(200);

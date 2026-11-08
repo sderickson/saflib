@@ -5,6 +5,7 @@
     { "path": "../../../../monorepo" },
     { "path": "../../../../node" },
     { "path": "../../../../ops/ops-db" },
+    { "path": "../../../../node-log/node-log-db" },
     { "path": "../../../../ops/ops-http" }
   ],
   "compilerOptions": {

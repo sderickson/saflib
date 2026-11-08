@@ -1,6 +1,8 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createOnDiskDbKeyAccessor } from "@saflib/drizzle";
+import { addTransport } from "@saflib/node";
+import { createPersistentLogTransport, logsDb } from "@saflib/node-log-db";
 import { opsDb } from "@saflib/ops-db";
 import {
   createOpsRouter,
@@ -22,6 +24,23 @@ const opsDbAccessor = createOnDiskDbKeyAccessor({
 /** Opaque key for `@saflib/ops-db` (ops tokens), separate from the main app DB. */
 export const getBaseOpsDbKey = opsDbAccessor.getDbKey;
 
+const logsDbAccessor = createOnDiskDbKeyAccessor({
+  packageUrl: import.meta.url,
+  filePrefix: "logs-db",
+  connect: logsDb.connect,
+});
+
+/** Opaque key for `@saflib/node-log-db` (persisted, redacted logs). */
+export const getBaseLogsDbKey = logsDbAccessor.getDbKey;
+
+/**
+ * Persist this process's logs (redacted, searchable, retained 14 days / 512 MB)
+ * for `GET /ops/logs`. Call once at startup, after `setServiceName`.
+ */
+export function enableBasePersistentLogs() {
+  addTransport(createPersistentLogTransport({ getDbKey: getBaseLogsDbKey }));
+}
+
 export interface CreateBaseOpsRouterOptions {
   /** Checks beyond the defaults (process, and disk for this package's data volume). */
   healthChecks?: HealthCheck[];
@@ -36,6 +55,7 @@ export interface CreateBaseOpsRouterOptions {
 export function createBaseOpsRouter(options: CreateBaseOpsRouterOptions = {}) {
   return createOpsRouter({
     dbKey: getBaseOpsDbKey(),
+    logsDbKey: getBaseLogsDbKey(),
     healthChecks: [diskCheck({ path: dataDir }), ...(options.healthChecks ?? [])],
   });
 }

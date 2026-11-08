@@ -22,6 +22,7 @@
     "@saflib/drizzle": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
+    "@saflib/node-log-db": "*",
     "@saflib/ops-db": "*",
     "@saflib/ops-http": "*",
     "commander": "^15.0.0"

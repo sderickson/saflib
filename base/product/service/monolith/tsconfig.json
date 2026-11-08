@@ -60,6 +60,9 @@
       "path": "../common"
     },
     {
+      "path": "../ops"
+    },
+    {
       "path": "../cron"
     },
     {

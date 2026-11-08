@@ -30,4 +30,12 @@ export const baseAuditMap: Record<string, AuditMapEntry> = {
     eventType: "ops_api.deploys.read",
     resourceType: "ops_api",
   },
+  "GET /ops/logs": {
+    eventType: "ops_api.logs.read",
+    resourceType: "ops_api",
+  },
+  "GET /ops/logs/templates": {
+    eventType: "ops_api.log_templates.read",
+    resourceType: "ops_api",
+  },
 };

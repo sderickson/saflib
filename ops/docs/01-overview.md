@@ -2,7 +2,7 @@
 
 `ops` is the **agent-facing ops API** for SAF products: a small set of read-mostly endpoints, authenticated by a machine token, that let a maintenance agent (or a human with `curl`) check on a running product without a user session, a dashboard, or database access.
 
-It is being built in phases; see [`plans/agent-maintainable-ops.md`](../../plans/agent-maintainable-ops.md). Today it provides ops tokens, health checks, and deploy history. Logs, issues, metrics, audit, alerts, and dependency status follow.
+It is being built in phases; see [`plans/agent-maintainable-ops.md`](../../plans/agent-maintainable-ops.md). Today it provides ops tokens, health checks, deploy history, and persisted logs. Logs, issues, metrics, audit, alerts, and dependency status follow.
 
 ## Packages
 
@@ -75,6 +75,18 @@ Each time the ops router is created (once per process), it records a **boot** in
 `GET /ops/deploys` returns this process's boot, recent deploys, and `boots_last_24h`. Many boots with few deploys suggests a crash loop.
 
 The same build is published to Prometheus as `saf_build_info{service_name, build_ref, commit_root, commit_saflib} 1`, so graphs can mark deploys.
+
+## Logs
+
+Products opt in with `enableBasePersistentLogs()` (or their equivalent) at startup, which adds a `@saflib/node-log-db` Winston transport:
+
+- Every `info`-or-worse line is **redacted at write time** (`@saflib/utils/redact`): secret and PII field names are masked whole; emails, phone numbers, tokens, card numbers and high-entropy strings are masked in text; query strings are stripped and IPs truncated. Each masked value is counted in `saf_log_redactions_total{kind}`, since it's a log call that should be fixed.
+- Lines are queued and written in batches; the transport never blocks or throws into the caller. Overflow is dropped and counted in `saf_logs_dropped_total`.
+- Messages are normalized into **templates** (ids, numbers and quoted values become placeholders), tracked with first/last seen and counts.
+- Retention: 14 days, 512 MB of live data, templates unseen for 90 days.
+- Search uses SQLite FTS5. Free text is matched word by word as literals.
+
+`GET /ops/logs` filters by time, minimum level, service, request id, template and text, newest first with cursor paging. `GET /ops/logs/templates` lists templates active in a window (default 24h), busiest first; `only_new=true` returns only templates first seen in the window, the "new behavior" signal. Message, fields, template text and sample lines are returned under `untrusted`.
 
 ## Untrusted content
 
