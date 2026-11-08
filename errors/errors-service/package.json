@@ -16,11 +16,14 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/drizzle": "*",
+    "@saflib/errors-db": "*",
     "@saflib/node": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@saflib/utils": "*"
   },
   "sideEffects": false
 }

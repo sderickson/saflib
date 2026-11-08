@@ -30,6 +30,11 @@ export interface OpsRouterOptions {
    * log endpoints respond 404.
    */
   logsDbKey?: DbKey;
+  /**
+   * The issues database (`@saflib/errors-db`). When omitted, the issue
+   * endpoints respond 404.
+   */
+  issuesDbKey?: DbKey;
   /** Build metadata override (tests); defaults to the image's `/etc/saf/build.json`. */
   buildInfo?: BuildInfo;
 }
@@ -65,6 +70,7 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
     dbKey,
     healthChecks: [processCheck(), ...(options.healthChecks ?? [])],
     logsDbKey: options.logsDbKey,
+    issuesDbKey: options.issuesDbKey,
     // Each router creation is one process start in production.
     currentBoot: recordCurrentBoot(dbKey, options.buildInfo),
   };

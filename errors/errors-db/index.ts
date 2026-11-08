@@ -19,8 +19,9 @@ export {
   type ListOccurrencesResult,
 } from "./queries/read.ts";
 export { setIssueStatus, type SetIssueStatusParams, type SetIssueStatusResult } from "./queries/set-status.ts";
-export { pruneIssues } from "./retention.ts";
+export { pruneIssues, startIssueRetention } from "./retention.ts";
 export { createIssueCollector, currentVersion } from "./collector.ts";
+export { createRedactionIssueRecorder, type RedactionEventLike } from "./redaction-issues.ts";
 
 import { issuesDbManager } from "./instances.ts";
 

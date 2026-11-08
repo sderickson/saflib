@@ -9,6 +9,8 @@ export interface OpsServiceContext {
   healthChecks: HealthCheck[];
   /** The persisted logs database, when the product enables it. */
   logsDbKey?: DbKey;
+  /** The issues database, when the product enables it. */
+  issuesDbKey?: DbKey;
   /** This process's boot record, once written. */
   currentBoot: Promise<OpsBoot | undefined>;
 }

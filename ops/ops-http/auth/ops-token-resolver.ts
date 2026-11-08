@@ -1,7 +1,7 @@
 import type { Handler, Request, Response } from "express";
 import type { SecurityResolver } from "@saflib/express";
 import type { DbKey } from "@saflib/drizzle";
-import { getSafContext, getSafReporters } from "@saflib/node";
+import { getSafContext, getSafReporters, reportWarning } from "@saflib/node";
 import {
   findActiveByHash,
   hashOpsToken,
@@ -26,6 +26,18 @@ export interface OpsTokenResolverOptions {
   failuresPerIpPerMinute?: number;
   /** Injected for tests. */
   limiters?: { perToken: FixedWindowLimiter; failuresPerIp: FixedWindowLimiter };
+}
+
+/** Report at most once per key per minute: limits are hit in bursts. */
+function createWarningThrottle(intervalMs = 60_000) {
+  const last = new Map<string, number>();
+  return (key: string, report: () => void) => {
+    const now = Date.now();
+    if ((last.get(key) ?? 0) > now - intervalMs) return;
+    last.set(key, now);
+    if (last.size > 10_000) last.clear();
+    report();
+  };
 }
 
 function reject(res: Response, status: number, message: string, retryAfter?: number) {
@@ -59,6 +71,8 @@ export function createOpsTokenSecurityResolver(
     }),
   };
 
+  const throttle = createWarningThrottle();
+
   return {
     scopes: opsTokenScopes,
     standalone: true,
@@ -69,6 +83,12 @@ export function createOpsTokenSecurityResolver(
           reject(res, 429, "Too many failed attempts", limiters.failuresPerIp.retryAfterSeconds(ip));
         const failed = (status: number, message: string) => {
           if (!limiters.failuresPerIp.hit(ip)) {
+            throttle(`auth:${ip}`, () =>
+              reportWarning("ops API: too many failed authentications from one address", {
+                fingerprint: "ops.auth_failures_limited",
+                extra: { clientIp: ip },
+              }),
+            );
             tooMany();
             return;
           }
@@ -99,6 +119,12 @@ export function createOpsTokenSecurityResolver(
             return;
           }
           if (!limiters.perToken.hit(opsToken.id)) {
+            throttle(`token:${opsToken.id}`, () =>
+              reportWarning("ops API: token rate limited", {
+                fingerprint: "ops.rate_limited",
+                extra: { opsTokenId: opsToken.id },
+              }),
+            );
             reject(res, 429, "Rate limited", limiters.perToken.retryAfterSeconds(opsToken.id));
             return;
           }

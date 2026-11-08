@@ -23,3 +23,16 @@ export function pruneIssues(dbKey: DbKey, options: { countsDays?: number; closed
     return { counts, groups };
   })();
 }
+
+/** Run {@link pruneIssues} periodically (default hourly). Returns a stop function. */
+export function startIssueRetention(getDbKey: () => DbKey, intervalMs = 3_600_000): () => void {
+  const timer = setInterval(() => {
+    try {
+      pruneIssues(getDbKey());
+    } catch (e) {
+      console.error("errors-db: retention failed", e);
+    }
+  }, intervalMs);
+  timer.unref();
+  return () => clearInterval(timer);
+}
