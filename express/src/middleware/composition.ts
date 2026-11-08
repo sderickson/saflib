@@ -134,7 +134,8 @@ export const createScopedMiddleware = (
   // Validate against the whole document a per-operation slice was cut from:
   // validators are cached per document, so routes share one instead of each
   // building its own (expensive: it compiles the OpenAPI meta-schema and
-  // preprocesses the document). Security below still compiles from the slice.
+  // preprocesses the document, on the first request; see openapi.ts).
+  // Security below still compiles from the slice.
   const openApiValidatorMiddleware = createOpenApiValidator({
     apiSpec: fullDocumentForValidation(apiSpec) ?? apiSpec,
     fileUploader,
