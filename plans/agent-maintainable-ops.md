@@ -6,15 +6,18 @@
 
 ## Status
 
-- **Phase:** 1 (ops token, health, manifest)
+- **Phase:** 1 (ops token, health, manifest). Code is done; the hub deploy
+  is pending.
 - **Last updated:** 2026-11-08
-- **Next action:** Phase 1. Start with the `ops` suite skeleton and the
-  `ops-token` security scheme.
+- **Next action:** review the Phase 1 commits (saflib branch
+  `2026-11-07-self-telemetry`; outer repo branch of the same name). Deploy
+  hub, mint a token with `npm run ops-tokens -- create` in the container, and
+  `curl /ops/health`. Then start Phase 2 (persistent logs).
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
 | 0 | Spikes: Prometheus footprint, graph rendering, Mermaid on GitHub | done (droplet run and embed tests moved to Phase 5) |
-| 1 | Ops token, `/ops` spec skeleton, `/ops/health`, build manifest and deploy markers | todo |
+| 1 | Ops token, `/ops` spec skeleton, `/ops/health`, build manifest and deploy markers | code done; deploy pending |
 | 2 | Persistent logs: SQLite store, write-time redaction, message templates, log endpoints | todo |
 | 3 | Issues: persistent grouped errors *and* warnings, resolve/ignore; first digest | todo |
 | 4 | Agent trial: CLI/skill plus a daily scheduled agent on one product | todo |
@@ -668,8 +671,13 @@ Slices:
       Done 2026-11-08: `ops-vue` (list, create showing the secret once,
       revoke) on the base admin SPA at `/ops-tokens`; `ops-tokens` CLI in
       `base-ops` for bootstrap and break-glass.
-- [ ] **1e.** Wire into hub: volume mount, Caddy unchanged (forward-auth
-      doesn't block); deploy
+- [x] **1e.** Wire into hub: volume mount, Caddy unchanged (forward-auth
+      doesn't block). Done 2026-11-08 in the outer repo: `hub/service/ops`
+      (`@sderickson/hub-ops`), mounted in `hub-http`, `/opt/hub/ops`
+      volume. Hub has no session gate, audit suite or admin SPA, so its ops
+      reads aren't audited and tokens come from the CLI.
+- [ ] **Deploy hub and smoke-test** (needs the human: deploys are
+      outward-facing).
 
 ### Phase 2: Persistent logs
 
