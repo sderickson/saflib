@@ -410,6 +410,9 @@ describe("PlansPage", () => {
       nextPlanFile: (ref) => (ref === PHASE_2_PATH ? undefined : PHASE_2_PATH),
     });
     server.use(...drive.handlers);
+    // The drive keeps advancing run-2 after the test sees the navigation;
+    // without this it carries on into the next test, which has no handlers.
+    onTestFinished(drive.restore);
 
     await router.push({ path: "/plans/2026-09-16-todo-app/phase-1-backend-schema.yaml" });
     const wrapper = mountTestApp(PlansPage);

@@ -87,7 +87,11 @@ export function remotePayload(
   extraEnv: Record<string, string> = {},
 ): string {
   const lines: string[] = [];
-  if (config.env.REMOTE_SUDO !== "0") lines.push("sudo -i");
+  // `exec`: the root shell reads the rest of the script in place of the login
+  // shell. Without it, when the root shell exits (e.g. `set -e` on a failed
+  // step) the login shell carries on with the remaining lines, unprivileged
+  // and without the functions and `set -e` defined below.
+  if (config.env.REMOTE_SUDO !== "0") lines.push("exec sudo -i");
   for (const [key, value] of Object.entries({
     ...config.env,
     ...deployNameEnv(config),

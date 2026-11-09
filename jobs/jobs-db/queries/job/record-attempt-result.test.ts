@@ -121,35 +121,80 @@ describe("recordAttemptResultJob", () => {
     expect(result.updated_at).toEqual(later);
   });
 
-  it.each([
-    "exhausted",
-    "permanent-status",
-    "rejected-by-endpoint",
-    "auth-unresolvable",
-  ] as const)("records dead with terminal_reason %s", async (terminal_reason) => {
-    await seedRunning(dbKey);
+  it("ends a retry as dead when a queued job holds the same dedupe_key", async () => {
+    // e.g. a cron tick enqueued the same work while this attempt ran;
+    // re-queueing would collide on job_dedupe_key_queued_uidx.
+    await createJob(
+      dbKey,
+      jobParams({
+        id: "job-1",
+        status: "running",
+        attempt: 1,
+        started_at: now,
+        heartbeat_at: now,
+        dedupe_key: "cron:sweep",
+      }),
+    );
+    await createJob(
+      dbKey,
+      jobParams({
+        id: "job-2",
+        dedupe_key: "cron:sweep",
+        original_request_id: "r-2",
+      }),
+    );
 
     const { result, error } = await recordAttemptResultJob(dbKey, {
       id: "job-1",
       now: later,
-      outcome: "dead",
-      result: {
-        status_code: 422,
-        error_body: "capped-by-caller",
-        terminal_reason,
-      },
+      outcome: "retry",
+      run_at: backoffAt,
+      result: { status_code: 503, error_body: "unavailable" },
     });
 
     expect(error).toBeUndefined();
     assert(result);
     expect(result.status).toBe("dead");
     expect(result.result).toEqual({
-      status_code: 422,
-      error_body: "capped-by-caller",
-      terminal_reason,
+      status_code: 503,
+      error_body: "unavailable",
+      terminal_reason: "exhausted",
     });
     expect(result.finished_at).toEqual(later);
   });
+
+  it.each([
+    "exhausted",
+    "permanent-status",
+    "rejected-by-endpoint",
+    "auth-unresolvable",
+  ] as const)(
+    "records dead with terminal_reason %s",
+    async (terminal_reason) => {
+      await seedRunning(dbKey);
+
+      const { result, error } = await recordAttemptResultJob(dbKey, {
+        id: "job-1",
+        now: later,
+        outcome: "dead",
+        result: {
+          status_code: 422,
+          error_body: "capped-by-caller",
+          terminal_reason,
+        },
+      });
+
+      expect(error).toBeUndefined();
+      assert(result);
+      expect(result.status).toBe("dead");
+      expect(result.result).toEqual({
+        status_code: 422,
+        error_body: "capped-by-caller",
+        terminal_reason,
+      });
+      expect(result.finished_at).toEqual(later);
+    },
+  );
 
   it("returns JobNotFoundError when the id does not exist", async () => {
     const { result, error } = await recordAttemptResultJob(dbKey, {
