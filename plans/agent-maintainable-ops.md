@@ -20,7 +20,7 @@
 | 2 | Persistent logs: SQLite store, write-time redaction, message templates, log endpoints | done (hub) |
 | 3 | Issues: persistent grouped errors *and* warnings, resolve/ignore; first digest | done except source maps (hub) |
 | 4 | Agent trial: CLI/skill plus a daily scheduled agent on one product | in progress |
-| 5 | Prometheus: per-host stack, standard histograms, query proxy, graph snapshots | todo |
+| 5 | Prometheus: per-host stack, standard histograms, query proxy, graph snapshots | mostly done (Tailscale, embed tests, 48h numbers left) |
 | 6 | Alerting: rules, Alertmanager to Slack and email, dead man's switch, external checks | todo |
 | 7 | Audit: query endpoints and security summaries | todo |
 | 8 | Dependencies: deployed manifest, available versions, advisories, update policy | todo |
@@ -754,24 +754,28 @@ Gaps found probing hub's ops API by hand (2026-11-09):
 
 ### Phase 5: Prometheus
 
-- [ ] Per-host Prometheus and node_exporter in the platform compose
+- [x] Per-host Prometheus and node_exporter in the platform compose
       (`hub/deploy`), with a 60s scrape interval, retention and size cap.
-      Record RAM, CPU and disk after 48 hours (carried over from Phase 0).
+      (Live 2026-11-09. First reading: Prometheus 83 MB RSS, node_exporter
+      18 MB, 1,241 series, on a 2 GB / 1 vCPU host with 1 GB available.)
+- [ ] Record RAM, CPU and disk after 48 hours (carried over from Phase 0).
 - [ ] Tailscale on the hosts; Prometheus and Alertmanager UIs reachable on
       the tailnet only; optionally move SSH and deploys onto the tailnet
 - [ ] Embed tests (carried over from Phase 0): a signed-GET graph in a
       GitHub PR body and in Slack; Mermaid `xychart-beta` on GitHub
-- [ ] Standard histogram bucket sets (finer latency buckets, status
-      classes), with saflib subsystems instrumented
-- [ ] `/ops/metrics/*` proxy with limits. **Per-app isolation:** Prometheus
+- [x] Standard histogram bucket sets (finer latency buckets, status
+      classes), with saflib subsystems instrumented (HTTP, DB queries, jobs,
+      cron, gRPC; outbound integrations and email still to do)
+- [x] `/ops/metrics/*` proxy with limits. **Per-app isolation:** Prometheus
       is shared per host, so the proxy must inject the app's own label
       matcher (e.g. `service_name="recipes"`) into every selector before
       forwarding, so one app's token can't read another app's series. Use
       `prom-label-proxy` or equivalent PromQL rewriting; never pass raw
       queries through. Graph links get the same enforcement.
-- [ ] Graph links: signed-GET rendering with lazy `object-store` caching
-      (or the POST snapshot fallback, per Phase 0); `saf-ops graph`
-- [ ] Digest gains error-rate and p95 comparisons
+- [x] Graph links: signed-GET rendering (built-in SVG renderer, resvg PNG)
+- [ ] Lazy `object-store` caching of rendered graphs, so links outlive
+      Prometheus retention; `saf-ops graph`
+- [x] Digest gains error-rate and p95 comparisons
 
 ### Phase 6: Alerting
 

@@ -1,5 +1,5 @@
 type: object
-required: [ since, generated_at, summary, health, deploys, issues, logs ]
+required: [ since, generated_at, summary, health, deploys, issues, logs, metrics ]
 properties:
   since:
     type: string
@@ -83,3 +83,31 @@ properties:
             items:
               $ref: "./ops-log-template.yaml"
       - type: "null"
+  metrics:
+    description: >
+      Request count, 5xx error rate and p95 latency (all routes) for this
+      window and the one before it. Null when the product hasn't enabled
+      metrics. `flags` feed `needs_attention`: `error_rate_high` (at least 5%
+      with 20+ requests), `error_rate_up` (at least 1% and double the
+      previous window), `p95_up` (at least 0.5s and double). If Prometheus
+      couldn't be queried, `error` says why and the values are null.
+    oneOf:
+      - type: "null"
+      - type: object
+        required: [ window_seconds, requests, error_rate, p95_seconds, flags, error ]
+        properties:
+          window_seconds:
+            type: integer
+          requests:
+            $ref: "./ops-metric-comparison.yaml"
+          error_rate:
+            $ref: "./ops-metric-comparison.yaml"
+          p95_seconds:
+            $ref: "./ops-metric-comparison.yaml"
+          flags:
+            type: array
+            items:
+              type: string
+              enum: [ error_rate_high, error_rate_up, p95_up ]
+          error:
+            type: [ string, "null" ]

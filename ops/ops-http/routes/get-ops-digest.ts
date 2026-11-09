@@ -6,20 +6,23 @@ import { countLogsByLevel, listTemplates } from "@saflib/node-log-db";
 import { throwError } from "@saflib/utils";
 import { opsServiceStorage } from "../context.ts";
 import { runHealthChecks } from "../health/run-health-checks.ts";
+import { digestMetrics } from "../metrics/digest-metrics.ts";
 import { mapIssue, mapLogTemplate, mapOpsBoot, queryDate } from "./_helpers.ts";
 
 const DAY_MS = 86_400_000;
 const TOP = 10;
 
 export const getOpsDigestHandler = createHandler(async function (req, res) {
-  const { dbKey, logsDbKey, issuesDbKey, healthChecks, currentBoot } = opsServiceStorage.getStore()!;
+  const { dbKey, logsDbKey, issuesDbKey, healthChecks, currentBoot, metrics: metricsConfig } =
+    opsServiceStorage.getStore()!;
   const since = queryDate(req.query.since) ?? new Date(Date.now() - DAY_MS);
   await currentBoot;
 
-  const [health, recentDeploys, boots] = await Promise.all([
+  const [health, recentDeploys, boots, metrics] = await Promise.all([
     runHealthChecks(healthChecks),
     throwError(listBoots(dbKey, { newBuildsOnly: true, limit: 50 })),
     throwError(countBootsSince(dbKey, since)),
+    metricsConfig ? digestMetrics(metricsConfig, since) : Promise.resolve(null),
   ]);
   const deploys = recentDeploys.filter((b) => b.started_at >= since);
 
@@ -68,7 +71,11 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
     generated_at: new Date().toISOString(),
     summary: {
       needs_attention:
-        health.status !== "ok" || newIssueCount > 0 || regressedCount > 0 || newSevereTemplates > 0,
+        health.status !== "ok" ||
+        newIssueCount > 0 ||
+        regressedCount > 0 ||
+        newSevereTemplates > 0 ||
+        (metrics?.flags.length ?? 0) > 0,
       health_status: health.status,
       new_issues: newIssueCount,
       regressed_issues: regressedCount,
@@ -81,6 +88,7 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
     deploys: deploys.map(mapOpsBoot),
     issues,
     logs,
+    metrics,
   };
   const response: OpsResponseBody["getOpsDigest"][200] = { digest };
   res.status(200).json(response);

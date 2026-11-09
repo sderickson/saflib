@@ -116,11 +116,17 @@ histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_
 sum(rate(http_request_duration_seconds_count{status_code="5xx"}[5m])) / sum(rate(http_request_duration_seconds_count[5m]))
 ```
 
+### Graph links
+
+`POST /ops/metrics/graph-links {query, start?, end?, step?, width?, height?, title?}` (`ops:read`) returns `svg_url` and `png_url` for a line graph. They work without a token, so they can go in `<img>` tags in GitHub, Slack or email. Relative times are resolved when minted, and the HMAC signature covers every parameter, so a link shows exactly one graph; changing anything returns 403. Images render through the same proxy and limits, are `immutable`-cacheable, and are rate limited (60/minute per IP). Signing keys are in ops-db, created on first use; `revokeGraphKey` breaks every link a key signed. Rendering is a small built-in SVG line renderer (UTC axis, up to 10 lines), and PNGs use resvg with a bundled DejaVu font, since images have no system fonts.
+
 To add a product on a host, put its scrape config in the platform's `prometheus/scrape.d/<app>.yml` (DNS discovery on `<app>-monolith`, relabelled `saf_app: <app>`), as hub's is.
 
 ## Digest
 
 `GET /ops/digest?since=` (default 24h) is the agent's first call: health failures, deploys and restarts, new / regressed / busiest issues, new log templates and level counts. `summary.needs_attention` is false when health is ok and nothing new or regressed needs a look (new info-level templates don't count), so a scheduled run can stop early. Sections for stores a product hasn't enabled are null.
+
+With metrics enabled, the digest's `metrics` section compares the window with the one before it: request count, 5xx error rate and p95 latency across all routes. Its `flags` (`error_rate_high`: at least 5% on 20+ requests; `error_rate_up`: at least 1% and double; `p95_up`: at least 0.5s and double) count toward `needs_attention`. If Prometheus can't be queried, `metrics.error` says why and the rest of the digest still returns.
 
 ## Untrusted content
 
