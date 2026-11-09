@@ -10,6 +10,7 @@ import {
 } from "./auth/ops-token-resolver.ts";
 import { processCheck } from "./health/builtin-checks.ts";
 import { recordCurrentBoot } from "./boot.ts";
+import { registerHealthCheckMetric } from "./health/health-metric.ts";
 import type { BuildInfo, ReleaseInfo } from "@saflib/node/git-hashes";
 import type { HealthCheck } from "./health/types.ts";
 import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
@@ -83,6 +84,7 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
     // Each router creation is one process start in production.
     currentBoot: recordCurrentBoot(dbKey, options.buildInfo, options.releaseInfo),
   };
+  registerHealthCheckMetric(context.healthChecks);
   const resolver = createOpsTokenSecurityResolver(() => dbKey, options.rateLimits);
 
   const inner = express.Router();

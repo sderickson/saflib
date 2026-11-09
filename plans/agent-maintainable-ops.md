@@ -21,7 +21,7 @@
 | 3 | Issues: persistent grouped errors *and* warnings, resolve/ignore; first digest | done except source maps (hub) |
 | 4 | Agent trial: CLI/skill plus a daily scheduled agent on one product | in progress |
 | 5 | Prometheus: per-host stack, standard histograms, query proxy, graph snapshots | mostly done (Tailscale, embed tests, 48h numbers left) |
-| 6 | Alerting: rules, Alertmanager to Slack and email, dead man's switch, external checks | todo |
+| 6 | Alerting: rules, Alertmanager to Slack and email, dead man's switch, external checks | code done; secrets and external services pending |
 | 7 | Audit: query endpoints and security summaries | todo |
 | 8 | Dependencies: deployed manifest, available versions, advisories, update policy | todo |
 | 9 | Roll out to all products; alerts wake the agent (stretch) | todo |
@@ -760,7 +760,10 @@ Gaps found probing hub's ops API by hand (2026-11-09):
       18 MB, 1,241 series, on a 2 GB / 1 vCPU host with 1 GB available.)
 - [ ] Record RAM, CPU and disk after 48 hours (carried over from Phase 0).
 - [ ] Tailscale on the hosts; Prometheus and Alertmanager UIs reachable on
-      the tailnet only; optionally move SSH and deploys onto the tailnet
+      the tailnet only; optionally move SSH and deploys onto the tailnet.
+      Shelved 2026-11-09 until there's time; plan is one tailnet for every
+      host, Prometheus published on 127.0.0.1 and exposed with
+      `tailscale serve`.
 - [ ] Embed tests (carried over from Phase 0): a signed-GET graph in a
       GitHub PR body and in Slack; Mermaid `xychart-beta` on GitHub
 - [x] Standard histogram bucket sets (finer latency buckets, status
@@ -779,11 +782,18 @@ Gaps found probing hub's ops API by hand (2026-11-09):
 
 ### Phase 6: Alerting
 
-- [ ] Default rule set (above), overridable per product
-- [ ] Alertmanager routes to Slack and email
-- [ ] Watchdog to an external heartbeat; external uptime checks per site and
-      for `/ops/health`
-- [ ] `/ops/alerts/webhook`, `GET /ops/alerts`, ack; digest section
+- [x] Default rule set (`ops/prometheus/saf-default.rules.yml`, promtool
+      tests beside it), overridable per product. Health checks are exported
+      as `saf_health_check_status`, which covers audit rotation and Kratos.
+      Not yet: TLS expiry (left to the external uptime check), backup age
+      (no backups yet), security spikes (needs failed-login metrics).
+- [x] Alertmanager routes to each app's webhook and Slack (secrets as files
+      on the server); email is a commented block awaiting SMTP credentials
+- [x] Watchdog route to an external heartbeat
+- [ ] Human setup: Slack webhook, heartbeat service, SMTP, an
+      `ops:alerts-ingest` token on the server, external uptime checks per
+      site and for `/ops/health`
+- [x] `/ops/alerts/webhook`, `GET /ops/alerts`, ack; digest section
 
 ### Phase 7: Audit
 

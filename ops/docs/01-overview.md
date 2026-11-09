@@ -130,6 +130,30 @@ The host's Alertmanager posts every alert to each app's `POST /ops/alerts/webhoo
 - `POST /ops/alerts/{id}/ack` (`ops:triage`): marks it seen, recorded as `ops_token:<id>`.
 - The digest's `alerts` section lists what's firing, and unacknowledged firing alerts (`summary.firing_alerts`) count toward `needs_attention`.
 
+### Alert rules and routing
+
+SAF's default rules are `ops/prometheus/saf-default.rules.yml`; the platform deploy loads it (hub links it into `prometheus/rules/`, and the upload carries the real file). They cover:
+- **Reliability:** targets down (all colors), 5xx above 5%, crash loops, event-loop lag, failing or warning health checks (`saf_health_check_status`, published at scrape time from the ops router's checks), new error issues, regressions and dead jobs.
+- **Performance:** a 2s p95 budget per path with traffic, and a 500ms DB-query p95.
+- **Capacity:** disk over 80% and 90%, filling within 3 days, memory under 10%, dropped log lines.
+- **Watchdog:** always firing, for the external heartbeat.
+
+`promtool test rules saf-default.rules.test.yml` (in Docker: `docker run --rm -v "$PWD:/r" -w /r --entrypoint promtool prom/prometheus:v3.5.0 test rules saf-default.rules.test.yml`) checks them; run it after changing a rule. Products add or tighten rules with their own file in the platform's `prometheus/rules/`.
+
+Alertmanager (platform deploy, `alertmanager/alertmanager.yml`) routes on `saf_app`: each app's alerts go to its `/ops/alerts/webhook` (straight over the edge network) and Slack. The Watchdog pings the heartbeat URL every minute. A critical alert silences the matching warning. Secrets are files on the server, never in the repo; a missing one only stops that integration:
+
+```sh
+sudo mkdir -p /opt/alertmanager/secrets
+# ops token with only ops:alerts-ingest, from the app's admin Ops tokens page
+printf '%s' 'safops_…' | sudo tee /opt/alertmanager/secrets/hub-ops-token >/dev/null
+printf '%s' 'https://hooks.slack.com/services/…' | sudo tee /opt/alertmanager/secrets/slack-webhook-url >/dev/null
+printf '%s' 'https://hc-ping.com/…' | sudo tee /opt/alertmanager/secrets/heartbeat-url >/dev/null
+# Alertmanager runs as nobody (65534)
+sudo chown -R 65534 /opt/alertmanager/secrets && sudo chmod 700 /opt/alertmanager/secrets && sudo chmod 600 /opt/alertmanager/secrets/*
+```
+
+Email is a commented block in the config, to fill in once there are SMTP credentials. A product on the same host gets its own route (`saf_app="<app>"`) and receiver pointing at its webhook, with its own token file.
+
 ## Digest
 
 `GET /ops/digest?since=` (default 24h) is the agent's first call: health failures, deploys and restarts, new / regressed / busiest issues, new log templates and level counts. `summary.needs_attention` is false when health is ok and nothing new or regressed needs a look (new info-level templates don't count), so a scheduled run can stop early. Sections for stores a product hasn't enabled are null.

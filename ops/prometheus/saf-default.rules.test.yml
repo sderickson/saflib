@@ -1,0 +1,108 @@
+# promtool test rules saf-default.rules.test.yml
+rule_files:
+  - saf-default.rules.yml
+evaluation_interval: 1m
+
+tests:
+  - name: one color down during a switch is fine; every target down is not
+    interval: 1m
+    input_series:
+      - series: 'up{job="hub", saf_app="hub", instance="blue:3001"}'
+        values: "1x10 0x20"
+      - series: 'up{job="hub", saf_app="hub", instance="green:3001"}'
+        values: "0x10 1x5 0x15"
+    alert_rule_test:
+      - eval_time: 12m
+        alertname: SafTargetDown
+        exp_alerts: []
+      - eval_time: 25m
+        alertname: SafTargetDown
+        exp_alerts:
+          - exp_labels: { severity: critical, saf_app: hub, job: hub }
+            exp_annotations:
+              summary: "hub (hub) can't be scraped"
+              description: "Every hub target has been down for 5 minutes."
+
+  - name: 5xx above 5% with traffic fires; the same ratio on a trickle doesn't
+    interval: 1m
+    input_series:
+      # 10 requests/min, 1 of them 5xx (10%).
+      - series: 'http_request_duration_seconds_count{saf_app="hub", path="/x", status_code="2xx"}'
+        values: "0+9x40"
+      - series: 'http_request_duration_seconds_count{saf_app="hub", path="/x", status_code="5xx"}'
+        values: "0+1x40"
+      # 0.2 requests/min, 10% failing: below the traffic floor.
+      - series: 'http_request_duration_seconds_count{saf_app="quiet", path="/x", status_code="2xx"}'
+        values: "0+0.18x40"
+      - series: 'http_request_duration_seconds_count{saf_app="quiet", path="/x", status_code="5xx"}'
+        values: "0+0.02x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: SafHighErrorRate
+        exp_alerts:
+          - exp_labels: { severity: critical, saf_app: hub }
+            exp_annotations:
+              summary: "hub: 10% of requests are failing (5xx)"
+              description: "Over 5% of requests returned 5xx for 10 minutes."
+
+  - name: disk over 80% warns, over 90% is critical
+    interval: 1m
+    input_series:
+      - series: 'node_filesystem_size_bytes{saf_app="host", mountpoint="/", fstype="ext4"}'
+        values: "100x30"
+      - series: 'node_filesystem_avail_bytes{saf_app="host", mountpoint="/", fstype="ext4"}'
+        values: "15x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: SafDiskAlmostFull
+        exp_alerts:
+          - exp_labels: { severity: warning, saf_app: host, mountpoint: "/", fstype: ext4 }
+            exp_annotations:
+              summary: "Host disk is 85% full"
+              description: "The root filesystem has been over 80% used for 10 minutes."
+      - eval_time: 20m
+        alertname: SafDiskCritical
+        exp_alerts: []
+
+  - name: a failing health check fires after 5 minutes
+    interval: 1m
+    input_series:
+      - series: 'saf_health_check_status{saf_app="hub", check="kratos"}'
+        values: "0x5 2x10"
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: SafHealthCheckFailing
+        exp_alerts: []
+      - eval_time: 12m
+        alertname: SafHealthCheckFailing
+        exp_alerts:
+          - exp_labels: { severity: critical, saf_app: hub, check: kratos }
+            exp_annotations:
+              summary: "hub: health check kratos is failing"
+              description: "See GET /ops/health for the check's summary."
+
+  - name: a new error issue fires; a new warning issue doesn't
+    interval: 1m
+    input_series:
+      - series: 'saf_issue_new_groups_total{saf_app="hub", level="error", kind="server"}'
+        values: "0x5 1x10"
+      - series: 'saf_issue_new_groups_total{saf_app="hub", level="warn", kind="server"}'
+        values: "0x5 3x10"
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: SafNewErrorIssue
+        exp_alerts:
+          - exp_labels: { severity: warning, saf_app: hub }
+            exp_annotations:
+              summary: "hub: a new error issue appeared"
+              description: "See GET /ops/issues?status=open for details."
+
+  - name: the watchdog always fires
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: Watchdog
+        exp_alerts:
+          - exp_labels: { severity: none, saf_app: host }
+            exp_annotations:
+              summary: "Alerting pipeline heartbeat"
+              description: "Always firing, by design."
