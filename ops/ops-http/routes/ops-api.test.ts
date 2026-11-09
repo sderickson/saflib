@@ -119,6 +119,20 @@ describe("ops API", () => {
       await request(app).get("/admin/ops-tokens").set(makeUserHeaders()).expect(403);
     });
 
+    it("requires a completed second factor, even for a site admin", async () => {
+      const noMfa = { ...makeAdminHeaders(), "x-user-mfa-completed": "false" };
+      const calls = [
+        request(app).get("/admin/ops-tokens").set(noMfa),
+        request(app).post("/admin/ops-tokens").set(noMfa).send({ name: "x", scopes: ["ops:read"] }),
+        request(app).post("/admin/ops-tokens/1/revoke").set(noMfa).send({}),
+        request(app).get("/admin/logs").set(noMfa),
+      ];
+      for (const res of await Promise.all(calls)) {
+        expect(res.status).toBe(403);
+        expect(res.body.code).toBe("MFA_REQUIRED");
+      }
+    });
+
     it("does not accept an ops token for admin routes", async () => {
       const t = await token(["ops:read", "ops:triage"]);
       await request(app)
