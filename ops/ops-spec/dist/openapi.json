@@ -47,6 +47,9 @@
       "OpsDigest": {
         "$ref": "#/components/schemas/ops-digest"
       },
+      "OpsDependencies": {
+        "$ref": "#/components/schemas/ops-dependencies"
+      },
       "OpsAlert": {
         "$ref": "#/components/schemas/ops-alert"
       },
@@ -585,7 +588,8 @@
           "issues",
           "logs",
           "metrics",
-          "alerts"
+          "alerts",
+          "dependencies"
         ],
         "properties": {
           "since": {
@@ -838,6 +842,235 @@
                 }
               }
             ]
+          },
+          "dependencies": {
+            "description": "Counts from the latest dependency check (see GET /ops/dependencies). High or critical advisories (`actionable`) and a stale check count toward `needs_attention`; outdated packages don't (Renovate's job). Null when the product has no lockfile to check.\n",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "checked_at",
+                  "stale",
+                  "advisories",
+                  "actionable",
+                  "outdated_direct",
+                  "renovate_due"
+                ],
+                "properties": {
+                  "checked_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time",
+                    "description": "Null until the first check finishes."
+                  },
+                  "stale": {
+                    "type": "boolean"
+                  },
+                  "advisories": {
+                    "type": "object",
+                    "required": [
+                      "critical",
+                      "high",
+                      "moderate",
+                      "low",
+                      "unknown"
+                    ],
+                    "properties": {
+                      "critical": {
+                        "type": "integer"
+                      },
+                      "high": {
+                        "type": "integer"
+                      },
+                      "moderate": {
+                        "type": "integer"
+                      },
+                      "low": {
+                        "type": "integer"
+                      },
+                      "unknown": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "actionable": {
+                    "type": "integer"
+                  },
+                  "outdated_direct": {
+                    "type": "integer"
+                  },
+                  "renovate_due": {
+                    "type": "integer"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "ops-dependencies": {
+        "type": "object",
+        "description": "The latest check of this image's installed packages (its lockfile) against OSV.dev advisories and the npm registry. Checked a couple of minutes after a deploy and then daily.\n",
+        "required": [
+          "checked_at",
+          "stale",
+          "packages_total",
+          "direct_total",
+          "node_version",
+          "lockfile_hash",
+          "advisories",
+          "outdated",
+          "errors"
+        ],
+        "properties": {
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "No successful check in the last 72 hours."
+          },
+          "packages_total": {
+            "type": "integer"
+          },
+          "direct_total": {
+            "type": "integer"
+          },
+          "node_version": {
+            "type": "string"
+          },
+          "lockfile_hash": {
+            "type": "string"
+          },
+          "advisories": {
+            "type": "array",
+            "description": "Most severe first.",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "aliases",
+                "severity",
+                "package",
+                "deployed",
+                "fixed_in",
+                "direct",
+                "actionable",
+                "untrusted"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "OSV id (usually a GHSA)."
+                },
+                "aliases": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "critical",
+                    "high",
+                    "moderate",
+                    "low",
+                    "unknown"
+                  ]
+                },
+                "package": {
+                  "type": "string"
+                },
+                "deployed": {
+                  "type": "string"
+                },
+                "fixed_in": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Lowest fixed version above the deployed one."
+                },
+                "direct": {
+                  "type": "boolean",
+                  "description": "A direct dependency of the image's packages (else pulled in transitively; fix via the parent or npm overrides)."
+                },
+                "actionable": {
+                  "type": "boolean",
+                  "description": "High or critical."
+                },
+                "untrusted": {
+                  "type": "object",
+                  "required": [
+                    "summary"
+                  ],
+                  "properties": {
+                    "summary": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "outdated": {
+            "type": "array",
+            "description": "Direct dependencies with a newer release.",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "deployed",
+                "latest",
+                "latest_published_at",
+                "update",
+                "renovate_due"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "deployed": {
+                  "type": "string"
+                },
+                "latest": {
+                  "type": "string"
+                },
+                "latest_published_at": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "update": {
+                  "type": "string",
+                  "enum": [
+                    "major",
+                    "minor",
+                    "patch"
+                  ]
+                },
+                "renovate_due": {
+                  "type": "boolean",
+                  "description": "The latest release is past the 3-day minimum release age, so Renovate should have a PR open."
+                }
+              }
+            }
+          },
+          "errors": {
+            "type": "array",
+            "description": "Lookups that failed; the rest of the report stands.",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -1365,6 +1598,82 @@
                     },
                     "boots_last_24h": {
                       "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/dependencies": {
+      "get": {
+        "summary": "Deployed dependencies, advisories and available updates",
+        "description": "The latest dependency check of what this image runs. `dependencies` is null when the product has no lockfile to check (e.g. outside a built image) or no check has finished yet.\n",
+        "operationId": "getOpsDependencies",
+        "security": [
+          {
+            "ops-token": [
+              "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The latest check.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "dependencies"
+                  ],
+                  "properties": {
+                    "dependencies": {
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/ops-dependencies"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   }
                 }

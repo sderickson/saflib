@@ -39,6 +39,8 @@ components:
       $ref: "./schemas/ops-issue-occurrence.yaml"
     OpsDigest:
       $ref: "./schemas/ops-digest.yaml"
+    OpsDependencies:
+      $ref: "./schemas/ops-dependencies.yaml"
     OpsAlert:
       $ref: "./schemas/ops-alert.yaml"
     OpsMetricsResult:
@@ -59,6 +61,9 @@ paths:
   /ops/deploys:
     get:
       $ref: "./routes/deploys.yaml#/listOpsDeploys"
+  /ops/dependencies:
+    get:
+      $ref: "./routes/dependencies.yaml#/getOpsDependencies"
   /ops/logs:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogs"

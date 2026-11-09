@@ -43,6 +43,13 @@
       "when": 1794199202977,
       "tag": "0005_thick_rattler",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794205510388,
+      "tag": "0006_worried_lord_hawal",
+      "breakpoints": true
     }
   ]
 }

@@ -14,7 +14,14 @@ import { ProductEventsAsync } from "@saflib/analytics-vue";
 import { MetricsAsync } from "@saflib/node-metrics-vue";
 import { ErrorsAsync } from "@saflib/errors-vue";
 import { AuditLogsAsync } from "@saflib/audit-vue";
-import { AlertsAsync, IssuesAsync, LogsAsync, OpsMetricsAsync, OpsTokensAsync } from "@saflib/ops-vue";
+import {
+  AlertsAsync,
+  DependenciesAsync,
+  IssuesAsync,
+  LogsAsync,
+  OpsMetricsAsync,
+  OpsTokensAsync,
+} from "@saflib/ops-vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
 import UsersAsync from "./pages/users/UsersAsync.vue";
 import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
@@ -87,6 +94,10 @@ export const createAdminRouter = (options?: {
     {
       path: adminLinks.opsMetrics.path,
       component: OpsMetricsAsync,
+    },
+    {
+      path: adminLinks.opsDependencies.path,
+      component: DependenciesAsync,
     },
     {
       path: adminLinks.opsTokens.path,

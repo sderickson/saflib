@@ -28,6 +28,7 @@ import {
   getOpsGraphSvgHandler,
 } from "./graphs.ts";
 import { getOpsAccessHandler } from "./get-ops-access.ts";
+import { getOpsDependenciesHandler } from "./get-ops-dependencies.ts";
 import { ackOpsAlertHandler, listOpsAlertsHandler, receiveOpsAlertsHandler } from "./alerts.ts";
 
 /** Routes with full paths (`/ops/*`, `/admin/ops-tokens*`). */
@@ -43,6 +44,7 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.get("/ops/health", getOpsHealthHandler);
   router.get("/ops/digest", getOpsDigestHandler);
   router.get("/ops/deploys", listOpsDeploysHandler);
+  router.get("/ops/dependencies", getOpsDependenciesHandler);
   router.get("/ops/logs", listOpsLogsHandler);
   router.get("/ops/logs/templates", listOpsLogTemplatesHandler);
   router.get("/ops/metrics/query", queryOpsMetricsHandler);

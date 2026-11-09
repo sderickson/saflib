@@ -16,6 +16,7 @@ const digest = {
   issues: { new: [{ id: "i1", level: "error", status: "open", untrusted: { title: "TypeError in checkout" } }], regressed: [], top: [] },
   logs: null,
   metrics: { window_seconds: 86400, requests: { current: 1200, previous: 1000 }, error_rate: { current: 0.001, previous: 0 }, p95_seconds: { current: 0.12, previous: 0.1 }, flags: [], error: null },
+  dependencies: { checked_at: "2026-11-09T06:00:00.000Z", stale: false, advisories: { critical: 0, high: 2, moderate: 1, low: 0, unknown: 0 }, actionable: 2, outdated_direct: 9, renovate_due: 8 },
   alerts: { firing: [{ id: "a1", alertname: "SafDiskAlmostFull", untrusted: { annotations: { summary: "Host disk is 85% full" } } }], firing_unacked: 1, fired_in_window: 1, pipeline_last_seen_at: "2026-11-09T09:58:00.000Z", pipeline_stale: false },
 };
 
@@ -42,6 +43,7 @@ describe("OpsDigestPanel", () => {
     expect(text).toContain("SafDiskAlmostFull");
     expect(text).toContain("TypeError in checkout");
     expect(text).toContain("1,200");
+    expect(wrapper.find("[data-test=digest-deps]").text()).toContain("2 high/critical advisories");
     await vi.waitFor(() => expect(wrapper.findAll("img.ops-graph-img")).toHaveLength(3));
     wrapper.unmount();
   });

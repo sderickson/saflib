@@ -64,6 +64,10 @@ export const adminLinks: LinkMap = {
     subdomain,
     path: "/ops-metrics",
   },
+  opsDependencies: {
+    subdomain,
+    path: "/ops-dependencies",
+  },
   // BEGIN WORKFLOW AREA page-links FOR vue/add-view
   // END WORKFLOW AREA
 };

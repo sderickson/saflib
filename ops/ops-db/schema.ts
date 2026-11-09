@@ -187,3 +187,23 @@ export const opsNotifierState = sqliteTable("ops_notifier_state", {
 });
 
 export type OpsNotifierStateTest1 = Expect<Equal<OpsNotifierState, typeof opsNotifierState.$inferSelect>>;
+
+/**
+ * One dependency check (OSV advisories, npm latest versions) of the deployed
+ * lockfile. `report` is the JSON report; the newest row is current.
+ */
+export interface OpsDependencyCheck {
+  id: string;
+  checked_at: Date;
+  lockfile_hash: string;
+  report: string;
+}
+
+export const opsDependencyChecks = sqliteTable("ops_dependency_checks", {
+  id: text("id").primaryKey(),
+  checked_at: integer("checked_at", { mode: "timestamp_ms" }).notNull(),
+  lockfile_hash: text("lockfile_hash").notNull(),
+  report: text("report").notNull(),
+});
+
+export type OpsDependencyCheckTest1 = Expect<Equal<OpsDependencyCheck, typeof opsDependencyChecks.$inferSelect>>;

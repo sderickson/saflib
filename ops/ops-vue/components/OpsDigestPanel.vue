@@ -51,6 +51,15 @@
             <div class="text-caption text-medium-emphasis mt-2">
               {{ strings.deploys }}: {{ digest.summary.deploys }} · {{ digest.summary.boots }} {{ strings.restarts }}
             </div>
+            <div v-if="digest.dependencies" class="text-caption mt-1" data-test="digest-deps">
+              {{ strings.dependencies }}:
+              <v-chip v-if="digest.dependencies.actionable" color="error" size="x-small" class="mr-1">
+                {{ digest.dependencies.actionable }} {{ strings.highAdvisories }}
+              </v-chip>
+              <span v-else class="text-medium-emphasis">{{ strings.noHighAdvisories }}</span>
+              <span class="text-medium-emphasis"> · {{ digest.dependencies.outdated_direct }} {{ strings.outdated }}</span>
+              <router-link v-if="dependenciesTo" :to="dependenciesTo" class="ml-1">{{ strings.viewAll }}</router-link>
+            </div>
           </v-card>
         </v-col>
 
@@ -111,7 +120,7 @@ import { useOpsDigest } from "../requests/queries.ts";
 import OpsGraph from "./OpsGraph.vue";
 import { ops_digest_panel as strings } from "./OpsDigestPanel.strings.ts";
 
-withDefaults(defineProps<{ issuesTo?: RouteLocationRaw; alertsTo?: RouteLocationRaw; showGraphs?: boolean }>(), {
+withDefaults(defineProps<{ issuesTo?: RouteLocationRaw; alertsTo?: RouteLocationRaw; dependenciesTo?: RouteLocationRaw; showGraphs?: boolean }>(), {
   showGraphs: true,
 });
 
