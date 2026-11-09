@@ -38,6 +38,8 @@ components:
       $ref: "./schemas/ops-issue-occurrence.yaml"
     OpsDigest:
       $ref: "./schemas/ops-digest.yaml"
+    OpsMetricsResult:
+      $ref: "./schemas/ops-metrics-result.yaml"
     Error:
       $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
@@ -75,6 +77,15 @@ paths:
   /ops/issues/{id}/reopen:
     post:
       $ref: "./routes/issues.yaml#/reopenOpsIssue"
+  /ops/metrics/query:
+    get:
+      $ref: "./routes/metrics.yaml#/queryOpsMetrics"
+  /ops/metrics/query_range:
+    get:
+      $ref: "./routes/metrics.yaml#/queryOpsMetricsRange"
+  /ops/metrics/series:
+    get:
+      $ref: "./routes/metrics.yaml#/listOpsMetricsSeries"
   /admin/logs:
     get:
       $ref: "./routes/logs.yaml#/listAdminLogs"

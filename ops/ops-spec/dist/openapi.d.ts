@@ -223,6 +223,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/metrics/query": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Instant PromQL query
+         * @description Runs read-only PromQL at one point in time. Every selector is confined to this app's series plus host metrics. Prometheus scrapes every 60s, so use `rate()`/`increase()` windows of at least `[4m]` (standard: `[5m]`).
+         */
+        get: operations["queryOpsMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/metrics/query_range": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * PromQL query over a time range
+         * @description Like `queryOpsMetrics`, evaluated every `step` seconds from `start` to `end`. Limits: range at most 31 days, step at least 60s, at most 1,500 points per series.
+         */
+        get: operations["queryOpsMetricsRange"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/metrics/series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Series matching selectors
+         * @description The label sets of series matching any `match` selector, for discovering metric and label names. Confined like the query endpoints.
+         */
+        get: operations["listOpsMetricsSeries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/logs": {
         parameters: {
             query?: never;
@@ -294,6 +354,7 @@ export interface components {
         OpsIssue: components["schemas"]["ops-issue"];
         OpsIssueOccurrence: components["schemas"]["ops-issue-occurrence"];
         OpsDigest: components["schemas"]["ops-digest"];
+        OpsMetricsResult: components["schemas"]["ops-metrics-result"];
         Error: _Ext1_Error;
         /** @description One health check's latest result. */
         "ops-health-check": {
@@ -481,6 +542,19 @@ export interface components {
                     [key: string]: unknown;
                 } | null;
             };
+        };
+        /** @description A Prometheus query result, restricted to this app's series and host metrics (`saf_app` is injected into every selector). Label values are set by the app's own instrumentation (route templates, operation ids), not by request content. */
+        "ops-metrics-result": {
+            /** @enum {string} */
+            result_type: "vector" | "matrix" | "scalar" | "string";
+            /** @description For `vector`: `{metric, value: [unix_seconds, "value"]}` per series. For `matrix`: `{metric, values: [[unix_seconds, "value"], ...]}`. For `scalar` and `string`: a single `{value}` entry. */
+            result: {
+                metric?: {
+                    [key: string]: string;
+                };
+                value?: unknown[];
+                values?: unknown[][];
+            }[];
         };
         /** @description An ops token's metadata. The secret itself is never returned after creation. */
         "ops-token": {
@@ -1192,6 +1266,253 @@ export interface operations {
             };
             /** @description Rate limited. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    queryOpsMetrics: {
+        parameters: {
+            query: {
+                query: string;
+                /** @description Evaluation time (default now). */
+                time?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Query result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        metrics: components["schemas"]["ops-metrics-result"];
+                    };
+                };
+            };
+            /** @description Invalid PromQL, or the query exceeds a limit (range over 31 days, step under 60s, more than 1,500 points per series, more than 200 series). The message says which and how to narrow it. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Metrics are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Prometheus is unreachable or timed out. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    queryOpsMetricsRange: {
+        parameters: {
+            query: {
+                query: string;
+                start: string;
+                end: string;
+                /** @description Resolution in seconds (default 300, minimum 60). */
+                step?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Query result (a matrix). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        metrics: components["schemas"]["ops-metrics-result"];
+                    };
+                };
+            };
+            /** @description Invalid PromQL, or the query exceeds a limit (range over 31 days, step under 60s, more than 1,500 points per series, more than 200 series). The message says which and how to narrow it. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Metrics are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Prometheus is unreachable or timed out. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listOpsMetricsSeries: {
+        parameters: {
+            query: {
+                /** @description Series selectors, e.g. `http_request_duration_seconds_count`. */
+                match: string[];
+                /** @description Default one hour ago. */
+                start?: string;
+                /** @description Default now. */
+                end?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching series (at most 200). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        series: {
+                            [key: string]: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Invalid PromQL, or the query exceeds a limit (range over 31 days, step under 60s, more than 1,500 points per series, more than 200 series). The message says which and how to narrow it. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Metrics are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Prometheus is unreachable or timed out. */
+            502: {
                 headers: {
                     [name: string]: unknown;
                 };

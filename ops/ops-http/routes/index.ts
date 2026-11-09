@@ -17,6 +17,11 @@ import {
 import { listOpsTokensHandler } from "./list-ops-tokens.ts";
 import { createOpsTokenHandler } from "./create-ops-token.ts";
 import { revokeOpsTokenHandler } from "./revoke-ops-token.ts";
+import {
+  listOpsMetricsSeriesHandler,
+  queryOpsMetricsHandler,
+  queryOpsMetricsRangeHandler,
+} from "./metrics.ts";
 
 /** Routes with full paths (`/ops/*`, `/admin/ops-tokens*`). */
 export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
@@ -32,6 +37,9 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.get("/ops/deploys", listOpsDeploysHandler);
   router.get("/ops/logs", listOpsLogsHandler);
   router.get("/ops/logs/templates", listOpsLogTemplatesHandler);
+  router.get("/ops/metrics/query", queryOpsMetricsHandler);
+  router.get("/ops/metrics/query_range", queryOpsMetricsRangeHandler);
+  router.get("/ops/metrics/series", listOpsMetricsSeriesHandler);
   router.get("/ops/issues", listOpsIssuesHandler);
   router.get("/ops/issues/:id", getOpsIssueHandler);
   router.get("/ops/issues/:id/occurrences", listOpsIssueOccurrencesHandler);

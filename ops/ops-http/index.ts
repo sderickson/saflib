@@ -14,3 +14,4 @@ export type {
   HealthCheckOutcome,
   HealthStatus,
 } from "./health/types.ts";
+export { METRICS_LIMITS, type OpsMetricsConfig } from "./metrics/prometheus.ts";

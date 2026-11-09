@@ -12,6 +12,7 @@ import { processCheck } from "./health/builtin-checks.ts";
 import { recordCurrentBoot } from "./boot.ts";
 import type { BuildInfo, ReleaseInfo } from "@saflib/node/git-hashes";
 import type { HealthCheck } from "./health/types.ts";
+import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
 
 export interface OpsRouterOptions {
   /** Connection to the ops database; connects with `dbOptions` when omitted. */
@@ -37,6 +38,11 @@ export interface OpsRouterOptions {
   issuesDbKey?: DbKey;
   /** Build metadata override (tests); defaults to the image's `/etc/saf/build.json`. */
   buildInfo?: BuildInfo;
+  /**
+   * Metrics query proxy (`/ops/metrics/*`). Requires the host's
+   * prom-label-proxy; when omitted, the metrics endpoints respond 404.
+   */
+  metrics?: OpsMetricsConfig;
   /** Release stamp override (tests); defaults to `/etc/saf/release/release.json`. */
   releaseInfo?: ReleaseInfo;
 }
@@ -73,6 +79,7 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
     healthChecks: [processCheck(), ...(options.healthChecks ?? [])],
     logsDbKey: options.logsDbKey,
     issuesDbKey: options.issuesDbKey,
+    metrics: options.metrics,
     // Each router creation is one process start in production.
     currentBoot: recordCurrentBoot(dbKey, options.buildInfo, options.releaseInfo),
   };
