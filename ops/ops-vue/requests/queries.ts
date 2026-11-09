@@ -191,3 +191,25 @@ export function useOpsGraphLink(body: OpsRequestBody["createOpsGraphLink"]) {
     queryFn: () => handleClientMethod(client.POST("/ops/metrics/graph-links", { body })),
   });
 }
+
+/**
+ * Instant PromQL (current value per series); disabled while the query is
+ * empty. Unlike other queries, errors keep the server's message (e.g.
+ * Prometheus's parse error): on this page it's what the admin needs.
+ */
+export function useOpsMetricsInstant(query: Ref<string>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["queryOpsMetrics"][200], Error>({
+    queryKey: computed(() => ["ops", "metrics", "instant", query.value] as const),
+    enabled: computed(() => query.value.trim() !== ""),
+    retry: false,
+    queryFn: async () => {
+      const { data, error, response } = await client.GET("/ops/metrics/query", {
+        params: { query: { query: query.value } },
+      });
+      if (data) return data;
+      const message = (error as { message?: unknown } | undefined)?.message;
+      throw new Error(typeof message === "string" ? message : `Request failed (${response.status})`);
+    },
+  });
+}

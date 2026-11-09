@@ -8,6 +8,7 @@ import AlertsAsync from "./pages/AlertsAsync.vue";
 import AlertsPage from "./pages/AlertsPage.vue";
 import OpsDigestPanel from "./components/OpsDigestPanel.vue";
 import OpsGraph from "./components/OpsGraph.vue";
+import OpsMetricsAsync from "./pages/OpsMetricsAsync.vue";
 
 export { configureOpsVue } from "./client.ts";
 export {
@@ -19,6 +20,7 @@ export {
   LogsPage,
   OpsDigestPanel,
   OpsGraph,
+  OpsMetricsAsync,
   OpsTokensAsync,
   OpsTokensPage,
 };

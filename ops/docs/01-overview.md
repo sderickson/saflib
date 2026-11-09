@@ -49,6 +49,7 @@ curl -H "Authorization: Bearer $SAF_OPS_TOKEN" https://api.example.com/ops/healt
 
 - `IssuesAsync`: open / resolved / ignored issues; expand one for its details and recent occurrences (messages and stacks as plain text), and resolve, ignore (7 days or indefinitely) or reopen it.
 - `AlertsAsync`: firing alerts, or the last 7 days; acknowledge.
+- `OpsMetricsAsync`: PromQL explorer over `/ops/metrics/*` (same isolation and limits as agents get). Presets for traffic, availability, performance (overall and by route), database queries, host memory/disk/CPU/load and process memory/event loop; an editable query, a 1h–7d range, a graph and a table of current values. The query and range are in the URL.
 - `LogsAsync`: log search (`/ops/logs`).
 - `OpsTokensAsync`: mint and revoke tokens (`/admin/ops-tokens`, session only).
 - `OpsDigestPanel`: the digest for the admin home page (health, traffic vs. the previous day, firing alerts, new and regressed issues, the alerting heartbeat) plus graphs, each a signed graph link minted with `OpsGraph`.

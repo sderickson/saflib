@@ -3,6 +3,7 @@ import OpsTokensAsync from "./OpsTokensAsync.vue";
 import LogsAsync from "./LogsAsync.vue";
 import IssuesAsync from "./IssuesAsync.vue";
 import AlertsAsync from "./AlertsAsync.vue";
+import OpsMetricsAsync from "./OpsMetricsAsync.vue";
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -11,6 +12,7 @@ export const router = createRouter({
     { path: "/ops/logs", component: LogsAsync },
     { path: "/ops/issues", component: IssuesAsync },
     { path: "/ops/alerts", component: AlertsAsync },
+    { path: "/ops/metrics", component: OpsMetricsAsync },
     { path: "/", redirect: "/ops/tokens" },
   ],
 });
