@@ -157,3 +157,38 @@ describe("GET /ops/dependencies and the digest", () => {
     expect(digest.summary.needs_attention).toBe(true);
   });
 });
+
+describe("accepted advisories", () => {
+  it("keep an accepted advisory in the report but not actionable, until the acceptance lapses", async () => {
+    const { findAcceptance } = await import("./accepted.ts");
+    const accepted = [{ id: "CVE-2026-1", reason: "no upstream fix", until: "2026-12-01" }];
+    expect(findAcceptance(["GHSA-aaaa", "CVE-2026-1"], accepted, new Date("2026-12-01T23:00:00Z"))).toBeDefined();
+    expect(findAcceptance(["GHSA-aaaa", "CVE-2026-1"], accepted, new Date("2026-12-02T01:00:00Z"))).toBeUndefined();
+
+    const dbKey = opsDb.connect();
+    const app = createApp({ dbKey, dependencies: { acceptedAdvisories: [{ id: "CVE-2026-1", reason: "no upstream fix" }] } });
+    const { token } = await throwError(createToken(dbKey, { name: "t", scopes: ["ops:read"], createdBy: null }));
+    const auth = { authorization: `Bearer ${token}` };
+    await runDependencyCheckOnce({ dbKey, manifest: parseLockfile(lockfile, "v24.11.0"), fetch: fakeFetch(), now: new Date() });
+    const deps = (await request(app).get("/ops/dependencies").set(auth).expect(200)).body.dependencies;
+    expect(deps.advisories[0]).toMatchObject({ id: "GHSA-aaaa", actionable: false, accepted: { reason: "no upstream fix", until: null } });
+    const digest = (await request(app).get("/ops/digest").set(auth).expect(200)).body.digest;
+    expect(digest.dependencies.actionable).toBe(0);
+  });
+});
+
+describe("dependency metrics", () => {
+  it("exports advisory counts (accepted separately), runtime EOL and check time", async () => {
+    const client = (await import("prom-client")).default;
+    const { registerDependencyMetrics } = await import("./metrics.ts");
+    const dbKey = opsDb.connect();
+    const manifest = { ...parseLockfile(lockfile, "v24.11.0"), osRelease: { id: "debian", versionId: "12" } };
+    await runDependencyCheckOnce({ dbKey, manifest, fetch: fakeFetch(), now });
+    registerDependencyMetrics(dbKey, [{ id: "GHSA-aaaa", reason: "r" }]);
+    const text = (await client.register.metrics());
+    expect(text).toContain('saf_dependency_advisories{severity="high"} 0');
+    expect(text).toContain('saf_dependency_advisories{severity="accepted"} 1');
+    expect(text).toMatch(/^saf_dependency_runtime_eol_soon 1$/m);
+    expect(text).toMatch(/^saf_dependency_check_timestamp_seconds \d+/m);
+  });
+});

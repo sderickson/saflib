@@ -15,7 +15,7 @@ const DAY_MS = 86_400_000;
 const TOP = 10;
 
 export const getOpsDigestHandler = createHandler(async function (req, res) {
-  const { dbKey, logsDbKey, issuesDbKey, healthChecks, currentBoot, metrics: metricsConfig, dependencyChecks } =
+  const { dbKey, logsDbKey, issuesDbKey, healthChecks, currentBoot, metrics: metricsConfig, dependencyChecks, acceptedAdvisories } =
     opsServiceStorage.getStore()!;
   const since = queryDate(req.query.since) ?? new Date(Date.now() - DAY_MS);
   await currentBoot;
@@ -28,7 +28,7 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
     throwError(listAlerts(dbKey, { statuses: ["firing"], excludeAlertnames: [WATCHDOG_ALERTNAME], limit: 200 })),
     throwError(listAlerts(dbKey, { activeSince: since, excludeAlertnames: [WATCHDOG_ALERTNAME], limit: 200 })),
     throwError(listAlerts(dbKey, { alertnames: [WATCHDOG_ALERTNAME], limit: 1 })),
-    latestDependencies(dbKey),
+    latestDependencies(dbKey, new Date(), acceptedAdvisories),
   ]);
   const dependencies: OpsDigest["dependencies"] =
     deps || dependencyChecks

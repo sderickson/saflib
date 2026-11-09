@@ -745,8 +745,14 @@ export interface components {
                 fixed_in: string | null;
                 /** @description A direct dependency of the image's packages (else pulled in transitively; fix via the parent or npm overrides). */
                 direct: boolean;
-                /** @description High or critical. */
+                /** @description High or critical, and not accepted. */
                 actionable: boolean;
+                /** @description Set when the product accepted this advisory for now (no upstream fix, unused code path); it then isn't actionable. */
+                accepted: null | {
+                    reason: string;
+                    /** @description Last day the acceptance applies (YYYY-MM-DD). */
+                    until: string | null;
+                };
                 untrusted: {
                     summary: string;
                 };

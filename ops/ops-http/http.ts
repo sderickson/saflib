@@ -13,6 +13,8 @@ import { recordCurrentBoot } from "./boot.ts";
 import { registerHealthCheckMetric } from "./health/health-metric.ts";
 import { readManifest } from "./dependencies/manifest.ts";
 import { startDependencyChecks } from "./dependencies/scheduler.ts";
+import { SAFLIB_ACCEPTED_ADVISORIES, type AcceptedAdvisory } from "./dependencies/accepted.ts";
+import { registerDependencyMetrics } from "./dependencies/metrics.ts";
 import type { BuildInfo, ReleaseInfo } from "@saflib/node/git-hashes";
 import type { HealthCheck } from "./health/types.ts";
 import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
@@ -51,8 +53,13 @@ export interface OpsRouterOptions {
    * lockfile. On by default when a lockfile exists at
    * `SAF_LOCKFILE`/`/app/package-lock.json` (built images); `false` turns
    * them off. Tests pass a manifest and drive `runDependencyCheckOnce`.
+   *
+   * `acceptedAdvisories` lists advisories the product lives with for now
+   * (no upstream fix, unused code path): still reported, never actionable.
+   * Give each a reason and, ideally, an `until` date to look again. They add
+   * to `SAFLIB_ACCEPTED_ADVISORIES` (for packages saflib brings in).
    */
-  dependencies?: false | { lockfilePath?: string };
+  dependencies?: false | { lockfilePath?: string; acceptedAdvisories?: AcceptedAdvisory[] };
   /** Release stamp override (tests); defaults to `/etc/saf/release/release.json`. */
   releaseInfo?: ReleaseInfo;
 }
@@ -92,6 +99,10 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
     metrics: options.metrics,
     // Each router creation is one process start in production.
     currentBoot: recordCurrentBoot(dbKey, options.buildInfo, options.releaseInfo),
+    acceptedAdvisories: [
+      ...SAFLIB_ACCEPTED_ADVISORIES,
+      ...(options.dependencies ? (options.dependencies.acceptedAdvisories ?? []) : []),
+    ],
   };
   registerHealthCheckMetric(context.healthChecks);
   const manifest =
@@ -101,6 +112,7 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
   if (manifest) {
     startDependencyChecks({ dbKey, manifest });
     context.dependencyChecks = true;
+    registerDependencyMetrics(dbKey, context.acceptedAdvisories ?? []);
   }
   const resolver = createOpsTokenSecurityResolver(() => dbKey, options.rateLimits);
 

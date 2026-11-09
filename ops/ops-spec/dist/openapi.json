@@ -968,6 +968,7 @@
                 "fixed_in",
                 "direct",
                 "actionable",
+                "accepted",
                 "untrusted"
               ],
               "properties": {
@@ -1010,7 +1011,34 @@
                 },
                 "actionable": {
                   "type": "boolean",
-                  "description": "High or critical."
+                  "description": "High or critical, and not accepted."
+                },
+                "accepted": {
+                  "description": "Set when the product accepted this advisory for now (no upstream fix, unused code path); it then isn't actionable.\n",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "reason",
+                        "until"
+                      ],
+                      "properties": {
+                        "reason": {
+                          "type": "string"
+                        },
+                        "until": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Last day the acceptance applies (YYYY-MM-DD)."
+                        }
+                      }
+                    }
+                  ]
                 },
                 "untrusted": {
                   "type": "object",

@@ -47,6 +47,10 @@
               <!-- Untrusted text: plain interpolation only (escaped), never v-html. -->
               <div class="text-body-2 dep-text">{{ a.untrusted.summary }}</div>
               <div class="text-caption text-medium-emphasis">{{ [a.id, ...a.aliases].join(" · ") }}</div>
+              <div v-if="a.accepted" class="text-caption" data-test="advisory-accepted">
+                <v-chip size="x-small" variant="outlined" class="mr-1">{{ strings.accepted }}</v-chip>
+                {{ a.accepted.reason }}<template v-if="a.accepted.until"> ({{ strings.until }} {{ a.accepted.until }})</template>
+              </div>
             </td>
           </tr>
         </tbody>

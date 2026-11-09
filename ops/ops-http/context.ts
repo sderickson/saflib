@@ -3,6 +3,7 @@ import type { DbKey } from "@saflib/drizzle";
 import type { OpsBoot } from "@saflib/ops-db";
 import type { HealthCheck } from "./health/types.ts";
 import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
+import type { AcceptedAdvisory } from "./dependencies/accepted.ts";
 
 /** Per-router state for ops handlers. */
 export interface OpsServiceContext {
@@ -14,6 +15,8 @@ export interface OpsServiceContext {
   issuesDbKey?: DbKey;
   /** True when this process checks its dependencies (it has a lockfile). */
   dependencyChecks?: boolean;
+  /** Advisories the product accepted (see `OpsRouterOptions.dependencies`). */
+  acceptedAdvisories?: AcceptedAdvisory[];
   /** Where PromQL goes, when the product enables metrics. */
   metrics?: OpsMetricsConfig;
   /** This process's boot record, once written. */

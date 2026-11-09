@@ -21,7 +21,7 @@ describe("DependenciesAsync", () => {
           node_version: "v24.22.2",
           lockfile_hash: "h",
           advisories: [
-            { id: "GHSA-1", aliases: ["CVE-2026-1"], severity: "high", package: "undici", deployed: "8.10.2", fixed_in: "8.12.2", direct: true, actionable: true, untrusted: { summary: "TLS bypass <img src=x>" } },
+            { id: "GHSA-1", aliases: ["CVE-2026-1"], severity: "high", package: "undici", deployed: "8.10.2", fixed_in: "8.12.2", direct: true, actionable: false, accepted: { reason: "no upstream fix", until: "2027-01-31" }, untrusted: { summary: "TLS bypass <img src=x>" } },
           ],
           outdated: [
             { name: "express", deployed: "5.2.1", latest: "5.3.0", latest_published_at: "2026-10-09T00:00:00.000Z", update: "minor", renovate_due: true },
@@ -45,6 +45,7 @@ describe("DependenciesAsync", () => {
     expect(advisory.text()).toContain("fixed in 8.12.2");
     expect(advisory.text()).toContain("TLS bypass <img src=x>");
     expect(advisory.find("img").exists()).toBe(false);
+    expect(advisory.find("[data-test=advisory-accepted]").text()).toContain("no upstream fix (until 2027-01-31)");
     expect(wrapper.find("[data-test=outdated-row]").text()).toContain("5.2.1 → 5.3.0");
     expect(wrapper.find("[data-test=deps-summary]").text()).toContain("557 packages (25 direct)");
     const runtime = wrapper.findAll("[data-test=runtime-row]");

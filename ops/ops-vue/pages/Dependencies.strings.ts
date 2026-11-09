@@ -18,6 +18,8 @@ export const ops_dependencies = {
   renovateDue: "Renovate due",
   errors: "Some lookups failed",
   runtime: "Runtime",
+  accepted: "accepted",
+  until: "until",
   eol: "supported until",
   eolUnknown: "end of life unknown",
   eolSoon: "end of life soon",
