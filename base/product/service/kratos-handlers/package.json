@@ -17,6 +17,7 @@
   "devDependencies": {
     "@saflib/email-service": "*",
     "@saflib/monorepo": "*",
+    "@saflib/vitest": "*",
     "vitest": "*"
   },
   "scripts": {
