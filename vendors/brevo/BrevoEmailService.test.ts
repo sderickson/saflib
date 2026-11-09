@@ -81,3 +81,15 @@ describe("BrevoEmailService", () => {
     });
   });
 });
+
+describe("send log fields", () => {
+  it("keep the sender's domain and the message id's unique part, not addresses", async () => {
+    const { domainOf, messageIdLocalPart } = await import("./BrevoEmailService.ts");
+    expect(domainOf('"Recipes" <noreply@example.com>')).toBe("example.com");
+    expect(domainOf("a@b.com")).toBe("b.com");
+    expect(domainOf({ name: "X", address: "x@y.org" })).toBe("y.org");
+    expect(domainOf(undefined)).toBeUndefined();
+    expect(messageIdLocalPart("<202611090523.abc123@smtp-relay.mailin.fr>")).toBe("202611090523.abc123");
+    expect(messageIdLocalPart("<a@x>,<b@y>")).toBe("a,b");
+  });
+});
