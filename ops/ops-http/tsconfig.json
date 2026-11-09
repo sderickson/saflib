@@ -1,14 +1,33 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
-    { "path": "../../drizzle" },
-    { "path": "../../express" },
-    { "path": "../../node" },
-    { "path": "../ops-db" },
-    { "path": "../../errors/errors-db" },
-    { "path": "../../node-log/node-log-db" },
-    { "path": "../ops-spec" },
-    { "path": "../../utils" }
+    {
+      "path": "../../drizzle"
+    },
+    {
+      "path": "../../errors/errors-db"
+    },
+    {
+      "path": "../../express"
+    },
+    {
+      "path": "../../monorepo"
+    },
+    {
+      "path": "../../node"
+    },
+    {
+      "path": "../../node-log/node-log-db"
+    },
+    {
+      "path": "../../utils"
+    },
+    {
+      "path": "../ops-db"
+    },
+    {
+      "path": "../ops-spec"
+    }
   ],
   "compilerOptions": {
     "outDir": "./dist/types",
@@ -17,6 +36,15 @@
     "emitDeclarationOnly": true,
     "rootDir": "."
   },
-  "exclude": ["node_modules", "dist/types", "e2e", "playwright-report", "test-results"],
-  "include": ["**/*.ts", "**/*.json"]
+  "exclude": [
+    "node_modules",
+    "dist/types",
+    "e2e",
+    "playwright-report",
+    "test-results"
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ]
 }

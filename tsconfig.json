@@ -140,6 +140,9 @@
       "path": "./base/product/service/monolith"
     },
     {
+      "path": "./base/product/service/ops"
+    },
+    {
       "path": "./base/product/service/sdk"
     },
     {
@@ -228,6 +231,9 @@
     },
     {
       "path": "./env-workflows"
+    },
+    {
+      "path": "./errors/errors-db"
     },
     {
       "path": "./errors/errors-http"
@@ -320,6 +326,9 @@
       "path": "./node"
     },
     {
+      "path": "./node-log/node-log-db"
+    },
+    {
       "path": "./node-log/node-log-http"
     },
     {
@@ -354,6 +363,18 @@
     },
     {
       "path": "./openapi-workflows"
+    },
+    {
+      "path": "./ops/ops-db"
+    },
+    {
+      "path": "./ops/ops-http"
+    },
+    {
+      "path": "./ops/ops-spec"
+    },
+    {
+      "path": "./ops/ops-vue"
     },
     {
       "path": "./ory-kratos/ory-kratos-http"
