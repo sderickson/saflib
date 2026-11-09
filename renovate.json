@@ -58,6 +58,11 @@
       "matchDatasources": ["docker"]
     },
     {
+      "description": "msw 3.0.4's XMLHttpRequest interception doesn't work under jsdom (fetch does), so axios-based tests such as ory-kratos's fail with Network Error. msw 2.12.7 works with the same jsdom. Lift when an msw 3 release fixes it.",
+      "matchPackageNames": ["msw"],
+      "allowedVersions": "<3"
+    },
+    {
       "description": "TypeScript 7 is the native (Go) compiler with no JavaScript API, which openapi-typescript and vue-tsc call. Lift when both support TS 7.",
       "matchPackageNames": ["typescript"],
       "allowedVersions": "<7"
