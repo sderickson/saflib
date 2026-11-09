@@ -1,8 +1,10 @@
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { requireRemote, type DeployConfig } from "./config.ts";
+import { makeReleaseStamp, RELEASE_DIR, writeReleaseStamp } from "./release.ts";
 
 /** Scripts this package runs on the server (`remote-scripts/*.sh`). */
 export type RemoteScript =
@@ -193,9 +195,17 @@ export async function syncAssets(config: DeployConfig): Promise<void> {
   const zipName = "deploy-instance.zip";
   const zipPath = path.join(config.deployDir, zipName);
   console.log(`Zipping remote-assets for ${sshHostname}:${remoteAssetsPath}…`);
-  await run("zip", ["-qr", zipPath, "."], {
-    cwd: path.join(config.deployDir, "remote-assets"),
-  });
+  const assetsDir = path.join(config.deployDir, "remote-assets");
+  await run("zip", ["-qr", zipPath, "."], { cwd: assetsDir });
+  // Stamp what this deploy ships (release/release.json, mounted into services
+  // at /etc/saf/release/) so a config-only deploy still shows in the ops API.
+  const stampDir = mkdtempSync(path.join(tmpdir(), "saf-release-"));
+  try {
+    writeReleaseStamp(stampDir, makeReleaseStamp(assetsDir));
+    await run("zip", ["-qr", zipPath, RELEASE_DIR], { cwd: stampDir });
+  } finally {
+    rmSync(stampDir, { recursive: true, force: true });
+  }
   try {
     console.log("Uploading…");
     await run("sftp", ["-q", sshHostname], {

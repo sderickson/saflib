@@ -15,4 +15,76 @@ export const baseAuditMap: Record<string, AuditMapEntry> = {
     eventType: "user_config.marketing_unsubscribe",
     resourceType: "user_config",
   },
+  // Ops tokens (@saflib/ops-spec): machine credentials for the ops API.
+  "POST /admin/ops-tokens": {
+    eventType: "ops_token.create",
+    resourceType: "ops_token",
+  },
+  "POST /admin/ops-tokens/:id/revoke": {
+    eventType: "ops_token.revoke",
+    resourceType: "ops_token",
+  },
+  // Ops API reads, attributed to the token (actor `ops_token:<id>`).
+  // `GET /ops/health` is deliberately not audited: uptime checks poll it.
+  "GET /ops/deploys": {
+    eventType: "ops_api.deploys.read",
+    resourceType: "ops_api",
+  },
+  "GET /ops/logs": {
+    eventType: "ops_api.logs.read",
+    resourceType: "ops_api",
+  },
+  "GET /ops/logs/templates": {
+    eventType: "ops_api.log_templates.read",
+    resourceType: "ops_api",
+  },
+  "GET /ops/digest": {
+    eventType: "ops_api.digest.read",
+    resourceType: "ops_api",
+  },
+  "GET /ops/metrics/query": {
+    eventType: "ops_api.metrics.query",
+    resourceType: "ops_api",
+  },
+  "GET /ops/metrics/query_range": {
+    eventType: "ops_api.metrics.query_range",
+    resourceType: "ops_api",
+  },
+  "GET /ops/metrics/series": {
+    eventType: "ops_api.metrics.series",
+    resourceType: "ops_api",
+  },
+  "GET /ops/alerts": {
+    eventType: "ops_api.alerts.read",
+    resourceType: "ops_api",
+  },
+  "POST /ops/alerts/:id/ack": {
+    eventType: "ops_api.alert.ack",
+    resourceType: "alert",
+  },
+  "GET /ops/issues": {
+    eventType: "ops_api.issues.read",
+    resourceType: "ops_api",
+  },
+  "GET /ops/issues/:id": {
+    eventType: "ops_api.issue.read",
+    resourceType: "issue",
+  },
+  "GET /ops/issues/:id/occurrences": {
+    eventType: "ops_api.issue_occurrences.read",
+    resourceType: "issue",
+  },
+  // Triage (ops:triage): the only writes an ops token can make.
+  "POST /ops/issues/:id/resolve": {
+    eventType: "ops_api.issue.resolve",
+    resourceType: "issue",
+  },
+  "POST /ops/issues/:id/ignore": {
+    eventType: "ops_api.issue.ignore",
+    resourceType: "issue",
+  },
+  "POST /ops/issues/:id/reopen": {
+    eventType: "ops_api.issue.reopen",
+    resourceType: "issue",
+  },
 };

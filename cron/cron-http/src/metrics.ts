@@ -1,4 +1,4 @@
-import { metricHistogramDefaultBuckets } from "@saflib/node";
+import { latencyBuckets } from "@saflib/node";
 import client from "prom-client";
 
 const cronMetricName = "cron_job_duration_seconds";
@@ -11,7 +11,7 @@ export function makeCronMetric() {
     name: cronMetricName,
     help: cronMetricHelp,
     labelNames: labels,
-    buckets: metricHistogramDefaultBuckets,
+    buckets: latencyBuckets,
   });
 }
 

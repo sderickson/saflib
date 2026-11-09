@@ -1,4 +1,4 @@
-import { getSafReporters } from "@saflib/node";
+import { getSafReporters, observeDbQuery } from "@saflib/node";
 
 /**
  * A subclass of `Error` which is used to indicate that an error was *not* caught
@@ -32,9 +32,13 @@ export function queryWrapper<F extends (...args: any[]) => Promise<any>>(
   queryFunc: F,
 ): F {
   return (async (...args: any[]) => {
+    const start = performance.now();
     try {
-      return await queryFunc(...args);
+      const result = await queryFunc(...args);
+      observeDbQuery((performance.now() - start) / 1000, "ok");
+      return result;
     } catch (error) {
+      observeDbQuery((performance.now() - start) / 1000, "error");
       const { logError } = getSafReporters();
       logError(error);
       throw new UnhandledDatabaseError();

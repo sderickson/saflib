@@ -1,0 +1,194 @@
+# SAF's default alert rules. The platform deploy loads this file (hub links to
+# it); products add or tighten rules in their own files beside it.
+#
+# Scrapes are every 60s, so rate() windows are at least [5m] and `for:` is at
+# least a few minutes. Every series carries saf_app (the app, or "host"),
+# which Alertmanager routes on; aggregations keep it.
+#
+# Severity: critical (users are affected now), warning (look today).
+groups:
+  - name: saf-reliability
+    rules:
+      - alert: SafTargetDown
+        # max over instances: during a blue-green switch one color is down
+        # while the other is up, which is fine.
+        expr: max by (saf_app, job) (up) == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} ({{ $labels.saf_app }}) can't be scraped"
+          description: "Every {{ $labels.job }} target has been down for 5 minutes."
+
+      - alert: SafHighErrorRate
+        expr: |
+          (
+            sum by (saf_app) (rate(http_request_duration_seconds_count{status_code="5xx"}[10m]))
+            /
+            sum by (saf_app) (rate(http_request_duration_seconds_count[10m]))
+          ) > 0.05
+          and
+          sum by (saf_app) (rate(http_request_duration_seconds_count[10m])) > 1 / 60
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.saf_app }}: {{ $value | humanizePercentage }} of requests are failing (5xx)"
+          description: "Over 5% of requests returned 5xx for 10 minutes."
+
+      - alert: SafCrashLooping
+        # Deploys restart processes too (the platform deploy recreates every
+        # platform service), so stay quiet for 30 minutes after one. A real
+        # crash loop keeps restarting and fires once that window passes.
+        expr: |
+          changes(process_start_time_seconds[30m]) >= 3
+          unless on () (time() - max(saf_release_timestamp_seconds) < 1800)
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.saf_app }} restarted {{ $value }} times in 30 minutes"
+          description: "The process at {{ $labels.instance }} keeps restarting."
+
+      - alert: SafEventLoopLag
+        expr: nodejs_eventloop_lag_p99_seconds > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }}: event loop p99 lag is {{ $value | humanizeDuration }}"
+          description: "The Node event loop has been blocked for over 500ms (p99) for 10 minutes."
+
+      - alert: SafHealthCheckFailing
+        expr: saf_health_check_status == 2
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.saf_app }}: health check {{ $labels.check }} is failing"
+          description: "See GET /ops/health for the check's summary."
+
+      - alert: SafHealthCheckWarning
+        expr: saf_health_check_status == 1
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }}: health check {{ $labels.check }} has warned for 30 minutes"
+          description: "See GET /ops/health for the check's summary."
+
+      - alert: SafNewErrorIssue
+        expr: sum by (saf_app) (increase(saf_issue_new_groups_total{level=~"error|fatal"}[10m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }}: a new error issue appeared"
+          description: "See GET /ops/issues?status=open for details."
+
+      - alert: SafIssueRegressed
+        expr: sum by (saf_app) (increase(saf_issue_regressions_total[10m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }}: a resolved issue came back"
+          description: "See GET /ops/issues?status=regressed."
+
+      - alert: SafDeadJobs
+        expr: sum by (saf_app) (increase(jobs_delivery_duration_seconds_count{status="dead"}[30m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }}: jobs went dead (out of retries)"
+          description: "See the jobs admin page or the jobs.dead issue."
+
+  - name: saf-performance
+    rules:
+      - alert: SafSlowRoute
+        # Only routes with some traffic (3+/min); p95 of a handful of requests is noise.
+        expr: |
+          histogram_quantile(0.95,
+            sum by (saf_app, path, le) (rate(http_request_duration_seconds_bucket{path!="unspecified"}[10m]))
+          ) > 2
+          and
+          sum by (saf_app, path) (rate(http_request_duration_seconds_count{path!="unspecified"}[10m])) > 0.05
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }} {{ $labels.path }}: p95 is {{ $value | humanizeDuration }}"
+          description: "p95 latency has been over the 2s default budget for 15 minutes."
+
+      - alert: SafSlowDbQueries
+        expr: |
+          histogram_quantile(0.95, sum by (saf_app, le) (rate(db_query_duration_seconds_bucket[10m]))) > 0.5
+          and
+          sum by (saf_app) (rate(db_query_duration_seconds_count[10m])) > 0.05
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }}: database query p95 is {{ $value | humanizeDuration }}"
+          description: "Query p95 has been over 500ms for 15 minutes."
+
+  - name: saf-capacity
+    rules:
+      - alert: SafDiskAlmostFull
+        expr: |
+          1 - node_filesystem_avail_bytes{mountpoint="/", fstype!~"tmpfs|overlay|squashfs"}
+            / node_filesystem_size_bytes{mountpoint="/", fstype!~"tmpfs|overlay|squashfs"} > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host disk is {{ $value | humanizePercentage }} full"
+          description: "The root filesystem has been over 80% used for 10 minutes."
+
+      - alert: SafDiskCritical
+        expr: |
+          1 - node_filesystem_avail_bytes{mountpoint="/", fstype!~"tmpfs|overlay|squashfs"}
+            / node_filesystem_size_bytes{mountpoint="/", fstype!~"tmpfs|overlay|squashfs"} > 0.9
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host disk is {{ $value | humanizePercentage }} full"
+          description: "The root filesystem is over 90% used. SQLite writes fail when it fills."
+
+      - alert: SafDiskFillingUp
+        expr: predict_linear(node_filesystem_avail_bytes{mountpoint="/", fstype!~"tmpfs|overlay|squashfs"}[6h], 3 * 86400) < 0
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host disk fills within 3 days at the current rate"
+          description: "Based on the last 6 hours of disk use."
+
+      - alert: SafMemoryPressure
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host has {{ $value | humanizePercentage }} of memory available"
+          description: "Under 10% of memory has been available for 10 minutes."
+
+      - alert: SafTelemetryDropping
+        expr: sum by (saf_app) (increase(saf_logs_dropped_total[15m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }} is dropping log lines"
+          description: "The persistent log store couldn't keep up or failed writes."
+
+  - name: saf-meta
+    rules:
+      # Always firing. Alertmanager sends it to an external heartbeat service;
+      # if the pings stop, that service alerts (dead host, Prometheus or
+      # Alertmanager).
+      - alert: Watchdog
+        expr: vector(1)
+        labels:
+          severity: none
+          saf_app: host
+        annotations:
+          summary: "Alerting pipeline heartbeat"
+          description: "Always firing, by design."

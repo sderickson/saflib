@@ -2,6 +2,12 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
+      "path": "../../drizzle"
+    },
+    {
+      "path": "../errors-db"
+    },
+    {
       "path": "../../node"
     }
   ],

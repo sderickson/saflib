@@ -1,0 +1,33 @@
+{
+  "name": "@saflib/errors-db",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Issue tracking store: errors and warnings grouped by fingerprint, with status, regressions, occurrences and window counts",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./instances": "./instances.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "generate": "drizzle-kit generate && saf-drizzle check-migrations",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/drizzle": "*",
+    "@saflib/env": "*",
+    "@saflib/node": "*",
+    "@saflib/utils": "*",
+    "drizzle-orm": "^0.45.2",
+    "prom-client": "^15.1.3"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "drizzle-kit": "*"
+  },
+  "sideEffects": false
+}

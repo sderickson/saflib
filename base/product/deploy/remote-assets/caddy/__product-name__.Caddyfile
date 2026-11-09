@@ -62,11 +62,12 @@
 
 # API subdomain
 # Public monolith paths skip Kratos forward_auth (health, CSP ingest, marketing unsubscribe).
+# /ops/* authenticates by ops bearer token in the app, so the session lookup is skipped.
 
 {$PROTOCOL}://api.{$DOMAIN} {
 	import transport-security
 	import cors {$CORS_ORIGINS}
-	@public_monolith path /health /csp-violations /user-configs/unsubscribe-marketing
+	@public_monolith path /health /ops/* /csp-violations /user-configs/unsubscribe-marketing
 	handle @public_monolith {
 		reverse_proxy __product-name__-monolith-{$SAF_COLOR}:3001 {
 			import reverse_proxy_common

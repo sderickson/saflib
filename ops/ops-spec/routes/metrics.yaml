@@ -1,0 +1,374 @@
+x-common-errors: &common-errors
+  "400":
+    description: >
+      Invalid PromQL, or the query exceeds a limit (range over 31 days, step
+      under 60s, more than 1,500 points per series, more than 200 series).
+      The message says which and how to narrow it.
+    content:
+      application/json:
+        schema:
+          $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+  "401":
+    description: Missing, malformed, unknown, revoked or expired token.
+    content:
+      application/json:
+        schema:
+          $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+  "403":
+    description: The token lacks the required scope.
+    content:
+      application/json:
+        schema:
+          $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+  "404":
+    description: Metrics are not enabled for this product.
+    content:
+      application/json:
+        schema:
+          $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+  "429":
+    description: Rate limited.
+    content:
+      application/json:
+        schema:
+          $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+  "502":
+    description: Prometheus is unreachable or timed out.
+    content:
+      application/json:
+        schema:
+          $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+queryOpsMetrics:
+  summary: Instant PromQL query
+  description: >
+    Runs read-only PromQL at one point in time. Every selector is confined to
+    this app's series plus host metrics. Prometheus scrapes every 60s, so use
+    `rate()`/`increase()` windows of at least `[4m]` (standard: `[5m]`).
+  operationId: queryOpsMetrics
+  security:
+    - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
+  parameters:
+    - name: query
+      in: query
+      required: true
+      allowReserved: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 4000
+    - name: time
+      in: query
+      allowReserved: true
+      required: false
+      description: Evaluation time (default now).
+      schema:
+        type: string
+        format: date-time
+  responses:
+    "200":
+      description: Query result.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ metrics ]
+            properties:
+              metrics:
+                $ref: "../schemas/ops-metrics-result.yaml"
+    <<: *common-errors
+
+queryOpsMetricsRange:
+  summary: PromQL query over a time range
+  description: >
+    Like `queryOpsMetrics`, evaluated every `step` seconds from `start` to
+    `end`. Limits: range at most 31 days, step at least 60s, at most 1,500
+    points per series.
+  operationId: queryOpsMetricsRange
+  security:
+    - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
+  parameters:
+    - name: query
+      in: query
+      required: true
+      allowReserved: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 4000
+    - name: start
+      in: query
+      allowReserved: true
+      required: true
+      schema:
+        type: string
+        format: date-time
+    - name: end
+      in: query
+      allowReserved: true
+      required: true
+      schema:
+        type: string
+        format: date-time
+    - name: step
+      in: query
+      required: false
+      description: Resolution in seconds (default 300, minimum 60).
+      schema:
+        type: integer
+        minimum: 60
+        default: 300
+  responses:
+    "200":
+      description: Query result (a matrix).
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ metrics ]
+            properties:
+              metrics:
+                $ref: "../schemas/ops-metrics-result.yaml"
+    <<: *common-errors
+
+listOpsMetricsSeries:
+  summary: Series matching selectors
+  description: >
+    The label sets of series matching any `match` selector, for discovering
+    metric and label names. Confined like the query endpoints.
+  operationId: listOpsMetricsSeries
+  security:
+    - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
+  parameters:
+    - name: match
+      in: query
+      required: true
+      allowReserved: true
+      description: Series selectors, e.g. `http_request_duration_seconds_count`.
+      style: form
+      explode: true
+      schema:
+        type: array
+        minItems: 1
+        maxItems: 10
+        items:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    - name: start
+      in: query
+      allowReserved: true
+      required: false
+      description: Default one hour ago.
+      schema:
+        type: string
+        format: date-time
+    - name: end
+      in: query
+      allowReserved: true
+      required: false
+      description: Default now.
+      schema:
+        type: string
+        format: date-time
+  responses:
+    "200":
+      description: Matching series (at most 200).
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ series ]
+            properties:
+              series:
+                type: array
+                items:
+                  type: object
+                  additionalProperties:
+                    type: string
+    <<: *common-errors
+
+createOpsGraphLink:
+  summary: Mint a signed graph link
+  description: >
+    Returns SVG and PNG URLs for a line graph of `query` over a time range.
+    The URLs work without a token (for `<img>` tags in GitHub, Slack, email),
+    and only ever show this exact graph: the signature covers the query,
+    range, step, size and title. Relative times are resolved now, so the
+    graph is reproducible. Nothing is stored. Same limits as
+    `queryOpsMetricsRange`.
+  operationId: createOpsGraphLink
+  security:
+    - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [ query ]
+          additionalProperties: false
+          properties:
+            query:
+              type: string
+              minLength: 1
+              maxLength: 4000
+            start:
+              type: string
+              format: date-time
+              description: Default 24 hours before `end`.
+            end:
+              type: string
+              format: date-time
+              description: Default now.
+            step:
+              type: integer
+              minimum: 60
+              description: Seconds between points (default chosen for about 300 points).
+            width:
+              type: integer
+              minimum: 200
+              maximum: 1600
+              default: 720
+            height:
+              type: integer
+              minimum: 120
+              maximum: 1000
+              default: 320
+            title:
+              type: string
+              maxLength: 120
+              default: ""
+  responses:
+    "200":
+      description: The signed links.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ graph_link ]
+            properties:
+              graph_link:
+                type: object
+                required: [ svg_url, png_url, start, end, step ]
+                properties:
+                  svg_url:
+                    type: string
+                  png_url:
+                    type: string
+                  start:
+                    type: string
+                    format: date-time
+                  end:
+                    type: string
+                    format: date-time
+                  step:
+                    type: integer
+    <<: *common-errors
+
+x-graph-image: &graph-image
+  description: >
+    Renders a graph from a signed link (see `createOpsGraphLink`). Public: the
+    signature is the credential. Responses are immutable and cacheable.
+    Rate limited per IP.
+  parameters:
+    - { name: q, in: query, required: true, allowReserved: true, schema: { type: string, minLength: 1, maxLength: 4000 } }
+    - { name: start, in: query, required: true, schema: { type: integer } }
+    - { name: end, in: query, required: true, schema: { type: integer } }
+    - { name: step, in: query, required: true, schema: { type: integer, minimum: 60 } }
+    - { name: w, in: query, required: true, schema: { type: integer, minimum: 200, maximum: 1600 } }
+    - { name: h, in: query, required: true, schema: { type: integer, minimum: 120, maximum: 1000 } }
+    - { name: title, in: query, required: false, allowReserved: true, schema: { type: string, maxLength: 120 } }
+    - { name: kid, in: query, required: true, schema: { type: string, maxLength: 64 } }
+    - { name: sig, in: query, required: true, schema: { type: string, maxLength: 128 } }
+
+getOpsGraphSvg:
+  <<: *graph-image
+  x-public: true
+  summary: Graph image (SVG)
+  operationId: getOpsGraphSvg
+  responses:
+    "200":
+      description: The graph.
+      content:
+        image/svg+xml:
+          schema:
+            type: string
+    "400":
+      description: The graph's query is invalid or over a limit.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Bad signature, or the signing key was revoked.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "404":
+      description: Metrics are not enabled for this product.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "429":
+      description: Rate limited.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "502":
+      description: Prometheus is unreachable or timed out.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+getOpsGraphPng:
+  <<: *graph-image
+  x-public: true
+  summary: Graph image (PNG)
+  operationId: getOpsGraphPng
+  responses:
+    "200":
+      description: The graph, rendered at 2x.
+      content:
+        image/png:
+          schema:
+            type: string
+            format: binary
+    "400":
+      description: The graph's query is invalid or over a limit.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Bad signature, or the signing key was revoked.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "404":
+      description: Metrics are not enabled for this product.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "429":
+      description: Rate limited.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "502":
+      description: Prometheus is unreachable or timed out.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

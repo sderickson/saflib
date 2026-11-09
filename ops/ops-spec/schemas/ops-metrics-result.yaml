@@ -1,0 +1,32 @@
+type: object
+description: >
+  A Prometheus query result, restricted to this app's series and host
+  metrics (`saf_app` is injected into every selector). Label values are set by
+  the app's own instrumentation (route templates, operation ids), not by
+  request content.
+required: [ result_type, result ]
+properties:
+  result_type:
+    type: string
+    enum: [ vector, matrix, scalar, string ]
+  result:
+    type: array
+    description: >
+      For `vector`: `{metric, value: [unix_seconds, "value"]}` per series.
+      For `matrix`: `{metric, values: [[unix_seconds, "value"], ...]}`.
+      For `scalar` and `string`: a single `{value}` entry.
+    items:
+      type: object
+      properties:
+        metric:
+          type: object
+          additionalProperties:
+            type: string
+        value:
+          type: array
+          items: {}
+        values:
+          type: array
+          items:
+            type: array
+            items: {}

@@ -5,6 +5,7 @@ import {
   getServiceName,
   makeSubsystemReporters,
   onShutdown,
+  reportWarning,
   safContextStorage,
   safReportersStorage,
   type SafContext,
@@ -267,6 +268,10 @@ export async function runJobs(
           if (error) {
             logError(error);
           }
+          reportWarning(`job went dead: unknown operation ${job.operation_id}`, {
+            fingerprint: `jobs.dead:${job.operation_id}`,
+            extra: { jobId: job.id, terminalReason: "permanent-status" },
+          });
           endTimer("dead");
           return;
         }
@@ -386,6 +391,15 @@ export async function runJobs(
           if (error) {
             logError(error);
           }
+          // Retries exhausted (or a permanent failure): worth an issue.
+          reportWarning(`job went dead: ${job.operation_id}`, {
+            fingerprint: `jobs.dead:${job.operation_id}`,
+            extra: {
+              jobId: job.id,
+              statusCode: classification.status_code,
+              terminalReason: classification.terminal_reason,
+            },
+          });
         }
 
         endTimer(classification.metricStatus);

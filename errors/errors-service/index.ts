@@ -17,6 +17,7 @@ export {
 } from "./createErrorService.ts";
 export { configureMockErrors } from "./configureMockErrors.ts";
 export { InMemoryErrorService, CSP_INGEST_MESSAGE } from "./in-memory/InMemoryErrorService.ts";
+export { SqliteErrorService } from "./sqlite/SqliteErrorService.ts";
 export {
   listReportedErrors,
   recordReportedError,

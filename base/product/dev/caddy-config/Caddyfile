@@ -69,7 +69,7 @@ http://__static-subdomain-name__.docker.localhost {
 http://api.docker.localhost {
 	import transport-security
 	import cors {$DOMAIN}
-	@public_monolith path /health /csp-violations /user-configs/unsubscribe-marketing /dev/logs /dev/logs/stream
+	@public_monolith path /health /ops/* /csp-violations /user-configs/unsubscribe-marketing /dev/logs /dev/logs/stream
 	handle @public_monolith {
 		reverse_proxy base-monolith:3001 {
 			import reverse_proxy_common

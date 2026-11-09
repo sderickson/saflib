@@ -20,10 +20,12 @@
     "@saflib/audit-http": "*",
     "@saflib/base-service-common": "*",
     "@saflib/drizzle": "*",
-    "@saflib/env": "*"
+    "@saflib/env": "*",
+    "@saflib/ops-http": "*"
   },
   "devDependencies": {
     "@saflib/base-spec": "*",
+    "@saflib/ops-spec": "*",
     "@saflib/vitest": "*"
   },
   "sideEffects": false

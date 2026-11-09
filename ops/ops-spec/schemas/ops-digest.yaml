@@ -1,0 +1,146 @@
+type: object
+required: [ since, generated_at, summary, health, deploys, issues, logs, metrics, alerts ]
+properties:
+  since:
+    type: string
+    format: date-time
+  generated_at:
+    type: string
+    format: date-time
+  summary:
+    type: object
+    required: [ needs_attention, health_status, new_issues, regressed_issues, open_issues, new_log_templates, deploys, boots, firing_alerts ]
+    properties:
+      needs_attention:
+        type: boolean
+      health_status:
+        type: string
+        enum: [ ok, warn, fail ]
+      new_issues:
+        type: integer
+      regressed_issues:
+        type: integer
+      open_issues:
+        type: integer
+        description: Open or regressed issues seen in the window.
+      new_log_templates:
+        type: integer
+      deploys:
+        type: integer
+      boots:
+        type: integer
+        description: Process starts in the window (deploys and restarts).
+      firing_alerts:
+        type: integer
+        description: Alerts firing now and not acknowledged (0 without an alert store).
+  health:
+    type: object
+    required: [ status, failing ]
+    properties:
+      status:
+        type: string
+        enum: [ ok, warn, fail ]
+      failing:
+        type: array
+        description: Checks that are warn or fail.
+        items:
+          $ref: "./ops-health-check.yaml"
+  deploys:
+    type: array
+    description: Deploys (new builds) started in the window, newest first.
+    items:
+      $ref: "./ops-boot.yaml"
+  issues:
+    oneOf:
+      - type: object
+        required: [ new, regressed, top ]
+        properties:
+          new:
+            type: array
+            description: First seen in the window, busiest first (up to 10).
+            items:
+              $ref: "./ops-issue.yaml"
+          regressed:
+            type: array
+            description: Resolved issues that came back in the window (up to 10).
+            items:
+              $ref: "./ops-issue.yaml"
+          top:
+            type: array
+            description: Open or regressed issues with the most occurrences in the window (up to 10).
+            items:
+              $ref: "./ops-issue.yaml"
+      - type: "null"
+  logs:
+    oneOf:
+      - type: object
+        required: [ level_counts, new_templates ]
+        properties:
+          level_counts:
+            type: object
+            additionalProperties:
+              type: integer
+          new_templates:
+            type: array
+            description: Message shapes first seen in the window, busiest first (up to 10).
+            items:
+              $ref: "./ops-log-template.yaml"
+      - type: "null"
+  metrics:
+    description: >
+      Request count, 5xx error rate and p95 latency (all routes) for this
+      window and the one before it. Null when the product hasn't enabled
+      metrics. `flags` feed `needs_attention`: `error_rate_high` (at least 5%
+      with 20+ requests), `error_rate_up` (at least 1% and double the
+      previous window), `p95_up` (at least 0.5s and double). If Prometheus
+      couldn't be queried, `error` says why and the values are null.
+    oneOf:
+      - type: "null"
+      - type: object
+        required: [ window_seconds, requests, error_rate, p95_seconds, flags, error ]
+        properties:
+          window_seconds:
+            type: integer
+          requests:
+            $ref: "./ops-metric-comparison.yaml"
+          error_rate:
+            $ref: "./ops-metric-comparison.yaml"
+          p95_seconds:
+            $ref: "./ops-metric-comparison.yaml"
+          flags:
+            type: array
+            items:
+              type: string
+              enum: [ error_rate_high, error_rate_up, p95_up ]
+          error:
+            type: [ string, "null" ]
+  alerts:
+    description: >
+      Alertmanager alerts: everything firing now (unacknowledged firing alerts
+      count toward `needs_attention`) and how many fired during the window.
+      Null when the product has no alert store.
+    oneOf:
+      - type: "null"
+      - type: object
+        required: [ firing, firing_unacked, fired_in_window, pipeline_last_seen_at, pipeline_stale ]
+        properties:
+          firing:
+            type: array
+            items:
+              $ref: "./ops-alert.yaml"
+          firing_unacked:
+            type: integer
+          fired_in_window:
+            type: integer
+          pipeline_last_seen_at:
+            type: [ string, "null" ]
+            format: date-time
+            description: >
+              Last delivery of the always-firing Watchdog, which proves
+              Prometheus, Alertmanager and this webhook (and its token) work.
+              Null if it has never arrived.
+          pipeline_stale:
+            type: boolean
+            description: >
+              The Watchdog has arrived before but not in the last 15 minutes:
+              alerting is broken. Counts toward `needs_attention`.

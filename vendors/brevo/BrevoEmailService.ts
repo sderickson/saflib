@@ -63,10 +63,13 @@ export class BrevoEmailService implements EmailService {
     }
     const messageId = body.messageId ?? body.messageIds?.join(",") ?? "";
 
+    // Identifiers, not identities: no addresses (the redaction filter masks
+    // anything shaped like an email, which includes Brevo's message ids). The
+    // id's unique part is enough to find the message in Brevo's logs.
     log.info("Email sent (Brevo)", {
-      from: options.from,
+      fromDomain: domainOf(options.from),
       subject: options.subject,
-      messageId,
+      messageIdLocal: messageIdLocalPart(messageId),
     });
 
     return {
@@ -76,4 +79,19 @@ export class BrevoEmailService implements EmailService {
       response: "202 Accepted (Brevo)",
     };
   }
+}
+
+/** The domain of an address like `Name <user@example.com>` or `user@example.com`. */
+export function domainOf(address: EmailOptions["from"]): string | undefined {
+  const raw = typeof address === "string" ? address : address?.address;
+  const match = raw ? /@([^>\s]+)/.exec(raw) : null;
+  return match?.[1];
+}
+
+/** `<abc123@smtp-relay.mailin.fr>` → `abc123` (comma-separated ids kept as a list). */
+export function messageIdLocalPart(messageId: string): string {
+  return messageId
+    .split(",")
+    .map((id) => id.trim().replace(/^</, "").split("@")[0])
+    .join(",");
 }

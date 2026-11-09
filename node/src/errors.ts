@@ -57,6 +57,7 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
     user: collectorUser,
     level: options?.level || "error",
     extra: options?.extra || {},
+    fingerprint: options?.fingerprint,
     tags: {
       "service.name": ctx.serviceName,
       "subsystem.name": ctx.subsystemName,
@@ -121,6 +122,7 @@ export const makeSubsystemErrorReporter = (
       error: e,
       level: options?.level || "error",
       extra: options?.extra || {},
+      fingerprint: options?.fingerprint,
       tags: {
         "service.name": getServiceName(),
         "subsystem.name": subsystemName,
@@ -130,4 +132,21 @@ export const makeSubsystemErrorReporter = (
 
     broadcastError(e, collectorParam, options);
   };
+};
+
+/**
+ * Report something worth a human or agent's attention that isn't a failure:
+ * a rate limit hit, retries exhausted, a degraded fallback. Becomes a `warn`
+ * issue (grouped by `fingerprint` when given, else by message shape) and a
+ * `warn` log line.
+ */
+export const reportWarning = (
+  message: string,
+  options: { fingerprint?: string; extra?: Record<string, unknown> } = {},
+) => {
+  getSafReporters().logError(new Error(message), {
+    level: "warning",
+    fingerprint: options.fingerprint,
+    extra: options.extra,
+  });
 };

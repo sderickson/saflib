@@ -1,4 +1,4 @@
-import { metricHistogramDefaultBuckets, getServiceName } from "@saflib/node";
+import { latencyBuckets, getServiceName } from "@saflib/node";
 import client from "prom-client";
 import type { JobStatus } from "@saflib/jobs-db";
 
@@ -14,7 +14,7 @@ const deliveryHistogram = new client.Histogram({
   name: "jobs_delivery_duration_seconds",
   help: "Duration of job delivery attempts",
   labelNames: ["service_name", "operation_id", "status"],
-  buckets: metricHistogramDefaultBuckets,
+  buckets: latencyBuckets,
 });
 
 const enqueuedCounter = new client.Counter({

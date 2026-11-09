@@ -1,22 +1,15 @@
 import { computed } from "vue";
-import {
-  kratosEmailFromSession,
-  kratosEmailVerifiedFromSession,
-  useKratosSession,
-} from "@saflib/ory-kratos-sdk";
-import { isSiteAdminEmail } from "#utils/site-admin.logic.ts";
+import { useKratosSession } from "@saflib/ory-kratos-sdk";
+import { useOpsAccess } from "@saflib/ops-vue";
 
-/** True when the session email is a verified site-admin (nav chrome only). */
+/**
+ * True when the signed-in user is a site admin (nav chrome only; the server
+ * enforces access). Asks the API (`GET /ops/access`), so admin emails stay
+ * server-side instead of being baked into client code.
+ */
 export function useSiteAdmin() {
   const { data: session } = useKratosSession();
-
-  const isSiteAdmin = computed(() => {
-    const email = kratosEmailFromSession(session.value);
-    if (!isSiteAdminEmail(email)) {
-      return false;
-    }
-    return kratosEmailVerifiedFromSession(session.value);
-  });
-
+  const signedIn = computed(() => Boolean(session.value?.identity));
+  const { isSiteAdmin } = useOpsAccess("api", signedIn);
   return { isSiteAdmin };
 }

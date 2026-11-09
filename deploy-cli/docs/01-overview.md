@@ -37,6 +37,10 @@ Services in a product's `docker-compose.blue-green.yaml` deploy with no downtime
 - `up --local` runs the same flow against the local Docker, beside a running prod-local stack (which runs blue), using `docker-compose.blue-green.prod-local.yaml` in the deploy package when there is one.
 - Only for product deploys: the platform's edge and Kratos aren't duplicated.
 
+## Release stamp
+
+`sync` adds `release/release.json` to every upload: when the deploy ran, the HEAD commits of the deploying checkout (`-dirty` if uncommitted), and a hash of `remote-assets/`. Services mount `./release` at `/etc/saf/release` and record it on boot, so the ops API's deploy history includes config-only deploys. The local `remote-assets/release/` that prod-local creates is gitignored.
+
 ## Commands
 
 | Command                    | npm script (convention)       | What it does                                                                                                                                                                                                                                                                       |

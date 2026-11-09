@@ -3,6 +3,9 @@
     <h1>{{ t(strings.title) }}</h1>
     <p>{{ t(strings.description) }}</p>
 
+    <!-- What the daily check sees: health, alerts, issues, traffic, graphs. -->
+    <OpsDigestPanel class="mt-4" :issues-to="adminLinks.opsIssues.path" :alerts-to="adminLinks.opsAlerts.path" />
+
     <div class="mt-4 text-body-2">
       <p class="text-medium-emphasis mb-1">{{ t(strings.gitHashesHeading) }}</p>
       <p class="mb-0">
@@ -23,6 +26,8 @@
 
 <script setup lang="ts">
 import ErrorSmokeWidgets from "@saflib/errors-vue/pages/ErrorSmokeWidgets.vue";
+import { OpsDigestPanel } from "@saflib/ops-vue";
+import { adminLinks } from "@saflib/base-links";
 import { getGitHashes } from "@saflib/vue";
 import { ContentWidth } from "@saflib/vue/components";
 import { home as strings } from "./Home.strings.ts";

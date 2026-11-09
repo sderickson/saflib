@@ -1,0 +1,18 @@
+type: object
+description: >
+  Aggregate health. `status` is the worst of the checks (`fail` > `warn` > `ok`).
+required:
+  - status
+  - checked_at
+  - checks
+properties:
+  status:
+    type: string
+    enum: [ ok, warn, fail ]
+  checked_at:
+    type: string
+    format: date-time
+  checks:
+    type: array
+    items:
+      $ref: "./ops-health-check.yaml"

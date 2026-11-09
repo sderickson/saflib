@@ -1,0 +1,25 @@
+export const ops_tokens = {
+  documentTitle: "Ops Tokens",
+  title: "Ops Tokens",
+  intro:
+    "Machine credentials for the ops API (health, deploys, and later logs, issues and metrics). Give each agent or integration its own token.",
+  empty: "No ops tokens yet.",
+  create: "Create token",
+  createTitle: "Create ops token",
+  nameLabel: "Name",
+  nameHint: "Who uses it, e.g. \"maintenance agent (GitHub Actions)\"",
+  scopesLabel: "Scopes",
+  expiresLabel: "Expires in (days, optional)",
+  cancel: "Cancel",
+  submit: "Create",
+  secretTitle: "Copy this token now",
+  secretWarning:
+    "This is the only time the token is shown. Store it in your secret manager; it cannot be retrieved later.",
+  done: "Done",
+  revoke: "Revoke",
+  revokeConfirm: "Revoke this token? Anything using it will stop working immediately.",
+  active: "Active",
+  revoked: "Revoked",
+  expired: "Expired",
+  never: "Never",
+};

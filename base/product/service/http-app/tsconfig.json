@@ -2,6 +2,9 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
+      "path": "../../../../audit/audit-http"
+    },
+    {
       "path": "../../../../analytics/analytics-http"
     },
     {
@@ -35,6 +38,9 @@
       "path": "../../../../node-metrics/node-metrics-http"
     },
     {
+      "path": "../../../../ops/ops-http"
+    },
+    {
       "path": "../../../../vendors/brevo"
     },
     {
@@ -51,6 +57,9 @@
     },
     {
       "path": "../jobs"
+    },
+    {
+      "path": "../ops"
     }
   ],
   "compilerOptions": {

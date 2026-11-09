@@ -119,4 +119,18 @@ describe("makeContextMiddleware Kratos session re-validation", () => {
     expect(res.body).toEqual({ userId: "identity-once" });
     expect(fetch).toHaveBeenCalledTimes(1);
   });
+
+  it("looks up the session from the cookie alone when the edge didn't stamp a header", async () => {
+    vi.mocked(fetch).mockResolvedValue(Response.json(sessionResponse({ id: "identity-cookie" })));
+    const res = await request(appWithAuth()).get("/protected").set("Cookie", "theme=dark; ory_kratos_session=valid");
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ userId: "identity-cookie" });
+    expect(vi.mocked(fetch).mock.calls[0]![1]).toMatchObject({ headers: { Cookie: "theme=dark; ory_kratos_session=valid" } });
+  });
+
+  it("doesn't call Kratos without a header or session cookie", async () => {
+    const res = await request(appWithAuth()).get("/protected").set("Cookie", "theme=dark");
+    expect(res.status).toBe(401);
+    expect(fetch).not.toHaveBeenCalled();
+  });
 });

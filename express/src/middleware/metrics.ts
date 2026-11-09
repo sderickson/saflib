@@ -1,4 +1,4 @@
-import { getServiceName } from "@saflib/node";
+import { getServiceName, latencyBuckets, statusClass } from "@saflib/node";
 import promBundle from "express-prom-bundle";
 import { Router } from "express";
 import type { Request } from "express";
@@ -31,6 +31,10 @@ const promRecordingMiddleware = promBundle({
     operation_id: "",
   },
   includeUp: true,
+  // Standard latency buckets; status codes grouped into classes (2xx, 4xx, ...)
+  // so the finer buckets don't multiply series.
+  buckets: latencyBuckets,
+  formatStatusCode: (res) => statusClass(res.statusCode),
   normalizePath: normalizeMetricPath,
   transformLabels: (labels, req) => {
     labels.service_name = getServiceName();

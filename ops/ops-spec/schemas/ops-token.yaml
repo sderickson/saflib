@@ -1,0 +1,41 @@
+type: object
+description: An ops token's metadata. The secret itself is never returned after creation.
+required:
+  - id
+  - name
+  - token_prefix
+  - scopes
+  - created_by
+  - created_at
+  - expires_at
+  - last_used_at
+  - revoked_at
+properties:
+  id:
+    type: string
+  name:
+    type: string
+  token_prefix:
+    type: string
+    description: First characters after `safops_`, to recognize which token is which.
+  scopes:
+    type: array
+    items:
+      type: string
+      enum: [ "ops:read", "ops:triage", "ops:alerts-ingest" ]
+  created_by:
+    type: [ string, "null" ]
+    description: Kratos identity id of the admin who created it.
+  created_at:
+    type: string
+    format: date-time
+  expires_at:
+    type: [ string, "null" ]
+    format: date-time
+  last_used_at:
+    type: [ string, "null" ]
+    format: date-time
+    description: Updated at most once a minute.
+  revoked_at:
+    type: [ string, "null" ]
+    format: date-time

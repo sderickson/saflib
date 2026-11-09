@@ -9,6 +9,7 @@ import { cronServiceStorage } from "./context.ts";
 export type { CronServiceOptions };
 
 export { createCronRouter };
+export { createCronHealthCheck } from "./src/health-check.ts";
 
 export type {
   JobsMap,

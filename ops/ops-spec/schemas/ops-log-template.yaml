@@ -1,0 +1,33 @@
+type: object
+description: >
+  A message shape (values collapsed into placeholders). A template first seen
+  recently is a new behavior worth a look.
+required: [ hash, level, service_name, first_seen, last_seen, count, window_count, untrusted ]
+properties:
+  hash:
+    type: string
+  level:
+    type: string
+    description: Level of the first line seen with this template.
+  service_name:
+    type: [ string, "null" ]
+  first_seen:
+    type: string
+    format: date-time
+  last_seen:
+    type: string
+    format: date-time
+  count:
+    type: integer
+    description: Lines since the template was first recorded.
+  window_count:
+    type: integer
+    description: Lines in the requested window.
+  untrusted:
+    type: object
+    required: [ template, sample_message ]
+    properties:
+      template:
+        type: string
+      sample_message:
+        type: [ string, "null" ]

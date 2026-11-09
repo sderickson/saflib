@@ -11,6 +11,9 @@
       "path": "../../../../cron/cron-vue"
     },
     {
+      "path": "../../../../ops/ops-vue"
+    },
+    {
       "path": "../../../../email/email-vue"
     },
     {

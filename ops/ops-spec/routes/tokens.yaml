@@ -1,0 +1,150 @@
+listOpsTokens:
+  summary: List ops tokens (admin)
+  operationId: listOpsTokens
+  security:
+    - session: [ site-admin ]
+  responses:
+    "200":
+      description: Every token, newest first, including revoked and expired ones.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ ops_tokens ]
+            properties:
+              ops_tokens:
+                type: array
+                items:
+                  $ref: "../schemas/ops-token.yaml"
+    "401":
+      description: Not signed in.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Not a site admin.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+createOpsToken:
+  summary: Create an ops token (admin)
+  description: >
+    Mints a token. The plaintext `token` is in this response only; it cannot
+    be retrieved again.
+  operationId: createOpsToken
+  security:
+    - session: [ site-admin ]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required: [ name, scopes ]
+          properties:
+            name:
+              type: string
+              minLength: 1
+              maxLength: 100
+            scopes:
+              type: array
+              minItems: 1
+              items:
+                type: string
+                enum: [ "ops:read", "ops:triage", "ops:alerts-ingest" ]
+            expires_at:
+              type: [ string, "null" ]
+              format: date-time
+              description: Optional expiry; omit or null for no expiry.
+  responses:
+    "201":
+      description: The new token.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ ops_token, token ]
+            properties:
+              ops_token:
+                $ref: "../schemas/ops-token.yaml"
+              token:
+                type: string
+                description: The secret, `safops_…`. Shown once.
+    "400":
+      description: Invalid request (e.g. expiry in the past).
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "401":
+      description: Not signed in.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Not a site admin.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+revokeOpsToken:
+  summary: Revoke an ops token (admin)
+  operationId: revokeOpsToken
+  security:
+    - session: [ site-admin ]
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          description: Empty JSON object.
+          properties: {}
+  responses:
+    "200":
+      description: The revoked token.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ ops_token ]
+            properties:
+              ops_token:
+                $ref: "../schemas/ops-token.yaml"
+    "401":
+      description: Not signed in.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Not a site admin.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "404":
+      description: No token with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "409":
+      description: Already revoked.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

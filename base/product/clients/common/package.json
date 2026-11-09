@@ -39,6 +39,7 @@
     "@saflib/base-spec": "*",
     "@saflib/errors-vue": "*",
     "@saflib/links": "*",
+    "@saflib/ops-vue": "*",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/ory-kratos-spa": "*",
     "@saflib/sdk": "*",

@@ -1,0 +1,120 @@
+openapi: 3.1.0
+info:
+  title: Ops API
+  version: 1.0.0
+  description: >
+    Agent-facing operational telemetry for a SAF product (health, and later
+    logs, issues, metrics, audit, alerts, dependencies), read with an ops
+    token. Plus site-admin routes for managing those tokens. Free text that
+    originated outside the app is always returned under an `untrusted` key.
+
+components:
+  securitySchemes:
+    session:
+      $ref: "pkg:@saflib/openapi/security-schemes/session.yaml"
+    ops-token:
+      type: http
+      scheme: bearer
+      description: >
+        Machine credential for the ops API (`Authorization: Bearer safops_…`).
+        Not tied to a user. Scopes: `ops:read` (every GET), `ops:triage`
+        (issue status changes, alert acknowledgement), `ops:alerts-ingest`
+        (only posting alerts; Alertmanager's token).
+  schemas:
+    OpsHealth:
+      $ref: "./schemas/ops-health.yaml"
+    OpsHealthCheck:
+      $ref: "./schemas/ops-health-check.yaml"
+    OpsToken:
+      $ref: "./schemas/ops-token.yaml"
+    OpsBoot:
+      $ref: "./schemas/ops-boot.yaml"
+    OpsLogEntry:
+      $ref: "./schemas/ops-log-entry.yaml"
+    OpsLogTemplate:
+      $ref: "./schemas/ops-log-template.yaml"
+    OpsIssue:
+      $ref: "./schemas/ops-issue.yaml"
+    OpsIssueOccurrence:
+      $ref: "./schemas/ops-issue-occurrence.yaml"
+    OpsDigest:
+      $ref: "./schemas/ops-digest.yaml"
+    OpsAlert:
+      $ref: "./schemas/ops-alert.yaml"
+    OpsMetricsResult:
+      $ref: "./schemas/ops-metrics-result.yaml"
+    Error:
+      $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+paths:
+  /ops/health:
+    get:
+      $ref: "./routes/health.yaml#/getOpsHealth"
+  /ops/access:
+    get:
+      $ref: "./routes/access.yaml#/getOpsAccess"
+  /ops/digest:
+    get:
+      $ref: "./routes/digest.yaml#/getOpsDigest"
+  /ops/deploys:
+    get:
+      $ref: "./routes/deploys.yaml#/listOpsDeploys"
+  /ops/logs:
+    get:
+      $ref: "./routes/logs.yaml#/listOpsLogs"
+  /ops/logs/templates:
+    get:
+      $ref: "./routes/logs.yaml#/listOpsLogTemplates"
+  /ops/issues:
+    get:
+      $ref: "./routes/issues.yaml#/listOpsIssues"
+  /ops/issues/{id}:
+    get:
+      $ref: "./routes/issues.yaml#/getOpsIssue"
+  /ops/issues/{id}/occurrences:
+    get:
+      $ref: "./routes/issues.yaml#/listOpsIssueOccurrences"
+  /ops/issues/{id}/resolve:
+    post:
+      $ref: "./routes/issues.yaml#/resolveOpsIssue"
+  /ops/issues/{id}/ignore:
+    post:
+      $ref: "./routes/issues.yaml#/ignoreOpsIssue"
+  /ops/issues/{id}/reopen:
+    post:
+      $ref: "./routes/issues.yaml#/reopenOpsIssue"
+  /ops/metrics/query:
+    get:
+      $ref: "./routes/metrics.yaml#/queryOpsMetrics"
+  /ops/metrics/query_range:
+    get:
+      $ref: "./routes/metrics.yaml#/queryOpsMetricsRange"
+  /ops/metrics/series:
+    get:
+      $ref: "./routes/metrics.yaml#/listOpsMetricsSeries"
+  /ops/metrics/graph-links:
+    post:
+      $ref: "./routes/metrics.yaml#/createOpsGraphLink"
+  /ops/metrics/graph.svg:
+    get:
+      $ref: "./routes/metrics.yaml#/getOpsGraphSvg"
+  /ops/metrics/graph.png:
+    get:
+      $ref: "./routes/metrics.yaml#/getOpsGraphPng"
+  /ops/alerts:
+    get:
+      $ref: "./routes/alerts.yaml#/listOpsAlerts"
+  /ops/alerts/webhook:
+    post:
+      $ref: "./routes/alerts.yaml#/receiveOpsAlerts"
+  /ops/alerts/{id}/ack:
+    post:
+      $ref: "./routes/alerts.yaml#/ackOpsAlert"
+  /admin/ops-tokens:
+    get:
+      $ref: "./routes/tokens.yaml#/listOpsTokens"
+    post:
+      $ref: "./routes/tokens.yaml#/createOpsToken"
+  /admin/ops-tokens/{id}/revoke:
+    post:
+      $ref: "./routes/tokens.yaml#/revokeOpsToken"

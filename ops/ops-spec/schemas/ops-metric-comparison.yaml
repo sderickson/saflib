@@ -1,0 +1,8 @@
+type: object
+description: A value for the digest window and for the window of the same length just before it.
+required: [ current, previous ]
+properties:
+  current:
+    type: [ number, "null" ]
+  previous:
+    type: [ number, "null" ]

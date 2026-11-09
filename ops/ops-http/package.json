@@ -1,0 +1,42 @@
+{
+  "name": "@saflib/ops-http",
+  "saf": {
+    "kind": "lib"
+  },
+  "description": "Ops API router: ops-token auth, rate limiting, health checks, and token admin routes",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@saflib/drizzle": "*",
+    "@saflib/errors-db": "*",
+    "@saflib/express": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "@saflib/node-log-db": "*",
+    "@saflib/ops-db": "*",
+    "@saflib/ops-spec": "*",
+    "@saflib/utils": "*",
+    "dejavu-fonts-ttf": "^2.37.3",
+    "express": "^5.0.0",
+    "http-errors": "^2.0.0",
+    "prom-client": "^15.1.3"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@types/express": "^5.0.0",
+    "@types/http-errors": "^2.0.0",
+    "@types/supertest": "^7.0.0",
+    "supertest": "^7.0.0"
+  },
+  "sideEffects": false
+}

@@ -1,0 +1,44 @@
+getOpsDigest:
+  summary: What changed and what needs attention since a time
+  description: >
+    The agent's first call. `summary.needs_attention` is false when health is
+    ok and there are no new or regressed issues and no new warn/error log
+    templates; a scheduled run can stop there. Each item carries an id for
+    the detail endpoints (`/ops/issues/{id}`, `/ops/logs?template=`).
+    Sections are null when the product hasn't enabled that store. `since`
+    defaults to 24 hours ago.
+  operationId: getOpsDigest
+  security:
+    - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
+  parameters:
+    - { name: since, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
+  responses:
+    "200":
+      description: The digest.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ digest ]
+            properties:
+              digest:
+                $ref: "../schemas/ops-digest.yaml"
+    "401":
+      description: Missing, malformed, unknown, revoked or expired token.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: The token lacks the required scope.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "429":
+      description: Rate limited.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
