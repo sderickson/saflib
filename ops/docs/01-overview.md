@@ -131,6 +131,10 @@ The host's Alertmanager posts every alert to each app's `POST /ops/alerts/webhoo
 - The digest's `alerts` section lists what's firing, and unacknowledged firing alerts (`summary.firing_alerts`) count toward `needs_attention`.
 - The always-firing **Watchdog** is also delivered to each app's webhook (every 5 minutes, never to Slack) as a heartbeat. It's left out of alert lists and `needs_attention`; the digest's `alerts.pipeline_last_seen_at` shows when it last arrived, proving Prometheus, Alertmanager, the webhook and its token all work. If it has arrived before but not in 15 minutes, `alerts.pipeline_stale` is true and counts toward `needs_attention`.
 
+### Email notifications
+
+`startOpsNotifier` (the base product's `startBaseOpsNotifier`, hub's `startHubOpsNotifier`, called at startup) emails every site admin in `ADMIN_EMAILS` through the product's email service (Brevo) when alerts start firing or new error-level issues appear (including regressions). It checks every 5 minutes and batches everything new into one email, at most one every 15 minutes and 12 per UTC day. A cursor in `ops-db` only moves when an email goes out, so events held back by the limits arrive in the next one, and a failed send is retried. The claim is compare-and-swap, so overlapping blue-green colors don't both send. The Watchdog, warnings, and alerts that were already firing aren't emailed; they're in the digest.
+
 ### Alert rules and routing
 
 SAF's default rules are `ops/prometheus/saf-default.rules.yml`; the platform deploy loads it (hub links it into `prometheus/rules/`, and the upload carries the real file). They cover:
@@ -141,19 +145,18 @@ SAF's default rules are `ops/prometheus/saf-default.rules.yml`; the platform dep
 
 `promtool test rules saf-default.rules.test.yml` (in Docker: `docker run --rm -v "$PWD:/r" -w /r --entrypoint promtool prom/prometheus:v3.5.0 test rules saf-default.rules.test.yml`) checks them; run it after changing a rule. Products add or tighten rules with their own file in the platform's `prometheus/rules/`.
 
-Alertmanager (platform deploy, `alertmanager/alertmanager.yml`) routes on `saf_app`: each app's alerts go to its `/ops/alerts/webhook` (straight over the edge network) and Slack. The Watchdog pings the heartbeat URL every minute. A critical alert silences the matching warning. Secrets are files on the server, never in the repo; a missing one only stops that integration:
+Alertmanager (platform deploy, `alertmanager/alertmanager.yml`) routes on `saf_app`: each app's alerts go to its `/ops/alerts/webhook` (straight over the edge network) and Slack, and the Watchdog goes to the webhook as a heartbeat. A critical alert silences the matching warning. There is no external dead man's switch yet; one is planned on a separate monitoring machine, and the config says how to add it. Secrets are files on the server, never in the repo; a missing one only stops that integration:
 
 ```sh
 sudo mkdir -p /opt/alertmanager/secrets
 # ops token with only ops:alerts-ingest, from the app's admin Ops tokens page
 printf '%s' 'safops_…' | sudo tee /opt/alertmanager/secrets/hub-ops-token >/dev/null
 printf '%s' 'https://hooks.slack.com/services/…' | sudo tee /opt/alertmanager/secrets/slack-webhook-url >/dev/null
-printf '%s' 'https://hc-ping.com/…' | sudo tee /opt/alertmanager/secrets/heartbeat-url >/dev/null
 # Alertmanager runs as nobody (65534)
 sudo chown -R 65534 /opt/alertmanager/secrets && sudo chmod 700 /opt/alertmanager/secrets && sudo chmod 600 /opt/alertmanager/secrets/*
 ```
 
-Email is a commented block in the config, to fill in once there are SMTP credentials. A product on the same host gets its own route (`saf_app="<app>"`) and receiver pointing at its webhook, with its own token file.
+A product on the same host gets its own route (`saf_app="<app>"`) and receiver pointing at its webhook, with its own token file.
 
 ## Digest
 

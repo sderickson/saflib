@@ -163,3 +163,27 @@ export const opsAlerts = sqliteTable("ops_alerts", {
 });
 
 export type OpsAlertTest1 = Expect<Equal<OpsAlert, typeof opsAlerts.$inferSelect>>;
+
+/**
+ * Rate-limit and batching state for one notification channel (e.g.
+ * "email"). Events after `cursor` haven't been sent; the cursor only moves
+ * when a notification goes out, so rate-limited events roll into the next.
+ */
+export interface OpsNotifierState {
+  channel: string;
+  cursor: Date;
+  last_sent_at: Date | null;
+  /** UTC date (YYYY-MM-DD) that `sent_today` counts. */
+  day: string;
+  sent_today: number;
+}
+
+export const opsNotifierState = sqliteTable("ops_notifier_state", {
+  channel: text("channel").primaryKey(),
+  cursor: integer("cursor", { mode: "timestamp_ms" }).notNull(),
+  last_sent_at: integer("last_sent_at", { mode: "timestamp_ms" }),
+  day: text("day").notNull(),
+  sent_today: integer("sent_today").notNull(),
+});
+
+export type OpsNotifierStateTest1 = Expect<Equal<OpsNotifierState, typeof opsNotifierState.$inferSelect>>;

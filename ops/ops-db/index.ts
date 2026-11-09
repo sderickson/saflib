@@ -46,8 +46,14 @@ export {
   upsertAlerts,
 } from "./queries/ops-alerts/alerts.ts";
 export type { AckAlertResult, IncomingAlert, ListAlertsParams } from "./queries/ops-alerts/alerts.ts";
+export {
+  claimNotification,
+  getNotifierState,
+  releaseNotification,
+} from "./queries/ops-notifier/notifier-state.ts";
+export type { ClaimNotificationParams, ClaimNotificationResult } from "./queries/ops-notifier/notifier-state.ts";
 export { opsTokenScopes } from "./schema.ts";
-export type { OpsAlert, OpsBoot, OpsGraphKey, OpsToken, OpsTokenScope } from "./schema.ts";
+export type { OpsAlert, OpsBoot, OpsGraphKey, OpsNotifierState, OpsToken, OpsTokenScope } from "./schema.ts";
 
 import { opsDbManager } from "./instances.ts";
 

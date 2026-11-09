@@ -790,9 +790,13 @@ Gaps found probing hub's ops API by hand (2026-11-09):
 - [x] Alertmanager routes to each app's webhook and Slack (secrets as files
       on the server); email is a commented block awaiting SMTP credentials
 - [x] Watchdog route to an external heartbeat
-- [ ] Human setup: Slack webhook, heartbeat service, SMTP, an
-      `ops:alerts-ingest` token on the server, external uptime checks per
-      site and for `/ops/health`
+- [x] `ops:alerts-ingest` token on the server; the Watchdog reaches hub's
+      webhook as a heartbeat (`pipeline_last_seen_at`), verified 2026-11-09
+- [x] Email to site admins from the app (Brevo, `ADMIN_EMAILS`) for new
+      alerts and new error issues, batched and rate limited (15 min, 12/day)
+- [ ] Deferred to a separate monitoring machine (which will also run the
+      scheduled agent): external dead man's switch and uptime/TLS checks per
+      site and `/ops/health`. Slack is optional, not configured.
 - [x] `/ops/alerts/webhook`, `GET /ops/alerts`, ack; digest section
 
 ### Phase 7: Audit

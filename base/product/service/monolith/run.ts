@@ -10,7 +10,12 @@ import {
   makeKratosActionHandler,
 } from "@saflib/base-kratos-handlers";
 import { initializeDependencies } from "./dependencies.ts";
-import { configureBaseIssues, enableBasePersistentLogs } from "@saflib/base-ops";
+import {
+  configureBaseIssues,
+  enableBasePersistentLogs,
+  startBaseOpsNotifier,
+} from "@saflib/base-ops";
+import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 
 validateEnv(process.env, envSchema);
 setServiceName("base");
@@ -26,6 +31,8 @@ configureMockErrors();
 collectSystemMetrics();
 
 await initializeDependencies();
+// Batched, rate-limited email to site admins for new alerts and errors.
+startBaseOpsNotifier(resolveEmailServiceFromEnv(), "Base <noreply@saflib.com>");
 
 startOryKratosService({
   courierCallbacks: callbacks,

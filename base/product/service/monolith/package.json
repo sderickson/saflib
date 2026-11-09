@@ -35,6 +35,7 @@
     "@saflib/node": "*",
     "@saflib/ory-kratos-http": "*",
     "@saflib/secret-store": "*",
+    "@saflib/vendors-brevo": "*",
     "@saflib/vendors-loki": "*",
     "@saflib/vendors-sentry-node": "*"
   },

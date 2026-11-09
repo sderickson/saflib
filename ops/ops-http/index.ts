@@ -15,3 +15,13 @@ export type {
   HealthStatus,
 } from "./health/types.ts";
 export { METRICS_LIMITS, type OpsMetricsConfig } from "./metrics/prometheus.ts";
+export {
+  adminEmailSender,
+  adminEmailsFromEnv,
+  buildNotification,
+  runNotifierOnce,
+  startOpsNotifier,
+  type EmailSenderLike,
+  type OpsNotification,
+  type OpsNotifierOptions,
+} from "./notify/notifier.ts";

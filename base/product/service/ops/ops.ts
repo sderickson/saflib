@@ -16,6 +16,9 @@ import {
   diskCheck,
   isOpsApiRequest,
   type HealthCheck,
+  adminEmailSender,
+  startOpsNotifier,
+  type EmailSenderLike,
 } from "@saflib/ops-http";
 
 export { isOpsApiRequest };
@@ -96,5 +99,19 @@ export function createBaseOpsRouter(options: CreateBaseOpsRouterOptions = {}) {
     // PromQL via the host's prom-label-proxy, confined to saf_app="base"
     // (set by this app's scrape config) plus host metrics.
     metrics: { app: "base" },
+  });
+}
+
+/**
+ * Email every site admin (`ADMIN_EMAILS`) about newly firing alerts and new
+ * error issues: batched every 5 minutes, at most one email per 15 minutes
+ * and 12 a day. Call once at startup, after email is configured.
+ */
+export function startBaseOpsNotifier(email: EmailSenderLike, from: string) {
+  return startOpsNotifier({
+    product: "base",
+    dbKey: getBaseOpsDbKey(),
+    issuesDbKey: getBaseIssuesDbKey(),
+    send: adminEmailSender(email, from),
   });
 }
