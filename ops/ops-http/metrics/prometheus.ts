@@ -78,7 +78,7 @@ export function enforceSeriesCap(count: number): void {
   if (count > METRICS_LIMITS.maxSeries) {
     throw createError(
       400,
-      `Query matched more than ${METRICS_LIMITS.maxSeries} series; aggregate it (e.g. sum by (route) (...)) or add label matchers.`,
+      `Query matched more than ${METRICS_LIMITS.maxSeries} series; aggregate it (e.g. sum by (path) (...)) or add label matchers.`,
     );
   }
 }

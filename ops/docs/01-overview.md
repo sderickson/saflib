@@ -109,10 +109,10 @@ Each host runs Prometheus (60s scrapes, 30 days), node_exporter and prom-label-p
 
 `GET /ops/metrics/query`, `/ops/metrics/query_range` and `/ops/metrics/series` (`ops:read`) run read-only PromQL through prom-label-proxy, which injects `saf_app=~"<app>|host"` into every selector. A token can't read another app's series, even by naming them. Limits: 31-day range, 60s minimum step, 1,500 points per series, 200 series (the error suggests aggregating), 10s timeout. Bad PromQL is a 400 with Prometheus's message; Prometheus being down is a 502. Enable with `createOpsRouter({ metrics: { app } })`; the proxy URL defaults to `PROM_LABEL_PROXY_URL` or `http://prom-label-proxy:8080`.
 
-Built-in instrumentation uses the standard `latencyBuckets` (`@saflib/node`: 5ms to 30s in 12 steps): `http_request_duration_seconds` (by route, operation, method and status class, `2xx`…), `db_query_duration_seconds` (every `queryWrapper` query, by outcome), and the jobs, cron and gRPC durations. With 60s scrapes, `rate()` windows must be at least `[4m]`; the standard window is `[5m]`:
+Built-in instrumentation uses the standard `latencyBuckets` (`@saflib/node`: 5ms to 30s in 12 steps): `http_request_duration_seconds` (by path (the route template), operation, method and status class, `2xx`…), `db_query_duration_seconds` (every `queryWrapper` query, by outcome), and the jobs, cron and gRPC durations. With 60s scrapes, `rate()` windows must be at least `[4m]`; the standard window is `[5m]`:
 
 ```promql
-histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_bucket[5m])))
+histogram_quantile(0.95, sum by (le, path) (rate(http_request_duration_seconds_bucket[5m])))
 sum(rate(http_request_duration_seconds_count{status_code="5xx"}[5m])) / sum(rate(http_request_duration_seconds_count[5m]))
 ```
 

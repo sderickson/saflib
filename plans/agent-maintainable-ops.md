@@ -289,7 +289,7 @@ Run real Prometheus, one per host, in the platform compose file:
   - Pay for them by grouping `status_code` into classes (2xx/3xx/4xx/5xx).
 - Use classic histograms (what `prom-client` supports).
 - The ops skill documents the standard queries, for example
-  `histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_bucket[5m])))`.
+  `histogram_quantile(0.95, sum by (le, path) (rate(http_request_duration_seconds_bucket[5m])))`.
 
 **Querying.** The app proxies `query`, `query_range` and `series` to
 Prometheus behind the ops token, with a timeout, a cap on samples or series,
