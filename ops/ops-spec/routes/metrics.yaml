@@ -59,6 +59,7 @@ queryOpsMetrics:
         maxLength: 4000
     - name: time
       in: query
+      allowReserved: true
       required: false
       description: Evaluation time (default now).
       schema:
@@ -97,12 +98,14 @@ queryOpsMetricsRange:
         maxLength: 4000
     - name: start
       in: query
+      allowReserved: true
       required: true
       schema:
         type: string
         format: date-time
     - name: end
       in: query
+      allowReserved: true
       required: true
       schema:
         type: string
@@ -154,6 +157,7 @@ listOpsMetricsSeries:
           maxLength: 1000
     - name: start
       in: query
+      allowReserved: true
       required: false
       description: Default one hour ago.
       schema:
@@ -161,6 +165,7 @@ listOpsMetricsSeries:
         format: date-time
     - name: end
       in: query
+      allowReserved: true
       required: false
       description: Default now.
       schema:

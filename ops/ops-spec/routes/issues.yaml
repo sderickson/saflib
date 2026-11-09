@@ -21,7 +21,7 @@ listOpsIssues:
       in: query
       required: false
       schema: { type: array, items: { type: string, maxLength: 32 } }
-    - { name: since, in: query, required: false, schema: { type: string, format: date-time } }
+    - { name: since, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
     - { name: new, in: query, required: false, description: Only issues first seen in the window., schema: { type: boolean } }
     - { name: regressed, in: query, required: false, description: Only issues that regressed in the window., schema: { type: boolean } }
     - name: sort

@@ -25,9 +25,6 @@ const PALETTE = [
   "#2563eb", "#dc2626", "#16a34a", "#d97706", "#7c3aed",
   "#0891b2", "#db2777", "#65a30d", "#ea580c", "#475569",
 ];
-/** Labels that identify the scrape, not the series. */
-const HIDDEN_LABELS = new Set(["__name__", "saf_app", "instance", "job", "service_name"]);
-
 export function escapeXml(s: string): string {
   return s.replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
@@ -38,13 +35,24 @@ function truncate(s: string, max: number): string {
   return s.length > max ? `${s.slice(0, max - 1)}…` : s;
 }
 
-/** Legend text: the labels that differ from the scrape's identity. */
-export function seriesLabel(metric: Record<string, string>): string {
+/** Legend label for one series, given the label keys every series shares. */
+export function seriesLabel(metric: Record<string, string>, constantKeys: Set<string> = new Set()): string {
   const parts = Object.entries(metric)
-    .filter(([k]) => !HIDDEN_LABELS.has(k))
+    .filter(([k]) => k !== "__name__" && !constantKeys.has(k))
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${k}=${v}`);
   return parts.length > 0 ? parts.join(", ") : (metric.__name__ ?? "value");
+}
+
+/**
+ * Label keys with the same value on every series (e.g. saf_app, often job):
+ * they don't tell lines apart, so the legend leaves them out. With a single
+ * series, the scrape's identity labels are dropped instead.
+ */
+export function constantLabelKeys(metrics: Record<string, string>[]): Set<string> {
+  if (metrics.length <= 1) return new Set(["saf_app", "instance", "job", "service_name"]);
+  const keys = new Set(metrics.flatMap((m) => Object.keys(m)));
+  return new Set([...keys].filter((k) => metrics.every((m) => m[k] === metrics[0]![k])));
 }
 
 /** About `count` round tick values covering [min, max] (1, 2, 5 × 10^n steps). */
@@ -156,11 +164,12 @@ export function renderGraphSvg(o: RenderGraphOptions): string {
     if (d) out.push(`<path d="${d}" fill="none" stroke="${PALETTE[i % PALETTE.length]}" stroke-width="1.6"/>`);
   });
 
+  const constant = constantLabelKeys(shown.map((s) => s.metric));
   let ly = m.top + ph + 44;
   shown.forEach((s, i) => {
     out.push(
       `<rect x="${m.left}" y="${ly - 8}" width="10" height="10" fill="${PALETTE[i % PALETTE.length]}"/>`,
-      `<text x="${m.left + 16}" y="${ly}" fill="#374151">${escapeXml(truncate(seriesLabel(s.metric), Math.floor(pw / 6)))}</text>`,
+      `<text x="${m.left + 16}" y="${ly}" fill="#374151">${escapeXml(truncate(seriesLabel(s.metric, constant), Math.floor(pw / 6)))}</text>`,
     );
     ly += 15;
   });

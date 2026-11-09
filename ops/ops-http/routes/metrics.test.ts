@@ -111,4 +111,14 @@ describe("/ops/metrics", () => {
     await request(app).get("/ops/metrics/query").query({ query: "up" }).set(auth).expect(404);
     await request(app).get("/ops/metrics/query").query({ query: "up" }).expect(401);
   });
+
+  it("accepts timestamps written plainly (unencoded colons), as curl sends them", async () => {
+    const { app, auth } = await setup();
+    reply = () => success({ resultType: "matrix", result: [] });
+    await request(app)
+      .get("/ops/metrics/query_range?query=up&start=2026-11-08T00:00:00Z&end=2026-11-09T00:00:00Z")
+      .set(auth)
+      .expect(200);
+    await request(app).get("/ops/digest?since=2026-11-08T00:00:00Z").set(auth).expect(200);
+  });
 });

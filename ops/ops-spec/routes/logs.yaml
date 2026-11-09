@@ -7,8 +7,8 @@ listOpsLogs:
   security:
     - ops-token: [ "ops:read" ]
   parameters:
-    - { name: since, in: query, required: false, schema: { type: string, format: date-time } }
-    - { name: until, in: query, required: false, schema: { type: string, format: date-time } }
+    - { name: since, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
+    - { name: until, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
     - name: level
       in: query
       required: false
@@ -69,7 +69,7 @@ listOpsLogTemplates:
   security:
     - ops-token: [ "ops:read" ]
   parameters:
-    - { name: since, in: query, required: false, schema: { type: string, format: date-time } }
+    - { name: since, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
     - { name: only_new, in: query, required: false, schema: { type: boolean, default: false } }
     - { name: service, in: query, required: false, schema: { type: string, maxLength: 100 } }
     - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
@@ -123,8 +123,8 @@ listAdminLogs:
   security:
     - session: [ site-admin ]
   parameters:
-    - { name: since, in: query, required: false, schema: { type: string, format: date-time } }
-    - { name: until, in: query, required: false, schema: { type: string, format: date-time } }
+    - { name: since, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
+    - { name: until, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
     - name: level
       in: query
       required: false

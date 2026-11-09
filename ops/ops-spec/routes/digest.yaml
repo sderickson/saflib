@@ -11,7 +11,7 @@ getOpsDigest:
   security:
     - ops-token: [ "ops:read" ]
   parameters:
-    - { name: since, in: query, required: false, schema: { type: string, format: date-time } }
+    - { name: since, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
   responses:
     "200":
       description: The digest.
