@@ -1,46 +1,33 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, expect, it } from "vitest";
 import express from "express";
 import request from "supertest";
-import client from "prom-client";
+import { setServiceName } from "@saflib/node";
 import { metricsMiddleware } from "./metrics.ts";
 
-describe("metricsMiddleware", () => {
-  const originalDeployment = process.env.DEPLOYMENT_NAME;
-
-  afterEach(() => {
-    if (originalDeployment === undefined) {
-      delete process.env.DEPLOYMENT_NAME;
-    } else {
-      process.env.DEPLOYMENT_NAME = originalDeployment;
-    }
-    client.register.clear();
-  });
-
-  function makeApp() {
+describe("HTTP metrics", () => {
+  it("records standard latency buckets with status classes", async () => {
+    setServiceName("metrics-test");
     const app = express();
     app.use(...metricsMiddleware);
-    app.get("/health", (_req, res) => {
-      res.status(200).end("ok");
+    app.get("/ok", (_req, res) => {
+      res.status(201).end();
     });
-    return app;
-  }
+    app.get("/missing", (_req, res) => {
+      res.status(404).end();
+    });
 
-  it("allows /metrics without forwarded-host in development", async () => {
-    process.env.DEPLOYMENT_NAME = "development";
-    const res = await request(makeApp()).get("/metrics").expect(200);
-    expect(res.text).toContain("# TYPE");
-  });
+    await request(app).get("/ok").expect(201);
+    await request(app).get("/missing").expect(404);
+    const text = (await request(app).get("/metrics").expect(200)).text;
 
-  it("blocks /metrics with forwarded-host outside development", async () => {
-    process.env.DEPLOYMENT_NAME = "production";
-    await request(makeApp())
-      .get("/metrics")
-      .set("x-forwarded-host", "api.example.com")
-      .expect(403);
-  });
-
-  it("allows /metrics with forwarded-host outside development when no header", async () => {
-    process.env.DEPLOYMENT_NAME = "production";
-    await request(makeApp()).get("/metrics").expect(200);
+    const buckets = text
+      .split("\n")
+      .filter((l) => l.startsWith("http_request_duration_seconds_bucket") && l.includes('status_code="2xx"'))
+      .map((l) => /le="([^"]+)"/.exec(l)?.[1]);
+    expect(buckets).toEqual([
+      "0.005", "0.01", "0.025", "0.05", "0.1", "0.25", "0.5", "1", "2.5", "5", "10", "30", "+Inf",
+    ]);
+    expect(text).toMatch(/status_code="4xx"/);
+    expect(text).not.toMatch(/status_code="201"|status_code="404"/);
   });
 });

@@ -1,4 +1,4 @@
-import { metricHistogramDefaultBuckets } from "@saflib/node";
+import { latencyBuckets } from "@saflib/node";
 import client from "prom-client";
 
 const grpcMetricName = "grpc_request_duration_seconds";
@@ -14,7 +14,7 @@ export function makeGrpcMetric() {
     name: grpcMetricName,
     help: grpcMetricHelp,
     labelNames: labels,
-    buckets: metricHistogramDefaultBuckets,
+    buckets: latencyBuckets,
   });
 }
 
