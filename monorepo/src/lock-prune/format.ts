@@ -38,6 +38,16 @@ export function formatIssue(issue: LockPruneIssue): string[] {
         `  product lock entry: ${issue.productLockfileKey}`,
         `  saflib lock entry: ${issue.platformLockfileKey}`,
       ];
+    case "workspace-duplicate":
+      return [
+        `${issue.dependency}${issue.version ? `@${issue.version}` : ""} is locked twice: at the root and again under a workspace (two copies break packages that must load once, like Vue).`,
+        `  remove lockfile entry: ${issue.lockfileKey}`,
+      ];
+    case "workspace-misaligned":
+      return [
+        `${issue.dependency} is ${issue.nestedVersion ?? "?"} under a workspace but ${issue.rootVersion ?? "(none)"} at the root, so workspaces load different copies.`,
+        ...issue.detail.map((line) => `  ${line}`),
+      ];
     case "platform-override-sync":
       return [
         "product root overrides differ from saflib's (yours to keep or change).",

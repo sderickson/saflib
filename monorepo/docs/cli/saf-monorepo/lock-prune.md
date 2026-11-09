@@ -4,8 +4,9 @@
 Usage: saf-monorepo lock-prune [options]
 
 Report product/saflib workspace issues in an embedded product repo. --fix
-repairs lockfile bookkeeping (stale entries, misplaced hoists); everything else
-is reported for you to decide on.
+repairs lockfile bookkeeping (stale entries, misplaced hoists, copies nested
+under workspaces) and re-resolves with npm until clean; everything else is
+reported for you to decide on.
 
 Options:
   --root <dir>  product monorepo root (default: auto-detect)

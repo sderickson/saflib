@@ -12,6 +12,8 @@ export type {
   PlatformOverrideSyncIssue,
   StaleLockfileIssue,
   UnhoistedRegistryDependencyIssue,
+  WorkspaceDuplicateIssue,
+  WorkspaceMisalignedIssue,
 } from "./types.ts";
 
 export {
@@ -39,6 +41,8 @@ export {
   findStaleLockfileEntries,
   pruneStaleLockfileEntries,
 } from "./stale.ts";
+
+export { findWorkspaceAlignmentIssues } from "./workspace-issues.ts";
 
 export { isFixableIssue } from "./types.ts";
 export { analyzeProductLockPrune } from "./analyze.ts";

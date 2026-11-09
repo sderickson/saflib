@@ -28,3 +28,5 @@ export {
 export { checkDependencies, type DependencyReport } from "./dependencies/check.ts";
 export { parseLockfile, readManifest, type DependencyManifest } from "./dependencies/manifest.ts";
 export { runDependencyCheckOnce, startDependencyChecks } from "./dependencies/scheduler.ts";
+export { SAFLIB_ACCEPTED_ADVISORIES, findAcceptance, type AcceptedAdvisory } from "./dependencies/accepted.ts";
+export { checkRuntime, readOsRelease, type RuntimeComponent, type OsRelease } from "./dependencies/runtime.ts";

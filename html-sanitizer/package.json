@@ -22,7 +22,7 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "entities": "^4.5.0",
+    "entities": "^7.0.1",
     "htmlparser2": "^12.0.0"
   }
 }

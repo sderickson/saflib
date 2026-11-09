@@ -2,7 +2,7 @@ export const ops_dependencies = {
   documentTitle: "Dependencies",
   title: "Dependencies",
   intro:
-    "What this app's server runs, checked against OSV.dev advisories and the npm registry a few minutes after each deploy and then daily. Renovate opens the update PRs; this shows what's actually deployed.",
+    "What this app's server runs, checked against OSV.dev advisories, the npm registry, and endoflife.date a few minutes after each deploy and then daily. Renovate opens the update PRs; this shows what's actually deployed.",
   none: "No check yet. Checks run in built images a couple of minutes after a deploy.",
   checked: "Checked",
   stale: "stale",
@@ -17,4 +17,11 @@ export const ops_dependencies = {
   transitive: "transitive",
   renovateDue: "Renovate due",
   errors: "Some lookups failed",
+  runtime: "Runtime",
+  accepted: "accepted",
+  until: "until",
+  eol: "supported until",
+  eolUnknown: "end of life unknown",
+  eolSoon: "end of life soon",
+  latestInCycle: "latest in line:",
 };

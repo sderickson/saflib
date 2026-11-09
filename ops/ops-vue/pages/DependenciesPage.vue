@@ -14,6 +14,24 @@
         {{ strings.errors }}: {{ deps.errors.slice(0, 3).join("; ") }}
       </v-alert>
 
+      <template v-if="deps.runtime.length">
+        <h2 class="text-h6 mb-2">{{ strings.runtime }}</h2>
+        <v-table density="compact" class="elevation-1 mb-6">
+          <tbody>
+            <tr v-for="c in deps.runtime" :key="c.name" data-test="runtime-row">
+              <td><code>{{ c.name }} {{ c.version }}</code></td>
+              <td class="text-no-wrap">
+                {{ c.eol ? `${strings.eol} ${formatDate(c.eol)}` : strings.eolUnknown }}
+                <v-chip v-if="c.eol_soon" color="warning" size="x-small" class="ml-1">{{ strings.eolSoon }}</v-chip>
+              </td>
+              <td class="text-caption text-medium-emphasis text-no-wrap">
+                {{ c.latest_in_cycle && c.latest_in_cycle !== c.version ? `${strings.latestInCycle} ${c.latest_in_cycle}` : "" }}
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
+      </template>
+
       <h2 class="text-h6 mb-2">{{ strings.advisories }} ({{ deps.advisories.length }})</h2>
       <p v-if="deps.advisories.length === 0" class="text-body-2 mb-4">{{ strings.noAdvisories }}</p>
       <v-table v-else density="compact" class="elevation-1 mb-6">
@@ -29,6 +47,10 @@
               <!-- Untrusted text: plain interpolation only (escaped), never v-html. -->
               <div class="text-body-2 dep-text">{{ a.untrusted.summary }}</div>
               <div class="text-caption text-medium-emphasis">{{ [a.id, ...a.aliases].join(" · ") }}</div>
+              <div v-if="a.accepted" class="text-caption" data-test="advisory-accepted">
+                <v-chip size="x-small" variant="outlined" class="mr-1">{{ strings.accepted }}</v-chip>
+                {{ a.accepted.reason }}<template v-if="a.accepted.until"> ({{ strings.until }} {{ a.accepted.until }})</template>
+              </div>
             </td>
           </tr>
         </tbody>

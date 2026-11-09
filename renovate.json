@@ -1,25 +1,65 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    "group:allNonMajor"
-  ],
+  "description": "saflib is the source of truth for dependency versions. It deploys nowhere and its CI is thorough, so every update (majors included) merges itself once CI is green; products adopt changes when an agent bumps saflib in them.",
+  "extends": ["config:recommended"],
+  "timezone": "America/Los_Angeles",
   "minimumReleaseAge": "3 days",
   "internalChecksFilter": "strict",
   "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": {
-    "labels": [
-      "security"
-    ],
+    "labels": ["security"],
     "minimumReleaseAge": null
+  },
+  "rebaseWhen": "behind-base-branch",
+  "prConcurrentLimit": 6,
+  "prHourlyLimit": 2,
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": false,
+  "automergeSchedule": ["after 9am and before 5pm every weekday"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 9am on monday"]
   },
   "packageRules": [
     {
-      "enabled": false,
+      "description": "Non-major updates travel together unless a group below claims them.",
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "non-major dependencies"
+    },
+    {
+      "groupName": "Vue",
       "matchPackageNames": [
-        "@saflib/{/,}**",
-        "template-package-{/,}**"
+        "vue",
+        "@vue/{/,}**",
+        "vue-router",
+        "vuetify",
+        "vue-tsc",
+        "vue-i18n",
+        "@intlify/{/,}**",
+        "@tanstack/vue-query",
+        "@vitejs/plugin-vue"
       ]
+    },
+    {
+      "groupName": "Vite and Vitest",
+      "matchPackageNames": ["vite", "vitest", "@vitest/{/,}**", "rolldown", "esbuild", "vitepress"]
+    },
+    {
+      "groupName": "type definitions",
+      "matchPackageNames": ["@types/{/,}**"]
+    },
+    {
+      "groupName": "GitHub Actions",
+      "matchManagers": ["github-actions"]
+    },
+    {
+      "groupName": "Docker images",
+      "matchDatasources": ["docker"]
+    },
+    {
+      "enabled": false,
+      "matchPackageNames": ["@saflib/{/,}**", "template-package-{/,}**"]
     }
   ]
 }

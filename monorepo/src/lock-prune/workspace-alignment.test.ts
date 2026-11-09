@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   findDependencyMisalignment,
   formatDependencyMisalignment,
-} from "./dependency-alignment.ts";
+} from "./workspace-alignment.ts";
 
 describe("findDependencyMisalignment", () => {
   it("reports a workspace that needs a different version than the root", () => {

@@ -844,7 +844,7 @@
             ]
           },
           "dependencies": {
-            "description": "Counts from the latest dependency check (see GET /ops/dependencies). High or critical advisories (`actionable`) and a stale check count toward `needs_attention`; outdated packages don't (Renovate's job). Null when the product has no lockfile to check.\n",
+            "description": "Counts from the latest dependency check (see GET /ops/dependencies). High or critical advisories (`actionable`), a runtime near or past end of life, and a stale check count toward `needs_attention`; outdated packages don't (Renovate's job). Null when the product has no lockfile to check.\n",
             "oneOf": [
               {
                 "type": "null"
@@ -857,7 +857,8 @@
                   "advisories",
                   "actionable",
                   "outdated_direct",
-                  "renovate_due"
+                  "renovate_due",
+                  "runtime_eol_soon"
                 ],
                 "properties": {
                   "checked_at": {
@@ -906,6 +907,10 @@
                   },
                   "renovate_due": {
                     "type": "integer"
+                  },
+                  "runtime_eol_soon": {
+                    "type": "integer",
+                    "description": "Runtime components (Node, base OS) past or within 90 days of end of life."
                   }
                 }
               }
@@ -915,7 +920,7 @@
       },
       "ops-dependencies": {
         "type": "object",
-        "description": "The latest check of this image's installed packages (its lockfile) against OSV.dev advisories and the npm registry. Checked a couple of minutes after a deploy and then daily.\n",
+        "description": "The latest check of this image's installed packages (its lockfile) against OSV.dev advisories and the npm registry, and of its runtime (Node, base OS) against endoflife.date. Checked a couple of minutes after a deploy and then daily.\n",
         "required": [
           "checked_at",
           "stale",
@@ -925,6 +930,7 @@
           "lockfile_hash",
           "advisories",
           "outdated",
+          "runtime",
           "errors"
         ],
         "properties": {
@@ -962,6 +968,7 @@
                 "fixed_in",
                 "direct",
                 "actionable",
+                "accepted",
                 "untrusted"
               ],
               "properties": {
@@ -1004,7 +1011,34 @@
                 },
                 "actionable": {
                   "type": "boolean",
-                  "description": "High or critical."
+                  "description": "High or critical, and not accepted."
+                },
+                "accepted": {
+                  "description": "Set when the product accepted this advisory for now (no upstream fix, unused code path); it then isn't actionable.\n",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "reason",
+                        "until"
+                      ],
+                      "properties": {
+                        "reason": {
+                          "type": "string"
+                        },
+                        "until": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Last day the acceptance applies (YYYY-MM-DD)."
+                        }
+                      }
+                    }
+                  ]
                 },
                 "untrusted": {
                   "type": "object",
@@ -1061,6 +1095,52 @@
                 "renovate_due": {
                   "type": "boolean",
                   "description": "The latest release is past the 3-day minimum release age, so Renovate should have a PR open."
+                }
+              }
+            }
+          },
+          "runtime": {
+            "type": "array",
+            "description": "Pins outside the lockfile that age out on their own: the Node version and the container's base OS. Upgrading means a new base image (Dockerfile `FROM`), which Renovate proposes. Empty in reports from before this was checked.\n",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "version",
+                "cycle",
+                "eol",
+                "eol_soon",
+                "latest_in_cycle"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "endoflife.date product (nodejs, debian, alpine-linux, ubuntu)."
+                },
+                "version": {
+                  "type": "string"
+                },
+                "cycle": {
+                  "type": "string",
+                  "description": "Release line (Node's major, Debian's major, Alpine's major.minor)."
+                },
+                "eol": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "End of security support (YYYY-MM-DD); null if unknown or unannounced."
+                },
+                "eol_soon": {
+                  "type": "boolean",
+                  "description": "EOL is past or within 90 days."
+                },
+                "latest_in_cycle": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Newest release in this cycle."
                 }
               }
             }

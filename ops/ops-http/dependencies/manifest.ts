@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
+import { readOsRelease, type OsRelease } from "./runtime.ts";
 
 /** One installed package version. */
 export interface InstalledPackage {
@@ -14,6 +15,8 @@ export interface DependencyManifest {
   /** sha256 of the lockfile: a new value means a new set of packages. */
   lockfileHash: string;
   nodeVersion: string;
+  /** The container's OS release (null when not running on Linux, e.g. tests). */
+  osRelease?: OsRelease | null;
 }
 
 interface LockfileEntry {
@@ -79,5 +82,5 @@ export const DEFAULT_LOCKFILE = "/app/package-lock.json";
 /** The image's manifest, or undefined when there's no lockfile (dev, tests). */
 export function readManifest(lockfilePath: string = process.env.SAF_LOCKFILE ?? DEFAULT_LOCKFILE) {
   if (!existsSync(lockfilePath)) return undefined;
-  return parseLockfile(readFileSync(lockfilePath, "utf8"));
+  return { ...parseLockfile(readFileSync(lockfilePath, "utf8")), osRelease: readOsRelease() };
 }

@@ -10,7 +10,7 @@ import {
   hoistUnhoistedRegistryDependencies,
 } from "./hoist.ts";
 import { pruneStaleLockfileEntries } from "./stale.ts";
-import { readPackageLock } from "./lockfile-ops.ts";
+import { deleteLockfileTree, readPackageLock } from "./lockfile-ops.ts";
 
 function writePrunedLockfile(
   lockfilePath: string,
@@ -49,6 +49,31 @@ export function applyLockPruneFixes(analysis: LockPruneAnalysis): string[] {
         );
         break;
     }
+  }
+
+  const workspaceNested = analysis.issues.filter(
+    (issue) =>
+      issue.kind === "workspace-duplicate" ||
+      issue.kind === "workspace-misaligned",
+  );
+  if (workspaceNested.length > 0) {
+    writePrunedLockfile(analysis.lockfilePath, (lockfile) => {
+      const packages = lockfile.packages ?? {};
+      for (const issue of workspaceNested) {
+        deleteLockfileTree(packages, issue.lockfileKey);
+        if (issue.kind === "workspace-duplicate") {
+          applied.push(`removed duplicate ${issue.lockfileKey}`);
+        } else {
+          // npm keeps any resolution that still satisfies the ranges, so drop
+          // the root copy too and let it pick one version for everybody.
+          deleteLockfileTree(packages, `node_modules/${issue.dependency}`);
+          applied.push(
+            `removed ${issue.lockfileKey} and node_modules/${issue.dependency} for npm to re-resolve`,
+          );
+        }
+      }
+    });
+    wroteLockfile = true;
   }
 
   if (hoistingHazards.length > 0 || unhoistedRegistry.length > 0) {

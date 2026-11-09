@@ -16,7 +16,7 @@ const digest = {
   issues: { new: [{ id: "i1", level: "error", status: "open", untrusted: { title: "TypeError in checkout" } }], regressed: [], top: [] },
   logs: null,
   metrics: { window_seconds: 86400, requests: { current: 1200, previous: 1000 }, error_rate: { current: 0.001, previous: 0 }, p95_seconds: { current: 0.12, previous: 0.1 }, flags: [], error: null },
-  dependencies: { checked_at: "2026-11-09T06:00:00.000Z", stale: false, advisories: { critical: 0, high: 2, moderate: 1, low: 0, unknown: 0 }, actionable: 2, outdated_direct: 9, renovate_due: 8 },
+  dependencies: { checked_at: "2026-11-09T06:00:00.000Z", stale: false, advisories: { critical: 0, high: 2, moderate: 1, low: 0, unknown: 0 }, actionable: 2, outdated_direct: 9, renovate_due: 8, runtime_eol_soon: 0 },
   alerts: { firing: [{ id: "a1", alertname: "SafDiskAlmostFull", untrusted: { annotations: { summary: "Host disk is 85% full" } } }], firing_unacked: 1, fired_in_window: 1, pipeline_last_seen_at: "2026-11-09T09:58:00.000Z", pipeline_stale: false },
 };
 

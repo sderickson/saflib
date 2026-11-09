@@ -21,6 +21,7 @@ export const ops_digest_panel = {
   highAdvisories: "high/critical advisories",
   noHighAdvisories: "no high advisories",
   outdated: "outdated",
+  runtimeEolSoon: "runtime nearing end of life",
   graphs: "Graphs",
   graphRequests: "Requests per minute",
   graphP95: "p95 latency (seconds)",

@@ -236,7 +236,13 @@ describe("runBootstrap", () => {
     const pkg = JSON.parse(
       readFileSync(join(cwd, "package.json"), "utf8"),
     ) as { overrides?: Record<string, string> };
-    expect(pkg.overrides?.vite).toBe("8.0.13");
-    expect(pkg.overrides?.vue).toBe("3.5.20");
+    // The product gets saflib's own pins, whatever they currently are.
+    const saflibOverrides = (
+      JSON.parse(readFileSync(join(saflibRoot, "package.json"), "utf8")) as {
+        overrides: Record<string, string>;
+      }
+    ).overrides;
+    expect(pkg.overrides?.vite).toBe(saflibOverrides.vite);
+    expect(pkg.overrides?.vue).toBe(saflibOverrides.vue);
   });
 });

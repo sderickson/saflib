@@ -137,3 +137,58 @@ tests:
             exp_annotations:
               summary: "Alerting pipeline heartbeat"
               description: "Always firing, by design."
+
+  - name: high advisories fire; accepted ones don't; blue and green count once
+    interval: 1m
+    input_series:
+      - series: 'saf_dependency_advisories{saf_app="hub", instance="blue:3001", severity="high"}'
+        values: "2x60"
+      - series: 'saf_dependency_advisories{saf_app="hub", instance="green:3001", severity="high"}'
+        values: "2x60"
+      - series: 'saf_dependency_advisories{saf_app="recipes", instance="r:3002", severity="accepted"}'
+        values: "1x60"
+    alert_rule_test:
+      - eval_time: 45m
+        alertname: SafSecurityAdvisory
+        exp_alerts:
+          - exp_labels: { severity: warning, saf_app: hub }
+            exp_annotations:
+              summary: "hub runs packages with 2 high or critical advisories"
+              description: "See /ops/dependencies. A package saflib provides is fixed by bumping saflib; one with no fix can be accepted (with a reason) in the ops router's dependencies config."
+
+  - name: host security updates fire only after a day pending
+    interval: 1m
+    input_series:
+      - series: 'saf_apt_upgrades_pending{saf_app="host", job="node", kind="security"}'
+        values: "3x1800"
+      - series: 'saf_apt_upgrades_pending{saf_app="host", job="node", kind="all"}'
+        values: "9x1800"
+    alert_rule_test:
+      - eval_time: 12h
+        alertname: SafHostSecurityUpdates
+        exp_alerts: []
+      - eval_time: 26h
+        alertname: SafHostSecurityUpdates
+        exp_alerts:
+          - exp_labels: { severity: warning, saf_app: host }
+            exp_annotations:
+              summary: "Host has 3 security updates pending for over a day"
+              description: "unattended-upgrades isn't installing them (held, needs a prompt, or disabled). Install with apt, then check whether a reboot is needed."
+
+  - name: a dependency check that stops reporting fires after 3 days
+    interval: 1m
+    input_series:
+      # Last check at t=0 (unix 0), never again.
+      - series: 'saf_dependency_check_timestamp_seconds{saf_app="hub", instance="blue:3001"}'
+        values: "0x4600"
+    alert_rule_test:
+      - eval_time: 2d
+        alertname: SafDependencyCheckStale
+        exp_alerts: []
+      - eval_time: 74h
+        alertname: SafDependencyCheckStale
+        exp_alerts:
+          - exp_labels: { severity: warning, saf_app: hub }
+            exp_annotations:
+              summary: "hub hasn't finished a dependency check in 3 days"
+              description: "The daily check is failing (OSV or the registry unreachable?); its errors are in the app's logs."

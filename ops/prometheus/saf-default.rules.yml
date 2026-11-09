@@ -179,6 +179,76 @@ groups:
           summary: "{{ $labels.saf_app }} is dropping log lines"
           description: "The persistent log store couldn't keep up or failed writes."
 
+  # Updates that need a person: advisories in what's deployed, a runtime
+  # nearing end of life, host security updates that didn't install themselves.
+  # Each has a "check stopped" rule, since a silent check reads as all clear.
+  - name: saf-maintenance
+    rules:
+      - alert: SafSecurityAdvisory
+        # Accepted advisories are exported as severity="accepted".
+        expr: max by (saf_app) (saf_dependency_advisories{severity=~"critical|high"}) > 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }} runs packages with {{ $value }} high or critical advisories"
+          description: "See /ops/dependencies. A package saflib provides is fixed by bumping saflib; one with no fix can be accepted (with a reason) in the ops router's dependencies config."
+
+      - alert: SafRuntimeEndOfLife
+        expr: max by (saf_app) (saf_dependency_runtime_eol_soon) > 0
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }} runs a Node or base OS release within 90 days of end of life"
+          description: "See the runtime section of /ops/dependencies; moving means a new base image (Dockerfile FROM)."
+
+      - alert: SafDependencyCheckStale
+        expr: time() - max by (saf_app) (saf_dependency_check_timestamp_seconds) > 3 * 86400
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.saf_app }} hasn't finished a dependency check in 3 days"
+          description: "The daily check is failing (OSV or the registry unreachable?); its errors are in the app's logs."
+
+      - alert: SafHostSecurityUpdates
+        # unattended-upgrades normally installs these within a day.
+        expr: max by (saf_app) (saf_apt_upgrades_pending{kind="security"}) > 0
+        for: 24h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host has {{ $value }} security updates pending for over a day"
+          description: "unattended-upgrades isn't installing them (held, needs a prompt, or disabled). Install with apt, then check whether a reboot is needed."
+
+      - alert: SafHostRebootRequired
+        expr: max by (saf_app) (saf_reboot_required) == 1
+        for: 24h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host has needed a reboot for over a day"
+          description: "Installed updates (often the kernel) only take effect after a reboot."
+
+      - alert: SafHostAptListsStale
+        expr: time() - max by (saf_app) (saf_apt_lists_updated_timestamp_seconds) > 3 * 86400
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host hasn't refreshed its package lists in 3 days"
+          description: "apt-daily.timer isn't running, so pending-update counts are out of date."
+
+      - alert: SafHostAptCheckStale
+        expr: time() - max by (saf_app) (saf_apt_check_timestamp_seconds) > 3 * 3600
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "The host update check hasn't succeeded in 3 hours"
+          description: "The host-apt sidecar is failing; see its container logs."
+
   - name: saf-meta
     rules:
       # Always firing. Alertmanager sends it to an external heartbeat service;

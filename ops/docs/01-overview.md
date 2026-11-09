@@ -178,12 +178,19 @@ Built images install from a lockfile pruned to the image's own packages (`saf-do
 
 - **OSV.dev** for advisories against every installed package (batched), with severity, the lowest fixed version above the deployed one, and whether the package is a direct dependency.
 - **The npm registry** for the latest release of each direct dependency, and, for the ones behind, how old that release is. Past Renovate's 3-day `minimumReleaseAge` it's `renovate_due`: a PR should be open.
+- **endoflife.date** for the runtime: the Node version and the container's base OS (from `/etc/os-release`), with end-of-life dates. One past or within 90 days of EOL is `eol_soon` and counts toward `needs_attention`, since moving a Node major or base image takes planning and no lockfile bump does it.
 
 Reports are kept in `ops-db` (last 30). If the OSV query fails, no report is recorded, since "no advisories" would be a false all-clear. Checks are on whenever a lockfile exists (`SAF_LOCKFILE` overrides the path; `createOpsRouter({ dependencies: false })` turns them off) and never in tests.
 
 - `GET /ops/dependencies` (`ops:read` or site-admin session): the latest report; advisory summaries come from OSV, so they're under `untrusted`.
 - The digest's `dependencies` section counts advisories by severity, `actionable` (high or critical), outdated and `renovate_due` direct dependencies. Actionable advisories and a stale check (none in 72 hours) count toward `needs_attention`; outdated packages don't, since Renovate opens those PRs.
 - `DependenciesAsync` shows it in the admin app, and the home digest links to it.
+
+**Accepted advisories.** An advisory with no fix to take (a transitive package pinned by its parent, say) can be accepted: `createOpsRouter({ dependencies: { acceptedAdvisories: [{ id, reason, until }] } })`. It stays in the report, marked `accepted` with its reason, but isn't `actionable`, so it doesn't alert or count toward `needs_attention`. `until` (YYYY-MM-DD) makes the acceptance lapse so someone looks again. Acceptances apply when the report is read, so changing them needs no new check. `SAFLIB_ACCEPTED_ADVISORIES` holds the ones for packages saflib brings in (today: zod 3 via `@infisical/sdk`); products add their own.
+
+**Alerts.** The latest report is exported as `saf_dependency_advisories{severity}` (accepted ones as `severity="accepted"`), `saf_dependency_runtime_eol_soon` and `saf_dependency_check_timestamp_seconds`, and `saf-default.rules.yml`'s `saf-maintenance` group alerts on them: `SafSecurityAdvisory` (high or critical, 30m), `SafRuntimeEndOfLife`, `SafDependencyCheckStale` (3 days). They go through Alertmanager like any other alert, so they reach the email notifier.
+
+**Host updates.** The platform deploy runs a `host-apt` sidecar (`saflib/ops/prometheus/host-apt-metrics.sh` in `busybox`) that runs the host's own `apt-get -s dist-upgrade` against its read-only root every hour. That's a simulation: it needs only `CAP_SYS_CHROOT`, no network, and a tmpfs over `/host/tmp`, and takes no locks. It writes `saf_apt_upgrades_pending{kind="all"|"security"}`, `saf_reboot_required` and freshness timestamps for node-exporter's textfile collector. `SafHostSecurityUpdates` fires when security updates have been pending a day (unattended-upgrades normally installs them sooner), `SafHostRebootRequired` when a reboot has been needed a day, and `SafHostAptListsStale` / `SafHostAptCheckStale` when the data stops being fresh.
 
 Renovate (both repos' `renovate.json`) holds new releases for 3 days (`minimumReleaseAge`, with `internalChecksFilter: "strict"`), opens security fixes immediately (`vulnerabilityAlerts`, labelled `security`, with OSV as a source), and updates image tags in compose files (`config:recommended`).
 

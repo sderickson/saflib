@@ -1,5 +1,6 @@
 import type { DependencyManifest } from "./manifest.ts";
 import { compareVersions, updateKind } from "./semver.ts";
+import { checkRuntime, type RuntimeComponent } from "./runtime.ts";
 
 export type AdvisorySeverity = "critical" | "high" | "moderate" | "low" | "unknown";
 
@@ -36,6 +37,8 @@ export interface DependencyReport {
   lockfile_hash: string;
   advisories: DependencyAdvisory[];
   outdated: OutdatedDependency[];
+  /** Node and the base OS, with their end-of-life dates. */
+  runtime: RuntimeComponent[];
   /** Lookups that failed (the rest of the report still stands). */
   errors: string[];
 }
@@ -47,6 +50,7 @@ export interface CheckOptions {
   minimumReleaseAgeMs?: number;
   osvUrl?: string;
   registryUrl?: string;
+  endoflifeUrl?: string;
   timeoutMs?: number;
 }
 
@@ -88,7 +92,8 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (t: T) => Promise<R
 
 /**
  * Check a manifest against OSV.dev (advisories for every installed package)
- * and the npm registry (latest version of each direct dependency). Never
+ * the npm registry (latest version of each direct dependency), and
+ * endoflife.date (Node's and the base OS's end of life). Never
  * throws; failed lookups are listed in `errors`.
  */
 export async function checkDependencies(
@@ -196,6 +201,14 @@ export async function checkDependencies(
   });
   outdated.sort((a, b) => ["major", "minor", "patch"].indexOf(a.update) - ["major", "minor", "patch"].indexOf(b.update) || a.name.localeCompare(b.name));
 
+  const runtime = await checkRuntime(manifest.nodeVersion, manifest.osRelease ?? null, {
+    fetch: f,
+    now,
+    url: (options.endoflifeUrl ?? "https://endoflife.date").replace(/\/+$/, ""),
+    signal: timeout,
+    errors,
+  });
+
   return {
     checked_at: now.toISOString(),
     packages_total: manifest.packages.length,
@@ -204,6 +217,7 @@ export async function checkDependencies(
     lockfile_hash: manifest.lockfileHash,
     advisories,
     outdated,
+    runtime,
     errors,
   };
 }

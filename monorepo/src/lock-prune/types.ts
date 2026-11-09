@@ -78,13 +78,38 @@ export interface PlatformOverrideSyncIssue {
   changed: Record<string, { from: string; to: string }>;
 }
 
+/** A second copy of the root's own version below a workspace directory. */
+export interface WorkspaceDuplicateIssue {
+  kind: "workspace-duplicate";
+  dependency: string;
+  version?: string;
+  lockfileKey: string;
+}
+
+/**
+ * A different version below a workspace directory than at the root. Often a
+ * stale resolution npm keeps because it still satisfies the ranges; `--fix`
+ * deletes both copies and re-resolves, and what survives is a real conflict.
+ */
+export interface WorkspaceMisalignedIssue {
+  kind: "workspace-misaligned";
+  dependency: string;
+  lockfileKey: string;
+  nestedVersion?: string;
+  rootVersion?: string;
+  /** Who wants which version (from the alignment check). */
+  detail: string[];
+}
+
 export type LockPruneIssue =
   | HoistingHazardIssue
   | CompetingDependencyIssue
   | StaleLockfileIssue
   | UnhoistedRegistryDependencyIssue
   | LockfileVersionSkewIssue
-  | PlatformOverrideSyncIssue;
+  | PlatformOverrideSyncIssue
+  | WorkspaceDuplicateIssue
+  | WorkspaceMisalignedIssue;
 
 export interface PlatformContract {
   overrides: Record<string, string>;
@@ -102,8 +127,18 @@ export interface LockPruneAnalysis {
 
 export interface LockPruneOptions {
   rootDir?: string;
-  /** Apply the fixable issues' fixes (see `isFixableIssue`). */
+  /**
+   * Apply the fixable issues' fixes (see `isFixableIssue`), re-resolve the
+   * lockfile, and repeat until nothing fixable is left.
+   */
   fix?: boolean;
+  /**
+   * Re-resolves the product lockfile after a pass of fixes. Defaults to
+   * `npm install --package-lock-only --ignore-scripts` in the product root.
+   */
+  reresolve?: (rootDir: string) => void;
+  /** Most fix passes before giving up (default 5). */
+  maxPasses?: number;
 }
 
 /**
@@ -115,6 +150,8 @@ export function isFixableIssue(issue: LockPruneIssue): boolean {
   return (
     issue.kind === "stale-lockfile" ||
     issue.kind === "hoisting-hazard" ||
-    issue.kind === "unhoisted-registry-dependency"
+    issue.kind === "unhoisted-registry-dependency" ||
+    issue.kind === "workspace-duplicate" ||
+    issue.kind === "workspace-misaligned"
   );
 }
