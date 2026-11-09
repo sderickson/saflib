@@ -42,8 +42,14 @@ describe("ops API", () => {
         .expect(401);
     });
 
-    it("does not accept a user session in place of a token", async () => {
-      await request(app).get("/ops/health").set(makeAdminHeaders()).expect(401);
+    it("accepts a site admin's session instead of a token, but not other users'", async () => {
+      await request(app).get("/ops/health").set(makeAdminHeaders()).expect(200);
+      await request(app).get("/ops/health").set(makeUserHeaders()).expect(403);
+      // Without MFA, a site admin's session is refused like on other admin routes.
+      await request(app)
+        .get("/ops/health")
+        .set({ ...makeAdminHeaders(), "x-user-mfa-completed": "false" })
+        .expect(403);
     });
 
     it("rejects revoked tokens", async () => {
@@ -105,9 +111,10 @@ describe("ops API", () => {
           },
         },
       });
-      await request(app).get("/ops/health").expect(401);
-      await request(app).get("/ops/health").expect(401);
-      await request(app).get("/ops/health").expect(429);
+      const bad = { authorization: "Bearer safops_not-a-real-token-000000000000" };
+      await request(app).get("/ops/health").set(bad).expect(401);
+      await request(app).get("/ops/health").set(bad).expect(401);
+      await request(app).get("/ops/health").set(bad).expect(429);
       const t = await token();
       await request(app).get("/ops/health").set("authorization", `Bearer ${t.token}`).expect(429);
     });

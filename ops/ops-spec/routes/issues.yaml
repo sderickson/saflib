@@ -8,6 +8,7 @@ listOpsIssues:
   operationId: listOpsIssues
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - name: status
       in: query
@@ -75,6 +76,7 @@ getOpsIssue:
   operationId: getOpsIssue
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - { name: id, in: path, required: true, schema: { type: string, maxLength: 64 } }
   responses:
@@ -119,6 +121,7 @@ listOpsIssueOccurrences:
   operationId: listOpsIssueOccurrences
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - { name: id, in: path, required: true, schema: { type: string, maxLength: 64 } }
     - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
@@ -167,6 +170,7 @@ resolveOpsIssue:
   operationId: resolveOpsIssue
   security:
     - ops-token: [ "ops:triage" ]
+    - session: [ site-admin ]
   parameters:
     - { name: id, in: path, required: true, schema: { type: string, maxLength: 64 } }
   requestBody:
@@ -228,6 +232,7 @@ ignoreOpsIssue:
   operationId: ignoreOpsIssue
   security:
     - ops-token: [ "ops:triage" ]
+    - session: [ site-admin ]
   parameters:
     - { name: id, in: path, required: true, schema: { type: string, maxLength: 64 } }
   requestBody:
@@ -288,6 +293,7 @@ reopenOpsIssue:
   operationId: reopenOpsIssue
   security:
     - ops-token: [ "ops:triage" ]
+    - session: [ site-admin ]
   parameters:
     - { name: id, in: path, required: true, schema: { type: string, maxLength: 64 } }
   requestBody:

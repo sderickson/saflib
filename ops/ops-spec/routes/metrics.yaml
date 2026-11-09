@@ -48,6 +48,7 @@ queryOpsMetrics:
   operationId: queryOpsMetrics
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - name: query
       in: query
@@ -87,6 +88,7 @@ queryOpsMetricsRange:
   operationId: queryOpsMetricsRange
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - name: query
       in: query
@@ -139,6 +141,7 @@ listOpsMetricsSeries:
   operationId: listOpsMetricsSeries
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - name: match
       in: query
@@ -200,6 +203,7 @@ createOpsGraphLink:
   operationId: createOpsGraphLink
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   requestBody:
     required: true
     content:

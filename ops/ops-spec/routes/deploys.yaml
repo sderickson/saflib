@@ -8,6 +8,7 @@ listOpsDeploys:
   operationId: listOpsDeploys
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - name: limit
       in: query

@@ -6,6 +6,7 @@ listOpsLogs:
   operationId: listOpsLogs
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - { name: since, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
     - { name: until, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
@@ -68,6 +69,7 @@ listOpsLogTemplates:
   operationId: listOpsLogTemplates
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - { name: since, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
     - { name: only_new, in: query, required: false, schema: { type: boolean, default: false } }

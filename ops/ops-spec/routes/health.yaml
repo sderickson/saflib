@@ -7,6 +7,7 @@ getOpsHealth:
   operationId: getOpsHealth
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   responses:
     "200":
       description: Health check results.

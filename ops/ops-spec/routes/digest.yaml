@@ -10,6 +10,7 @@ getOpsDigest:
   operationId: getOpsDigest
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - { name: since, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
   responses:

@@ -85,6 +85,7 @@ listOpsAlerts:
   operationId: listOpsAlerts
   security:
     - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
   parameters:
     - name: status
       in: query
@@ -130,6 +131,7 @@ ackOpsAlert:
   operationId: ackOpsAlert
   security:
     - ops-token: [ "ops:triage" ]
+    - session: [ site-admin ]
   parameters:
     - name: id
       in: path

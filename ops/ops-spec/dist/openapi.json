@@ -1116,6 +1116,11 @@
             "ops-token": [
               "ops:read"
             ]
+          },
+          {
+            "session": [
+              "site-admin"
+            ]
           }
         ],
         "responses": {
@@ -1179,6 +1184,11 @@
           {
             "ops-token": [
               "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -1255,6 +1265,11 @@
           {
             "ops-token": [
               "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -1352,6 +1367,11 @@
           {
             "ops-token": [
               "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -1534,6 +1554,11 @@
             "ops-token": [
               "ops:read"
             ]
+          },
+          {
+            "session": [
+              "site-admin"
+            ]
           }
         ],
         "parameters": [
@@ -1656,6 +1681,11 @@
           {
             "ops-token": [
               "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -1850,6 +1880,11 @@
             "ops-token": [
               "ops:read"
             ]
+          },
+          {
+            "session": [
+              "site-admin"
+            ]
           }
         ],
         "parameters": [
@@ -1934,6 +1969,11 @@
           {
             "ops-token": [
               "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -2033,6 +2073,11 @@
           {
             "ops-token": [
               "ops:triage"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -2141,6 +2186,11 @@
           {
             "ops-token": [
               "ops:triage"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -2252,6 +2302,11 @@
             "ops-token": [
               "ops:triage"
             ]
+          },
+          {
+            "session": [
+              "site-admin"
+            ]
           }
         ],
         "parameters": [
@@ -2354,6 +2409,11 @@
           {
             "ops-token": [
               "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -2472,6 +2532,11 @@
           {
             "ops-token": [
               "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -2610,6 +2675,11 @@
           {
             "ops-token": [
               "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -2753,6 +2823,11 @@
           {
             "ops-token": [
               "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],
@@ -3240,6 +3315,11 @@
             "ops-token": [
               "ops:read"
             ]
+          },
+          {
+            "session": [
+              "site-admin"
+            ]
           }
         ],
         "parameters": [
@@ -3478,6 +3558,11 @@
           {
             "ops-token": [
               "ops:triage"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
             ]
           }
         ],

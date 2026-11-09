@@ -76,6 +76,9 @@ export function createOpsTokenSecurityResolver(
   return {
     scopes: opsTokenScopes,
     standalone: true,
+    // Any bearer header takes the token path (and is validated there); other
+    // requests fall to the operation's session alternative, if it has one.
+    applies: (req) => /^Bearer\s/i.test(req.header("authorization") ?? ""),
     middleware: (requiredScopes) => {
       const handler: Handler = async (req, res, next) => {
         const ip = req.ip ?? "unknown";
