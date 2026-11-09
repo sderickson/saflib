@@ -21,6 +21,8 @@ export interface RenderGraphOptions {
 
 export const FONT_FAMILY = "DejaVu Sans";
 const MAX_LINES = 10;
+/** Legend entries shown; more lines are summarized as "+N more" so the plot keeps its height. */
+const MAX_LEGEND = 3;
 const PALETTE = [
   "#2563eb", "#dc2626", "#16a34a", "#d97706", "#7c3aed",
   "#0891b2", "#db2777", "#65a30d", "#ea580c", "#475569",
@@ -103,8 +105,9 @@ function formatTime(t: number, step: number): string {
 export function renderGraphSvg(o: RenderGraphOptions): string {
   const { width: W, height: H } = o;
   const shown = o.series.slice(0, MAX_LINES);
-  const hiddenCount = o.series.length - shown.length;
-  const legendRows = shown.length + (hiddenCount > 0 ? 1 : 0);
+  const labelled = shown.slice(0, MAX_LEGEND);
+  const unlabelledCount = o.series.length - labelled.length;
+  const legendRows = labelled.length + (unlabelledCount > 0 ? 1 : 0);
   const m = { top: o.title ? 30 : 12, right: 16, bottom: 30 + legendRows * 15 + (legendRows ? 6 : 0), left: 56 };
   const pw = Math.max(10, W - m.left - m.right);
   const ph = Math.max(10, H - m.top - m.bottom);
@@ -166,15 +169,17 @@ export function renderGraphSvg(o: RenderGraphOptions): string {
 
   const constant = constantLabelKeys(shown.map((s) => s.metric));
   let ly = m.top + ph + 44;
-  shown.forEach((s, i) => {
+  labelled.forEach((s, i) => {
     out.push(
       `<rect x="${m.left}" y="${ly - 8}" width="10" height="10" fill="${PALETTE[i % PALETTE.length]}"/>`,
       `<text x="${m.left + 16}" y="${ly}" fill="#374151">${escapeXml(truncate(seriesLabel(s.metric, constant), Math.floor(pw / 6)))}</text>`,
     );
     ly += 15;
   });
-  if (hiddenCount > 0) {
-    out.push(`<text x="${m.left}" y="${ly}" fill="#6b7280">+${hiddenCount} more series not shown</text>`);
+  if (unlabelledCount > 0) {
+    out.push(
+      `<text x="${m.left}" y="${ly}" fill="#6b7280">+${unlabelledCount} more series${o.series.length > MAX_LINES ? ` (${o.series.length - MAX_LINES} not drawn)` : ""}</text>`,
+    );
   }
   out.push("</svg>");
   return out.join("\n");

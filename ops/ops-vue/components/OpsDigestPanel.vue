@@ -88,7 +88,7 @@
         <div class="d-flex flex-wrap ga-4">
           <OpsGraph
             :title="strings.graphRequests"
-            query='sum by (path) (rate(http_request_duration_seconds_count{path!="unspecified"}[5m])) * 60'
+            query='sum(rate(http_request_duration_seconds_count{path!="unspecified"}[5m])) * 60'
           />
           <OpsGraph
             :title="strings.graphP95"

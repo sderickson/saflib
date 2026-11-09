@@ -31,4 +31,12 @@ describe("renderGraphSvg", () => {
   it("picks round ticks covering the range", () => {
     expect(niceTicks(0, 83)).toEqual([0, 20, 40, 60, 80, 100]);
   });
+
+  it("labels at most three series and summarizes the rest", () => {
+    const series = Array.from({ length: 12 }, (_, i) => ({ metric: { path: `/p${i}` }, values: [[0, "1"]] as [number, string][] }));
+    const svg = renderGraphSvg({ series, start: 0, end: 3600, width: 600, height: 240 });
+    expect((svg.match(/path=\/p\d+/g) ?? [])).toHaveLength(3);
+    expect(svg).toContain("+9 more series (2 not drawn)");
+    expect((svg.match(/<path /g) ?? [])).toHaveLength(10);
+  });
 });

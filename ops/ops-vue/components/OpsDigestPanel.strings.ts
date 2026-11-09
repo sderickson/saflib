@@ -18,7 +18,7 @@ export const ops_digest_panel = {
   pipelineStale: "stale",
   viewAll: "View all",
   graphs: "Graphs",
-  graphRequests: "Requests per minute by path",
+  graphRequests: "Requests per minute",
   graphP95: "p95 latency (seconds)",
   graphMemory: "Host memory available (%)",
   metricsUnavailable: "Metrics unavailable",
