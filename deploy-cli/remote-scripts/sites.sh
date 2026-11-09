@@ -56,6 +56,25 @@ route_env() {
   fi
 }
 
+# edge_caddy <args...>: run caddy in the edge through the container's
+# entrypoint. `docker exec` skips the entrypoint, and an image may set the env
+# its Caddyfile reads there (e.g. defaults applied by a wrapper script);
+# `caddy reload` reads the Caddyfile in the exec'd process, so without that env
+# every {$KEY} the entrypoint would have set comes out empty.
+edge_caddy() {
+  entrypoint=$(docker_cmd inspect -f '{{range .Config.Entrypoint}}{{.}} {{end}}' "$SAF_EDGE_CONTAINER")
+  entrypoint="${entrypoint% }"
+  case "$entrypoint" in
+    "") docker_cmd exec "$SAF_EDGE_CONTAINER" caddy "$@" ;;
+    caddy | */caddy | *" caddy" | *" "*/caddy)
+      # shellcheck disable=SC2086 # the entrypoint's words, as Docker runs them
+      docker_cmd exec "$SAF_EDGE_CONTAINER" $entrypoint "$@" ;;
+    *)
+      # shellcheck disable=SC2086
+      docker_cmd exec "$SAF_EDGE_CONTAINER" $entrypoint caddy "$@" ;;
+  esac
+}
+
 # register_sites [color]: copy this deploy's routes into the edge and reload.
 register_sites() {
   color="${1:-}"
@@ -76,7 +95,7 @@ register_sites() {
     docker_cmd cp "$rendered" "$SAF_EDGE_CONTAINER:/etc/caddy/sites/$name"
     rm -f "$rendered"
   done
-  if docker_cmd exec "$SAF_EDGE_CONTAINER" caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile; then
+  if edge_caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile; then
     for f in caddy/*.Caddyfile; do
       docker_cmd exec "$SAF_EDGE_CONTAINER" rm -f "/etc/caddy/sites/$(basename "$f").bak"
     done

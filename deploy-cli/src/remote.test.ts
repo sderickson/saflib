@@ -77,10 +77,12 @@ describe("remotePayload", () => {
     composeFiles: ["/x/remote-assets/docker-compose.prod.yaml"],
   });
 
-  it("starts with sudo -i unless REMOTE_SUDO=0", () => {
-    expect(remotePayload(config({}), "true").startsWith("sudo -i\n")).toBe(
-      true,
-    );
+  it("starts with exec sudo -i unless REMOTE_SUDO=0", () => {
+    // exec: if the root shell exits early, the login shell mustn't carry on
+    // running the rest of the script.
+    expect(
+      remotePayload(config({}), "true").startsWith("exec sudo -i\n"),
+    ).toBe(true);
     expect(remotePayload(config({ REMOTE_SUDO: "0" }), "true")).not.toContain(
       "sudo -i",
     );
