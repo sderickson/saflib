@@ -1,0 +1,79 @@
+type: object
+description: >
+  The latest check of this image's installed packages (its lockfile) against
+  OSV.dev advisories and the npm registry. Checked a couple of minutes after a
+  deploy and then daily.
+required: [ checked_at, stale, packages_total, direct_total, node_version, lockfile_hash, advisories, outdated, errors ]
+properties:
+  checked_at:
+    type: string
+    format: date-time
+  stale:
+    type: boolean
+    description: No successful check in the last 72 hours.
+  packages_total:
+    type: integer
+  direct_total:
+    type: integer
+  node_version:
+    type: string
+  lockfile_hash:
+    type: string
+  advisories:
+    type: array
+    description: Most severe first.
+    items:
+      type: object
+      required: [ id, aliases, severity, package, deployed, fixed_in, direct, actionable, untrusted ]
+      properties:
+        id:
+          type: string
+          description: OSV id (usually a GHSA).
+        aliases:
+          type: array
+          items: { type: string }
+        severity:
+          type: string
+          enum: [ critical, high, moderate, low, unknown ]
+        package:
+          type: string
+        deployed:
+          type: string
+        fixed_in:
+          type: [ string, "null" ]
+          description: Lowest fixed version above the deployed one.
+        direct:
+          type: boolean
+          description: A direct dependency of the image's packages (else pulled in transitively; fix via the parent or npm overrides).
+        actionable:
+          type: boolean
+          description: High or critical.
+        untrusted:
+          type: object
+          required: [ summary ]
+          properties:
+            summary:
+              type: string
+  outdated:
+    type: array
+    description: Direct dependencies with a newer release.
+    items:
+      type: object
+      required: [ name, deployed, latest, latest_published_at, update, renovate_due ]
+      properties:
+        name: { type: string }
+        deployed: { type: string }
+        latest: { type: string }
+        latest_published_at:
+          type: [ string, "null" ]
+          format: date-time
+        update:
+          type: string
+          enum: [ major, minor, patch ]
+        renovate_due:
+          type: boolean
+          description: The latest release is past the 3-day minimum release age, so Renovate should have a PR open.
+  errors:
+    type: array
+    description: Lookups that failed; the rest of the report stands.
+    items: { type: string }

@@ -54,6 +54,10 @@ export const baseAuditMap: Record<string, AuditMapEntry> = {
     eventType: "ops_api.metrics.series",
     resourceType: "ops_api",
   },
+  "GET /ops/dependencies": {
+    eventType: "ops_api.dependencies.read",
+    resourceType: "ops_api",
+  },
   "GET /ops/alerts": {
     eventType: "ops_api.alerts.read",
     resourceType: "ops_api",

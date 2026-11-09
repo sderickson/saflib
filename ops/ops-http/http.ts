@@ -2,7 +2,7 @@ import express, { type Request } from "express";
 import { createErrorMiddleware, createGlobalMiddleware } from "@saflib/express";
 import type { DbKey, DbOptions } from "@saflib/drizzle";
 import { opsDb } from "@saflib/ops-db";
-import { opsServiceStorage } from "./context.ts";
+import { opsServiceStorage, type OpsServiceContext } from "./context.ts";
 import { createOpsRoutes } from "./routes/index.ts";
 import {
   createOpsTokenSecurityResolver,
@@ -11,6 +11,8 @@ import {
 import { processCheck } from "./health/builtin-checks.ts";
 import { recordCurrentBoot } from "./boot.ts";
 import { registerHealthCheckMetric } from "./health/health-metric.ts";
+import { readManifest } from "./dependencies/manifest.ts";
+import { startDependencyChecks } from "./dependencies/scheduler.ts";
 import type { BuildInfo, ReleaseInfo } from "@saflib/node/git-hashes";
 import type { HealthCheck } from "./health/types.ts";
 import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
@@ -44,6 +46,13 @@ export interface OpsRouterOptions {
    * prom-label-proxy; when omitted, the metrics endpoints respond 404.
    */
   metrics?: OpsMetricsConfig;
+  /**
+   * Daily dependency checks (OSV advisories, npm latest) of the image's
+   * lockfile. On by default when a lockfile exists at
+   * `SAF_LOCKFILE`/`/app/package-lock.json` (built images); `false` turns
+   * them off. Tests pass a manifest and drive `runDependencyCheckOnce`.
+   */
+  dependencies?: false | { lockfilePath?: string };
   /** Release stamp override (tests); defaults to `/etc/saf/release/release.json`. */
   releaseInfo?: ReleaseInfo;
 }
@@ -75,7 +84,7 @@ function isOpsPath(path: string): boolean {
  */
 export function createOpsRouter(options: OpsRouterOptions = {}) {
   const dbKey = options.dbKey ?? opsDb.connect(options.dbOptions);
-  const context = {
+  const context: OpsServiceContext = {
     dbKey,
     healthChecks: [processCheck(), ...(options.healthChecks ?? [])],
     logsDbKey: options.logsDbKey,
@@ -85,6 +94,14 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
     currentBoot: recordCurrentBoot(dbKey, options.buildInfo, options.releaseInfo),
   };
   registerHealthCheckMetric(context.healthChecks);
+  const manifest =
+    options.dependencies === false || process.env.NODE_ENV === "test"
+      ? undefined
+      : readManifest(options.dependencies?.lockfilePath);
+  if (manifest) {
+    startDependencyChecks({ dbKey, manifest });
+    context.dependencyChecks = true;
+  }
   const resolver = createOpsTokenSecurityResolver(() => dbKey, options.rateLimits);
 
   const inner = express.Router();

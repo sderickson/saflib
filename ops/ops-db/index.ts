@@ -52,8 +52,12 @@ export {
   releaseNotification,
 } from "./queries/ops-notifier/notifier-state.ts";
 export type { ClaimNotificationParams, ClaimNotificationResult } from "./queries/ops-notifier/notifier-state.ts";
+export {
+  getLatestDependencyCheck,
+  recordDependencyCheck,
+} from "./queries/ops-dependency-checks/dependency-checks.ts";
 export { opsTokenScopes } from "./schema.ts";
-export type { OpsAlert, OpsBoot, OpsGraphKey, OpsNotifierState, OpsToken, OpsTokenScope } from "./schema.ts";
+export type { OpsAlert, OpsBoot, OpsDependencyCheck, OpsGraphKey, OpsNotifierState, OpsToken, OpsTokenScope } from "./schema.ts";
 
 import { opsDbManager } from "./instances.ts";
 

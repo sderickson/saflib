@@ -213,3 +213,12 @@ export function useOpsMetricsInstant(query: Ref<string>) {
     },
   });
 }
+
+/** The latest dependency check (advisories, outdated direct dependencies). */
+export function useOpsDependencies() {
+  const client = getClient();
+  return useQuery<OpsResponseBody["getOpsDependencies"][200], TanstackError>({
+    queryKey: ["ops", "dependencies"],
+    queryFn: () => handleClientMethod(client.GET("/ops/dependencies", {})),
+  });
+}

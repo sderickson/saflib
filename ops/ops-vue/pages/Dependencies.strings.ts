@@ -1,0 +1,20 @@
+export const ops_dependencies = {
+  documentTitle: "Dependencies",
+  title: "Dependencies",
+  intro:
+    "What this app's server runs, checked against OSV.dev advisories and the npm registry a few minutes after each deploy and then daily. Renovate opens the update PRs; this shows what's actually deployed.",
+  none: "No check yet. Checks run in built images a couple of minutes after a deploy.",
+  checked: "Checked",
+  stale: "stale",
+  packages: "packages",
+  direct: "direct",
+  advisories: "Advisories",
+  noAdvisories: "No known advisories.",
+  outdated: "Outdated direct dependencies",
+  noOutdated: "Every direct dependency is on its latest release.",
+  fixedIn: "fixed in",
+  noFix: "no fix yet",
+  transitive: "transitive",
+  renovateDue: "Renovate due",
+  errors: "Some lookups failed",
+};

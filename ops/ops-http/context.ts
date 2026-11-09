@@ -12,6 +12,8 @@ export interface OpsServiceContext {
   logsDbKey?: DbKey;
   /** The issues database, when the product enables it. */
   issuesDbKey?: DbKey;
+  /** True when this process checks its dependencies (it has a lockfile). */
+  dependencyChecks?: boolean;
   /** Where PromQL goes, when the product enables metrics. */
   metrics?: OpsMetricsConfig;
   /** This process's boot record, once written. */

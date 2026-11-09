@@ -172,6 +172,23 @@ sudo chown -R 65534 /opt/alertmanager/secrets && sudo chmod 700 /opt/alertmanage
 
 A product on the same host gets its own route (`saf_app="<app>"`) and receiver pointing at its webhook, with its own token file.
 
+## Dependencies
+
+Built images install from a lockfile pruned to the image's own packages (`saf-docker`), left at `/app/package-lock.json`, so the server knows exactly what it runs. A couple of minutes after startup and then daily, the ops router checks it (skipping a lockfile checked in the last 20 hours):
+
+- **OSV.dev** for advisories against every installed package (batched), with severity, the lowest fixed version above the deployed one, and whether the package is a direct dependency.
+- **The npm registry** for the latest release of each direct dependency, and, for the ones behind, how old that release is. Past Renovate's 3-day `minimumReleaseAge` it's `renovate_due`: a PR should be open.
+
+Reports are kept in `ops-db` (last 30). If the OSV query fails, no report is recorded, since "no advisories" would be a false all-clear. Checks are on whenever a lockfile exists (`SAF_LOCKFILE` overrides the path; `createOpsRouter({ dependencies: false })` turns them off) and never in tests.
+
+- `GET /ops/dependencies` (`ops:read` or site-admin session): the latest report; advisory summaries come from OSV, so they're under `untrusted`.
+- The digest's `dependencies` section counts advisories by severity, `actionable` (high or critical), outdated and `renovate_due` direct dependencies. Actionable advisories and a stale check (none in 72 hours) count toward `needs_attention`; outdated packages don't, since Renovate opens those PRs.
+- `DependenciesAsync` shows it in the admin app, and the home digest links to it.
+
+Renovate (both repos' `renovate.json`) holds new releases for 3 days (`minimumReleaseAge`, with `internalChecksFilter: "strict"`), opens security fixes immediately (`vulnerabilityAlerts`, labelled `security`, with OSV as a source), and updates image tags in compose files (`config:recommended`).
+
+The agent's part: fix Renovate PRs that fail CI; handle advisories Renovate can't, such as a transitive package with no upstream fix (npm `overrides`) or a major bump; and flag when `main` has a fix that production doesn't yet (compare `/ops/dependencies` with the lockfile on `main`).
+
 ## Digest
 
 `GET /ops/digest?since=` (default 24h) is the agent's first call: health failures, deploys and restarts, new / regressed / busiest issues, new log templates and level counts. `summary.needs_attention` is false when health is ok and nothing new or regressed needs a look (new info-level templates don't count), so a scheduled run can stop early. Sections for stores a product hasn't enabled are null.

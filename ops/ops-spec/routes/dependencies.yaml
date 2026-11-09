@@ -1,0 +1,41 @@
+getOpsDependencies:
+  summary: Deployed dependencies, advisories and available updates
+  description: >
+    The latest dependency check of what this image runs. `dependencies` is
+    null when the product has no lockfile to check (e.g. outside a built
+    image) or no check has finished yet.
+  operationId: getOpsDependencies
+  security:
+    - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
+  responses:
+    "200":
+      description: The latest check.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ dependencies ]
+            properties:
+              dependencies:
+                oneOf:
+                  - $ref: "../schemas/ops-dependencies.yaml"
+                  - type: "null"
+    "401":
+      description: Missing, malformed, unknown, revoked or expired token.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: The token lacks the required scope.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "429":
+      description: Rate limited.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
