@@ -6,23 +6,20 @@
 
 ## Status
 
-- **Phase:** 1 (ops token, health, manifest). Code is done; the hub deploy
-  is pending.
-- **Last updated:** 2026-11-08
-- **Next action:** review the Phase 1 commits (saflib branch
-  `2026-11-07-self-telemetry`; outer repo branch of the same name). Deploy
-  hub, mint a token with `npm run ops-tokens -- create` in the container, and
-  `curl /ops/health`. Phase 2 (persistent logs) is also code-complete; the
-  same deploy enables it, as does Phase 3 (issues and digest). Next: Phase 4
-  (agent trial against hub), and the recipes wiring left over from Phase 1.
+- **Phase:** 4 (agent trial). Phases 1–3 are live on hub (deployed
+  2026-11-09); the ops API answered every read endpoint with a token kept in
+  1Password.
+- **Last updated:** 2026-11-09
+- **Next action:** Phase 4 against hub. Recipes wiring left over from Phase 1
+  is still open.
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
 | 0 | Spikes: Prometheus footprint, graph rendering, Mermaid on GitHub | done (droplet run and embed tests moved to Phase 5) |
-| 1 | Ops token, `/ops` spec skeleton, `/ops/health`, build manifest and deploy markers | code done; deploy pending |
-| 2 | Persistent logs: SQLite store, write-time redaction, message templates, log endpoints | done (deploy pending) |
-| 3 | Issues: persistent grouped errors *and* warnings, resolve/ignore; first digest | done except source maps (deploy pending) |
-| 4 | Agent trial: CLI/skill plus a daily scheduled agent on one product | todo |
+| 1 | Ops token, `/ops` spec skeleton, `/ops/health`, build manifest and deploy markers | done (hub) |
+| 2 | Persistent logs: SQLite store, write-time redaction, message templates, log endpoints | done (hub) |
+| 3 | Issues: persistent grouped errors *and* warnings, resolve/ignore; first digest | done except source maps (hub) |
+| 4 | Agent trial: CLI/skill plus a daily scheduled agent on one product | in progress |
 | 5 | Prometheus: per-host stack, standard histograms, query proxy, graph snapshots | todo |
 | 6 | Alerting: rules, Alertmanager to Slack and email, dead man's switch, external checks | todo |
 | 7 | Audit: query endpoints and security summaries | todo |
@@ -731,6 +728,20 @@ Slices:
       still go to Sentry.
 
 ### Phase 4: Agent trial
+
+Gaps found probing hub's ops API by hand (2026-11-09):
+
+- [x] Kratos readiness in health (`kratosCheck`)
+- [x] Release stamp, so config-only deploys count as deploys
+- [x] Blue-green color reaches the service (`SAF_COLOR`)
+- [ ] Kratos logs. Its logs live in its own container, so the 2026-11-08 MFA
+      debugging needed SSH. Options: ship Kratos's JSON stdout into the
+      product's log store with a small sidecar, or an ops endpoint over
+      Kratos's own audit trail. Either must keep the redaction rules
+      (Kratos logs emails and IPs).
+- [ ] Client stacks: resolve minified frames by rebuilding the deployed
+      commit with source maps (see Phase 3) if the trial shows the agent
+      can't work from the message, route and deploy timing alone.
 
 - [ ] `ops-cli` with `digest`, `issues` and `logs`
 - [ ] Ops skill/doc
