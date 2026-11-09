@@ -1,6 +1,9 @@
 import * as Sentry from "@sentry/node";
 import { addErrorCollector, getSafReporters } from "@saflib/node";
-import { sanitizeTelemetryEvent } from "@saflib/utils/telemetry-sanitize";
+import {
+  sanitizeTelemetryEvent,
+  TELEMETRY_SENTRY_DATA_COLLECTION,
+} from "@saflib/utils/telemetry-sanitize";
 import type {
   ErrorService,
   ListReportedErrorsOptions,
@@ -10,6 +13,10 @@ import type {
 import { typedEnv } from "./env.ts";
 
 export type SentryErrorServiceOptions = {
+  /**
+   * True lets Sentry collect what it does by default (user info, cookies,
+   * headers, bodies, query params). Off by default: SAF sends errors only.
+   */
   sendDefaultPii?: boolean;
 };
 
@@ -42,7 +49,9 @@ export class SentryErrorService implements ErrorService {
     };
   }
 
-  listReportedErrors(_options?: ListReportedErrorsOptions): ReportedErrorRecord[] {
+  listReportedErrors(
+    _options?: ListReportedErrorsOptions,
+  ): ReportedErrorRecord[] {
     return [];
   }
 
@@ -52,11 +61,15 @@ export class SentryErrorService implements ErrorService {
       return;
     }
 
+    // Sentry v11 replaced sendDefaultPii (off by default) with dataCollection,
+    // which collects user info, cookies, headers and bodies unless told not to.
     const sendDefaultPii = this.options.sendDefaultPii ?? false;
 
     Sentry.init({
       dsn,
-      sendDefaultPii,
+      ...(sendDefaultPii
+        ? {}
+        : { dataCollection: TELEMETRY_SENTRY_DATA_COLLECTION }),
       beforeSend(event) {
         return sanitizeTelemetryEvent(event);
       },

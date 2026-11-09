@@ -8,10 +8,7 @@ export const TELEMETRY_SENSITIVE_COOKIE_NAMES = new Set([
 ]);
 
 /** Context keys omitted from client error telemetry (may contain PII). */
-export const TELEMETRY_OMITTED_CONTEXT_KEYS = new Set([
-  "propsData",
-  "attrs",
-]);
+export const TELEMETRY_OMITTED_CONTEXT_KEYS = new Set(["propsData", "attrs"]);
 
 export type TelemetryHttpRequest = {
   cookies?: Record<string, unknown>;
@@ -43,9 +40,7 @@ export function sanitizeTelemetryCookieMap(
   return changed ? next : cookies;
 }
 
-export function sanitizeTelemetryCookieHeader(
-  cookieHeader: string,
-): string {
+export function sanitizeTelemetryCookieHeader(cookieHeader: string): string {
   if (!cookieHeader.trim()) {
     return cookieHeader;
   }
@@ -165,3 +160,24 @@ export function sanitizeTelemetryEvent<T extends TelemetryEventPayload>(
     ...(extra !== event.extra ? { extra } : {}),
   };
 }
+
+/**
+ * Sentry v11 `dataCollection` that collects nothing beyond the error itself.
+ * v11 replaced `sendDefaultPii` (off by default) with `dataCollection`, whose
+ * defaults collect user info, cookies, headers, bodies and query params, so
+ * SAF passes this explicitly. Plain data, so this module stays SDK-free;
+ * it matches Sentry's `DataCollection` type.
+ */
+export const TELEMETRY_SENTRY_DATA_COLLECTION = {
+  userInfo: false,
+  cookies: false,
+  httpHeaders: false,
+  httpBodies: [] as never[],
+  urlQueryParams: false,
+  graphQL: { document: false, variables: false },
+  genAI: { inputs: false, outputs: false },
+  mcp: { inputs: false, outputs: false },
+  databaseQueryData: false,
+  queues: false,
+  stackFrameVariables: false,
+};
