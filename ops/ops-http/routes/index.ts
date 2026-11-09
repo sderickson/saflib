@@ -27,6 +27,7 @@ import {
   getOpsGraphPngHandler,
   getOpsGraphSvgHandler,
 } from "./graphs.ts";
+import { ackOpsAlertHandler, listOpsAlertsHandler, receiveOpsAlertsHandler } from "./alerts.ts";
 
 /** Routes with full paths (`/ops/*`, `/admin/ops-tokens*`). */
 export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
@@ -48,6 +49,9 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.post("/ops/metrics/graph-links", createOpsGraphLinkHandler);
   router.get("/ops/metrics/graph.svg", getOpsGraphSvgHandler);
   router.get("/ops/metrics/graph.png", getOpsGraphPngHandler);
+  router.get("/ops/alerts", listOpsAlertsHandler);
+  router.post("/ops/alerts/webhook", receiveOpsAlertsHandler);
+  router.post("/ops/alerts/:id/ack", ackOpsAlertHandler);
   router.get("/ops/issues", listOpsIssuesHandler);
   router.get("/ops/issues/:id", getOpsIssueHandler);
   router.get("/ops/issues/:id/occurrences", listOpsIssueOccurrencesHandler);

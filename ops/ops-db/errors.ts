@@ -10,3 +10,6 @@ export class OpsTokenNotFoundError extends OpsDatabaseError {}
 
 /** The token exists but was already revoked. */
 export class OpsTokenAlreadyRevokedError extends OpsDatabaseError {}
+
+/** No alert with that id. */
+export class OpsAlertNotFoundError extends OpsDatabaseError {}

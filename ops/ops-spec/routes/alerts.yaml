@@ -1,0 +1,161 @@
+x-common-errors: &common-errors
+  "401":
+    description: Missing, malformed, unknown, revoked or expired token.
+    content:
+      application/json:
+        schema:
+          $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+  "403":
+    description: The token lacks the required scope.
+    content:
+      application/json:
+        schema:
+          $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+  "429":
+    description: Rate limited.
+    content:
+      application/json:
+        schema:
+          $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+receiveOpsAlerts:
+  summary: Alertmanager webhook
+  description: >
+    Alertmanager's webhook receiver (payload version 4) posts here with a
+    token holding `ops:alerts-ingest`. Each alert is recorded by fingerprint.
+  operationId: receiveOpsAlerts
+  # Annotations are stored and returned under `untrusted`, never rendered;
+  # rejecting a batch for a stray `<` would lose real alerts.
+  tags: [ block-html-exempt ]
+  security:
+    - ops-token: [ "ops:alerts-ingest" ]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [ alerts ]
+          properties:
+            alerts:
+              type: array
+              maxItems: 500
+              items:
+                type: object
+                required: [ status, labels, startsAt, fingerprint ]
+                properties:
+                  status:
+                    type: string
+                    enum: [ firing, resolved ]
+                  labels:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  annotations:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  startsAt:
+                    type: string
+                  endsAt:
+                    type: string
+                  fingerprint:
+                    type: string
+                    minLength: 1
+                    maxLength: 64
+  responses:
+    "200":
+      description: Alerts recorded.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ received ]
+            properties:
+              received:
+                type: integer
+    <<: *common-errors
+
+listOpsAlerts:
+  summary: Alerts
+  description: >
+    Firing alerts by default, newest first. `status=all` with `since` lists
+    everything that fired since then, including resolved alerts.
+  operationId: listOpsAlerts
+  security:
+    - ops-token: [ "ops:read" ]
+  parameters:
+    - name: status
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [ firing, resolved, all ]
+        default: firing
+    - { name: since, in: query, required: false, allowReserved: true, schema: { type: string, format: date-time } }
+    - name: unacked
+      in: query
+      required: false
+      schema:
+        type: boolean
+    - name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+  responses:
+    "200":
+      description: Alerts.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ alerts ]
+            properties:
+              alerts:
+                type: array
+                items:
+                  $ref: "../schemas/ops-alert.yaml"
+    <<: *common-errors
+
+ackOpsAlert:
+  summary: Acknowledge an alert
+  description: >
+    Marks the alert as seen, so it stops counting toward the digest's
+    `needs_attention`. Firing again after a resolve clears the ack.
+  operationId: ackOpsAlert
+  security:
+    - ops-token: [ "ops:triage" ]
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          type: object
+  responses:
+    "200":
+      description: The acknowledged alert.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ alert ]
+            properties:
+              alert:
+                $ref: "../schemas/ops-alert.yaml"
+    "404":
+      description: No alert with that id.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    <<: *common-errors

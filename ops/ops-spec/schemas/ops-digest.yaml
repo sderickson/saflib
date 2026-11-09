@@ -1,5 +1,5 @@
 type: object
-required: [ since, generated_at, summary, health, deploys, issues, logs, metrics ]
+required: [ since, generated_at, summary, health, deploys, issues, logs, metrics, alerts ]
 properties:
   since:
     type: string
@@ -9,7 +9,7 @@ properties:
     format: date-time
   summary:
     type: object
-    required: [ needs_attention, health_status, new_issues, regressed_issues, open_issues, new_log_templates, deploys, boots ]
+    required: [ needs_attention, health_status, new_issues, regressed_issues, open_issues, new_log_templates, deploys, boots, firing_alerts ]
     properties:
       needs_attention:
         type: boolean
@@ -30,6 +30,9 @@ properties:
       boots:
         type: integer
         description: Process starts in the window (deploys and restarts).
+      firing_alerts:
+        type: integer
+        description: Alerts firing now and not acknowledged (0 without an alert store).
   health:
     type: object
     required: [ status, failing ]
@@ -111,3 +114,21 @@ properties:
               enum: [ error_rate_high, error_rate_up, p95_up ]
           error:
             type: [ string, "null" ]
+  alerts:
+    description: >
+      Alertmanager alerts: everything firing now (unacknowledged firing alerts
+      count toward `needs_attention`) and how many fired during the window.
+      Null when the product has no alert store.
+    oneOf:
+      - type: "null"
+      - type: object
+        required: [ firing, firing_unacked, fired_in_window ]
+        properties:
+          firing:
+            type: array
+            items:
+              $ref: "./ops-alert.yaml"
+          firing_unacked:
+            type: integer
+          fired_in_window:
+            type: integer

@@ -1,12 +1,13 @@
 import { createHandler } from "@saflib/express";
 import type { OpsDigest, OpsResponseBody } from "@saflib/ops-spec";
-import { countBootsSince, listBoots } from "@saflib/ops-db";
+import { countBootsSince, listAlerts, listBoots } from "@saflib/ops-db";
 import { listIssues } from "@saflib/errors-db";
 import { countLogsByLevel, listTemplates } from "@saflib/node-log-db";
 import { throwError } from "@saflib/utils";
 import { opsServiceStorage } from "../context.ts";
 import { runHealthChecks } from "../health/run-health-checks.ts";
 import { digestMetrics } from "../metrics/digest-metrics.ts";
+import { mapAlert } from "./alerts.ts";
 import { mapIssue, mapLogTemplate, mapOpsBoot, queryDate } from "./_helpers.ts";
 
 const DAY_MS = 86_400_000;
@@ -18,12 +19,20 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
   const since = queryDate(req.query.since) ?? new Date(Date.now() - DAY_MS);
   await currentBoot;
 
-  const [health, recentDeploys, boots, metrics] = await Promise.all([
+  const [health, recentDeploys, boots, metrics, firing, activeInWindow] = await Promise.all([
     runHealthChecks(healthChecks),
     throwError(listBoots(dbKey, { newBuildsOnly: true, limit: 50 })),
     throwError(countBootsSince(dbKey, since)),
     metricsConfig ? digestMetrics(metricsConfig, since) : Promise.resolve(null),
+    throwError(listAlerts(dbKey, { statuses: ["firing"], limit: 200 })),
+    throwError(listAlerts(dbKey, { activeSince: since, limit: 200 })),
   ]);
+  const firingUnacked = firing.filter((a) => a.acked_at === null).length;
+  const alerts: OpsDigest["alerts"] = {
+    firing: firing.slice(0, TOP).map(mapAlert),
+    firing_unacked: firingUnacked,
+    fired_in_window: activeInWindow.length,
+  };
   const deploys = recentDeploys.filter((b) => b.started_at >= since);
 
   let issues: OpsDigest["issues"] = null;
@@ -75,7 +84,8 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
         newIssueCount > 0 ||
         regressedCount > 0 ||
         newSevereTemplates > 0 ||
-        (metrics?.flags.length ?? 0) > 0,
+        (metrics?.flags.length ?? 0) > 0 ||
+        firingUnacked > 0,
       health_status: health.status,
       new_issues: newIssueCount,
       regressed_issues: regressedCount,
@@ -83,12 +93,14 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
       new_log_templates: newTemplateCount,
       deploys: deploys.length,
       boots,
+      firing_alerts: firingUnacked,
     },
     health: { status: health.status, failing: health.checks.filter((c) => c.status !== "ok") },
     deploys: deploys.map(mapOpsBoot),
     issues,
     logs,
     metrics,
+    alerts,
   };
   const response: OpsResponseBody["getOpsDigest"][200] = { digest };
   res.status(200).json(response);

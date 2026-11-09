@@ -2,7 +2,11 @@ import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 
 /** Every scope an ops token can hold. */
-export const opsTokenScopes = ["ops:read", "ops:triage"] as const;
+/**
+ * `ops:read`: every GET. `ops:triage`: issue status changes and alert acks.
+ * `ops:alerts-ingest`: only posting alerts (Alertmanager's webhook token).
+ */
+export const opsTokenScopes = ["ops:read", "ops:triage", "ops:alerts-ingest"] as const;
 
 export type OpsTokenScope = (typeof opsTokenScopes)[number];
 
@@ -119,3 +123,43 @@ export const opsGraphKeys = sqliteTable("ops_graph_keys", {
 });
 
 export type OpsGraphKeyTest1 = Expect<Equal<OpsGraphKey, typeof opsGraphKeys.$inferSelect>>;
+
+/**
+ * An alert received from Alertmanager, one row per alert fingerprint (its
+ * label set). Re-firing after a resolve updates the row and clears the ack.
+ */
+export interface OpsAlert {
+  id: string;
+  fingerprint: string;
+  alertname: string;
+  severity: string | null;
+  status: "firing" | "resolved";
+  /** JSON object of the alert's labels (set by alert rules). */
+  labels: string;
+  /** JSON object of annotations; may embed label values. */
+  annotations: string;
+  starts_at: Date;
+  ends_at: Date | null;
+  first_received_at: Date;
+  last_received_at: Date;
+  acked_at: Date | null;
+  acked_by: string | null;
+}
+
+export const opsAlerts = sqliteTable("ops_alerts", {
+  id: text("id").primaryKey(),
+  fingerprint: text("fingerprint").notNull().unique(),
+  alertname: text("alertname").notNull(),
+  severity: text("severity"),
+  status: text("status", { enum: ["firing", "resolved"] }).notNull(),
+  labels: text("labels").notNull(),
+  annotations: text("annotations").notNull(),
+  starts_at: integer("starts_at", { mode: "timestamp_ms" }).notNull(),
+  ends_at: integer("ends_at", { mode: "timestamp_ms" }),
+  first_received_at: integer("first_received_at", { mode: "timestamp_ms" }).notNull(),
+  last_received_at: integer("last_received_at", { mode: "timestamp_ms" }).notNull(),
+  acked_at: integer("acked_at", { mode: "timestamp_ms" }),
+  acked_by: text("acked_by"),
+});
+
+export type OpsAlertTest1 = Expect<Equal<OpsAlert, typeof opsAlerts.$inferSelect>>;

@@ -18,7 +18,8 @@ components:
       description: >
         Machine credential for the ops API (`Authorization: Bearer safops_…`).
         Not tied to a user. Scopes: `ops:read` (every GET), `ops:triage`
-        (issue status changes, alert acknowledgement).
+        (issue status changes, alert acknowledgement), `ops:alerts-ingest`
+        (only posting alerts; Alertmanager's token).
   schemas:
     OpsHealth:
       $ref: "./schemas/ops-health.yaml"
@@ -38,6 +39,8 @@ components:
       $ref: "./schemas/ops-issue-occurrence.yaml"
     OpsDigest:
       $ref: "./schemas/ops-digest.yaml"
+    OpsAlert:
+      $ref: "./schemas/ops-alert.yaml"
     OpsMetricsResult:
       $ref: "./schemas/ops-metrics-result.yaml"
     Error:
@@ -95,6 +98,15 @@ paths:
   /ops/metrics/graph.png:
     get:
       $ref: "./routes/metrics.yaml#/getOpsGraphPng"
+  /ops/alerts:
+    get:
+      $ref: "./routes/alerts.yaml#/listOpsAlerts"
+  /ops/alerts/webhook:
+    post:
+      $ref: "./routes/alerts.yaml#/receiveOpsAlerts"
+  /ops/alerts/{id}/ack:
+    post:
+      $ref: "./routes/alerts.yaml#/ackOpsAlert"
   /admin/logs:
     get:
       $ref: "./routes/logs.yaml#/listAdminLogs"

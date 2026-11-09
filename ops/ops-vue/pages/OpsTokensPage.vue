@@ -120,7 +120,7 @@ import { useOpsTokensPageLoader } from "./OpsTokens.loader.ts";
 import { ops_tokens as strings } from "./OpsTokens.strings.ts";
 
 type Scope = OpsTokenResponse["scopes"][number];
-const scopeOptions: Scope[] = ["ops:read", "ops:triage"];
+const scopeOptions: Scope[] = ["ops:read", "ops:triage", "ops:alerts-ingest"];
 
 const headers = [
   { title: "Name", key: "name", sortable: true },

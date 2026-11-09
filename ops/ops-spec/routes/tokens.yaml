@@ -55,7 +55,7 @@ createOpsToken:
               minItems: 1
               items:
                 type: string
-                enum: [ "ops:read", "ops:triage" ]
+                enum: [ "ops:read", "ops:triage", "ops:alerts-ingest" ]
             expires_at:
               type: [ string, "null" ]
               format: date-time

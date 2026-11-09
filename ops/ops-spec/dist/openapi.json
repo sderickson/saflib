@@ -16,7 +16,7 @@
       "ops-token": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Machine credential for the ops API (`Authorization: Bearer safops_…`). Not tied to a user. Scopes: `ops:read` (every GET), `ops:triage` (issue status changes, alert acknowledgement).\n"
+        "description": "Machine credential for the ops API (`Authorization: Bearer safops_…`). Not tied to a user. Scopes: `ops:read` (every GET), `ops:triage` (issue status changes, alert acknowledgement), `ops:alerts-ingest` (only posting alerts; Alertmanager's token).\n"
       }
     },
     "schemas": {
@@ -46,6 +46,9 @@
       },
       "OpsDigest": {
         "$ref": "#/components/schemas/ops-digest"
+      },
+      "OpsAlert": {
+        "$ref": "#/components/schemas/ops-alert"
       },
       "OpsMetricsResult": {
         "$ref": "#/components/schemas/ops-metrics-result"
@@ -481,6 +484,96 @@
           }
         }
       },
+      "ops-alert": {
+        "type": "object",
+        "description": "An alert from the host's Alertmanager. `labels` come from alert rules. Annotations can embed label values, so they are under `untrusted`.\n",
+        "required": [
+          "id",
+          "fingerprint",
+          "alertname",
+          "severity",
+          "status",
+          "labels",
+          "starts_at",
+          "ends_at",
+          "last_received_at",
+          "acked_at",
+          "acked_by",
+          "untrusted"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "alertname": {
+            "type": "string"
+          },
+          "severity": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "firing",
+              "resolved"
+            ]
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "last_received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acked_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "acked_by": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "untrusted": {
+            "type": "object",
+            "required": [
+              "annotations"
+            ],
+            "properties": {
+              "annotations": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
       "ops-digest": {
         "type": "object",
         "required": [
@@ -491,7 +584,8 @@
           "deploys",
           "issues",
           "logs",
-          "metrics"
+          "metrics",
+          "alerts"
         ],
         "properties": {
           "since": {
@@ -512,7 +606,8 @@
               "open_issues",
               "new_log_templates",
               "deploys",
-              "boots"
+              "boots",
+              "firing_alerts"
             ],
             "properties": {
               "needs_attention": {
@@ -545,6 +640,10 @@
               "boots": {
                 "type": "integer",
                 "description": "Process starts in the window (deploys and restarts)."
+              },
+              "firing_alerts": {
+                "type": "integer",
+                "description": "Alerts firing now and not acknowledged (0 without an alert store)."
               }
             }
           },
@@ -691,6 +790,36 @@
                       "string",
                       "null"
                     ]
+                  }
+                }
+              }
+            ]
+          },
+          "alerts": {
+            "description": "Alertmanager alerts: everything firing now (unacknowledged firing alerts count toward `needs_attention`) and how many fired during the window. Null when the product has no alert store.\n",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "firing",
+                  "firing_unacked",
+                  "fired_in_window"
+                ],
+                "properties": {
+                  "firing": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ops-alert"
+                    }
+                  },
+                  "firing_unacked": {
+                    "type": "integer"
+                  },
+                  "fired_in_window": {
+                    "type": "integer"
                   }
                 }
               }
@@ -920,7 +1049,8 @@
               "type": "string",
               "enum": [
                 "ops:read",
-                "ops:triage"
+                "ops:triage",
+                "ops:alerts-ingest"
               ]
             }
           },
@@ -3086,6 +3216,339 @@
         }
       }
     },
+    "/ops/alerts": {
+      "get": {
+        "summary": "Alerts",
+        "description": "Firing alerts by default, newest first. `status=all` with `since` lists everything that fired since then, including resolved alerts.\n",
+        "operationId": "listOpsAlerts",
+        "security": [
+          {
+            "ops-token": [
+              "ops:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "firing",
+                "resolved",
+                "all"
+              ],
+              "default": "firing"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "allowReserved": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "unacked",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alerts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "alerts"
+                  ],
+                  "properties": {
+                    "alerts": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ops-alert"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/alerts/webhook": {
+      "post": {
+        "summary": "Alertmanager webhook",
+        "description": "Alertmanager's webhook receiver (payload version 4) posts here with a token holding `ops:alerts-ingest`. Each alert is recorded by fingerprint.\n",
+        "operationId": "receiveOpsAlerts",
+        "tags": [
+          "block-html-exempt"
+        ],
+        "security": [
+          {
+            "ops-token": [
+              "ops:alerts-ingest"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "alerts"
+                ],
+                "properties": {
+                  "alerts": {
+                    "type": "array",
+                    "maxItems": 500,
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "status",
+                        "labels",
+                        "startsAt",
+                        "fingerprint"
+                      ],
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "firing",
+                            "resolved"
+                          ]
+                        },
+                        "labels": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "annotations": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "startsAt": {
+                          "type": "string"
+                        },
+                        "endsAt": {
+                          "type": "string"
+                        },
+                        "fingerprint": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Alerts recorded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "received"
+                  ],
+                  "properties": {
+                    "received": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/alerts/{id}/ack": {
+      "post": {
+        "summary": "Acknowledge an alert",
+        "description": "Marks the alert as seen, so it stops counting toward the digest's `needs_attention`. Firing again after a resolve clears the ack.\n",
+        "operationId": "ackOpsAlert",
+        "security": [
+          {
+            "ops-token": [
+              "ops:triage"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The acknowledged alert.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "alert"
+                  ],
+                  "properties": {
+                    "alert": {
+                      "$ref": "#/components/schemas/ops-alert"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No alert with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/logs": {
       "get": {
         "summary": "Search persisted logs (admin)",
@@ -3347,7 +3810,8 @@
                       "type": "string",
                       "enum": [
                         "ops:read",
-                        "ops:triage"
+                        "ops:triage",
+                        "ops:alerts-ingest"
                       ]
                     }
                   },

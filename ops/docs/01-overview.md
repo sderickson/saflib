@@ -122,6 +122,14 @@ sum(rate(http_request_duration_seconds_count{status_code="5xx"}[5m])) / sum(rate
 
 To add a product on a host, put its scrape config in the platform's `prometheus/scrape.d/<app>.yml` (DNS discovery on `<app>-monolith`, relabelled `saf_app: <app>`), as hub's is.
 
+## Alerts
+
+The host's Alertmanager posts every alert to each app's `POST /ops/alerts/webhook`, using a token whose only scope is `ops:alerts-ingest` (mint one on the ops tokens page and store it on the server; see the platform deploy). Alerts are kept by fingerprint in `ops-db`; one that fires again after resolving updates its row and loses its ack. Resolved alerts are kept 30 days. The webhook is exempt from the HTML body check: annotations are stored and only ever returned under `untrusted`.
+
+- `GET /ops/alerts` (`ops:read`): firing alerts by default; `status=all&since=` for everything active since then; `unacked=true`.
+- `POST /ops/alerts/{id}/ack` (`ops:triage`): marks it seen, recorded as `ops_token:<id>`.
+- The digest's `alerts` section lists what's firing, and unacknowledged firing alerts (`summary.firing_alerts`) count toward `needs_attention`.
+
 ## Digest
 
 `GET /ops/digest?since=` (default 24h) is the agent's first call: health failures, deploys and restarts, new / regressed / busiest issues, new log templates and level counts. `summary.needs_attention` is false when health is ok and nothing new or regressed needs a look (new info-level templates don't count), so a scheduled run can stop early. Sections for stores a product hasn't enabled are null.

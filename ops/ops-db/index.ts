@@ -39,8 +39,15 @@ export {
   getOrCreateSigningKey,
   revokeGraphKey,
 } from "./queries/ops-graph-keys/graph-keys.ts";
+export {
+  ackAlert,
+  listAlerts,
+  pruneResolvedAlerts,
+  upsertAlerts,
+} from "./queries/ops-alerts/alerts.ts";
+export type { AckAlertResult, IncomingAlert, ListAlertsParams } from "./queries/ops-alerts/alerts.ts";
 export { opsTokenScopes } from "./schema.ts";
-export type { OpsBoot, OpsGraphKey, OpsToken, OpsTokenScope } from "./schema.ts";
+export type { OpsAlert, OpsBoot, OpsGraphKey, OpsToken, OpsTokenScope } from "./schema.ts";
 
 import { opsDbManager } from "./instances.ts";
 

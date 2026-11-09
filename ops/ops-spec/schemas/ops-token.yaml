@@ -22,7 +22,7 @@ properties:
     type: array
     items:
       type: string
-      enum: [ "ops:read", "ops:triage" ]
+      enum: [ "ops:read", "ops:triage", "ops:alerts-ingest" ]
   created_by:
     type: [ string, "null" ]
     description: Kratos identity id of the admin who created it.
