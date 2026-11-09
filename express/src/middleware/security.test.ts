@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import express, { type Handler } from "express";
 import request from "supertest";
 import { asOpenApiDocument } from "@saflib/openapi";
-import { compileOperationSecurity, type SecurityResolver } from "./security.ts";
+import { compileOperationSecurity, usesStandaloneCredential, type SecurityResolver } from "./security.ts";
 import { makeRegisterRoute } from "../register-route.ts";
 import { errorHandler } from "./errors.ts";
 import { createScopedMiddleware } from "./composition.ts";
@@ -62,6 +62,7 @@ const teamResolver: SecurityResolver = {
 const machineResolver: SecurityResolver = {
   scopes: ["read"],
   standalone: true,
+  applies: (req) => (req.header("authorization") ?? "").startsWith("Bearer "),
   middleware: () => [
     (req, res, next) => {
       const header = req.header("authorization");
@@ -256,5 +257,56 @@ describe("makeRegisterRoute with OpenAPI security", () => {
     expect(() => createScopedMiddleware({ apiSpec: multi })).toThrow(
       /getUndeclared: missing `security`/,
     );
+  });
+
+  describe("session OR a standalone scheme", () => {
+    function orApp() {
+      const app = express();
+      const registerRoute = makeRegisterRoute({ securityResolvers: { machine: machineResolver } });
+      registerRoute(
+        app,
+        opSpec({ security: [{ machine: ["read"] }, { session: [] }] }),
+        (_req, res) => {
+          res.status(200).json({ machine: res.locals.machine ?? null });
+        },
+      );
+      app.use(errorHandler);
+      return app;
+    }
+
+    it("accepts either a session or the machine credential", async () => {
+      const app = orApp();
+      await request(app).get("/things/1").expect(401);
+      const viaSession = await request(app).get("/things/1").set(makeUserHeaders()).expect(200);
+      expect(viaSession.body).toEqual({ machine: null });
+      const viaMachine = await request(app).get("/things/1").set("authorization", "Bearer good").expect(200);
+      expect(viaMachine.body).toEqual({ machine: "good" });
+    });
+
+    it("never falls back to the session when a bad machine credential is sent", async () => {
+      await request(orApp())
+        .get("/things/1")
+        .set({ ...makeUserHeaders(), authorization: "Bearer bad" })
+        .expect(401);
+    });
+
+    it.each([
+      [{ security: [{ machine: ["read"] }, { session: [] }, { session: ["mfa"] }] }, /at most one session requirement/],
+      [{ security: [{ bare: [] }, { session: [] }] }, /needs `applies`/],
+    ])("fails closed at mount time: %j", (operation, message) => {
+      const bare: SecurityResolver = { scopes: [], standalone: true, middleware: () => [] };
+      expect(() =>
+        compileOperationSecurity(opSpec(operation), { machine: machineResolver, bare }),
+      ).toThrow(message);
+    });
+
+    it("tells CSRF which requests a standalone credential authenticates", () => {
+      const schema = { security: [{ machine: ["read"] }, { session: [] }] };
+      const withBearer = { header: (n: string) => (n === "authorization" ? "Bearer x" : undefined) } as never;
+      const withoutBearer = { header: () => undefined } as never;
+      expect(usesStandaloneCredential(withBearer, schema, { machine: machineResolver })).toBe(true);
+      expect(usesStandaloneCredential(withoutBearer, schema, { machine: machineResolver })).toBe(false);
+      expect(usesStandaloneCredential(withoutBearer, { security: [{ machine: [] }] }, { machine: machineResolver })).toBe(true);
+    });
   });
 });

@@ -1,4 +1,4 @@
-import type { Handler } from "express";
+import type { Handler, Request } from "express";
 import {
   OPENAPI_EXTENSION_PUBLIC,
   findOperationAccessProblem,
@@ -24,6 +24,14 @@ export interface SecurityResolver {
    * CSRF, since no cookie authenticates them.
    */
   standalone?: boolean;
+  /**
+   * For standalone schemes: whether this request carries the scheme's
+   * credential (e.g. an `Authorization: Bearer` header). Required to offer the
+   * scheme as an alternative to `session` (OpenAPI OR): a request it applies
+   * to is authenticated by it alone; any other request takes the session
+   * path. Must only inspect the request, not validate the credential.
+   */
+  applies?: (req: Request) => boolean;
   middleware: (scopes: string[]) => Handler[];
 }
 
@@ -87,27 +95,12 @@ function failFor(operationId: string) {
   };
 }
 
-/** Build the middleware for one operation from its `security` / `x-public`. */
-function compileRequirement(
-  { operationId, security, isPublic, problem }: OperationSecurityInfo,
-  resolvers: SecurityResolvers,
+/** Build the middleware for one requirement (AND of its schemes). */
+function compileSingleRequirement(
+  requirement: SecurityRequirement,
+  allResolvers: SecurityResolvers,
+  fail: (message: string) => never,
 ): Handler[] {
-  const fail = failFor(operationId);
-  if (problem) {
-    fail(problem);
-  }
-  if (isPublic || !security) {
-    return [];
-  }
-  if (security.length > 1) {
-    fail("multiple (OR) security requirements are not supported");
-  }
-
-  const allResolvers: SecurityResolvers = {
-    session: sessionSecurityResolver,
-    ...resolvers,
-  };
-  const requirement = security[0]!;
   // Session first: other schemes (e.g. org) read the resolved auth.
   const schemes = Object.keys(requirement).sort((a, b) =>
     a === "session" ? -1 : b === "session" ? 1 : 0,
@@ -138,6 +131,63 @@ function compileRequirement(
     }
     return resolver.middleware(scopes);
   });
+}
+
+/** The standalone scheme a requirement consists of, if that's what it is. */
+function standaloneSchemeOf(
+  requirement: SecurityRequirement,
+  allResolvers: SecurityResolvers,
+): string | undefined {
+  const schemes = Object.keys(requirement);
+  return schemes.length === 1 && allResolvers[schemes[0]!]?.standalone ? schemes[0] : undefined;
+}
+
+/** Build the middleware for one operation from its `security` / `x-public`. */
+function compileRequirement(
+  { operationId, security, isPublic, problem }: OperationSecurityInfo,
+  resolvers: SecurityResolvers,
+): Handler[] {
+  const fail = failFor(operationId);
+  if (problem) {
+    fail(problem);
+  }
+  if (isPublic || !security) {
+    return [];
+  }
+
+  const allResolvers: SecurityResolvers = {
+    session: sessionSecurityResolver,
+    ...resolvers,
+  };
+  if (security.length === 1) {
+    return compileSingleRequirement(security[0]!, allResolvers, fail);
+  }
+
+  // OR: any number of single standalone schemes (each must say when it
+  // applies) plus at most one session requirement. A request is
+  // authenticated by the first standalone scheme that applies to it, or else
+  // by the session requirement; never by a mix.
+  const alternatives = security.map((requirement) => {
+    const scheme = standaloneSchemeOf(requirement, allResolvers);
+    if (scheme && !allResolvers[scheme]!.applies) {
+      fail(`standalone scheme "${scheme}" needs \`applies\` to be offered as an alternative`);
+    }
+    return {
+      applies: scheme ? allResolvers[scheme]!.applies! : undefined,
+      chain: runChain(compileSingleRequirement(requirement, allResolvers, fail)),
+    };
+  });
+  const sessionAlternatives = alternatives.filter((a) => !a.applies);
+  if (sessionAlternatives.length > 1) {
+    fail("multiple (OR) security requirements may include at most one session requirement");
+  }
+  const fallback = sessionAlternatives[0] ?? alternatives[0]!;
+  return [
+    (req, res, next) => {
+      const chosen = alternatives.find((a) => a.applies?.(req)) ?? fallback;
+      chosen.chain(req, res, next);
+    },
+  ];
 }
 
 /** Run handlers in order, as Express would for a route's middleware list. */
@@ -231,6 +281,28 @@ export function isSessionlessOperation(schema: object | undefined): boolean {
         !Object.prototype.hasOwnProperty.call(requirement, "session"),
     )
   );
+}
+
+/**
+ * True when this request is authenticated by a standalone scheme that the
+ * matched operation offers (as its only security or as an OR alternative to
+ * `session`) and whose credential the request carries. Such requests have no
+ * cookie session to protect, so CSRF doesn't apply.
+ */
+export function usesStandaloneCredential(
+  req: Request,
+  schema: object | undefined,
+  resolvers: SecurityResolvers = {},
+): boolean {
+  if (isSessionlessOperation(schema)) return true;
+  const security = (schema as Record<string, unknown> | undefined)?.security;
+  if (!Array.isArray(security)) return false;
+  return security.some((requirement) => {
+    if (typeof requirement !== "object" || requirement === null) return false;
+    const schemes = Object.keys(requirement);
+    const resolver = schemes.length === 1 ? resolvers[schemes[0]!] : undefined;
+    return Boolean(resolver?.standalone && resolver.applies?.(req));
+  });
 }
 
 /** True when the matched operation is marked `x-public: true`. */

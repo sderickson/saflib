@@ -138,7 +138,7 @@ export const createScopedMiddleware = (
 
   const accessChecks: Handler[] = [
     // CSRF reads `x-public` and the `csrf-exempt` tag from `req.openapi.schema`.
-    makeCsrfMiddleware(),
+    makeCsrfMiddleware(securityResolvers),
     makeContextMiddleware(),
     unsafeRequestLogger,
     ...compileOperationSecurity(apiSpec, securityResolvers),

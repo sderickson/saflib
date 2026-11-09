@@ -22,6 +22,9 @@ function defaultKratosBrowserUrl(): string {
   return "http://kratos:4433";
 }
 
+/** Kratos's default browser session cookie. */
+const KRATOS_SESSION_COOKIE = /(?:^|;\s*)ory_kratos_session=/;
+
 async function resolveKratosAuth(
   cookie: string | undefined,
 ): Promise<Auth | undefined> {
@@ -199,15 +202,22 @@ async function resolveAuth(req: Request): Promise<AuthResolution> {
     }
   }
 
+  // Look the session up when Caddy's forward_auth stamped the identity
+  // header, or when the request simply carries a Kratos session cookie (routes
+  // that bypass forward_auth, e.g. /ops/*). Either way only Kratos's whoami
+  // answer is trusted: the header and cookie are just triggers.
   const kratosId = req.headers["x-kratos-authenticated-identity-id"];
-  if (typeof kratosId === "string" && kratosId.length > 0) {
-    const cookie =
-      typeof req.headers.cookie === "string" ? req.headers.cookie : undefined;
+  const cookie =
+    typeof req.headers.cookie === "string" ? req.headers.cookie : undefined;
+  const stamped = typeof kratosId === "string" && kratosId.length > 0;
+  const hasSessionCookie = cookie !== undefined && KRATOS_SESSION_COOKIE.test(cookie);
+  const testHeaders = typedEnv.NODE_ENV === "test" && typeof req.headers["x-user-id"] === "string";
+  if (stamped || (hasSessionCookie && !testHeaders)) {
     const auth = await resolveKratosAuth(cookie);
     if (auth) {
       return { auth };
     }
-    // Edge stamped identity id but session cookie no longer valid (logout, expiry, test teardown).
+    // Session cookie no longer valid (logout, expiry, test teardown).
     return {};
   }
   if (typedEnv.NODE_ENV === "test") {
