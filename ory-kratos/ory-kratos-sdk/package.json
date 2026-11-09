@@ -28,7 +28,7 @@
   "devDependencies": {
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
-    "msw": "^2.11.3"
+    "msw": "^3.0.0"
   },
   "sideEffects": [
     "./index.ts",
