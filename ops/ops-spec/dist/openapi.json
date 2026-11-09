@@ -806,7 +806,9 @@
                 "required": [
                   "firing",
                   "firing_unacked",
-                  "fired_in_window"
+                  "fired_in_window",
+                  "pipeline_last_seen_at",
+                  "pipeline_stale"
                 ],
                 "properties": {
                   "firing": {
@@ -820,6 +822,18 @@
                   },
                   "fired_in_window": {
                     "type": "integer"
+                  },
+                  "pipeline_last_seen_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time",
+                    "description": "Last delivery of the always-firing Watchdog, which proves Prometheus, Alertmanager and this webhook (and its token) work. Null if it has never arrived.\n"
+                  },
+                  "pipeline_stale": {
+                    "type": "boolean",
+                    "description": "The Watchdog has arrived before but not in the last 15 minutes: alerting is broken. Counts toward `needs_attention`.\n"
                   }
                 }
               }
@@ -3219,7 +3233,7 @@
     "/ops/alerts": {
       "get": {
         "summary": "Alerts",
-        "description": "Firing alerts by default, newest first. `status=all` with `since` lists everything that fired since then, including resolved alerts.\n",
+        "description": "Firing alerts by default, newest first. `status=all` with `since` lists everything that fired since then, including resolved alerts. The Watchdog heartbeat is left out (see the digest's `pipeline_last_seen_at`).\n",
         "operationId": "listOpsAlerts",
         "security": [
           {

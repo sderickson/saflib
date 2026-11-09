@@ -7,7 +7,7 @@ import { throwError } from "@saflib/utils";
 import { opsServiceStorage } from "../context.ts";
 import { runHealthChecks } from "../health/run-health-checks.ts";
 import { digestMetrics } from "../metrics/digest-metrics.ts";
-import { mapAlert } from "./alerts.ts";
+import { mapAlert, PIPELINE_STALE_MS, WATCHDOG_ALERTNAME } from "./alerts.ts";
 import { mapIssue, mapLogTemplate, mapOpsBoot, queryDate } from "./_helpers.ts";
 
 const DAY_MS = 86_400_000;
@@ -19,19 +19,25 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
   const since = queryDate(req.query.since) ?? new Date(Date.now() - DAY_MS);
   await currentBoot;
 
-  const [health, recentDeploys, boots, metrics, firing, activeInWindow] = await Promise.all([
+  const [health, recentDeploys, boots, metrics, firing, activeInWindow, watchdog] = await Promise.all([
     runHealthChecks(healthChecks),
     throwError(listBoots(dbKey, { newBuildsOnly: true, limit: 50 })),
     throwError(countBootsSince(dbKey, since)),
     metricsConfig ? digestMetrics(metricsConfig, since) : Promise.resolve(null),
-    throwError(listAlerts(dbKey, { statuses: ["firing"], limit: 200 })),
-    throwError(listAlerts(dbKey, { activeSince: since, limit: 200 })),
+    throwError(listAlerts(dbKey, { statuses: ["firing"], excludeAlertnames: [WATCHDOG_ALERTNAME], limit: 200 })),
+    throwError(listAlerts(dbKey, { activeSince: since, excludeAlertnames: [WATCHDOG_ALERTNAME], limit: 200 })),
+    throwError(listAlerts(dbKey, { alertnames: [WATCHDOG_ALERTNAME], limit: 1 })),
   ]);
+  // Never seen: no Alertmanager delivers here yet, which isn't a failure.
+  const pipelineLastSeen = watchdog[0]?.last_received_at ?? null;
+  const pipelineStale = pipelineLastSeen !== null && Date.now() - pipelineLastSeen.getTime() > PIPELINE_STALE_MS;
   const firingUnacked = firing.filter((a) => a.acked_at === null).length;
   const alerts: OpsDigest["alerts"] = {
     firing: firing.slice(0, TOP).map(mapAlert),
     firing_unacked: firingUnacked,
     fired_in_window: activeInWindow.length,
+    pipeline_last_seen_at: pipelineLastSeen?.toISOString() ?? null,
+    pipeline_stale: pipelineStale,
   };
   const deploys = recentDeploys.filter((b) => b.started_at >= since);
 
@@ -85,7 +91,8 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
         regressedCount > 0 ||
         newSevereTemplates > 0 ||
         (metrics?.flags.length ?? 0) > 0 ||
-        firingUnacked > 0,
+        firingUnacked > 0 ||
+        pipelineStale,
       health_status: health.status,
       new_issues: newIssueCount,
       regressed_issues: regressedCount,

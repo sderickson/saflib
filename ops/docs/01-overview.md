@@ -129,6 +129,7 @@ The host's Alertmanager posts every alert to each app's `POST /ops/alerts/webhoo
 - `GET /ops/alerts` (`ops:read`): firing alerts by default; `status=all&since=` for everything active since then; `unacked=true`.
 - `POST /ops/alerts/{id}/ack` (`ops:triage`): marks it seen, recorded as `ops_token:<id>`.
 - The digest's `alerts` section lists what's firing, and unacknowledged firing alerts (`summary.firing_alerts`) count toward `needs_attention`.
+- The always-firing **Watchdog** is also delivered to each app's webhook (every 5 minutes, never to Slack) as a heartbeat. It's left out of alert lists and `needs_attention`; the digest's `alerts.pipeline_last_seen_at` shows when it last arrived, proving Prometheus, Alertmanager, the webhook and its token all work. If it has arrived before but not in 15 minutes, `alerts.pipeline_stale` is true and counts toward `needs_attention`.
 
 ### Alert rules and routing
 

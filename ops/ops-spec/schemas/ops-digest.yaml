@@ -122,7 +122,7 @@ properties:
     oneOf:
       - type: "null"
       - type: object
-        required: [ firing, firing_unacked, fired_in_window ]
+        required: [ firing, firing_unacked, fired_in_window, pipeline_last_seen_at, pipeline_stale ]
         properties:
           firing:
             type: array
@@ -132,3 +132,15 @@ properties:
             type: integer
           fired_in_window:
             type: integer
+          pipeline_last_seen_at:
+            type: [ string, "null" ]
+            format: date-time
+            description: >
+              Last delivery of the always-firing Watchdog, which proves
+              Prometheus, Alertmanager and this webhook (and its token) work.
+              Null if it has never arrived.
+          pipeline_stale:
+            type: boolean
+            description: >
+              The Watchdog has arrived before but not in the last 15 minutes:
+              alerting is broken. Counts toward `needs_attention`.

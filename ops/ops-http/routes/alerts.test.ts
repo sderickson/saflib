@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import request from "supertest";
-import { createToken, opsDb, type OpsTokenScope } from "@saflib/ops-db";
+import { createToken, opsDb, upsertAlerts, type OpsTokenScope } from "@saflib/ops-db";
 import { throwError } from "@saflib/utils";
 import { createApp } from "../http.ts";
 
@@ -11,7 +11,7 @@ async function setup() {
     const { token } = await throwError(createToken(dbKey, { name: "t", scopes, createdBy: null }));
     return { authorization: `Bearer ${token}` };
   };
-  return { app, ingest: await token(["ops:alerts-ingest"]), reader: await token(["ops:read"]), triager: await token(["ops:read", "ops:triage"]) };
+  return { dbKey, app, ingest: await token(["ops:alerts-ingest"]), reader: await token(["ops:read"]), triager: await token(["ops:read", "ops:triage"]) };
 }
 
 const payload = (status: "firing" | "resolved", endsAt = "0001-01-01T00:00:00Z") => ({
@@ -81,5 +81,37 @@ describe("/ops/alerts", () => {
   it("404s acking an unknown alert", async () => {
     const { app, triager } = await setup();
     await request(app).post("/ops/alerts/nope/ack").set(triager).send({}).expect(404);
+  });
+
+  it("treats the Watchdog as the pipeline heartbeat, not an alert", async () => {
+    const { dbKey, app, ingest, reader } = await setup();
+    const watchdog = (startsAt: string) => ({
+      fingerprint: "watchdog",
+      status: "firing" as const,
+      labels: { alertname: "Watchdog", severity: "none", saf_app: "host" },
+      annotations: { summary: "Alerting pipeline heartbeat" },
+      startsAt,
+    });
+
+    let digest = (await request(app).get("/ops/digest").set(reader).expect(200)).body.digest;
+    expect(digest.alerts).toMatchObject({ pipeline_last_seen_at: null, pipeline_stale: false });
+
+    await request(app)
+      .post("/ops/alerts/webhook")
+      .set(ingest)
+      .send({ alerts: [{ ...watchdog("2026-11-09T00:00:00Z"), endsAt: "0001-01-01T00:00:00Z" }] })
+      .expect(200);
+    expect((await request(app).get("/ops/alerts").set(reader).expect(200)).body.alerts).toHaveLength(0);
+    digest = (await request(app).get("/ops/digest").set(reader).expect(200)).body.digest;
+    expect(digest.summary).toMatchObject({ needs_attention: false, firing_alerts: 0 });
+    expect(digest.alerts.firing).toHaveLength(0);
+    expect(digest.alerts.pipeline_stale).toBe(false);
+    expect(Date.now() - new Date(digest.alerts.pipeline_last_seen_at).getTime()).toBeLessThan(60_000);
+
+    // Last delivery 20 minutes ago: alerting is broken.
+    await throwError(upsertAlerts(dbKey, [watchdog("2026-11-09T00:00:00Z")], new Date(Date.now() - 20 * 60_000)));
+    digest = (await request(app).get("/ops/digest").set(reader).expect(200)).body.digest;
+    expect(digest.alerts.pipeline_stale).toBe(true);
+    expect(digest.summary.needs_attention).toBe(true);
   });
 });

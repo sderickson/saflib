@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/utils";
-import { and, desc, eq, gte, inArray, isNull, lt, or } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lt, notInArray, or } from "drizzle-orm";
 import { opsDbManager } from "../../instances.ts";
 import { opsAlerts, type OpsAlert } from "../../schema.ts";
 import { OpsAlertNotFoundError } from "../../errors.ts";
@@ -69,6 +69,10 @@ export interface ListAlertsParams {
   activeSince?: Date;
   /** Only unacknowledged alerts. */
   unacked?: boolean;
+  /** Leave these out (e.g. the Watchdog heartbeat). */
+  excludeAlertnames?: string[];
+  /** Only these. */
+  alertnames?: string[];
   limit?: number;
 }
 
@@ -81,6 +85,8 @@ export const listAlerts = queryWrapper(
       where.push(or(eq(opsAlerts.status, "firing"), gte(opsAlerts.ends_at, params.activeSince)));
     }
     if (params.unacked) where.push(isNull(opsAlerts.acked_at));
+    if (params.excludeAlertnames?.length) where.push(notInArray(opsAlerts.alertname, params.excludeAlertnames));
+    if (params.alertnames?.length) where.push(inArray(opsAlerts.alertname, params.alertnames));
     const rows = await db
       .select()
       .from(opsAlerts)

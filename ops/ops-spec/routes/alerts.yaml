@@ -80,7 +80,8 @@ listOpsAlerts:
   summary: Alerts
   description: >
     Firing alerts by default, newest first. `status=all` with `since` lists
-    everything that fired since then, including resolved alerts.
+    everything that fired since then, including resolved alerts. The
+    Watchdog heartbeat is left out (see the digest's `pipeline_last_seen_at`).
   operationId: listOpsAlerts
   security:
     - ops-token: [ "ops:read" ]

@@ -15,6 +15,15 @@ import type { OpsCaller } from "../auth/ops-token-resolver.ts";
 import { opsServiceStorage } from "../context.ts";
 import { queryDate, queryString } from "./_helpers.ts";
 
+/**
+ * The always-firing heartbeat rule. Alertmanager sends it to each app's
+ * webhook to prove delivery works; it is never an alert to act on.
+ */
+export const WATCHDOG_ALERTNAME = "Watchdog";
+
+/** How long without a Watchdog delivery before the pipeline counts as broken. */
+export const PIPELINE_STALE_MS = 15 * 60_000;
+
 function parseObject(json: string): Record<string, string> {
   try {
     const v = JSON.parse(json) as unknown;
@@ -59,6 +68,7 @@ export const listOpsAlertsHandler = createHandler(async function (req, res) {
       statuses: status === "all" ? undefined : [status as OpsAlert["status"]],
       activeSince: queryDate(req.query.since),
       unacked: String(req.query.unacked) === "true",
+      excludeAlertnames: [WATCHDOG_ALERTNAME],
       limit: req.query.limit === undefined ? undefined : Number(req.query.limit),
     }),
   );
