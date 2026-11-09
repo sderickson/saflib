@@ -37,7 +37,12 @@ groups:
           description: "Over 5% of requests returned 5xx for 10 minutes."
 
       - alert: SafCrashLooping
-        expr: changes(process_start_time_seconds[30m]) >= 3
+        # Deploys restart processes too (the platform deploy recreates every
+        # platform service), so stay quiet for 30 minutes after one. A real
+        # crash loop keeps restarting and fires once that window passes.
+        expr: |
+          changes(process_start_time_seconds[30m]) >= 3
+          unless on () (time() - max(saf_release_timestamp_seconds) < 1800)
         labels:
           severity: critical
         annotations:

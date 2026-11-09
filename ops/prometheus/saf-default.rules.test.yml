@@ -97,6 +97,37 @@ tests:
               summary: "hub: a new error issue appeared"
               description: "See GET /ops/issues?status=open for details."
 
+  - name: restarts right after a deploy aren't a crash loop; restarts without one are
+    interval: 1m
+    input_series:
+      # Restarted at minutes 1, 3 and 5.
+      - series: 'process_start_time_seconds{saf_app="host", job="prometheus", instance="p"}'
+        values: "0 60 60 180 180 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300"
+      - series: 'process_start_time_seconds{saf_app="hub", job="hub", instance="h"}'
+        values: "0 60 60 180 180 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300"
+      # A deploy at minute 4 (the release stamp's time).
+      - series: 'saf_release_timestamp_seconds{saf_app="hub", service_name="hub"}'
+        values: "240x20"
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: SafCrashLooping
+        exp_alerts: []
+  - name: three restarts with no recent deploy fire
+    interval: 1m
+    input_series:
+      - series: 'process_start_time_seconds{saf_app="hub", job="hub", instance="h"}'
+        values: "0 60 60 180 180 300 300 300 300 300"
+      - series: 'saf_release_timestamp_seconds{saf_app="hub", service_name="hub"}'
+        values: "-7200x10"
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: SafCrashLooping
+        exp_alerts:
+          - exp_labels: { severity: critical, saf_app: hub, job: hub, instance: h }
+            exp_annotations:
+              summary: "hub restarted 3 times in 30 minutes"
+              description: "The process at h keeps restarting."
+
   - name: the watchdog always fires
     alert_rule_test:
       - eval_time: 1m

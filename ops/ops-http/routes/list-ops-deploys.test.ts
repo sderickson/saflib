@@ -87,5 +87,7 @@ describe("GET /ops/deploys", () => {
     expect(
       res.body.deploys.map((d: { release_assets_hash: string }) => d.release_assets_hash),
     ).toEqual(["kratos-v2", "kratos-v1"]);
+    const metric = await client.register.getSingleMetricAsString("saf_release_timestamp_seconds");
+    expect(metric).toMatch(new RegExp(`saf_release_timestamp_seconds\\{[^}]*\\} ${Date.parse("2026-11-09T01:00:00.000Z") / 1000}`));
   });
 });

@@ -51,6 +51,26 @@ export function registerBuildInfoMetric(info: BuildInfo | undefined, service: st
 }
 
 /**
+ * `saf_release_timestamp_seconds{service_name}`: when the deploy that started
+ * this process ran (its release stamp). Alert rules use it to tell restarts
+ * caused by a deploy from a crash loop.
+ */
+export function registerReleaseMetric(release: ReleaseInfo | undefined, service: string) {
+  const releasedAt = parseDate(release?.released_at);
+  const name = "saf_release_timestamp_seconds";
+  const existing = client.register.getSingleMetric(name);
+  const gauge =
+    (existing as client.Gauge<string> | undefined) ??
+    new client.Gauge({
+      name,
+      help: "Unix time of the deploy that started this process (from its release stamp)",
+      labelNames: ["service_name"],
+    });
+  gauge.reset();
+  if (releasedAt) gauge.set({ service_name: service }, releasedAt.getTime() / 1000);
+}
+
+/**
  * Record this process's start in ops-db and publish `saf_build_info`.
  * Never throws: a failure is logged and resolves to `undefined`.
  */
@@ -62,6 +82,7 @@ export async function recordCurrentBoot(
   const service = serviceName();
   try {
     registerBuildInfoMetric(info, service);
+    registerReleaseMetric(release, service);
     const { result } = await recordBoot(dbKey, {
       service_name: service,
       color: process.env.SAF_COLOR?.trim() || null,
