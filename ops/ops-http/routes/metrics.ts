@@ -6,6 +6,7 @@ import {
   enforceSeriesCap,
   METRICS_LIMITS,
   promGet,
+  validateRange,
   toUnixSeconds,
   type OpsMetricsConfig,
 } from "../metrics/prometheus.ts";
@@ -47,19 +48,7 @@ export const queryOpsMetricsRangeHandler = createHandler(async function (req, re
   const start = queryDate(req.query.start)!;
   const end = queryDate(req.query.end)!;
   const step = req.query.step === undefined ? 300 : Number(req.query.step);
-  const rangeSeconds = (end.getTime() - start.getTime()) / 1000;
-  if (rangeSeconds <= 0) throw createError(400, "end must be after start");
-  if (rangeSeconds > METRICS_LIMITS.maxRangeSeconds) {
-    throw createError(400, "Range is over 31 days (Prometheus keeps 30)");
-  }
-  if (step < METRICS_LIMITS.minStepSeconds) {
-    throw createError(400, "step must be at least 60 seconds (the scrape interval)");
-  }
-  const points = Math.floor(rangeSeconds / step) + 1;
-  if (points > METRICS_LIMITS.maxPointsPerSeries) {
-    const minStep = Math.ceil(rangeSeconds / (METRICS_LIMITS.maxPointsPerSeries - 1));
-    throw createError(400, `${points} points per series is over ${METRICS_LIMITS.maxPointsPerSeries}; use step >= ${minStep}`);
-  }
+  validateRange(start.getTime() / 1000, end.getTime() / 1000, step);
   const params = new URLSearchParams({
     query: String(req.query.query),
     start: toUnixSeconds(start),

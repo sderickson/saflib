@@ -16,6 +16,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@saflib/drizzle": "*",
     "@saflib/errors-db": "*",
     "@saflib/express": "*",
@@ -25,6 +26,7 @@
     "@saflib/ops-db": "*",
     "@saflib/ops-spec": "*",
     "@saflib/utils": "*",
+    "dejavu-fonts-ttf": "^2.37.3",
     "express": "^5.0.0",
     "http-errors": "^2.0.0",
     "prom-client": "^15.1.3"

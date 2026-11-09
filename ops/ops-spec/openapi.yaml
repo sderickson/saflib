@@ -86,6 +86,15 @@ paths:
   /ops/metrics/series:
     get:
       $ref: "./routes/metrics.yaml#/listOpsMetricsSeries"
+  /ops/metrics/graph-links:
+    post:
+      $ref: "./routes/metrics.yaml#/createOpsGraphLink"
+  /ops/metrics/graph.svg:
+    get:
+      $ref: "./routes/metrics.yaml#/getOpsGraphSvg"
+  /ops/metrics/graph.png:
+    get:
+      $ref: "./routes/metrics.yaml#/getOpsGraphPng"
   /admin/logs:
     get:
       $ref: "./routes/logs.yaml#/listAdminLogs"

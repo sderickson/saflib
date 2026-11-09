@@ -2140,6 +2140,7 @@
             "name": "query",
             "in": "query",
             "required": true,
+            "allowReserved": true,
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -2256,6 +2257,7 @@
             "name": "query",
             "in": "query",
             "required": true,
+            "allowReserved": true,
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -2391,6 +2393,7 @@
             "name": "match",
             "in": "query",
             "required": true,
+            "allowReserved": true,
             "description": "Series selectors, e.g. `http_request_duration_seconds_count`.",
             "style": "form",
             "explode": true,
@@ -2473,6 +2476,492 @@
           },
           "403": {
             "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Metrics are not enabled for this product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Prometheus is unreachable or timed out.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/metrics/graph-links": {
+      "post": {
+        "summary": "Mint a signed graph link",
+        "description": "Returns SVG and PNG URLs for a line graph of `query` over a time range. The URLs work without a token (for `<img>` tags in GitHub, Slack, email), and only ever show this exact graph: the signature covers the query, range, step, size and title. Relative times are resolved now, so the graph is reproducible. Nothing is stored. Same limits as `queryOpsMetricsRange`.\n",
+        "operationId": "createOpsGraphLink",
+        "security": [
+          {
+            "ops-token": [
+              "ops:read"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "query"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "start": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Default 24 hours before `end`."
+                  },
+                  "end": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Default now."
+                  },
+                  "step": {
+                    "type": "integer",
+                    "minimum": 60,
+                    "description": "Seconds between points (default chosen for about 300 points)."
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 200,
+                    "maximum": 1600,
+                    "default": 720
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 120,
+                    "maximum": 1000,
+                    "default": 320
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "default": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The signed links.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "graph_link"
+                  ],
+                  "properties": {
+                    "graph_link": {
+                      "type": "object",
+                      "required": [
+                        "svg_url",
+                        "png_url",
+                        "start",
+                        "end",
+                        "step"
+                      ],
+                      "properties": {
+                        "svg_url": {
+                          "type": "string"
+                        },
+                        "png_url": {
+                          "type": "string"
+                        },
+                        "start": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "end": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "step": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid PromQL, or the query exceeds a limit (range over 31 days, step under 60s, more than 1,500 points per series, more than 200 series). The message says which and how to narrow it.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Metrics are not enabled for this product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Prometheus is unreachable or timed out.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/metrics/graph.svg": {
+      "get": {
+        "description": "Renders a graph from a signed link (see `createOpsGraphLink`). Public: the signature is the credential. Responses are immutable and cacheable. Rate limited per IP.\n",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "allowReserved": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "step",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 60
+            }
+          },
+          {
+            "name": "w",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 200,
+              "maximum": 1600
+            }
+          },
+          {
+            "name": "h",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 120,
+              "maximum": 1000
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "required": false,
+            "allowReserved": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "kid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "sig",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          }
+        ],
+        "x-public": true,
+        "summary": "Graph image (SVG)",
+        "operationId": "getOpsGraphSvg",
+        "responses": {
+          "200": {
+            "description": "The graph.",
+            "content": {
+              "image/svg+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The graph's query is invalid or over a limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Bad signature, or the signing key was revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Metrics are not enabled for this product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Prometheus is unreachable or timed out.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/metrics/graph.png": {
+      "get": {
+        "description": "Renders a graph from a signed link (see `createOpsGraphLink`). Public: the signature is the credential. Responses are immutable and cacheable. Rate limited per IP.\n",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "allowReserved": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "step",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 60
+            }
+          },
+          {
+            "name": "w",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 200,
+              "maximum": 1600
+            }
+          },
+          {
+            "name": "h",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 120,
+              "maximum": 1000
+            }
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "required": false,
+            "allowReserved": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "kid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "sig",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          }
+        ],
+        "x-public": true,
+        "summary": "Graph image (PNG)",
+        "operationId": "getOpsGraphPng",
+        "responses": {
+          "200": {
+            "description": "The graph, rendered at 2x.",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The graph's query is invalid or over a limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Bad signature, or the signing key was revoked.",
             "content": {
               "application/json": {
                 "schema": {

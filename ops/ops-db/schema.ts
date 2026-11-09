@@ -97,3 +97,25 @@ export const opsBoots = sqliteTable("ops_boots", {
 });
 
 export type OpsBootTest1 = Expect<Equal<OpsBoot, typeof opsBoots.$inferSelect>>;
+
+/**
+ * HMAC keys for signed graph links (`/ops/metrics/graph.*`). The newest
+ * active key signs; any active key verifies. Created on first use, so there
+ * is no secret to deploy. Revoking a key breaks every link it signed.
+ */
+export interface OpsGraphKey {
+  id: string;
+  /** 32 random bytes, base64url. */
+  secret: string;
+  created_at: Date;
+  revoked_at: Date | null;
+}
+
+export const opsGraphKeys = sqliteTable("ops_graph_keys", {
+  id: text("id").primaryKey(),
+  secret: text("secret").notNull(),
+  created_at: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  revoked_at: integer("revoked_at", { mode: "timestamp_ms" }),
+});
+
+export type OpsGraphKeyTest1 = Expect<Equal<OpsGraphKey, typeof opsGraphKeys.$inferSelect>>;

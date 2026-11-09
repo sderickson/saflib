@@ -283,6 +283,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/metrics/graph-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mint a signed graph link
+         * @description Returns SVG and PNG URLs for a line graph of `query` over a time range. The URLs work without a token (for `<img>` tags in GitHub, Slack, email), and only ever show this exact graph: the signature covers the query, range, step, size and title. Relative times are resolved now, so the graph is reproducible. Nothing is stored. Same limits as `queryOpsMetricsRange`.
+         */
+        post: operations["createOpsGraphLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/metrics/graph.svg": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Graph image (SVG)
+         * @description Renders a graph from a signed link (see `createOpsGraphLink`). Public: the signature is the credential. Responses are immutable and cacheable. Rate limited per IP.
+         */
+        get: operations["getOpsGraphSvg"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/metrics/graph.png": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Graph image (PNG)
+         * @description Renders a graph from a signed link (see `createOpsGraphLink`). Public: the signature is the credential. Responses are immutable and cacheable. Rate limited per IP.
+         */
+        get: operations["getOpsGraphPng"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/logs": {
         parameters: {
             query?: never;
@@ -1485,6 +1545,264 @@ export interface operations {
                 };
             };
             /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Metrics are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Prometheus is unreachable or timed out. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    createOpsGraphLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    query: string;
+                    /**
+                     * Format: date-time
+                     * @description Default 24 hours before `end`.
+                     */
+                    start?: string;
+                    /**
+                     * Format: date-time
+                     * @description Default now.
+                     */
+                    end?: string;
+                    /** @description Seconds between points (default chosen for about 300 points). */
+                    step?: number;
+                    /** @default 720 */
+                    width?: number;
+                    /** @default 320 */
+                    height?: number;
+                    /** @default  */
+                    title?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The signed links. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        graph_link: {
+                            svg_url: string;
+                            png_url: string;
+                            /** Format: date-time */
+                            start: string;
+                            /** Format: date-time */
+                            end: string;
+                            step: number;
+                        };
+                    };
+                };
+            };
+            /** @description Invalid PromQL, or the query exceeds a limit (range over 31 days, step under 60s, more than 1,500 points per series, more than 200 series). The message says which and how to narrow it. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Metrics are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Prometheus is unreachable or timed out. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getOpsGraphSvg: {
+        parameters: {
+            query: {
+                q: string;
+                start: number;
+                end: number;
+                step: number;
+                w: number;
+                h: number;
+                title?: string;
+                kid: string;
+                sig: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The graph. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/svg+xml": string;
+                };
+            };
+            /** @description The graph's query is invalid or over a limit. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Bad signature, or the signing key was revoked. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Metrics are not enabled for this product. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Prometheus is unreachable or timed out. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getOpsGraphPng: {
+        parameters: {
+            query: {
+                q: string;
+                start: number;
+                end: number;
+                step: number;
+                w: number;
+                h: number;
+                title?: string;
+                kid: string;
+                sig: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The graph, rendered at 2x. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
+            };
+            /** @description The graph's query is invalid or over a limit. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Bad signature, or the signing key was revoked. */
             403: {
                 headers: {
                     [name: string]: unknown;

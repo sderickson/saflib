@@ -22,6 +22,11 @@ import {
   queryOpsMetricsHandler,
   queryOpsMetricsRangeHandler,
 } from "./metrics.ts";
+import {
+  createOpsGraphLinkHandler,
+  getOpsGraphPngHandler,
+  getOpsGraphSvgHandler,
+} from "./graphs.ts";
 
 /** Routes with full paths (`/ops/*`, `/admin/ops-tokens*`). */
 export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
@@ -40,6 +45,9 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.get("/ops/metrics/query", queryOpsMetricsHandler);
   router.get("/ops/metrics/query_range", queryOpsMetricsRangeHandler);
   router.get("/ops/metrics/series", listOpsMetricsSeriesHandler);
+  router.post("/ops/metrics/graph-links", createOpsGraphLinkHandler);
+  router.get("/ops/metrics/graph.svg", getOpsGraphSvgHandler);
+  router.get("/ops/metrics/graph.png", getOpsGraphPngHandler);
   router.get("/ops/issues", listOpsIssuesHandler);
   router.get("/ops/issues/:id", getOpsIssueHandler);
   router.get("/ops/issues/:id/occurrences", listOpsIssueOccurrencesHandler);

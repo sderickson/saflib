@@ -34,8 +34,13 @@ export type {
   ListBootsResult,
   CountBootsSinceResult,
 } from "./queries/ops-boots/list-boots.ts";
+export {
+  findActiveGraphKey,
+  getOrCreateSigningKey,
+  revokeGraphKey,
+} from "./queries/ops-graph-keys/graph-keys.ts";
 export { opsTokenScopes } from "./schema.ts";
-export type { OpsBoot, OpsToken, OpsTokenScope } from "./schema.ts";
+export type { OpsBoot, OpsGraphKey, OpsToken, OpsTokenScope } from "./schema.ts";
 
 import { opsDbManager } from "./instances.ts";
 

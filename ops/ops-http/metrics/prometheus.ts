@@ -82,3 +82,23 @@ export function enforceSeriesCap(count: number): void {
     );
   }
 }
+
+/** Range-query limits (unix seconds); throws a 400 saying how to fix it. */
+export function validateRange(start: number, end: number, step: number): void {
+  const rangeSeconds = end - start;
+  if (rangeSeconds <= 0) throw createError(400, "end must be after start");
+  if (rangeSeconds > METRICS_LIMITS.maxRangeSeconds) {
+    throw createError(400, "Range is over 31 days (Prometheus keeps 30)");
+  }
+  if (step < METRICS_LIMITS.minStepSeconds) {
+    throw createError(400, "step must be at least 60 seconds (the scrape interval)");
+  }
+  const points = Math.floor(rangeSeconds / step) + 1;
+  if (points > METRICS_LIMITS.maxPointsPerSeries) {
+    const minStep = Math.ceil(rangeSeconds / (METRICS_LIMITS.maxPointsPerSeries - 1));
+    throw createError(
+      400,
+      `${points} points per series is over ${METRICS_LIMITS.maxPointsPerSeries}; use step >= ${minStep}`,
+    );
+  }
+}
