@@ -26,6 +26,21 @@ optional  → kratosSessionRouteRecords() on auth for /settings + /verify-wall
 
 Products configure recovery → settings redirects via `configureAuthApp({ postRecoverySettingsHref })`.
 
+## Second factors
+
+SAF products offer two second factors (AAL2), and users pick either or both:
+
+- **Authenticator app** (TOTP).
+- **Passkey or security key**: Kratos's `webauthn` method with `passwordless: false`.
+
+The first-factor `passkey` method (passwordless sign-in) stays off: it drives the same browser prompt as `webauthn`, so the two compete. The platform and product templates (`base/platform/kratos*`, `base/product/dev/kratos`) ship this setup. It takes all three of the following; leaving any out fails quietly:
+
+1. **`kratos.yml`**: `totp` and `webauthn` enabled. The `webauthn` `rp.origins` list every page that runs the ceremony, which is auth (sign-in) and account (setup).
+2. **`identity.schema.json`**: the email trait's credentials mark `webauthn: { identifier: true }` and `totp: { account_name: true }`. Without the webauthn identifier, the browser creates a key but Kratos never attaches it, and the settings page just reloads.
+3. **Account `/mfa` route**: `SettingsSectionAsync` with `section: "mfa"`, which renders both groups from one flow. `section: "totp"` shows only the authenticator app.
+
+A settings flow lists only the methods enabled when it was created, so after changing methods, open the settings page without a `?flow=` parameter.
+
 ## Page structure
 
 Each flow uses `*Async.vue` (lazy load), a page `*.vue` (fetch flow, error panels), and `*FlowForm.vue` (submit). Shared rendering goes through `common/KratosFlowUi.vue`.

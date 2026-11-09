@@ -6,8 +6,8 @@ export const account_settings_section = {
   mfa_required:
     "For security, multi-factor authentication is required for admin accounts and strongly recommended for everyone.",
   mfa_intro_setup:
-    "Use the authenticator built into your phone — Passwords on iPhone, or Google Password Manager / the Authenticator app on Android. Open it, add this account with the QR code (or secret key) below, then enter the code it shows.",
+    "Add a second factor: a passkey or security key, or an authenticator app (Passwords on iPhone, Google Password Manager or an Authenticator app on Android).",
   mfa_intro_linked:
-    "Your account already has an authenticator app linked. To change it, unlink the current authenticator below first, then set up a new one.",
+    "Your account has a second factor linked. You can add another or remove one below.",
   sessions_title: "Manage Logged-In Sessions",
 };
