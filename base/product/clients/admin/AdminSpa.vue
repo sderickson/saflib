@@ -10,6 +10,8 @@ const adminSidebarLinks = [
   { ...adminLinks.cronJobs, name: "Cron" },
   { ...adminLinks.jobs, name: "Jobs" },
   { ...adminLinks.audit, name: "Audit" },
+  { ...adminLinks.opsIssues, name: "Issues" },
+  { ...adminLinks.opsAlerts, name: "Alerts" },
   { ...adminLinks.opsLogs, name: "Logs" },
   { ...adminLinks.opsTokens, name: "Ops tokens" },
 ];
