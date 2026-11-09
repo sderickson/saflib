@@ -58,6 +58,11 @@
       "matchDatasources": ["docker"]
     },
     {
+      "description": "TypeScript 7 is the native (Go) compiler with no JavaScript API, which openapi-typescript and vue-tsc call. Lift when both support TS 7.",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    },
+    {
       "enabled": false,
       "matchPackageNames": ["@saflib/{/,}**", "template-package-{/,}**"]
     }
