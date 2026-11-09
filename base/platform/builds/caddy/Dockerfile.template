@@ -1,10 +1,10 @@
 # Edge reverse proxy (platform deploy). Holds no product files: products serve
 # their clients from their own web containers and register routes into
 # /etc/caddy/sites (see caddy/Caddyfile).
-FROM caddy:2.11.3-builder-alpine AS caddy-rebuild
+FROM caddy:2.11.9-builder-alpine AS caddy-rebuild
 RUN xcaddy build v2.11.3
 
-FROM caddy:2.11.3-alpine
+FROM caddy:2.11.9-alpine
 COPY --from=caddy-rebuild /usr/bin/caddy /usr/bin/caddy
 RUN apk upgrade --no-cache && rm -rf /var/cache/apk/*
 
