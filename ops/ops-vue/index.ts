@@ -9,12 +9,14 @@ import AlertsPage from "./pages/AlertsPage.vue";
 import OpsDigestPanel from "./components/OpsDigestPanel.vue";
 import OpsGraph from "./components/OpsGraph.vue";
 import OpsMetricsAsync from "./pages/OpsMetricsAsync.vue";
+import DependenciesAsync from "./pages/DependenciesAsync.vue";
 
 export { configureOpsVue } from "./client.ts";
 export { useOpsAccess } from "./requests/access.ts";
 export {
   AlertsAsync,
   AlertsPage,
+  DependenciesAsync,
   IssuesAsync,
   IssuesPage,
   LogsAsync,

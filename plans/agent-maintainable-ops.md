@@ -24,7 +24,7 @@
 | 5 | Prometheus: per-host stack, standard histograms, query proxy, graph snapshots | mostly done (Tailscale, embed tests, 48h numbers left) |
 | 6 | Alerting: rules, Alertmanager to Slack and email, dead man's switch, external checks | code done; secrets and external services pending |
 | 7 | Audit: query endpoints and security summaries | todo |
-| 8 | Dependencies: deployed manifest, available versions, advisories, update policy | todo |
+| 8 | Dependencies: deployed manifest, available versions, advisories, update policy | done (deploy pending) |
 | 9 | Roll out to all products; alerts wake the agent (stretch) | todo |
 
 ## Context
@@ -808,11 +808,16 @@ Gaps found probing hub's ops API by hand (2026-11-09):
 
 ### Phase 8: Dependencies
 
-- [ ] Manifest contains the full lockfile resolution
-- [ ] Daily npm registry and OSV check job; `GET /ops/dependencies`; digest
-      section
-- [ ] Renovate config across repos: `minimumReleaseAge`,
+- [x] Manifest contains the full lockfile resolution (read at runtime from
+      the image's pruned lockfile, `/app/package-lock.json`; no build change)
+- [x] Daily npm registry and OSV check (in the ops router, not cron);
+      `GET /ops/dependencies`; digest section; admin Dependencies page
+- [x] Renovate config across repos: `minimumReleaseAge`,
       `vulnerabilityAlerts`, Docker tags in compose files
+- [ ] First live run on hub (2026-11-09, run locally against its image
+      lockfile): 557 packages, 30 advisories (high: undici and multer
+      direct; body-parser, follow-redirects, source-map-js transitive), 9
+      outdated direct dependencies
 
 ### Phase 9: Rollout and alert-driven wake
 

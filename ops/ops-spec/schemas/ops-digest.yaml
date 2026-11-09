@@ -1,5 +1,5 @@
 type: object
-required: [ since, generated_at, summary, health, deploys, issues, logs, metrics, alerts ]
+required: [ since, generated_at, summary, health, deploys, issues, logs, metrics, alerts, dependencies ]
 properties:
   since:
     type: string
@@ -144,3 +144,35 @@ properties:
             description: >
               The Watchdog has arrived before but not in the last 15 minutes:
               alerting is broken. Counts toward `needs_attention`.
+  dependencies:
+    description: >
+      Counts from the latest dependency check (see GET /ops/dependencies).
+      High or critical advisories (`actionable`) and a stale check count
+      toward `needs_attention`; outdated packages don't (Renovate's job).
+      Null when the product has no lockfile to check.
+    oneOf:
+      - type: "null"
+      - type: object
+        required: [ checked_at, stale, advisories, actionable, outdated_direct, renovate_due ]
+        properties:
+          checked_at:
+            type: [ string, "null" ]
+            format: date-time
+            description: Null until the first check finishes.
+          stale:
+            type: boolean
+          advisories:
+            type: object
+            required: [ critical, high, moderate, low, unknown ]
+            properties:
+              critical: { type: integer }
+              high: { type: integer }
+              moderate: { type: integer }
+              low: { type: integer }
+              unknown: { type: integer }
+          actionable:
+            type: integer
+          outdated_direct:
+            type: integer
+          renovate_due:
+            type: integer

@@ -4,7 +4,7 @@
     <p>{{ t(strings.description) }}</p>
 
     <!-- What the daily check sees: health, alerts, issues, traffic, graphs. -->
-    <OpsDigestPanel class="mt-4" :issues-to="adminLinks.opsIssues.path" :alerts-to="adminLinks.opsAlerts.path" />
+    <OpsDigestPanel class="mt-4" :issues-to="adminLinks.opsIssues.path" :alerts-to="adminLinks.opsAlerts.path" :dependencies-to="adminLinks.opsDependencies.path" />
 
     <div class="mt-4 text-body-2">
       <p class="text-medium-emphasis mb-1">{{ t(strings.gitHashesHeading) }}</p>

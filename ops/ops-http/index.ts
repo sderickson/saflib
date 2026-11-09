@@ -25,3 +25,6 @@ export {
   type OpsNotification,
   type OpsNotifierOptions,
 } from "./notify/notifier.ts";
+export { checkDependencies, type DependencyReport } from "./dependencies/check.ts";
+export { parseLockfile, readManifest, type DependencyManifest } from "./dependencies/manifest.ts";
+export { runDependencyCheckOnce, startDependencyChecks } from "./dependencies/scheduler.ts";
