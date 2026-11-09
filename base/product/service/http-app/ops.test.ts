@@ -23,10 +23,16 @@ describe("ops API in the base app", () => {
     else process.env.DEPLOYMENT_NAME = prevDeploymentName;
   });
 
-  it("defers /ops/* past the session gate to the ops-token scheme", async () => {
-    const res = await request(lease.app).get("/ops/health").expect(401);
-    // The ops resolver's message, not the session gate's generic one.
+  it("defers /ops/* past the session gate to the operation's own security", async () => {
+    // A bearer credential goes to the ops-token scheme: its message, not the gate's.
+    const res = await request(lease.app)
+      .get("/ops/health")
+      .set("authorization", "Bearer safops_not-a-real-token-000000000000")
+      .expect(401);
     expect(res.body.message).toMatch(/ops token/i);
+    // Otherwise the session alternative applies: site admins get in, anonymous doesn't.
+    await request(lease.app).get("/ops/health").expect(401);
+    await request(lease.app).get("/ops/health").set(makeAdminHeaders()).expect(200);
   });
 
   it("serves health with base checks for a valid token", async () => {
