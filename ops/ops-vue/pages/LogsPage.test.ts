@@ -29,7 +29,7 @@ const requests: URL[] = [];
 describe("LogsAsync", () => {
   stubGlobals();
   setupMockServer([
-    http.get(`${API}/admin/logs`, ({ request }) => {
+    http.get(`${API}/ops/logs`, ({ request }) => {
       const url = new URL(request.url);
       requests.push(url);
       if (url.searchParams.get("cursor") === "2") {

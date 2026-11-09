@@ -14,8 +14,8 @@ import {
   type SetIssueStatusParams,
 } from "@saflib/errors-db";
 import { opsServiceStorage } from "../context.ts";
-import type { OpsCaller } from "../auth/ops-token-resolver.ts";
 import { mapIssue, mapOccurrence, queryDate, queryList, queryString } from "./_helpers.ts";
+import { callerActor } from "./_helpers.ts";
 
 function issuesDbKey(): DbKey {
   const { issuesDbKey } = opsServiceStorage.getStore()!;
@@ -81,10 +81,6 @@ export const listOpsIssueOccurrencesHandler = createHandler(async function (req,
   res.status(200).json(response);
 });
 
-function actor(res: Response): string {
-  const caller = res.locals.opsToken as OpsCaller | undefined;
-  return caller ? `ops_token:${caller.id}` : "unknown";
-}
 
 async function triage(req: Request, res: Response, params: SetIssueStatusParams) {
   const id = String(req.params.id);
@@ -104,7 +100,7 @@ export const resolveOpsIssueHandler = createHandler(async function (req, res) {
   const body: OpsRequestBody["resolveOpsIssue"] = req.body;
   await triage(req, res, {
     status: "resolved",
-    actor: actor(res),
+    actor: callerActor(res),
     note: body.note,
     resolvedInVersion: body.resolved_in_version,
   });
@@ -114,10 +110,10 @@ export const ignoreOpsIssueHandler = createHandler(async function (req, res) {
   const body: OpsRequestBody["ignoreOpsIssue"] = req.body;
   const until = body.until ? new Date(body.until) : null;
   if (until && until.getTime() <= Date.now()) throw createError(400, "until must be in the future");
-  await triage(req, res, { status: "ignored", actor: actor(res), note: body.note, until });
+  await triage(req, res, { status: "ignored", actor: callerActor(res), note: body.note, until });
 });
 
 export const reopenOpsIssueHandler = createHandler(async function (req, res) {
   const body: OpsRequestBody["reopenOpsIssue"] = req.body;
-  await triage(req, res, { status: "open", actor: actor(res), note: body.note });
+  await triage(req, res, { status: "open", actor: callerActor(res), note: body.note });
 });

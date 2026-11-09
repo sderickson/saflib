@@ -1,3 +1,6 @@
+import type { Response } from "express";
+import { getSafContext } from "@saflib/node";
+import type { OpsCaller } from "../auth/ops-token-resolver.ts";
 import type { OpsBoot, OpsToken } from "@saflib/ops-db";
 import type {
   OpsBootResponse,
@@ -119,4 +122,15 @@ export function queryList(value: unknown): string[] | undefined {
   const items = (Array.isArray(value) ? value : [value]).flatMap((v) => String(v).split(","));
   const list = items.map((v) => v.trim()).filter(Boolean);
   return list.length > 0 ? list : undefined;
+}
+
+/**
+ * Who made a change: `ops_token:<id>` for token callers, `user:<id>` for a
+ * site admin's session (admin pages).
+ */
+export function callerActor(res: Response): string {
+  const caller = res.locals.opsToken as OpsCaller | undefined;
+  if (caller) return `ops_token:${caller.id}`;
+  const userId = getSafContext().auth?.userId;
+  return userId ? `user:${userId}` : "unknown";
 }

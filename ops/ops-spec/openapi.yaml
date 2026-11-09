@@ -107,9 +107,6 @@ paths:
   /ops/alerts/{id}/ack:
     post:
       $ref: "./routes/alerts.yaml#/ackOpsAlert"
-  /admin/logs:
-    get:
-      $ref: "./routes/logs.yaml#/listAdminLogs"
   /admin/ops-tokens:
     get:
       $ref: "./routes/tokens.yaml#/listOpsTokens"

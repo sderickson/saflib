@@ -5,6 +5,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { createToken, opsDb } from "@saflib/ops-db";
 import { issuesDb, recordOccurrence } from "@saflib/errors-db";
 import { throwError } from "@saflib/utils";
+import { makeAdminHeaders, makeUserHeaders } from "@saflib/express";
 import { createApp } from "../http.ts";
 
 describe("ops issue endpoints", () => {
@@ -114,5 +115,15 @@ describe("ops issue endpoints", () => {
   it("responds 404 when the product hasn't enabled issues", async () => {
     const plain = createApp({ dbKey: opsKey });
     await request(plain).get("/ops/issues").set(read).expect(404);
+  });
+
+  it("lets a site admin triage from the admin pages, recorded as the user", async () => {
+    const res = await request(app)
+      .post(`/ops/issues/${hotId}/resolve`)
+      .set(makeAdminHeaders("admin-7"))
+      .send({ note: "fixed" })
+      .expect(200);
+    expect(res.body.issue).toMatchObject({ status: "resolved", status_changed_by: "user:admin-7" });
+    await request(app).post(`/ops/issues/${hotId}/reopen`).set(makeUserHeaders()).send({}).expect(403);
   });
 });

@@ -403,26 +403,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/admin/logs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Search persisted logs (admin)
-         * @description Newest first. Filters combine with AND. `q` is free text matched word by word against messages. Page with `cursor` from `next_cursor`.
-         */
-        get: operations["listAdminLogs"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/admin/ops-tokens": {
         parameters: {
             query?: never;
@@ -2132,68 +2112,6 @@ export interface operations {
             };
             /** @description Rate limited. */
             429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
-    };
-    listAdminLogs: {
-        parameters: {
-            query?: {
-                since?: string;
-                until?: string;
-                /** @description This level and anything more severe. */
-                level?: "error" | "warn" | "info" | "http" | "verbose" | "debug" | "silly";
-                service?: string;
-                q?: string;
-                /** @description A template hash. */
-                template?: string;
-                request_id?: string;
-                limit?: number;
-                cursor?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Matching lines. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        logs: components["schemas"]["ops-log-entry"][];
-                        next_cursor: string | null;
-                    };
-                };
-            };
-            /** @description Not signed in. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Not a site admin. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Logs are not enabled for this product. */
-            404: {
                 headers: {
                     [name: string]: unknown;
                 };

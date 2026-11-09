@@ -43,6 +43,18 @@ curl -H "Authorization: Bearer $SAF_OPS_TOKEN" https://api.example.com/ops/healt
 
 `ops-token` is a **standalone** security scheme (`SecurityResolver.standalone` in `@saflib/express`): it authenticates without a session, must be the only scheme in its requirement, and its operations skip CSRF. The product passes `isOpsApiRequest` as `deferAuth` to `createProductHttpApp`, so the global session gate lets `/ops/*` through to the operation's own `security`. Token admin routes are not deferred; they need a site-admin session like any admin route. Caddy lists `/ops/*` with the public monolith paths so it skips the Kratos session lookup.
 
+## Admin pages
+
+`@saflib/ops-vue` provides admin pages that call the same `/ops/*` endpoints as agents, authenticated by the admin's session instead of a token: every ops read and triage operation declares `security: [{ ops-token: [...] }, { session: [site-admin] }]`. A request with an `Authorization: Bearer` header is checked as a token (never falling back to the session); any other request needs a site-admin session with MFA. Session requests get CSRF protection; token requests don't need it. Triage and acks from the pages are recorded as `user:<id>`.
+
+- `IssuesAsync`: open / resolved / ignored issues; expand one for its details and recent occurrences (messages and stacks as plain text), and resolve, ignore (7 days or indefinitely) or reopen it.
+- `AlertsAsync`: firing alerts, or the last 7 days; acknowledge.
+- `LogsAsync`: log search (`/ops/logs`).
+- `OpsTokensAsync`: mint and revoke tokens (`/admin/ops-tokens`, session only).
+- `OpsDigestPanel`: the digest for the admin home page (health, traffic vs. the previous day, firing alerts, new and regressed issues, the alerting heartbeat) plus graphs, each a signed graph link minted with `OpsGraph`.
+
+Hub's API routes `/ops/*` around Caddy's `forward_auth`; Express still sees the admin's session because it looks the session up from the Kratos session cookie when the edge didn't stamp the identity header.
+
 ## Health checks
 
 `GET /ops/health` runs every registered check concurrently (2s timeout each; a timeout reports `fail`) and returns each result plus the worst status. It responds 200 even when checks fail.

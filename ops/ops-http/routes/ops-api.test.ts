@@ -132,7 +132,7 @@ describe("ops API", () => {
         request(app).get("/admin/ops-tokens").set(noMfa),
         request(app).post("/admin/ops-tokens").set(noMfa).send({ name: "x", scopes: ["ops:read"] }),
         request(app).post("/admin/ops-tokens/1/revoke").set(noMfa).send({}),
-        request(app).get("/admin/logs").set(noMfa),
+        request(app).get("/ops/logs").set(noMfa),
       ];
       for (const res of await Promise.all(calls)) {
         expect(res.status).toBe(403);

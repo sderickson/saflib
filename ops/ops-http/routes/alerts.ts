@@ -11,9 +11,8 @@ import {
   type OpsAlert,
 } from "@saflib/ops-db";
 import { throwError } from "@saflib/utils";
-import type { OpsCaller } from "../auth/ops-token-resolver.ts";
 import { opsServiceStorage } from "../context.ts";
-import { queryDate, queryString } from "./_helpers.ts";
+import { callerActor, queryDate, queryString } from "./_helpers.ts";
 
 /**
  * The always-firing heartbeat rule. Alertmanager sends it to each app's
@@ -78,12 +77,7 @@ export const listOpsAlertsHandler = createHandler(async function (req, res) {
 
 export const ackOpsAlertHandler = createHandler(async function (req, res) {
   const { dbKey } = opsServiceStorage.getStore()!;
-  const caller = res.locals.opsToken as OpsCaller | undefined;
-  const { result, error } = await ackAlert(
-    dbKey,
-    String(req.params.id),
-    caller ? `ops_token:${caller.id}` : "unknown",
-  );
+  const { result, error } = await ackAlert(dbKey, String(req.params.id), callerActor(res));
   if (error) {
     if (error instanceof OpsAlertNotFoundError) throw createError(404, `No alert with id ${req.params.id}`);
     throw error satisfies never;

@@ -81,11 +81,9 @@ describe("ops log endpoints", () => {
     await request(noLogs).get("/ops/logs/templates").set(auth).expect(404);
   });
 
-  it("serves the same logs to site admins at /admin/logs, not to tokens", async () => {
-    await request(app).get("/admin/logs").expect(401);
-    await request(app).get("/admin/logs").set(makeUserHeaders()).expect(403);
-    await request(app).get("/admin/logs").set(auth).expect(401);
-    const res = await request(app).get("/admin/logs?q=imported").set(makeAdminHeaders()).expect(200);
+  it("serves the same logs to site admins' sessions, not other users'", async () => {
+    await request(app).get("/ops/logs").set(makeUserHeaders()).expect(403);
+    const res = await request(app).get("/ops/logs?q=imported").set(makeAdminHeaders()).expect(200);
     expect(res.body.logs).toHaveLength(2);
   });
 

@@ -58,8 +58,6 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.post("/ops/issues/:id/resolve", resolveOpsIssueHandler);
   router.post("/ops/issues/:id/ignore", ignoreOpsIssueHandler);
   router.post("/ops/issues/:id/reopen", reopenOpsIssueHandler);
-  // Same query as /ops/logs, behind a site-admin session for the admin SPA.
-  router.get("/admin/logs", listOpsLogsHandler);
   router.get("/admin/ops-tokens", listOpsTokensHandler);
   router.post("/admin/ops-tokens", createOpsTokenHandler);
   router.post("/admin/ops-tokens/:id/revoke", revokeOpsTokenHandler);
