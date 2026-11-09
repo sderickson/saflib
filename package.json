@@ -30,8 +30,8 @@
   "overrides": {
     "vue-router": "^5.0.0",
     "vuetify": "^4.1.6",
-    "vite": "8.3.7",
-    "rolldown": "~1.2.18",
+    "vite": "8.1.7",
+    "rolldown": "~1.1.7",
     "better-sqlite3": "12.11.1",
     "vue": "3.5.45",
     "@vue/compiler-core": "3.5.45",
