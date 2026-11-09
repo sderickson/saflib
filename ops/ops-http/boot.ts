@@ -1,7 +1,12 @@
 import client from "prom-client";
 import type { DbKey } from "@saflib/drizzle";
 import { getServiceName, getSafReporters } from "@saflib/node";
-import { getBuildInfo, type BuildInfo } from "@saflib/node/git-hashes";
+import {
+  getBuildInfo,
+  getReleaseInfo,
+  type BuildInfo,
+  type ReleaseInfo,
+} from "@saflib/node/git-hashes";
 import { recordBoot, type OpsBoot } from "@saflib/ops-db";
 
 function serviceName(): string {
@@ -52,6 +57,7 @@ export function registerBuildInfoMetric(info: BuildInfo | undefined, service: st
 export async function recordCurrentBoot(
   dbKey: DbKey,
   info: BuildInfo | undefined = getBuildInfo(),
+  release: ReleaseInfo | undefined = getReleaseInfo(),
 ): Promise<OpsBoot | undefined> {
   const service = serviceName();
   try {
@@ -67,6 +73,10 @@ export async function recordCurrentBoot(
       dirty: info?.dirty ?? null,
       built_at: parseDate(info?.builtAt),
       node_version: process.version,
+      released_at: parseDate(release?.released_at),
+      release_commit_root: release?.commits?.root ?? null,
+      release_commit_saflib: release?.commits?.saflib ?? null,
+      release_assets_hash: release?.assets_hash ?? null,
     });
     return result;
   } catch (e) {

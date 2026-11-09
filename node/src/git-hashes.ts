@@ -46,6 +46,22 @@ export function getBuildInfo(): BuildInfo | undefined {
 }
 
 /**
+ * The release a deploy shipped (`saf-deploy` writes `release/release.json`
+ * into remote-assets; compose mounts it at `/etc/saf/release/`). Unlike
+ * {@link BuildInfo}, it changes on every deploy, including config-only ones.
+ */
+export interface ReleaseInfo {
+  released_at?: string;
+  commits?: Partial<GitHashes>;
+  assets_hash?: string;
+}
+
+/** The mounted release stamp, or `undefined` when none is mounted (dev, tests). */
+export function getReleaseInfo(): ReleaseInfo | undefined {
+  return readJson<ReleaseInfo>(join(buildInfoDir(), "release", "release.json"));
+}
+
+/**
  * Build infos of this image and every upstream build baked into it
  * (`/etc/saf/builds/*.json`), for diagnostics.
  */

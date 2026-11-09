@@ -45,3 +45,6 @@ saf-workflow-status.error.json
 .github/workflows/typecheck.yml
 .github/workflows/push.yml
 .github/actions/setup-node-deps/
+
+# saf-deploy release stamp (written into the upload; prod-local creates it empty)
+**/remote-assets/release/

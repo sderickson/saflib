@@ -59,7 +59,9 @@ Suites export checks for their own state (the `HealthCheck` type lives in `@safl
 - `createJobsHealthCheck` (`@saflib/jobs-http`): warns if any job went dead in the last 24h; reports queue depth.
 - `createCronHealthCheck` (`@saflib/cron-http`): warns if an enabled cron job's last run failed or timed out.
 
-The base product registers all of these plus `base-db`. Products and suites add their own by passing `healthChecks` to `createBaseOpsRouter` / `createOpsRouter`:
+`kratosCheck()` (`@saflib/ops-http`) probes Kratos's `/health/ready` on its admin API (`KRATOS_ADMIN_API_URL`), so health fails when users can't sign in even though the service itself is up.
+
+The base product registers all of these plus `base-db` and `kratos`. Products and suites add their own by passing `healthChecks` to `createBaseOpsRouter` / `createOpsRouter`:
 
 ```ts
 const myCheck: HealthCheck = {
@@ -70,7 +72,9 @@ const myCheck: HealthCheck = {
 
 ## Deploys
 
-Each time the ops router is created (once per process), it records a **boot** in `ops-db` from the image's build metadata (`/etc/saf/build.json`, written by `saf-docker build`): build ref, image, input hash, root and saflib commits, build time, Node version, and blue-green color. A boot whose build differs from the previous one is a **deploy**; the rest are restarts.
+Each time the ops router is created (once per process), it records a **boot** in `ops-db` from the image's build metadata (`/etc/saf/build.json`, written by `saf-docker build`): build ref, image, input hash, root and saflib commits, build time, Node version, and blue-green color. It also records the deploy's **release stamp** (`/etc/saf/release/release.json`, which `saf-deploy` writes into every upload and compose mounts read-only): when the deploy ran, the commits it ran from, and a hash of the deploy's remote-assets. A boot whose build *or* release differs from the previous one is a **deploy**; the rest are restarts. The release is what makes config-only deploys visible: a Kratos or Caddy change, or a new image for another service, ships without rebuilding this service's image. `release_commit_root` can be newer than `commit_root` for the same reason.
+
+The service needs `SAF_COLOR` in its environment for `color`; the template's blue-green compose passes it.
 
 `GET /ops/deploys` returns this process's boot, recent deploys, and `boots_last_24h`. Many boots with few deploys suggests a crash loop.
 

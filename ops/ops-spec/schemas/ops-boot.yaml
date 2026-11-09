@@ -1,8 +1,11 @@
 type: object
 description: >
-  One process start. `new_build` marks deploys (the build differs from the
-  previous start of the same service); the rest are restarts. Build fields
-  come from the image's build metadata and are null outside built images.
+  One process start. `new_build` marks deploys (the build or the release
+  differs from the previous start of the same service); the rest are
+  restarts. Build fields come from the image's build metadata and are null
+  outside built images. Release fields come from the stamp `saf-deploy`
+  writes on every deploy, so config-only deploys (Kratos, Caddy, another
+  image) show up too; they are null when no stamp is mounted.
 required:
   - id
   - service_name
@@ -16,6 +19,10 @@ required:
   - dirty
   - built_at
   - node_version
+  - released_at
+  - release_commit_root
+  - release_commit_saflib
+  - release_assets_hash
   - new_build
 properties:
   id:
@@ -46,5 +53,17 @@ properties:
     format: date-time
   node_version:
     type: string
+  released_at:
+    type: [ string, "null" ]
+    format: date-time
+    description: When the deploy that started this process ran.
+  release_commit_root:
+    type: [ string, "null" ]
+    description: Product repo commit the deploy ran from (`-dirty` if it had uncommitted changes). Can be newer than `commit_root`, since images are only rebuilt when their inputs change.
+  release_commit_saflib:
+    type: [ string, "null" ]
+  release_assets_hash:
+    type: [ string, "null" ]
+    description: Hash of the deploy's remote-assets (compose, Kratos and Caddy config). A change with the same build means a config-only deploy.
   new_build:
     type: boolean

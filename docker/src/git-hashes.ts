@@ -87,27 +87,40 @@ function withDirtySuffix(cwd: string, hash: string): string {
   return hasUncommittedChanges(cwd) ? `${hash}-dirty` : hash;
 }
 
+/**
+ * HEAD commits of the product repo enclosing `cwd` and of saflib, each with a
+ * `-dirty` suffix when that repo has uncommitted changes; `"unknown"` when a
+ * repo or its HEAD cannot be read.
+ */
+export function readRepoCommits(cwd: string = process.cwd()): {
+  root: string;
+  saflib: string;
+} {
+  const productRoot = findProductRoot(cwd);
+  const saflibDir = findSaflibDir();
+
+  const rootHash = getGitHash(productRoot) ?? "unknown";
+  const root =
+    rootHash === "unknown" ? rootHash : withDirtySuffix(productRoot, rootHash);
+
+  let saflib = "unknown";
+  if (existsSync(saflibDir)) {
+    const saflibHash = getGitHash(saflibDir) ?? "unknown";
+    saflib =
+      saflibHash === "unknown"
+        ? saflibHash
+        : withDirtySuffix(saflibDir, saflibHash);
+  }
+  return { root, saflib };
+}
+
 export function writeGitHashesEnvFile(options: GitHashesEnvOptions = {}): {
   root: string;
   saflib: string;
 } {
   const cwd = options.cwd ?? process.cwd();
-
-  const productRoot = findProductRoot(cwd);
   const saflibDir = findSaflibDir();
-
-  const rootHash = getGitHash(productRoot) ?? "unknown";
-  const rootWithDirty =
-    rootHash === "unknown" ? rootHash : withDirtySuffix(productRoot, rootHash);
-
-  let saflibWithDirty = "unknown";
-  if (existsSync(saflibDir)) {
-    const saflibHash = getGitHash(saflibDir) ?? "unknown";
-    saflibWithDirty =
-      saflibHash === "unknown"
-        ? saflibHash
-        : withDirtySuffix(saflibDir, saflibHash);
-  }
+  const { root: rootWithDirty, saflib: saflibWithDirty } = readRepoCommits(cwd);
 
   const jsonContent =
     JSON.stringify({ root: rootWithDirty, saflib: saflibWithDirty }, null, 2) +

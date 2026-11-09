@@ -31,6 +31,7 @@ export function mapOpsBoot(row: OpsBoot): OpsBootResponse {
     ...row,
     started_at: row.started_at.toISOString(),
     built_at: row.built_at?.toISOString() ?? null,
+    released_at: row.released_at?.toISOString() ?? null,
   };
 }
 

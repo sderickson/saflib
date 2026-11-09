@@ -58,4 +58,34 @@ describe("GET /ops/deploys", () => {
       .expect(200);
     expect(res.body.current).toMatchObject({ build_ref: null, commit_root: null, new_build: true });
   });
+
+  it("counts a config-only deploy (same image, new release stamp)", async () => {
+    const dbKey = opsDb.connect();
+    const release = (assets: string) => ({
+      released_at: "2026-11-09T01:00:00.000Z",
+      commits: { root: "deploy-root", saflib: "deploy-saflib" },
+      assets_hash: assets,
+    });
+    await recordCurrentBoot(dbKey, buildInfo("a"), release("kratos-v1"));
+    const app = createApp({ dbKey, buildInfo: buildInfo("a"), releaseInfo: release("kratos-v2") });
+    const { token } = await throwError(
+      createToken(dbKey, { name: "t", scopes: ["ops:read"], createdBy: null }),
+    );
+
+    const res = await request(app)
+      .get("/ops/deploys")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+
+    expect(res.body.current).toMatchObject({
+      build_ref: "a",
+      release_assets_hash: "kratos-v2",
+      release_commit_root: "deploy-root",
+      released_at: "2026-11-09T01:00:00.000Z",
+      new_build: true,
+    });
+    expect(
+      res.body.deploys.map((d: { release_assets_hash: string }) => d.release_assets_hash),
+    ).toEqual(["kratos-v2", "kratos-v1"]);
+  });
 });

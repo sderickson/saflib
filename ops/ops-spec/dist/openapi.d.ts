@@ -319,7 +319,7 @@ export interface components {
             checks: components["schemas"]["ops-health-check"][];
         };
         error: _Ext0_error;
-        /** @description One process start. `new_build` marks deploys (the build differs from the previous start of the same service); the rest are restarts. Build fields come from the image's build metadata and are null outside built images. */
+        /** @description One process start. `new_build` marks deploys (the build or the release differs from the previous start of the same service); the rest are restarts. Build fields come from the image's build metadata and are null outside built images. Release fields come from the stamp `saf-deploy` writes on every deploy, so config-only deploys (Kratos, Caddy, another image) show up too; they are null when no stamp is mounted. */
         "ops-boot": {
             id: string;
             service_name: string;
@@ -337,6 +337,16 @@ export interface components {
             /** Format: date-time */
             built_at: string | null;
             node_version: string;
+            /**
+             * Format: date-time
+             * @description When the deploy that started this process ran.
+             */
+            released_at: string | null;
+            /** @description Product repo commit the deploy ran from (`-dirty` if it had uncommitted changes). Can be newer than `commit_root`, since images are only rebuilt when their inputs change. */
+            release_commit_root: string | null;
+            release_commit_saflib: string | null;
+            /** @description Hash of the deploy's remote-assets (compose, Kratos and Caddy config). A change with the same build means a config-only deploy. */
+            release_assets_hash: string | null;
             new_build: boolean;
         };
         /** @description A group of occurrences of one error or warning. `open` and `regressed` need attention. `untrusted.title` comes from the first occurrence's message (redacted) and may contain outside content. */

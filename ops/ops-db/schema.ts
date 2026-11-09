@@ -45,8 +45,8 @@ export const opsTokens = sqliteTable("ops_tokens", {
 export type OpsTokenTest1 = Expect<Equal<OpsToken, typeof opsTokens.$inferSelect>>;
 
 /**
- * One process start. Rows whose build differs from the previous start for the
- * same service are deploys (`new_build`); the rest are restarts.
+ * One process start. Rows whose build or release differs from the previous
+ * start for the same service are deploys (`new_build`); the rest are restarts.
  */
 export interface OpsBoot {
   id: string;
@@ -63,6 +63,15 @@ export interface OpsBoot {
   dirty: boolean | null;
   built_at: Date | null;
   node_version: string;
+  /**
+   * From the deploy's mounted release stamp (`/etc/saf/release/release.json`);
+   * null when none is mounted. Changes on config-only deploys too.
+   */
+  released_at: Date | null;
+  release_commit_root: string | null;
+  release_commit_saflib: string | null;
+  release_assets_hash: string | null;
+  /** True when the build or the release differs from the previous start. */
   new_build: boolean;
 }
 
@@ -80,6 +89,10 @@ export const opsBoots = sqliteTable("ops_boots", {
   dirty: integer("dirty", { mode: "boolean" }),
   built_at: integer("built_at", { mode: "timestamp" }),
   node_version: text("node_version").notNull(),
+  released_at: integer("released_at", { mode: "timestamp_ms" }),
+  release_commit_root: text("release_commit_root"),
+  release_commit_saflib: text("release_commit_saflib"),
+  release_assets_hash: text("release_assets_hash"),
   new_build: integer("new_build", { mode: "boolean" }).notNull(),
 });
 

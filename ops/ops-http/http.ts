@@ -10,7 +10,7 @@ import {
 } from "./auth/ops-token-resolver.ts";
 import { processCheck } from "./health/builtin-checks.ts";
 import { recordCurrentBoot } from "./boot.ts";
-import type { BuildInfo } from "@saflib/node/git-hashes";
+import type { BuildInfo, ReleaseInfo } from "@saflib/node/git-hashes";
 import type { HealthCheck } from "./health/types.ts";
 
 export interface OpsRouterOptions {
@@ -37,6 +37,8 @@ export interface OpsRouterOptions {
   issuesDbKey?: DbKey;
   /** Build metadata override (tests); defaults to the image's `/etc/saf/build.json`. */
   buildInfo?: BuildInfo;
+  /** Release stamp override (tests); defaults to `/etc/saf/release/release.json`. */
+  releaseInfo?: ReleaseInfo;
 }
 
 /**
@@ -72,7 +74,7 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
     logsDbKey: options.logsDbKey,
     issuesDbKey: options.issuesDbKey,
     // Each router creation is one process start in production.
-    currentBoot: recordCurrentBoot(dbKey, options.buildInfo),
+    currentBoot: recordCurrentBoot(dbKey, options.buildInfo, options.releaseInfo),
   };
   const resolver = createOpsTokenSecurityResolver(() => dbKey, options.rateLimits);
 

@@ -15,6 +15,13 @@
       "when": 1794157246579,
       "tag": "0001_cuddly_wasp",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794186957085,
+      "tag": "0002_true_cerebro",
+      "breakpoints": true
     }
   ]
 }

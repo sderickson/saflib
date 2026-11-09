@@ -14,6 +14,9 @@ services:
     logging: *default-logging
     image: $CONTAINER_REGISTRY/saflib-base-monolith:latest
     container_name: __product-name__-monolith-${SAF_COLOR:-blue}
+    environment:
+      # Recorded on each boot (ops API deploys), so restarts show their color.
+      - SAF_COLOR=${SAF_COLOR:-blue}
     restart: unless-stopped
     deploy:
       resources:
@@ -23,6 +26,8 @@ services:
           memory: 128M
     memswap_limit: 2G
     volumes:
+      # The deploy's release stamp (saf-deploy), recorded on each boot.
+      - ./release:/etc/saf/release:ro
       - /opt/__product-name__/cron:/app/__product-name__/service/cron/data
       - /opt/__product-name__/db:/app/__product-name__/service/db/data
       - /opt/__product-name__/identity:/app/__product-name__/service/identity/data
