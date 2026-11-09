@@ -10,7 +10,7 @@ import { createDevLogsRouter } from "@saflib/node-log-http";
 import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 import { baseDb, baseDbManager } from "@saflib/base-db/instances";
 import { createBaseOpsRouter, isOpsApiRequest } from "@saflib/base-ops";
-import { probeCheck } from "@saflib/ops-http";
+import { kratosCheck, probeCheck } from "@saflib/ops-http";
 import { createAuditRotationHealthCheck } from "@saflib/audit-http/express/audit-rotation-health-check";
 import {
   baseAuditRecorderMiddleware,
@@ -94,6 +94,7 @@ export function buildBaseHttpApp(
           createAuditRotationHealthCheck({ getAuditDbKey: () => context.auditDbKey }),
           createJobsHealthCheck({ getDbKey: getBaseJobsDbKey }),
           createCronHealthCheck({ getDbKey: getBaseCronDbKey }),
+          kratosCheck(),
         ],
       }),
       createBaseAuditRouter(),

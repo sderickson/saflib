@@ -1,6 +1,7 @@
 import { statfs } from "node:fs/promises";
 import { monitorEventLoopDelay } from "node:perf_hooks";
 import { getHeapStatistics } from "node:v8";
+import { kratosAdminBaseUrl } from "@saflib/express";
 import type { HealthCheck, HealthCheckOutcome, HealthStatus } from "./types.ts";
 
 const MB = 1024 * 1024;
@@ -90,6 +91,29 @@ export function probeCheck(name: string, probe: () => Promise<boolean | void>): 
       return ok === false
         ? { status: "fail", summary: `${name} probe returned false` }
         : { status: "ok", summary: `${name} reachable` };
+    },
+  };
+}
+
+/**
+ * Kratos readiness (`GET <admin>/health/ready`). Products authenticate through
+ * Kratos, so the service is not healthy for users when Kratos is down even if
+ * its own process is. `baseUrl` defaults to `KRATOS_ADMIN_API_URL`
+ * (`http://kratos:4434`).
+ */
+export function kratosCheck(options: { baseUrl?: string } = {}): HealthCheck {
+  return {
+    name: "kratos",
+    async run(): Promise<HealthCheckOutcome> {
+      const base = (options.baseUrl ?? kratosAdminBaseUrl()).replace(/\/+$/, "");
+      try {
+        const res = await fetch(`${base}/health/ready`);
+        return res.ok
+          ? { status: "ok", summary: "kratos ready" }
+          : { status: "fail", summary: `kratos not ready (HTTP ${res.status})` };
+      } catch (e) {
+        return { status: "fail", summary: `kratos unreachable: ${e instanceof Error ? e.message : String(e)}` };
+      }
     },
   };
 }

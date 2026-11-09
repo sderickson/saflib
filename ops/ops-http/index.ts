@@ -7,7 +7,7 @@ export {
   type OpsTokenResolverOptions,
 } from "./auth/ops-token-resolver.ts";
 export { createFixedWindowLimiter, type FixedWindowLimiter } from "./auth/rate-limit.ts";
-export { diskCheck, processCheck, probeCheck } from "./health/builtin-checks.ts";
+export { diskCheck, kratosCheck, processCheck, probeCheck } from "./health/builtin-checks.ts";
 export { runHealthChecks } from "./health/run-health-checks.ts";
 export type {
   HealthCheck,
