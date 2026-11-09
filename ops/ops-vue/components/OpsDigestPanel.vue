@@ -58,6 +58,9 @@
               </v-chip>
               <span v-else class="text-medium-emphasis">{{ strings.noHighAdvisories }}</span>
               <span class="text-medium-emphasis"> · {{ digest.dependencies.outdated_direct }} {{ strings.outdated }}</span>
+              <v-chip v-if="digest.dependencies.runtime_eol_soon" color="warning" size="x-small" class="ml-1">
+                {{ strings.runtimeEolSoon }}
+              </v-chip>
               <router-link v-if="dependenciesTo" :to="dependenciesTo" class="ml-1">{{ strings.viewAll }}</router-link>
             </div>
           </v-card>

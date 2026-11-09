@@ -700,7 +700,7 @@ export interface components {
                 /** @description The Watchdog has arrived before but not in the last 15 minutes: alerting is broken. Counts toward `needs_attention`. */
                 pipeline_stale: boolean;
             };
-            /** @description Counts from the latest dependency check (see GET /ops/dependencies). High or critical advisories (`actionable`) and a stale check count toward `needs_attention`; outdated packages don't (Renovate's job). Null when the product has no lockfile to check. */
+            /** @description Counts from the latest dependency check (see GET /ops/dependencies). High or critical advisories (`actionable`), a runtime near or past end of life, and a stale check count toward `needs_attention`; outdated packages don't (Renovate's job). Null when the product has no lockfile to check. */
             dependencies: null | {
                 /**
                  * Format: date-time
@@ -718,9 +718,11 @@ export interface components {
                 actionable: number;
                 outdated_direct: number;
                 renovate_due: number;
+                /** @description Runtime components (Node, base OS) past or within 90 days of end of life. */
+                runtime_eol_soon: number;
             };
         };
-        /** @description The latest check of this image's installed packages (its lockfile) against OSV.dev advisories and the npm registry. Checked a couple of minutes after a deploy and then daily. */
+        /** @description The latest check of this image's installed packages (its lockfile) against OSV.dev advisories and the npm registry, and of its runtime (Node, base OS) against endoflife.date. Checked a couple of minutes after a deploy and then daily. */
         "ops-dependencies": {
             /** Format: date-time */
             checked_at: string;
@@ -760,6 +762,20 @@ export interface components {
                 update: "major" | "minor" | "patch";
                 /** @description The latest release is past the 3-day minimum release age, so Renovate should have a PR open. */
                 renovate_due: boolean;
+            }[];
+            /** @description Pins outside the lockfile that age out on their own: the Node version and the container's base OS. Upgrading means a new base image (Dockerfile `FROM`), which Renovate proposes. Empty in reports from before this was checked. */
+            runtime: {
+                /** @description endoflife.date product (nodejs, debian, alpine-linux, ubuntu). */
+                name: string;
+                version: string;
+                /** @description Release line (Node's major, Debian's major, Alpine's major.minor). */
+                cycle: string;
+                /** @description End of security support (YYYY-MM-DD); null if unknown or unannounced. */
+                eol: string | null;
+                /** @description EOL is past or within 90 days. */
+                eol_soon: boolean;
+                /** @description Newest release in this cycle. */
+                latest_in_cycle: string | null;
             }[];
             /** @description Lookups that failed; the rest of the report stands. */
             errors: string[];

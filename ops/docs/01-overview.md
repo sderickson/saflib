@@ -178,6 +178,7 @@ Built images install from a lockfile pruned to the image's own packages (`saf-do
 
 - **OSV.dev** for advisories against every installed package (batched), with severity, the lowest fixed version above the deployed one, and whether the package is a direct dependency.
 - **The npm registry** for the latest release of each direct dependency, and, for the ones behind, how old that release is. Past Renovate's 3-day `minimumReleaseAge` it's `renovate_due`: a PR should be open.
+- **endoflife.date** for the runtime: the Node version and the container's base OS (from `/etc/os-release`), with end-of-life dates. One past or within 90 days of EOL is `eol_soon` and counts toward `needs_attention`, since moving a Node major or base image takes planning and no lockfile bump does it.
 
 Reports are kept in `ops-db` (last 30). If the OSV query fails, no report is recorded, since "no advisories" would be a false all-clear. Checks are on whenever a lockfile exists (`SAF_LOCKFILE` overrides the path; `createOpsRouter({ dependencies: false })` turns them off) and never in tests.
 

@@ -1,9 +1,10 @@
 type: object
 description: >
   The latest check of this image's installed packages (its lockfile) against
-  OSV.dev advisories and the npm registry. Checked a couple of minutes after a
-  deploy and then daily.
-required: [ checked_at, stale, packages_total, direct_total, node_version, lockfile_hash, advisories, outdated, errors ]
+  OSV.dev advisories and the npm registry, and of its runtime (Node, base OS)
+  against endoflife.date. Checked a couple of minutes after a deploy and then
+  daily.
+required: [ checked_at, stale, packages_total, direct_total, node_version, lockfile_hash, advisories, outdated, runtime, errors ]
 properties:
   checked_at:
     type: string
@@ -73,6 +74,33 @@ properties:
         renovate_due:
           type: boolean
           description: The latest release is past the 3-day minimum release age, so Renovate should have a PR open.
+  runtime:
+    type: array
+    description: >
+      Pins outside the lockfile that age out on their own: the Node version and
+      the container's base OS. Upgrading means a new base image (Dockerfile
+      `FROM`), which Renovate proposes. Empty in reports from before this was
+      checked.
+    items:
+      type: object
+      required: [ name, version, cycle, eol, eol_soon, latest_in_cycle ]
+      properties:
+        name:
+          type: string
+          description: endoflife.date product (nodejs, debian, alpine-linux, ubuntu).
+        version: { type: string }
+        cycle:
+          type: string
+          description: Release line (Node's major, Debian's major, Alpine's major.minor).
+        eol:
+          type: [ string, "null" ]
+          description: End of security support (YYYY-MM-DD); null if unknown or unannounced.
+        eol_soon:
+          type: boolean
+          description: EOL is past or within 90 days.
+        latest_in_cycle:
+          type: [ string, "null" ]
+          description: Newest release in this cycle.
   errors:
     type: array
     description: Lookups that failed; the rest of the report stands.

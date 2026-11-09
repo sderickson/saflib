@@ -147,13 +147,14 @@ properties:
   dependencies:
     description: >
       Counts from the latest dependency check (see GET /ops/dependencies).
-      High or critical advisories (`actionable`) and a stale check count
-      toward `needs_attention`; outdated packages don't (Renovate's job).
+      High or critical advisories (`actionable`), a runtime near or past end
+      of life, and a stale check count toward `needs_attention`; outdated
+      packages don't (Renovate's job).
       Null when the product has no lockfile to check.
     oneOf:
       - type: "null"
       - type: object
-        required: [ checked_at, stale, advisories, actionable, outdated_direct, renovate_due ]
+        required: [ checked_at, stale, advisories, actionable, outdated_direct, renovate_due, runtime_eol_soon ]
         properties:
           checked_at:
             type: [ string, "null" ]
@@ -176,3 +177,6 @@ properties:
             type: integer
           renovate_due:
             type: integer
+          runtime_eol_soon:
+            type: integer
+            description: Runtime components (Node, base OS) past or within 90 days of end of life.

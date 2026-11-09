@@ -47,6 +47,7 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
           actionable: deps?.advisories.filter((a) => a.actionable).length ?? 0,
           outdated_direct: deps?.outdated.length ?? 0,
           renovate_due: deps?.outdated.filter((o) => o.renovate_due).length ?? 0,
+          runtime_eol_soon: deps?.runtime.filter((c) => c.eol_soon).length ?? 0,
         }
       : null;
   // Never seen: no Alertmanager delivers here yet, which isn't a failure.
@@ -115,6 +116,7 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
         firingUnacked > 0 ||
         pipelineStale ||
         (dependencies?.actionable ?? 0) > 0 ||
+        (dependencies?.runtime_eol_soon ?? 0) > 0 ||
         dependencies?.stale === true,
       health_status: health.status,
       new_issues: newIssueCount,

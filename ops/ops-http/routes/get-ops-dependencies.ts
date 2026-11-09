@@ -23,6 +23,7 @@ export async function latestDependencies(dbKey: DbKey, now: Date = new Date()): 
     lockfile_hash: r.lockfile_hash,
     advisories: r.advisories.map(({ summary, ...a }) => ({ ...a, untrusted: { summary } })),
     outdated: r.outdated,
+    runtime: r.runtime ?? [],
     errors: r.errors,
   };
 }

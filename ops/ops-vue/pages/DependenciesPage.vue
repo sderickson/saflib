@@ -14,6 +14,24 @@
         {{ strings.errors }}: {{ deps.errors.slice(0, 3).join("; ") }}
       </v-alert>
 
+      <template v-if="deps.runtime.length">
+        <h2 class="text-h6 mb-2">{{ strings.runtime }}</h2>
+        <v-table density="compact" class="elevation-1 mb-6">
+          <tbody>
+            <tr v-for="c in deps.runtime" :key="c.name" data-test="runtime-row">
+              <td><code>{{ c.name }} {{ c.version }}</code></td>
+              <td class="text-no-wrap">
+                {{ c.eol ? `${strings.eol} ${formatDate(c.eol)}` : strings.eolUnknown }}
+                <v-chip v-if="c.eol_soon" color="warning" size="x-small" class="ml-1">{{ strings.eolSoon }}</v-chip>
+              </td>
+              <td class="text-caption text-medium-emphasis text-no-wrap">
+                {{ c.latest_in_cycle && c.latest_in_cycle !== c.version ? `${strings.latestInCycle} ${c.latest_in_cycle}` : "" }}
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
+      </template>
+
       <h2 class="text-h6 mb-2">{{ strings.advisories }} ({{ deps.advisories.length }})</h2>
       <p v-if="deps.advisories.length === 0" class="text-body-2 mb-4">{{ strings.noAdvisories }}</p>
       <v-table v-else density="compact" class="elevation-1 mb-6">
