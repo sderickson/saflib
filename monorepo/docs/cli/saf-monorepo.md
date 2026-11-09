@@ -12,8 +12,9 @@ Commands:
   format <filename>     Format a file with Prettier
   lock-prune [options]  Report product/saflib workspace issues in an embedded
                         product repo. --fix repairs lockfile bookkeeping (stale
-                        entries, misplaced hoists); everything else is reported
-                        for you to decide on.
+                        entries, misplaced hoists, copies nested under
+                        workspaces) and re-resolves with npm until clean;
+                        everything else is reported for you to decide on.
   help [command]        display help for command
 ```
 

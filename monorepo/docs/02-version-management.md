@@ -6,13 +6,13 @@ This document explains who sets which versions, how npm installs them, and the t
 
 ## Platform vs product
 
-| Layer            | Examples                                          | Version ownership                                                                                                                                        |
-| ---------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Platform**     | `saflib/vue`, `saflib/sdk`, `saflib/openapi`      | Registry semver ranges in each package's `package.json`; hard pins in `saflib/package.json` `overrides`; resolved versions in `saflib/package-lock.json` |
+| Layer            | Examples                                          | Version ownership                                                                                                                                         |
+| ---------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Platform**     | `saflib/vue`, `saflib/sdk`, `saflib/openapi`      | Registry semver ranges in each package's `package.json`; hard pins in `saflib/package.json` `overrides`; resolved versions in `saflib/package-lock.json`  |
 | **Product**      | `{product}/clients/app`, `{product}/service/http` | `@saflib/*` and `@{org}/{product}-*` workspace deps (`"*"`), plus every registry package the package imports, with a range compatible with the platform's |
-| **Product root** | top-level `package.json`                          | Workspace list, shared dev tooling (`vitest`, `vue-tsc`), and `overrides` (seeded from saflib's at bootstrap; the product's to change)                    |
+| **Product root** | top-level `package.json`                          | Workspace list, shared dev tooling (`vitest`, `vue-tsc`), and `overrides` (copied from saflib's at bootstrap and on every saflib bump)                      |
 
-The platform submodule sets the versions saflib was tested against. A product should stay compatible with them (ranges that overlap, so npm can install one copy), but the product root decides its own pins.
+The platform submodule sets the versions saflib was tested against. saflib is the source of truth for every package it declares: products follow its versions and copy its overrides when they bump the submodule (see [Dependency updates](./03-dependency-updates.md)). A product chooses versions only for packages saflib doesn't use.
 
 ## One install root
 
@@ -63,7 +63,7 @@ Hard pins npm must enforce across the whole tree — versions npm cannot reliabl
 }
 ```
 
-`overrides` in a workspace member's `package.json` **do not apply** to the product root install. Bootstrap copies saflib's overrides into a new product root; after that they're the product's. lock-prune reports where they differ from saflib's, so you can decide whether to follow.
+`overrides` in a workspace member's `package.json` **do not apply** to the product root install. Bootstrap copies saflib's overrides into a new product root, and each saflib bump copies them again. lock-prune reports where they differ from saflib's; a product keeps a difference only for a reason worth writing down.
 
 ### 3. `saflib/package-lock.json` resolved versions
 
@@ -93,42 +93,40 @@ It runs before every dev-stack install (the `deps` service) and at the end of `p
 
 ## lock-prune
 
-[`saf-monorepo lock-prune`](./cli/saf-monorepo/lock-prune.md) reports product/platform drift and exits non-zero when it finds any. It changes nothing unless you pass `--fix`, and even then only repairs lockfile bookkeeping:
+[`saf-monorepo lock-prune`](./cli/saf-monorepo/lock-prune.md) reports product/platform drift, including everything the dependency alignment check reports, and exits non-zero when it finds any. It changes nothing unless you pass `--fix`, and even then only repairs lockfile bookkeeping:
 
-| Issue                                                     | With `--fix`                                 |
-| --------------------------------------------------------- | -------------------------------------------- |
-| Stale lockfile workspace paths                            | Removes dead entries from `package-lock.json` |
-| Hoisting hazard (peer only under `saflib/node_modules`)   | Moves the lockfile entry to root `node_modules/` |
-| Unhoisted registry dep (locked only under a saflib path)  | Hoists the lockfile entry to root `node_modules/` |
-| Competing product dep (range that doesn't overlap saflib's) | Reported only                              |
-| Nested lockfile version skew vs platform                  | Reported only                                |
-| Override drift vs `saflib/package.json`                   | Reported only                                |
+| Issue                                                        | With `--fix`                                                                                  |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| Stale lockfile workspace paths                               | Removes dead entries from `package-lock.json`                                                 |
+| Hoisting hazard (peer only under `saflib/node_modules`)      | Moves the lockfile entry to root `node_modules/`                                              |
+| Unhoisted registry dep (locked only under a saflib path)     | Hoists the lockfile entry to root `node_modules/`                                             |
+| Workspace duplicate (root's version again under a workspace) | Removes the nested copy                                                                       |
+| Workspace misalignment (other version under a workspace)     | Removes the nested and root copies for npm to re-resolve; reported if npm recreates the split |
+| Competing product dep (range that doesn't overlap saflib's)  | Reported only                                                                                 |
+| Nested lockfile version skew vs platform                     | Reported only                                                                                 |
+| Override drift vs `saflib/package.json`                      | Reported only                                                                                 |
 
-After `--fix`, run **`npm install` at the product root** to refresh `node_modules/`.
+`--fix` repeats until nothing fixable is left (up to five passes): apply the fixes, `npm install --package-lock-only --ignore-scripts`, check again. A misalignment that survives a clean re-resolve is a genuine range conflict. Afterwards, run **`npm install` at the product root** to refresh `node_modules/`.
 
-Nothing runs lock-prune automatically. Earlier product repos may still have a `preinstall` hook that runs `saflib/monorepo/bin/lock-prune-run.ts --yes`; that now applies only the fixes above, and the hook can be removed.
+Nothing runs lock-prune automatically. Earlier product repos may still have a `preinstall` hook that runs `saflib/monorepo/bin/lock-prune-run.ts --yes`; inside an npm install it makes a single pass without calling npm, and the hook can be removed.
 
 Implementation lives under `saflib/monorepo/src/lock-prune/`.
 
 ## Updating the platform
 
-When you bump the `saflib/` submodule:
-
-1. Pull or checkout the new submodule commit.
-2. Run `npm install` at the product root.
-3. Run the dependency alignment check, and `npm exec saf-monorepo -- lock-prune` to see where the product differs from the new platform versions.
-4. Run `npm run typecheck` and fix any product code breaks from intentional platform changes.
+[Dependency updates](./03-dependency-updates.md) is the runbook: how saflib's Renovate PRs merge themselves, and the steps for bumping saflib in a product (copy overrides, re-resolve, `lock-prune --fix`, verify).
 
 ## Design principles
 
 1. **One lockfile, one `node_modules` root, one copy of each package.** No nested install roots inside `saflib/` in product repos.
-2. **Platform sets tested versions; products stay compatible.** Products choose their own pins and overrides, within ranges npm can share with the platform.
+2. **saflib sets versions; products follow.** saflib's ranges, overrides and lockfile are what products adopt; products pick versions only for packages saflib doesn't use.
 3. **Declare what you import.** Every package, product or platform, lists the registry packages it imports, so each Docker image's staged install is complete.
 4. **Check, don't rewrite.** Tools report misalignment and leave version decisions to people; automatic fixes are limited to lockfile bookkeeping.
 
 ## Related docs
 
 - [Overview](./01-overview.md) — workspace layout and package conventions
+- [Dependency updates](./03-dependency-updates.md) — the update runbook
 - [lock-prune CLI](./cli/saf-monorepo/lock-prune.md) — flags
 - [product/init](../../product/docs/workflows/init.md) — scaffolding a new product
 - [saf-create / bootstrap](../../product/docs/01-overview.md) — new monorepo setup
