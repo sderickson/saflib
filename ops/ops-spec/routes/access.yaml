@@ -1,0 +1,30 @@
+getOpsAccess:
+  summary: The caller's admin access
+  description: >
+    Whether the caller is signed in, a site admin, and has completed MFA this
+    session, so UIs can show admin links without baking admin emails into
+    client code. Public: an anonymous caller gets all false; it only ever
+    describes the caller.
+  operationId: getOpsAccess
+  x-public: true
+  responses:
+    "200":
+      description: The caller's access.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ access ]
+            properties:
+              access:
+                type: object
+                required: [ signed_in, site_admin, mfa_completed ]
+                properties:
+                  signed_in:
+                    type: boolean
+                  site_admin:
+                    type: boolean
+                    description: The session's verified email is in the server's ADMIN_EMAILS.
+                  mfa_completed:
+                    type: boolean
+                    description: Admin pages also need this; without it they offer step-up.

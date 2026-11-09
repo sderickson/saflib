@@ -47,6 +47,9 @@
     },
     {
       "path": "../links"
+    },
+    {
+      "path": "../../../../ops/ops-vue"
     }
   ],
   "include": [

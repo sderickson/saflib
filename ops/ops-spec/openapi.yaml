@@ -50,6 +50,9 @@ paths:
   /ops/health:
     get:
       $ref: "./routes/health.yaml#/getOpsHealth"
+  /ops/access:
+    get:
+      $ref: "./routes/access.yaml#/getOpsAccess"
   /ops/digest:
     get:
       $ref: "./routes/digest.yaml#/getOpsDigest"

@@ -11,6 +11,7 @@ import OpsGraph from "./components/OpsGraph.vue";
 import OpsMetricsAsync from "./pages/OpsMetricsAsync.vue";
 
 export { configureOpsVue } from "./client.ts";
+export { useOpsAccess } from "./requests/access.ts";
 export {
   AlertsAsync,
   AlertsPage,

@@ -26,6 +26,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The caller's admin access
+         * @description Whether the caller is signed in, a site admin, and has completed MFA this session, so UIs can show admin links without baking admin emails into client code. Public: an anonymous caller gets all false; it only ever describes the caller.
+         */
+        get: operations["getOpsAccess"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ops/digest": {
         parameters: {
             query?: never;
@@ -787,6 +807,34 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getOpsAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's access. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        access: {
+                            signed_in: boolean;
+                            /** @description The session's verified email is in the server's ADMIN_EMAILS. */
+                            site_admin: boolean;
+                            /** @description Admin pages also need this; without it they offer step-up. */
+                            mfa_completed: boolean;
+                        };
+                    };
                 };
             };
         };

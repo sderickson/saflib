@@ -202,4 +202,19 @@ describe("ops API", () => {
     await request(app).get("/opsfoo").expect(404);
     await request(app).get("/admin/other").expect(404);
   });
+
+  describe("GET /ops/access", () => {
+    it("describes only the caller", async () => {
+      expect((await request(app).get("/ops/access").expect(200)).body).toEqual({
+        access: { signed_in: false, site_admin: false, mfa_completed: false },
+      });
+      expect((await request(app).get("/ops/access").set(makeUserHeaders()).expect(200)).body.access).toMatchObject({
+        signed_in: true,
+        site_admin: false,
+      });
+      const admin = await request(app).get("/ops/access").set(makeAdminHeaders()).expect(200);
+      expect(admin.body.access).toEqual({ signed_in: true, site_admin: true, mfa_completed: true });
+      expect(admin.headers["cache-control"]).toMatch(/no-store/);
+    });
+  });
 });

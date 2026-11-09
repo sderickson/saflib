@@ -10,8 +10,9 @@
   2026-11-09); the ops API answered every read endpoint with a token kept in
   1Password.
 - **Last updated:** 2026-11-09
-- **Next action:** Phase 4 against hub. Recipes wiring left over from Phase 1
-  is still open.
+- **Next action:** recipes is wired (ops API, logs, issues, metrics, alerts,
+  admin pages, email notifier) as of 2026-11-09; deploy it and mint its
+  tokens. Then Phase 7 (audit) or Phase 8 (dependencies).
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |

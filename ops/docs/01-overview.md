@@ -52,6 +52,7 @@ curl -H "Authorization: Bearer $SAF_OPS_TOKEN" https://api.example.com/ops/healt
 - `OpsMetricsAsync`: PromQL explorer over `/ops/metrics/*` (same isolation and limits as agents get). Presets for traffic, availability, performance (overall and by route), database queries, host memory/disk/CPU/load and process memory/event loop; an editable query, a 1h–7d range, a graph and a table of current values. The query and range are in the URL.
 - `LogsAsync`: log search (`/ops/logs`).
 - `OpsTokensAsync`: mint and revoke tokens (`/admin/ops-tokens`, session only).
+- `useOpsAccess(apiSubdomain, enabled)`: whether the signed-in user is a site admin, from the public `GET /ops/access` (which only ever describes the caller). Layouts use it for an "Admin" nav link instead of baking admin emails into client code.
 - `OpsDigestPanel`: the digest for the admin home page (health, traffic vs. the previous day, firing alerts, new and regressed issues, the alerting heartbeat) plus graphs, each a signed graph link minted with `OpsGraph`.
 
 Hub's API routes `/ops/*` around Caddy's `forward_auth`; Express still sees the admin's session because it looks the session up from the Kratos session cookie when the edge didn't stamp the identity header.
