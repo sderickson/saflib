@@ -1,9 +1,13 @@
 import { defineConfig } from "vitest/config";
+import { defaultMaxWorkers } from "./vitest/base-vitest.config.js";
 
 export default defineConfig({
   test: {
     fsModuleCache: true,
     isolate: false,
+    // Projects that don't set maxWorkers inherit this; Vitest refuses to run
+    // projects with different values together, and the shared configs set it.
+    maxWorkers: defaultMaxWorkers,
     env: {
       TZ: "UTC",
       NODE_OPTIONS: "--disable-warning=DEP0040",

@@ -170,11 +170,56 @@ export function sliceOperation(
   };
 }
 
+const SLICE_SOURCE = Symbol.for("@saflib/openapi/slice-source");
+/** Per source document: its private copy, or null when it can't be shared. */
+const validationCopies = new WeakMap<object, object | null>();
+
+/**
+ * Whether the document still has a `$ref` to another file. A validator given
+ * the whole document resolves every one of them, so a single dangling ref
+ * (like a template's placeholder route) would fail every route; a slice only
+ * carries the refs its own operation uses.
+ */
+function hasExternalRef(node: unknown): boolean {
+  if (Array.isArray(node)) return node.some(hasExternalRef);
+  if (node === null || typeof node !== "object") return false;
+  for (const [key, value] of Object.entries(node)) {
+    if (key === "$ref" && typeof value === "string" && !value.startsWith("#")) {
+      return true;
+    }
+    if (hasExternalRef(value)) return true;
+  }
+  return false;
+}
+
+/**
+ * The complete document a {@link sliceOperationById} slice was cut from, as
+ * one private copy per document (so validators may annotate it without
+ * touching the original). Lets every route cut from one document share a
+ * single request validator: building a validator is expensive, so one per
+ * route made startup slow. Undefined for documents that aren't slices, and
+ * for documents with refs to other files (see {@link hasExternalRef}): those
+ * validate per slice as before.
+ */
+export function fullDocumentForValidation<T extends object>(
+  slice: T,
+): T | undefined {
+  const source = (slice as Record<symbol, object | undefined>)[SLICE_SOURCE];
+  if (!source) return undefined;
+  let copy = validationCopies.get(source);
+  if (copy === undefined) {
+    copy = hasExternalRef(source) ? null : structuredClone(source);
+    validationCopies.set(source, copy);
+  }
+  return (copy ?? undefined) as T | undefined;
+}
+
 /**
  * {@link sliceOperation} by operation id: the one-operation document a route
  * validates against, cut from the package's complete OpenAPI document. The
  * result is a deep copy: validators may annotate the document they are given,
- * and slices of one document must not share objects.
+ * and slices of one document must not share objects. It remembers the
+ * document it came from (see {@link fullDocumentForValidation}).
  */
 export function sliceOperationById<T extends object>(
   document: T,
@@ -187,7 +232,9 @@ export function sliceOperationById<T extends object>(
   if (!entry) {
     throw new Error(`Unknown operationId ${operationId}`);
   }
-  return structuredClone(
+  const slice = structuredClone(
     sliceOperation(doc, entry.pathKey, entry.method, operationId),
-  ) as unknown as T;
+  );
+  Object.defineProperty(slice, SLICE_SOURCE, { value: document });
+  return slice as unknown as T;
 }

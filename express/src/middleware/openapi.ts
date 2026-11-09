@@ -4,7 +4,10 @@ import type {
   OpenApiRequestMetadata,
 } from "express-openapi-validator/dist/framework/types.ts";
 import type { InternalServerError } from "express-openapi-validator/dist/framework/types.ts";
-import { assertOpenApiOperationTags, type OpenApiDocument } from "@saflib/openapi";
+import {
+  assertOpenApiOperationTags,
+  type OpenApiDocument,
+} from "@saflib/openapi";
 import { typedEnv } from "@saflib/env";
 import { safReportersStorage } from "@saflib/node";
 import type { Request } from "express";
@@ -33,8 +36,9 @@ function propertyNameFromIssuePath(path?: string): string | undefined {
 }
 
 function formatOpenApiValidationError(err: InternalServerError): string {
-  const issues = (err as InternalServerError & { errors?: OpenApiValidationIssue[] })
-    .errors;
+  const issues = (
+    err as InternalServerError & { errors?: OpenApiValidationIssue[] }
+  ).errors;
   if (!issues?.length) {
     return err.message;
   }
@@ -69,8 +73,9 @@ function formatOpenApiValidationError(err: InternalServerError): string {
         continue;
       }
       const location =
-        issue.path?.replace(/\/[^/]+$/, "").replace(/^\/response/, "response") ||
-        "response";
+        issue.path
+          ?.replace(/\/[^/]+$/, "")
+          .replace(/^\/response/, "response") || "response";
       const existing = byLocation.get(location) ?? [];
       existing.push(property);
       byLocation.set(location, existing);
@@ -112,10 +117,7 @@ const validateResponses = {
       return;
     }
 
-    if (
-      typedEnv.NODE_ENV === "test" ||
-      typedEnv.NODE_ENV === "development"
-    ) {
+    if (typedEnv.NODE_ENV === "test" || typedEnv.NODE_ENV === "development") {
       console.error("====== OpenAPI response validation failed ======");
       console.error(err.message);
       console.error(
@@ -129,7 +131,7 @@ const validateResponses = {
   },
 };
 
-/** Shared validator stacks per spec — avoids re-compiling AJV on every router mount. */
+/** Shared validator stacks per spec, so routes that share a document share one validator. */
 const validatorCache = new WeakMap<
   OpenApiDocument,
   Map<string, OpenApiRequestHandler[]>
@@ -148,9 +150,6 @@ function buildOpenApiValidatorMiddleware(
   spec: string | OpenApiDocument,
   fileUploader?: multer.Options,
 ): OpenApiRequestHandler[] {
-  if (typeof spec === "object" && spec !== null) {
-    assertOpenApiOperationTags(spec);
-  }
   return OpenApiValidator.middleware({
     apiSpec: spec,
     validateRequests: true,
@@ -165,6 +164,73 @@ function buildOpenApiValidatorMiddleware(
     },
     fileUploader,
   });
+}
+
+/**
+ * The steps express-openapi-validator's chain has for the options above, in
+ * order. Each lazy stand-in carries the same name, so code that finds a step
+ * by name (`splitAtMultipart`) works before the real chain exists.
+ */
+const VALIDATOR_STEP_NAMES = [
+  "pathParamsMiddleware",
+  "metadataMiddleware",
+  "securityMiddleware",
+  // Present even without a `fileUploader` (the validator defaults it on).
+  "multipartMiddleware",
+  "requestMiddleware",
+  "responseMiddleware",
+];
+
+function namedHandler(
+  name: string,
+  handler: OpenApiRequestHandler,
+): OpenApiRequestHandler {
+  Object.defineProperty(handler, "name", { value: name });
+  return handler;
+}
+
+/**
+ * The validator chain, built on the first request instead of at mount.
+ * Creating it loads and preprocesses the whole document (and compiles the
+ * OpenAPI meta-schema), which for an app with many specs was over half of
+ * startup; specs that never see a request now never pay it. The first request
+ * per spec pays it instead (tens to a couple hundred ms).
+ */
+function lazyOpenApiValidatorMiddleware(
+  spec: string | OpenApiDocument,
+  fileUploader?: multer.Options,
+): OpenApiRequestHandler[] {
+  if (typeof spec === "object" && spec !== null) {
+    // Cheap, and catches untagged operations at boot rather than first use.
+    assertOpenApiOperationTags(spec);
+  }
+  const names = VALIDATOR_STEP_NAMES;
+  let chain: OpenApiRequestHandler[] | undefined;
+  const realChain = (): OpenApiRequestHandler[] => {
+    if (!chain) {
+      const built = buildOpenApiValidatorMiddleware(spec, fileUploader);
+      const builtNames = built.map((handler) => handler.name);
+      if (builtNames.join(",") !== names.join(",")) {
+        throw new Error(
+          `OpenAPI validator chain changed: expected [${names.join(", ")}], got [${builtNames.join(", ")}]`,
+        );
+      }
+      chain = built;
+    }
+    return chain;
+  };
+  return names.map((name, index) =>
+    namedHandler(name, (req, res, next) => {
+      let handler: OpenApiRequestHandler;
+      try {
+        handler = realChain()[index];
+      } catch (err) {
+        next(err);
+        return;
+      }
+      return handler(req, res, next);
+    }),
+  );
 }
 
 export interface OpenApiValidatorOptions {
@@ -195,10 +261,10 @@ export const createOpenApiValidator = (
     if (cached) {
       return cached;
     }
-    const created = buildOpenApiValidatorMiddleware(spec, options.fileUploader);
+    const created = lazyOpenApiValidatorMiddleware(spec, options.fileUploader);
     byUploader.set(uploaderKey, created);
     return created;
   }
 
-  return buildOpenApiValidatorMiddleware(spec, options.fileUploader);
+  return lazyOpenApiValidatorMiddleware(spec, options.fileUploader);
 };

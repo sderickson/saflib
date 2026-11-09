@@ -6,6 +6,7 @@ import { defineConfig } from "vitest/config";
 import { searchForWorkspaceRoot } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vuetify from "vite-plugin-vuetify";
+import os from "node:os";
 import path from "node:path";
 import { existsSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -35,6 +36,9 @@ const fsAllow = buildFsAllow();
 const baseTest = {
   fsModuleCache: true,
   isolate: false,
+  // See @saflib/vitest's defaultMaxWorkers: duplicate cold imports per worker
+  // cost more than extra workers gain.
+  maxWorkers: Math.max(1, Math.min(4, os.availableParallelism() - 1)),
   environment: "jsdom",
   globals: true,
   exclude: ["**/e2e/**"],

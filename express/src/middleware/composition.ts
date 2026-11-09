@@ -1,6 +1,7 @@
 import type { ErrorRequestHandler, Handler, RequestHandler } from "express";
 import { json, urlencoded } from "express";
 import type { OpenApiDocument } from "@saflib/openapi";
+import { fullDocumentForValidation } from "@saflib/openapi/slice-operation";
 import { corsRouter } from "./cors.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
@@ -15,7 +16,10 @@ import { makeCsrfMiddleware } from "./csrf.ts";
 import { makeCsrfTokenMiddleware } from "./csrf-token.ts";
 import multer from "multer";
 import { cleanupUploadedFiles } from "./multer.ts";
-import { compileOperationSecurity, type SecurityResolvers } from "./security.ts";
+import {
+  compileOperationSecurity,
+  type SecurityResolvers,
+} from "./security.ts";
 
 /**
  * Options for creating global middleware.
@@ -40,11 +44,7 @@ export const createInternalMiddleware = (
     ...metricsMiddleware,
     noStoreCacheControl,
     everyRequestLogger,
-    json(
-      jsonLimit
-        ? { limit: jsonLimit, strict: false }
-        : { strict: false },
-    ),
+    json(jsonLimit ? { limit: jsonLimit, strict: false } : { strict: false }),
   ];
 };
 
@@ -131,8 +131,13 @@ export const createScopedMiddleware = (
 ): Handler[] => {
   const { apiSpec, fileUploader, securityResolvers } = options;
 
+  // Validate against the whole document a per-operation slice was cut from:
+  // validators are cached per document, so routes share one instead of each
+  // building its own (expensive: it compiles the OpenAPI meta-schema and
+  // preprocesses the document, on the first request; see openapi.ts).
+  // Security below still compiles from the slice.
   const openApiValidatorMiddleware = createOpenApiValidator({
-    apiSpec,
+    apiSpec: fullDocumentForValidation(apiSpec) ?? apiSpec,
     fileUploader,
   }) as unknown as Handler[];
 
