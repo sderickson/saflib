@@ -1,6 +1,6 @@
 import type { DependencyManifest } from "./manifest.ts";
 import { compareVersions, updateKind } from "./semver.ts";
-import { checkRuntime, type RuntimeComponent } from "./runtime.ts";
+import { checkRuntime, type OsRelease, type RuntimeComponent } from "./runtime.ts";
 
 export type AdvisorySeverity = "critical" | "high" | "moderate" | "low" | "unknown";
 
@@ -51,6 +51,11 @@ export interface CheckOptions {
   osvUrl?: string;
   registryUrl?: string;
   endoflifeUrl?: string;
+  /**
+   * The server's OS, checked for end of life alongside the image's. The ops
+   * router passes a Prometheus lookup (node_os_info) when metrics are on.
+   */
+  hostOs?: () => Promise<OsRelease | null>;
   timeoutMs?: number;
 }
 
@@ -201,7 +206,16 @@ export async function checkDependencies(
   });
   outdated.sort((a, b) => ["major", "minor", "patch"].indexOf(a.update) - ["major", "minor", "patch"].indexOf(b.update) || a.name.localeCompare(b.name));
 
+  let hostOs: OsRelease | null = null;
+  if (options.hostOs) {
+    try {
+      hostOs = await options.hostOs();
+    } catch (e) {
+      errors.push(`host os: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
   const runtime = await checkRuntime(manifest.nodeVersion, manifest.osRelease ?? null, {
+    hostOs,
     fetch: f,
     now,
     url: (options.endoflifeUrl ?? "https://endoflife.date").replace(/\/+$/, ""),

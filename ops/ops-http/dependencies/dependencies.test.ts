@@ -76,6 +76,7 @@ function fakeFetch(opts: { osvDown?: boolean } = {}): typeof fetch {
       ]);
     }
     if (url.endsWith("/api/debian.json")) return json([{ cycle: "12", eol: "2026-12-31", latest: "12.15" }]);
+    if (url.endsWith("/api/ubuntu.json")) return json([{ cycle: "25.10", eol: "2026-07-01", latest: "25.10" }]);
     return json({}, 404);
   }) as typeof fetch;
 }
@@ -87,10 +88,11 @@ describe("runtime", () => {
     const os = parseOsRelease('PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"\nID=debian\nVERSION_ID="12"\n');
     expect(os).toEqual({ id: "debian", versionId: "12" });
     expect(runtimeCycles("v24.11.0", os)).toEqual([
-      { name: "nodejs", version: "24.11.0", cycle: "24" },
-      { name: "debian", version: "12", cycle: "12" },
+      { scope: "image", name: "nodejs", version: "24.11.0", cycle: "24" },
+      { scope: "image", name: "debian", version: "12", cycle: "12" },
     ]);
     expect(runtimeCycles("v24.11.0", { id: "alpine", versionId: "3.22.1" })[1]).toEqual({
+      scope: "image",
       name: "alpine-linux",
       version: "3.22.1",
       cycle: "3.22",
@@ -104,9 +106,36 @@ describe("checkDependencies", () => {
     const manifest = { ...parseLockfile(lockfile, "v24.11.0"), osRelease: { id: "debian", versionId: "12" } };
     const r = await checkDependencies(manifest, { fetch: fakeFetch(), now });
     expect(r.runtime).toEqual([
-      { name: "nodejs", version: "24.11.0", cycle: "24", eol: "2028-04-30", eol_soon: false, latest_in_cycle: "24.22.2" },
-      { name: "debian", version: "12", cycle: "12", eol: "2026-12-31", eol_soon: true, latest_in_cycle: "12.15" },
+      { scope: "image", name: "nodejs", version: "24.11.0", cycle: "24", eol: "2028-04-30", eol_soon: false, latest_in_cycle: "24.22.2" },
+      { scope: "image", name: "debian", version: "12", cycle: "12", eol: "2026-12-31", eol_soon: true, latest_in_cycle: "12.15" },
     ]);
+  });
+
+  it("checks the host's OS too, and keeps going when the lookup fails", async () => {
+    const manifest = { ...parseLockfile(lockfile, "v24.11.0"), osRelease: { id: "debian", versionId: "12" } };
+    const r = await checkDependencies(manifest, {
+      fetch: fakeFetch(),
+      now,
+      hostOs: async () => ({ id: "ubuntu", versionId: "25.10" }),
+    });
+    expect(r.runtime.find((c) => c.scope === "host")).toEqual({
+      scope: "host",
+      name: "ubuntu",
+      version: "25.10",
+      cycle: "25.10",
+      eol: "2026-07-01",
+      eol_soon: true,
+      latest_in_cycle: "25.10",
+    });
+    const failed = await checkDependencies(manifest, {
+      fetch: fakeFetch(),
+      now,
+      hostOs: async () => {
+        throw new Error("Prometheus unreachable");
+      },
+    });
+    expect(failed.runtime.map((c) => c.scope)).toEqual(["image", "image"]);
+    expect(failed.errors).toContain("host os: Prometheus unreachable");
   });
 
   it("finds advisories with fixed versions and outdated direct dependencies", async () => {

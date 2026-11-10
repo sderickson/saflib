@@ -27,8 +27,8 @@ describe("DependenciesAsync", () => {
             { name: "express", deployed: "5.2.1", latest: "5.3.0", latest_published_at: "2026-10-09T00:00:00.000Z", update: "minor", renovate_due: true },
           ],
           runtime: [
-            { name: "nodejs", version: "24.11.0", cycle: "24", eol: "2028-04-30", eol_soon: false, latest_in_cycle: "24.22.2" },
-            { name: "debian", version: "12", cycle: "12", eol: "2026-12-31", eol_soon: true, latest_in_cycle: "12.15" },
+            { scope: "image", name: "nodejs", version: "24.11.0", cycle: "24", eol: "2028-04-30", eol_soon: false, latest_in_cycle: "24.22.2" },
+            { scope: "host", name: "ubuntu", version: "25.10", cycle: "25.10", eol: "2026-07-01", eol_soon: true, latest_in_cycle: "25.10" },
           ],
           errors: [],
         },
@@ -52,6 +52,7 @@ describe("DependenciesAsync", () => {
     expect(runtime).toHaveLength(2);
     expect(runtime[0]!.text()).toContain("latest in line: 24.22.2");
     expect(runtime[1]!.text()).toContain("end of life soon");
+    expect(runtime[1]!.text()).toContain("(server)");
     wrapper.unmount();
   });
 });

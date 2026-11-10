@@ -13,6 +13,7 @@ import { recordCurrentBoot } from "./boot.ts";
 import { registerHealthCheckMetric } from "./health/health-metric.ts";
 import { readManifest } from "./dependencies/manifest.ts";
 import { startDependencyChecks } from "./dependencies/scheduler.ts";
+import { hostOsFromPrometheus } from "./dependencies/host-os.ts";
 import { SAFLIB_ACCEPTED_ADVISORIES, type AcceptedAdvisory } from "./dependencies/accepted.ts";
 import { registerDependencyMetrics } from "./dependencies/metrics.ts";
 import type { BuildInfo, ReleaseInfo } from "@saflib/node/git-hashes";
@@ -110,7 +111,13 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
       ? undefined
       : readManifest(options.dependencies?.lockfilePath);
   if (manifest) {
-    startDependencyChecks({ dbKey, manifest });
+    const metricsConfig = options.metrics;
+    startDependencyChecks({
+      dbKey,
+      manifest,
+      // The server's OS gets the same end-of-life check as the image's.
+      hostOs: metricsConfig ? () => hostOsFromPrometheus(metricsConfig) : undefined,
+    });
     context.dependencyChecks = true;
     registerDependencyMetrics(dbKey, context.acceptedAdvisories ?? []);
   }

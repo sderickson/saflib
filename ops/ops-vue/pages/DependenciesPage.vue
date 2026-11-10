@@ -19,7 +19,10 @@
         <v-table density="compact" class="elevation-1 mb-6">
           <tbody>
             <tr v-for="c in deps.runtime" :key="c.name" data-test="runtime-row">
-              <td><code>{{ c.name }} {{ c.version }}</code></td>
+              <td>
+                <code>{{ c.name }} {{ c.version }}</code>
+                <span class="text-caption text-medium-emphasis"> ({{ c.scope === "host" ? strings.scopeHost : strings.scopeImage }})</span>
+              </td>
               <td class="text-no-wrap">
                 {{ c.eol ? `${strings.eol} ${formatDate(c.eol)}` : strings.eolUnknown }}
                 <v-chip v-if="c.eol_soon" color="warning" size="x-small" class="ml-1">{{ strings.eolSoon }}</v-chip>

@@ -90,14 +90,18 @@ properties:
   runtime:
     type: array
     description: >
-      Pins outside the lockfile that age out on their own: the Node version and
-      the container's base OS. Upgrading means a new base image (Dockerfile
-      `FROM`), which Renovate proposes. Empty in reports from before this was
-      checked.
+      Pins outside the lockfile that age out on their own: the Node version,
+      the container's base OS (moving means a new Dockerfile `FROM`), and the
+      server's OS (moving means upgrading or replacing the host). Empty in
+      reports from before this was checked.
     items:
       type: object
-      required: [ name, version, cycle, eol, eol_soon, latest_in_cycle ]
+      required: [ scope, name, version, cycle, eol, eol_soon, latest_in_cycle ]
       properties:
+        scope:
+          type: string
+          enum: [ image, host ]
+          description: image is Node and the container's base OS; host is the server's OS (from node_os_info, when metrics are on).
         name:
           type: string
           description: endoflife.date product (nodejs, debian, alpine-linux, ubuntu).

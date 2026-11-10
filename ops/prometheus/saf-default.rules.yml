@@ -200,8 +200,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "{{ $labels.saf_app }} runs a Node or base OS release within 90 days of end of life"
-          description: "See the runtime section of /ops/dependencies; moving means a new base image (Dockerfile FROM)."
+          summary: "{{ $labels.saf_app }} runs a Node, base OS or host OS release past or within 90 days of end of life"
+          description: "See the runtime section of /ops/dependencies. Node or the image's OS: a new base image (Dockerfile FROM). The host's OS (scope host): upgrade or replace the server; past end of life it gets no security updates."
 
       - alert: SafDependencyCheckStale
         expr: time() - max by (saf_app) (saf_dependency_check_timestamp_seconds) > 3 * 86400

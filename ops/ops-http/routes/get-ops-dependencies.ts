@@ -39,7 +39,8 @@ export async function latestDependencies(
       };
     }),
     outdated: r.outdated,
-    runtime: r.runtime ?? [],
+    // Reports from before scopes existed only checked the image.
+    runtime: (r.runtime ?? []).map((c) => ({ ...c, scope: c.scope ?? "image" })),
     errors: r.errors,
   };
 }
