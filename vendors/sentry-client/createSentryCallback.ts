@@ -1,5 +1,8 @@
 import * as Sentry from "@sentry/vue";
-import { sanitizeTelemetryEvent } from "@saflib/utils/telemetry-sanitize";
+import {
+  sanitizeTelemetryEvent,
+  TELEMETRY_SENTRY_DATA_COLLECTION,
+} from "@saflib/utils/telemetry-sanitize";
 import { createApp } from "vue";
 import {
   isLocalhostHostname,
@@ -40,7 +43,8 @@ export function createSentryCallback(options: SentryCallbackOptions = {}) {
     Sentry.init({
       app,
       dsn: import.meta.env.VITE_CLIENT_SENTRY_DSN,
-      sendDefaultPii: false,
+      // v11 collects user info, cookies, headers and bodies unless told not to.
+      dataCollection: TELEMETRY_SENTRY_DATA_COLLECTION,
       beforeSend(event) {
         return sanitizeTelemetryEvent(event);
       },
