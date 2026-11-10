@@ -24,7 +24,7 @@
  */
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { copyFile, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { subprocessEnv } from "./subprocess-env.ts";
@@ -180,7 +180,15 @@ export async function snapshotWorkingTree(repo: string): Promise<{ head: string;
   try {
     // Starting from a copy of the real index keeps `add -A` fast: unchanged
     // files are recognized by their cached stat data instead of re-hashed.
-    if (await exists(indexPath)) await copyFile(indexPath, scratchIndex);
+    if (await exists(indexPath)) {
+      await copyFile(indexPath, scratchIndex);
+      // Keep the index's mtime: git re-reads ("racily clean") entries whose
+      // files changed in the same second the index was written only when the
+      // index's mtime says so. A fresh mtime on the copy would make it trust
+      // stale stat data and miss a same-size edit (seen on Linux CI).
+      const { atime, mtime } = await stat(indexPath);
+      await utimes(scratchIndex, atime, mtime);
+    }
     const env = { GIT_INDEX_FILE: scratchIndex };
     await git(repo, ["add", "-A"], { env });
     const tree = (await git(repo, ["write-tree"], { env })).trim();
