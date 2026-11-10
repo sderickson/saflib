@@ -149,17 +149,33 @@ export interface EmailSenderLike {
 
 /** Site admins from `ADMIN_EMAILS` (comma-separated), the same list that grants admin. */
 export function adminEmailsFromEnv(): string[] {
-  return (process.env.ADMIN_EMAILS ?? "")
+  return emailList(process.env.ADMIN_EMAILS);
+}
+
+function emailList(value: string | undefined): string[] {
+  return (value ?? "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
 }
 
-/** A notifier `send` that emails every site admin; no-op when there are none. */
+/**
+ * Who gets ops emails: `OPS_NOTIFY_EMAILS` when set (e.g. one on-call
+ * person), else every site admin (`ADMIN_EMAILS`).
+ */
+export function opsNotifyEmailsFromEnv(): string[] {
+  const notify = emailList(process.env.OPS_NOTIFY_EMAILS);
+  return notify.length > 0 ? notify : adminEmailsFromEnv();
+}
+
+/**
+ * A notifier `send` that emails `OPS_NOTIFY_EMAILS`, or every site admin
+ * when that's unset; no-op when there's nobody.
+ */
 export function adminEmailSender(
   email: EmailSenderLike,
   from: string,
-  recipients: () => string[] = adminEmailsFromEnv,
+  recipients: () => string[] = opsNotifyEmailsFromEnv,
 ): OpsNotifierOptions["send"] {
   return async ({ subject, text }) => {
     const to = recipients();

@@ -1,8 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { issuesDb, recordOccurrence } from "@saflib/errors-db";
 import { opsDb, upsertAlerts } from "@saflib/ops-db";
 import { throwError } from "@saflib/utils";
-import { runNotifierOnce, type OpsNotification } from "./notifier.ts";
+import {
+  adminEmailSender,
+  opsNotifyEmailsFromEnv,
+  runNotifierOnce,
+  type OpsNotification,
+} from "./notifier.ts";
 
 function setup() {
   const dbKey = opsDb.connect();
@@ -73,5 +78,34 @@ describe("ops notifier", () => {
     setFail(false);
     expect(await runNotifierOnce(options, new Date(t0.getTime() + 30 * 60_000))).toBe("sent");
     expect(sent[0]!.text).toContain("SafTargetDown");
+  });
+});
+
+describe("ops email recipients", () => {
+  const saved = { notify: process.env.OPS_NOTIFY_EMAILS, admins: process.env.ADMIN_EMAILS };
+  afterEach(() => {
+    process.env.OPS_NOTIFY_EMAILS = saved.notify;
+    process.env.ADMIN_EMAILS = saved.admins;
+    if (saved.notify === undefined) delete process.env.OPS_NOTIFY_EMAILS;
+    if (saved.admins === undefined) delete process.env.ADMIN_EMAILS;
+  });
+
+  it("go to OPS_NOTIFY_EMAILS when set, else every site admin", async () => {
+    process.env.ADMIN_EMAILS = "a@x.test, b@x.test";
+    delete process.env.OPS_NOTIFY_EMAILS;
+    expect(opsNotifyEmailsFromEnv()).toEqual(["a@x.test", "b@x.test"]);
+    process.env.OPS_NOTIFY_EMAILS = " ";
+    expect(opsNotifyEmailsFromEnv()).toEqual(["a@x.test", "b@x.test"]);
+    process.env.OPS_NOTIFY_EMAILS = "Oncall@X.test";
+    expect(opsNotifyEmailsFromEnv()).toEqual(["oncall@x.test"]);
+
+    const sendEmail = vi.fn(async () => ({}));
+    await adminEmailSender({ sendEmail }, "alerts@x.test")({ subject: "s", text: "t" });
+    expect(sendEmail).toHaveBeenCalledWith({
+      to: ["oncall@x.test"],
+      from: "alerts@x.test",
+      subject: "s",
+      text: "t",
+    });
   });
 });
