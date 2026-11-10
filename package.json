@@ -45,9 +45,9 @@
     "@vue/shared": "3.5.45",
     "@types/node": "^24.3.0",
     "typescript": "~6.0.0",
-    "msw": "2.12.7",
+    "msw": "2.15.0",
     "drizzle-kit": "^0.31.10",
-    "eslint": "10.11.0",
+    "eslint": "10.14.0",
     "@tanstack/vue-query": "5.85.9",
     "@vitejs/plugin-vue": "6.0.10",
     "editorconfig": {
