@@ -238,7 +238,7 @@ groups:
           severity: warning
         annotations:
           summary: "Host hasn't refreshed its package lists in 3 days"
-          description: "apt-daily.timer isn't running, so pending-update counts are out of date."
+          description: "Either apt-daily.timer isn't running, or the host's release is past end of life and its archive no longer publishes (check node_os_info against the release's EOL). Either way, pending-update counts, security ones included, can't be trusted."
 
       - alert: SafHostAptCheckStale
         expr: time() - max by (saf_app) (saf_apt_check_timestamp_seconds) > 3 * 3600

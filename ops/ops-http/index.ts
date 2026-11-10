@@ -18,6 +18,7 @@ export { METRICS_LIMITS, type OpsMetricsConfig } from "./metrics/prometheus.ts";
 export {
   adminEmailSender,
   adminEmailsFromEnv,
+  opsNotifyEmailsFromEnv,
   buildNotification,
   runNotifierOnce,
   startOpsNotifier,
