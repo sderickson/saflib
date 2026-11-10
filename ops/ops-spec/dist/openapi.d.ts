@@ -769,8 +769,13 @@ export interface components {
                 /** @description The latest release is past the 3-day minimum release age, so Renovate should have a PR open. */
                 renovate_due: boolean;
             }[];
-            /** @description Pins outside the lockfile that age out on their own: the Node version and the container's base OS. Upgrading means a new base image (Dockerfile `FROM`), which Renovate proposes. Empty in reports from before this was checked. */
+            /** @description Pins outside the lockfile that age out on their own: the Node version, the container's base OS (moving means a new Dockerfile `FROM`), and the server's OS (moving means upgrading or replacing the host). Empty in reports from before this was checked. */
             runtime: {
+                /**
+                 * @description image is Node and the container's base OS; host is the server's OS (from node_os_info, when metrics are on).
+                 * @enum {string}
+                 */
+                scope: "image" | "host";
                 /** @description endoflife.date product (nodejs, debian, alpine-linux, ubuntu). */
                 name: string;
                 version: string;

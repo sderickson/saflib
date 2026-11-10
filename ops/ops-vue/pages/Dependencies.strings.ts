@@ -18,6 +18,8 @@ export const ops_dependencies = {
   renovateDue: "Renovate due",
   errors: "Some lookups failed",
   runtime: "Runtime",
+  scopeImage: "image",
+  scopeHost: "server",
   accepted: "accepted",
   until: "until",
   eol: "supported until",
