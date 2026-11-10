@@ -227,7 +227,8 @@ export function syncPlatformOverrides(
   const applied: string[] = [];
 
   for (const [name, version] of Object.entries(platform.overrides)) {
-    if (nextOverrides[name] === version) continue;
+    // Overrides can nest ({ "editorconfig": { "commander": "^15" } }).
+    if (JSON.stringify(nextOverrides[name]) === JSON.stringify(version)) continue;
     nextOverrides[name] = version;
     applied.push(`${name}@${version}`);
   }
