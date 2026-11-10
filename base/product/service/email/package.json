@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@saflib/monorepo": "*",
+    "@saflib/vitest": "*",
     "vitest": "*"
   },
   "sideEffects": false,
