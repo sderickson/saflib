@@ -16,7 +16,6 @@
   "automerge": true,
   "automergeType": "pr",
   "platformAutomerge": false,
-  "automergeSchedule": ["after 9am and before 5pm every weekday"],
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["before 9am on monday"]
