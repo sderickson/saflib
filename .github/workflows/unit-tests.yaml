@@ -28,7 +28,8 @@ jobs:
 
       # Tests fail to run if this one package isn't installed
       - name: Install rollup for linux
-        run: npm install @rollup/rollup-linux-x64-gnu
+        # --no-save: CI mustn't edit package.json (the Renovate preset test reads it).
+        run: npm install --no-save @rollup/rollup-linux-x64-gnu
 
       # Tests make real commits in temp repos (e.g. workflow runs committing
       # their changes); runners have no git identity by default.
