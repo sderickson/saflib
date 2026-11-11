@@ -5,7 +5,11 @@ import type { DbKey } from "@saflib/drizzle";
 import { appendAuditEvent } from "@saflib/audit-db/queries/audit-event/append";
 import type { AuditEventDetails } from "@saflib/audit-db/schemas/audit-event";
 import type { SafContext } from "@saflib/node";
-import { getSafContext, getSafReporters } from "@saflib/node";
+import {
+  getSafContext,
+  getSafReporters,
+  runWithOperationName,
+} from "@saflib/node";
 import type { AuditMapEntry, AuditOutcome } from "./audit-map.ts";
 
 const DEFAULT_FAIL_CLOSED_STATUS_CODES: readonly number[] = [200, 201, 204];
@@ -272,7 +276,10 @@ export function createAuditRecorder(
     }
 
     const startedAt = recorderLocals(res).auditRequestStartedAt ?? Date.now();
-    const outcome = outcomeForEntry(entry, failClosedOptions.responseStatusCode);
+    const outcome = outcomeForEntry(
+      entry,
+      failClosedOptions.responseStatusCode,
+    );
     const { authMethod, actorUserId } = resolveActor(saf, res);
     const ts = new Date();
     const durationMs = Date.now() - startedAt;
@@ -377,7 +384,10 @@ export function createAuditRecorder(
       const pathParams = (req.params ?? {}) as Record<string, string>;
       const primaryId = resolveResourceId(req, routePattern);
 
-      const baseDetails = (): Extract<AuditEventDetails, { source: "http" }> => ({
+      const baseDetails = (): Extract<
+        AuditEventDetails,
+        { source: "http" }
+      > => ({
         source: "http",
         method,
         route_pattern: routePattern,
@@ -442,7 +452,16 @@ export function createAuditRecorder(
         const startedAt = Date.now();
         recorderLocals(res).auditRequestStartedAt = startedAt;
         res.on("finish", () => {
-          void emitRows(req, res, startedAt);
+          // This listener belongs to global middleware, so it runs in the
+          // request's early context ("unknown-operation") whenever the
+          // response was sent from outside the route (validation 400s, the
+          // app-wide error handler). The matched operation is known by now.
+          const operationId = (
+            req as { openapi?: { schema?: { operationId?: string } } }
+          ).openapi?.schema?.operationId;
+          void runWithOperationName(operationId, () =>
+            emitRows(req, res, startedAt),
+          );
         });
         next();
       };
