@@ -18,7 +18,7 @@
     "@saflib/vitest": "*",
     "@types/jsdom": "^30.0.0",
     "dompurify": "^3.4.17",
-    "jsdom": "^30.0.1"
+    "jsdom": "^31.0.0"
   },
   "sideEffects": false,
   "dependencies": {
