@@ -83,8 +83,11 @@ import type { AdminLogFilters } from "../requests/queries.ts";
 const { filters, logsQuery } = useLogsPageLoader();
 const lines = computed(() => logsQuery.data.value?.pages.flatMap((p) => p.logs) ?? []);
 
+const ANY_LEVEL = "any";
 const levelOptions = [
-  { title: strings.anyLevel, value: undefined },
+  // Not undefined: v-select falls back to the title ("Any") for an undefined
+  // value, which the API rejects as a level.
+  { title: strings.anyLevel, value: ANY_LEVEL },
   { title: "error", value: "error" },
   { title: "warn", value: "warn" },
   { title: "info", value: "info" },
@@ -94,7 +97,7 @@ const draft = reactive<AdminLogFilters>({ ...filters.value });
 
 function apply() {
   filters.value = {
-    level: draft.level,
+    level: (draft.level as string | undefined) === ANY_LEVEL ? undefined : draft.level,
     q: draft.q?.trim() || undefined,
     request_id: draft.request_id?.trim() || undefined,
   };

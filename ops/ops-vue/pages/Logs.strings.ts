@@ -4,7 +4,7 @@ export const ops_logs = {
   intro: "Persisted application logs (redacted at write time, kept for 14 days).",
   levelLabel: "Minimum level",
   anyLevel: "Any",
-  searchLabel: "Search messages",
+  searchLabel: "Search messages and fields",
   requestLabel: "Request id",
   apply: "Apply",
   empty: "No matching log lines.",
