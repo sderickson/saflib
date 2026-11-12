@@ -48,7 +48,7 @@
     "msw": "2.15.0",
     "drizzle-kit": "^0.31.10",
     "eslint": "10.14.0",
-    "@tanstack/vue-query": "5.85.9",
+    "@tanstack/vue-query": "5.107.1",
     "@vitejs/plugin-vue": "6.0.10",
     "editorconfig": {
       "commander": "^15.0.0"
