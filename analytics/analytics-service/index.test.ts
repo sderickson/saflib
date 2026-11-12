@@ -133,6 +133,37 @@ describe("capture merges SafContext (e.g. host)", () => {
       },
     });
   });
+
+  it("keeps device and network identifiers out of the event's log line", () => {
+    vi.spyOn(node, "getSafContext").mockReturnValue(safWithHost);
+    const info = vi.fn();
+    vi.spyOn(node, "getSafReporters").mockReturnValue({
+      log: { info } as unknown as node.SafReporters["log"],
+      logError: vi.fn(),
+    });
+    const svc = createAnalyticsService({ type: "in-memory" });
+    svc.capture({ event: "evt" });
+
+    // The analytics provider still gets them.
+    expect(capturedAnalyticsCalls[0]).toMatchObject({
+      context: { user_agent: "vitest/1" },
+    });
+    expect(info).toHaveBeenCalled();
+    for (const [, meta] of info.mock.calls as [
+      string,
+      { context: Record<string, unknown> },
+    ][]) {
+      expect(meta.context).toMatchObject({
+        host: "api.example.com",
+        origin: "https://app.example",
+      });
+      for (const key of ["user_agent", "client_ip", "accept_language"]) {
+        expect(meta.context).not.toHaveProperty(key);
+      }
+    }
+    expect(JSON.stringify(info.mock.calls)).not.toContain("203.0.113.1");
+    vi.mocked(node.getSafReporters).mockRestore();
+  });
 });
 
 describe("analytics consent", () => {
