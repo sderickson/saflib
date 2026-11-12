@@ -41,7 +41,12 @@ describe("LogsAsync", () => {
       return HttpResponse.json({
         logs: [
           line(3, "<img src=x onerror=alert(1)> rendered as text", { redactions: 2 }),
-          line(2, "second line"),
+          line(2, "second line", {
+            untrusted: {
+              message: "second line",
+              fields: { migration: "0002_fts_fields", tables: ["log_entries"], note: "<b>plain</b>" },
+            },
+          }),
         ],
         next_cursor: "2",
       });
@@ -63,6 +68,23 @@ describe("LogsAsync", () => {
     expect(rows[0]!.text()).toContain("<img src=x onerror=alert(1)> rendered as text");
     expect(rows[0]!.find("img").exists()).toBe(false);
     expect(rows[0]!.text()).toContain("2 redacted");
+    wrapper.unmount();
+  });
+
+  it("collapses fields to their keys and expands to the whole object", async () => {
+    const wrapper = await mount();
+    const row = wrapper.findAll("[data-test=log-line]")[1]!;
+    expect(row.find("[data-test=log-fields-keys]").text()).toBe("{ migration, tables, note }");
+    expect(row.find("[data-test=log-fields-json]").exists()).toBe(false);
+
+    await row.find("[data-test=log-fields-toggle]").trigger("click");
+    const json = row.find("[data-test=log-fields-json]");
+    expect(json.text()).toContain('"migration": "0002_fts_fields"');
+    expect(json.find("b").exists()).toBe(false);
+    expect(row.find("[data-test=log-fields-keys]").exists()).toBe(false);
+
+    await row.find("[data-test=log-fields-toggle]").trigger("click");
+    expect(row.find("[data-test=log-fields-json]").exists()).toBe(false);
     wrapper.unmount();
   });
 

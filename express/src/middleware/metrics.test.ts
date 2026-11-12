@@ -30,4 +30,29 @@ describe("HTTP metrics", () => {
     expect(text).toMatch(/status_code="4xx"/);
     expect(text).not.toMatch(/status_code="201"|status_code="404"/);
   });
+
+  it("leaves streaming (server-sent events) responses out of request metrics", async () => {
+    setServiceName("metrics-test");
+    const app = express();
+    app.use(...metricsMiddleware);
+    app.get("/stream", (_req, res) => {
+      res.setHeader("Content-Type", "text/event-stream");
+      res.write("data: hello\n\n");
+      setTimeout(() => res.end(), 20);
+    });
+    app.get("/quick", (_req, res) => {
+      res.status(200).end();
+    });
+    const requestCount = async () =>
+      (await request(app).get("/metrics").expect(200)).text
+        .split("\n")
+        .filter((l) => l.startsWith("http_request_duration_seconds_count"))
+        .reduce((sum, l) => sum + Number(l.split(" ").at(-1)), 0);
+
+    const before = await requestCount();
+    await request(app).get("/stream").expect(200);
+    expect(await requestCount()).toBe(before);
+    await request(app).get("/quick").expect(200);
+    expect(await requestCount()).toBe(before + 1);
+  });
 });

@@ -44,9 +44,25 @@
             <v-chip v-if="line.redactions > 0" size="x-small" color="warning" class="ml-2">
               {{ line.redactions }} {{ strings.redacted }}
             </v-chip>
-            <div v-if="line.untrusted.fields" class="text-caption text-medium-emphasis log-fields">
-              {{ JSON.stringify(line.untrusted.fields) }}
-            </div>
+            <!-- Fields collapse to their keys; click to see the whole object. -->
+            <button
+              v-if="line.untrusted.fields"
+              type="button"
+              class="text-caption text-medium-emphasis log-fields-toggle"
+              :aria-expanded="expanded.has(line.id)"
+              data-test="log-fields-toggle"
+              @click="toggleFields(line.id)"
+            >
+              <span class="log-fields-chevron">{{ expanded.has(line.id) ? "▾" : "▸" }}</span>
+              <span v-if="!expanded.has(line.id)" class="log-fields-keys" data-test="log-fields-keys">
+                {{ fieldKeysSummary(line.untrusted.fields) }}
+              </span>
+            </button>
+            <pre
+              v-if="line.untrusted.fields && expanded.has(line.id)"
+              class="text-caption log-fields-json"
+              data-test="log-fields-json"
+            >{{ JSON.stringify(line.untrusted.fields, null, 2) }}</pre>
           </td>
           <td class="text-caption">
             <a
@@ -95,6 +111,20 @@ const levelOptions = [
 
 const draft = reactive<AdminLogFilters>({ ...filters.value });
 
+/** Log lines whose fields are expanded. */
+const expanded = reactive(new Set<number>());
+function toggleFields(id: number) {
+  if (expanded.has(id)) expanded.delete(id);
+  else expanded.add(id);
+}
+
+/** "{ key1, key2, … }": what a collapsed fields object shows. */
+function fieldKeysSummary(fields: unknown): string {
+  if (fields === null || typeof fields !== "object" || Array.isArray(fields)) return "{ … }";
+  const keys = Object.keys(fields);
+  return keys.length === 0 ? "{}" : `{ ${keys.join(", ")} }`;
+}
+
 function apply() {
   filters.value = {
     level: (draft.level as string | undefined) === ANY_LEVEL ? undefined : draft.level,
@@ -116,8 +146,30 @@ const levelColor = (level: string) =>
 </script>
 
 <style scoped>
-.log-message,
-.log-fields {
+.log-message {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.log-fields-toggle {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.log-fields-keys {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.log-fields-json {
+  margin: 4px 0 0;
   white-space: pre-wrap;
   word-break: break-word;
 }
