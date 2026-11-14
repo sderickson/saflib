@@ -203,7 +203,10 @@ const levelColor = (level: string) =>
   white-space: pre-wrap;
   word-break: break-word;
 }
+/* Vuetify fixes cell height (36px compact); with top alignment the slack all
+   lands below the content. Size rows to content instead. */
 .logs-table td {
+  height: auto !important;
   vertical-align: top;
   padding-top: 2px !important;
   padding-bottom: 2px !important;
