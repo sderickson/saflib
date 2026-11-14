@@ -10,4 +10,13 @@ export const ops_logs = {
   empty: "No matching log lines.",
   loadMore: "Load more",
   redacted: "redacted",
+  filterByRequest: "Show only request",
+  columns: {
+    time: "Time",
+    level: "Level",
+    request: "Req",
+    operation: "Operation",
+    message: "Message",
+    fields: "Fields",
+  },
 };

@@ -71,20 +71,40 @@ describe("LogsAsync", () => {
     wrapper.unmount();
   });
 
-  it("collapses fields to their keys and expands to the whole object", async () => {
+  it("shows fields in their own column, expanding into a row below", async () => {
     const wrapper = await mount();
     const row = wrapper.findAll("[data-test=log-line]")[1]!;
     expect(row.find("[data-test=log-fields-keys]").text()).toBe("{ migration, tables, note }");
-    expect(row.find("[data-test=log-fields-json]").exists()).toBe(false);
+    expect(wrapper.find("[data-test=log-fields-json]").exists()).toBe(false);
 
     await row.find("[data-test=log-fields-toggle]").trigger("click");
-    const json = row.find("[data-test=log-fields-json]");
+    const json = wrapper.find("[data-test=log-fields-row] [data-test=log-fields-json]");
     expect(json.text()).toContain('"migration": "0002_fts_fields"');
     expect(json.find("b").exists()).toBe(false);
-    expect(row.find("[data-test=log-fields-keys]").exists()).toBe(false);
+    expect(row.find("[data-test=log-fields-toggle]").attributes("aria-expanded")).toBe("true");
 
     await row.find("[data-test=log-fields-toggle]").trigger("click");
-    expect(row.find("[data-test=log-fields-json]").exists()).toBe(false);
+    expect(wrapper.find("[data-test=log-fields-json]").exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("labels columns in a header", async () => {
+    const wrapper = await mount();
+    const headers = wrapper.findAll("thead th").map((th) => th.text());
+    expect(headers).toEqual(["Time", "Level", "Req", "Operation", "Message", "Fields"]);
+    wrapper.unmount();
+  });
+
+  it("shows request ids as colored three-character pills that filter", async () => {
+    const wrapper = await mount();
+    const pills = wrapper.findAll("[data-test=log-request-pill]");
+    expect(pills.map((p) => p.text())).toEqual(["req", "req"]);
+    expect(pills[0]!.attributes("title")).toBe("req-3");
+    // Same prefix, different ids: different colors.
+    expect(pills[0]!.attributes("style")).not.toBe(pills[1]!.attributes("style"));
+
+    await pills[0]!.trigger("click");
+    await vi.waitFor(() => expect(requests.at(-1)!.searchParams.get("request_id")).toBe("req-3"));
     wrapper.unmount();
   });
 
