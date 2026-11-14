@@ -26,12 +26,12 @@
     "@sentry/vite-plugin": "^11.0.0"
   },
   "peerDependencies": {
-    "vite": "8.3.6"
+    "vite": "8.3.8"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
     "@saflib/workflows": "*",
-    "vite": "8.3.6",
+    "vite": "8.3.8",
     "vitest": "^5.0.0"
   },
   "sideEffects": false
