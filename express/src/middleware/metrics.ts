@@ -1,7 +1,7 @@
 import { getServiceName, latencyBuckets, statusClass } from "@saflib/node";
 import promBundle from "express-prom-bundle";
 import { Router } from "express";
-import type { Request } from "express";
+import type { Request, Response } from "express";
 
 /** Path label: Express route template from OpenAPI, or "unspecified" when no spec match. */
 function normalizeMetricPath(req: Request): string {
@@ -10,6 +10,15 @@ function normalizeMetricPath(req: Request): string {
     return expressRoute;
   }
   return "unspecified";
+}
+
+/** A server-sent events stream (open until the client disconnects). */
+function isStreamingResponse(res: Response): boolean {
+  const contentType = res.getHeader("content-type");
+  return (
+    typeof contentType === "string" &&
+    contentType.startsWith("text/event-stream")
+  );
 }
 
 function isDevelopment(): boolean {
@@ -36,6 +45,11 @@ const promRecordingMiddleware = promBundle({
   buckets: latencyBuckets,
   formatStatusCode: (res) => statusClass(res.statusCode),
   normalizePath: normalizeMetricPath,
+  // Streaming responses (server-sent events) stay open by design, for as long
+  // as the client listens; counting them would swamp the latency and rate of
+  // requests that are meant to answer immediately (one 30s stream outweighs
+  // thousands of 50ms requests at p95).
+  bypass: { onFinish: (_req, res) => isStreamingResponse(res) },
   transformLabels: (labels, req) => {
     labels.service_name = getServiceName();
     const opId = req.openapi?.schema?.operationId;

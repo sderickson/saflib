@@ -78,7 +78,9 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
     log.info(`Product event: ${event.event}`, {
       event: event.event,
       distinct_id: distinctId,
-      ...(mergedContext !== undefined ? { context: mergedContext } : {}),
+      ...(mergedContext !== undefined
+        ? { context: withoutClientIdentifiers(mergedContext) }
+        : {}),
     });
   }
 
@@ -87,4 +89,26 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
     event: string;
     context?: Record<string, unknown>;
   }): void;
+}
+
+/**
+ * Context keys that identify the person's device or network. The analytics
+ * provider gets them; the ops log copy of each event doesn't need them.
+ */
+const CLIENT_IDENTIFIER_KEYS = new Set([
+  "user_agent",
+  "userAgent",
+  "client_ip",
+  "clientIp",
+  "ip",
+  "accept_language",
+  "acceptLanguage",
+]);
+
+export function withoutClientIdentifiers(
+  context: Record<string, unknown>,
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(context).filter(([key]) => !CLIENT_IDENTIFIER_KEYS.has(key)),
+  );
 }

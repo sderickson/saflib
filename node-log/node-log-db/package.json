@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@saflib/vitest": "*",
+    "better-sqlite3": "12.11.1",
     "drizzle-kit": "*",
     "winston": "^3.11.0"
   },
