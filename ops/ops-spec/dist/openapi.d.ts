@@ -443,6 +443,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/tokens/exchange": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Exchange an ops token for a short-lived one
+         * @description Trades the calling token (which needs `ops:exchange`) for a new token that expires soon, so a long-lived token can stay in a password manager while an agent works with a short-lived copy. The new token gets the requested scopes, or all of the caller's; never `ops:exchange`, so it can't mint more. It expires after `expires_in_seconds` (default one hour) or when the calling token does, whichever is first, and is revoked along with it.
+         */
+        post: operations["exchangeOpsToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/ops-tokens": {
         parameters: {
             query?: never;
@@ -849,7 +869,7 @@ export interface components {
             name: string;
             /** @description First characters after `safops_`, to recognize which token is which. */
             token_prefix: string;
-            scopes: ("ops:read" | "ops:triage" | "ops:alerts-ingest")[];
+            scopes: ("ops:read" | "ops:triage" | "ops:alerts-ingest" | "ops:exchange")[];
             /** @description Kratos identity id of the admin who created it. */
             created_by: string | null;
             /** Format: date-time */
@@ -863,6 +883,8 @@ export interface components {
             last_used_at: string | null;
             /** Format: date-time */
             revoked_at: string | null;
+            /** @description Id of the token this one was exchanged for (short-lived, from `POST /ops/tokens/exchange`); null for tokens an admin created. Revoking that token revokes this one. */
+            exchanged_from: string | null;
         };
     };
     responses: never;
@@ -2329,6 +2351,75 @@ export interface operations {
             };
         };
     };
+    exchangeOpsToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Scopes for the new token; each must be one the caller holds. Defaults to all of the caller's scopes except `ops:exchange`. */
+                    scopes?: ("ops:read" | "ops:triage" | "ops:alerts-ingest")[];
+                    /** @description Lifetime, up to 8 hours. Defaults to 3600 (1 hour). */
+                    expires_in_seconds?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description The new token. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ops_token: components["schemas"]["ops-token"];
+                        /** @description The secret, `safops_…`. Shown once. */
+                        token: string;
+                    };
+                };
+            };
+            /** @description Invalid request: a requested scope the caller doesn't hold, or no scopes left to grant. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Missing, invalid, expired, or revoked token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks `ops:exchange`. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
     listOpsTokens: {
         parameters: {
             query?: never;
@@ -2380,7 +2471,7 @@ export interface operations {
             content: {
                 "application/json": {
                     name: string;
-                    scopes: ("ops:read" | "ops:triage" | "ops:alerts-ingest")[];
+                    scopes: ("ops:read" | "ops:triage" | "ops:alerts-ingest" | "ops:exchange")[];
                     /**
                      * Format: date-time
                      * @description Optional expiry; omit or null for no expiry.

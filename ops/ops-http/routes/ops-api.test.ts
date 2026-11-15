@@ -23,8 +23,11 @@ describe("ops API", () => {
   let dbKey: DbKey;
   let app: express.Express;
 
-  async function token(scopes: ("ops:read" | "ops:triage")[] = ["ops:read"]) {
-    return throwError(createToken(dbKey, { name: "t", scopes, createdBy: null }));
+  async function token(
+    scopes: ("ops:read" | "ops:triage" | "ops:exchange")[] = ["ops:read"],
+    expiresAt: Date | null = null,
+  ) {
+    return throwError(createToken(dbKey, { name: "t", scopes, createdBy: null, expiresAt }));
   }
 
   beforeEach(() => {
@@ -195,6 +198,73 @@ describe("ops API", () => {
         .set(makeAdminHeaders())
         .send({ name: "x", scopes: ["ops:admin"] })
         .expect(400);
+    });
+  });
+
+  describe("POST /ops/tokens/exchange", () => {
+    const exchange = (secret: string, body: object = {}) =>
+      request(app).post("/ops/tokens/exchange").set("authorization", `Bearer ${secret}`).send(body);
+
+    it("needs ops:exchange", async () => {
+      const t = await token(["ops:read", "ops:triage"]);
+      await exchange(t.token).expect(403);
+    });
+
+    it("mints a one-hour token with the caller's scopes minus ops:exchange", async () => {
+      const t = await token(["ops:read", "ops:triage", "ops:exchange"]);
+      const before = Date.now();
+      const res = await exchange(t.token).expect(201);
+      expect(res.body.token).toMatch(/^safops_/);
+      expect(res.body.ops_token).toMatchObject({
+        scopes: ["ops:read", "ops:triage"],
+        exchanged_from: t.opsToken.id,
+      });
+      const expiresAt = Date.parse(res.body.ops_token.expires_at);
+      expect(expiresAt - before).toBeGreaterThan(59 * 60 * 1000);
+      expect(expiresAt - before).toBeLessThanOrEqual(60 * 60 * 1000 + 5000);
+
+      await request(app).get("/ops/health").set("authorization", `Bearer ${res.body.token}`).expect(200);
+    });
+
+    it("can't be used to mint more tokens", async () => {
+      const t = await token(["ops:read", "ops:exchange"]);
+      const res = await exchange(t.token).expect(201);
+      await exchange(res.body.token).expect(403);
+    });
+
+    it("grants only requested scopes the caller holds, within 8 hours", async () => {
+      const t = await token(["ops:read", "ops:exchange"]);
+      const res = await exchange(t.token, { scopes: ["ops:read"], expires_in_seconds: 120 }).expect(201);
+      expect(Date.parse(res.body.ops_token.expires_at) - Date.now()).toBeLessThanOrEqual(120_000);
+      await exchange(t.token, { scopes: ["ops:triage"] }).expect(400);
+      await exchange(t.token, { scopes: ["ops:exchange"] }).expect(400);
+      await exchange(t.token, { expires_in_seconds: 9 * 60 * 60 }).expect(400);
+    });
+
+    it("refuses when the caller holds nothing but ops:exchange", async () => {
+      const t = await token(["ops:exchange"]);
+      await exchange(t.token).expect(400);
+    });
+
+    it("never outlives the calling token", async () => {
+      const callerExpiry = new Date(Date.now() + 10 * 60 * 1000);
+      const t = await token(["ops:read", "ops:exchange"], callerExpiry);
+      const res = await exchange(t.token).expect(201);
+      // Stored to the second.
+      expect(
+        Math.abs(Date.parse(res.body.ops_token.expires_at) - callerExpiry.getTime()),
+      ).toBeLessThan(1000);
+    });
+
+    it("stops working when the calling token is revoked", async () => {
+      const t = await token(["ops:read", "ops:exchange"]);
+      const res = await exchange(t.token).expect(201);
+      await request(app)
+        .post(`/admin/ops-tokens/${t.opsToken.id}/revoke`)
+        .set(makeAdminHeaders())
+        .send({})
+        .expect(200);
+      await request(app).get("/ops/health").set("authorization", `Bearer ${res.body.token}`).expect(401);
     });
   });
 

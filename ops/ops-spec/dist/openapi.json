@@ -1366,7 +1366,8 @@
           "created_at",
           "expires_at",
           "last_used_at",
-          "revoked_at"
+          "revoked_at",
+          "exchanged_from"
         ],
         "properties": {
           "id": {
@@ -1386,7 +1387,8 @@
               "enum": [
                 "ops:read",
                 "ops:triage",
-                "ops:alerts-ingest"
+                "ops:alerts-ingest",
+                "ops:exchange"
               ]
             }
           },
@@ -1422,6 +1424,13 @@
               "null"
             ],
             "format": "date-time"
+          },
+          "exchanged_from": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Id of the token this one was exchanged for (short-lived, from `POST /ops/tokens/exchange`); null for tokens an admin created. Revoking that token revokes this one.\n"
           }
         }
       }
@@ -4092,6 +4101,117 @@
         }
       }
     },
+    "/ops/tokens/exchange": {
+      "post": {
+        "summary": "Exchange an ops token for a short-lived one",
+        "description": "Trades the calling token (which needs `ops:exchange`) for a new token that expires soon, so a long-lived token can stay in a password manager while an agent works with a short-lived copy. The new token gets the requested scopes, or all of the caller's; never `ops:exchange`, so it can't mint more. It expires after `expires_in_seconds` (default one hour) or when the calling token does, whichever is first, and is revoked along with it.\n",
+        "operationId": "exchangeOpsToken",
+        "security": [
+          {
+            "ops-token": [
+              "ops:exchange"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "scopes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ops:read",
+                        "ops:triage",
+                        "ops:alerts-ingest"
+                      ]
+                    },
+                    "description": "Scopes for the new token; each must be one the caller holds. Defaults to all of the caller's scopes except `ops:exchange`.\n"
+                  },
+                  "expires_in_seconds": {
+                    "type": "integer",
+                    "minimum": 60,
+                    "maximum": 28800,
+                    "description": "Lifetime, up to 8 hours. Defaults to 3600 (1 hour)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The new token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ops_token",
+                    "token"
+                  ],
+                  "properties": {
+                    "ops_token": {
+                      "$ref": "#/components/schemas/ops-token"
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "The secret, `safops_…`. Shown once."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request: a requested scope the caller doesn't hold, or no scopes left to grant.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, expired, or revoked token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks `ops:exchange`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/ops-tokens": {
       "get": {
         "summary": "List ops tokens (admin)",
@@ -4183,7 +4303,8 @@
                       "enum": [
                         "ops:read",
                         "ops:triage",
-                        "ops:alerts-ingest"
+                        "ops:alerts-ingest",
+                        "ops:exchange"
                       ]
                     }
                   },

@@ -11,6 +11,8 @@ export interface CreateTokenParams {
   scopes: OpsTokenScope[];
   createdBy: string | null;
   expiresAt?: Date | null;
+  /** The token this one is exchanged for, if any. */
+  exchangedFrom?: string | null;
 }
 
 /** The stored row plus the plaintext token, which is never retrievable again. */
@@ -35,6 +37,7 @@ export const createToken = queryWrapper(
         created_by: params.createdBy,
         created_at: new Date(),
         expires_at: params.expiresAt ?? null,
+        exchanged_from: params.exchangedFrom ?? null,
       })
       .returning();
     return { result: { token: minted.token, opsToken: opsToken! } };

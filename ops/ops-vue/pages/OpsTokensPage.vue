@@ -16,6 +16,19 @@
       item-value="id"
       class="elevation-1"
     >
+      <template #[`item.name`]="{ item }">
+        {{ item.name }}
+        <v-chip
+          v-if="item.exchanged_from"
+          size="x-small"
+          variant="outlined"
+          class="ml-1"
+          :title="strings.exchangedHint"
+          data-test="token-exchanged"
+        >
+          {{ strings.exchanged }}
+        </v-chip>
+      </template>
       <template #[`item.token_prefix`]="{ item }">
         <code>safops_{{ item.token_prefix }}…</code>
       </template>
@@ -120,7 +133,7 @@ import { useOpsTokensPageLoader } from "./OpsTokens.loader.ts";
 import { ops_tokens as strings } from "./OpsTokens.strings.ts";
 
 type Scope = OpsTokenResponse["scopes"][number];
-const scopeOptions: Scope[] = ["ops:read", "ops:triage", "ops:alerts-ingest"];
+const scopeOptions: Scope[] = ["ops:read", "ops:triage", "ops:alerts-ingest", "ops:exchange"];
 
 const headers = [
   { title: "Name", key: "name", sortable: true },

@@ -50,6 +50,13 @@
       "when": 1794205510388,
       "tag": "0006_worried_lord_hawal",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1794764372854,
+      "tag": "0007_solid_nico_minoru",
+      "breakpoints": true
     }
   ]
 }

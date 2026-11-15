@@ -10,6 +10,7 @@ required:
   - expires_at
   - last_used_at
   - revoked_at
+  - exchanged_from
 properties:
   id:
     type: string
@@ -22,7 +23,7 @@ properties:
     type: array
     items:
       type: string
-      enum: [ "ops:read", "ops:triage", "ops:alerts-ingest" ]
+      enum: [ "ops:read", "ops:triage", "ops:alerts-ingest", "ops:exchange" ]
   created_by:
     type: [ string, "null" ]
     description: Kratos identity id of the admin who created it.
@@ -39,3 +40,9 @@ properties:
   revoked_at:
     type: [ string, "null" ]
     format: date-time
+  exchanged_from:
+    type: [ string, "null" ]
+    description: >
+      Id of the token this one was exchanged for (short-lived, from
+      `POST /ops/tokens/exchange`); null for tokens an admin created. Revoking
+      that token revokes this one.

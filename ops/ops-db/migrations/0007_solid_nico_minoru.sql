@@ -1,0 +1,1 @@
+ALTER TABLE `ops_tokens` ADD `exchanged_from` text;
