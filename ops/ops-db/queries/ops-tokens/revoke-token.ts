@@ -1,7 +1,7 @@
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/utils";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { opsDbManager } from "../../instances.ts";
 import { opsTokens, type OpsToken } from "../../schema.ts";
 import {
@@ -14,7 +14,10 @@ export type RevokeTokenResult = ReturnsError<
   OpsTokenNotFoundError | OpsTokenAlreadyRevokedError
 >;
 
-/** Revoke a token by id. Revocation is permanent. */
+/**
+ * Revoke a token by id, and any still-active tokens exchanged from it.
+ * Revocation is permanent.
+ */
 export const revokeToken = queryWrapper(
   async (dbKey: DbKey, id: string): Promise<RevokeTokenResult> => {
     const db = opsDbManager.get(dbKey)!;
@@ -27,11 +30,16 @@ export const revokeToken = queryWrapper(
     if (existing.revoked_at) {
       return { error: new OpsTokenAlreadyRevokedError(id) };
     }
+    const now = new Date();
     const [row] = await db
       .update(opsTokens)
-      .set({ revoked_at: new Date() })
+      .set({ revoked_at: now })
       .where(eq(opsTokens.id, id))
       .returning();
+    await db
+      .update(opsTokens)
+      .set({ revoked_at: now })
+      .where(and(eq(opsTokens.exchanged_from, id), isNull(opsTokens.revoked_at)));
     return { result: row! };
   },
 );

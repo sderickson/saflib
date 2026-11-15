@@ -25,6 +25,7 @@ export function mapOpsToken(row: OpsToken): OpsTokenResponse {
     expires_at: row.expires_at?.toISOString() ?? null,
     last_used_at: row.last_used_at?.toISOString() ?? null,
     revoked_at: row.revoked_at?.toISOString() ?? null,
+    exchanged_from: row.exchanged_from,
   };
 }
 

@@ -5,8 +5,15 @@ import type { Expect, Equal } from "@saflib/drizzle";
 /**
  * `ops:read`: every GET. `ops:triage`: issue status changes and alert acks.
  * `ops:alerts-ingest`: only posting alerts (Alertmanager's webhook token).
+ * `ops:exchange`: trade this token for a short-lived one (never granted to
+ * the exchanged token itself).
  */
-export const opsTokenScopes = ["ops:read", "ops:triage", "ops:alerts-ingest"] as const;
+export const opsTokenScopes = [
+  "ops:read",
+  "ops:triage",
+  "ops:alerts-ingest",
+  "ops:exchange",
+] as const;
 
 export type OpsTokenScope = (typeof opsTokenScopes)[number];
 
@@ -31,6 +38,11 @@ export interface OpsToken {
   /** Updated at most once per minute per token. */
   last_used_at: Date | null;
   revoked_at: Date | null;
+  /**
+   * Id of the token this one was exchanged for (`POST /ops/tokens/exchange`);
+   * null for tokens an admin created. Revoking that token revokes this one.
+   */
+  exchanged_from: string | null;
 }
 
 export const opsTokens = sqliteTable("ops_tokens", {
@@ -44,6 +56,7 @@ export const opsTokens = sqliteTable("ops_tokens", {
   expires_at: integer("expires_at", { mode: "timestamp" }),
   last_used_at: integer("last_used_at", { mode: "timestamp" }),
   revoked_at: integer("revoked_at", { mode: "timestamp" }),
+  exchanged_from: text("exchanged_from"),
 });
 
 export type OpsTokenTest1 = Expect<Equal<OpsToken, typeof opsTokens.$inferSelect>>;

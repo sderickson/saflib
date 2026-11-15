@@ -19,6 +19,7 @@ const token = (overrides: Partial<OpsTokenResponse>): OpsTokenResponse => ({
   expires_at: null,
   last_used_at: null,
   revoked_at: null,
+  exchanged_from: null,
   ...overrides,
 });
 
@@ -26,6 +27,7 @@ const listed: OpsResponseBody["listOpsTokens"][200] = {
   ops_tokens: [
     token({}),
     token({ id: "t2", name: "old laptop", revoked_at: "2026-11-02T00:00:00.000Z" }),
+    token({ id: "t4", name: "maintenance agent", exchanged_from: "t1", scopes: ["ops:read", "ops:triage"] }),
   ],
 };
 
@@ -54,13 +56,21 @@ describe("OpsTokensAsync", () => {
   it("lists tokens by prefix and state, with revoke only for active ones", async () => {
     const wrapper = await mount();
     const rows = wrapper.findAll("tbody tr");
-    expect(rows).toHaveLength(2);
+    expect(rows).toHaveLength(3);
     expect(rows[0]!.text()).toContain("safops_AbCdEfGh…");
     expect(rows[0]!.text()).toContain("Active");
     expect(rows[0]!.text()).toContain("Revoke");
     expect(rows[1]!.text()).toContain("Revoked");
     expect(rows[1]!.text()).not.toContain("Revoke ");
     expect(rows[1]!.findComponent({ name: "v-btn" }).exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("labels exchanged tokens", async () => {
+    const wrapper = await mount();
+    const rows = wrapper.findAll("tbody tr");
+    expect(rows[0]!.find("[data-test=token-exchanged]").exists()).toBe(false);
+    expect(rows[2]!.find("[data-test=token-exchanged]").text()).toBe("exchanged");
     wrapper.unmount();
   });
 

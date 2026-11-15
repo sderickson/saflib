@@ -17,6 +17,7 @@ import {
 import { listOpsTokensHandler } from "./list-ops-tokens.ts";
 import { createOpsTokenHandler } from "./create-ops-token.ts";
 import { revokeOpsTokenHandler } from "./revoke-ops-token.ts";
+import { exchangeOpsTokenHandler } from "./exchange-ops-token.ts";
 import {
   listOpsMetricsSeriesHandler,
   queryOpsMetricsHandler,
@@ -62,6 +63,7 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.post("/ops/issues/:id/resolve", resolveOpsIssueHandler);
   router.post("/ops/issues/:id/ignore", ignoreOpsIssueHandler);
   router.post("/ops/issues/:id/reopen", reopenOpsIssueHandler);
+  router.post("/ops/tokens/exchange", exchangeOpsTokenHandler);
   router.get("/admin/ops-tokens", listOpsTokensHandler);
   router.post("/admin/ops-tokens", createOpsTokenHandler);
   router.post("/admin/ops-tokens/:id/revoke", revokeOpsTokenHandler);

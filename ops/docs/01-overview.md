@@ -19,7 +19,7 @@ The base product wires these through `@saflib/base-ops` (`base/product/service/o
 
 - Format `safops_` + 32 random bytes (base64url). The prefix lets secret scanners recognize leaked tokens.
 - Only the SHA-256 is stored. The plaintext is returned once, by `POST /admin/ops-tokens`.
-- Scopes: `ops:read` (every GET) and `ops:triage` (issue status changes and alert acknowledgement, once those exist).
+- Scopes: `ops:read` (every GET), `ops:triage` (issue status changes and alert acknowledgement), `ops:alerts-ingest` (only the Alertmanager webhook), and `ops:exchange` (trade the token for a short-lived one; see below).
 - Optional expiry; revocation is permanent. Creating and revoking tokens is audit-logged.
 - Ops API reads are audit-logged against the token: `auth_method: ops_token`, `actor_user_id: ops_token:<id>` (via `opsMachineActor`, passed to `createAuditRecorder({ resolveMachineActor })`). `GET /ops/health` is not audited, since uptime checks poll it.
 - Requests are rate limited per token (default 120/min), and failed authentications per client IP (default 20/min).
@@ -38,6 +38,23 @@ CLI changes are logged but not audit-logged (no signed-in admin). Then:
 ```bash
 curl -H "Authorization: Bearer $SAF_OPS_TOKEN" https://api.example.com/ops/health
 ```
+
+### Short-lived sessions (`ops:exchange`)
+
+A long-lived token with `ops:exchange` can stay in a password manager while an agent works with a short-lived copy. `POST /ops/tokens/exchange` (authenticated with the long-lived token) returns a new token:
+
+- with the requested `scopes`, or all of the caller's; never `ops:exchange`, so an exchanged token can't mint more;
+- expiring after `expires_in_seconds` (default 3600, at most 8 hours), or when the calling token does, whichever is first;
+- marked with `exchanged_from` (shown as "exchanged" on the Ops tokens page), and revoked along with the token it came from.
+
+`saflib/ops/ops-http/bin/ops-session.ts` does this from a laptop. `start` reads the long-lived token with `op read` (one 1Password approval), exchanges it, and saves only the short-lived token to `~/.cache/saf-ops/<app>.json` (mode 0600). `call` sends one request with it and prints the body, so an agent never handles the token; it exits 2 when the session is missing or expired. Products add npm scripts:
+
+```json
+"ops-session": "node saflib/ops/ops-http/bin/ops-session.ts start --name <app> --api https://api.example.com --op-ref 'op://Private/<item>/credential'",
+"ops": "node saflib/ops/ops-http/bin/ops-session.ts call --name <app>"
+```
+
+Then `npm run ops-session` once, and `npm run ops -- /ops/digest` for the next hour.
 
 ### How it plugs into auth
 

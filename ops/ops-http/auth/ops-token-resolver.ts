@@ -17,6 +17,9 @@ export interface OpsCaller {
   id: string;
   name: string;
   scopes: OpsToken["scopes"];
+  expiresAt: Date | null;
+  /** Set when the caller is itself an exchanged (short-lived) token. */
+  exchangedFrom: string | null;
 }
 
 export interface OpsTokenResolverOptions {
@@ -131,7 +134,13 @@ export function createOpsTokenSecurityResolver(
             reject(res, 429, "Rate limited", limiters.perToken.retryAfterSeconds(opsToken.id));
             return;
           }
-          const caller: OpsCaller = { id: opsToken.id, name: opsToken.name, scopes: opsToken.scopes };
+          const caller: OpsCaller = {
+            id: opsToken.id,
+            name: opsToken.name,
+            scopes: opsToken.scopes,
+            expiresAt: opsToken.expires_at,
+            exchangedFrom: opsToken.exchanged_from,
+          };
           res.locals.opsToken = caller;
           void touchLastUsed(getDbKey(), opsToken.id).catch((e: unknown) => {
             getSafReporters().log.warn("ops token last-used update failed", { error: String(e) });
