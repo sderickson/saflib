@@ -20,7 +20,7 @@
     "@saflib/analytics-service": "*",
     "@saflib/env": "*",
     "@saflib/node": "*",
-    "posthog-node": "^5.33.2"
+    "posthog-node": "^6.0.0"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",
