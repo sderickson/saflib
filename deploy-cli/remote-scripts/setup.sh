@@ -1,3 +1,11 @@
+# With SAF_DATA_DIR set (env.remote), the data disk must be mounted there
+# first: otherwise the stack's bind mounts would quietly create it on the
+# boot disk.
+if [ -n "${SAF_DATA_DIR:-}" ] && ! findmnt --mountpoint "$SAF_DATA_DIR" > /dev/null; then
+  echo "SAF_DATA_DIR ($SAF_DATA_DIR) is not a mount point. Attach the data disk and mount it there first." >&2
+  exit 1
+fi
+
 # Install Docker (if missing) and make sure it's running.
 if ! command -v docker &> /dev/null; then
   echo "Docker could not be found, installing..."
@@ -13,6 +21,50 @@ if ! command -v docker &> /dev/null; then
     $SUDO tee /etc/apt/sources.list.d/docker.list > /dev/null
   $SUDO apt-get update
   $SUDO apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+fi
+
+# Docker daemon settings. A host without /etc/docker/daemon.json gets a
+# hardened default; an existing file is left alone, except that
+# SAF_USERNS_REMAP=1 adds user-namespace remapping (root in a container is
+# then an unprivileged uid on the host). Turning that on for a host that
+# already runs containers hides its images, containers and volumes (Docker
+# keeps them under a separate root), so it's meant for new hosts.
+daemon_json=/etc/docker/daemon.json
+restart_docker=
+if [ ! -f "$daemon_json" ]; then
+  echo "Installing a hardened $daemon_json..."
+  userns_line=
+  [ "${SAF_USERNS_REMAP:-}" != 1 ] || userns_line='  "userns-remap": "default",'
+  $SUDO mkdir -p /etc/docker
+  $SUDO tee "$daemon_json" > /dev/null <<EOF
+{
+$userns_line
+  "icc": false,
+  "live-restore": true,
+  "userland-proxy": false,
+  "no-new-privileges": true,
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "25m", "max-file": "4" }
+}
+EOF
+  restart_docker=1
+elif [ "${SAF_USERNS_REMAP:-}" = 1 ] && ! grep -q '"userns-remap"' "$daemon_json"; then
+  echo "Adding userns-remap to $daemon_json..."
+  $SUDO python3 - "$daemon_json" <<'EOF'
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    config = json.load(f)
+config["userns-remap"] = "default"
+with open(path, "w") as f:
+    json.dump(config, f, indent=2)
+    f.write("\n")
+EOF
+  restart_docker=1
+fi
+if [ -n "$restart_docker" ]; then
+  $SUDO dockerd --validate --config-file "$daemon_json"
+  $SUDO systemctl restart docker
 fi
 
 if ! systemctl is-active --quiet docker; then
