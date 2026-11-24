@@ -7,6 +7,9 @@ Build, push and deploy a SAF product's production stack. Run from the deploy
 package (env.remote + remote-assets/).
 
 Options:
+  --target <name>           deploy target: env.remote.<name>'s values over
+                            env.remote (default: SAF_DEPLOY_TARGET, else
+                            env.remote alone)
   -h, --help                display help for command
 
 Commands:

@@ -21,6 +21,7 @@ Run `saf-deploy` from the product's **deploy package** (npm scripts do this). It
   - `REMOTE_ASSETS_FOLDER_PATH`: where `remote-assets/` is unpacked and compose runs
   - `REMOTE_SUDO` (optional): `0` to not `sudo -i` on the server. Privileged steps then use `sudo` when not root.
   - `SAF_EDGE_CONTAINER` (product deploys): the platform's edge container, which `remote-assets/caddy/*.Caddyfile` routes are registered with.
+- `env.remote.<target>` (optional): another host to deploy to, e.g. a new machine during a migration. Its values are layered over `env.remote` (usually just `SSH_HOSTNAME` and host settings). Select it with `--target <target>` or `SAF_DEPLOY_TARGET=<target>`; remote commands print the target and host first.
 - `remote-assets/docker-compose.prod.yaml`: the production stack. Its `$CONTAINER_REGISTRY/<image>` services (and the blue-green file's) decide **which images are built and pushed**; there are no image lists to maintain.
 - `remote-assets/docker-compose.blue-green.yaml` (optional, product deploys): services deployed blue-green; see below.
 

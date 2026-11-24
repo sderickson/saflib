@@ -23,7 +23,15 @@ const program = new Command()
   .name("saf-deploy")
   .description(
     "Build, push and deploy a SAF product's production stack. Run from the deploy package (env.remote + remote-assets/).",
-  );
+  )
+  .option(
+    "--target <name>",
+    "deploy target: env.remote.<name>'s values over env.remote (default: SAF_DEPLOY_TARGET, else env.remote alone)",
+  )
+  .hook("preAction", (command) => {
+    const { target } = command.opts<{ target?: string }>();
+    if (target) process.env.SAF_DEPLOY_TARGET = target;
+  });
 
 // BEGIN WORKFLOW AREA cli-commands FOR commander/add-command
 addBuildCommand(program);

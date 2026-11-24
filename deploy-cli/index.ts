@@ -1,5 +1,8 @@
 export {
+  describeTarget,
   loadDeployConfig,
+  selectedTarget,
+  targetEnvFile,
   parseEnvFile,
   PROD_COMPOSE_FILE,
   type DeployConfig,

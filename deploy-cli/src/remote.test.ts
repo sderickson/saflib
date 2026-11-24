@@ -11,7 +11,12 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
-import { loadDeployConfig, parseEnvFile, requireRemote } from "./config.ts";
+import {
+  describeTarget,
+  loadDeployConfig,
+  parseEnvFile,
+  requireRemote,
+} from "./config.ts";
 import {
   localPayload,
   readRemoteScript,
@@ -59,6 +64,49 @@ describe("config", () => {
     const config = loadDeployConfig(dir);
     expect(config.containerRegistry).toBe("ghcr.io/ci");
     expect(config.env.CONTAINER_REGISTRY).toBe("ghcr.io/ci");
+  });
+
+  it("layers a target's env.remote.<target> over env.remote", () => {
+    writeFileSync(
+      path.join(dir, "env.remote"),
+      "SSH_HOSTNAME=me@old\nREMOTE_ZIP_PATH=/home/me\n",
+    );
+    writeFileSync(
+      path.join(dir, "env.remote.next"),
+      "SSH_HOSTNAME=me@new\nSAF_USERNS_REMAP=1\n",
+    );
+    const base = loadDeployConfig(dir, undefined);
+    expect(base.target).toBeUndefined();
+    expect(base.env.SSH_HOSTNAME).toBe("me@old");
+    const next = loadDeployConfig(dir, "next");
+    expect(next.target).toBe("next");
+    expect(next.env).toEqual({
+      SSH_HOSTNAME: "me@new",
+      REMOTE_ZIP_PATH: "/home/me",
+      SAF_USERNS_REMAP: "1",
+    });
+    expect(describeTarget(next)).toBe("next (me@new)");
+  });
+
+  it("reads the target from SAF_DEPLOY_TARGET, treating 'default' as none", () => {
+    writeFileSync(path.join(dir, "env.remote"), "SSH_HOSTNAME=me@old\n");
+    writeFileSync(path.join(dir, "env.remote.next"), "SSH_HOSTNAME=me@new\n");
+    const previousTarget = process.env.SAF_DEPLOY_TARGET;
+    try {
+      process.env.SAF_DEPLOY_TARGET = "next";
+      expect(loadDeployConfig(dir).env.SSH_HOSTNAME).toBe("me@new");
+      process.env.SAF_DEPLOY_TARGET = "default";
+      expect(loadDeployConfig(dir).env.SSH_HOSTNAME).toBe("me@old");
+    } finally {
+      if (previousTarget === undefined) delete process.env.SAF_DEPLOY_TARGET;
+      else process.env.SAF_DEPLOY_TARGET = previousTarget;
+    }
+  });
+
+  it("refuses a target without an overrides file, or with an odd name", () => {
+    writeFileSync(path.join(dir, "env.remote"), "SSH_HOSTNAME=me@old\n");
+    expect(() => loadDeployConfig(dir, "nope")).toThrow(/has no .*env\.remote\.nope/);
+    expect(() => loadDeployConfig(dir, "../x")).toThrow(/Invalid deploy target/);
   });
 
   it("names missing remote settings", () => {

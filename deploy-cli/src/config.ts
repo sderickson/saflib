@@ -14,7 +14,15 @@ export const BLUE_GREEN_COMPOSE_FILE =
  */
 export interface DeployConfig {
   deployDir: string;
-  /** Every `KEY=value` in `env.remote` (sent to the server for remote commands). */
+  /**
+   * The selected target: `undefined` for the default (`env.remote` alone),
+   * else the name whose `env.remote.<target>` overrides were layered on top.
+   */
+  target?: string;
+  /**
+   * Every `KEY=value` in `env.remote`, with the target's overrides (sent to
+   * the server for remote commands).
+   */
   env: Record<string, string>;
   /** `CONTAINER_REGISTRY` (the process env wins, e.g. in CI). */
   containerRegistry?: string;
@@ -37,18 +45,48 @@ export function parseEnvFile(contents: string): Record<string, string> {
   return env;
 }
 
+/** Where a target's overrides live: `env.remote.<target>`. */
+export function targetEnvFile(deployDir: string, target: string): string {
+  return path.join(deployDir, `env.remote.${target}`);
+}
+
+/** The target named by `SAF_DEPLOY_TARGET` (set by `--target`), if any. */
+export function selectedTarget(): string | undefined {
+  const target = process.env.SAF_DEPLOY_TARGET?.trim();
+  return target && target !== "default" ? target : undefined;
+}
+
+/**
+ * Loads a deploy's settings: `env.remote`, then (for a target other than the
+ * default) `env.remote.<target>`'s values on top. `target` defaults to
+ * {@link selectedTarget}.
+ */
 export function loadDeployConfig(
   deployDir: string = process.cwd(),
+  target: string | undefined = selectedTarget(),
 ): DeployConfig {
   const envFile = path.join(deployDir, "env.remote");
   const env = existsSync(envFile)
     ? parseEnvFile(readFileSync(envFile, "utf8"))
     : {};
+  if (target) {
+    if (!/^[A-Za-z0-9_-]+$/.test(target)) {
+      throw new Error(`Invalid deploy target "${target}"`);
+    }
+    const overrides = targetEnvFile(deployDir, target);
+    if (!existsSync(overrides)) {
+      throw new Error(
+        `Deploy target "${target}" has no ${path.relative(process.cwd(), overrides) || overrides}`,
+      );
+    }
+    Object.assign(env, parseEnvFile(readFileSync(overrides, "utf8")));
+  }
   const containerRegistry =
     process.env.CONTAINER_REGISTRY || env.CONTAINER_REGISTRY;
   if (containerRegistry) env.CONTAINER_REGISTRY = containerRegistry;
   return {
     deployDir,
+    target,
     env,
     containerRegistry,
     composeFile: path.join(deployDir, PROD_COMPOSE_FILE),
@@ -56,6 +94,13 @@ export function loadDeployConfig(
       .map((file) => path.join(deployDir, file))
       .filter((file, i) => i === 0 || existsSync(file)),
   };
+}
+
+/** How to name a config's target and host in output, e.g. `next (root@host)`. */
+export function describeTarget(config: DeployConfig): string {
+  const host = config.env.SSH_HOSTNAME;
+  const name = config.target ?? "default";
+  return host ? `${name} (${host})` : name;
 }
 
 /** The values remote commands need; throws naming whatever is missing. */
