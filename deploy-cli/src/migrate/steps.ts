@@ -124,6 +124,17 @@ function rollbackLines(ctx: MigrateContext, addressMoved: boolean): string[] {
   ];
 }
 
+/** Formats `$DISK` and mounts it at `dir`, now and on every boot. */
+function mountCommands(dir: string): string[] {
+  return [
+    "DISK=/dev/disk/by-id/google-<disk-name>   # formatting erases it: double-check",
+    "sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard $DISK",
+    `sudo mkdir -p '${dir}'`,
+    `echo "UUID=$(sudo blkid -s UUID -o value $DISK) ${dir} ext4 discard,defaults,nofail 0 2" | sudo tee -a /etc/fstab`,
+    `sudo systemctl daemon-reload && sudo mount '${dir}' && sudo chmod 755 '${dir}'`,
+  ];
+}
+
 export function migrationSteps(): Step<MigrateContext>[] {
   return [
     {
@@ -134,10 +145,14 @@ export function migrationSteps(): Step<MigrateContext>[] {
         "In your cloud console, create the VM:",
         "  - an Ubuntu LTS image (not an interim release: those reach end of life in 9 months)",
         `  - an architecture images are built for (SAF_DEPLOY_PLATFORMS: ${platforms(ctx)})`,
-        `  - a separate, empty data disk (mounted at ${dataDir(ctx)} in step 3), with a snapshot schedule`,
+        "  - a separate, empty data disk, with a snapshot schedule",
         "  - HTTP and HTTPS allowed; the same service account as the old VM",
         "  - a temporary external address. The static address moves over in step 9",
-        "Then add your SSH key to it.",
+        "Add your SSH key to it, SSH in, and format and mount the data disk so it",
+        "mounts again on every boot. Find the disk with `lsblk` (on GCP,",
+        "/dev/disk/by-id/google-<disk-name>), then:",
+        ...mountCommands(dataDir(ctx)).map((line) => `  ${line}`),
+        "Step 3 checks the mount and its /etc/fstab entry.",
       ],
     },
     {
@@ -192,21 +207,34 @@ export function migrationSteps(): Step<MigrateContext>[] {
     },
     {
       id: "disk",
-      title: "Mount the data disk",
+      title: "Check the data disk",
       kind: "auto",
       describe: (ctx) => [
-        `Checks the new machine's data disk is mounted at ${dataDir(ctx)}.`,
-        "If it isn't, lists its disks and the commands to format and mount one.",
+        `Checks the new machine's data disk is mounted at ${dataDir(ctx)}, from an`,
+        "/etc/fstab entry so it mounts again after a reboot. If not, lists its disks",
+        "and the commands from step 1.",
       ],
       run: async (ctx) => {
         const dir = dataDir(ctx);
         const status = await ctx.ops.sshCapture(
           newHost(ctx),
-          `findmnt --mountpoint '${dir}' > /dev/null && echo mounted || echo missing`,
+          `findmnt --mountpoint '${dir}' > /dev/null && echo mounted || echo missing; ` +
+            `findmnt --fstab --mountpoint '${dir}' > /dev/null && echo fstab || echo no-fstab`,
         );
-        if (status.trim() === "mounted") {
-          ctx.io.print(`${dir} is mounted.`);
+        const [mounted, fstab] = status.trim().split("\n");
+        if (mounted === "mounted" && fstab === "fstab") {
+          ctx.io.print(`${dir} is mounted, and listed in /etc/fstab.`);
           return;
+        }
+        if (mounted === "mounted") {
+          ctx.io.print(
+            `${dir} is mounted but not in /etc/fstab, so it won't come back after a reboot. On the new machine:`,
+          );
+          ctx.io.print(
+            `  echo "UUID=$(findmnt -no UUID '${dir}') ${dir} ext4 discard,defaults,nofail 0 2" | sudo tee -a /etc/fstab`,
+          );
+          ctx.io.print("  sudo systemctl daemon-reload && sudo mount -a");
+          throw new Error(`${dir} has no /etc/fstab entry`);
         }
         const disks = await ctx.ops.sshCapture(
           newHost(ctx),
@@ -218,13 +246,7 @@ export function migrationSteps(): Step<MigrateContext>[] {
         ctx.io.print(
           "Find the empty data disk (on GCP, /dev/disk/by-id/google-<disk-name>), then on the new machine:",
         );
-        for (const line of [
-          "DISK=/dev/disk/by-id/google-<disk-name>   # formatting erases it: double-check",
-          "sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard $DISK",
-          `sudo mkdir -p '${dir}'`,
-          `echo "UUID=$(sudo blkid -s UUID -o value $DISK) ${dir} ext4 discard,defaults,nofail 0 2" | sudo tee -a /etc/fstab`,
-          `sudo mount '${dir}' && sudo chmod 755 '${dir}'`,
-        ]) {
+        for (const line of mountCommands(dir)) {
           ctx.io.print(`  ${line}`);
         }
         throw new Error(`${dir} isn't mounted yet`);
@@ -384,6 +406,13 @@ export function migrationSteps(): Step<MigrateContext>[] {
         '  gcloud compute instances add-access-config <new-vm> --access-config-name="External NAT" --address=<static-ip> --zone=<zone>',
         "Then this step checks the address reaches the new machine (by its host keys),",
         `updates ~/.ssh/known_hosts for it, and points env.remote.${ctx.to} at it.`,
+        "",
+        `Afterwards, update your own pointers from the temporary address${ctx.state.newHost ? ` (${addressOf(ctx.state.newHost)})` : ""}`,
+        "to the static one: ~/.ssh/config Host entries, the host/URL on the SSH key in",
+        "your password manager, and so on. Other machines that SSH in (another laptop,",
+        "CI) will see a changed host key for the static address: on each, run",
+        "`ssh-keygen -R <static-ip>` and connect once to accept the new key.",
+        "Then release the temporary address.",
       ],
       rollback: (ctx) => rollbackLines(ctx, true),
       run: async (ctx) => {

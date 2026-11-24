@@ -149,48 +149,53 @@ Steps:
 1. **Create the machine** (manual). Printed checklist: Ubuntu LTS image (not
    an interim release), architecture matching `SAF_DEPLOY_PLATFORMS`, a
    separate data disk (with a snapshot schedule), HTTP/HTTPS firewall rules,
-   the service account the product needs. No static IP yet: the old host's
-   address moves over at cutover.
-2. **SSH** (manual + check). Operator adds their key and enters
-   `user@address`. The tool checks `ssh -o BatchMode=yes` works, then writes
-   `env.remote.<to>` for each deploy (`SSH_HOSTNAME`, plus
-   `SAF_USERNS_REMAP=1`), showing the diff first.
-3. **Data disk** (manual + check). If `SAF_DATA_DIR` isn't a mount point on
-   the new host, list unmounted block devices (`lsblk`) and print the
-   format/mount/fstab commands for the operator to run (formatting is
-   destructive, so the tool never runs it). Re-check until mounted.
+   the service account the product needs, a temporary external address (the
+   old host's static address moves over at cutover). The operator adds their
+   SSH key, then formats and mounts the data disk with an `/etc/fstab` entry
+   (`nofail`) using the printed commands. Formatting is destructive, so the
+   tool never runs it.
+2. **Connect** (automated). Operator enters `user@address`. The tool checks
+   SSH works and that it isn't the old host (`/etc/machine-id`), records the
+   host keys, then writes `env.remote.<to>` for each deploy (`SSH_HOSTNAME`,
+   plus `SAF_USERNS_REMAP=1`).
+3. **Check the data disk** (automated). `SAF_DATA_DIR` must be mounted and
+   listed in `/etc/fstab`, so it survives a reboot. If not, list block devices
+   and reprint step 1's commands. Re-check until it passes.
 4. **Setup** (automated): `setup` on the new host.
-5. **Images** (check). For each deploy, confirm every image in the compose
-   files has a manifest for the new host's architecture
-   (`docker buildx imagetools inspect`), else say how to publish one.
-6. **Stage** (automated): `sync` and `pull` for each deploy on the new host,
+5. **Stage** (automated): `sync` and `pull` for each deploy on the new host
+   (a pull failure explains how to publish images for the new architecture),
    and copy `SAF_MIGRATE_HOST_PATHS` (e.g. `/opt/alertmanager/secrets`) from
    old to new. Nothing is started.
-7. **Begin the window** (confirm). Everything up to here is safe to do days
-   ahead. From here, the product is down until step 11.
-8. **Stop the old host** (automated): `down` for each deploy, in reverse.
-9. **Copy data** (automated): stream `SAF_DATA_DIR` old → new through the
+6. **Begin the window** (confirm). Everything up to here is safe to do days
+   ahead. From here, the product is down until step 10.
+7. **Stop the old host** (automated): `down` for each deploy, in reverse.
+8. **Copy data** (automated): stream `SAF_DATA_DIR` old → new through the
    operator's machine (`ssh old tar | ssh new tar`, numeric owners kept; no
-   host-to-host keys needed), then compare a per-file checksum list from both
-   sides. With userns-remap on the new host, shift every owner by the
-   remapped base (from `/etc/subuid`'s `dockremap` entry) so each container
-   sees the same uid it did before. `SAF_DATA_OWNERS` (e.g.
-   `app=1000:1000 kratos=10000:10000`) then sets owners per top-level folder,
-   for containers that changed to a non-root `USER` (phase 5).
-10. **Move the address** (manual). Printed `gcloud` hints for moving a
-    static external IP from one VM to another; the tool waits until
-    `ssh <address>` reaches the new host (by comparing host keys or
-    `/etc/machine-id`).
-11. **Start the new host** (automated): `up` for each deploy, platform first.
-    Then the operator checks the product (the tool prints
-    `SAF_MIGRATE_CHECK_URL` results if set).
-12. **Promote** (automated, confirm): swap `env.remote` ↔ `env.remote.<to>`
-    in each deploy (the old one stays as `env.remote.<from-name>`).
+   host-to-host keys needed, nothing written to the operator's disk), then
+   compare a per-file checksum list from both sides. With userns-remap on the
+   new host, shift every owner by the remapped base (from `/etc/subuid`'s
+   `dockremap` entry) so each container sees the same uid it did before.
+   `SAF_DATA_OWNERS` (e.g. `app=1000:1000 kratos=10000:10000`) then sets
+   owners per top-level folder, for containers that changed to a non-root
+   user (phase 5).
+9. **Move the address** (manual). Printed `gcloud` hints for moving a static
+   external IP from one VM to another; the tool checks the address reaches
+   the new host (host keys, then `/etc/machine-id`), replaces its
+   `known_hosts` entry and points `env.remote.<to>` at it. Reminds the
+   operator to repoint their own SSH config / password-manager entries from
+   the temporary address, refresh `known_hosts` on other machines, and release
+   the temporary address.
+10. **Start the new host** (automated): `up` for each deploy, platform first.
+11. **Verify** (confirm): prints `SAF_MIGRATE_CHECK_URL`'s status if set; the
+    operator checks the product.
+12. **Promote** (automated): merge `env.remote.<to>` into `env.remote` in
+    each deploy (the replaced values stay as `env.remote.<previous-name>`).
 13. **Afterwards** (checklist): keep the old VM stopped (not deleted) for a
-    week as a rollback; confirm the new disk's snapshot schedule; delete the
-    old VM and disk later.
+    week as a rollback; confirm the new disk's snapshot schedule; commit the
+    env changes; narrow `SAF_DEPLOY_PLATFORMS` once every host shares an
+    architecture; delete the old VM and disk later.
 
-**Rollback** from steps 8–11: move the address back if moved, `up` on the old
+**Rollback** from steps 7–11: move the address back if moved, `up` on the old
 host. The old host's data is never modified. The tool prints this at each of
 those steps.
 

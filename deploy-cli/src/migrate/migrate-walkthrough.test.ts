@@ -138,7 +138,7 @@ describe("migration walkthrough", () => {
             ? `${id}\naarch64\nUbuntu 26.04 LTS\n`
             : `${id}\n`;
         }
-        if (command.startsWith("findmnt")) return "mounted\n";
+        if (command.startsWith("findmnt")) return "mounted\nfstab\n";
         if (command.includes("-print -quit")) return "empty\n";
         if (command.includes("sha256sum")) return "abc  ./app/db.sqlite\n";
         if (command.includes("python3")) {
