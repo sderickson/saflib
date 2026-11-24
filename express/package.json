@@ -24,7 +24,7 @@
     "cors": "^2.0.0",
     "express": "^5.0.0",
     "express-openapi-validator": "^5.0.0",
-    "express-prom-bundle": "^8.0.0",
+    "express-prom-bundle": "^9.0.0",
     "helmet": "^8.1.0",
     "http-errors": "^2.0.0",
     "morgan": "^1.0.0",
