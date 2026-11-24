@@ -307,7 +307,8 @@ export function migrationSteps(): Step<MigrateContext>[] {
                 "  https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)",
               ]
             : []),
-          `  sudo docker login ${registry ?? "<registry>"} -u <user> --password-stdin   # paste the token, Enter, Ctrl-D`,
+          `  sudo docker login ${registry ?? "<registry>"} -u <user>`,
+          "  (at the hidden Password: prompt, paste the token and press Enter)",
           "Then this step checks root's Docker config has the login. Skip (s) if the images are public.",
         ];
       },
