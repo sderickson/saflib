@@ -133,7 +133,16 @@ function shannonEntropy(s: string): number {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function looksLikeSecret(token: string): boolean {
+/**
+ * ISO timestamps, including filename-safe ones with `-` for `:`
+ * (`2026-11-24T00-05-00`). Their `T`/`Z` and digits otherwise make paths
+ * like `/data/audit/audit-2026-11-24T00-05-00` look like mixed-case secrets.
+ * The time may be cut short: candidates stop at `:` and `.`.
+ */
+const ISO_TIMESTAMP = /\d{4}-\d{2}-\d{2}T\d{2}(?:[-:]\d{2}){0,2}(?:\.\d+)?Z?/g;
+
+function looksLikeSecret(match: string): boolean {
+  const token = match.replace(ISO_TIMESTAMP, "");
   if (UUID.test(token)) return false; // identifiers
   if (/^[0-9a-f]+$/i.test(token)) return false; // hashes, commit shas: identifiers
   if (!/[a-z]/.test(token) || !/[A-Z]/.test(token) || !/[0-9]/.test(token)) return false;
