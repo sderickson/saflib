@@ -3,11 +3,15 @@ import path from "node:path";
 import type { DbKey } from "@saflib/drizzle";
 import lockfile from "proper-lockfile";
 import { auditDb } from "./instances.ts";
-import { auditDbDataRoot } from "./paths.ts";
 
-/** Sentinel for cross-process serialization of audit DB writes (append + rotation clear). */
-export function auditWriteLockPath(): string {
-  return path.join(auditDbDataRoot(), ".audit-write.lock");
+/**
+ * Sentinel for cross-process serialization of audit DB writes (append +
+ * rotation clear): beside the connected database file, so every process (and
+ * container) sharing that file shares the lock, and it lives wherever the
+ * database's directory is mounted.
+ */
+export function auditWriteLockPath(dbPath: string): string {
+  return path.join(path.dirname(dbPath), ".audit-write.lock");
 }
 
 const lockOptions = {
@@ -20,9 +24,11 @@ const lockOptions = {
   },
 } as const;
 
-function usesOnDiskAuditDb(dbKey: DbKey): boolean {
+function onDiskAuditDbPath(dbKey: DbKey): string | undefined {
   const storagePath = auditDb.getDbPath(dbKey);
-  return storagePath !== undefined && storagePath !== ":memory:";
+  return storagePath !== undefined && storagePath !== ":memory:"
+    ? storagePath
+    : undefined;
 }
 
 async function runLocked<T>(fn: () => T | Promise<T>): Promise<T> {
@@ -42,11 +48,12 @@ export async function withAuditWriteLock<T>(
   dbKey: DbKey,
   fn: () => T | Promise<T>,
 ): Promise<T> {
-  if (!usesOnDiskAuditDb(dbKey)) {
+  const dbPath = onDiskAuditDbPath(dbKey);
+  if (!dbPath) {
     return runLocked(fn);
   }
 
-  const lockPath = auditWriteLockPath();
+  const lockPath = auditWriteLockPath(dbPath);
   await mkdir(path.dirname(lockPath), { recursive: true });
   const release = await lockfile.lock(lockPath, lockOptions);
   try {
