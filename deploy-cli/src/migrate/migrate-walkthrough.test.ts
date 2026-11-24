@@ -114,7 +114,7 @@ describe("migration walkthrough", () => {
     app = path.join(root, "app");
     writeDeploy(
       platform,
-      "SAF_DATA_DIR=/mnt/data\nSAF_DEPLOY_PLATFORMS=amd64,arm64\nSAF_MIGRATE_HOST_PATHS=/opt/secrets\nSAF_DATA_OWNERS=app=1000:1000\n",
+      "CONTAINER_REGISTRY=ghcr.io/me\nSAF_DATA_DIR=/mnt/data\nSAF_DEPLOY_PLATFORMS=amd64,arm64\nSAF_MIGRATE_HOST_PATHS=/opt/secrets\nSAF_DATA_OWNERS=app=1000:1000\n",
     );
     writeDeploy(app, "");
   });
@@ -138,6 +138,11 @@ describe("migration walkthrough", () => {
           return command.includes("uname")
             ? `${id}\naarch64\nUbuntu 26.04 LTS\n`
             : `${id}\n`;
+        }
+        if (command.includes(".docker/config.json")) {
+          calls.push(`registry@${host}`);
+          expect(command).toContain('"ghcr.io"');
+          return "yes\n";
         }
         if (command.startsWith("findmnt")) return "mounted\nfstab\n";
         if (command.includes("-print -quit")) return "empty\n";
@@ -193,6 +198,7 @@ describe("migration walkthrough", () => {
     );
     expect(calls).toEqual([
       "setup platform@me@temp",
+      "registry@me@temp",
       "sync platform@me@temp",
       "pull platform@me@temp",
       "sync app@me@temp",

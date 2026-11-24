@@ -127,6 +127,10 @@ export function preflight(ctx: MigrateContext): void {
   oldHost(ctx);
 }
 
+/** The registry's host (`ghcr.io` for `ghcr.io/acme`), if one is set. */
+const registryHost = (ctx: MigrateContext) =>
+  toConfigs(ctx)[0].containerRegistry?.split("/")[0];
+
 const platforms = (ctx: MigrateContext) =>
   setting(ctx, "SAF_DEPLOY_PLATFORMS") ?? "amd64";
 
@@ -140,9 +144,7 @@ function rollbackLines(ctx: MigrateContext, addressMoved: boolean): string[] {
   const from = targetFlag(ctx.from);
   return [
     "If something goes wrong from here, roll back:",
-    ...(addressMoved
-      ? ["  - move the static address back to the old VM (reverse step 9)"]
-      : []),
+    ...(addressMoved ? ["  - move the static address back to the old VM"] : []),
     `  - in each deploy, \`saf-deploy up ${from}\` (platform deploy first).`,
     "  The old host's data is never modified.",
   ];
@@ -177,13 +179,13 @@ export function migrationSteps(): Step<MigrateContext>[] {
         `  - an architecture images are built for (SAF_DEPLOY_PLATFORMS: ${platforms(ctx)})`,
         "  - a separate, empty data disk, with a snapshot schedule",
         "  - HTTP and HTTPS allowed; the same service account as the old VM",
-        "  - a temporary external address. The static address moves over in step 9",
+        "  - a temporary external address. The static address moves over during the window",
         "",
         "Add your SSH key to it, SSH in, and format and mount the data disk so it",
         "mounts again on every boot (the fstab line finds it by filesystem UUID, so",
         "device names changing between boots doesn't matter). Find it with:",
         ...mountCommands(dataDir(ctx)),
-        "Step 3 checks the mount and its /etc/fstab entry.",
+        "A later step checks the mount and its /etc/fstab entry.",
       ],
     },
     {
@@ -216,7 +218,7 @@ export function migrationSteps(): Step<MigrateContext>[] {
         const archName = ARCH_NAMES[arch] ?? arch;
         if (!platforms(ctx).split(",").includes(archName)) {
           io.print(
-            `⚠ Images are built for ${platforms(ctx)}, not ${archName}: add it to SAF_DEPLOY_PLATFORMS and push before step 5.`,
+            `⚠ Images are built for ${platforms(ctx)}, not ${archName}: add it to SAF_DEPLOY_PLATFORMS and push before staging.`,
           );
         }
         const remap = await io.ask(
@@ -291,6 +293,40 @@ export function migrationSteps(): Step<MigrateContext>[] {
       },
     },
     {
+      id: "registry",
+      title: "Log in to the container registry",
+      kind: "auto",
+      describe: (ctx) => {
+        const registry = registryHost(ctx);
+        return [
+          `Deploys run Docker as root on the host, so root needs a login to ${registry ?? "the registry"}`,
+          "to pull private images. On the new machine:",
+          ...(registry === "ghcr.io"
+            ? [
+                "  (GitHub: a classic personal access token with only read:packages; see",
+                "  https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)",
+              ]
+            : []),
+          `  sudo docker login ${registry ?? "<registry>"} -u <user> --password-stdin   # paste the token, Enter, Ctrl-D`,
+          "Then this step checks root's Docker config has the login. Skip (s) if the images are public.",
+        ];
+      },
+      run: async (ctx) => {
+        const registry = registryHost(ctx);
+        if (!registry) return;
+        const found = await ctx.ops.sshCapture(
+          newHost(ctx),
+          `sudo -n grep -qF '"${registry}"' /root/.docker/config.json 2>/dev/null && echo yes || echo no`,
+        );
+        if (found.trim() !== "yes") {
+          throw new Error(
+            `root on the new machine isn't logged in to ${registry}`,
+          );
+        }
+        ctx.io.print(`root is logged in to ${registry}.`);
+      },
+    },
+    {
       id: "stage",
       title: "Stage the stack on the new machine",
       kind: "auto",
@@ -343,8 +379,8 @@ export function migrationSteps(): Step<MigrateContext>[] {
       title: "Begin the maintenance window",
       kind: "confirm",
       describe: () => [
-        "From the next step, the product is down until step 10 brings it up on the",
-        "new machine (usually a few minutes). Continue when you're ready for that.",
+        "From the next step, the product is down until the stack starts on the new",
+        "machine (usually a few minutes). Continue when you're ready for that.",
       ],
     },
     {
