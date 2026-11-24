@@ -239,7 +239,10 @@ export function createAuditRecorder(
       });
     } catch (err) {
       const { log, logError } = getSafReporters();
-      log.error("appendAuditEvent failed", { err });
+      log.error("appendAuditEvent failed", {
+        event_type: args.eventType,
+        ...auditErrorFields(err),
+      });
       logError(err instanceof Error ? err : new Error(String(err)));
       throw err;
     }
@@ -342,7 +345,7 @@ export function createAuditRecorder(
     } catch (err) {
       recorderLocals(res).__httpAuditRecorderSkip = true;
       const { log, logError } = getSafReporters();
-      log.error("appendAuditEvent failed (fail-closed)", { err });
+      log.error("appendAuditEvent failed (fail-closed)", auditErrorFields(err));
       logError(err instanceof Error ? err : new Error(String(err)));
       throw createError(503, "Audit log unavailable");
     }
@@ -473,5 +476,19 @@ export function createAuditRecorder(
     clearAuditMapOverrideForTests(): void {
       activeAuditMap = options.auditMap;
     },
+  };
+}
+
+/**
+ * What to log about a failed audit write. Not the error object itself: a
+ * database error can carry the statement's parameters (the event's details,
+ * which name people). `logError` reports the error, redacted, as an issue.
+ */
+function auditErrorFields(err: unknown): Record<string, string> {
+  if (!(err instanceof Error)) return { error_name: typeof err };
+  const code = (err as { code?: unknown }).code;
+  return {
+    error_name: err.name,
+    ...(typeof code === "string" ? { error_code: code } : {}),
   };
 }

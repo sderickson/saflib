@@ -6,6 +6,9 @@ import {
   findMonorepoRoot,
 } from "@saflib/monorepo/workspace";
 import { buildImages, type BuildResult } from "./build-images.ts";
+import { publishManifests, resolvePlatforms } from "./manifests.ts";
+
+const resolvePlatformName = (p: string) => resolvePlatforms([p])[0];
 import { formatBuildReport } from "./build-report.ts";
 import { generateDockerfiles } from "./docker.ts";
 import { dockerCli } from "./executor.ts";
@@ -18,8 +21,19 @@ export const DEFAULT_KEEP_IMAGES = 2;
 import { selectBuilds, type BuildSelection } from "./select.ts";
 
 export interface RunImageBuildOptions extends BuildSelection {
-  /** `native` (default), `amd64`, `arm64`, or `os/arch`. */
+  /**
+   * `native` (default), `amd64`, `arm64`, or `os/arch`; or a comma-separated
+   * list (`amd64,arm64`) for a multi-arch build: each platform is built in
+   * turn under its input tag only, then (when pushing) `latest` and
+   * `build.json` tags become manifest lists of every platform's image.
+   */
   platform?: string;
+  /**
+   * False: don't publish manifest lists after a multi-arch push, and for a
+   * single platform, push only the input tag. For CI jobs that each build
+   * one architecture, followed by {@link runManifestPublish}.
+   */
+  manifest?: boolean;
   registry?: string;
   push?: boolean;
   force?: boolean;
@@ -55,27 +69,44 @@ export async function runImageBuild(
   const all = generateDockerfiles(ctx);
   const selected = selectBuilds(all, options);
   const prepareMs = Date.now() - prepareStarted;
-  const reporter = createReporter();
   const startedAt = new Date();
-  const results = await buildImages({
-    contextDir: ctx.rootDir,
-    builds: all,
-    selected,
-    platform: options.platform,
-    registry: options.registry,
-    push: options.push,
-    force: options.force,
-    dryRun: options.dryRun,
-    concurrency: options.concurrency,
-    executor: dockerCli,
-    commits: {
-      root: headOf(ctx.rootDir),
-      saflib: headOf(findSaflibDir()),
-    },
-    logDir: path.join(ctx.rootDir, ".saf-docker", "logs"),
-    onEvent: (event) => reporter.onEvent(event),
-    prepareMs,
-  }).finally(() => reporter.close());
+  const platforms = parsePlatformList(options.platform);
+  const multiArch = platforms.length > 1;
+  if (multiArch) {
+    // Native last, so local `latest` tags end up runnable on this machine.
+    const native = await dockerCli.serverPlatform();
+    const isNative = (p: string) =>
+      p === "native" || resolvePlatformName(p) === native;
+    platforms.sort((a, b) => Number(isNative(a)) - Number(isNative(b)));
+  }
+  const movingTags = !multiArch && options.manifest !== false;
+  const results: BuildResult[] = [];
+  for (const platform of platforms) {
+    if (multiArch) console.log(`\n== ${platform}`);
+    const reporter = createReporter();
+    results.push(
+      ...(await buildImages({
+        contextDir: ctx.rootDir,
+        builds: all,
+        selected,
+        platform,
+        registry: options.registry,
+        push: options.push,
+        movingTags,
+        force: options.force,
+        dryRun: options.dryRun,
+        concurrency: options.concurrency,
+        executor: dockerCli,
+        commits: {
+          root: headOf(ctx.rootDir),
+          saflib: headOf(findSaflibDir()),
+        },
+        logDir: path.join(ctx.rootDir, ".saf-docker", "logs"),
+        onEvent: (event) => reporter.onEvent(event),
+        prepareMs,
+      }).finally(() => reporter.close())),
+    );
+  }
 
   const count = (o: BuildResult["outcome"]) =>
     results.filter((r) => r.outcome === o).length;
@@ -117,5 +148,79 @@ export async function runImageBuild(
     }),
   );
   console.log(`Report: ${reportFile}`);
+
+  if (
+    multiArch &&
+    options.push &&
+    options.manifest !== false &&
+    failed === 0 &&
+    !options.dryRun
+  ) {
+    console.log("");
+    const ok = await runManifestPublish({ ...options, ctx, all, selected });
+    return { ok, results };
+  }
   return { ok: failed === 0, results };
+}
+
+/** `amd64,arm64` → `["amd64", "arm64"]`; nothing → `["native"]`. */
+export function parsePlatformList(platform: string | undefined): string[] {
+  const list = (platform ?? "native")
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+  return list.length > 0 ? [...new Set(list)] : ["native"];
+}
+
+export interface RunManifestPublishOptions extends BuildSelection {
+  /** Comma-separated platforms whose images to combine, e.g. `amd64,arm64`. */
+  platform?: string;
+  registry?: string;
+  dryRun?: boolean;
+}
+
+/**
+ * Publishes multi-arch moving tags (`latest`, `build.json` tags) for the
+ * selected builds, from each platform's already-pushed input-tagged image.
+ * Resolves false (after printing why) if any platform's image is missing.
+ */
+export async function runManifestPublish(
+  options: RunManifestPublishOptions & {
+    ctx?: ReturnType<typeof buildMonorepoContext>;
+    all?: ReturnType<typeof generateDockerfiles>;
+    selected?: ReturnType<typeof selectBuilds>;
+  },
+): Promise<boolean> {
+  if (!options.registry) throw new Error("Publishing manifests needs a registry");
+  const ctx =
+    options.ctx ??
+    buildMonorepoContext(findMonorepoRoot(options.cwd ?? process.cwd()));
+  const all = options.all ?? generateDockerfiles(ctx);
+  const selected = options.selected ?? selectBuilds(all, options);
+  const platforms = parsePlatformList(options.platform);
+  if (platforms.includes("native")) {
+    throw new Error(
+      "Manifests need explicit platforms, e.g. --platform amd64,arm64",
+    );
+  }
+  console.log(
+    `Publishing multi-arch tags (${platforms.join(", ")})${options.dryRun ? " (dry run)" : ""}…`,
+  );
+  try {
+    const published = await publishManifests({
+      contextDir: ctx.rootDir,
+      builds: all,
+      selected,
+      platforms,
+      registry: options.registry,
+      executor: dockerCli,
+      dryRun: options.dryRun,
+      onPublished: (m) => console.log(`  ${m.image}: ${m.tags.join(", ")}`),
+    });
+    console.log(`Done: ${published.length} image(s)`);
+    return true;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    return false;
+  }
 }

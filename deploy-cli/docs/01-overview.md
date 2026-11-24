@@ -21,6 +21,10 @@ Run `saf-deploy` from the product's **deploy package** (npm scripts do this). It
   - `REMOTE_ASSETS_FOLDER_PATH`: where `remote-assets/` is unpacked and compose runs
   - `REMOTE_SUDO` (optional): `0` to not `sudo -i` on the server. Privileged steps then use `sudo` when not root.
   - `SAF_EDGE_CONTAINER` (product deploys): the platform's edge container, which `remote-assets/caddy/*.Caddyfile` routes are registered with.
+  - `SAF_DEPLOY_PLATFORMS` (optional): platforms images are built for, comma-separated (default `amd64`); see **Multi-arch images**.
+  - `SAF_DATA_DIR` (optional): where the host's data disk is mounted. `setup` refuses to continue unless it's a mount point.
+  - `SAF_USERNS_REMAP` (optional): `1` to have `setup` turn on Docker user-namespace remapping. For new hosts: on a running host it hides existing images, containers and volumes.
+- `env.remote.<target>` (optional): another host to deploy to, e.g. a new machine during a migration. Its values are layered over `env.remote` (usually just `SSH_HOSTNAME` and host settings). Select it with `--target <target>` or `SAF_DEPLOY_TARGET=<target>`; remote commands print the target and host first.
 - `remote-assets/docker-compose.prod.yaml`: the production stack. Its `$CONTAINER_REGISTRY/<image>` services (and the blue-green file's) decide **which images are built and pushed**; there are no image lists to maintain.
 - `remote-assets/docker-compose.blue-green.yaml` (optional, product deploys): services deployed blue-green; see below.
 
@@ -37,29 +41,89 @@ Services in a product's `docker-compose.blue-green.yaml` deploy with no downtime
 - `up --local` runs the same flow against the local Docker, beside a running prod-local stack (which runs blue), using `docker-compose.blue-green.prod-local.yaml` in the deploy package when there is one.
 - Only for product deploys: the platform's edge and Kratos aren't duplicated.
 
+## Multi-arch images
+
+A product whose hosts run different architectures (e.g. during a move from
+amd64 to arm64) sets `SAF_DEPLOY_PLATFORMS=amd64,arm64` in `env.remote`.
+Each platform is built in turn and pushed under its input tag only
+(`in-<hash>`; the platform is part of the hash). Then `latest` and any
+`build.json` tags become manifest lists of every platform's image, so each
+host's `docker pull …:latest` gets its own architecture and compose files
+don't change.
+
+On one machine, `push` does both: the non-native platform builds under
+emulation (slow). In CI, build each architecture natively on its own runner
+with `push --platform <arch> --no-manifest`, then run `manifest` once both
+jobs finish; it computes each platform's input hash from the checkout and
+refuses to publish until every platform's image is in the registry.
+
+Locally, `latest` follows the most recent platform built (native last), since
+downstream Dockerfiles build `FROM <upstream>:latest`.
+
+## Moving to a new machine
+
+`saf-deploy migrate` walks through moving every deploy on a host to a new
+machine, one step at a time (Enter to continue, `s` to skip, `q` to stop;
+rerunning resumes). Run it from the monorepo root:
+
+    saf-deploy migrate --deploys deploy,app/deploy --to next
+
+1. **Create the machine** (manual checklist: LTS image, architecture, a separate
+   data disk with snapshots, firewall, service account).
+2. **Connect**: checks SSH, then writes `env.remote.next` in each deploy.
+3. **Mount the data disk**: checks `SAF_DATA_DIR` is mounted; if not, lists the
+   disks and prints the format/mount commands (it never formats anything).
+4. **Set up**: `setup` on the new machine.
+5. **Stage**: `sync` and `pull` for each deploy, and copy
+   `SAF_MIGRATE_HOST_PATHS` from the old machine. Nothing starts.
+6. **Begin the window**.
+7. **Stop the old stack**: `down` in each deploy, platform last.
+8. **Copy the data**: streams `SAF_DATA_DIR` old → new through your machine,
+   compares every file's checksum, then fixes owners for userns-remap and
+   `SAF_DATA_OWNERS`.
+9. **Move the static address** (manual, with `gcloud` hints): then checks the
+   address presents the new machine's host keys, updates `known_hosts`, and
+   points `env.remote.next` at it.
+10. **Start the new stack**: `up` in each deploy, platform first.
+11. **Check the product** (and `SAF_MIGRATE_CHECK_URL`, if set).
+12. **Promote**: merge `env.remote.next` into `env.remote`, keeping the old
+    values as `env.remote.previous`.
+13. **Afterwards** (checklist).
+
+Settings it reads (from the first deploy that has them):
+
+- `SAF_DATA_DIR` (required): the data disk's mount point, the same on both machines.
+- `SAF_DATA_OWNERS` (optional): `folder=uid:gid` pairs for top-level data folders whose container now runs as that user.
+- `SAF_MIGRATE_HOST_PATHS` (optional): absolute host paths outside the deploys to copy (e.g. secrets under `/opt`).
+- `SAF_MIGRATE_CHECK_URL` (optional): a URL that should answer once the new stack is up.
+
+Docker named volumes (e.g. Caddy certificates, Prometheus history) aren't
+copied: Caddy requests new certificates once the address moves.
+
 ## Release stamp
 
 `sync` adds `release/release.json` to every upload: when the deploy ran, the HEAD commits of the deploying checkout (`-dirty` if uncommitted), and a hash of `remote-assets/`. Services mount `./release` at `/etc/saf/release` and record it on boot, so the ops API's deploy history includes config-only deploys. The local `remote-assets/release/` that prod-local creates is gitignored.
 
 ## Commands
 
-| Command                    | npm script (convention)       | What it does                                                                                                                                                                                                                                                                       |
-| -------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `build`                    | `build`                       | `saf-docker build` of the images the prod compose file runs (and their upstream builds), for `linux/amd64` by default (`--platform native` for prod-local on a Mac). Unchanged images are skipped; registry copies are reused. Local images also get `$CONTAINER_REGISTRY/…` tags. |
-| `push`                     | `push`                        | `build`, then push every tag; already-pushed images are only retagged.                                                                                                                                                                                                             |
-| `status`                   | `status`                      | What `build` would do.                                                                                                                                                                                                                                                             |
-| `sync`                     | `sync`                        | Zip `remote-assets/`, upload it, unpack it with rsync (keeps bind-mount inodes).                                                                                                                                                                                                   |
-| `pull`                     | `remote-pull`                 | On the server, pull the prod (and blue-green) compose files' `$CONTAINER_REGISTRY` images.                                                                                                                                                                                         |
-| `up [--local]`             | `remote-deploy`               | Blue-green services first (see above), then `docker compose up -d --force-recreate --remove-orphans` of the rest, `register-sites`, and prune. `--local` runs the blue-green part beside prod-local.                                                                               |
-| `live [--local]`           |                               | Which blue-green color is live, and each color's containers.                                                                                                                                                                                                                       |
-| `rollback [--local]`       |                               | Run the blue-green services' previous images again (recorded by the last successful `up`), health-gated like a deploy.                                                                                                                                                             |
-| `register-sites [--local]` | `prod-local` (with `--local`) | Copy `remote-assets/caddy/*.Caddyfile` (placeholders filled from the matching `.env`) into the edge and reload it. If the edge rejects them, this deploy's previous routes are restored. `--local` targets a prod-local edge on the local Docker.                                  |
-| `down`                     | `remote-undeploy`             | `docker compose down`, and both blue-green colors.                                                                                                                                                                                                                                 |
-| `logs`                     | `remote-logs`                 | Follow the stack's logs.                                                                                                                                                                                                                                                           |
-| `setup`                    | `remote-setup`                | Install Docker if missing; start it.                                                                                                                                                                                                                                               |
-| `purge`                    | `remote-purge`                | Uninstall Docker.                                                                                                                                                                                                                                                                  |
-| `exec [file]`              | `exec-remote`                 | Run a script (file or stdin) on the server with `env.remote` exported.                                                                                                                                                                                                             |
-| `release`                  | `full-deploy`                 | `push` → `sync` → `pull` → `up` (which registers routes).                                                                                                                                                                                                                          |
+| Command                    | npm script (convention)       | What it does                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `build`                    | `build`                       | `saf-docker build` of the images the prod compose file runs (and their upstream builds), for the platforms in `--platform`, else `SAF_DEPLOY_PLATFORMS` in `env.remote`, else `linux/amd64` (`--platform native` for prod-local on a Mac). Unchanged images are skipped; registry copies are reused. Local images also get `$CONTAINER_REGISTRY/…` tags.                                             |
+| `push`                     | `push`                        | `build`, then push every tag; already-pushed images are only retagged. With several platforms (`amd64,arm64`), see **Multi-arch images**.                                                                                                                                                                                                                                                            |
+| `manifest`                 |                               | Point `latest` (and `build.json` tags) at multi-arch manifest lists of each platform's pushed image; the step after per-platform `push --no-manifest` jobs.                                                                                                                                                                                                                                          |
+| `status`                   | `status`                      | What `build` would do.                                                                                                                                                                                                                                                                                                                                                                               |
+| `sync`                     | `sync`                        | Zip `remote-assets/`, upload it, unpack it with rsync (keeps bind-mount inodes).                                                                                                                                                                                                                                                                                                                     |
+| `pull`                     | `remote-pull`                 | On the server, pull the prod (and blue-green) compose files' `$CONTAINER_REGISTRY` images.                                                                                                                                                                                                                                                                                                           |
+| `up [--local]`             | `remote-deploy`               | Blue-green services first (see above), then `docker compose up -d --force-recreate --remove-orphans` of the rest, `register-sites`, and prune. `--local` runs the blue-green part beside prod-local.                                                                                                                                                                                                 |
+| `live [--local]`           |                               | Which blue-green color is live, and each color's containers.                                                                                                                                                                                                                                                                                                                                         |
+| `rollback [--local]`       |                               | Run the blue-green services' previous images again (recorded by the last successful `up`), health-gated like a deploy.                                                                                                                                                                                                                                                                               |
+| `register-sites [--local]` | `prod-local` (with `--local`) | Copy `remote-assets/caddy/*.Caddyfile` (placeholders filled from the matching `.env`) into the edge and reload it. If the edge rejects them, this deploy's previous routes are restored. `--local` targets a prod-local edge on the local Docker.                                                                                                                                                    |
+| `down`                     | `remote-undeploy`             | `docker compose down`, and both blue-green colors.                                                                                                                                                                                                                                                                                                                                                   |
+| `logs`                     | `remote-logs`                 | Follow the stack's logs.                                                                                                                                                                                                                                                                                                                                                                             |
+| `setup`                    | `remote-setup`                | Check `SAF_DATA_DIR` is a mount point (when set); install Docker if missing; install a hardened `/etc/docker/daemon.json` if there is none (with `SAF_USERNS_REMAP=1`, add `userns-remap`, also to an existing file); turn on unattended security upgrades and the apt timers, rebooting when an update needs it at 08:00 UTC (midnight to 1am Pacific). Docker's own packages aren't auto-upgraded. |
+| `purge`                    | `remote-purge`                | Uninstall Docker.                                                                                                                                                                                                                                                                                                                                                                                    |
+| `exec [file]`              | `exec-remote`                 | Run a script (file or stdin) on the server with `env.remote` exported.                                                                                                                                                                                                                                                                                                                               |
+| `release`                  | `full-deploy`                 | `push` → `sync` → `pull` → `up` (which registers routes).                                                                                                                                                                                                                                                                                                                                            |
 
 Remote commands pipe their script (bundled in this package under `remote-scripts/`) to `ssh $SSH_HOSTNAME 'bash -s'`, preceded by `sudo -i` (unless `REMOTE_SUDO=0`) and `export`s of every `env.remote` value.
 

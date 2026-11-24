@@ -4,6 +4,7 @@ import { setupContext } from "@saflib/commander";
 // BEGIN WORKFLOW AREA cli-imports FOR commander/add-command
 import { addBuildCommand } from "./build.ts";
 import { addPushCommand } from "./push.ts";
+import { addManifestCommand } from "./manifest.ts";
 import { addStatusCommand } from "./status.ts";
 import { addSyncCommand } from "./sync.ts";
 import { addSetupCommand } from "./setup.ts";
@@ -17,17 +18,27 @@ import { addReleaseCommand } from "./release.ts";
 import { addRegisterSitesCommand } from "./register-sites.ts";
 import { addLiveCommand } from "./live.ts";
 import { addRollbackCommand } from "./rollback.ts";
+import { addMigrateCommand } from "./migrate.ts";
 // END WORKFLOW AREA
 
 const program = new Command()
   .name("saf-deploy")
   .description(
     "Build, push and deploy a SAF product's production stack. Run from the deploy package (env.remote + remote-assets/).",
-  );
+  )
+  .option(
+    "--target <name>",
+    "deploy target: env.remote.<name>'s values over env.remote (default: SAF_DEPLOY_TARGET, else env.remote alone)",
+  )
+  .hook("preAction", (command) => {
+    const { target } = command.opts<{ target?: string }>();
+    if (target) process.env.SAF_DEPLOY_TARGET = target;
+  });
 
 // BEGIN WORKFLOW AREA cli-commands FOR commander/add-command
 addBuildCommand(program);
 addPushCommand(program);
+addManifestCommand(program);
 addStatusCommand(program);
 addSyncCommand(program);
 addSetupCommand(program);
@@ -41,6 +52,7 @@ addReleaseCommand(program);
 addRegisterSitesCommand(program);
 addLiveCommand(program);
 addRollbackCommand(program);
+addMigrateCommand(program);
 // END WORKFLOW AREA
 
 setupContext({ serviceName: "saf-deploy" }, () => {

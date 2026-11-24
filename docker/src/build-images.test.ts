@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import type { Build } from "./builds.ts";
+import { publishManifests } from "./manifests.ts";
 import {
   buildImages,
   resolvePlatform,
@@ -48,6 +49,12 @@ class FakeDocker implements DockerExecutor {
   }
   async remoteTag(source: string, target: string) {
     this.calls.push(`remoteTag ${source} ${target}`);
+    this.remote.add(target);
+  }
+  manifests = new Map<string, string[]>();
+  async remoteManifest(target: string, sources: string[]) {
+    this.calls.push(`remoteManifest ${target} ${sources.join(" ")}`);
+    this.manifests.set(target, sources);
     this.remote.add(target);
   }
   async pull(ref: string) {
@@ -412,6 +419,61 @@ describe("buildImages", () => {
       "built",
       "built",
     ]);
+  });
+
+  it("with movingTags off, pushes only input tags but still tags latest locally", async () => {
+    await run({ registry: "reg.io", push: true, movingTags: false });
+    const remote = [...docker.remote];
+    expect(remote.length).toBe(3);
+    expect(remote.every((r) => /:in-\w+$/.test(r))).toBe(true);
+    expect(docker.local.has("x-app:latest")).toBe(true);
+
+    // A second run (images now up to date) adds no moving tags remotely.
+    docker.calls = [];
+    await run({ registry: "reg.io", push: true, movingTags: false });
+    expect(docker.calls.filter((c) => c.startsWith("remoteTag"))).toEqual([]);
+    expect([...docker.remote].every((r) => /:in-\w+$/.test(r))).toBe(true);
+  });
+
+  it("publishes multi-arch moving tags once every platform's image is pushed", async () => {
+    const publish = (platforms: string[]) =>
+      publishManifests({
+        contextDir: root,
+        builds,
+        selected: [builds[2]],
+        platforms,
+        registry: "reg.io",
+        executor: docker,
+      });
+
+    await run({
+      registry: "reg.io",
+      push: true,
+      movingTags: false,
+      platform: "linux/arm64",
+    });
+    await expect(publish(["amd64", "arm64"])).rejects.toThrow(
+      /Not in the registry yet[\s\S]*x-web:in-\w+ \(linux\/amd64\)/,
+    );
+    expect(docker.manifests.size).toBe(0);
+
+    await run({
+      registry: "reg.io",
+      push: true,
+      movingTags: false,
+      platform: "amd64",
+    });
+    const published = await publish(["amd64", "arm64"]);
+    expect(published.map((m) => [m.image, m.tags])).toEqual([
+      ["x-base", ["latest"]],
+      ["x-app", ["latest"]],
+      ["x-web", ["latest", "v1"]],
+    ]);
+    const web = docker.manifests.get("reg.io/x-web:latest")!;
+    expect(web).toHaveLength(2);
+    expect(new Set(web).size).toBe(2);
+    expect(web.every((r) => docker.remote.has(r))).toBe(true);
+    expect(docker.manifests.get("reg.io/x-web:v1")).toEqual(web);
   });
 
   it("limits concurrent builds", async () => {

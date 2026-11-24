@@ -135,7 +135,9 @@ describe("createAuditRecorder", () => {
     expect(res.status).toBe(200);
     await drainAuditRecorder();
 
-    const { result } = await listAuditEventsByTimestamp(auditKey, { limit: 50 });
+    const { result } = await listAuditEventsByTimestamp(auditKey, {
+      limit: 50,
+    });
     expect(result?.events).toHaveLength(1);
     const row = result!.events[0]!;
     expect(row.event_type).toBe("widget.read");
@@ -149,7 +151,9 @@ describe("createAuditRecorder", () => {
     expect(res.status).toBe(500);
     await drainAuditRecorder();
 
-    const { result } = await listAuditEventsByTimestamp(auditKey, { limit: 50 });
+    const { result } = await listAuditEventsByTimestamp(auditKey, {
+      limit: 50,
+    });
     expect(result?.events).toHaveLength(1);
     expect(result!.events[0]!.event_type).toBe("widget.cleared");
     expect(result!.events[0]!.resource_id).toBe("c1");
@@ -160,7 +164,9 @@ describe("createAuditRecorder", () => {
     expect(res.status).toBe(200);
     await drainAuditRecorder();
 
-    const { result } = await listAuditEventsByTimestamp(auditKey, { limit: 50 });
+    const { result } = await listAuditEventsByTimestamp(auditKey, {
+      limit: 50,
+    });
     expect(result?.events).toHaveLength(0);
   });
 
@@ -169,7 +175,9 @@ describe("createAuditRecorder", () => {
     expect(res.status).toBe(204);
     await drainAuditRecorder();
 
-    const { result } = await listAuditEventsByTimestamp(auditKey, { limit: 50 });
+    const { result } = await listAuditEventsByTimestamp(auditKey, {
+      limit: 50,
+    });
     expect(result?.events).toHaveLength(2);
     const types = result!.events.map((e) => e.resource_type).sort();
     expect(types).toEqual(["other", "thing"]);
@@ -185,7 +193,9 @@ describe("createAuditRecorder", () => {
     expect(res.status).toBe(304);
     await drainAuditRecorder();
 
-    const { result } = await listAuditEventsByTimestamp(auditKey, { limit: 50 });
+    const { result } = await listAuditEventsByTimestamp(auditKey, {
+      limit: 50,
+    });
     expect(result?.events).toHaveLength(1);
     expect(result!.events[0]!.outcome).toBe("success");
     const details = result!.events[0]!.details;
@@ -200,7 +210,9 @@ describe("createAuditRecorder", () => {
     expect(res.status).toBe(403);
     await drainAuditRecorder();
 
-    const { result } = await listAuditEventsByTimestamp(auditKey, { limit: 50 });
+    const { result } = await listAuditEventsByTimestamp(auditKey, {
+      limit: 50,
+    });
     expect(result?.events).toHaveLength(1);
     expect(result!.events[0]!.outcome).toBe("denied");
   });
@@ -221,8 +233,40 @@ describe("createAuditRecorder", () => {
     await drainAuditRecorder();
     expect(logErrorSpy).toHaveBeenCalledTimes(1);
 
-    const { result } = await listAuditEventsByTimestamp(auditKey, { limit: 50 });
+    const { result } = await listAuditEventsByTimestamp(auditKey, {
+      limit: 50,
+    });
     expect(result?.events?.length ?? 0).toBe(0);
+  });
+
+  it("logs only the error's name and code when appendAuditEvent throws, not the error", async () => {
+    const logErrorSpy = vi.fn();
+    const errorSpy = vi.fn();
+    vi.spyOn(safNode, "getSafReporters").mockReturnValue({
+      log: { error: errorSpy } as unknown as safNode.SafReporters["log"],
+      logError: logErrorSpy,
+    });
+    const failure = Object.assign(
+      new Error("insert failed: jane@example.com"),
+      {
+        code: "SQLITE_CONSTRAINT",
+        params: ["jane@example.com"],
+      },
+    );
+    vi.spyOn(auditDbModule, "appendAuditEvent").mockRejectedValueOnce(failure);
+
+    await request(app).get("/boom/b1");
+    await drainAuditRecorder();
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    const [message, fields] = errorSpy.mock.calls[0]!;
+    expect(message).toBe("appendAuditEvent failed");
+    expect(fields).toMatchObject({
+      error_name: "Error",
+      error_code: "SQLITE_CONSTRAINT",
+    });
+    expect(JSON.stringify(fields)).not.toContain("jane@example.com");
+    expect(logErrorSpy).toHaveBeenCalledWith(failure);
   });
 
   it("fail-closed route returns 503 when appendAuditEvent rejects", async () => {
@@ -240,7 +284,9 @@ describe("createAuditRecorder", () => {
     expect(res.status).toBe(503);
     await drainAuditRecorder();
 
-    const { result } = await listAuditEventsByTimestamp(auditKey, { limit: 50 });
+    const { result } = await listAuditEventsByTimestamp(auditKey, {
+      limit: 50,
+    });
     expect(result?.events?.length ?? 0).toBe(0);
   });
 });

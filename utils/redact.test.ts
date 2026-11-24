@@ -22,6 +22,11 @@ describe("redactString", () => {
       "secret [redacted:high_entropy]",
       "high_entropy",
     ],
+    [
+      "secret 2026-11-24T00-05-00Zk9mQ2xwYXJ0aWNsZXNBbmRXYXZlczEyMzQ1Njc4OTA",
+      "secret [redacted:high_entropy]",
+      "high_entropy",
+    ],
   ])("masks %j", (input, expected, kind) => {
     const r = redactString(input);
     expect(r.value).toBe(expected);
@@ -36,6 +41,9 @@ describe("redactString", () => {
     "listAuditLogsMaintenanceHandlerForAdmins ran",
     "order 1234567890 shipped",
     "card 4111 1111 1111 1112 (fails Luhn)",
+    "Connecting to database: /app/data/audit/staging/audit-2026-11-24T00-05-00.140Z.sqlite",
+    "audit-seal: rename to sealed (/app/data/audit/sealed/audit-2026-11-24T00-05-00.140Z.sqlite.zst)",
+    "backup /var/lib/app/backups/snapshot-2026-11-24T00:05:00Z.tar",
   ])("leaves identifiers alone: %j", (input) => {
     const r = redactString(input);
     expect(r.value).toBe(input);

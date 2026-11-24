@@ -3,7 +3,11 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { requireRemote, type DeployConfig } from "./config.ts";
+import {
+  describeTarget,
+  requireRemote,
+  type DeployConfig,
+} from "./config.ts";
 import { makeReleaseStamp, RELEASE_DIR, writeReleaseStamp } from "./release.ts";
 
 /** Scripts this package runs on the server (`remote-scripts/*.sh`). */
@@ -172,6 +176,19 @@ export function run(
   });
 }
 
+const announced = new Set<string>();
+
+/**
+ * Prints which target and host remote commands go to, once per deploy and
+ * target, so it's never a surprise which machine is being touched.
+ */
+export function announceTarget(config: DeployConfig): void {
+  const key = `${config.deployDir}\0${config.target ?? ""}`;
+  if (announced.has(key)) return;
+  announced.add(key);
+  console.log(`Target: ${describeTarget(config)}`);
+}
+
 /** Runs `script` on the server over ssh, with env.remote available. */
 export async function runRemote(
   config: DeployConfig,
@@ -179,6 +196,7 @@ export async function runRemote(
   extraEnv: Record<string, string> = {},
 ): Promise<void> {
   const { sshHostname } = requireRemote(config);
+  announceTarget(config);
   await run("ssh", [sshHostname, "bash -s"], {
     input: remotePayload(config, script, extraEnv),
   });
@@ -192,6 +210,7 @@ export async function runRemote(
 export async function syncAssets(config: DeployConfig): Promise<void> {
   const { sshHostname, remoteZipPath, remoteAssetsPath } =
     requireRemote(config);
+  announceTarget(config);
   const zipName = "deploy-instance.zip";
   const zipPath = path.join(config.deployDir, zipName);
   console.log(`Zipping remote-assets for ${sshHostname}:${remoteAssetsPath}…`);

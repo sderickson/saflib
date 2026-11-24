@@ -7,6 +7,9 @@ Build, push and deploy a SAF product's production stack. Run from the deploy
 package (env.remote + remote-assets/).
 
 Options:
+  --target <name>           deploy target: env.remote.<name>'s values over
+                            env.remote (default: SAF_DEPLOY_TARGET, else
+                            env.remote alone)
   -h, --help                display help for command
 
 Commands:
@@ -17,12 +20,17 @@ Commands:
   push [options]            Build (if needed) and push the production images to
                             CONTAINER_REGISTRY; images already pushed are only
                             retagged.
+  manifest [options]        Point the production images' latest (and build.json)
+                            tags at multi-arch manifest lists of each platform's
+                            pushed image. Run after per-platform `push
+                            --no-manifest` jobs.
   status [options]          Show which production images would be built, pulled
                             from the registry, or are up to date.
   sync                      Upload remote-assets/ (compose file, config) to
                             REMOTE_ASSETS_FOLDER_PATH on the server.
-  setup                     Install Docker on the server if needed and make sure
-                            it's running.
+  setup                     Install Docker if needed, make sure it's running,
+                            and turn on automatic security updates (rebooting
+                            when needed at 08:00 UTC).
   pull                      Pull this product's images (those from
                             CONTAINER_REGISTRY in the prod compose file) on the
                             server.
@@ -49,6 +57,12 @@ Commands:
                             (recorded by the last successful `up`), with the
                             same health gate as a deploy. The rest of the stack
                             is left alone.
+  migrate [options]         Walk through moving the whole stack (every deploy on
+                            the host) to a new machine: create it, connect,
+                            mount its data disk, set it up, stage, then in a
+                            short window stop the old stack, copy the data, move
+                            the address and start the new one. Resumable; run
+                            from the monorepo root.
   help [command]            display help for command
 ```
 
@@ -56,6 +70,7 @@ Commands:
 
 - [build](./saf-deploy/build.md)
 - [push](./saf-deploy/push.md)
+- [manifest](./saf-deploy/manifest.md)
 - [status](./saf-deploy/status.md)
 - [sync](./saf-deploy/sync.md)
 - [setup](./saf-deploy/setup.md)
@@ -69,3 +84,4 @@ Commands:
 - [register-sites](./saf-deploy/register-sites.md)
 - [live](./saf-deploy/live.md)
 - [rollback](./saf-deploy/rollback.md)
+- [migrate](./saf-deploy/migrate.md)
