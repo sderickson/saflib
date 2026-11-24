@@ -20,6 +20,10 @@ Commands:
   push [options]            Build (if needed) and push the production images to
                             CONTAINER_REGISTRY; images already pushed are only
                             retagged.
+  manifest [options]        Point the production images' latest (and build.json)
+                            tags at multi-arch manifest lists of each platform's
+                            pushed image. Run after per-platform `push
+                            --no-manifest` jobs.
   status [options]          Show which production images would be built, pulled
                             from the registry, or are up to date.
   sync                      Upload remote-assets/ (compose file, config) to
@@ -60,6 +64,7 @@ Commands:
 
 - [build](./saf-deploy/build.md)
 - [push](./saf-deploy/push.md)
+- [manifest](./saf-deploy/manifest.md)
 - [status](./saf-deploy/status.md)
 - [sync](./saf-deploy/sync.md)
 - [setup](./saf-deploy/setup.md)

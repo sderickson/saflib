@@ -4,6 +4,7 @@ import { setupContext } from "@saflib/commander";
 // BEGIN WORKFLOW AREA cli-imports FOR commander/add-command
 import { addBuildCommand } from "./build.ts";
 import { addPushCommand } from "./push.ts";
+import { addManifestCommand } from "./manifest.ts";
 import { addStatusCommand } from "./status.ts";
 import { addSyncCommand } from "./sync.ts";
 import { addSetupCommand } from "./setup.ts";
@@ -36,6 +37,7 @@ const program = new Command()
 // BEGIN WORKFLOW AREA cli-commands FOR commander/add-command
 addBuildCommand(program);
 addPushCommand(program);
+addManifestCommand(program);
 addStatusCommand(program);
 addSyncCommand(program);
 addSetupCommand(program);

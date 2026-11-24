@@ -129,6 +129,11 @@ export interface DockerExecutor {
   tag(source: string, target: string): Promise<void>;
   /** Adds a tag to an image already in the registry, without pulling it. */
   remoteTag(source: string, target: string): Promise<void>;
+  /**
+   * Points `target` at a manifest list of `sources` (one image per
+   * architecture, all already in the registry), without pulling them.
+   */
+  remoteManifest(target: string, sources: string[]): Promise<void>;
   pull(ref: string, platform?: string): Promise<void>;
   push(ref: string): Promise<void>;
   build(options: DockerBuildOptions): Promise<BuildStats>;
@@ -269,6 +274,16 @@ export const dockerCli: DockerExecutor = {
   },
   remoteTag: async (source, target) => {
     await runOrThrow(["buildx", "imagetools", "create", "-t", target, source]);
+  },
+  remoteManifest: async (target, sources) => {
+    await runOrThrow([
+      "buildx",
+      "imagetools",
+      "create",
+      "-t",
+      target,
+      ...sources,
+    ]);
   },
   pull: async (ref, platform) => {
     await runOrThrow([

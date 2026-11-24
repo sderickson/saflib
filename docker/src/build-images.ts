@@ -111,6 +111,14 @@ export interface BuildImagesOptions {
   registry?: string;
   /** Push built/pulled images (requires `registry`). */
   push?: boolean;
+  /**
+   * Push and retag `latest` and `build.json` tags in the registry (default
+   * true). False for one architecture of a multi-arch build: only the input
+   * tag (`in-<hash>`, which includes the platform) reaches the registry, and
+   * `publishManifests` later points the moving tags at every architecture's
+   * image. Local tags are unaffected.
+   */
+  movingTags?: boolean;
   /** Rebuild even when the input-tagged image exists. */
   force?: boolean;
   /** Report what would happen without building, pulling, tagging or pushing. */
@@ -137,7 +145,7 @@ export interface BuildImagesOptions {
  */
 const PUSH_ATTEMPTS = 3;
 
-const PLATFORM_ALIASES: Record<string, string> = {
+export const PLATFORM_ALIASES: Record<string, string> = {
   amd64: "linux/amd64",
   linux: "linux/amd64",
   prod: "linux/amd64",
@@ -167,7 +175,7 @@ export function resolvePlatform(
 }
 
 /** `selected` plus every build they (transitively) consume. */
-function withUpstreams(
+export function withUpstreams(
   selected: Build[],
   byRef: Map<string, Build>,
   inputsOf: (build: Build) => BuildInputs,
@@ -308,6 +316,10 @@ export async function buildImages(
     const inputs = inputsOf(build);
     const tag = inputTag(inputs.inputHash);
     const tags = [tag, "latest", ...build.extraTags];
+    // Locally, moving tags always follow this build: downstream Dockerfiles
+    // build `FROM <upstream>:latest`, so each platform's pass needs them.
+    // In the registry they're left to publishManifests when movingTags is off.
+    const remoteTags = options.movingTags === false ? [tag] : tags;
     const local = `${build.image}:${tag}`;
     const started = Date.now();
     const result = (
@@ -358,7 +370,7 @@ export async function buildImages(
     };
     const publish = async () => {
       if (!options.push) return;
-      for (const t of tags) await pushWithRetry(remote(build.image, t));
+      for (const t of remoteTags) await pushWithRetry(remote(build.image, t));
     };
 
     const action = actionOf.get(build.ref)!;
@@ -372,7 +384,7 @@ export async function buildImages(
         ) {
           await limit(publish);
         } else if (options.push) {
-          for (const t of tags.slice(1)) {
+          for (const t of remoteTags.slice(1)) {
             await executor.remoteTag(
               remote(build.image, tag),
               remote(build.image, t),
@@ -385,7 +397,7 @@ export async function buildImages(
       if (action === "in-registry") {
         if (options.dryRun) return result("would-pull");
         if (options.push) {
-          for (const t of tags.slice(1)) {
+          for (const t of remoteTags.slice(1)) {
             await executor.remoteTag(
               remote(build.image, tag),
               remote(build.image, t),
