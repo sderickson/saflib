@@ -21,8 +21,9 @@ Commands:
                             from the registry, or are up to date.
   sync                      Upload remote-assets/ (compose file, config) to
                             REMOTE_ASSETS_FOLDER_PATH on the server.
-  setup                     Install Docker on the server if needed and make sure
-                            it's running.
+  setup                     Install Docker if needed, make sure it's running,
+                            and turn on automatic security updates (rebooting
+                            when needed at 08:00 UTC).
   pull                      Pull this product's images (those from
                             CONTAINER_REGISTRY in the prod compose file) on the
                             server.

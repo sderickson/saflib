@@ -6,6 +6,6 @@ export const addSetupCommand = (program: Command) => {
     program,
     "setup",
     "setup",
-    "Install Docker on the server if needed and make sure it's running.",
+    "Install Docker if needed, make sure it's running, and turn on automatic security updates (rebooting when needed at 08:00 UTC).",
   );
 };
