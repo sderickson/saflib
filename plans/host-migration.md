@@ -6,18 +6,20 @@
 
 ## Status
 
-- **Phase:** 1 (in progress)
+- **Phase:** 6 (first product migration): saflib side done, product adopted
+  on a branch, not yet run against a real host.
 - **Last updated:** 2026-11-24
-- **Next action:** deploy targets in `@saflib/deploy-cli`.
+- **Next action:** run `saf-deploy migrate` steps 1–5 against the new host
+  (rehearsal), then schedule the attended window.
 
 | Phase | Description | State |
 | ----- | ----------- | ----- |
-| 1 | Deploy targets (`env.remote.<target>`) | in progress |
-| 2 | Multi-arch images (per-arch builds + manifest) | todo |
-| 3 | Host setup: data mount check, daemon.json, userns-remap | todo |
-| 4 | `saf-deploy migrate` guided walkthrough + data copy | todo |
-| 5 | Non-root containers (image `USER`s, host-reading services) | todo |
-| 6 | First product migration (adopt, rehearse, cut over) | todo |
+| 1 | Deploy targets (`env.remote.<target>`) | done |
+| 2 | Multi-arch images (per-arch builds + manifest) | done |
+| 3 | Host setup: data mount check, daemon.json, userns-remap | done |
+| 4 | `saf-deploy migrate` guided walkthrough + data copy | done |
+| 5 | Non-root containers (image `USER`s, host-reading services) | done (product side, per target) |
+| 6 | First product migration (adopt, rehearse, cut over) | in progress |
 
 ## Context
 
@@ -244,3 +246,14 @@ Product-side changes, in the product repo:
   existing host hides its images, containers and volumes.
 - **2026-11-24:** A guided, resumable walkthrough rather than a one-shot
   script: migrations are rare, attended, and include manual cloud steps.
+- **2026-11-24:** The app's container user is set per target in compose
+  (`user: "${SAF_APP_USER:-0:0}"`), not baked into the image with `USER`.
+  Existing hosts' data is root-owned, so an image `USER` would break them on
+  their next deploy; the migration sets the new host's data owners
+  (`SAF_DATA_OWNERS`) to match. Every container writing the same SQLite
+  files must share that user.
+- **2026-11-24:** Data copy goes through the operator's machine as two `ssh`
+  processes piped together, and checks every file's sha256 on both sides
+  before fixing owners. Ownership is fixed only right after a fresh extract
+  (the step refuses a non-empty destination unless told to clear it), so a
+  retry never shifts uids twice.
