@@ -57,6 +57,12 @@ Commands:
                             (recorded by the last successful `up`), with the
                             same health gate as a deploy. The rest of the stack
                             is left alone.
+  migrate [options]         Walk through moving the whole stack (every deploy on
+                            the host) to a new machine: create it, connect,
+                            mount its data disk, set it up, stage, then in a
+                            short window stop the old stack, copy the data, move
+                            the address and start the new one. Resumable; run
+                            from the monorepo root.
   help [command]            display help for command
 ```
 
@@ -78,3 +84,4 @@ Commands:
 - [register-sites](./saf-deploy/register-sites.md)
 - [live](./saf-deploy/live.md)
 - [rollback](./saf-deploy/rollback.md)
+- [migrate](./saf-deploy/migrate.md)

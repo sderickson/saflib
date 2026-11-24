@@ -18,6 +18,7 @@ import { addReleaseCommand } from "./release.ts";
 import { addRegisterSitesCommand } from "./register-sites.ts";
 import { addLiveCommand } from "./live.ts";
 import { addRollbackCommand } from "./rollback.ts";
+import { addMigrateCommand } from "./migrate.ts";
 // END WORKFLOW AREA
 
 const program = new Command()
@@ -51,6 +52,7 @@ addReleaseCommand(program);
 addRegisterSitesCommand(program);
 addLiveCommand(program);
 addRollbackCommand(program);
+addMigrateCommand(program);
 // END WORKFLOW AREA
 
 setupContext({ serviceName: "saf-deploy" }, () => {
