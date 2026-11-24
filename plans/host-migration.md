@@ -12,14 +12,14 @@
 - **Next action:** run `saf-deploy migrate` steps 1–5 against the new host
   (rehearsal), then schedule the attended window.
 
-| Phase | Description | State |
-| ----- | ----------- | ----- |
-| 1 | Deploy targets (`env.remote.<target>`) | done |
-| 2 | Multi-arch images (per-arch builds + manifest) | done |
-| 3 | Host setup: data mount check, daemon.json, userns-remap | done |
-| 4 | `saf-deploy migrate` guided walkthrough + data copy | done |
-| 5 | Non-root containers (image `USER`s, host-reading services) | done (product side, per target) |
-| 6 | First product migration (adopt, rehearse, cut over) | in progress |
+| Phase | Description                                                | State                           |
+| ----- | ---------------------------------------------------------- | ------------------------------- |
+| 1     | Deploy targets (`env.remote.<target>`)                     | done                            |
+| 2     | Multi-arch images (per-arch builds + manifest)             | done                            |
+| 3     | Host setup: data mount check, daemon.json, userns-remap    | done                            |
+| 4     | `saf-deploy migrate` guided walkthrough + data copy        | done                            |
+| 5     | Non-root containers (image `USER`s, host-reading services) | done (product side, per target) |
+| 6     | First product migration (adopt, rehearse, cut over)        | in progress                     |
 
 ## Context
 
