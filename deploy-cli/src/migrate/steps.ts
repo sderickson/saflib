@@ -148,14 +148,20 @@ function rollbackLines(ctx: MigrateContext, addressMoved: boolean): string[] {
   ];
 }
 
-/** Formats `$DISK` and mounts it at `dir`, now and on every boot. */
+/** How to pick the data disk, then format it and mount it at `dir` for good. */
 function mountCommands(dir: string): string[] {
   return [
-    "DISK=/dev/disk/by-id/google-<disk-name>   # formatting erases it: double-check",
-    "sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard $DISK",
-    `sudo mkdir -p '${dir}'`,
-    `echo "UUID=$(sudo blkid -s UUID -o value $DISK) ${dir} ext4 discard,defaults,nofail 0 2" | sudo tee -a /etc/fstab`,
-    `sudo systemctl daemon-reload && sudo mount '${dir}' && sudo chmod 755 '${dir}'`,
+    "  lsblk",
+    "The data disk is the one whose SIZE matches the disk you added, with TYPE",
+    "`disk`, no partitions under it and no MOUNTPOINTS. The boot disk is the one",
+    "whose partitions hold / and /boot; `loop` entries are snaps. Then:",
+    "  DISK=/dev/<name>   # e.g. /dev/nvme0n2 or /dev/sdb",
+    "  sudo blkid $DISK   # must print nothing: no filesystem yet. Formatting erases it",
+    "  sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard $DISK",
+    `  sudo mkdir -p '${dir}'`,
+    `  echo "UUID=$(sudo blkid -s UUID -o value $DISK) ${dir} ext4 discard,defaults,nofail 0 2" | sudo tee -a /etc/fstab`,
+    `  sudo systemctl daemon-reload && sudo mount '${dir}' && sudo chmod 755 '${dir}'`,
+    "  findmnt " + dir + "   # shows the disk mounted there",
   ];
 }
 
@@ -172,10 +178,11 @@ export function migrationSteps(): Step<MigrateContext>[] {
         "  - a separate, empty data disk, with a snapshot schedule",
         "  - HTTP and HTTPS allowed; the same service account as the old VM",
         "  - a temporary external address. The static address moves over in step 9",
+        "",
         "Add your SSH key to it, SSH in, and format and mount the data disk so it",
-        "mounts again on every boot. Find the disk with `lsblk` (on GCP,",
-        "/dev/disk/by-id/google-<disk-name>), then:",
-        ...mountCommands(dataDir(ctx)).map((line) => `  ${line}`),
+        "mounts again on every boot (the fstab line finds it by filesystem UUID, so",
+        "device names changing between boots doesn't matter). Find it with:",
+        ...mountCommands(dataDir(ctx)),
         "Step 3 checks the mount and its /etc/fstab entry.",
       ],
     },
@@ -262,17 +269,12 @@ export function migrationSteps(): Step<MigrateContext>[] {
         }
         const disks = await ctx.ops.sshCapture(
           newHost(ctx),
-          "lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS; ls -l /dev/disk/by-id/ 2>/dev/null | grep -i google || true",
+          "lsblk -e 7 -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS",
         );
-        ctx.io.print("Disks on the new machine:");
+        ctx.io.print(`${dir} isn't mounted. Disks on the new machine:`);
         ctx.io.print(disks.trimEnd());
         ctx.io.print();
-        ctx.io.print(
-          "Find the empty data disk (on GCP, /dev/disk/by-id/google-<disk-name>), then on the new machine:",
-        );
-        for (const line of mountCommands(dir)) {
-          ctx.io.print(`  ${line}`);
-        }
+        for (const line of mountCommands(dir).slice(1)) ctx.io.print(line);
         throw new Error(`${dir} isn't mounted yet`);
       },
     },
