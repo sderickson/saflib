@@ -4,9 +4,11 @@ import path from "node:path";
 import { Readable } from "stream";
 import {
   ObjectStore,
+  type ReadFileOptions,
   PathTraversalError,
   StorageError,
   FileNotFoundError,
+  type StorageFileEntry,
 } from "../ObjectStore.ts";
 import type { ReturnsError } from "@saflib/utils";
 import { getSafReporters } from "@saflib/node";
@@ -212,6 +214,7 @@ export class DiskObjectStore extends ObjectStore {
 
   async readFile(
     relativePath: string,
+    options?: ReadFileOptions,
   ): Promise<
     ReturnsError<
       Readable,
@@ -227,7 +230,10 @@ export class DiskObjectStore extends ObjectStore {
       if (!stats.isFile()) {
         return { error: new FileNotFoundError(relativePath) };
       }
-      const stream = createReadStream(filePath);
+      const stream = createReadStream(filePath,{
+        start: options?.start,
+        end: options?.end
+      });
       return { result: stream as Readable };
     } catch (error) {
       if (error instanceof PathTraversalError) {
@@ -246,6 +252,44 @@ export class DiskObjectStore extends ObjectStore {
           error instanceof Error ? error : undefined,
         ),
       };
+    }
+  }
+
+  async getFileInfo(
+    relativePath: string
+  ):Promise< ReturnsError<StorageFileEntry, PathTraversalError | StorageError | FileNotFoundError>>{
+    try {
+      const filePath = this.resolvePath(relativePath);
+      const stats = await stat(filePath).catch(() => null);
+      if (!stats?.isFile()) {
+        return {
+          error: new FileNotFoundError(relativePath)
+        };
+      }
+
+      return {
+        result: {
+            path: relativePath,
+            name: relativePath,
+            size: stats.size,
+            updated: stats.mtime.toISOString(),
+            timeCreated: stats.birthtime.toISOString(),
+          },
+      }
+      
+    } catch (error) {
+      if (error instanceof PathTraversalError){
+        return { error };
+      }
+      const { logError } = getSafReporters();
+      logError(error);
+      return {
+        error: new StorageError(
+          "Error reading file info",
+          error instanceof Error ? error : undefined,
+        ),
+      };
+      
     }
   }
 

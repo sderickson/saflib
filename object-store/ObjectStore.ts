@@ -12,6 +12,11 @@ export type UploadFileResult = {
   storageObject?: StorageFileEntry;
 };
 
+/** Inclusive byte range, same convention as HTTP Range and fs.createReadStream. */
+export type ReadFileOptions = { 
+  start?: number;
+  end?: number
+};
 export class PathTraversalError extends Error {
   constructor(path: string) {
     super(`Path "${path}" attempts path traversal`);
@@ -80,8 +85,15 @@ export abstract class ObjectStore {
 
   abstract readFile(
     path: string,
+    options?: ReadFileOptions
   ): Promise<
     ReturnsError<Readable, PathTraversalError | StorageError | FileNotFoundError>
+  >;
+
+  abstract getFileInfo(
+    path: string,
+  ): Promise<
+    ReturnsError<StorageFileEntry, PathTraversalError | StorageError | FileNotFoundError>
   >;
 
   abstract upsertContainer(): Promise<

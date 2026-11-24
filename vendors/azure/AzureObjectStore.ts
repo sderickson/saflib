@@ -4,6 +4,8 @@ import {
   PathTraversalError,
   StorageError,
   FileNotFoundError,
+  type ReadFileOptions,
+  type StorageFileEntry,
 } from "@saflib/object-store";
 import { getBlobServiceClient } from "./client.ts";
 import { uploadFile } from "./upload-file.ts";
@@ -189,7 +191,10 @@ export class AzureObjectStore extends ObjectStore {
     }
   }
 
-  async readFile(path: string): Promise<ReturnsError<Readable>> {
+  async readFile(
+    path: string,
+    options?: ReadFileOptions,
+  ): Promise<ReturnsError<Readable>> {
     try {
       let blobName: string;
       try {
@@ -222,7 +227,11 @@ export class AzureObjectStore extends ObjectStore {
         };
       }
 
-      const downloadResponse = await blobClient.download();
+      // download(offset, count): convert the inclusive [start, end] range.
+      const offset = options?.start ?? 0;
+      const count =
+        options?.end === undefined ? undefined : options.end - offset + 1;
+      const downloadResponse = await blobClient.download(offset, count);
       const stream = downloadResponse.readableStreamBody;
       if (!stream) {
         return {
@@ -238,6 +247,50 @@ export class AzureObjectStore extends ObjectStore {
       return {
         error: new StorageError(
           "Error reading file",
+          error instanceof Error ? error : undefined,
+        ),
+      };
+    }
+  }
+
+  async getFileInfo(
+    path: string,
+  ): Promise<
+    ReturnsError<StorageFileEntry, PathTraversalError | StorageError | FileNotFoundError>
+  > {
+    try {
+      const blobName = this.getScopedPath(path);
+      if (typedEnv.NODE_ENV === "test") {
+        return { result: { path: blobName, size: 0 } };
+      }
+      const blobClient = getBlobServiceClient({ tier: this.tier })
+        .getContainerClient(this.containerName)
+        .getBlockBlobClient(blobName);
+      const props = await blobClient.getProperties();
+      return {
+        result: {
+          path: blobName,
+          name: blobName,
+          bucket: this.containerName,
+          size: props.contentLength,
+          contentType: props.contentType,
+          etag: props.etag,
+          updated: props.lastModified?.toISOString(),
+          timeCreated: props.createdOn?.toISOString(),
+        },
+      };
+    } catch (error) {
+      if (error instanceof PathTraversalError) {
+        return { error };
+      }
+      if ((error as { statusCode?: number }).statusCode === 404) {
+        return { error: new FileNotFoundError(path) };
+      }
+      const { logError } = getSafReporters();
+      logError(error);
+      return {
+        error: new StorageError(
+          "Error reading file info",
           error instanceof Error ? error : undefined,
         ),
       };

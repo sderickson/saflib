@@ -4,6 +4,8 @@ import { ObjectStore } from "../ObjectStore.ts";
 import type { ReturnsError } from "@saflib/utils";
 import {
   PathTraversalError,
+  type ReadFileOptions,
+  type StorageFileEntry,
   StorageError,
   FileNotFoundError,
 } from "../ObjectStore.ts";
@@ -128,6 +130,7 @@ export class TestObjectStore extends ObjectStore {
 
   async readFile(
     path: string,
+    options?:ReadFileOptions
   ): Promise<
     ReturnsError<Readable, PathTraversalError | StorageError | FileNotFoundError>
   > {
@@ -145,7 +148,28 @@ export class TestObjectStore extends ObjectStore {
       return { error: new FileNotFoundError(path) };
     }
     const content = this.contentMap.get(path) ?? Buffer.alloc(0);
-    return { result: Readable.from(content) };
+    const fileEnd = options?.end === undefined ? undefined : options.end + 1
+    const sliced = content.subarray(options?.start ?? 0, fileEnd);
+    return { result: Readable.from(sliced) };
+  }
+  
+  async getFileInfo(
+    path: string,
+  ): Promise<
+    ReturnsError<StorageFileEntry, PathTraversalError | StorageError | FileNotFoundError>
+  > {
+    try {
+      this.getScopedPath(path);
+    } catch (error) {
+      if (error instanceof PathTraversalError) {
+        return { error };
+      }
+      throw error;
+    }
+
+    const file = this.files.find((f) => f.path === path);
+    if (!file) return { error: new FileNotFoundError(path) };
+    return { result: { ...file, size: this.contentMap.get(path)?.length ?? 0 } };
   }
 
   async upsertContainer(): Promise<

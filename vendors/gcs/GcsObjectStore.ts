@@ -2,11 +2,13 @@ import { Readable } from "stream";
 import { pipeline } from "node:stream/promises";
 import {
   ObjectStore,
+  type ReadFileOptions,
   PathTraversalError,
   StorageError,
   FileNotFoundError,
   gcsMetadataToStorageFileEntry,
   type UploadFileResult,
+  type StorageFileEntry,
 } from "@saflib/object-store";
 import { getStorage } from "./client.ts";
 import { typedEnv } from "@saflib/env";
@@ -206,7 +208,7 @@ export class GcsObjectStore extends ObjectStore {
     }
   }
 
-  async readFile(path: string): Promise<ReturnsError<Readable>> {
+  async readFile(path: string, options?:ReadFileOptions): Promise<ReturnsError<Readable>> {
     try {
       let objectName: string;
       try {
@@ -237,13 +239,58 @@ export class GcsObjectStore extends ObjectStore {
         };
       }
 
-      return { result: file.createReadStream() };
+      return { 
+        result: file.createReadStream({
+          start: options?.start,
+          end: options?.end 
+        })
+      };
+
     } catch (error) {
       const { logError } = getSafReporters();
       logError(error);
       return {
         error: new StorageError(
           "Error reading file",
+          error instanceof Error ? error : undefined,
+        ),
+      };
+    }
+  }
+
+  async getFileInfo(
+    path: string,
+  ): Promise<
+    ReturnsError<StorageFileEntry, PathTraversalError | StorageError | FileNotFoundError>
+  > {
+    try {
+      const objectName = this.getScopedPath(path);
+      if (typedEnv.NODE_ENV === "test") {
+        return { result: { path: objectName, size: 0 } };
+      }
+      const bucket = getStorage().bucket(this.bucketName);
+      const file = bucket.file(objectName);
+      const [meta]  = await file.getMetadata();
+      return {
+        result: gcsMetadataToStorageFileEntry(
+          meta as Record<string,unknown>,
+          this.bucketName,
+          objectName
+        ),
+      };
+
+    } catch (error) {
+      if (error instanceof PathTraversalError) {
+        return { error };
+      }
+      if ((error as { code?: number }).code === 404) {
+        return { error: new FileNotFoundError(path) };
+      }
+      const { logError } = getSafReporters();
+      logError(error);
+      return {
+        error: new StorageError(
+          "Error reading file info",
           error instanceof Error ? error : undefined,
         ),
       };
