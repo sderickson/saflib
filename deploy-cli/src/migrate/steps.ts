@@ -79,8 +79,26 @@ const fromConfigs = (ctx: MigrateContext) =>
   ctx.deployDirs.map((d) => loadDeployConfig(d, ctx.from));
 const toConfigs = (ctx: MigrateContext) =>
   ctx.deployDirs.map((d) => loadDeployConfig(d, ctx.to));
-const oldHost = (ctx: MigrateContext) => fromConfigs(ctx)[0].env.SSH_HOSTNAME;
-const newHost = (ctx: MigrateContext) => toConfigs(ctx)[0].env.SSH_HOSTNAME;
+/**
+ * The one host every deploy points at. Host-level work (setup, the data copy,
+ * the address move) runs once against it, so deploys on different hosts are
+ * refused rather than half-migrated.
+ */
+function sharedHost(configs: DeployConfig[], which: string): string {
+  const hosts = [...new Set(configs.map((c) => c.env.SSH_HOSTNAME))];
+  if (hosts.length !== 1 || !hosts[0]) {
+    throw new Error(
+      `The deploys' ${which} SSH_HOSTNAME differ (${configs
+        .map(
+          (c) => `${relative(c.deployDir)}: ${c.env.SSH_HOSTNAME || "unset"}`,
+        )
+        .join(", ")}); migrate moves one host's whole stack at a time`,
+    );
+  }
+  return hosts[0];
+}
+const oldHost = (ctx: MigrateContext) => sharedHost(fromConfigs(ctx), "old");
+const newHost = (ctx: MigrateContext) => sharedHost(toConfigs(ctx), "new");
 const relative = (dir: string) => path.relative(process.cwd(), dir) || ".";
 const targetFlag = (target: string | undefined) =>
   target ? `--target ${target}` : "(no --target)";
@@ -101,6 +119,12 @@ export function dataDir(ctx: MigrateContext): string {
     );
   }
   return dir;
+}
+
+/** Checks the settings every run needs, so a mistake fails before step 1. */
+export function preflight(ctx: MigrateContext): void {
+  dataDir(ctx);
+  oldHost(ctx);
 }
 
 const platforms = (ctx: MigrateContext) =>

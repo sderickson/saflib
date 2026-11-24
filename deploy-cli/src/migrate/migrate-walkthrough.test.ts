@@ -20,6 +20,7 @@ import {
 } from "./runner.ts";
 import {
   migrationSteps,
+  preflight,
   type MigrateContext,
   type MigrateOps,
 } from "./steps.ts";
@@ -242,6 +243,21 @@ describe("migration walkthrough", () => {
     );
     expect(io.output).toContain("✗ me@old is the old machine");
     expect(existsSync(path.join(platform, "env.remote.next"))).toBe(false);
+  });
+
+  it("refuses deploys that point at different hosts", () => {
+    writeDeploy(app, "SSH_HOSTNAME=me@elsewhere\n");
+    const ctx = {
+      deployDirs: [platform, app],
+      to: "next",
+      previousName: "previous",
+      state: freshState(),
+      io: scriptedIO(() => ""),
+      ops: {} as MigrateOps,
+    };
+    expect(() => preflight(ctx)).toThrow(/SSH_HOSTNAME differ.*me@elsewhere/);
+    writeDeploy(app, "");
+    expect(() => preflight(ctx)).not.toThrow();
   });
 
   it("starts fresh when saved progress is for another target", () => {

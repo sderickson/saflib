@@ -10,8 +10,8 @@ import {
   terminalIO,
 } from "../../src/migrate/runner.ts";
 import {
-  dataDir,
   migrationSteps,
+  preflight,
   realOps,
   type MigrateContext,
 } from "../../src/migrate/steps.ts";
@@ -77,7 +77,7 @@ export const addMigrateCommand = (program: Command) => {
           ops: realOps,
         };
         try {
-          dataDir(ctx); // fail now, not mid-walkthrough
+          preflight(ctx); // fail now, not mid-walkthrough
           const steps = migrationSteps();
           io.print(
             `Migrating ${deployDirs.length} deploy(s) to the "${options.to}" target. Progress: ${path.relative(process.cwd(), file)}`,
