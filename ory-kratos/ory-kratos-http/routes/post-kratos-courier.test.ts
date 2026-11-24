@@ -6,6 +6,7 @@ import {
   createInternalMiddleware,
 } from "@saflib/express";
 import { createPostKratosCourierHandler } from "./post-kratos-courier.ts";
+import { getSafReporters } from "@saflib/node";
 import type { KratosCourierCallbacks } from "../courier-callbacks.ts";
 
 describe("createPostKratosCourierHandler", () => {
@@ -113,6 +114,41 @@ describe("createPostKratosCourierHandler", () => {
     });
   });
 
+  it("logs the identity id, never the recipient address", async () => {
+    const { log } = getSafReporters();
+    const info = vi.spyOn(log, "info");
+    const warn = vi.spyOn(log, "warn");
+    const handler = createPostKratosCourierHandler({
+      onVerificationCodeValid: vi.fn().mockResolvedValue(undefined),
+    });
+    app = express();
+    app.use(createInternalMiddleware());
+    app.post("/email/kratos-courier", handler);
+    app.use(createErrorMiddleware());
+
+    // Twice, so the skipped-duplicate log line is covered too.
+    for (let i = 0; i < 2; i++) {
+      const res = await request(app)
+        .post("/email/kratos-courier")
+        .send({
+          ...verificationCodeBody,
+          template_data: {
+            ...verificationCodeBody.template_data,
+            verification_code: "111111",
+          },
+        })
+        .set("Content-Type", "application/json");
+      expect(res.status).toBe(204);
+    }
+
+    const logged = JSON.stringify([...info.mock.calls, ...warn.mock.calls]);
+    expect(logged).toContain("0e7a38c8-841f-45ea-abe6-9a1ef859c074");
+    expect(logged).toContain("Skipped duplicate");
+    expect(logged).not.toContain("user@example.com");
+    info.mockRestore();
+    warn.mockRestore();
+  });
+
   it("calls onRecoveryValid for recovery.valid (link)", async () => {
     const onRecoveryValid = vi.fn().mockResolvedValue(undefined);
     const body = {
@@ -182,7 +218,9 @@ describe("createPostKratosCourierHandler", () => {
     const app = appWith({ onVerificationCodeValid });
 
     const first = send(app).then((r) => r);
-    await vi.waitFor(() => expect(onVerificationCodeValid).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() =>
+      expect(onVerificationCodeValid).toHaveBeenCalledTimes(1),
+    );
     const second = send(app).then((r) => r);
     finish();
 
@@ -210,7 +248,10 @@ describe("createPostKratosCourierHandler", () => {
     await send(app);
     await send(app, {
       ...verificationCodeBody,
-      template_data: { ...verificationCodeBody.template_data, verification_code: "111111" },
+      template_data: {
+        ...verificationCodeBody.template_data,
+        verification_code: "111111",
+      },
     });
 
     expect(onVerificationCodeValid).toHaveBeenCalledTimes(2);

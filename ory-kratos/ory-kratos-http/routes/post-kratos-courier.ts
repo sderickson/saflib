@@ -109,8 +109,10 @@ async function dispatchCallback(
       });
       return;
     default:
-      log.warn(`Unsupported Kratos courier template_type: ${templateId}`);
-      log.warn(JSON.stringify(td, null, 2));
+      // Keys only: the values include the identity's traits and live codes.
+      log.warn(`Unsupported Kratos courier template_type: ${templateId}`, {
+        template_data_keys: Object.keys(td),
+      });
       return;
   }
 }
@@ -188,7 +190,8 @@ export function createPostKratosCourierHandler(
     log.info(`Kratos courier email ${templateId}`, {
       template_type: rawType,
       template_id: templateId,
-      recipient: body.recipient,
+      // The identity id, never the recipient address: logs are telemetry.
+      identity_id: user.id || null,
     });
 
     const now = Date.now();
@@ -203,7 +206,7 @@ export function createPostKratosCourierHandler(
         await earlier.delivery;
         log.info(`Skipped duplicate Kratos courier delivery ${templateId}`, {
           template_id: templateId,
-          recipient: body.recipient,
+          identity_id: user.id || null,
         });
         res.status(204).end();
         return;
