@@ -12,6 +12,7 @@ export const jsonSpec = castJson(json);
 export type { paths };
 
 export type IdentitySummary = components["schemas"]["IdentitySummary"];
+export type IdentityRecord = components["schemas"]["IdentityRecord"];
 
 export type KratosAdminResponseBody = ExtractResponseBody<operations>;
 export type KratosAdminRequestBody = ExtractRequestBody<operations>;

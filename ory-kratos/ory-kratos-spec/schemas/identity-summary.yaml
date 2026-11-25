@@ -7,6 +7,8 @@ required:
   - verified
   - state
   - created_at
+  - org
+  - role
 properties:
   id:
     type: string
@@ -26,3 +28,9 @@ properties:
   created_at:
     type: string
     format: date-time
+  org:
+    type: [ string, "null" ]
+    description: The org(s) the person belongs to, when the product has orgs.
+  role:
+    type: [ string, "null" ]
+    description: Their role in that org, when the product has roles.

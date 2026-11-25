@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  fetchAllKratosPages,
+  nextKratosPageUrl,
   fetchKratosIdentitiesByIds,
   fetchKratosIdentityById,
   kratosAdminBaseUrl,
@@ -139,5 +141,38 @@ describe("fetchKratosIdentitiesByIds", () => {
       identities: [],
     });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("fetchAllKratosPages", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  it("follows rel=next until a page has no next link", async () => {
+    vi.stubEnv("KRATOS_ADMIN_API_URL", "http://kratos.test");
+    const pages: Record<string, { body: unknown[]; link: string | null }> = {
+      "/admin/identities?page_size=2": {
+        body: [{ id: "a" }, { id: "b" }],
+        link: '</admin/identities?page_size=2&page_token=x>; rel="first",</admin/identities?page_size=2&page_token=p2>; rel="next"',
+      },
+      "/admin/identities?page_size=2&page_token=p2": { body: [{ id: "c" }], link: null },
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        const page = pages[url.replace("http://kratos.test", "")]!;
+        return { ok: true, json: async () => page.body, headers: new Headers(page.link ? { link: page.link } : {}) };
+      }),
+    );
+    const result = await fetchAllKratosPages("/admin/identities?page_size=2");
+    expect(result).toEqual({ ok: true, items: [{ id: "a" }, { id: "b" }, { id: "c" }] });
+  });
+
+  it("parses only the next link", () => {
+    expect(nextKratosPageUrl('</a>; rel="first",</b>; rel="next"')).toBe("/b");
+    expect(nextKratosPageUrl('</a>; rel="first"')).toBeNull();
+    expect(nextKratosPageUrl(null)).toBeNull();
   });
 });

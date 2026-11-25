@@ -6,63 +6,37 @@ import {
   makeRegisterRoute,
 } from "@saflib/express";
 import { operationJsonSpec as lookupIdentitiesAdminSpec } from "@saflib/ory-kratos-spec/operations/lookupIdentitiesAdmin";
+import { operationJsonSpec as listIdentitiesAdminSpec } from "@saflib/ory-kratos-spec/operations/listIdentitiesAdmin";
+import { operationJsonSpec as getIdentityAdminSpec } from "@saflib/ory-kratos-spec/operations/getIdentityAdmin";
 import type {
   IdentitySummary,
   KratosAdminRequestBody,
   KratosAdminResponseBody,
 } from "@saflib/ory-kratos-spec";
-
-/**
- * Display names for identity ids. Kratos traits only hold the email, so the
- * product supplies names from wherever it keeps them; omit or return
- * nothing to show emails only.
- */
-export type ResolveDisplayNames = (
-  ids: string[],
-) => Promise<Record<string, string | null | undefined>>;
+import {
+  createIdentityDirectory,
+  matchesIdentitySearch,
+  toIdentitySummary,
+  type ResolveProfiles,
+} from "./identity-directory.ts";
 
 export interface KratosAdminRouterOptions {
-  resolveDisplayNames?: ResolveDisplayNames;
-}
-
-interface KratosIdentityLike {
-  id?: unknown;
-  state?: unknown;
-  created_at?: unknown;
-  traits?: { email?: unknown };
-  verifiable_addresses?: { verified?: unknown }[];
-}
-
-/** Maps a Kratos admin identity to what admin pages show. */
-export function toIdentitySummary(
-  raw: unknown,
-  name: string | null = null,
-): IdentitySummary | null {
-  const identity = raw as KratosIdentityLike;
-  if (!identity || typeof identity.id !== "string") return null;
-  const email = identity.traits?.email;
-  return {
-    id: identity.id,
-    email: typeof email === "string" && email.trim() ? email.trim() : null,
-    name,
-    verified: (identity.verifiable_addresses ?? []).some((a) => a.verified === true),
-    state: typeof identity.state === "string" ? identity.state : "active",
-    created_at:
-      typeof identity.created_at === "string"
-        ? identity.created_at
-        : new Date(0).toISOString(),
-  };
+  /** Names (and org/role) for identities; Kratos only stores the email. */
+  resolveProfiles?: ResolveProfiles;
 }
 
 /**
  * Site-admin identity routes, mounted on the product's API:
  * - `POST /admin/identities/lookup`: ids → names and emails, for display.
+ * - `GET /admin/identities`: list and search, for the Users page.
+ * - `GET /admin/identities/{id}`: one person, with second factors.
  */
 export function createKratosAdminRouter(
   options: KratosAdminRouterOptions = {},
 ): Router {
   const router = Router();
   const registerRoute = makeRegisterRoute();
+  const directory = createIdentityDirectory(options.resolveProfiles);
 
   registerRoute(
     router,
@@ -73,17 +47,60 @@ export function createKratosAdminRouter(
       if (!result.ok) {
         throw createError(502, "Identity service error");
       }
-      const found = result.identities
-        .map((raw) => toIdentitySummary(raw))
-        .filter((s): s is IdentitySummary => s !== null);
-      const names =
-        found.length > 0 && options.resolveDisplayNames
-          ? await options.resolveDisplayNames(found.map((s) => s.id))
+      const rawById = new Map(
+        result.identities.map((raw) => [(raw as { id?: unknown }).id, raw]),
+      );
+      const foundIds = [...rawById.keys()].filter((id): id is string => typeof id === "string");
+      const profiles =
+        foundIds.length > 0 && options.resolveProfiles
+          ? await options.resolveProfiles(foundIds)
           : {};
-      const identities = found.map((s) => ({ ...s, name: names[s.id] ?? null }));
+      const identities = foundIds
+        .map((id) => toIdentitySummary(rawById.get(id), profiles[id]))
+        .filter((s): s is IdentitySummary => s !== null);
       res.status(200).json({
         identities,
       } satisfies KratosAdminResponseBody["lookupIdentitiesAdmin"][200]);
+    }),
+  );
+
+  registerRoute(
+    router,
+    listIdentitiesAdminSpec,
+    createHandler(async (req, res) => {
+      const q = typeof req.query.q === "string" ? req.query.q : "";
+      const limit = Math.min(Math.max(Number(req.query.limit ?? 50) || 50, 1), 100);
+      const offset = Math.max(Number(req.query.cursor ?? 0) || 0, 0);
+      let all;
+      try {
+        all = await directory.all();
+      } catch {
+        throw createError(502, "Identity service error");
+      }
+      const matching = q ? all.filter((r) => matchesIdentitySearch(r, q)) : all;
+      const page = matching.slice(offset, offset + limit);
+      const nextOffset = offset + page.length;
+      res.status(200).json({
+        identities: page,
+        next_cursor: nextOffset < matching.length ? String(nextOffset) : null,
+        total: matching.length,
+      } satisfies KratosAdminResponseBody["listIdentitiesAdmin"][200]);
+    }),
+  );
+
+  registerRoute(
+    router,
+    getIdentityAdminSpec,
+    createHandler(async (req, res) => {
+      const result = await directory.get(String(req.params.id));
+      if (!result.ok) {
+        if (result.status === 404) throw createError(404, "User not found");
+        throw createError(502, "Identity service error");
+      }
+      const { ok: _ok, ...body } = result;
+      res
+        .status(200)
+        .json(body satisfies KratosAdminResponseBody["getIdentityAdmin"][200]);
     }),
   );
 

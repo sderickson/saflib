@@ -144,3 +144,47 @@ export async function fetchKratosIdentitiesByIds(
   }
   return { ok: true, identities };
 }
+
+/** The `rel="next"` URL from a Kratos `Link` header, if any. */
+export function nextKratosPageUrl(link: string | null): string | null {
+  if (!link) return null;
+  for (const part of link.split(",")) {
+    const m = part.match(/<([^>]+)>\s*;\s*rel="next"/);
+    if (m) return m[1]!;
+  }
+  return null;
+}
+
+/**
+ * Fetches every page of a Kratos admin list endpoint (e.g.
+ * `/admin/identities?page_size=500`), following `Link: rel="next"`. Stops
+ * after `maxPages` so a runaway list can't hang a request.
+ */
+export async function fetchAllKratosPages(
+  pathAndQuery: string,
+  maxPages = 20,
+): Promise<{ ok: true; items: unknown[] } | { ok: false; status: number }> {
+  const items: unknown[] = [];
+  let next: string | null = pathAndQuery;
+  for (let page = 0; next && page < maxPages; page++) {
+    let kres: Response;
+    try {
+      kres = await fetch(`${kratosAdminBaseUrl()}${next}`, {
+        headers: { Accept: "application/json" },
+      });
+    } catch {
+      return { ok: false, status: 0 };
+    }
+    if (!kres.ok) return { ok: false, status: kres.status };
+    let body: unknown;
+    try {
+      body = await kres.json();
+    } catch {
+      return { ok: false, status: kres.status };
+    }
+    if (!Array.isArray(body) || body.length === 0) break;
+    items.push(...body);
+    next = nextKratosPageUrl(kres.headers.get("link"));
+  }
+  return { ok: true, items };
+}

@@ -6,6 +6,46 @@ import type { Error as _Ext1_Error } from "@saflib/openapi/schemas/Error";
  */
 
 export interface paths {
+    "/admin/identities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List and search identities
+         * @description Everyone with an identity, newest first, optionally filtered by a search on name, email or id. Site admins only.
+         */
+        get: operations["listIdentitiesAdmin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/identities/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get one identity
+         * @description One identity with its second factors and active session count. Site admins only.
+         */
+        get: operations["getIdentityAdmin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/identities/lookup": {
         parameters: {
             query?: never;
@@ -31,6 +71,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         IdentitySummary: components["schemas"]["identity-summary"];
+        IdentityRecord: components["schemas"]["identity-record"];
         Error: _Ext1_Error;
         /** @description What admin pages need to show a person. Resolved at read time; never stored. */
         "identity-summary": {
@@ -46,6 +87,20 @@ export interface components {
             state: string;
             /** Format: date-time */
             created_at: string;
+            /** @description The org(s) the person belongs to, when the product has orgs. */
+            org: string | null;
+            /** @description Their role in that org, when the product has roles. */
+            role: string | null;
+        };
+        /** @description An identity as the Users page lists it. */
+        "identity-record": components["schemas"]["identity-summary"] & {
+            /** @description Whether a second factor (TOTP, security key or passkey) is set up. */
+            mfa: boolean;
+            /**
+             * Format: date-time
+             * @description When they last signed in, from their Kratos sessions.
+             */
+            last_sign_in_at: string | null;
         };
         error: _Ext0_error;
     };
@@ -57,6 +112,127 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listIdentitiesAdmin: {
+        parameters: {
+            query?: {
+                /** @description Matches name or email (substring) or id (prefix), case-insensitive. */
+                q?: string;
+                /** @description Opaque cursor from a previous page's `next_cursor`. */
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of identities. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        identities: components["schemas"]["identity-record"][];
+                        next_cursor: string | null;
+                        /** @description How many identities match the search. */
+                        total: number;
+                    };
+                };
+            };
+            /** @description Not signed in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Site admin required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The identity service could not be reached. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getIdentityAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The identity. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        identity: components["schemas"]["identity-record"];
+                        /** @description Second factors set up, e.g. `totp`, `webauthn`, `passkey`. */
+                        mfa_methods: string[];
+                        active_sessions: number;
+                    };
+                };
+            };
+            /** @description Not signed in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Site admin required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description No such identity. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The identity service could not be reached. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
     lookupIdentitiesAdmin: {
         parameters: {
             query?: never;

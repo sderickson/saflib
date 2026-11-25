@@ -18,6 +18,9 @@
       "IdentitySummary": {
         "$ref": "#/components/schemas/identity-summary"
       },
+      "IdentityRecord": {
+        "$ref": "#/components/schemas/identity-record"
+      },
       "Error": {
         "$ref": "#/components/schemas/error"
       },
@@ -30,7 +33,9 @@
           "name",
           "verified",
           "state",
-          "created_at"
+          "created_at",
+          "org",
+          "role"
         ],
         "properties": {
           "id": {
@@ -62,8 +67,51 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "org": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The org(s) the person belongs to, when the product has orgs."
+          },
+          "role": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Their role in that org, when the product has roles."
           }
         }
+      },
+      "identity-record": {
+        "description": "An identity as the Users page lists it.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/identity-summary"
+          },
+          {
+            "type": "object",
+            "required": [
+              "mfa",
+              "last_sign_in_at"
+            ],
+            "properties": {
+              "mfa": {
+                "type": "boolean",
+                "description": "Whether a second factor (TOTP, security key or passkey) is set up."
+              },
+              "last_sign_in_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time",
+                "description": "When they last signed in, from their Kratos sessions."
+              }
+            }
+          }
+        ]
       },
       "error": {
         "type": "object",
@@ -82,6 +130,212 @@
     }
   },
   "paths": {
+    "/admin/identities": {
+      "get": {
+        "summary": "List and search identities",
+        "description": "Everyone with an identity, newest first, optionally filtered by a search on name, email or id. Site admins only.\n",
+        "operationId": "listIdentitiesAdmin",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Matches name or email (substring) or id (prefix), case-insensitive.",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor from a previous page's `next_cursor`.",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of identities.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "identities",
+                    "next_cursor",
+                    "total"
+                  ],
+                  "properties": {
+                    "identities": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/identity-record"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "How many identities match the search."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Site admin required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The identity service could not be reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/identities/{id}": {
+      "get": {
+        "summary": "Get one identity",
+        "description": "One identity with its second factors and active session count. Site admins only.",
+        "operationId": "getIdentityAdmin",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "identity",
+                    "mfa_methods",
+                    "active_sessions"
+                  ],
+                  "properties": {
+                    "identity": {
+                      "$ref": "#/components/schemas/identity-record"
+                    },
+                    "mfa_methods": {
+                      "type": "array",
+                      "description": "Second factors set up, e.g. `totp`, `webauthn`, `passkey`.",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "active_sessions": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Site admin required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The identity service could not be reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/identities/lookup": {
       "post": {
         "summary": "Look up identities by id",

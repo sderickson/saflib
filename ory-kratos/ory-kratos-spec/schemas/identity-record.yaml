@@ -1,0 +1,15 @@
+description: An identity as the Users page lists it.
+allOf:
+  - $ref: "./identity-summary.yaml"
+  - type: object
+    required:
+      - mfa
+      - last_sign_in_at
+    properties:
+      mfa:
+        type: boolean
+        description: Whether a second factor (TOTP, security key or passkey) is set up.
+      last_sign_in_at:
+        type: [ string, "null" ]
+        format: date-time
+        description: When they last signed in, from their Kratos sessions.

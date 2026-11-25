@@ -13,10 +13,18 @@ components:
   schemas:
     IdentitySummary:
       $ref: "./schemas/identity-summary.yaml"
+    IdentityRecord:
+      $ref: "./schemas/identity-record.yaml"
     Error:
       $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
 paths:
+  /admin/identities:
+    get:
+      $ref: "./routes/identities.yaml#/listIdentitiesAdmin"
+  /admin/identities/{id}:
+    get:
+      $ref: "./routes/identities.yaml#/getIdentityAdmin"
   /admin/identities/lookup:
     post:
       $ref: "./routes/identities.yaml#/lookupIdentitiesAdmin"

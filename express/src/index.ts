@@ -83,6 +83,8 @@ export {
   resolveUserIdByEmail,
   fetchKratosIdentityById,
   fetchKratosIdentitiesByIds,
+  fetchAllKratosPages,
+  nextKratosPageUrl,
   resolveEmailFromIdentityId,
 } from "./kratos-admin.ts";
 
