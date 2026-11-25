@@ -1,10 +1,23 @@
 import UserRef from "./components/UserRef.vue";
 import ActorChip from "./components/ActorChip.vue";
+import UsersAsync from "./pages/users/UsersAsync.vue";
 
-export { UserRef, ActorChip };
+export { UserRef, ActorChip, UsersAsync };
 export type { ActorKind } from "./components/ActorChip.vue";
 export { configureOryKratosVue } from "./client.ts";
-export { useIdentity, resetIdentityLoaderForTests } from "./requests/identities.ts";
+export {
+  useIdentity,
+  useListIdentities,
+  useGetIdentityAdmin,
+  resetIdentityLoaderForTests,
+} from "./requests/identities.ts";
+export {
+  configureUsersPage,
+  formatRelative,
+  type UsersPageConfig,
+  type UserPageLink,
+} from "./lib/users-page.ts";
+export { users_page } from "./pages/users/Users.strings.ts";
 export { isKratosId, createIdentityBatcher } from "./lib/identity-batcher.ts";
 export { configureUserLinks, type UserLinks } from "./lib/user-links.ts";
 export { initialsFor } from "./lib/initials.ts";

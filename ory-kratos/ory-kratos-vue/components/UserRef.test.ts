@@ -24,6 +24,8 @@ describe("UserRef", () => {
             id,
             email: "ada@example.com",
             name: "Ada Lovelace",
+            org: null,
+            role: null,
             verified: true,
             state: "active",
             created_at: "2026-10-30T00:00:00Z",

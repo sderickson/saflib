@@ -5,6 +5,8 @@ const summary = (id: string) => ({
   id,
   email: `${id}@example.com`,
   name: null,
+  org: null,
+  role: null,
   verified: true,
   state: "active",
   created_at: "2026-01-01T00:00:00Z",
