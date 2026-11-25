@@ -11,10 +11,11 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@saflib/jobs-spec": "*",
+    "@saflib/ory-kratos-vue": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
-    "@tanstack/vue-query": "*",
-    "@saflib/jobs-spec": "*"
+    "@tanstack/vue-query": "*"
   },
   "sideEffects": false
 }

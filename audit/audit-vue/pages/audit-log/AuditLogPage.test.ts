@@ -68,6 +68,8 @@ describe("AuditLogPage", () => {
     });
 
     expect(wrapper.text()).toContain("Audit log");
-    expect(wrapper.text()).toContain("user-1");
+    // Not a Kratos id, so the actor shows as a ShortId; the request too.
+    expect(wrapper.text()).toContain("u·user");
+    expect(wrapper.text()).toContain("r·req1");
   });
 });

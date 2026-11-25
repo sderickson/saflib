@@ -68,7 +68,25 @@
       :items-per-page="-1"
       hide-default-footer
       density="compact"
-    />
+    >
+      <template #[`item.ts`]="{ item }">
+        <span class="text-no-wrap">{{ formatTime(item.ts) }}</span>
+      </template>
+      <template #[`item.actor_user_id`]="{ item }">
+        <AuditActor :row="item" />
+      </template>
+      <template #[`item.resource`]="{ item }">
+        <span v-if="item.resource_type || item.resource_id" class="d-inline-flex align-center ga-1 text-no-wrap">
+          <span v-if="item.resource_type">{{ item.resource_type }}</span>
+          <ShortId v-if="item.resource_id" :id="item.resource_id" />
+        </span>
+        <span v-else class="text-medium-emphasis">—</span>
+      </template>
+      <template #[`item.request_id`]="{ item }">
+        <ShortId v-if="item.request_id" :id="item.request_id" prefix="r" />
+        <span v-else class="text-medium-emphasis">—</span>
+      </template>
+    </v-data-table>
 
     <div class="mt-4">
       <v-btn
@@ -86,7 +104,8 @@
 
 <script setup lang="ts">
 import type { AuditLog } from "@saflib/audit-spec/types";
-import { ContentWidth } from "@saflib/vue/components";
+import { ContentWidth, ShortId } from "@saflib/vue/components";
+import AuditActor from "./AuditActor.vue";
 import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
 import { showError, showInfo } from "@saflib/vue";
 import { computed } from "vue";
@@ -137,11 +156,17 @@ const headers = [
 const tableItems = computed(() =>
   rows.value.map((r) => ({
     ...r,
-    resource:
-      [r.resource_type, r.resource_id].filter(Boolean).join(" ") || "—",
+    resource: [r.resource_type, r.resource_id].filter(Boolean).join(" "),
     details: formatDetails(r.details),
   })),
 );
+
+function formatTime(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "medium",
+  }).format(new Date(iso));
+}
 
 function formatDetails(details: AuditLog["details"]): string {
   if (details == null) return "—";

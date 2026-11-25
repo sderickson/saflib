@@ -5,6 +5,7 @@ import type { Request } from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { createEmailsRouter } from "@saflib/email-service";
 import { createDevErrorsRouter, createErrorsRouter } from "@saflib/errors-http";
+import { createKratosAdminRouter } from "@saflib/ory-kratos-http";
 import { createDevLogsRouter } from "@saflib/node-log-http";
 import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 import { baseDb, baseDbManager } from "@saflib/base-db/instances";
@@ -96,6 +97,9 @@ export function buildBaseHttpApp(
         ],
       }),
       createBaseAuditRouter(),
+      // Site-admin identity lookups for UserRef. Pass resolveDisplayNames to
+      // show names; Kratos traits only hold the email.
+      createKratosAdminRouter(),
       createJobsRouter({ dbKey: getBaseJobsDbKey() }),
       createCronRouter({
         dbKey: getBaseCronDbKey(),

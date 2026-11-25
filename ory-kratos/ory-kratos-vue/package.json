@@ -3,7 +3,6 @@
   "description": "Admin components for showing people: UserRef, actor chips and batched identity lookups",
   "private": true,
   "type": "module",
-  "main": "./index.ts",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -11,10 +10,15 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@saflib/ory-kratos-spec": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "exports": {
+    ".": "./index.ts",
+    "./mdi-icons": "./mdi-icons.ts"
+  }
 }

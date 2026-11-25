@@ -32,6 +32,7 @@
     "@saflib/node-log-http": "*",
     "@saflib/node-metrics-http": "*",
     "@saflib/ops-http": "*",
+    "@saflib/ory-kratos-http": "*",
     "@saflib/vendors-brevo": "*"
   },
   "devDependencies": {

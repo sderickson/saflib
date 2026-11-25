@@ -8,6 +8,7 @@
       :items="jobs"
       item-value="job_name"
       class="elevation-1"
+      density="compact"
     >
       <template #[`item.enabled`]="{ item }">
         <v-chip :color="item.enabled ? 'success' : 'error'">
@@ -24,7 +25,7 @@
       </template>
 
       <template #[`item.enabled_by`]="{ item }">
-        <span v-if="item.enabled_by">{{ item.enabled_by }}</span>
+        <UserRef v-if="item.enabled_by" :id="item.enabled_by" />
         <span v-else-if="item.enabled" class="text-warning">
           Missing — re-enable to record authority (job is not running)
         </span>
@@ -42,11 +43,11 @@
       </template>
 
       <template #[`item.last_run_at`]="{ item }">
-        {{ formatDateTime(item.last_run_at) }}
+        <span class="text-no-wrap">{{ formatDateTime(item.last_run_at) }}</span>
       </template>
 
       <template #[`item.runs_next_at`]="{ item }">
-        {{ formatRunsNext(item) }}
+        <span class="text-no-wrap">{{ formatRunsNext(item) }}</span>
       </template>
 
       <template #[`item.actions`]="{ item }">
@@ -69,6 +70,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { ContentWidth } from "@saflib/vue/components";
+import { UserRef } from "@saflib/ory-kratos-vue";
 import type { JobSettings } from "@saflib/cron-spec";
 import { useCronJobsPageLoader } from "./CronJobs.loader.ts";
 import { cron_jobs as strings } from "./CronJobs.strings.ts";

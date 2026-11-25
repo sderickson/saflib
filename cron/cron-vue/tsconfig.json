@@ -18,6 +18,9 @@
   ],
   "references": [
     {
+      "path": "../../ory-kratos/ory-kratos-vue"
+    },
+    {
       "path": "../../sdk"
     },
     {

@@ -171,7 +171,8 @@ describe("CronJobsAsync", () => {
     expect(
       row1.findComponent({ name: "v-chip", text: "Enabled" }).exists(),
     ).toBe(true); // Status Chip
-    expect(row1.text()).toContain("admin-user-1");
+    // Not a Kratos id, so UserRef shows it as a ShortId.
+    expect(row1.text()).toContain("u·admi");
     expect(
       row1.findComponent({ name: "v-chip", text: "success" }).exists(),
     ).toBe(true); // Last Run Status Chip

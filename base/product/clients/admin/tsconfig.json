@@ -8,9 +8,6 @@
       "path": "../../../../cron/cron-vue"
     },
     {
-      "path": "../../../../ops/ops-vue"
-    },
-    {
       "path": "../../../../email/email-vue"
     },
     {
@@ -26,10 +23,16 @@
       "path": "../../../../node-log/node-log-vue"
     },
     {
+      "path": "../../../../ops/ops-vue"
+    },
+    {
       "path": "../../../../ory-kratos/ory-kratos-sdk"
     },
     {
       "path": "../../../../ory-kratos/ory-kratos-spa"
+    },
+    {
+      "path": "../../../../ory-kratos/ory-kratos-vue"
     },
     {
       "path": "../../../../vue"

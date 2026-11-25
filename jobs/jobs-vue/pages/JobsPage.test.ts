@@ -1,3 +1,4 @@
+import { shortId } from "@saflib/vue";
 import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
@@ -159,7 +160,8 @@ describe("JobsPage", () => {
     getTable(wrapper).findAll("tbody tr");
   const getRowByJobId = (wrapper: VueWrapper, jobId: string) => {
     const rows = getRows(wrapper);
-    const row = rows.find((r) => r.text().includes(jobId));
+    // The table shows jobs as ShortIds (j·job1); the full id is on hover.
+    const row = rows.find((r) => r.text().includes(shortId(jobId, "j")));
     expect(row, `Row for job "${jobId}" not found`).toBeDefined();
     return row!;
   };
@@ -201,13 +203,13 @@ describe("JobsPage", () => {
 
     const headers = table.findAll("thead th");
     expect(headers.map((h) => h.text())).toEqual([
-      "Id",
+      "Job",
       "Status",
       "Operation",
-      "User",
-      "Original Request Id",
+      "Started by",
+      "Request",
       "Attempt",
-      "Created At",
+      "Created",
       "Actions",
     ]);
 
@@ -215,10 +217,11 @@ describe("JobsPage", () => {
     expect(rows).toHaveLength(mockJobs.length);
 
     const row1 = getRowByJobId(wrapper, "job-1");
-    expect(row1.text()).toContain("job-1");
+    expect(row1.text()).toContain("j·job1");
     expect(row1.text()).toContain("jobsDemoStepB");
-    expect(row1.text()).toContain("user-1");
-    expect(row1.text()).toContain("r-abc");
+    // "user-1" isn't a Kratos id, so UserRef shows it as a ShortId.
+    expect(row1.text()).toContain("u·user");
+    expect(row1.text()).toContain("r·rabc");
     expect(
       row1.findComponent({ name: "v-chip", text: "pending" }).exists(),
     ).toBe(true);

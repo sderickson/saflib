@@ -17,6 +17,7 @@
   "dependencies": {
     "@saflib/audit-sdk": "*",
     "@saflib/audit-spec": "*",
+    "@saflib/ory-kratos-vue": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*",

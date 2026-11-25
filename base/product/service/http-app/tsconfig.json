@@ -38,6 +38,9 @@
       "path": "../../../../ops/ops-http"
     },
     {
+      "path": "../../../../ory-kratos/ory-kratos-http"
+    },
+    {
       "path": "../../../../vendors/brevo"
     },
     {

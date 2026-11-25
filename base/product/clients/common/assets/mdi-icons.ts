@@ -6,14 +6,18 @@
  */
 import {
   mdiArrowRight,
+  mdiChevronLeft,
   mdiClose,
   mdiMenu,
 } from "@mdi/js";
 import { kratosMdiIconPaths } from "@saflib/ory-kratos-spa/mdi-icons";
+import { oryKratosVueMdiIconPaths } from "@saflib/ory-kratos-vue/mdi-icons";
 
 export const mdiIconPaths: Record<string, string> = {
   ...kratosMdiIconPaths,
+  ...oryKratosVueMdiIconPaths,
   "mdi-arrow-right": mdiArrowRight,
+  "mdi-chevron-left": mdiChevronLeft,
   "mdi-close": mdiClose,
   "mdi-menu": mdiMenu,
 };

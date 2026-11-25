@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@saflib/cron-spec": "*",
+    "@saflib/ory-kratos-vue": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*"

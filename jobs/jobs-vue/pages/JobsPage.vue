@@ -85,9 +85,22 @@
       :items="jobs"
       item-value="id"
       class="elevation-1"
+      density="compact"
       :items-per-page="pageSize"
       hide-default-footer
     >
+      <template #[`item.id`]="{ item }">
+        <ShortId :id="item.id" prefix="j" />
+      </template>
+
+      <template #[`item.user_id`]="{ item }">
+        <JobActor :job="item" />
+      </template>
+
+      <template #[`item.original_request_id`]="{ item }">
+        <ShortId :id="item.original_request_id" prefix="r" />
+      </template>
+
       <template #[`item.status`]="{ item }">
         <v-chip :color="statusColor(item.status)" size="small">
           {{ item.status }}
@@ -95,7 +108,7 @@
       </template>
 
       <template #[`item.created_at`]="{ item }">
-        {{ formatDateTime(item.created_at) }}
+        <span class="text-no-wrap">{{ formatDateTime(item.created_at) }}</span>
       </template>
 
       <template #[`item.actions`]="{ item }">
@@ -176,7 +189,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ContentWidth } from "@saflib/vue/components";
+import { ContentWidth, ShortId } from "@saflib/vue/components";
+import JobActor from "./JobActor.vue";
 import type { Job } from "@saflib/jobs-spec";
 import {
   useGetJob,
@@ -210,13 +224,13 @@ const statusOptions: Job["status"][] = [
 ];
 
 const headers = [
-  { title: "Id", key: "id", sortable: true },
+  { title: "Job", key: "id", sortable: true },
   { title: "Status", key: "status", sortable: true },
   { title: "Operation", key: "operation_id", sortable: true },
-  { title: "User", key: "user_id", sortable: true },
-  { title: "Original Request Id", key: "original_request_id", sortable: true },
+  { title: "Started by", key: "user_id", sortable: true },
+  { title: "Request", key: "original_request_id", sortable: true },
   { title: "Attempt", key: "attempt", sortable: true },
-  { title: "Created At", key: "created_at", sortable: true },
+  { title: "Created", key: "created_at", sortable: true },
   { title: "Actions", key: "actions", sortable: false },
 ];
 

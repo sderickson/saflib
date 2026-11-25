@@ -68,7 +68,7 @@
             <v-card v-for="o in occurrences" :key="o.id" variant="outlined" class="mb-2 pa-2">
               <div class="text-caption text-medium-emphasis mb-1">
                 {{ formatTime(o.ts) }}
-                <span v-if="o.request_id"> · {{ strings.request }} <code>{{ o.request_id.slice(0, 8) }}</code></span>
+                <span v-if="o.request_id"> · {{ strings.request }} <ShortId :id="o.request_id" prefix="r" /></span>
                 <span v-if="o.version"> · <code>{{ shortVersion(o.version) }}</code></span>
               </div>
               <div class="occurrence-text">{{ o.untrusted.message }}</div>
@@ -88,7 +88,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ContentWidth } from "@saflib/vue/components";
+import { ContentWidth, ShortId } from "@saflib/vue/components";
 import { useIssuesPageLoader, type IssueTab } from "./Issues.loader.ts";
 import { ops_issues as strings } from "./Issues.strings.ts";
 import { useListOpsIssueOccurrences, useTriageOpsIssue } from "../requests/queries.ts";

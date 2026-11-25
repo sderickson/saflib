@@ -7,6 +7,12 @@ import {
 import { adminLinks } from "@saflib/base-links";
 import { isDevelopmentDeployment } from "@saflib/vue";
 import type { BuildRepoUrls } from "@saflib/ops-vue";
+import { configureUserLinks } from "@saflib/ory-kratos-vue";
+
+// UserRef hover cards link to the person's page.
+configureUserLinks({
+  user: (id) => `${adminLinks.users.path}?id=${encodeURIComponent(id)}`,
+});
 
 /** Where this product's commits live, for the build chip's links. */
 const repos: BuildRepoUrls = {

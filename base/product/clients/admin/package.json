@@ -35,6 +35,7 @@
     "@saflib/ops-vue": "*",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/ory-kratos-spa": "*",
+    "@saflib/ory-kratos-vue": "*",
     "@saflib/vue": "*"
   },
   "devDependencies": {
