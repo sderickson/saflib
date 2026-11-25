@@ -52,6 +52,7 @@ export class SqliteErrorService implements ErrorService {
       kind,
       message: input.message,
       stack: input.stack,
+      fingerprint: input.fingerprint,
       serviceName: input.source,
       fields: input.metadata,
       version: this.version,
@@ -107,4 +108,19 @@ export class SqliteErrorService implements ErrorService {
       }),
     );
   }
+}
+
+/**
+ * A reported-error sink (`addReportedErrorSink`) that records client errors
+ * and CSP violations as issues, for products whose error service is
+ * something else (e.g. Sentry). Don't add it when `SqliteErrorService` on
+ * the same DB is already the error service, or reports count twice.
+ */
+export function createIssuesReportedErrorSink(options: {
+  getDbKey: () => DbKey;
+}): (input: ReportedErrorInput) => void {
+  const service = new SqliteErrorService(options);
+  return (input) => {
+    service.recordReportedError(input);
+  };
 }

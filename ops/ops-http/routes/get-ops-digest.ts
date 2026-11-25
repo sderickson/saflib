@@ -79,14 +79,18 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
       // Everything awaiting triage, not only this window's activity.
       throwError(listIssues(issuesDbKey, { windowSince: since, statuses: ["open", "regressed"], sort: "count", limit: 200 })),
     ]);
-    // Ignored issues don't need attention even when new.
-    const freshActive = fresh.issues.filter((i) => i.status !== "ignored");
+    // Only what still needs a look: an issue first seen (or regressed) in the
+    // window but since resolved or ignored doesn't, and shouldn't keep
+    // needs_attention on until it ages out of the window.
+    const active = (i: { status: string }) => i.status === "open" || i.status === "regressed";
+    const freshActive = fresh.issues.filter(active);
+    const regressedActive = regressed.issues.filter(active);
     newIssueCount = freshActive.length;
-    regressedCount = regressed.issues.length;
+    regressedCount = regressedActive.length;
     openCount = open.issues.length;
     issues = {
       new: freshActive.slice(0, TOP).map(mapIssue),
-      regressed: regressed.issues.slice(0, TOP).map(mapIssue),
+      regressed: regressedActive.slice(0, TOP).map(mapIssue),
       top: top.issues.map(mapIssue),
       open: open.issues.slice(0, TOP).map(mapIssue),
     };

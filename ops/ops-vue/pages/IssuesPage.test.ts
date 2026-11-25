@@ -74,4 +74,23 @@ describe("IssuesAsync", () => {
     expect(posts[0]!.body).toEqual({});
     wrapper.unmount();
   });
+
+  it("keeps the tab in ?status= and highlights it after the list reloads", async () => {
+    await router.push("/ops/issues");
+    const wrapper = mountTestApp(IssuesAsync, { attachTo: document.body });
+    await vi.waitFor(() => expect(wrapper.find("[data-test=issues-tab-resolved]").exists()).toBe(true));
+    await wrapper.find("[data-test=issues-tab-resolved]").trigger("click");
+    await vi.waitFor(() => expect(router.currentRoute.value.query.status).toBe("resolved"));
+    await vi.waitFor(() => expect(wrapper.text()).toContain("old bug"));
+    expect(statusQueries.at(-1)).toEqual(["resolved"]);
+    expect(wrapper.find("[data-test=issues-tab-resolved]").classes()).toContain("v-tab--selected");
+    expect(wrapper.find("[data-test=issues-tab-active]").classes()).not.toContain("v-tab--selected");
+
+    await router.push("/ops/issues");
+    await vi.waitFor(() => expect(statusQueries.at(-1)).toEqual(["open", "regressed"]));
+    await vi.waitFor(() =>
+      expect(wrapper.find("[data-test=issues-tab-active]").classes()).toContain("v-tab--selected"),
+    );
+    wrapper.unmount();
+  });
 });

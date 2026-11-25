@@ -3,7 +3,9 @@ import express from "express";
 import request from "supertest";
 import { createErrorMiddleware } from "@saflib/express";
 import {
+  addReportedErrorSink,
   configureMockErrors,
+  type ReportedErrorInput,
   listReportedErrors,
   recordReportedError,
   resetReportedErrorBufferForTests,
@@ -21,14 +23,17 @@ const siteAdminHeaders = {
 
 describe("errors routers", () => {
   const originalDeployment = process.env.DEPLOYMENT_NAME;
+  const sunk: ReportedErrorInput[] = [];
 
   beforeAll(() => {
     configureMockErrors();
+    addReportedErrorSink((input) => sunk.push(input));
   });
 
   beforeEach(() => {
     process.env.DEPLOYMENT_NAME = "development";
     resetReportedErrorBufferForTests();
+    sunk.length = 0;
   });
 
   afterEach(() => {
@@ -108,6 +113,48 @@ describe("errors routers", () => {
       kind: "csp-violation",
       source: "browser",
     });
+  });
+
+  it("titles CSP reports by directive, blocked origin and page, and sends them to sinks", async () => {
+    await request(makeApp())
+      .post("/csp-violations")
+      .set("content-type", "application/csp-report")
+      .send(
+        JSON.stringify({
+          "csp-report": {
+            "document-uri": "https://admin.example/ops/metrics?q=up",
+            "effective-directive": "img-src",
+            "violated-directive": "img-src 'self' data:",
+            "blocked-uri": "https://api.example/ops/metrics/graph.png?sig=abc123",
+          },
+        }),
+      )
+      .expect(204);
+
+    expect(sunk).toHaveLength(1);
+    expect(sunk[0]).toMatchObject({
+      kind: "csp-violation",
+      message: "CSP img-src blocked https://api.example on admin.example",
+      fingerprint: "csp:img-src:https://api.example:admin.example",
+    });
+  });
+
+  it("accepts Reporting API batches", async () => {
+    await request(makeApp())
+      .post("/csp-violations")
+      .set("content-type", "application/reports+json")
+      .send(
+        JSON.stringify([
+          { type: "csp-violation", body: { documentURL: "https://app.example/x", effectiveDirective: "script-src-elem", blockedURL: "inline" } },
+          { type: "csp-violation", body: { documentURL: "https://app.example/y", effectiveDirective: "connect-src", blockedURL: "wss://evil.example/s" } },
+        ]),
+      )
+      .expect(204);
+
+    expect(sunk.map((s) => s.message)).toEqual([
+      "CSP script-src-elem blocked inline on app.example",
+      "CSP connect-src blocked wss://evil.example on app.example",
+    ]);
   });
 
   it("records admin test errors as kind test", async () => {

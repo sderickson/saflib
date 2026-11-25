@@ -83,6 +83,20 @@ describe("GET /ops/digest", () => {
     expect(d.deploys.map((b: { build_ref: string }) => b.build_ref)).toEqual(["b1"]);
   });
 
+  it("leaves out issues new or regressed in the window but since resolved", async () => {
+    const fixed = recordOccurrence(issuesKey, { level: "error", kind: "server", serviceName: "s", message: "fixed", fingerprint: "fixed" }).group.id;
+    await throwError(setIssueStatus(issuesKey, fixed, { status: "resolved", actor: "a" }));
+    const back = recordOccurrence(issuesKey, { level: "error", kind: "server", serviceName: "s", message: "back", fingerprint: "back", ts: new Date(Date.now() - 3 * DAY) }).group.id;
+    await throwError(setIssueStatus(issuesKey, back, { status: "resolved", actor: "a" }));
+    recordOccurrence(issuesKey, { level: "error", kind: "server", serviceName: "s", message: "back", fingerprint: "back" });
+    await throwError(setIssueStatus(issuesKey, back, { status: "resolved", actor: "a" }));
+    const res = await request(app()).get("/ops/digest").set(auth).expect(200);
+    const { summary, issues } = res.body.digest;
+    expect(summary).toMatchObject({ needs_attention: false, new_issues: 0, regressed_issues: 0 });
+    expect(issues.new).toEqual([]);
+    expect(issues.regressed).toEqual([]);
+  });
+
   it("lists open issues however long ago they were last seen", async () => {
     // Quiet for days, still open: absent from the window's lists, present in open.
     const old = recordOccurrence(issuesKey, { level: "warn", kind: "server", serviceName: "s", message: "old leak", fingerprint: "old", ts: new Date(Date.now() - 5 * DAY) }).group.id;

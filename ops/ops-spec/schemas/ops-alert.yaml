@@ -2,7 +2,7 @@ type: object
 description: >
   An alert from the host's Alertmanager. `labels` come from alert rules.
   Annotations can embed label values, so they are under `untrusted`.
-required: [ id, fingerprint, alertname, severity, status, labels, starts_at, ends_at, last_received_at, acked_at, acked_by, untrusted ]
+required: [ id, fingerprint, alertname, severity, status, labels, starts_at, ends_at, last_received_at, acked_at, acked_by, resolved_by, untrusted ]
 properties:
   id:
     type: string
@@ -33,6 +33,9 @@ properties:
     format: date-time
   acked_by:
     type: [ string, "null" ]
+  resolved_by:
+    type: [ string, "null" ]
+    description: Who resolved it by hand; null when Alertmanager resolved it or it is firing.
   untrusted:
     type: object
     required: [ annotations ]

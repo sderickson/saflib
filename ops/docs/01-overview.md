@@ -19,7 +19,7 @@ The base product wires these through `@saflib/base-ops` (`base/product/service/o
 
 - Format `safops_` + 32 random bytes (base64url). The prefix lets secret scanners recognize leaked tokens.
 - Only the SHA-256 is stored. The plaintext is returned once, by `POST /admin/ops-tokens`.
-- Scopes: `ops:read` (every GET), `ops:triage` (issue status changes and alert acknowledgement), `ops:alerts-ingest` (only the Alertmanager webhook), and `ops:exchange` (trade the token for a short-lived one; see below).
+- Scopes: `ops:read` (every GET), `ops:triage` (issue status changes, alert acknowledgement and manual alert resolve), `ops:alerts-ingest` (only the Alertmanager webhook), and `ops:exchange` (trade the token for a short-lived one; see below).
 - Optional expiry; revocation is permanent. Creating and revoking tokens is audit-logged.
 - Ops API reads are audit-logged against the token: `auth_method: ops_token`, `actor_user_id: ops_token:<id>` (via `opsMachineActor`, passed to `createAuditRecorder({ resolveMachineActor })`). `GET /ops/health` is not audited, since uptime checks poll it.
 - Requests are rate limited per token (default 120/min), and failed authentications per client IP (default 20/min).
@@ -64,8 +64,9 @@ Then `npm run ops-session` once, and `npm run ops -- /ops/digest` for the next h
 
 `@saflib/ops-vue` provides admin pages that call the same `/ops/*` endpoints as agents, authenticated by the admin's session instead of a token: every ops read and triage operation declares `security: [{ ops-token: [...] }, { session: [site-admin] }]`. A request with an `Authorization: Bearer` header is checked as a token (never falling back to the session); any other request needs a site-admin session with MFA. Session requests get CSRF protection; token requests don't need it. Triage and acks from the pages are recorded as `user:<id>`.
 
-- `IssuesAsync`: open / resolved / ignored issues; expand one for its details and recent occurrences (messages and stacks as plain text), and resolve, ignore (7 days or indefinitely) or reopen it.
-- `AlertsAsync`: firing alerts, or the last 7 days; acknowledge.
+- `IssuesAsync`: open / resolved / ignored issues (the tab is in `?status=`); expand one for its details and recent occurrences (messages and stacks as plain text), and resolve, ignore (7 days or indefinitely) or reopen it.
+- `AlertsAsync`: firing alerts, or the last 7 days (`?view=recent`); acknowledge, or resolve by hand (`POST /ops/alerts/{id}/resolve`, recorded in `resolved_by`) an alert Alertmanager will never resolve, such as one from a replaced host. If it's still firing, the next delivery sets it firing again.
+- `OpsTokensAsync`: active tokens, or all of them (expired and revoked too); create and revoke.
 - `OpsMetricsAsync`: PromQL explorer over `/ops/metrics/*` (same isolation and limits as agents get). Presets for traffic, availability, performance (overall and by route), database queries, host memory/disk/CPU/load and process memory/event loop; an editable query, a 1h–7d range, a graph and a table of current values. The query and range are in the URL.
 - `LogsAsync`: log search (`/ops/logs`).
 - `OpsTokensAsync`: mint and revoke tokens (`/admin/ops-tokens`, session only).
@@ -127,7 +128,7 @@ Products opt in with `enableBasePersistentLogs()` (or their equivalent) at start
 
 `@saflib/errors-db` groups errors **and warnings** into issues:
 
-- **Sources:** server reports through a node error collector (`createIssueCollector`, which runs alongside vendor collectors such as Sentry); client and CSP reports through the SQLite `ErrorService`; leaking log lines through `createRedactionIssueRecorder` (`log.redaction:<kind>:<template>`, throttled; each occurrence's `fields` say where the match was, e.g. `fields.distinct_id`, and its shape, e.g. `36 chars: digits, lowercase, dashes`, never the value). Built-in warnings: jobs that go dead (`jobs.dead:<operation>`), ops token rate limits and failed-auth limits. Use `reportWarning(message, { fingerprint })` from `@saflib/node` for your own.
+- **Sources:** server reports through a node error collector (`createIssueCollector`, which runs alongside vendor collectors such as Sentry); client and CSP reports through the SQLite `ErrorService`, or, when another error service such as Sentry is set, through `addReportedErrorSink(createIssuesReportedErrorSink({ getDbKey }))` (CSP issues are titled and grouped by directive, blocked origin and page host, e.g. `CSP img-src blocked https://api.example.com on admin.example.com`); leaking log lines through `createRedactionIssueRecorder` (`log.redaction:<kind>:<template>`, throttled; each occurrence's `fields` say where the match was, e.g. `fields.distinct_id`, and its shape, e.g. `36 chars: digits, lowercase, dashes`, never the value). Built-in warnings: jobs that go dead (`jobs.dead:<operation>`), ops token rate limits and failed-auth limits. Use `reportWarning(message, { fingerprint })` from `@saflib/node` for your own.
 - **Grouping:** an explicit `fingerprint` if given; else the error name plus our own top stack frames (library frames, line numbers and bundle hashes dropped); else the message shape.
 - **Lifecycle:** `open` → `resolved` / `ignored` (optionally until a time). A resolved issue seen again becomes `regressed`; an expired ignore reopens. Levels escalate (warn → error).
 - **Storage:** the newest 20 occurrences per issue (redacted), hourly counts for window queries, retention for stale closed issues.
@@ -159,6 +160,7 @@ The host's Alertmanager posts every alert to each app's `POST /ops/alerts/webhoo
 
 - `GET /ops/alerts` (`ops:read`): firing alerts by default; `status=all&since=` for everything active since then; `unacked=true`.
 - `POST /ops/alerts/{id}/ack` (`ops:triage`): marks it seen, recorded as `ops_token:<id>`.
+- `POST /ops/alerts/{id}/resolve` (`ops:triage`): resolves it by hand, recorded in `resolved_by`, for an alert Alertmanager will never resolve (e.g. from a replaced host). A later firing delivery sets it firing again.
 - The digest's `alerts` section lists what's firing, and unacknowledged firing alerts (`summary.firing_alerts`) count toward `needs_attention`.
 - The always-firing **Watchdog** is also delivered to each app's webhook (every 5 minutes, never to Slack) as a heartbeat. It's left out of alert lists and `needs_attention`; the digest's `alerts.pipeline_last_seen_at` shows when it last arrived, proving Prometheus, Alertmanager, the webhook and its token all work. If it has arrived before but not in 15 minutes, `alerts.pipeline_stale` is true and counts toward `needs_attention`.
 

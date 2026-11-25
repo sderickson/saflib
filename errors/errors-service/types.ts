@@ -6,6 +6,8 @@ export interface ReportedErrorInput {
   stack?: string;
   metadata?: Record<string, unknown>;
   source: string;
+  /** Explicit grouping key for the issues DB; otherwise grouped by message. */
+  fingerprint?: string;
 }
 
 export interface ReportedErrorRecord {

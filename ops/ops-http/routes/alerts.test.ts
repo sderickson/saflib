@@ -78,9 +78,23 @@ describe("/ops/alerts", () => {
     await request(app).post("/ops/alerts/webhook").send(payload("firing")).expect(401);
   });
 
-  it("404s acking an unknown alert", async () => {
+  it("404s acking or resolving an unknown alert", async () => {
     const { app, triager } = await setup();
     await request(app).post("/ops/alerts/nope/ack").set(triager).send({}).expect(404);
+    await request(app).post("/ops/alerts/nope/resolve").set(triager).send({}).expect(404);
+  });
+
+  it("resolves an alert by hand, for triagers only", async () => {
+    const { app, ingest, reader, triager } = await setup();
+    await request(app).post("/ops/alerts/webhook").set(ingest).send(payload("firing")).expect(200);
+    const [alert] = (await request(app).get("/ops/alerts").set(reader).expect(200)).body.alerts;
+    await request(app).post(`/ops/alerts/${alert.id}/resolve`).set(reader).send({}).expect(403);
+
+    const resolved = await request(app).post(`/ops/alerts/${alert.id}/resolve`).set(triager).send({}).expect(200);
+    expect(resolved.body.alert).toMatchObject({ status: "resolved", resolved_by: expect.stringMatching(/^ops_token:/) });
+    expect((await request(app).get("/ops/alerts").set(reader).expect(200)).body.alerts).toHaveLength(0);
+    const digest = await request(app).get("/ops/digest").set(reader).expect(200);
+    expect(digest.body.digest.alerts.firing).toHaveLength(0);
   });
 
   it("treats the Watchdog as the pipeline heartbeat, not an alert", async () => {

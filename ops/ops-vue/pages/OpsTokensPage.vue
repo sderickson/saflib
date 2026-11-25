@@ -9,10 +9,25 @@
     </div>
     <p class="text-body-2 mb-4">{{ strings.intro }}</p>
 
+    <v-chip-group
+      v-if="tokens.length > 0"
+      v-model="filter"
+      mandatory
+      selected-class="text-primary"
+      class="mb-2"
+    >
+      <v-chip value="active" size="small" variant="outlined" data-test="filter-active">
+        {{ strings.filterActive }} ({{ activeCount }})
+      </v-chip>
+      <v-chip value="all" size="small" variant="outlined" data-test="filter-all">
+        {{ strings.filterAll }} ({{ tokens.length }})
+      </v-chip>
+    </v-chip-group>
+
     <v-data-table
       v-if="tokens.length > 0"
       :headers="headers"
-      :items="tokens"
+      :items="visibleTokens"
       item-value="id"
       class="elevation-1"
     >
@@ -59,6 +74,7 @@
           {{ strings.revoke }}
         </v-btn>
       </template>
+      <template #no-data>{{ strings.noActive }}</template>
       <template #bottom></template>
     </v-data-table>
     <p v-else class="text-body-1">{{ strings.empty }}</p>
@@ -147,6 +163,14 @@ const headers = [
 
 const { tokensQuery, createMutation, revokeMutation } = useOpsTokensPageLoader();
 const tokens = computed(() => tokensQuery.data.value?.ops_tokens ?? []);
+
+// Expired and revoked tokens (most of them short-lived exchanged ones) pile up
+// fast, so only active ones show until the admin asks for all.
+const filter = ref<"active" | "all">("active");
+const activeCount = computed(() => tokens.value.filter((t) => stateOf(t) === "active").length);
+const visibleTokens = computed(() =>
+  filter.value === "all" ? tokens.value : tokens.value.filter((t) => stateOf(t) === "active"),
+);
 
 function stateOf(t: OpsTokenResponse): "active" | "revoked" | "expired" {
   if (t.revoked_at) return "revoked";

@@ -443,6 +443,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/alerts/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve an alert by hand
+         * @description Marks a firing alert resolved, for one Alertmanager will never resolve (e.g. it came from a host that has been replaced). `resolved_by` records who did it. If the alert is in fact still firing, Alertmanager's next delivery sets it firing again. Resolving an already-resolved alert returns it unchanged.
+         */
+        post: operations["resolveOpsAlert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ops/tokens/exchange": {
         parameters: {
             query?: never;
@@ -649,6 +669,8 @@ export interface components {
             /** Format: date-time */
             acked_at: string | null;
             acked_by: string | null;
+            /** @description Who resolved it by hand; null when Alertmanager resolved it or it is firing. */
+            resolved_by: string | null;
             untrusted: {
                 annotations: {
                     [key: string]: string;
@@ -2316,6 +2338,70 @@ export interface operations {
         };
         responses: {
             /** @description The acknowledged alert. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        alert: components["schemas"]["ops-alert"];
+                    };
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description No alert with that id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    resolveOpsAlert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            /** @description The alert, now resolved. */
             200: {
                 headers: {
                     [name: string]: unknown;

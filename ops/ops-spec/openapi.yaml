@@ -18,7 +18,7 @@ components:
       description: >
         Machine credential for the ops API (`Authorization: Bearer safops_…`).
         Not tied to a user. Scopes: `ops:read` (every GET), `ops:triage`
-        (issue status changes, alert acknowledgement), `ops:alerts-ingest`
+        (issue status changes, alert acknowledgement and manual resolve), `ops:alerts-ingest`
         (only posting alerts; Alertmanager's token).
   schemas:
     OpsHealth:
@@ -115,6 +115,9 @@ paths:
   /ops/alerts/{id}/ack:
     post:
       $ref: "./routes/alerts.yaml#/ackOpsAlert"
+  /ops/alerts/{id}/resolve:
+    post:
+      $ref: "./routes/alerts.yaml#/resolveOpsAlert"
   /ops/tokens/exchange:
     post:
       $ref: "./routes/tokens.yaml#/exchangeOpsToken"

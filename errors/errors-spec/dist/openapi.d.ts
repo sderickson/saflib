@@ -34,7 +34,7 @@ export interface paths {
         put?: never;
         /**
          * Ingest a Content-Security-Policy violation report
-         * @description Accepts a browser CSP violation payload (`application/csp-report` or JSON with a `csp-report` object), normalizes into the shared error ring buffer as `kind: csp-violation`, and returns **204**. Tagged `csrf-exempt` because the browser cannot send our double-submit CSRF header on automatic violation posts. Tagged `no-auth` because browsers cannot rely on session cookies on automatic `report-uri` posts (no-cors).
+         * @description Accepts a browser CSP violation payload (`application/csp-report` or JSON with a `csp-report` object, or a Reporting API `application/reports+json` batch) and records each violation with the error service and any reported-error sinks (e.g. ops issues) as `kind: csp-violation`, titled by directive, blocked origin and page host; and returns **204**. Tagged `csrf-exempt` because the browser cannot send our double-submit CSRF header on automatic violation posts. Tagged `no-auth` because browsers cannot rely on session cookies on automatic `report-uri` posts (no-cors).
          */
         post: operations["postCspViolationReport"];
         delete?: never;
@@ -196,6 +196,9 @@ export interface operations {
                 "application/json": {
                     [key: string]: unknown;
                 };
+                "application/reports+json": {
+                    [key: string]: unknown;
+                }[];
             };
         };
         responses: {

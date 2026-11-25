@@ -14,7 +14,7 @@
 
 ## Integration
 
-Server errors flow from [`getSafReporters().logError`](../../node/docs/02-instrumentation.md) and [`addErrorCollector`](../../node/docs/ref/index/functions/addErrorCollector.md) into `InMemoryErrorService` when `configureMockErrors()` runs at startup (development). Client errors and CSP violations POST through `errors-sdk` / `errors-vue` to the same store.
+Server errors flow from [`getSafReporters().logError`](../../node/docs/02-instrumentation.md) and [`addErrorCollector`](../../node/docs/ref/index/functions/addErrorCollector.md) into `InMemoryErrorService` when `configureMockErrors()` runs at startup (development). Client errors and CSP violations POST through `errors-sdk` / `errors-vue` to the same store. Ingest routes call `reportError()`, which records with the error service and then every sink added with `addReportedErrorSink()` (the reported-error counterpart of `addErrorCollector`), so a product can send them to Sentry and its ops issues at once.
 
 When the repo follows [base/product/service/http](../../base/product/docs/01-overview.md):
 

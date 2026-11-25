@@ -32,6 +32,7 @@ describe("OpsDigestPanel", () => {
         graph_link: { svg_url: "http://x/g.svg", png_url: `http://x/g${graphLinks}.png`, start: digest.since, end: digest.generated_at, step: 300 },
       });
     }),
+    http.get("http://x/:file", () => new HttpResponse(new Uint8Array([137, 80, 78, 71]), { headers: { "content-type": "image/png" } })),
   ]);
 
   it("summarizes what needs attention and shows graphs", async () => {
@@ -45,6 +46,8 @@ describe("OpsDigestPanel", () => {
     expect(text).toContain("1,200");
     expect(wrapper.find("[data-test=digest-deps]").text()).toContain("2 high/critical advisories");
     await vi.waitFor(() => expect(wrapper.findAll("img.ops-graph-img")).toHaveLength(3));
+    // Shown from blob: URLs: the SPA's CSP allows those for img-src, not the API origin.
+    for (const img of wrapper.findAll("img.ops-graph-img")) expect(img.attributes("src")).toMatch(/^blob:/);
     wrapper.unmount();
   });
 });

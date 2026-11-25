@@ -6,6 +6,7 @@ import {
   listAlerts,
   OpsAlertNotFoundError,
   pruneResolvedAlerts,
+  resolveAlert,
   upsertAlerts,
   type IncomingAlert,
   type OpsAlert,
@@ -45,6 +46,7 @@ export function mapAlert(a: OpsAlert): OpsAlertResponse {
     last_received_at: a.last_received_at.toISOString(),
     acked_at: a.acked_at?.toISOString() ?? null,
     acked_by: a.acked_by,
+    resolved_by: a.resolved_by,
     untrusted: { annotations: parseObject(a.annotations) },
   };
 }
@@ -83,5 +85,16 @@ export const ackOpsAlertHandler = createHandler(async function (req, res) {
     throw error satisfies never;
   }
   const response: OpsResponseBody["ackOpsAlert"][200] = { alert: mapAlert(result) };
+  res.status(200).json(response);
+});
+
+export const resolveOpsAlertHandler = createHandler(async function (req, res) {
+  const { dbKey } = opsServiceStorage.getStore()!;
+  const { result, error } = await resolveAlert(dbKey, String(req.params.id), callerActor(res));
+  if (error) {
+    if (error instanceof OpsAlertNotFoundError) throw createError(404, `No alert with id ${req.params.id}`);
+    throw error satisfies never;
+  }
+  const response: OpsResponseBody["resolveOpsAlert"][200] = { alert: mapAlert(result) };
   res.status(200).json(response);
 });

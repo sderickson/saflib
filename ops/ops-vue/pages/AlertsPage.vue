@@ -3,8 +3,8 @@
     <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
     <p class="text-body-2 mb-4">{{ strings.intro }}</p>
 
-    <v-tabs v-model="tab" class="mb-4" density="compact">
-      <v-tab value="firing">{{ strings.tabFiring }}</v-tab>
+    <v-tabs :model-value="tab" class="mb-4" density="compact" @update:model-value="goToTab">
+      <v-tab value="firing" data-test="alerts-tab-firing">{{ strings.tabFiring }}</v-tab>
       <v-tab value="recent" data-test="alerts-tab-recent">{{ strings.tabRecent }}</v-tab>
     </v-tabs>
 
@@ -27,19 +27,33 @@
             <div v-if="a.ends_at">{{ strings.ended }} {{ formatTime(a.ends_at) }}</div>
           </td>
           <td class="text-no-wrap">
-            <span v-if="a.acked_at" class="text-caption text-medium-emphasis">
+            <div v-if="a.resolved_by" class="text-caption text-medium-emphasis" data-test="alert-resolved-by">
+              {{ strings.resolvedBy }} {{ a.resolved_by }}
+            </div>
+            <div v-if="a.acked_at" class="text-caption text-medium-emphasis">
               {{ strings.acked }} ({{ a.acked_by }})
-            </span>
-            <v-btn
-              v-else-if="a.status === 'firing'"
-              size="small"
-              variant="outlined"
-              :loading="ack.isPending.value"
-              data-test="alert-ack"
-              @click="ack.mutate({ id: a.id })"
-            >
-              {{ strings.ack }}
-            </v-btn>
+            </div>
+            <div v-if="a.status === 'firing'" class="d-flex ga-2">
+              <v-btn
+                v-if="!a.acked_at"
+                size="small"
+                variant="outlined"
+                :loading="ack.isPending.value"
+                data-test="alert-ack"
+                @click="ack.mutate({ id: a.id })"
+              >
+                {{ strings.ack }}
+              </v-btn>
+              <v-btn
+                size="small"
+                variant="text"
+                :loading="resolve.isPending.value"
+                data-test="alert-resolve"
+                @click="resolveAlert(a.id)"
+              >
+                {{ strings.resolve }}
+              </v-btn>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -49,21 +63,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { ContentWidth } from "@saflib/vue/components";
 import { useAlertsPageLoader } from "./Alerts.loader.ts";
 import { ops_alerts as strings } from "./Alerts.strings.ts";
-import { useAckOpsAlert } from "../requests/queries.ts";
+import { useAckOpsAlert, useResolveOpsAlert } from "../requests/queries.ts";
 
-const { view, alertsQuery } = useAlertsPageLoader();
+const { tab, alertsQuery } = useAlertsPageLoader();
 const alerts = computed(() => alertsQuery.data.value?.alerts ?? []);
 const ack = useAckOpsAlert();
+const resolve = useResolveOpsAlert();
 
-const tab = ref("firing");
-watch(tab, (t) => {
-  view.value =
-    t === "recent" ? { all: true, since: new Date(Date.now() - 7 * 86_400_000).toISOString() } : { all: false };
-});
+function resolveAlert(id: string) {
+  if (!window.confirm(strings.resolveConfirm)) return;
+  resolve.mutate({ id });
+}
+
+const route = useRoute();
+const router = useRouter();
+function goToTab(t: unknown) {
+  const { view: _view, ...rest } = route.query;
+  void router.push({ query: t === "recent" ? { ...rest, view: "recent" } : rest });
+}
 
 /** Labels that say where, minus the ones already shown. */
 const labelText = (labels: Record<string, string>) =>

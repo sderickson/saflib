@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { throwError } from "@saflib/utils";
-import { ackAlert, listAlerts, opsDb, OpsAlertNotFoundError, pruneResolvedAlerts, upsertAlerts } from "../../index.ts";
+import { ackAlert, listAlerts, opsDb, OpsAlertNotFoundError, pruneResolvedAlerts, resolveAlert, upsertAlerts } from "../../index.ts";
 
 const alert = (status: "firing" | "resolved", startsAt: string, endsAt = "0001-01-01T00:00:00Z") => ({
   fingerprint: "abc123",
@@ -47,5 +47,25 @@ describe("ops alerts", () => {
       upsertAlerts(dbKey, [alert("resolved", "2026-10-01T00:00:00Z", "2026-10-01T01:00:00Z")], new Date("2026-10-01T01:00:00Z")),
     );
     expect(await throwError(pruneResolvedAlerts(dbKey, new Date("2026-11-01T00:00:00Z")))).toBe(1);
+  });
+
+  it("resolves by hand, and a later firing delivery wins", async () => {
+    const dbKey = opsDb.connect();
+    const t = (h: number) => new Date(Date.UTC(2026, 10, 9, h));
+    await throwError(upsertAlerts(dbKey, [alert("firing", "2026-11-09T01:00:00Z")], t(1)));
+    const [row] = await throwError(listAlerts(dbKey, {}));
+
+    const resolved = await throwError(resolveAlert(dbKey, row!.id, "user:u1", t(2)));
+    expect(resolved).toMatchObject({ status: "resolved", ends_at: t(2), resolved_by: "user:u1" });
+    expect(await throwError(listAlerts(dbKey, { statuses: ["firing"] }))).toHaveLength(0);
+
+    // Resolving again keeps the first resolve.
+    expect(await throwError(resolveAlert(dbKey, row!.id, "user:u2", t(3)))).toMatchObject({ ends_at: t(2), resolved_by: "user:u1" });
+
+    // Alertmanager still says firing: it's firing again.
+    await throwError(upsertAlerts(dbKey, [alert("firing", "2026-11-09T01:00:00Z")], t(4)));
+    expect(await throwError(listAlerts(dbKey, {}))).toMatchObject([{ status: "firing", ends_at: null, resolved_by: null }]);
+
+    expect((await resolveAlert(dbKey, "nope", "x")).error).toBeInstanceOf(OpsAlertNotFoundError);
   });
 });

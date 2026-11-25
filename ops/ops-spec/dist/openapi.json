@@ -16,7 +16,7 @@
       "ops-token": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Machine credential for the ops API (`Authorization: Bearer safops_…`). Not tied to a user. Scopes: `ops:read` (every GET), `ops:triage` (issue status changes, alert acknowledgement), `ops:alerts-ingest` (only posting alerts; Alertmanager's token).\n"
+        "description": "Machine credential for the ops API (`Authorization: Bearer safops_…`). Not tied to a user. Scopes: `ops:read` (every GET), `ops:triage` (issue status changes, alert acknowledgement and manual resolve), `ops:alerts-ingest` (only posting alerts; Alertmanager's token).\n"
       }
     },
     "schemas": {
@@ -502,6 +502,7 @@
           "last_received_at",
           "acked_at",
           "acked_by",
+          "resolved_by",
           "untrusted"
         ],
         "properties": {
@@ -560,6 +561,13 @@
               "string",
               "null"
             ]
+          },
+          "resolved_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Who resolved it by hand; null when Alertmanager resolved it or it is firing."
           },
           "untrusted": {
             "type": "object",
@@ -4108,6 +4116,105 @@
         "responses": {
           "200": {
             "description": "The acknowledged alert.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "alert"
+                  ],
+                  "properties": {
+                    "alert": {
+                      "$ref": "#/components/schemas/ops-alert"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No alert with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/alerts/{id}/resolve": {
+      "post": {
+        "summary": "Resolve an alert by hand",
+        "description": "Marks a firing alert resolved, for one Alertmanager will never resolve (e.g. it came from a host that has been replaced). `resolved_by` records who did it. If the alert is in fact still firing, Alertmanager's next delivery sets it firing again. Resolving an already-resolved alert returns it unchanged.\n",
+        "operationId": "resolveOpsAlert",
+        "security": [
+          {
+            "ops-token": [
+              "ops:triage"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The alert, now resolved.",
             "content": {
               "application/json": {
                 "schema": {
