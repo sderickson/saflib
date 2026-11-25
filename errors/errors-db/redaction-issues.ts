@@ -3,7 +3,7 @@ import { recordOccurrence } from "./queries/record-occurrence.ts";
 
 /** Shape of `@saflib/node-log-db`'s `onRedaction` event (kept structural to avoid the dependency). */
 export interface RedactionEventLike {
-  detections: Array<{ kind: string; where: string }>;
+  detections: Array<{ kind: string; where: string; shape?: string }>;
   templateHash: string;
   template: string;
   serviceName: string | null;
@@ -25,9 +25,14 @@ export function createRedactionIssueRecorder(options: {
   const lastRecorded = new Map<string, number>();
   return (event: RedactionEventLike) => {
     const now = Date.now();
-    const byKind = new Map<string, string[]>();
-    for (const d of event.detections) byKind.set(d.kind, [...(byKind.get(d.kind) ?? []), d.where]);
-    for (const [kind, where] of byKind) {
+    const byKind = new Map<string, { where: string[]; shapes: string[] }>();
+    for (const d of event.detections) {
+      const entry = byKind.get(d.kind) ?? { where: [], shapes: [] };
+      entry.where.push(d.where);
+      if (d.shape) entry.shapes.push(d.shape);
+      byKind.set(d.kind, entry);
+    }
+    for (const [kind, { where, shapes }] of byKind) {
       const fingerprint = `log.redaction:${kind}:${event.templateHash}`;
       const last = lastRecorded.get(fingerprint);
       if (last !== undefined && now - last < minInterval) continue;
@@ -40,7 +45,9 @@ export function createRedactionIssueRecorder(options: {
           message: `Log line leaks ${kind} (masked): ${event.template}`,
           serviceName: event.serviceName,
           operationName: event.operationName,
-          fields: { where },
+          // Where it was and what it looked like (length, character
+          // classes), never the value: enough to triage a false positive.
+          fields: shapes.length > 0 ? { where, shapes } : { where },
           version: options.version ?? null,
         });
       } catch (e) {
