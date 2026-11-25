@@ -104,6 +104,8 @@ copied: Caddy requests new certificates once the address moves.
 
 `sync` adds `release/release.json` to every upload: when the deploy ran, the HEAD commits of the deploying checkout (`-dirty` if uncommitted), and a hash of `remote-assets/`. Services mount `./release` at `/etc/saf/release` and record it on boot, so the ops API's deploy history includes config-only deploys. The local `remote-assets/release/` that prod-local creates is gitignored.
 
+Before building, `build`, `push` and `release` warn when a submodule (e.g. saflib) is checked out at a different commit than the repo records, or isn't checked out: images are built from what's checked out, which after a branch switch without `git submodule update` isn't what's committed.
+
 ## Commands
 
 | Command                    | npm script (convention)       | What it does                                                                                                                                                                                                                                                                                                                                                                                         |

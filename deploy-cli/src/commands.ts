@@ -6,6 +6,7 @@ import {
   type DeployConfig,
 } from "./config.ts";
 import { readRemoteScript, runRemote, type RemoteScript } from "./remote.ts";
+import { warnOnSubmoduleMismatch } from "./submodules.ts";
 
 export interface ImageCommandOptions {
   /** Overrides `SAF_DEPLOY_PLATFORMS` (see {@link deployPlatforms}). */
@@ -22,10 +23,7 @@ export interface ImageCommandOptions {
  * `amd64,arm64` while hosts of both architectures run the stack), else
  * `amd64`.
  */
-export function deployPlatforms(
-  config: DeployConfig,
-  option?: string,
-): string {
+export function deployPlatforms(config: DeployConfig, option?: string): string {
   return option || config.env.SAF_DEPLOY_PLATFORMS || "amd64";
 }
 
@@ -39,6 +37,7 @@ export async function buildProductionImages(
 ): Promise<void> {
   const registry = requireRegistry(config);
   console.log(`Container registry: ${registry}`);
+  warnOnSubmoduleMismatch(config.deployDir);
   const { ok } = await runImageBuild({
     cwd: config.deployDir,
     composeFiles: config.composeFiles,
