@@ -1,0 +1,179 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Identity Admin API",
+    "version": "1.0.0",
+    "description": "Site-admin views of Kratos identities, so admin pages can show people by name and email while logs and audit rows keep storing only ids.\n"
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "description": "Signed-in SAF user (Kratos browser session; internal job calls present the same identity via a signed assertion, which is not modeled here). Scopes: `email-verified`, `mfa`, `site-admin` (implies email-verified + mfa).\n"
+      }
+    },
+    "schemas": {
+      "IdentitySummary": {
+        "$ref": "#/components/schemas/identity-summary"
+      },
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "identity-summary": {
+        "type": "object",
+        "description": "What admin pages need to show a person. Resolved at read time; never stored.",
+        "required": [
+          "id",
+          "email",
+          "name",
+          "verified",
+          "state",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Kratos identity id."
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The identity's email trait."
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Display name, when the product supplies one."
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Whether any verifiable address is verified."
+          },
+          "state": {
+            "type": "string",
+            "description": "Kratos identity state (`active` or `inactive`)."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/admin/identities/lookup": {
+      "post": {
+        "summary": "Look up identities by id",
+        "description": "Resolves a batch of identity ids to names and emails for display. Ids with no identity are left out of the result. Site admins only.\n",
+        "operationId": "lookupIdentitiesAdmin",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "ids"
+                ],
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 200,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The identities that exist, in no particular order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "identities"
+                  ],
+                  "properties": {
+                    "identities": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/identity-summary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Site admin required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The identity service could not be reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

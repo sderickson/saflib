@@ -1,0 +1,22 @@
+openapi: 3.1.0
+info:
+  title: Identity Admin API
+  version: 1.0.0
+  description: >
+    Site-admin views of Kratos identities, so admin pages can show people by
+    name and email while logs and audit rows keep storing only ids.
+
+components:
+  securitySchemes:
+    session:
+      $ref: "pkg:@saflib/openapi/security-schemes/session.yaml"
+  schemas:
+    IdentitySummary:
+      $ref: "./schemas/identity-summary.yaml"
+    Error:
+      $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+paths:
+  /admin/identities/lookup:
+    post:
+      $ref: "./routes/identities.yaml#/lookupIdentitiesAdmin"

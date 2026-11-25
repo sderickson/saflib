@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  fetchKratosIdentitiesByIds,
   fetchKratosIdentityById,
   kratosAdminBaseUrl,
   resolveEmailFromIdentityId,
@@ -88,5 +89,55 @@ describe("fetchKratosIdentityById / resolveEmailFromIdentityId", () => {
       status: 404,
     });
     await expect(resolveEmailFromIdentityId("missing")).resolves.toBeNull();
+  });
+});
+
+describe("fetchKratosIdentitiesByIds", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  const uuid = (n: number) =>
+    `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+
+  it("dedupes, skips non-uuid ids, and chunks requests", async () => {
+    vi.stubEnv("KRATOS_ADMIN_API_URL", "http://kratos.test");
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => ({
+      ok: true,
+      json: async () =>
+        new URL(url).searchParams.getAll("ids").map((id) => ({ id })),
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const ids = [
+      ...Array.from({ length: 150 }, (_, i) => uuid(i)),
+      uuid(0),
+      "ops_token:abc",
+    ];
+    const result = await fetchKratosIdentitiesByIds(ids);
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.identities).toHaveLength(150);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(String(fetchMock.mock.calls[0]![0])).toContain("page_size=100");
+  });
+
+  it("reports the status when Kratos fails", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 503 }));
+    await expect(fetchKratosIdentitiesByIds([uuid(1)])).resolves.toEqual({
+      ok: false,
+      status: 503,
+    });
+  });
+
+  it("makes no request when no id could be a Kratos id", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(fetchKratosIdentitiesByIds(["system"])).resolves.toEqual({
+      ok: true,
+      identities: [],
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

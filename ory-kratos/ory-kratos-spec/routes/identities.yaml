@@ -1,0 +1,58 @@
+lookupIdentitiesAdmin:
+  summary: Look up identities by id
+  description: >
+    Resolves a batch of identity ids to names and emails for display. Ids
+    with no identity are left out of the result. Site admins only.
+  operationId: lookupIdentitiesAdmin
+  security:
+    - session: [site-admin]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required:
+            - ids
+          properties:
+            ids:
+              type: array
+              minItems: 1
+              maxItems: 200
+              items:
+                type: string
+                minLength: 1
+                maxLength: 128
+  responses:
+    "200":
+      description: The identities that exist, in no particular order.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - identities
+            properties:
+              identities:
+                type: array
+                items:
+                  $ref: "../schemas/identity-summary.yaml"
+    "401":
+      description: Not signed in.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Site admin required.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "502":
+      description: The identity service could not be reached.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
