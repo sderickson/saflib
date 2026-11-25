@@ -95,7 +95,7 @@ export type IssueStatusFilter = "open" | "regressed" | "resolved" | "ignored";
 const issuesKey = ["ops", "issues"] as const;
 
 /** Issues with the given statuses, most recently seen first. */
-export function useListOpsIssues(statuses: Ref<IssueStatusFilter[]>) {
+export function useListOpsIssues(statuses: Readonly<Ref<IssueStatusFilter[]>>) {
   const client = getClient();
   return useQuery<OpsResponseBody["listOpsIssues"][200], TanstackError>({
     queryKey: computed(() => [...issuesKey, "list", [...statuses.value]] as const),

@@ -3,10 +3,10 @@
     <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
     <p class="text-body-2 mb-4">{{ strings.intro }}</p>
 
-    <v-tabs v-model="tab" class="mb-4" density="compact">
+    <v-tabs :model-value="tab" class="mb-4" density="compact" @update:model-value="goToTab">
       <v-tab value="active" data-test="issues-tab-active">{{ strings.tabActive }}</v-tab>
-      <v-tab value="resolved">{{ strings.tabResolved }}</v-tab>
-      <v-tab value="ignored">{{ strings.tabIgnored }}</v-tab>
+      <v-tab value="resolved" data-test="issues-tab-resolved">{{ strings.tabResolved }}</v-tab>
+      <v-tab value="ignored" data-test="issues-tab-ignored">{{ strings.tabIgnored }}</v-tab>
     </v-tabs>
 
     <v-expansion-panels v-if="issues.length > 0" v-model="openId" variant="accordion">
@@ -87,22 +87,22 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { ContentWidth } from "@saflib/vue/components";
-import { useIssuesPageLoader } from "./Issues.loader.ts";
+import { useIssuesPageLoader, type IssueTab } from "./Issues.loader.ts";
 import { ops_issues as strings } from "./Issues.strings.ts";
-import { useListOpsIssueOccurrences, useTriageOpsIssue, type IssueStatusFilter } from "../requests/queries.ts";
+import { useListOpsIssueOccurrences, useTriageOpsIssue } from "../requests/queries.ts";
 
-const { statuses, issuesQuery } = useIssuesPageLoader();
+const { tab, issuesQuery } = useIssuesPageLoader();
 const issues = computed(() => issuesQuery.data.value?.issues ?? []);
 
-const TABS: Record<string, IssueStatusFilter[]> = {
-  active: ["open", "regressed"],
-  resolved: ["resolved"],
-  ignored: ["ignored"],
-};
-const tab = ref("active");
-watch(tab, (t) => {
-  statuses.value = TABS[t] ?? TABS.active!;
+const route = useRoute();
+const router = useRouter();
+function goToTab(t: unknown) {
+  const { status: _status, ...rest } = route.query;
+  void router.push({ query: t === "active" ? rest : { ...rest, status: t as IssueTab } });
+}
+watch(tab, () => {
   openId.value = null;
 });
 
