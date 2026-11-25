@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { issuesDb, listIssues, createRedactionIssueRecorder } from "@saflib/errors-db";
 import { throwError } from "@saflib/utils";
 import { getErrorCollectors } from "@saflib/node";
-import { SqliteErrorService } from "./SqliteErrorService.ts";
+import { SqliteErrorService, createIssuesReportedErrorSink } from "./SqliteErrorService.ts";
 
 describe("SqliteErrorService", () => {
   it("records client and CSP reports as issues and lists latest occurrences", async () => {
@@ -25,6 +25,21 @@ describe("SqliteErrorService", () => {
     const listed = service.listReportedErrors({ kind: "client" });
     expect(listed).toHaveLength(1);
     expect(listed[0]!.metadata).toEqual({ route: "/recipes", email: "[redacted:pii_field]" });
+  });
+
+  it("groups by an explicit fingerprint, and works as a sink beside another error service", async () => {
+    const dbKey = issuesDb.connect();
+    const sink = createIssuesReportedErrorSink({ getDbKey: () => dbKey });
+    const report = (blocked: string) =>
+      sink({ kind: "csp-violation", message: `CSP img-src blocked ${blocked} on app.example`, fingerprint: `csp:img-src:${blocked}`, source: "browser" });
+    report("https://a.example");
+    report("https://a.example");
+    report("https://b.example");
+    const { issues } = await throwError(listIssues(dbKey, { sort: "first_seen" }));
+    expect(issues.map((i) => [i.kind, i.count])).toEqual([
+      ["csp", 1],
+      ["csp", 2],
+    ]);
   });
 
   it("installs a server collector that records warnings and errors", async () => {

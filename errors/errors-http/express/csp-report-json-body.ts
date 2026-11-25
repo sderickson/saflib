@@ -19,7 +19,9 @@ export const cspReportJsonBody: RequestHandler = (req, res, next) => {
     next();
     return;
   }
-  express.json({ limit: "256kb" })(req, res, (err: unknown) => {
+  // `type` must accept every content type above: by default express.json()
+  // only parses application/json and leaves csp-report bodies empty.
+  express.json({ limit: "256kb", type: () => true })(req, res, (err: unknown) => {
     if (err) {
       next(err);
       return;

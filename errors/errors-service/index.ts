@@ -6,6 +6,9 @@ export type {
   ReportedErrorRecord,
 } from "./types.ts";
 export {
+  addReportedErrorSink,
+  reportError,
+  type ReportedErrorSink,
   getErrorService,
   hasErrorService,
   resetErrorServiceForTests,
@@ -17,7 +20,10 @@ export {
 } from "./createErrorService.ts";
 export { configureMockErrors } from "./configureMockErrors.ts";
 export { InMemoryErrorService, CSP_INGEST_MESSAGE } from "./in-memory/InMemoryErrorService.ts";
-export { SqliteErrorService } from "./sqlite/SqliteErrorService.ts";
+export {
+  SqliteErrorService,
+  createIssuesReportedErrorSink,
+} from "./sqlite/SqliteErrorService.ts";
 export {
   listReportedErrors,
   recordReportedError,
