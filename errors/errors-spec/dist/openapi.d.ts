@@ -63,26 +63,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/admin/errors": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List buffered reported errors
-         * @description Development ring-buffer listing (`createDevErrorsRouter` only). Tagged `no-auth` so local dev stacks can read captured errors without a session, matching `/dev/logs`.
-         */
-        get: operations["listReportedErrors"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/maintenance/raise-test-error": {
         parameters: {
             query?: never;
@@ -249,53 +229,6 @@ export interface operations {
             };
             /** @description Intentional error for monitoring verification. */
             500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
-    };
-    listReportedErrors: {
-        parameters: {
-            query?: {
-                /** @description Filter by error kind. */
-                kind?: "csp-violation" | "client" | "server" | "test";
-                /** @description Filter by source (substring match). */
-                source?: string;
-                /** @description Maximum number of entries to return (from the tail). */
-                limit?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Buffered reported errors, newest last within the filtered slice. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        reported_errors: components["schemas"]["reported-error"][];
-                    };
-                };
-            };
-            /** @description Unauthorized — missing or invalid auth. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden — site admin required. */
-            403: {
                 headers: {
                     [name: string]: unknown;
                 };

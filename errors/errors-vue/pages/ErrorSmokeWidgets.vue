@@ -42,7 +42,7 @@ onMounted(() => {
     }
     showError({
       message:
-        "CSP violation observed; the browser POSTed the report to /csp-violations. Check the Errors page and Sentry when configured.",
+        "CSP violation observed; the browser POSTed the report to /csp-violations. Check Issues.",
     });
   };
   document.addEventListener("securitypolicyviolation", onViolation);
@@ -60,8 +60,8 @@ onUnmounted(() => {
 function showTestErrorFeedback(surface: "vue" | "backend", detail?: string) {
   const message =
     surface === "vue"
-      ? "Thrown a test Vue error — check the Errors page (and Sentry when configured)."
-      : `Backend test error: ${detail ?? "request failed"}. Check the Errors page.`;
+      ? "Thrown a test Vue error. Check Issues."
+      : `Backend test error: ${detail ?? "request failed"}. Check Issues.`;
   showError({ message });
 }
 

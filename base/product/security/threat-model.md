@@ -38,7 +38,7 @@ Keep this list in sync with Caddy `@public_monolith`, `isPublicMonolithRoute` in
 - `GET /health`
 - `POST /csp-violations` (also mounted via `@saflib/errors-http` in Express global middleware)
 - `POST /user-configs/unsubscribe-marketing`
-- `POST /errors/record`, `POST /product-events/record` (global middleware chrome)
+- `POST /errors/record` (global middleware chrome)
 - `GET /dev/logs`, `GET /dev/logs/stream` (development only; handler 403 otherwise)
 
 ## Owner responsibilities

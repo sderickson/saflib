@@ -5,9 +5,8 @@ import { createErrorMiddleware } from "@saflib/express";
 import {
   addReportedErrorSink,
   configureMockErrors,
+  getErrorService,
   type ReportedErrorInput,
-  listReportedErrors,
-  recordReportedError,
   resetReportedErrorBufferForTests,
 } from "@saflib/errors-service";
 import { createDevErrorsRouter, createErrorsRouter } from "./createErrorsRouter.ts";
@@ -20,6 +19,10 @@ const siteAdminHeaders = {
   "x-user-is-admin": "true",
   "x-user-mfa-completed": "true",
 } as const;
+
+/** What the error service buffered (and what sinks like Issues received). */
+const buffered = (kind?: "client" | "server" | "test" | "csp-violation") =>
+  getErrorService().listReportedErrors({ kind });
 
 describe("errors routers", () => {
   const originalDeployment = process.env.DEPLOYMENT_NAME;
@@ -53,7 +56,7 @@ describe("errors routers", () => {
     return app;
   }
 
-  it("records client errors via POST and lists them for site admins", async () => {
+  it("records client errors via POST", async () => {
     await request(makeApp())
       .post("/errors/record")
       .set("x-requested-with", "XMLHttpRequest")
@@ -67,28 +70,13 @@ describe("errors routers", () => {
       })
       .expect(204);
 
-    recordReportedError({
-      kind: "server",
-      message: "Unhandled exception",
-      source: "http",
-    });
-
-    const res = await request(makeApp())
-      .get("/admin/errors")
-      .set(siteAdminHeaders)
-      .expect(200);
-
-    expect(res.body.reported_errors).toHaveLength(2);
-    expect(res.body.reported_errors[0]).toMatchObject({
+    expect(buffered()).toHaveLength(1);
+    expect(buffered()[0]).toMatchObject({
       kind: "client",
       message: "Vue render failed",
       source: "web-admin",
     });
-    expect(res.body.reported_errors[1]).toMatchObject({
-      kind: "server",
-      source: "http",
-    });
-    expect(listReportedErrors()).toHaveLength(2);
+    expect(sunk).toHaveLength(1);
   });
 
   it("normalizes CSP violation reports into the same buffer", async () => {
@@ -103,13 +91,8 @@ describe("errors routers", () => {
       })
       .expect(204);
 
-    const res = await request(makeApp())
-      .get("/admin/errors")
-      .set(siteAdminHeaders)
-      .expect(200);
-
-    expect(res.body.reported_errors).toHaveLength(1);
-    expect(res.body.reported_errors[0]).toMatchObject({
+    expect(buffered()).toHaveLength(1);
+    expect(buffered()[0]).toMatchObject({
       kind: "csp-violation",
       source: "browser",
     });
@@ -163,55 +146,9 @@ describe("errors routers", () => {
       .set(siteAdminHeaders)
       .expect(500);
 
-    const res = await request(makeApp())
-      .get("/admin/errors")
-      .query({ kind: "test" })
-      .set(siteAdminHeaders)
-      .expect(200);
-
-    expect(res.body.reported_errors).toHaveLength(1);
-    expect(res.body.reported_errors[0].message).toContain(
+    expect(buffered("test")).toHaveLength(1);
+    expect(buffered("test")[0]!.message).toContain(
       "Intentional admin test error",
     );
-  });
-
-  it("returns 500 outside development (mis-mounted dev handler)", async () => {
-    process.env.DEPLOYMENT_NAME = "production";
-    await request(makeApp()).get("/admin/errors").expect(500);
-  });
-
-  it("lists buffered errors without auth (dev ring buffer)", async () => {
-    recordReportedError({
-      kind: "client",
-      message: "no session required",
-      source: "web-app",
-    });
-
-    const res = await request(makeApp()).get("/admin/errors").expect(200);
-
-    expect(res.body.reported_errors).toHaveLength(1);
-    expect(res.body.reported_errors[0].message).toBe("no session required");
-  });
-
-  it("filters listed errors by kind", async () => {
-    recordReportedError({
-      kind: "client",
-      message: "client",
-      source: "web-app",
-    });
-    recordReportedError({
-      kind: "server",
-      message: "server",
-      source: "http",
-    });
-
-    const res = await request(makeApp())
-      .get("/admin/errors")
-      .query({ kind: "client" })
-      .set(siteAdminHeaders)
-      .expect(200);
-
-    expect(res.body.reported_errors).toHaveLength(1);
-    expect(res.body.reported_errors[0].kind).toBe("client");
   });
 });

@@ -33,7 +33,6 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@saflib/analytics-vue": "*",
     "@saflib/base-links": "*",
     "@saflib/base-sdk": "*",
     "@saflib/base-spec": "*",

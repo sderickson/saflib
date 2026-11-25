@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
-import ErrorsPage from "./errors/ErrorsPage.vue";
+import ErrorSmokeWidgets from "./ErrorSmokeWidgets.vue";
 
 export const router = createRouter({
   history: createWebHistory(),
-  routes: [{ path: "/errors", component: ErrorsPage }],
+  routes: [{ path: "/", component: ErrorSmokeWidgets }],
 });

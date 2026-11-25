@@ -12,12 +12,6 @@
   },
   "references": [
     {
-      "path": "../analytics/analytics-sdk"
-    },
-    {
-      "path": "../analytics/analytics-spec"
-    },
-    {
       "path": "../links"
     },
     {

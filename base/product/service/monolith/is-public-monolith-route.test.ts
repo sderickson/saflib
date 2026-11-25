@@ -28,9 +28,9 @@ describe("isPublicMonolithRoute", () => {
       true,
     );
     expect(isPublicMonolithRoute(req("GET", "/admin/product-events"))).toBe(
-      true,
+      false,
     );
-    expect(isPublicMonolithRoute(req("GET", "/admin/errors"))).toBe(true);
+    expect(isPublicMonolithRoute(req("GET", "/admin/errors"))).toBe(false);
   });
 
   it("denies authenticated product routes", () => {

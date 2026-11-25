@@ -1,6 +1,6 @@
 {
   "name": "@saflib/errors-vue",
-  "description": "Client error reporting helpers, smoke widgets, and admin Errors page",
+  "description": "Client error reporting helpers and smoke widgets",
   "private": true,
   "type": "module",
   "main": "./index.ts",

@@ -1,3 +1,1 @@
-import ErrorsAsync from "./pages/errors/ErrorsAsync.vue";
-
-export { ErrorsAsync };
+export { default as ErrorSmokeWidgets } from "./pages/ErrorSmokeWidgets.vue";

@@ -5,9 +5,6 @@
       "path": "../../../../audit/audit-http"
     },
     {
-      "path": "../../../../analytics/analytics-http"
-    },
-    {
       "path": "../../../../cron/cron-http"
     },
     {

@@ -5,13 +5,12 @@ import type { Request } from "express";
  * `@public_monolith`). Keep OpenAPI `no-auth` tags in sync.
  *
  * Note: `/health`, `/csp-violations`, and `/errors/record` skip the early
- * auth gate. `/errors/record` and `/admin/errors` are development-only routes;
+ * auth gate. `/errors/record` is a development-only route;
  * listing them here keeps the public-surface inventory in one place.
  */
 const PUBLIC_POST_PATHS = new Set([
   "/csp-violations",
   "/errors/record",
-  "/product-events/record",
   "/user-configs/unsubscribe-marketing",
 ]);
 
@@ -21,8 +20,6 @@ const PUBLIC_GET_PATHS = new Set([
   "/dev/logs/stream",
   "/email/sent",
   "/admin/metrics/snapshot",
-  "/admin/product-events",
-  "/admin/errors",
 ]);
 
 /**

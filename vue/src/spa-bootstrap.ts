@@ -37,13 +37,6 @@ export function createSpaMain(options: CreateSpaMainOptions): () => void {
       configureAppDocumentTitle(options.title);
     }
     options.beforeMount?.();
-    if (import.meta.env.DEV) {
-      void import("./dev-product-events.ts").then(
-        ({ registerDevBackendProductEventConnector }) => {
-          registerDevBackendProductEventConnector();
-        },
-      );
-    }
     createVueApp(options.spa, {
       router: options.createRouter(),
       asyncPageError: options.asyncPageError,

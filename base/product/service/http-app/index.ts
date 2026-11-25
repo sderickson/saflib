@@ -5,7 +5,6 @@ import type { Request } from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { createEmailsRouter } from "@saflib/email-service";
 import { createDevErrorsRouter, createErrorsRouter } from "@saflib/errors-http";
-import { createDevAnalyticsRouter } from "@saflib/analytics-http";
 import { createDevLogsRouter } from "@saflib/node-log-http";
 import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 import { baseDb, baseDbManager } from "@saflib/base-db/instances";
@@ -74,7 +73,6 @@ export function buildBaseHttpApp(
         ? [
             createDevErrorsRouter(),
             createDevLogsRouter(),
-            createDevAnalyticsRouter(),
             createEmailsRouter({ emailService: resolveEmailServiceFromEnv() }),
             createMetricsRouter(),
           ]
