@@ -47,13 +47,13 @@ describe("ops-session", () => {
 
   const start = () =>
     main(
-      ["start", "--name", "casedaemon", "--api", "https://api.example.com/", "--op-ref", "op://Private/x/credential"],
+      ["start", "--name", "myapp", "--api", "https://api.example.com/", "--op-ref", "op://Private/x/credential"],
       deps,
     );
 
   it("exchanges the stored token and saves only the short-lived one, private to the user", async () => {
     await start();
-    const file = path.join(dir, "saf-ops", "casedaemon.json");
+    const file = path.join(dir, "saf-ops", "myapp.json");
     const saved = await readFile(file, "utf8");
     expect(JSON.parse(saved)).toEqual({
       api: "https://api.example.com",
@@ -69,30 +69,30 @@ describe("ops-session", () => {
   it("calls the API with the session and prints the body", async () => {
     await start();
     lines.length = 0;
-    await main(["call", "--name", "casedaemon", "/ops/digest"], deps);
+    await main(["call", "--name", "myapp", "/ops/digest"], deps);
     expect(JSON.parse(lines[0]!)).toEqual({ ok: true, url: "https://api.example.com/ops/digest" });
 
-    await main(["call", "--name", "casedaemon", "/ops/issues/abc/resolve", "--data", "{}"], deps);
+    await main(["call", "--name", "myapp", "/ops/issues/abc/resolve", "--data", "{}"], deps);
     const init = fetchMock.mock.calls.at(-1)![1] as RequestInit;
     expect(init.method).toBe("POST");
     expect(init.body).toBe("{}");
   });
 
   it("asks for a new session when there is none or it expired", async () => {
-    await expect(main(["call", "--name", "casedaemon", "/ops/digest"], deps)).rejects.toMatchObject({
+    await expect(main(["call", "--name", "myapp", "/ops/digest"], deps)).rejects.toMatchObject({
       exitCode: 2,
       message: expect.stringContaining("npm run ops-session"),
     });
 
     await start();
     deps.now = () => Date.parse("2026-11-15T11:00:01Z");
-    await expect(main(["call", "--name", "casedaemon", "/ops/digest"], deps)).rejects.toMatchObject({ exitCode: 2 });
-    await expect(main(["status", "--name", "casedaemon"], deps)).rejects.toMatchObject({ exitCode: 2 });
+    await expect(main(["call", "--name", "myapp", "/ops/digest"], deps)).rejects.toMatchObject({ exitCode: 2 });
+    await expect(main(["status", "--name", "myapp"], deps)).rejects.toMatchObject({ exitCode: 2 });
   });
 
   it("only calls /ops/ paths", async () => {
     await start();
-    await expect(main(["call", "--name", "casedaemon", "/admin/ops-tokens"], deps)).rejects.toBeInstanceOf(
+    await expect(main(["call", "--name", "myapp", "/admin/ops-tokens"], deps)).rejects.toBeInstanceOf(
       OpsSessionError,
     );
   });
