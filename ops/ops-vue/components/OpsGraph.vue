@@ -1,8 +1,8 @@
 <template>
-  <div v-if="!link.isError.value" class="ops-graph">
+  <div v-if="!link.isError.value && !loadFailed" class="ops-graph">
     <img
-      v-if="link.data.value"
-      :src="link.data.value.graph_link.png_url"
+      v-if="objectUrl"
+      :src="objectUrl"
       :alt="title"
       :width="width"
       :height="height"
@@ -13,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+import { onBeforeUnmount, ref, watch } from "vue";
 import { useOpsGraphLink } from "../requests/queries.ts";
 
 const props = withDefaults(
@@ -27,6 +28,41 @@ const link = useOpsGraphLink({
   start: new Date(Date.now() - props.hours * 3_600_000).toISOString(),
   width: props.width,
   height: props.height,
+});
+
+// The PNG lives on the API's origin, which the admin SPA's CSP doesn't allow
+// for img-src. Fetch it (connect-src allows the API) and show it as a blob:
+// URL, which img-src does allow, rather than widening every product's CSP.
+const objectUrl = ref<string | null>(null);
+const loadFailed = ref(false);
+let current = 0;
+
+function setObjectUrl(url: string | null) {
+  if (objectUrl.value) URL.revokeObjectURL(objectUrl.value);
+  objectUrl.value = url;
+}
+
+watch(
+  () => link.data.value?.graph_link.png_url,
+  async (pngUrl) => {
+    const request = ++current;
+    loadFailed.value = false;
+    if (!pngUrl) return setObjectUrl(null);
+    try {
+      const res = await fetch(pngUrl, { credentials: "omit" });
+      if (!res.ok) throw new Error(`graph PNG: HTTP ${res.status}`);
+      const blob = await res.blob();
+      if (request === current) setObjectUrl(URL.createObjectURL(blob));
+    } catch {
+      if (request === current) loadFailed.value = true;
+    }
+  },
+  { immediate: true },
+);
+
+onBeforeUnmount(() => {
+  current++;
+  setObjectUrl(null);
 });
 </script>
 
