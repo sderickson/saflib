@@ -74,9 +74,8 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
       throwError(
         listIssues(issuesDbKey, { windowSince: since, statuses: ["open", "regressed"], seenInWindow: true, sort: "window_count", limit: TOP }),
       ),
-      throwError(
-        listIssues(issuesDbKey, { windowSince: since, statuses: ["open", "regressed"], seenInWindow: true, limit: 200 }),
-      ),
+      // Everything awaiting triage, not only this window's activity.
+      throwError(listIssues(issuesDbKey, { windowSince: since, statuses: ["open", "regressed"], sort: "count", limit: 200 })),
     ]);
     // Ignored issues don't need attention even when new.
     const freshActive = fresh.issues.filter((i) => i.status !== "ignored");
@@ -87,6 +86,7 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
       new: freshActive.slice(0, TOP).map(mapIssue),
       regressed: regressed.issues.slice(0, TOP).map(mapIssue),
       top: top.issues.map(mapIssue),
+      open: open.issues.slice(0, TOP).map(mapIssue),
     };
   }
 

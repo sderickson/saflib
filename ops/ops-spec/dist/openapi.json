@@ -633,7 +633,7 @@
               },
               "open_issues": {
                 "type": "integer",
-                "description": "Open or regressed issues seen in the window."
+                "description": "Open or regressed issues, however long ago they were last seen (counted up to 200)."
               },
               "new_log_templates": {
                 "type": "integer"
@@ -689,7 +689,8 @@
                 "required": [
                   "new",
                   "regressed",
-                  "top"
+                  "top",
+                  "open"
                 ],
                 "properties": {
                   "new": {
@@ -709,6 +710,13 @@
                   "top": {
                     "type": "array",
                     "description": "Open or regressed issues with the most occurrences in the window (up to 10).",
+                    "items": {
+                      "$ref": "#/components/schemas/ops-issue"
+                    }
+                  },
+                  "open": {
+                    "type": "array",
+                    "description": "Open or regressed issues however long ago they were last seen, most occurrences first (up to 10). Everything still awaiting triage, not just this window's activity.",
                     "items": {
                       "$ref": "#/components/schemas/ops-issue"
                     }
@@ -2561,7 +2569,7 @@
                   "resolved_in_version": {
                     "type": "string",
                     "maxLength": 100,
-                    "description": "Commit or release containing the fix."
+                    "description": "Commit or release containing the fix. Defaults to the running build's commit, i.e. \"fixed in what's deployed now\"."
                   }
                 }
               }

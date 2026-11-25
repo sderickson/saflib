@@ -83,6 +83,18 @@ describe("GET /ops/digest", () => {
     expect(d.deploys.map((b: { build_ref: string }) => b.build_ref)).toEqual(["b1"]);
   });
 
+  it("lists open issues however long ago they were last seen", async () => {
+    // Quiet for days, still open: absent from the window's lists, present in open.
+    const old = recordOccurrence(issuesKey, { level: "warn", kind: "server", serviceName: "s", message: "old leak", fingerprint: "old", ts: new Date(Date.now() - 5 * DAY) }).group.id;
+    const fresh = recordOccurrence(issuesKey, { level: "error", kind: "server", serviceName: "s", message: "fresh", fingerprint: "fresh" }).group.id;
+    const res = await request(app()).get("/ops/digest").set(auth).expect(200);
+    const { summary, issues } = res.body.digest;
+    const ids = (list: Array<{ id: string }>) => list.map((i) => i.id).sort();
+    expect(summary.open_issues).toBe(2);
+    expect(ids(issues.top)).toEqual([fresh]);
+    expect(ids(issues.open)).toEqual([fresh, old].sort());
+  });
+
   it("returns null sections for stores the product hasn't enabled", async () => {
     const plain = createApp({ dbKey: opsKey });
     const res = await request(plain).get("/ops/digest").set(auth).expect(200);

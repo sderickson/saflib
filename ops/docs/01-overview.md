@@ -132,7 +132,7 @@ Products opt in with `enableBasePersistentLogs()` (or their equivalent) at start
 - **Lifecycle:** `open` → `resolved` / `ignored` (optionally until a time). A resolved issue seen again becomes `regressed`; an expired ignore reopens. Levels escalate (warn → error).
 - **Storage:** the newest 20 occurrences per issue (redacted), hourly counts for window queries, retention for stale closed issues.
 
-Endpoints: `GET /ops/issues` (status/level/kind; `new`, `regressed`; `sort=window_count`), `GET /ops/issues/:id`, `GET /ops/issues/:id/occurrences`, and `POST /ops/issues/:id/{resolve,ignore,reopen}` with `ops:triage` (recorded as `ops_token:<id>`).
+Endpoints: `GET /ops/issues` (status/level/kind; `new`, `regressed`; `sort=window_count`), `GET /ops/issues/:id`, `GET /ops/issues/:id/occurrences`, and `POST /ops/issues/:id/{resolve,ignore,reopen}` with `ops:triage` (recorded as `ops_token:<id>`). `resolve` takes an optional `resolved_in_version`, defaulting to the running build's commit.
 
 ## Metrics
 
@@ -215,7 +215,7 @@ The agent's part: fix Renovate PRs that fail CI; handle advisories Renovate can'
 
 ## Digest
 
-`GET /ops/digest?since=` (default 24h) is the agent's first call: health failures, deploys and restarts, new / regressed / busiest issues, new log templates and level counts. `summary.needs_attention` is false when health is ok and nothing new or regressed needs a look (new info-level templates don't count), so a scheduled run can stop early. Sections for stores a product hasn't enabled are null.
+`GET /ops/digest?since=` (default 24h) is the agent's first call: health failures, deploys and restarts, new / regressed / busiest issues, every issue still open however long ago it was last seen (`issues.open`, counted in `summary.open_issues`), new log templates and level counts. `summary.needs_attention` is false when health is ok and nothing new or regressed needs a look (new info-level templates don't count), so a scheduled run can stop early. Sections for stores a product hasn't enabled are null.
 
 With metrics enabled, the digest's `metrics` section compares the window with the one before it: request count, 5xx error rate and p95 latency across all routes. Its `flags` (`error_rate_high`: at least 5% on 20+ requests; `error_rate_up`: at least 1% and double; `p95_up`: at least 0.5s and double) count toward `needs_attention`. If Prometheus can't be queried, `metrics.error` says why and the rest of the digest still returns.
 

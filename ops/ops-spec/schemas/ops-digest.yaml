@@ -22,7 +22,7 @@ properties:
         type: integer
       open_issues:
         type: integer
-        description: Open or regressed issues seen in the window.
+        description: Open or regressed issues, however long ago they were last seen (counted up to 200).
       new_log_templates:
         type: integer
       deploys:
@@ -53,7 +53,7 @@ properties:
   issues:
     oneOf:
       - type: object
-        required: [ new, regressed, top ]
+        required: [ new, regressed, top, open ]
         properties:
           new:
             type: array
@@ -68,6 +68,11 @@ properties:
           top:
             type: array
             description: Open or regressed issues with the most occurrences in the window (up to 10).
+            items:
+              $ref: "./ops-issue.yaml"
+          open:
+            type: array
+            description: Open or regressed issues however long ago they were last seen, most occurrences first (up to 10). Everything still awaiting triage, not just this window's activity.
             items:
               $ref: "./ops-issue.yaml"
       - type: "null"
