@@ -29,7 +29,8 @@
           {{ initials }}
         </v-avatar>
         <template v-if="variant !== 'avatar'">
-          <ShortId v-if="loading" :id="id" prefix="u" />
+          <!-- Loading, or the lookup failed: the ShortId still identifies them. -->
+          <ShortId v-if="!identity" :id="id" prefix="u" />
           <span v-else class="user-ref__text">
             <span class="user-ref__name">{{ displayName }}</span>
             <span v-if="variant === 'full' && identity?.name && identity.email" class="user-ref__email">
@@ -95,7 +96,7 @@ const props = withDefaults(
   { variant: "compact" },
 );
 
-const { identity, isPerson, loading, notFound } = useIdentity(() => props.id);
+const { identity, isPerson, notFound } = useIdentity(() => props.id);
 
 const avatarSize = computed(() => (props.variant === "full" ? 32 : 22));
 const tintColor = computed(() => idTint(props.id));
