@@ -69,26 +69,31 @@ rerunning resumes). Run it from the monorepo root:
     saf-deploy migrate --deploys deploy,app/deploy --to next
 
 1. **Create the machine** (manual checklist: LTS image, architecture, a separate
-   data disk with snapshots, firewall, service account).
+   data disk with snapshots, firewall, service account; then add your SSH key,
+   and format and mount the data disk with an `/etc/fstab` entry).
 2. **Connect**: checks SSH, then writes `env.remote.next` in each deploy.
-3. **Mount the data disk**: checks `SAF_DATA_DIR` is mounted; if not, lists the
-   disks and prints the format/mount commands (it never formats anything).
+3. **Check the data disk**: `SAF_DATA_DIR` must be mounted and in `/etc/fstab`;
+   if not, lists the disks and prints the commands (it never formats anything).
 4. **Set up**: `setup` on the new machine.
-5. **Stage**: `sync` and `pull` for each deploy, and copy
-   `SAF_MIGRATE_HOST_PATHS` from the old machine. Nothing starts.
-6. **Begin the window**.
-7. **Stop the old stack**: `down` in each deploy, platform last.
-8. **Copy the data**: streams `SAF_DATA_DIR` old → new through your machine,
+5. **Log in to the registry**: deploys run Docker as root, so root needs a
+   registry login for private images (skip for public ones).
+6. **Stage**: `sync` and `pull` for each deploy, copy `SAF_MIGRATE_HOST_PATHS`
+   from the old machine, and check every service's CPU and memory limits fit
+   the new machine. Nothing starts.
+7. **Begin the window**.
+8. **Stop the old stack**: `down` in each deploy, platform last.
+9. **Copy the data**: streams `SAF_DATA_DIR` old → new through your machine,
    compares every file's checksum, then fixes owners for userns-remap and
    `SAF_DATA_OWNERS`.
-9. **Move the static address** (manual, with `gcloud` hints): then checks the
-   address presents the new machine's host keys, updates `known_hosts`, and
-   points `env.remote.next` at it.
-10. **Start the new stack**: `up` in each deploy, platform first.
-11. **Check the product** (and `SAF_MIGRATE_CHECK_URL`, if set).
-12. **Promote**: merge `env.remote.next` into `env.remote`, keeping the old
+10. **Move the static address** (manual, with `gcloud` hints): then checks the
+    address presents the new machine's host keys, updates `known_hosts`, and
+    points `env.remote.next` at it.
+11. **Start the new stack**: `up` in each deploy, platform first, then checks
+    every service is running (one-shot services may have exited cleanly).
+12. **Check the product** (and `SAF_MIGRATE_CHECK_URL`, if set).
+13. **Promote**: merge `env.remote.next` into `env.remote`, keeping the old
     values as `env.remote.previous`.
-13. **Afterwards** (checklist).
+14. **Afterwards** (checklist).
 
 Settings it reads (from the first deploy that has them):
 

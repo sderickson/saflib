@@ -18,6 +18,12 @@ import {
   tarExtractCommand,
 } from "./data.ts";
 import { promoteTarget, writeTargetEnv } from "./env-files.ts";
+import {
+  resourceProblems,
+  resourcesScript,
+  serviceProblems,
+  servicesStateScript,
+} from "./preflight.ts";
 import type { MigrateIO, MigrateState, Step } from "./runner.ts";
 import {
   addressOf,
@@ -336,6 +342,7 @@ export function migrationSteps(): Step<MigrateContext>[] {
         return [
           "For each deploy: sync remote-assets/ and pull its images. Nothing starts yet:",
           "a stack without its data would run jobs and request certificates.",
+          "Then checks every service's CPU and memory limits fit the new machine.",
           ...(hostPaths
             ? [`Also copies host files from the old machine: ${hostPaths}`]
             : []),
@@ -355,6 +362,21 @@ export function migrationSteps(): Step<MigrateContext>[] {
                 "(e.g. amd64,arm64) in env.remote and `saf-deploy push`.",
             );
           }
+        }
+        const tooBig: string[] = [];
+        for (const config of toConfigs(ctx)) {
+          const output = await ctx.ops.runRemoteCapture(config, resourcesScript());
+          tooBig.push(
+            ...resourceProblems(output).map(
+              (p) => `${relative(config.deployDir)}: ${p}`,
+            ),
+          );
+        }
+        if (tooBig.length > 0) {
+          throw new Error(
+            `Some services won't start on the new machine:\n  ${tooBig.join("\n  ")}\n` +
+              "Lower those limits in the compose files (or pick a bigger machine), then retry.",
+          );
         }
         const hostPaths = (setting(ctx, "SAF_MIGRATE_HOST_PATHS") ?? "")
           .split(/[\s,]+/)
@@ -516,7 +538,8 @@ export function migrationSteps(): Step<MigrateContext>[] {
       title: "Start the stack on the new machine",
       kind: "auto",
       describe: (ctx) => [
-        `\`saf-deploy up --target ${ctx.to}\` in each deploy, platform deploy first.`,
+        `\`saf-deploy up --target ${ctx.to}\` in each deploy, platform deploy first,`,
+        "then checks every service is running (or, for one-shot jobs, exited cleanly).",
       ],
       rollback: (ctx) => rollbackLines(ctx, true),
       run: async (ctx) => {
@@ -524,6 +547,25 @@ export function migrationSteps(): Step<MigrateContext>[] {
           ctx.io.print(`\n== ${relative(config.deployDir)}`);
           await ctx.ops.runRemote(config, upScript());
         }
+        const down: string[] = [];
+        for (const config of toConfigs(ctx)) {
+          const output = await ctx.ops.runRemoteCapture(
+            config,
+            servicesStateScript(),
+          );
+          down.push(
+            ...serviceProblems(output).map(
+              (p) => `${relative(config.deployDir)}: ${p}`,
+            ),
+          );
+        }
+        if (down.length > 0) {
+          throw new Error(
+            `Not everything is running:\n  ${down.join("\n  ")}\n` +
+              "Check those services' logs on the new machine, fix, then retry.",
+          );
+        }
+        ctx.io.print("Every service is running.");
       },
     },
     {
