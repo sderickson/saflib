@@ -57,6 +57,13 @@
       </v-btn>
     </div>
 
+    <div v-if="userFilter" class="d-flex align-center ga-2 mb-3" data-test="audit-user-filter">
+      <span class="text-body-2 text-medium-emphasis">{{ strings.filtered_to }}</span>
+      <v-chip closable variant="outlined" :close-label="strings.clear_user" @click:close="clearUserFilter">
+        <UserRef :id="userFilter" />
+      </v-chip>
+    </div>
+
     <p v-if="rows.length > 0" class="text-body-2 text-medium-emphasis mb-2">
       {{ strings.loaded }} {{ rows.length }}
     </p>
@@ -106,6 +113,8 @@
 import type { AuditLog } from "@saflib/audit-spec/types";
 import { ContentWidth, ShortId } from "@saflib/vue/components";
 import AuditActor from "./AuditActor.vue";
+import { UserRef } from "@saflib/ory-kratos-vue";
+import { useRoute, useRouter } from "vue-router";
 import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
 import { showError, showInfo } from "@saflib/vue";
 import { computed } from "vue";
@@ -124,6 +133,7 @@ withDefaults(
 
 const {
   fromInput,
+  userFilter,
   rows,
   nextCursor,
   spanHead,
@@ -135,6 +145,12 @@ const {
   loadMore,
   sealMutation,
 } = useAuditLogsPageLoader();
+
+const route = useRoute();
+const router = useRouter();
+function clearUserFilter() {
+  router.replace({ query: { ...route.query, user: undefined } });
+}
 
 const listLoading = computed(
   () =>

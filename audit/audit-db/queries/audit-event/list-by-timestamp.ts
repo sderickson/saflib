@@ -15,6 +15,8 @@ export type ListAuditEventsByTimestampParams = {
   to?: Date | number;
   limit?: number;
   cursor?: string;
+  /** Only events where this user is the actor or the one acted for. */
+  userId?: string;
   /** Default `asc` (oldest first). Use `desc` for newest first (admin UI). */
   order?: "asc" | "desc";
 };
@@ -86,6 +88,14 @@ export const listAuditEventsByTimestamp = queryWrapper(
     }
     if (toMs !== undefined) {
       clauses.push(lte(auditEventTable.ts, new Date(toMs)));
+    }
+    if (params.userId) {
+      clauses.push(
+        or(
+          eq(auditEventTable.actor_user_id, params.userId),
+          eq(auditEventTable.on_behalf_of_user_id, params.userId),
+        )!,
+      );
     }
     if (cursorKey !== undefined) {
       const dt = new Date(cursorKey.ts);

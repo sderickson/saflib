@@ -21,7 +21,8 @@
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*",
-    "vue": "*"
+    "vue": "*",
+    "vue-router": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

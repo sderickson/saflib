@@ -9,9 +9,10 @@ import { isDevelopmentDeployment } from "@saflib/vue";
 import type { BuildRepoUrls } from "@saflib/ops-vue";
 import { configureUserLinks } from "@saflib/ory-kratos-vue";
 
-// UserRef hover cards link to the person's page.
+// UserRef hover cards and the Users page link to a person's pages.
 configureUserLinks({
   user: (id) => `${adminLinks.users.path}?id=${encodeURIComponent(id)}`,
+  auditLog: (id) => `${adminLinks.audit.path}?user=${encodeURIComponent(id)}`,
 });
 
 /** Where this product's commits live, for the build chip's links. */

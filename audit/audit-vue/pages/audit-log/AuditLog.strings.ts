@@ -20,4 +20,6 @@ export const audit_log = {
     request: "Request",
     details: "Details",
   },
+  filtered_to: "Showing events by or for",
+  clear_user: "Show everyone",
 };

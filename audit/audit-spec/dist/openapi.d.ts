@@ -212,6 +212,8 @@ export interface operations {
                 cursor?: string;
                 /** @description Page size (default 100, max 1000). */
                 limit?: number;
+                /** @description Only events where this user is the actor or the one acted for. */
+                user_id?: string;
                 /** @description Sort by `ts` then `id`. `desc` returns newest events first (admin UI default). */
                 order?: "asc" | "desc";
             };

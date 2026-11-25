@@ -48,6 +48,7 @@ export function createListAuditLogsHandler(
     const cursor = parseQueryString(req.query.cursor);
     const limit = parseQueryLimit(req.query.limit);
     const orderRaw = parseQueryString(req.query.order);
+    const userId = parseQueryString(req.query.user_id);
 
     let from: Date | undefined;
     if (fromRaw !== undefined) {
@@ -72,6 +73,7 @@ export function createListAuditLogsHandler(
         from,
         cursor,
         limit,
+        ...(userId !== undefined ? { userId } : {}),
         ...(order !== undefined ? { order } : {}),
       }),
     ]);
