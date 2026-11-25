@@ -4,7 +4,7 @@
       <v-avatar size="44" :style="{ background: tintColor }" class="detail-avatar" aria-hidden="true">
         {{ initials }}
       </v-avatar>
-      <div class="flex-grow-1 min-w-0">
+      <div class="flex-grow-1" style="min-width: 0">
         <div class="text-h6 text-truncate">{{ identity?.name ?? identity?.email ?? strings.none }}</div>
         <div v-if="identity?.name && identity.email" class="text-body-2 text-medium-emphasis text-truncate">
           {{ identity.email }}

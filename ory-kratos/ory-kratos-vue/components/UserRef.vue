@@ -44,7 +44,7 @@
     <v-card v-if="identity" variant="elevated" class="pa-3" data-test="user-ref-card">
       <div class="d-flex align-center ga-3">
         <v-avatar size="40" :style="{ background: tintColor }" aria-hidden="true">{{ initials }}</v-avatar>
-        <div class="min-w-0">
+        <div style="min-width: 0">
           <div class="text-body-1 font-weight-medium">{{ identity.name ?? identity.email ?? id }}</div>
           <div v-if="identity.name && identity.email" class="text-body-2 text-medium-emphasis">
             {{ identity.email }}

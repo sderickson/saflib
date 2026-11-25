@@ -64,6 +64,10 @@ export function toIdentitySummary(
 }
 
 const PAGE = 500;
+// Kratos lists credentials only when asked, and their config can hold
+// secrets (a TOTP config carries its otpauth URL). Only the presence of each
+// type is kept (`mfaMethods`); raw identities are dropped after mapping and
+// never cached or sent to the browser.
 const credentialParams = MFA_CREDENTIAL_TYPES.map((t) => `include_credential=${t}`).join("&");
 
 /** Latest `authenticated_at` per identity, from Kratos sessions. */
