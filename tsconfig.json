@@ -377,6 +377,9 @@
       "path": "./ory-kratos/ory-kratos-spec"
     },
     {
+      "path": "./ory-kratos/ory-kratos-vue"
+    },
+    {
       "path": "./parser"
     },
     {
