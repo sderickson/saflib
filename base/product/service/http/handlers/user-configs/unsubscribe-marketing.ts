@@ -4,7 +4,7 @@ import type {
 } from "@saflib/base-spec/operations/unsubscribeMarketingEmailsUserConfigs";
 import { createHandler } from "@saflib/express";
 import { baseServiceStorage } from "@saflib/base-service-common/context";
-import { getSafReporters } from "@saflib/node";
+import { errorLogFields, getSafReporters } from "@saflib/node";
 
 import { resolveUserIdByEmail } from "./_helpers.ts";
 import { clearMarketingEmailsOptIn } from "@saflib/base-db/queries/user-config/clear-marketing-opt-in";
@@ -28,13 +28,17 @@ export const unsubscribeMarketingEmailsUserConfigsHandler = createHandler(
             await clearMarketingEmailsOptIn(ctx.baseDbKey, { user_id: userId });
           }
         } catch (e) {
-          log.error("marketing unsubscribe DB/identity failed", { err: e });
+          log.error(
+            "marketing unsubscribe DB/identity failed",
+            errorLogFields(e),
+          );
         }
       }
     } catch (e) {
-      log.error("marketing unsubscribe failed (returning 200 anyway)", {
-        err: e,
-      });
+      log.error(
+        "marketing unsubscribe failed (returning 200 anyway)",
+        errorLogFields(e),
+      );
     }
 
     const response: ResponseBody["unsubscribeMarketingEmailsUserConfigs"][200] =

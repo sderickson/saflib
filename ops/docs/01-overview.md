@@ -115,7 +115,7 @@ The same build is published to Prometheus as `saf_build_info{service_name, build
 
 Products opt in with `enableBasePersistentLogs()` (or their equivalent) at startup, which adds a `@saflib/node-log-db` Winston transport:
 
-- Every `info`-or-worse line is **redacted at write time** (`@saflib/utils/redact`): secret and PII field names are masked whole; emails, phone numbers, tokens, card numbers and high-entropy strings are masked in text; query strings are stripped and IPs truncated. Each masked value is counted in `saf_log_redactions_total{kind}`, since it's a log call that should be fixed.
+- Every `info`-or-worse line is **redacted at write time** (`@saflib/utils/redact`): secret and PII field names are masked whole; emails, phone numbers, tokens, card numbers and high-entropy strings are masked in text; query strings are stripped and IPs truncated. Each masked value is counted in `saf_log_redactions_total{kind}`, since it's a log call that should be fixed. Redaction is the safety net; `assertLogHygiene(rootDir)` from `@saflib/node` is the guard upstream: a test that fails when a log call logs a whole error object (`{ err }`) or interpolates one into its message. Log `errorLogFields(err)` (name, code, message) instead. saflib runs it on itself; products add a one-line test for their own code.
 - Lines are queued and written in batches; the transport never blocks or throws into the caller. Overflow is dropped and counted in `saf_logs_dropped_total`.
 - Messages are normalized into **templates** (ids, numbers and quoted values become placeholders), tracked with first/last seen and counts.
 - Retention: 14 days, 512 MB of live data, templates unseen for 90 days.

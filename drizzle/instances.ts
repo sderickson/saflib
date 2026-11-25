@@ -5,7 +5,7 @@ import type { Config } from "drizzle-kit";
 import type { Schema, DbKey, DbOptions, DbConnection, DbManagerOptions } from "./types.ts";
 import path from "path";
 import fs from "fs";
-import { makeSubsystemReporters } from "@saflib/node";
+import { makeSubsystemReporters, errorLogFields } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { randomUUID } from "crypto";
 import { Readable } from "node:stream";
@@ -191,14 +191,14 @@ export class DbManager<S extends Schema, C extends Config> {
       });
 
       backupStream.on("error", (error) => {
-        log.error(`Stream error: ${error}`);
+        log.error(`Stream error`, errorLogFields(error));
         this.cleanupBackup(backupPath);
       });
 
       log.info(`Backup stream created successfully for: ${backupPath}`);
       return backupStream;
     } catch (error) {
-      log.error(`Failed to create backup: ${error}`);
+      log.error(`Failed to create backup`, errorLogFields(error));
       await this.cleanupBackup(backupPath);
       throw error;
     }
@@ -219,7 +219,7 @@ export class DbManager<S extends Schema, C extends Config> {
         }
         this.activeBackups.delete(backupPath);
       } catch (error) {
-        log.error(`Failed to cleanup backup file ${backupPath}: ${error}`);
+        log.error(`Failed to cleanup backup file ${backupPath}`, errorLogFields(error));
       }
     }
   }
@@ -422,7 +422,7 @@ export class DbManager<S extends Schema, C extends Config> {
         try {
           await fs.promises.unlink(tempPath);
         } catch {}
-        log.error(`Stream error during restore: ${error}`);
+        log.error(`Stream error during restore`, errorLogFields(error));
         reject(error);
       });
 
@@ -431,7 +431,7 @@ export class DbManager<S extends Schema, C extends Config> {
         try {
           await fs.promises.unlink(tempPath);
         } catch {}
-        log.error(`Write error during restore: ${error}`);
+        log.error(`Write error during restore`, errorLogFields(error));
         reject(error);
       });
 
@@ -444,7 +444,7 @@ export class DbManager<S extends Schema, C extends Config> {
           try {
             await fs.promises.unlink(tempPath);
           } catch {}
-          log.error(`Failed to rename temporary file: ${error}`);
+          log.error(`Failed to rename temporary file`, errorLogFields(error));
           reject(error);
         }
       });

@@ -9,6 +9,7 @@ import {
   getSafContext,
   getSafReporters,
   runWithOperationName,
+  errorLogFields,
 } from "@saflib/node";
 import type { AuditMapEntry, AuditOutcome } from "./audit-map.ts";
 
@@ -441,7 +442,7 @@ export function createAuditRecorder(
     } catch (err) {
       try {
         const { log, logError } = getSafReporters();
-        log.error("audit emitRows failed", { err });
+        log.error("audit emitRows failed", errorLogFields(err));
         logError(err instanceof Error ? err : new Error(String(err)));
       } catch {
         /* swallow — recorder must never throw */

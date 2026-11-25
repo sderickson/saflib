@@ -8,6 +8,7 @@ export * from "./src/types.ts";
 export * from "./src/health-check.ts";
 export * from "./src/signAssertion.ts";
 export * from "./src/shutdown.ts";
+export * from "./src/log-hygiene.ts";
 export {
   configureInternalAssertionKeys,
   SAF_INTERNAL_ASSERTION_KEYS_NAME,
