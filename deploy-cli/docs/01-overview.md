@@ -69,26 +69,33 @@ rerunning resumes). Run it from the monorepo root:
     saf-deploy migrate --deploys deploy,app/deploy --to next
 
 1. **Create the machine** (manual checklist: LTS image, architecture, a separate
-   data disk with snapshots, firewall, service account).
+   data disk with snapshots, firewall, service account; then add your SSH key,
+   and format and mount the data disk with an `/etc/fstab` entry).
 2. **Connect**: checks SSH, then writes `env.remote.next` in each deploy.
-3. **Mount the data disk**: checks `SAF_DATA_DIR` is mounted; if not, lists the
-   disks and prints the format/mount commands (it never formats anything).
+3. **Check the data disk**: `SAF_DATA_DIR` must be mounted and in `/etc/fstab`;
+   if not, lists the disks and prints the commands (it never formats anything).
 4. **Set up**: `setup` on the new machine.
-5. **Stage**: `sync` and `pull` for each deploy, and copy
-   `SAF_MIGRATE_HOST_PATHS` from the old machine. Nothing starts.
-6. **Begin the window**.
-7. **Stop the old stack**: `down` in each deploy, platform last.
-8. **Copy the data**: streams `SAF_DATA_DIR` old → new through your machine,
-   compares every file's checksum, then fixes owners for userns-remap and
-   `SAF_DATA_OWNERS`.
-9. **Move the static address** (manual, with `gcloud` hints): then checks the
-   address presents the new machine's host keys, updates `known_hosts`, and
-   points `env.remote.next` at it.
-10. **Start the new stack**: `up` in each deploy, platform first.
-11. **Check the product** (and `SAF_MIGRATE_CHECK_URL`, if set).
-12. **Promote**: merge `env.remote.next` into `env.remote`, keeping the old
+5. **Log in to the registry**: deploys run Docker as root, so root needs a
+   registry login for private images (skip for public ones).
+6. **Stage**: `sync` and `pull` for each deploy, copy `SAF_MIGRATE_HOST_PATHS`
+   from the old machine, and check every service's CPU and memory limits fit
+   the new machine. Nothing starts. Optionally pre-copies the data disk, so the
+   copy in the window only sends what changed (worth it for large data).
+7. **Begin the window**.
+8. **Stop the old stack**: `down` in each deploy, platform last.
+9. **Copy the data**: streams `SAF_DATA_DIR` old → new through your machine
+   (after a pre-copy, only files that changed or are new, and deletes ones that
+   are gone), compares every file's checksum, then fixes owners for
+   userns-remap and `SAF_DATA_OWNERS` (safe to rerun).
+10. **Move the static address** (manual, with `gcloud` hints): then checks the
+    address presents the new machine's host keys, updates `known_hosts`, and
+    points `env.remote.next` at it.
+11. **Start the new stack**: `up` in each deploy, platform first, then checks
+    every service is running (one-shot services may have exited cleanly).
+12. **Check the product** (and `SAF_MIGRATE_CHECK_URL`, if set).
+13. **Promote**: merge `env.remote.next` into `env.remote`, keeping the old
     values as `env.remote.previous`.
-13. **Afterwards** (checklist).
+14. **Afterwards** (checklist).
 
 Settings it reads (from the first deploy that has them):
 
@@ -96,6 +103,7 @@ Settings it reads (from the first deploy that has them):
 - `SAF_DATA_OWNERS` (optional): `folder=uid:gid` pairs for top-level data folders whose container now runs as that user.
 - `SAF_MIGRATE_HOST_PATHS` (optional): absolute host paths outside the deploys to copy (e.g. secrets under `/opt`).
 - `SAF_MIGRATE_CHECK_URL` (optional): a URL that should answer once the new stack is up.
+- `SAF_MIGRATE_PROVIDER` (optional): `gcp`, `digitalocean` or `hetzner`, for provider-specific wording in the manual steps (machine checklist, disk device paths, moving the static address). Unset: generic wording.
 
 Docker named volumes (e.g. Caddy certificates, Prometheus history) aren't
 copied: Caddy requests new certificates once the address moves.
@@ -103,6 +111,8 @@ copied: Caddy requests new certificates once the address moves.
 ## Release stamp
 
 `sync` adds `release/release.json` to every upload: when the deploy ran, the HEAD commits of the deploying checkout (`-dirty` if uncommitted), and a hash of `remote-assets/`. Services mount `./release` at `/etc/saf/release` and record it on boot, so the ops API's deploy history includes config-only deploys. The local `remote-assets/release/` that prod-local creates is gitignored.
+
+Before building, `build`, `push` and `release` warn when a submodule (e.g. saflib) is checked out at a different commit than the repo records, or isn't checked out: images are built from what's checked out, which after a branch switch without `git submodule update` isn't what's committed.
 
 ## Commands
 

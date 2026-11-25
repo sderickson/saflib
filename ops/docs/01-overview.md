@@ -115,7 +115,7 @@ The same build is published to Prometheus as `saf_build_info{service_name, build
 
 Products opt in with `enableBasePersistentLogs()` (or their equivalent) at startup, which adds a `@saflib/node-log-db` Winston transport:
 
-- Every `info`-or-worse line is **redacted at write time** (`@saflib/utils/redact`): secret and PII field names are masked whole; emails, phone numbers, tokens, card numbers and high-entropy strings are masked in text; query strings are stripped and IPs truncated. Each masked value is counted in `saf_log_redactions_total{kind}`, since it's a log call that should be fixed.
+- Every `info`-or-worse line is **redacted at write time** (`@saflib/utils/redact`): secret and PII field names are masked whole; emails, phone numbers, tokens, card numbers and high-entropy strings are masked in text; query strings are stripped and IPs truncated. Each masked value is counted in `saf_log_redactions_total{kind}`, since it's a log call that should be fixed. Redaction is the safety net; `assertLogHygiene(rootDir)` from `@saflib/node` is the guard upstream: a test that fails when a log call logs a whole error object (`{ err }`) or interpolates one into its message. Log `errorLogFields(err)` (name, code, message) instead. saflib runs it on itself; products add a one-line test for their own code.
 - Lines are queued and written in batches; the transport never blocks or throws into the caller. Overflow is dropped and counted in `saf_logs_dropped_total`.
 - Messages are normalized into **templates** (ids, numbers and quoted values become placeholders), tracked with first/last seen and counts.
 - Retention: 14 days, 512 MB of live data, templates unseen for 90 days.
@@ -127,12 +127,12 @@ Products opt in with `enableBasePersistentLogs()` (or their equivalent) at start
 
 `@saflib/errors-db` groups errors **and warnings** into issues:
 
-- **Sources:** server reports through a node error collector (`createIssueCollector`, which runs alongside vendor collectors such as Sentry); client and CSP reports through the SQLite `ErrorService`; leaking log lines through `createRedactionIssueRecorder` (`log.redaction:<kind>:<template>`, throttled). Built-in warnings: jobs that go dead (`jobs.dead:<operation>`), ops token rate limits and failed-auth limits. Use `reportWarning(message, { fingerprint })` from `@saflib/node` for your own.
+- **Sources:** server reports through a node error collector (`createIssueCollector`, which runs alongside vendor collectors such as Sentry); client and CSP reports through the SQLite `ErrorService`; leaking log lines through `createRedactionIssueRecorder` (`log.redaction:<kind>:<template>`, throttled; each occurrence's `fields` say where the match was, e.g. `fields.distinct_id`, and its shape, e.g. `36 chars: digits, lowercase, dashes`, never the value). Built-in warnings: jobs that go dead (`jobs.dead:<operation>`), ops token rate limits and failed-auth limits. Use `reportWarning(message, { fingerprint })` from `@saflib/node` for your own.
 - **Grouping:** an explicit `fingerprint` if given; else the error name plus our own top stack frames (library frames, line numbers and bundle hashes dropped); else the message shape.
 - **Lifecycle:** `open` → `resolved` / `ignored` (optionally until a time). A resolved issue seen again becomes `regressed`; an expired ignore reopens. Levels escalate (warn → error).
 - **Storage:** the newest 20 occurrences per issue (redacted), hourly counts for window queries, retention for stale closed issues.
 
-Endpoints: `GET /ops/issues` (status/level/kind; `new`, `regressed`; `sort=window_count`), `GET /ops/issues/:id`, `GET /ops/issues/:id/occurrences`, and `POST /ops/issues/:id/{resolve,ignore,reopen}` with `ops:triage` (recorded as `ops_token:<id>`).
+Endpoints: `GET /ops/issues` (status/level/kind; `new`, `regressed`; `sort=window_count`), `GET /ops/issues/:id`, `GET /ops/issues/:id/occurrences`, and `POST /ops/issues/:id/{resolve,ignore,reopen}` with `ops:triage` (recorded as `ops_token:<id>`). `resolve` takes an optional `resolved_in_version`, defaulting to the running build's commit.
 
 ## Metrics
 
@@ -169,7 +169,7 @@ The host's Alertmanager posts every alert to each app's `POST /ops/alerts/webhoo
 ### Alert rules and routing
 
 SAF's default rules are `ops/prometheus/saf-default.rules.yml`; the platform deploy loads it (hub links it into `prometheus/rules/`, and the upload carries the real file). They cover:
-- **Reliability:** targets down (all colors), 5xx above 5%, crash loops, event-loop lag, failing or warning health checks (`saf_health_check_status`, published at scrape time from the ops router's checks), new error issues, regressions and dead jobs.
+- **Reliability:** targets down (all colors), 5xx above 5%, crash loops, event-loop lag, failing or warning health checks (`saf_health_check_status`, published at scrape time from the ops router's checks), new error issues, regressions, dead jobs, and recurring work that stopped (`SafRecurringWorkStopped`, critical: a POST operation that ran 3+ times every hour for a day, then not at all for an hour).
 - **Performance:** a 2s p95 budget per path with traffic, and a 500ms DB-query p95.
 - **Capacity:** disk over 80% and 90%, filling within 3 days, memory under 10%, dropped log lines.
 - **Watchdog:** always firing, for the external heartbeat.
@@ -207,7 +207,7 @@ Reports are kept in `ops-db` (last 30). If the OSV query fails, no report is rec
 
 **Alerts.** The latest report is exported as `saf_dependency_advisories{severity}` (accepted ones as `severity="accepted"`), `saf_dependency_runtime_eol_soon` and `saf_dependency_check_timestamp_seconds`, and `saf-default.rules.yml`'s `saf-maintenance` group alerts on them: `SafSecurityAdvisory` (high or critical, 30m), `SafRuntimeEndOfLife`, `SafDependencyCheckStale` (3 days). They go through Alertmanager like any other alert, so they reach the email notifier.
 
-**Host updates.** The platform deploy runs a `host-apt` sidecar (`saflib/ops/prometheus/host-apt-metrics.sh` in `busybox`) that runs the host's own `apt-get -s dist-upgrade` against its read-only root every hour. That's a simulation: it needs only `CAP_SYS_CHROOT`, no network, and a tmpfs over `/host/tmp`, and takes no locks. It writes `saf_apt_upgrades_pending{kind="all"|"security"}`, `saf_reboot_required` and freshness timestamps for node-exporter's textfile collector. `SafHostSecurityUpdates` fires when security updates have been pending a day (unattended-upgrades normally installs them sooner), `SafHostRebootRequired` when a reboot has been needed a day, and `SafHostAptListsStale` / `SafHostAptCheckStale` when the data stops being fresh.
+**Host updates.** The platform deploy runs a `host-apt` sidecar (`saflib/ops/prometheus/host-apt-metrics.sh` in `busybox`) that runs the host's own `apt-get -s dist-upgrade` against its read-only root every hour. That's a simulation: it needs only `CAP_SYS_CHROOT` (plus `CAP_CHOWN`, to take ownership of its output volume, which Docker user-namespace remapping creates owned by the remapped root), no network, and a tmpfs over `/host/tmp`, and takes no locks. It writes `saf_apt_upgrades_pending{kind="all"|"security"}`, `saf_reboot_required` and freshness timestamps for node-exporter's textfile collector. `SafHostSecurityUpdates` fires when security updates have been pending a day (unattended-upgrades normally installs them sooner), `SafHostRebootRequired` when a reboot has been needed a day, and `SafHostAptListsStale` / `SafHostAptCheckStale` when the data stops being fresh, and `SafHostAptCheckMissing` when it never arrives.
 
 Renovate (both repos' `renovate.json`) holds new releases for 3 days (`minimumReleaseAge`, with `internalChecksFilter: "strict"`), opens security fixes immediately (`vulnerabilityAlerts`, labelled `security`, with OSV as a source), and updates image tags in compose files (`config:recommended`).
 
@@ -215,9 +215,11 @@ The agent's part: fix Renovate PRs that fail CI; handle advisories Renovate can'
 
 ## Digest
 
-`GET /ops/digest?since=` (default 24h) is the agent's first call: health failures, deploys and restarts, new / regressed / busiest issues, new log templates and level counts. `summary.needs_attention` is false when health is ok and nothing new or regressed needs a look (new info-level templates don't count), so a scheduled run can stop early. Sections for stores a product hasn't enabled are null.
+`GET /ops/digest?since=` (default 24h) is the agent's first call: health failures, deploys and restarts, new / regressed / busiest issues, every issue still open however long ago it was last seen (`issues.open`, counted in `summary.open_issues`), new log templates and level counts. `summary.needs_attention` is false when health is ok and nothing new or regressed needs a look (new info-level templates don't count), so a scheduled run can stop early. Sections for stores a product hasn't enabled are null.
 
 With metrics enabled, the digest's `metrics` section compares the window with the one before it: request count, 5xx error rate and p95 latency across all routes. Its `flags` (`error_rate_high`: at least 5% on 20+ requests; `error_rate_up`: at least 1% and double; `p95_up`: at least 0.5s and double) count toward `needs_attention`. If Prometheus can't be queried, `metrics.error` says why and the rest of the digest still returns.
+
+The `activity` section answers "is anyone using it?" before maintenance: `distinct_users` counts signed-in users with a persisted log line in the window (from the logs store), and `requests_by_hour` counts user-facing requests per hour from Prometheus: GETs outside `/ops`, `/health` and `/metrics`, since background work (job deliveries, webhooks, scheduled syncs) arrives as POSTs.
 
 ## Untrusted content
 

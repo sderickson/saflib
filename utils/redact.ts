@@ -26,6 +26,12 @@ export interface RedactionDetection {
   kind: RedactionKind;
   /** `message`, or `fields.<path>` (e.g. `fields.user.email`). */
   where: string;
+  /**
+   * For pattern matches, the matched text's shape (length and character
+   * classes, e.g. `36 chars: digits, lowercase, dashes`), never the text:
+   * enough to tell a UUID from a card number when triaging.
+   */
+  shape?: string;
 }
 
 export interface RedactOptions {
@@ -83,9 +89,20 @@ const PII_KEY_SUFFIXES = [
  * Exact names only: as suffixes these would catch identifiers like
  * `service_name` or `ip_address`.
  */
-const PII_KEYS_EXACT = new Set(["name", "address", "ssn", "dob", "birthdate", "body", "query"]);
+const PII_KEYS_EXACT = new Set([
+  "name",
+  "address",
+  "ssn",
+  "dob",
+  "birthdate",
+  "body",
+  "query",
+]);
 
-function classifyKey(key: string, options: RedactOptions): RedactionKind | undefined {
+function classifyKey(
+  key: string,
+  options: RedactOptions,
+): RedactionKind | undefined {
   const k = normalizeKey(key);
   if (options.secretKeys?.includes(k)) return "secret_field";
   if (options.piiKeys?.includes(k)) return "pii_field";
@@ -145,13 +162,17 @@ function looksLikeSecret(match: string): boolean {
   const token = match.replace(ISO_TIMESTAMP, "");
   if (UUID.test(token)) return false; // identifiers
   if (/^[0-9a-f]+$/i.test(token)) return false; // hashes, commit shas: identifiers
-  if (!/[a-z]/.test(token) || !/[A-Z]/.test(token) || !/[0-9]/.test(token)) return false;
+  if (!/[a-z]/.test(token) || !/[A-Z]/.test(token) || !/[0-9]/.test(token))
+    return false;
   return shannonEntropy(token) >= 4;
 }
 
 /** Order matters: specific shapes before the generic high-entropy catch-all. */
 const PATTERNS: Pattern[] = [
-  { kind: "jwt", regex: /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g },
+  {
+    kind: "jwt",
+    regex: /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g,
+  },
   { kind: "bearer", regex: /\bBearer\s+[A-Za-z0-9._~+/=-]{8,}/gi },
   {
     kind: "api_key",
@@ -161,18 +182,27 @@ const PATTERNS: Pattern[] = [
   { kind: "email", regex: /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g },
   {
     kind: "card",
-    regex: /\b\d(?:[ -]?\d){12,18}\b/g,
+    // Not inside a longer token of letters, digits and dashes: a random UUID
+    // whose leading groups happen to be all digits (52345678-1234-4123-…)
+    // otherwise passes Luhn about one time in ten.
+    regex: /(?<![0-9A-Za-z-])\d(?:[ -]?\d){12,18}(?![0-9A-Za-z-])/g,
     // Card networks start with 2-6, which also keeps epoch-millisecond
     // timestamps (13 digits starting with 1) from matching.
     accept: (m) => {
       const digits = m.replace(/[ -]/g, "");
-      return digits.length >= 13 && digits.length <= 19 && /^[2-6]/.test(digits) && luhn(digits);
+      return (
+        digits.length >= 13 &&
+        digits.length <= 19 &&
+        /^[2-6]/.test(digits) &&
+        luhn(digits)
+      );
     },
   },
   {
     kind: "phone",
     // +E.164-ish, or North American (555) 555-5555 / 555-555-5555 / 555.555.5555.
-    regex: /(?:\+\d{1,3}[\s.-]?(?:\(\d{1,4}\)[\s.-]?)?\d[\d\s.-]{6,}\d)|(?:\(\d{3}\)\s?\d{3}-\d{4})|(?:\b\d{3}[-.]\d{3}[-.]\d{4}\b)/g,
+    regex:
+      /(?:\+\d{1,3}[\s.-]?(?:\(\d{1,4}\)[\s.-]?)?\d[\d\s.-]{6,}\d)|(?:\(\d{3}\)\s?\d{3}-\d{4})|(?:\b\d{3}[-.]\d{3}[-.]\d{4}\b)/g,
   },
   {
     kind: "high_entropy",
@@ -191,8 +221,10 @@ function stripQueryStrings(s: string): string {
   return s.replace(URL_WITH_QUERY, "$1?[stripped]");
 }
 
-const IPV4 = /\b(25[0-5]|2[0-4]\d|1?\d?\d)\.(25[0-5]|2[0-4]\d|1?\d?\d)\.(25[0-5]|2[0-4]\d|1?\d?\d)\.(25[0-5]|2[0-4]\d|1?\d?\d)\b/g;
-const IPV6_CANDIDATE = /(?<![0-9A-Fa-f:])[0-9A-Fa-f]{0,4}(?::[0-9A-Fa-f]{0,4}){2,7}(?![0-9A-Fa-f:])/g;
+const IPV4 =
+  /\b(25[0-5]|2[0-4]\d|1?\d?\d)\.(25[0-5]|2[0-4]\d|1?\d?\d)\.(25[0-5]|2[0-4]\d|1?\d?\d)\.(25[0-5]|2[0-4]\d|1?\d?\d)\b/g;
+const IPV6_CANDIDATE =
+  /(?<![0-9A-Fa-f:])[0-9A-Fa-f]{0,4}(?::[0-9A-Fa-f]{0,4}){2,7}(?![0-9A-Fa-f:])/g;
 
 function isIPv6(s: string): boolean {
   const doubleColons = s.split("::").length - 1;
@@ -200,14 +232,18 @@ function isIPv6(s: string): boolean {
   const groups = s.split(":");
   if (doubleColons === 0 && groups.length !== 8) return false;
   if (doubleColons === 1 && groups.length > 8) return false;
-  return groups.every((g) => g === "" || /^[0-9A-Fa-f]{1,4}$/.test(g)) && /[0-9A-Fa-f]/.test(s);
+  return (
+    groups.every((g) => g === "" || /^[0-9A-Fa-f]{1,4}$/.test(g)) &&
+    /[0-9A-Fa-f]/.test(s)
+  );
 }
 
 function expandIPv6(s: string): string[] {
   const [head = "", tail] = s.split("::");
   const h = head ? head.split(":") : [];
   const t = tail !== undefined ? (tail ? tail.split(":") : []) : [];
-  const fill = tail !== undefined ? Array(8 - h.length - t.length).fill("0") : [];
+  const fill =
+    tail !== undefined ? Array(8 - h.length - t.length).fill("0") : [];
   return [...h, ...fill, ...t];
 }
 
@@ -216,7 +252,8 @@ function truncateIps(s: string): string {
   let out = s.replace(IPV4, (_m, a, b, c) => `${a}.${b}.${c}.0`);
   out = out.replace(IPV6_CANDIDATE, (m) => {
     // Needs a `::` or all 8 groups, which rules out times like 12:30:45.
-    if (!isIPv6(m) || (!m.includes("::") && m.split(":").length !== 8)) return m;
+    if (!isIPv6(m) || (!m.includes("::") && m.split(":").length !== 8))
+      return m;
     const g = expandIPv6(m);
     return `${g.slice(0, 3).join(":")}::`;
   });
@@ -224,6 +261,22 @@ function truncateIps(s: string): string {
 }
 
 // ---------- strings and structures ----------
+
+/** `36 chars: digits, lowercase, dashes`: what a match looked like, not what it said. */
+export function shapeOf(text: string): string {
+  const classes = [
+    [/[0-9]/, "digits"],
+    [/[a-z]/, "lowercase"],
+    [/[A-Z]/, "uppercase"],
+    [/-/, "dashes"],
+    [/\s/, "spaces"],
+    [/[^0-9A-Za-z\s-]/, "symbols"],
+  ] as const;
+  const present = classes
+    .filter(([re]) => re.test(text))
+    .map(([, name]) => name);
+  return `${text.length} chars: ${present.join(", ")}`;
+}
 
 /** Redact one string: clean URLs and IPs, then mask and report pattern matches. */
 export function redactString(
@@ -235,7 +288,7 @@ export function redactString(
   for (const { kind, regex, accept } of PATTERNS) {
     s = s.replace(regex, (match) => {
       if (accept && !accept(match)) return match;
-      detections.push({ kind, where });
+      detections.push({ kind, where, shape: shapeOf(match) });
       return redactedMarker(kind);
     });
   }
@@ -272,7 +325,9 @@ function redactValue(
   }
   if (value instanceof Date) return value.toISOString();
   if (Array.isArray(value)) {
-    return value.map((v, i) => redactValue(v, `${path}[${i}]`, depth + 1, options, detections, seen));
+    return value.map((v, i) =>
+      redactValue(v, `${path}[${i}]`, depth + 1, options, detections, seen),
+    );
   }
 
   const out: Record<string, unknown> = {};
@@ -304,9 +359,13 @@ export function redactLogEntry(
   const fields =
     entry.fields === undefined
       ? undefined
-      : (redactValue(entry.fields, "fields", 0, options, detections, new WeakSet()) as Record<
-          string,
-          unknown
-        >);
+      : (redactValue(
+          entry.fields,
+          "fields",
+          0,
+          options,
+          detections,
+          new WeakSet(),
+        ) as Record<string, unknown>);
   return { value: { message: message.value, fields }, detections };
 }

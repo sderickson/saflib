@@ -112,6 +112,16 @@ describe("ops issue endpoints", () => {
     await request(app).post(`/ops/issues/${warnId}/reopen`).set(triage).send({ extra: 1 }).expect(400);
   });
 
+  it("defaults resolved_in_version to the running build's commit", async () => {
+    const built = createApp({
+      dbKey: opsKey,
+      issuesDbKey: issuesKey,
+      buildInfo: { buildRef: "b1", commits: { root: "deadbeef1234" } } as never,
+    });
+    const res = await request(built).post(`/ops/issues/${hotId}/resolve`).set(triage).send({}).expect(200);
+    expect(res.body.issue.resolved_in_version).toBe("deadbeef1234");
+  });
+
   it("responds 404 when the product hasn't enabled issues", async () => {
     const plain = createApp({ dbKey: opsKey });
     await request(plain).get("/ops/issues").set(read).expect(404);

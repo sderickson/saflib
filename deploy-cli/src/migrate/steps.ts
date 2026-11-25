@@ -16,8 +16,18 @@ import {
   parseDataOwners,
   tarCreateCommand,
   tarExtractCommand,
+  chunk,
+  planDelta,
+  removeCommand,
 } from "./data.ts";
 import { promoteTarget, writeTargetEnv } from "./env-files.ts";
+import { providerHints } from "./providers.ts";
+import {
+  resourceProblems,
+  resourcesScript,
+  serviceProblems,
+  servicesStateScript,
+} from "./preflight.ts";
 import type { MigrateIO, MigrateState, Step } from "./runner.ts";
 import {
   addressOf,
@@ -150,14 +160,20 @@ function rollbackLines(ctx: MigrateContext, addressMoved: boolean): string[] {
   ];
 }
 
+const provider = (ctx: MigrateContext) =>
+  providerHints(setting(ctx, "SAF_MIGRATE_PROVIDER"));
+
 /** How to pick the data disk, then format it and mount it at `dir` for good. */
-function mountCommands(dir: string): string[] {
+function mountCommands(ctx: MigrateContext, dir: string): string[] {
+  const hints = provider(ctx);
   return [
     "  lsblk",
     "The data disk is the one whose SIZE matches the disk you added, with TYPE",
     "`disk`, no partitions under it and no MOUNTPOINTS. The boot disk is the one",
-    "whose partitions hold / and /boot; `loop` entries are snaps. Then:",
-    "  DISK=/dev/<name>   # e.g. /dev/nvme0n2 or /dev/sdb",
+    "whose partitions hold / and /boot; `loop` entries are snaps.",
+    ...(hints.diskNote ? [hints.diskNote] : []),
+    "Then:",
+    `  DISK=/dev/<name>   # e.g. ${hints.diskExample}`,
     "  sudo blkid $DISK   # must print nothing: no filesystem yet. Formatting erases it",
     "  sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard $DISK",
     `  sudo mkdir -p '${dir}'`,
@@ -165,6 +181,23 @@ function mountCommands(dir: string): string[] {
     `  sudo systemctl daemon-reload && sudo mount '${dir}' && sudo chmod 755 '${dir}'`,
     "  findmnt " + dir + "   # shows the disk mounted there",
   ];
+}
+
+/** Makes sure the new machine's data dir is empty, asking before clearing it. */
+async function clearNewDataDir(
+  ctx: MigrateContext,
+  dir: string,
+): Promise<void> {
+  const empty = await ctx.ops.sshCapture(newHost(ctx), isEmptyDirCommand(dir));
+  if (empty.trim() === "empty") return;
+  const answer = await ctx.io.ask(
+    `${dir} on the new machine isn't empty (an earlier attempt?). Type "clear" to empty it`,
+  );
+  if (answer !== "clear") throw new Error(`${dir} isn't empty`);
+  await ctx.ops.sshCapture(
+    newHost(ctx),
+    `S=$([ "$(id -u)" = 0 ] || echo "sudo -n"); $S find '${dir}' -mindepth 1 -maxdepth 1 ! -name lost+found -exec rm -rf {} +`,
+  );
 }
 
 export function migrationSteps(): Step<MigrateContext>[] {
@@ -178,13 +211,12 @@ export function migrationSteps(): Step<MigrateContext>[] {
         "  - an Ubuntu LTS image (not an interim release: those reach end of life in 9 months)",
         `  - an architecture images are built for (SAF_DEPLOY_PLATFORMS: ${platforms(ctx)})`,
         "  - a separate, empty data disk, with a snapshot schedule",
-        "  - HTTP and HTTPS allowed; the same service account as the old VM",
-        "  - a temporary external address. The static address moves over during the window",
+        ...provider(ctx).machine,
         "",
         "Add your SSH key to it, SSH in, and format and mount the data disk so it",
         "mounts again on every boot (the fstab line finds it by filesystem UUID, so",
         "device names changing between boots doesn't matter). Find it with:",
-        ...mountCommands(dataDir(ctx)),
+        ...mountCommands(ctx, dataDir(ctx)),
         "A later step checks the mount and its /etc/fstab entry.",
       ],
     },
@@ -276,7 +308,7 @@ export function migrationSteps(): Step<MigrateContext>[] {
         ctx.io.print(`${dir} isn't mounted. Disks on the new machine:`);
         ctx.io.print(disks.trimEnd());
         ctx.io.print();
-        for (const line of mountCommands(dir).slice(1)) ctx.io.print(line);
+        for (const line of mountCommands(ctx, dir).slice(1)) ctx.io.print(line);
         throw new Error(`${dir} isn't mounted yet`);
       },
     },
@@ -336,6 +368,7 @@ export function migrationSteps(): Step<MigrateContext>[] {
         return [
           "For each deploy: sync remote-assets/ and pull its images. Nothing starts yet:",
           "a stack without its data would run jobs and request certificates.",
+          "Then checks every service's CPU and memory limits fit the new machine.",
           ...(hostPaths
             ? [`Also copies host files from the old machine: ${hostPaths}`]
             : []),
@@ -356,6 +389,24 @@ export function migrationSteps(): Step<MigrateContext>[] {
             );
           }
         }
+        const tooBig: string[] = [];
+        for (const config of toConfigs(ctx)) {
+          const output = await ctx.ops.runRemoteCapture(
+            config,
+            resourcesScript(),
+          );
+          tooBig.push(
+            ...resourceProblems(output).map(
+              (p) => `${relative(config.deployDir)}: ${p}`,
+            ),
+          );
+        }
+        if (tooBig.length > 0) {
+          throw new Error(
+            `Some services won't start on the new machine:\n  ${tooBig.join("\n  ")}\n` +
+              "Lower those limits in the compose files (or pick a bigger machine), then retry.",
+          );
+        }
         const hostPaths = (setting(ctx, "SAF_MIGRATE_HOST_PATHS") ?? "")
           .split(/[\s,]+/)
           .filter(Boolean);
@@ -372,6 +423,23 @@ export function migrationSteps(): Step<MigrateContext>[] {
             newHost(ctx),
             tarExtractCommand("/"),
           );
+        }
+        const dir = dataDir(ctx);
+        const answer = await ctx.io.ask(
+          `Pre-copy ${dir} now, so the copy during the window sends only what changed? Worth it for large data (y/n)`,
+          ctx.state.precopied ? "y" : "n",
+        );
+        if (answer.toLowerCase().startsWith("y")) {
+          await clearNewDataDir(ctx, dir);
+          ctx.io.print("Pre-copying (the old stack keeps running)…");
+          await ctx.ops.sshPipe(
+            oldHost(ctx),
+            tarCreateCommand(dir),
+            newHost(ctx),
+            tarExtractCommand(dir),
+          );
+          ctx.state.precopied = true;
+          ctx.io.print("Pre-copied.");
         }
       },
     },
@@ -416,27 +484,37 @@ export function migrationSteps(): Step<MigrateContext>[] {
         const { io, ops } = ctx;
         const dir = dataDir(ctx);
         const owners = parseDataOwners(setting(ctx, "SAF_DATA_OWNERS"));
-        const empty = await ops.sshCapture(
-          newHost(ctx),
-          isEmptyDirCommand(dir),
-        );
-        if (empty.trim() !== "empty") {
-          const answer = await io.ask(
-            `${dir} on the new machine isn't empty (an earlier attempt?). Type "clear" to empty it`,
+        if (ctx.state.precopied) {
+          // Send only what changed since the pre-copy.
+          const [oldList, newList] = await Promise.all([
+            ops.sshCapture(oldHost(ctx), checksumCommand(dir)),
+            ops.sshCapture(newHost(ctx), checksumCommand(dir)),
+          ]);
+          const { copy, remove } = planDelta(oldList, newList);
+          io.print(
+            `Since the pre-copy: ${copy.length} files changed or new, ${remove.length} removed.`,
           );
-          if (answer !== "clear") throw new Error(`${dir} isn't empty`);
-          await ops.sshCapture(
+          for (const paths of chunk(copy)) {
+            await ops.sshPipe(
+              oldHost(ctx),
+              tarCreateCommand(dir, paths),
+              newHost(ctx),
+              tarExtractCommand(dir),
+            );
+          }
+          for (const paths of chunk(remove)) {
+            await ops.sshCapture(newHost(ctx), removeCommand(dir, paths));
+          }
+        } else {
+          await clearNewDataDir(ctx, dir);
+          io.print("Copying…");
+          await ops.sshPipe(
+            oldHost(ctx),
+            tarCreateCommand(dir),
             newHost(ctx),
-            `S=$([ "$(id -u)" = 0 ] || echo "sudo -n"); $S find '${dir}' -mindepth 1 -maxdepth 1 ! -name lost+found -exec rm -rf {} +`,
+            tarExtractCommand(dir),
           );
         }
-        io.print("Copying…");
-        await ops.sshPipe(
-          oldHost(ctx),
-          tarCreateCommand(dir),
-          newHost(ctx),
-          tarExtractCommand(dir),
-        );
         io.print("Comparing checksums…");
         const [before, after] = await Promise.all([
           ops.sshCapture(oldHost(ctx), checksumCommand(dir)),
@@ -462,11 +540,7 @@ export function migrationSteps(): Step<MigrateContext>[] {
       title: "Move the static address",
       kind: "manual",
       describe: (ctx) => [
-        "Move the old machine's static external address to the new machine. On GCP",
-        "(check the access config's name with `gcloud compute instances describe <vm>`):",
-        '  gcloud compute instances delete-access-config <old-vm> --access-config-name="External NAT" --zone=<zone>',
-        '  gcloud compute instances delete-access-config <new-vm> --access-config-name="External NAT" --zone=<zone>',
-        '  gcloud compute instances add-access-config <new-vm> --access-config-name="External NAT" --address=<static-ip> --zone=<zone>',
+        ...provider(ctx).addressMove,
         "Once you've moved it, press Enter. This step then, automatically on this computer:",
         "  - checks the address reaches the new machine (its host keys match)",
         "  - replaces the address's ~/.ssh/known_hosts entry with the new machine's keys",
@@ -516,7 +590,8 @@ export function migrationSteps(): Step<MigrateContext>[] {
       title: "Start the stack on the new machine",
       kind: "auto",
       describe: (ctx) => [
-        `\`saf-deploy up --target ${ctx.to}\` in each deploy, platform deploy first.`,
+        `\`saf-deploy up --target ${ctx.to}\` in each deploy, platform deploy first,`,
+        "then checks every service is running (or, for one-shot jobs, exited cleanly).",
       ],
       rollback: (ctx) => rollbackLines(ctx, true),
       run: async (ctx) => {
@@ -524,6 +599,25 @@ export function migrationSteps(): Step<MigrateContext>[] {
           ctx.io.print(`\n== ${relative(config.deployDir)}`);
           await ctx.ops.runRemote(config, upScript());
         }
+        const down: string[] = [];
+        for (const config of toConfigs(ctx)) {
+          const output = await ctx.ops.runRemoteCapture(
+            config,
+            servicesStateScript(),
+          );
+          down.push(
+            ...serviceProblems(output).map(
+              (p) => `${relative(config.deployDir)}: ${p}`,
+            ),
+          );
+        }
+        if (down.length > 0) {
+          throw new Error(
+            `Not everything is running:\n  ${down.join("\n  ")}\n` +
+              "Check those services' logs on the new machine, fix, then retry.",
+          );
+        }
+        ctx.io.print("Every service is running.");
       },
     },
     {

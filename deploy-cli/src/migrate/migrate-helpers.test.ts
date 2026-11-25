@@ -21,6 +21,7 @@ import {
   checksumCommand,
   ownershipScript,
   parseDataOwners,
+  planDelta,
   tarCreateCommand,
   tarExtractCommand,
 } from "./data.ts";
@@ -122,6 +123,36 @@ describe("data copy", () => {
     const b = path.join(dir, "b");
     execFileSync("cp", ["-R", a, b]);
     expect(sum(b)).toBe(listing);
+  });
+
+  it("plans the files to send after a pre-copy: changed, new, and removed", () => {
+    const h = (c: string) => c.repeat(64);
+    const old = `${h("a")}  ./app/db.sqlite\n${h("b")}  ./app/new.txt\n${h("c")}  ./same.txt\n`;
+    const fresh = `${h("0")}  ./app/db.sqlite\n${h("c")}  ./same.txt\n${h("d")}  ./gone.txt\n`;
+    expect(planDelta(old, fresh)).toEqual({
+      copy: ["app/db.sqlite", "app/new.txt"],
+      remove: ["gone.txt"],
+    });
+  });
+
+  it("doesn't shift owners twice", () => {
+    const data = path.join(dir, "data");
+    mkdirSync(path.join(data, "kratos"), { recursive: true });
+    const script = path.join(dir, "own.py");
+    writeFileSync(script, ownershipScript(data, {}));
+    const { uid, gid } = statSync(path.join(data, "kratos"));
+    // A base at or below the current ids: they count as shifted already.
+    const out = execFileSync(
+      "python3",
+      [
+        "-I",
+        script,
+        "--dry-run",
+        `--base=${Math.max(1, uid)}:${Math.max(1, gid)}`,
+      ],
+      { encoding: "utf8" },
+    );
+    expect(out.trim()).toBe(`${uid}:${gid} kratos`);
   });
 
   it("plans shifted owners, setting listed folders to their container user", () => {

@@ -98,11 +98,15 @@ async function triage(req: Request, res: Response, params: SetIssueStatusParams)
 
 export const resolveOpsIssueHandler = createHandler(async function (req, res) {
   const body: OpsRequestBody["resolveOpsIssue"] = req.body;
+  // Default: fixed in the build that's running now (the same commit issues
+  // record as their version), so a regression is measured from it.
+  const resolvedInVersion =
+    body.resolved_in_version ?? (await opsServiceStorage.getStore()!.currentBoot)?.commit_root ?? undefined;
   await triage(req, res, {
     status: "resolved",
     actor: callerActor(res),
     note: body.note,
-    resolvedInVersion: body.resolved_in_version,
+    resolvedInVersion,
   });
 });
 

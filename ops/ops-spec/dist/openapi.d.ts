@@ -666,7 +666,7 @@ export interface components {
                 health_status: "ok" | "warn" | "fail";
                 new_issues: number;
                 regressed_issues: number;
-                /** @description Open or regressed issues seen in the window. */
+                /** @description Open or regressed issues, however long ago they were last seen (counted up to 200). */
                 open_issues: number;
                 new_log_templates: number;
                 deploys: number;
@@ -690,6 +690,8 @@ export interface components {
                 regressed: components["schemas"]["ops-issue"][];
                 /** @description Open or regressed issues with the most occurrences in the window (up to 10). */
                 top: components["schemas"]["ops-issue"][];
+                /** @description Open or regressed issues however long ago they were last seen, most occurrences first (up to 10). Everything still awaiting triage, not just this window's activity. */
+                open: components["schemas"]["ops-issue"][];
             } | null;
             logs: {
                 level_counts: {
@@ -705,6 +707,17 @@ export interface components {
                 error_rate: components["schemas"]["ops-metric-comparison"];
                 p95_seconds: components["schemas"]["ops-metric-comparison"];
                 flags: ("error_rate_high" | "error_rate_up" | "p95_up")[];
+                error: string | null;
+            };
+            /** @description Is anyone using it? Signed-in users with a logged request in the window (from the persisted logs; null without them), and user-facing requests per hour: GET requests outside the ops, health and metrics routes, since background work arrives as POSTs (null without metrics). Null when the product has neither. If Prometheus couldn't be queried, `error` says why. */
+            activity: null | {
+                distinct_users: number | null;
+                /** @description Oldest first; buckets widen past 48 hours to keep at most 48 points. */
+                requests_by_hour: null | {
+                    /** Format: date-time */
+                    start: string;
+                    requests: number;
+                }[];
                 error: string | null;
             };
             /** @description Alertmanager alerts: everything firing now (unacknowledged firing alerts count toward `needs_attention`) and how many fired during the window. Null when the product has no alert store. */
@@ -1470,7 +1483,7 @@ export interface operations {
                 "application/json": {
                     /** @description Why, e.g. "fixed in PR */
                     note?: string;
-                    /** @description Commit or release containing the fix. */
+                    /** @description Commit or release containing the fix. Defaults to the running build's commit, i.e. "fixed in what's deployed now". */
                     resolved_in_version?: string;
                 };
             };

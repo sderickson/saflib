@@ -49,6 +49,8 @@ export interface MigrateState {
   /** The new host's public keys (`<type> <key>`), to recognize it later. */
   newHostKeys?: string[];
   userNamespaces?: boolean;
+  /** The data was copied once during staging; the window's copy sends only changes. */
+  precopied?: boolean;
 }
 
 export function statePath(rootDir: string, to: string): string {

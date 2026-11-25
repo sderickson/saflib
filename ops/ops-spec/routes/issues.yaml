@@ -188,7 +188,7 @@ resolveOpsIssue:
             resolved_in_version:
               type: string
               maxLength: 100
-              description: Commit or release containing the fix.
+              description: Commit or release containing the fix. Defaults to the running build's commit, i.e. "fixed in what's deployed now".
   responses:
     "200":
       description: The issue.

@@ -17,8 +17,8 @@
  * when there's no session or it has expired.
  *
  * Products wire it up as npm scripts, e.g.:
- *   "ops-session": "node saflib/ops/ops-http/bin/ops-session.ts start --name casedaemon --api https://api.casedaemon.com --op-ref 'op://…'"
- *   "ops": "node saflib/ops/ops-http/bin/ops-session.ts call --name casedaemon"
+ *   "ops-session": "node saflib/ops/ops-http/bin/ops-session.ts start --name myapp --api https://api.myapp.example --op-ref 'op://…'"
+ *   "ops": "node saflib/ops/ops-http/bin/ops-session.ts call --name myapp"
  */
 import { execFile } from "node:child_process";
 import { mkdir, readFile, rm, writeFile, chmod } from "node:fs/promises";

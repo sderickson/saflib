@@ -10,8 +10,12 @@
 # apt-daily.timer (on by default on Debian and Ubuntu); a stale-lists metric
 # says when that stops.
 #
-# The container needs only CAP_SYS_CHROOT, no network, and a tmpfs over
-# /host/tmp (apt writes temp files while reading signed lists).
+# The container needs only CAP_SYS_CHROOT and CAP_CHOWN, no network, and a
+# tmpfs over /host/tmp (apt writes temp files while reading signed lists).
+# CAP_CHOWN is for the output volume: under Docker user-namespace remapping
+# it's created owned by the remapped root, which this container (opted out of
+# remapping, every other capability dropped) can't write to until it owns it.
+# It can only chown what's writable: the volume and the tmpfs, not the host.
 #
 # Writes $OUT_DIR/saf_host_apt.prom every $INTERVAL seconds (default 1h):
 #   saf_apt_upgrades_pending{kind="all"|"security"}
@@ -59,6 +63,11 @@ saf_apt_check_timestamp_seconds $(date +%s)
 EOF
   mv "$tmp" "$OUT_DIR/saf_host_apt.prom"
 }
+
+# Take ownership of the output directory (see CAP_CHOWN above); harmless when
+# it's already ours.
+chown "$(id -u):$(id -g)" "$OUT_DIR" 2>/dev/null ||
+  echo "host-apt-metrics: can't chown $OUT_DIR; writes may fail" >&2
 
 while :; do
   check

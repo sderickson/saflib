@@ -1,5 +1,5 @@
 type: object
-required: [ since, generated_at, summary, health, deploys, issues, logs, metrics, alerts, dependencies ]
+required: [ since, generated_at, summary, health, deploys, issues, logs, metrics, activity, alerts, dependencies ]
 properties:
   since:
     type: string
@@ -22,7 +22,7 @@ properties:
         type: integer
       open_issues:
         type: integer
-        description: Open or regressed issues seen in the window.
+        description: Open or regressed issues, however long ago they were last seen (counted up to 200).
       new_log_templates:
         type: integer
       deploys:
@@ -53,7 +53,7 @@ properties:
   issues:
     oneOf:
       - type: object
-        required: [ new, regressed, top ]
+        required: [ new, regressed, top, open ]
         properties:
           new:
             type: array
@@ -68,6 +68,11 @@ properties:
           top:
             type: array
             description: Open or regressed issues with the most occurrences in the window (up to 10).
+            items:
+              $ref: "./ops-issue.yaml"
+          open:
+            type: array
+            description: Open or regressed issues however long ago they were last seen, most occurrences first (up to 10). Everything still awaiting triage, not just this window's activity.
             items:
               $ref: "./ops-issue.yaml"
       - type: "null"
@@ -112,6 +117,36 @@ properties:
             items:
               type: string
               enum: [ error_rate_high, error_rate_up, p95_up ]
+          error:
+            type: [ string, "null" ]
+  activity:
+    description: >
+      Is anyone using it? Signed-in users with a logged request in the window
+      (from the persisted logs; null without them), and user-facing requests
+      per hour: GET requests outside the ops, health and metrics routes, since
+      background work arrives as POSTs (null without metrics). Null when the
+      product has neither. If Prometheus couldn't be queried, `error` says why.
+    oneOf:
+      - type: "null"
+      - type: object
+        required: [ distinct_users, requests_by_hour, error ]
+        properties:
+          distinct_users:
+            type: [ integer, "null" ]
+          requests_by_hour:
+            description: Oldest first; buckets widen past 48 hours to keep at most 48 points.
+            oneOf:
+              - type: "null"
+              - type: array
+                items:
+                  type: object
+                  required: [ start, requests ]
+                  properties:
+                    start:
+                      type: string
+                      format: date-time
+                    requests:
+                      type: number
           error:
             type: [ string, "null" ]
   alerts:
