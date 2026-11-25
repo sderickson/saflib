@@ -100,6 +100,24 @@ groups:
           summary: "{{ $labels.saf_app }}: jobs went dead (out of retries)"
           description: "See the jobs admin page or the jobs.dead issue."
 
+      # Background work (job deliveries, scheduled syncs) arrives as POSTs at a
+      # steady rate; one that ran at least 3 times in every hour of the day
+      # before and not once in the last hour has stopped. `unless` (not `== 0`)
+      # so it also fires when the series is gone, e.g. after a restart. A
+      # legitimate stop (a mailbox disconnected) fires once and clears within
+      # about an hour, as the quiet hour enters the baseline.
+      - alert: SafRecurringWorkStopped
+        expr: |
+          min_over_time((sum by (saf_app, operation_id) (increase(http_request_duration_seconds_count{method="POST", operation_id!=""}[1h])))[24h:1h] offset 1h) >= 3
+          unless on (saf_app, operation_id)
+          sum by (saf_app, operation_id) (increase(http_request_duration_seconds_count{method="POST", operation_id!=""}[1h])) > 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.saf_app }}: {{ $labels.operation_id }} stopped running"
+          description: "It ran at least 3 times every hour for the previous day, and not at all in the last hour. Check whatever schedules it (cron, the jobs queue, an external webhook) and its recent logs."
+
   - name: saf-performance
     rules:
       - alert: SafSlowRoute

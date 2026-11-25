@@ -221,3 +221,35 @@ tests:
       - eval_time: 4h
         alertname: SafHostAptCheckMissing
         exp_alerts: []
+
+  - name: steady background work that stops pages; work that keeps going doesn't
+    interval: 5m
+    input_series:
+      # 12 calls an hour for 26h, then nothing (series stays, flat).
+      - series: 'http_request_duration_seconds_count{saf_app="hub", method="POST", operation_id="importMail", status_code="2xx"}'
+        values: "0+1x312 312x30"
+      # Keeps going throughout.
+      - series: 'http_request_duration_seconds_count{saf_app="hub", method="POST", operation_id="syncCalendar", status_code="2xx"}'
+        values: "0+1x342"
+    alert_rule_test:
+      - eval_time: 26h
+        alertname: SafRecurringWorkStopped
+        exp_alerts: []
+      - eval_time: 27h25m
+        alertname: SafRecurringWorkStopped
+        exp_alerts:
+          - exp_labels: { severity: critical, saf_app: hub, operation_id: importMail }
+            exp_annotations:
+              summary: "hub: importMail stopped running"
+              description: "It ran at least 3 times every hour for the previous day, and not at all in the last hour. Check whatever schedules it (cron, the jobs queue, an external webhook) and its recent logs."
+
+  - name: occasional user POSTs don't count as recurring work
+    interval: 5m
+    input_series:
+      # A burst, then quiet: never 3+ in every hour.
+      - series: 'http_request_duration_seconds_count{saf_app="hub", method="POST", operation_id="createOrg", status_code="2xx"}'
+        values: "0 5 9 9x300"
+    alert_rule_test:
+      - eval_time: 26h
+        alertname: SafRecurringWorkStopped
+        exp_alerts: []

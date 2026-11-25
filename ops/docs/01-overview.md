@@ -169,7 +169,7 @@ The host's Alertmanager posts every alert to each app's `POST /ops/alerts/webhoo
 ### Alert rules and routing
 
 SAF's default rules are `ops/prometheus/saf-default.rules.yml`; the platform deploy loads it (hub links it into `prometheus/rules/`, and the upload carries the real file). They cover:
-- **Reliability:** targets down (all colors), 5xx above 5%, crash loops, event-loop lag, failing or warning health checks (`saf_health_check_status`, published at scrape time from the ops router's checks), new error issues, regressions and dead jobs.
+- **Reliability:** targets down (all colors), 5xx above 5%, crash loops, event-loop lag, failing or warning health checks (`saf_health_check_status`, published at scrape time from the ops router's checks), new error issues, regressions, dead jobs, and recurring work that stopped (`SafRecurringWorkStopped`, critical: a POST operation that ran 3+ times every hour for a day, then not at all for an hour).
 - **Performance:** a 2s p95 budget per path with traffic, and a 500ms DB-query p95.
 - **Capacity:** disk over 80% and 90%, filling within 3 days, memory under 10%, dropped log lines.
 - **Watchdog:** always firing, for the external heartbeat.
