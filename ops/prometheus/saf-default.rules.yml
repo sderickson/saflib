@@ -249,6 +249,19 @@ groups:
           summary: "The host update check hasn't succeeded in 3 hours"
           description: "The host-apt sidecar is failing; see its container logs."
 
+      # SafHostAptCheckStale can't fire for a check that never succeeded (no
+      # timestamp to be stale), e.g. on a new host whose sidecar can't write
+      # its textfile. Gated on node-exporter running, i.e. a platform host.
+      - alert: SafHostAptCheckMissing
+        expr: absent(saf_apt_check_timestamp_seconds) and on() count(node_os_info) > 0
+        for: 3h
+        labels:
+          severity: warning
+          saf_app: host
+        annotations:
+          summary: "The host update check has never reported"
+          description: "node-exporter is up but has no saf_apt_check_timestamp_seconds: the host-apt sidecar isn't running or can't write its textfile. See its container logs."
+
   - name: saf-meta
     rules:
       # Always firing. Alertmanager sends it to an external heartbeat service;

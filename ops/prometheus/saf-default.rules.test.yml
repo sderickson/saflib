@@ -192,3 +192,32 @@ tests:
             exp_annotations:
               summary: "hub hasn't finished a dependency check in 3 days"
               description: "The daily check is failing (OSV or the registry unreachable?); its errors are in the app's logs."
+
+  - name: a host update check that never reported fires after 3h; a reporting one doesn't
+    interval: 1m
+    input_series:
+      - series: 'node_os_info{saf_app="host", job="node"}'
+        values: "1x300"
+    alert_rule_test:
+      - eval_time: 2h
+        alertname: SafHostAptCheckMissing
+        exp_alerts: []
+      - eval_time: 4h
+        alertname: SafHostAptCheckMissing
+        exp_alerts:
+          - exp_labels: { severity: warning, saf_app: host }
+            exp_annotations:
+              summary: "The host update check has never reported"
+              description: "node-exporter is up but has no saf_apt_check_timestamp_seconds: the host-apt sidecar isn't running or can't write its textfile. See its container logs."
+
+  - name: SafHostAptCheckMissing stays quiet while the check reports
+    interval: 1m
+    input_series:
+      - series: 'node_os_info{saf_app="host", job="node"}'
+        values: "1x300"
+      - series: 'saf_apt_check_timestamp_seconds{saf_app="host"}'
+        values: "0+60x300"
+    alert_rule_test:
+      - eval_time: 4h
+        alertname: SafHostAptCheckMissing
+        exp_alerts: []
