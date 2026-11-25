@@ -2,9 +2,6 @@
   "files": [],
   "references": [
     {
-      "path": "../../../../analytics/analytics-vue"
-    },
-    {
       "path": "../../../../audit/audit-vue"
     },
     {
@@ -27,9 +24,6 @@
     },
     {
       "path": "../../../../node-log/node-log-vue"
-    },
-    {
-      "path": "../../../../node-metrics/node-metrics-vue"
     },
     {
       "path": "../../../../ory-kratos/ory-kratos-sdk"

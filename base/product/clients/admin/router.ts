@@ -10,13 +10,11 @@ import { isDevelopmentDeployment, scrollBehavior } from "@saflib/vue";
 import { CronJobsAsync } from "@saflib/cron-vue";
 import { JobsAsync } from "@saflib/jobs-vue";
 import { SentEmailsAsync } from "@saflib/email-vue";
-import { ProductEventsAsync } from "@saflib/analytics-vue";
-import { MetricsAsync } from "@saflib/node-metrics-vue";
-import { ErrorsAsync } from "@saflib/errors-vue";
 import { AuditLogsAsync } from "@saflib/audit-vue";
 import {
   AlertsAsync,
   DependenciesAsync,
+  DiagnosticsAsync,
   IssuesAsync,
   LogsAsync,
   OpsMetricsAsync,
@@ -32,24 +30,12 @@ import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
 const devObservabilityRoutes: RouteRecordRaw[] = isDevelopmentDeployment()
   ? [
       {
-        path: adminLinks.errors.path,
-        component: ErrorsAsync,
-      },
-      {
         path: adminLinks.emails.path,
         component: SentEmailsAsync,
       },
       {
         path: adminLinks.logs.path,
         component: DevLogsAsync,
-      },
-      {
-        path: adminLinks.metrics.path,
-        component: MetricsAsync,
-      },
-      {
-        path: adminLinks.events.path,
-        component: ProductEventsAsync,
       },
     ]
   : [];
@@ -102,6 +88,10 @@ export const createAdminRouter = (options?: {
     {
       path: adminLinks.opsTokens.path,
       component: OpsTokensAsync,
+    },
+    {
+      path: adminLinks.diagnostics.path,
+      component: DiagnosticsAsync,
     },
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
     // END WORKFLOW AREA

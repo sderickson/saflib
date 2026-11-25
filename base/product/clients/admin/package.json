@@ -22,7 +22,6 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@saflib/analytics-vue": "*",
     "@saflib/audit-vue": "*",
     "@saflib/base-clients-common": "*",
     "@saflib/base-links": "*",
@@ -33,7 +32,6 @@
     "@saflib/jobs-vue": "*",
     "@saflib/links": "*",
     "@saflib/node-log-vue": "*",
-    "@saflib/node-metrics-vue": "*",
     "@saflib/ops-vue": "*",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/ory-kratos-spa": "*",

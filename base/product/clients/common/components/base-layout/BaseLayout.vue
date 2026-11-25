@@ -78,18 +78,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { base_layout } from "./BaseLayout.strings.ts";
 import {
   linkToHrefWithHost,
-  navigateToLink,
   type Link,
   type LinkOptions,
 } from "@saflib/links";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
-import { useKratosSession } from "@saflib/ory-kratos-sdk";
 import { accountLinks, adminLinks, appLinks } from "@saflib/base-links";
 import { useSiteAdmin } from "#composables/useSiteAdmin.ts";
+import { useRequireAuth } from "#composables/useRequireAuth.ts";
 
 type SidebarLink = Link & { name: string };
 
@@ -107,28 +106,10 @@ const hasSidebar = computed(
     (props.devSidebarLinks?.length ?? 0) > 0,
 );
 
-const { data: session, status: sessionStatus } = useKratosSession();
+const { session } = useRequireAuth(() => props.requireAuth);
 const { isSiteAdmin } = useSiteAdmin();
 
 const isLoggedIn = computed(() => !!session.value);
-
-watch(
-  () =>
-    [props.requireAuth, sessionStatus.value, session.value] as [
-      boolean | undefined,
-      typeof sessionStatus.value,
-      typeof session.value,
-    ],
-  ([requireAuth, status, sess]) => {
-    if (typeof window === "undefined") return;
-    if (!requireAuth || status !== "success") return;
-    if (sess) return;
-    navigateToLink(authLinks.newLogin, {
-      params: { return_to: window.location.href },
-    });
-  },
-  { immediate: true },
-);
 
 const mobileNavOpen = ref(false);
 

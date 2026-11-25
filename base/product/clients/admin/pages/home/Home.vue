@@ -17,15 +17,10 @@
         <code class="ms-1">{{ git_hashes.saflib }}</code>
       </p>
     </div>
-
-    <div class="mt-4">
-      <ErrorSmokeWidgets />
-    </div>
   </ContentWidth>
 </template>
 
 <script setup lang="ts">
-import ErrorSmokeWidgets from "@saflib/errors-vue/pages/ErrorSmokeWidgets.vue";
 import { OpsDigestPanel } from "@saflib/ops-vue";
 import { adminLinks } from "@saflib/base-links";
 import { getGitHashes } from "@saflib/vue";

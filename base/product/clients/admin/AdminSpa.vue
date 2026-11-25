@@ -1,43 +1,54 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { DynamicBaseLayout } from "@saflib/base-clients-common/components";
+import {
+  DynamicAdminLayout,
+  type AdminNavGroup,
+} from "@saflib/base-clients-common/components";
 import { adminLinks } from "@saflib/base-links";
 import { isDevelopmentDeployment } from "@saflib/vue";
+import type { BuildRepoUrls } from "@saflib/ops-vue";
 
-const adminSidebarLinks = [
-  { ...adminLinks.home, name: "Home" },
-  { ...adminLinks.users, name: "Users" },
-  { ...adminLinks.cronJobs, name: "Cron" },
-  { ...adminLinks.jobs, name: "Jobs" },
-  { ...adminLinks.audit, name: "Audit" },
-  { ...adminLinks.opsIssues, name: "Issues" },
-  { ...adminLinks.opsAlerts, name: "Alerts" },
-  { ...adminLinks.opsMetrics, name: "Metrics" },
-  { ...adminLinks.opsDependencies, name: "Dependencies" },
-  { ...adminLinks.opsLogs, name: "Logs" },
-  { ...adminLinks.opsTokens, name: "Ops tokens" },
-];
+/** Where this product's commits live, for the build chip's links. */
+const repos: BuildRepoUrls = {
+  // root: "https://github.com/<org>/<repo>",
+};
 
-const devObservabilitySidebarLinks = computed(() => {
-  if (!isDevelopmentDeployment()) {
-    return [];
-  }
-  return [
-    { ...adminLinks.errors, name: "Errors" },
-    { ...adminLinks.emails, name: "Emails" },
-    { ...adminLinks.logs, name: "Live logs" },
-    { ...adminLinks.metrics, name: "Live metrics" },
-    { ...adminLinks.events, name: "Events" },
-  ];
-});
+const groups = computed<AdminNavGroup[]>(() => [
+  { items: [{ ...adminLinks.home, name: "Overview" }] },
+  {
+    label: "Customers",
+    items: [{ ...adminLinks.users, name: "Users" }],
+  },
+  {
+    label: "System",
+    items: [
+      { ...adminLinks.opsIssues, name: "Issues" },
+      { ...adminLinks.opsAlerts, name: "Alerts" },
+      { ...adminLinks.opsLogs, name: "Server logs" },
+      { ...adminLinks.opsMetrics, name: "Metrics" },
+      { ...adminLinks.jobs, name: "Background jobs" },
+      { ...adminLinks.cronJobs, name: "Cron jobs" },
+      { ...adminLinks.opsDependencies, name: "Dependencies" },
+      { ...adminLinks.audit, name: "Audit log" },
+      { ...adminLinks.opsTokens, name: "Ops tokens" },
+      { ...adminLinks.diagnostics, name: "Diagnostics" },
+    ],
+  },
+  {
+    label: "Dev",
+    tag: "local only",
+    items: isDevelopmentDeployment()
+      ? [
+          { ...adminLinks.emails, name: "Emails" },
+          { ...adminLinks.logs, name: "Live server logs" },
+        ]
+      : [],
+  },
+]);
 </script>
 
 <template>
-  <DynamicBaseLayout
-    require-auth
-    :sidebar-links="adminSidebarLinks"
-    :dev-sidebar-links="devObservabilitySidebarLinks"
-  >
+  <DynamicAdminLayout :groups="groups" :repos="repos">
     <router-view />
-  </DynamicBaseLayout>
+  </DynamicAdminLayout>
 </template>
