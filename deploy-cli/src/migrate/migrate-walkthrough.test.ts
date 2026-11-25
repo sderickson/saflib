@@ -225,6 +225,87 @@ describe("migration walkthrough", () => {
     }
   });
 
+  it("pre-copies during staging, then sends only what changed", async () => {
+    const calls: string[] = [];
+    let moved = false;
+    const ops: MigrateOps = {
+      sshCapture: async (host, command) => {
+        if (command.includes("machine-id")) {
+          const id = host === "me@old" && !moved ? "old-id" : "new-id";
+          return command.includes("uname")
+            ? `${id}\naarch64\nUbuntu\n`
+            : `${id}\n`;
+        }
+        if (command.startsWith("findmnt")) return "mounted\nfstab\n";
+        if (command.includes(".docker/config.json")) return "yes\n";
+        if (command.includes("-print -quit")) return "empty\n";
+        if (command.includes("sha256sum")) {
+          const current = `${"a".repeat(64)}  ./db.sqlite\n${"c".repeat(64)}  ./same.txt\n`;
+          // The new machine holds the pre-copy (an older db, a since-deleted
+          // file) until the window's delta lands.
+          const synced = calls.some((c) => c.startsWith("rm"));
+          return host === "me@old" || synced
+            ? current
+            : `${"0".repeat(64)}  ./db.sqlite\n${"c".repeat(64)}  ./same.txt\n${"d".repeat(64)}  ./gone.txt\n`;
+        }
+        if (command.includes("rm -f --")) {
+          calls.push(`rm ${command.split("-- ")[1]}`);
+          return "";
+        }
+        if (command.includes("python3")) return "ownership: ok\n";
+        throw new Error(`unexpected command ${command}`);
+      },
+      sshPipe: async (_from, fromCommand) => {
+        if (fromCommand.includes("opt/secrets")) return;
+        calls.push(
+          moved || calls.includes("precopy")
+            ? `delta ${fromCommand.split("-cpf - ")[1]}`
+            : "precopy",
+        );
+      },
+      scanHostKeys: async () => ["ssh-ed25519 NEW"],
+      runRemote: async () => {},
+      runRemoteCapture: async () => "",
+      syncAssets: async () => {},
+      trustHostKeys: async () => {},
+      fetchStatus: async () => 200,
+    };
+    const io = scriptedIO((question) =>
+      question.startsWith("New machine's SSH address")
+        ? "me@temp"
+        : question.startsWith("Pre-copy")
+          ? "y"
+          : "",
+    );
+    const print = io.print;
+    io.print = (text = "") => {
+      if (text.includes("Since the pre-copy")) moved = true;
+      print(text);
+    };
+    const state = freshState();
+    expect(
+      await runSteps(
+        migrationSteps(),
+        {
+          deployDirs: [platform, app],
+          to: "next",
+          previousName: "previous",
+          state,
+          io,
+          ops,
+        },
+        state,
+        io,
+        () => {},
+      ),
+    ).toBe("done");
+    expect(state.precopied).toBe(true);
+    expect(calls).toEqual(["precopy", "delta 'db.sqlite'", "rm 'gone.txt'"]);
+    expect(io.output).toContain(
+      "Since the pre-copy: 1 files changed or new, 1 removed.",
+    );
+  });
+
   it("won't treat the old machine as the new one", async () => {
     const ops = {
       sshCapture: async (_host: string, command: string) =>

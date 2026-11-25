@@ -80,11 +80,16 @@ if base_override:
 else:
     ubase, gbase = remap_base("/etc/subuid"), remap_base("/etc/subgid")
 
+def shifted(value, base):
+    # Container ids are below 65536 and the base is far above, so an id at or
+    # past the base was shifted already (a rerun, or a pre-copy then a copy).
+    return value if base and value >= base else base + value
+
 def target(rel, st):
     top = rel.split(os.sep, 1)[0]
     if top in owners:
         return ubase + owners[top]["uid"], gbase + owners[top]["gid"]
-    return ubase + st.st_uid, gbase + st.st_gid
+    return shifted(st.st_uid, ubase), shifted(st.st_gid, gbase)
 
 changed = 0
 for name in sorted(os.listdir(root)):
@@ -108,4 +113,44 @@ for name in sorted(os.listdir(root)):
 if not dry_run:
     print(f"ownership: base {ubase}:{gbase}, {changed} entries changed")
 `;
+}
+
+/** `<sha256>  ./<path>` lines (from {@link checksumCommand}) as path → hash. */
+export function parseChecksums(listing: string): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const line of listing.split("\n")) {
+    const match = /^([0-9a-f]{64}) {2}\.\/(.+)$/.exec(line);
+    if (match) map.set(match[2]!, match[1]!);
+  }
+  return map;
+}
+
+/**
+ * What to send so the new copy matches the old one: files that are missing or
+ * differ there, and files that exist only there (to delete).
+ */
+export function planDelta(
+  oldListing: string,
+  newListing: string,
+): { copy: string[]; remove: string[] } {
+  const before = parseChecksums(oldListing);
+  const after = parseChecksums(newListing);
+  const copy = [...before]
+    .filter(([p, h]) => after.get(p) !== h)
+    .map(([p]) => p);
+  const remove = [...after.keys()].filter((p) => !before.has(p));
+  return { copy, remove };
+}
+
+/** Deletes `paths` (relative to `dir`) as root. */
+export function removeCommand(dir: string, paths: string[]): string {
+  return `${AS_ROOT} cd ${shellQuote(dir)} && $S rm -f -- ${paths.map(shellQuote).join(" ")}`;
+}
+
+/** Splits `items` into chunks small enough for one remote command line. */
+export function chunk<T>(items: T[], size = 200): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size)
+    chunks.push(items.slice(i, i + size));
+  return chunks;
 }

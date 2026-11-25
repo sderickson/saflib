@@ -79,12 +79,14 @@ rerunning resumes). Run it from the monorepo root:
    registry login for private images (skip for public ones).
 6. **Stage**: `sync` and `pull` for each deploy, copy `SAF_MIGRATE_HOST_PATHS`
    from the old machine, and check every service's CPU and memory limits fit
-   the new machine. Nothing starts.
+   the new machine. Nothing starts. Optionally pre-copies the data disk, so the
+   copy in the window only sends what changed (worth it for large data).
 7. **Begin the window**.
 8. **Stop the old stack**: `down` in each deploy, platform last.
-9. **Copy the data**: streams `SAF_DATA_DIR` old → new through your machine,
-   compares every file's checksum, then fixes owners for userns-remap and
-   `SAF_DATA_OWNERS`.
+9. **Copy the data**: streams `SAF_DATA_DIR` old → new through your machine
+   (after a pre-copy, only files that changed or are new, and deletes ones that
+   are gone), compares every file's checksum, then fixes owners for
+   userns-remap and `SAF_DATA_OWNERS` (safe to rerun).
 10. **Move the static address** (manual, with `gcloud` hints): then checks the
     address presents the new machine's host keys, updates `known_hosts`, and
     points `env.remote.next` at it.
@@ -101,6 +103,7 @@ Settings it reads (from the first deploy that has them):
 - `SAF_DATA_OWNERS` (optional): `folder=uid:gid` pairs for top-level data folders whose container now runs as that user.
 - `SAF_MIGRATE_HOST_PATHS` (optional): absolute host paths outside the deploys to copy (e.g. secrets under `/opt`).
 - `SAF_MIGRATE_CHECK_URL` (optional): a URL that should answer once the new stack is up.
+- `SAF_MIGRATE_PROVIDER` (optional): `gcp`, `digitalocean` or `hetzner`, for provider-specific wording in the manual steps (machine checklist, disk device paths, moving the static address). Unset: generic wording.
 
 Docker named volumes (e.g. Caddy certificates, Prometheus history) aren't
 copied: Caddy requests new certificates once the address moves.
