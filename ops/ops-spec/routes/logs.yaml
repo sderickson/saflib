@@ -19,6 +19,8 @@ listOpsLogs:
     - { name: q, in: query, required: false, schema: { type: string, maxLength: 200 } }
     - { name: template, in: query, required: false, description: A template hash., schema: { type: string, maxLength: 64 } }
     - { name: request_id, in: query, required: false, schema: { type: string, maxLength: 128 } }
+    - { name: context_id, in: query, required: false, description: "Lines from one request, job delivery, cron tick or process.", schema: { type: string, maxLength: 128 } }
+    - { name: user_id, in: query, required: false, description: "Lines by one (pseudonymous) user.", schema: { type: string, maxLength: 128 } }
     - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 500, default: 100 } }
     - { name: cursor, in: query, required: false, schema: { type: string, maxLength: 32 } }
   responses:
@@ -91,6 +93,69 @@ listOpsLogTemplates:
                 type: array
                 items:
                   $ref: "../schemas/ops-log-template.yaml"
+    "401":
+      description: Missing, malformed, unknown, revoked or expired token.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: The token lacks the required scope.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "404":
+      description: Logs are not enabled for this product.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "429":
+      description: Rate limited.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+listOpsLogGroups:
+  summary: Logs grouped by request, job, cron tick or process
+  description: >
+    Newest group first. Filters pick groups that have a matching line;
+    counts cover all of a group's lines. Lines with no context come back as
+    single-line groups. Read a group's lines with `GET /ops/logs?context_id=`.
+  operationId: listOpsLogGroups
+  security:
+    - ops-token: [ "ops:read" ]
+    - session: [ site-admin ]
+  parameters:
+    - { name: since, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
+    - { name: until, in: query, allowReserved: true, required: false, schema: { type: string, format: date-time } }
+    - name: level
+      in: query
+      required: false
+      description: Groups with a line at this level or more severe.
+      schema: { type: string, enum: [ error, warn, info, http, verbose, debug, silly ] }
+    - { name: q, in: query, required: false, schema: { type: string, maxLength: 200 } }
+    - { name: user_id, in: query, required: false, schema: { type: string, maxLength: 128 } }
+    - { name: context_id, in: query, required: false, schema: { type: string, maxLength: 128 } }
+    - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+    - { name: cursor, in: query, required: false, schema: { type: string, maxLength: 32 } }
+  responses:
+    "200":
+      description: One page of groups.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ groups, next_cursor ]
+            properties:
+              groups:
+                type: array
+                items:
+                  $ref: "../schemas/ops-log-group.yaml"
+              next_cursor:
+                type: [ string, "null" ]
     "401":
       description: Missing, malformed, unknown, revoked or expired token.
       content:

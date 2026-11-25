@@ -31,6 +31,8 @@ components:
       $ref: "./schemas/ops-boot.yaml"
     OpsLogEntry:
       $ref: "./schemas/ops-log-entry.yaml"
+    OpsLogGroup:
+      $ref: "./schemas/ops-log-group.yaml"
     OpsLogTemplate:
       $ref: "./schemas/ops-log-template.yaml"
     OpsIssue:
@@ -67,6 +69,9 @@ paths:
   /ops/logs:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogs"
+  /ops/logs/groups:
+    get:
+      $ref: "./routes/logs.yaml#/listOpsLogGroups"
   /ops/logs/templates:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogTemplates"

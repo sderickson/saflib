@@ -18,6 +18,7 @@ export type OpsHealthCheck = components["schemas"]["OpsHealthCheck"];
 export type OpsTokenResponse = components["schemas"]["OpsToken"];
 export type OpsBootResponse = components["schemas"]["OpsBoot"];
 export type OpsLogEntryResponse = components["schemas"]["OpsLogEntry"];
+export type OpsLogGroupResponse = components["schemas"]["OpsLogGroup"];
 export type OpsLogTemplateResponse = components["schemas"]["OpsLogTemplate"];
 export type OpsIssueResponse = components["schemas"]["OpsIssue"];
 export type OpsIssueOccurrenceResponse = components["schemas"]["OpsIssueOccurrence"];

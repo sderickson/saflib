@@ -4,7 +4,7 @@ import { jsonSpec } from "@saflib/ops-spec";
 import { getOpsHealthHandler } from "./get-ops-health.ts";
 import { getOpsDigestHandler } from "./get-ops-digest.ts";
 import { listOpsDeploysHandler } from "./list-ops-deploys.ts";
-import { listOpsLogsHandler } from "./list-ops-logs.ts";
+import { listOpsLogGroupsHandler, listOpsLogsHandler } from "./list-ops-logs.ts";
 import { listOpsLogTemplatesHandler } from "./list-ops-log-templates.ts";
 import {
   getOpsIssueHandler,
@@ -47,6 +47,7 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.get("/ops/deploys", listOpsDeploysHandler);
   router.get("/ops/dependencies", getOpsDependenciesHandler);
   router.get("/ops/logs", listOpsLogsHandler);
+  router.get("/ops/logs/groups", listOpsLogGroupsHandler);
   router.get("/ops/logs/templates", listOpsLogTemplatesHandler);
   router.get("/ops/metrics/query", queryOpsMetricsHandler);
   router.get("/ops/metrics/query_range", queryOpsMetricsRangeHandler);
