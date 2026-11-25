@@ -6,6 +6,13 @@ export const logLevels = ["error", "warn", "info", "http", "verbose", "debug", "
 export type LogLevel = (typeof logLevels)[number];
 
 /**
+ * What a line belongs to, so lines from one request, job delivery, cron tick
+ * or process startup can be grouped. Lines outside all of those have none.
+ */
+export const logContextKinds = ["request", "job", "cron", "process"] as const;
+export type LogContextKind = (typeof logContextKinds)[number];
+
+/**
  * One persisted log line, already redacted. `message` and `fields` can still
  * contain text that originated outside the app (paths, error messages), so
  * readers must treat them as untrusted.
@@ -24,6 +31,10 @@ export interface LogEntry {
   request_id: string | null;
   /** Pseudonymous user id (an identifier, never an email or name). */
   user_id: string | null;
+  /** What the line belongs to; see {@link logContextKinds}. */
+  context_kind: string | null;
+  /** Request id, job id, cron tick id or process id, per `context_kind`. */
+  context_id: string | null;
   template_hash: string;
   message: string;
   fields: Record<string, unknown> | null;
@@ -43,6 +54,8 @@ export const logEntries = sqliteTable(
     operation_name: text("operation_name"),
     request_id: text("request_id"),
     user_id: text("user_id"),
+    context_kind: text("context_kind"),
+    context_id: text("context_id"),
     template_hash: text("template_hash").notNull(),
     message: text("message").notNull(),
     fields: text("fields", { mode: "json" }).$type<Record<string, unknown>>(),
@@ -52,6 +65,8 @@ export const logEntries = sqliteTable(
     index("log_entries_ts_idx").on(t.ts),
     index("log_entries_level_ts_idx").on(t.level_num, t.ts),
     index("log_entries_request_idx").on(t.request_id),
+    index("log_entries_context_idx").on(t.context_id, t.id),
+    index("log_entries_user_idx").on(t.user_id, t.id),
     index("log_entries_template_ts_idx").on(t.template_hash, t.ts),
   ],
 );

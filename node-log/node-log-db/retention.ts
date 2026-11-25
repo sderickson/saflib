@@ -5,6 +5,12 @@ import { logsPruned } from "./metrics.ts";
 export interface RetentionOptions {
   /** Delete lines older than this. Default 14 days. */
   maxAgeDays?: number;
+  /**
+   * Delete `http` (one per request) lines older than this. They're the
+   * bulk of the store and matter mostly while debugging recent traffic.
+   * Default 7 days.
+   */
+  httpMaxAgeDays?: number;
   /** Delete oldest lines while live data exceeds this. Default 512 MB. */
   maxBytes?: number;
   /** Forget templates not seen for this long. Default 90 days. */
@@ -48,6 +54,15 @@ export function pruneLogs(dbKey: DbKey, options: RetentionOptions = {}): PruneRe
   let byAge = 0;
   for (;;) {
     const n = deleteOlder.run(now - maxAgeMs).changes;
+    byAge += n;
+    if (n < BATCH) break;
+  }
+  const httpMaxAgeMs = (options.httpMaxAgeDays ?? 7) * DAY_MS;
+  const deleteOlderHttp = client.prepare(
+    `DELETE FROM log_entries WHERE id IN (SELECT id FROM log_entries WHERE level = 'http' AND ts < ? LIMIT ${BATCH})`,
+  );
+  for (;;) {
+    const n = deleteOlderHttp.run(now - httpMaxAgeMs).changes;
     byAge += n;
     if (n < BATCH) break;
   }

@@ -26,6 +26,8 @@ const CONTEXT_KEYS = new Set([
   "operation_name",
   "request_id",
   "user_id",
+  "context_kind",
+  "context_id",
   "splat",
 ]);
 
@@ -40,7 +42,7 @@ export interface RedactionEvent {
 
 export interface PersistentLogTransportOptions {
   getDbKey: () => DbKey;
-  /** Least severe level persisted. Default `info`. */
+  /** Least severe level persisted. Default `http` (includes the one-per-request lines). */
   minLevel?: (typeof logLevels)[number];
   /** Default 1000ms. */
   flushIntervalMs?: number;
@@ -67,6 +69,8 @@ interface PendingEntry {
   operation_name: string | null;
   request_id: string | null;
   user_id: string | null;
+  context_kind: string | null;
+  context_id: string | null;
   template_hash: string;
   template: string;
   message: string;
@@ -118,9 +122,9 @@ export class PersistentLogTransport extends TransportStream {
   private readonly retentionTimer: NodeJS.Timeout;
 
   constructor(options: PersistentLogTransportOptions) {
-    super({ level: options.minLevel ?? "info" });
+    super({ level: options.minLevel ?? "http" });
     this.options = options;
-    this.maxLevelNum = logLevels.indexOf(options.minLevel ?? "info");
+    this.maxLevelNum = logLevels.indexOf(options.minLevel ?? "http");
     this.flushTimer = setInterval(() => this.flush(), options.flushIntervalMs ?? 1000);
     this.flushTimer.unref();
     this.retentionTimer = setInterval(
@@ -187,6 +191,8 @@ export class PersistentLogTransport extends TransportStream {
       operation_name: str(info.operation_name),
       request_id: str(info.request_id),
       user_id: str(info.user_id),
+      context_kind: str(info.context_kind),
+      context_id: str(info.context_id),
       template_hash: hash,
       template,
       message: redacted.value.message,
@@ -204,8 +210,8 @@ export class PersistentLogTransport extends TransportStream {
     try {
       const client = logsDbManager.get(this.options.getDbKey())!.$client;
       const insertEntry = client.prepare(
-        `INSERT INTO log_entries (ts, level, level_num, service_name, subsystem_name, operation_name, request_id, user_id, template_hash, message, fields, redactions)
-         VALUES (@ts, @level, @level_num, @service_name, @subsystem_name, @operation_name, @request_id, @user_id, @template_hash, @message, @fields, @redactions)`,
+        `INSERT INTO log_entries (ts, level, level_num, service_name, subsystem_name, operation_name, request_id, user_id, context_kind, context_id, template_hash, message, fields, redactions)
+         VALUES (@ts, @level, @level_num, @service_name, @subsystem_name, @operation_name, @request_id, @user_id, @context_kind, @context_id, @template_hash, @message, @fields, @redactions)`,
       );
       const upsertTemplate = client.prepare(
         `INSERT INTO log_templates (hash, template, level, service_name, first_seen, last_seen, count)

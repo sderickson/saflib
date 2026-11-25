@@ -4,7 +4,7 @@ import type { OpenApiDocument } from "@saflib/openapi";
 import { fullDocumentForValidation } from "@saflib/openapi/slice-operation";
 import { corsRouter } from "./cors.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
-import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
+import { everyRequestLogger, requestLineLogger } from "./httpLogger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { healthRouter } from "./health.ts";
@@ -145,7 +145,7 @@ export const createScopedMiddleware = (
     // CSRF reads `x-public` and the `csrf-exempt` tag from `req.openapi.schema`.
     makeCsrfMiddleware(securityResolvers),
     makeContextMiddleware(),
-    unsafeRequestLogger,
+    requestLineLogger,
     ...compileOperationSecurity(apiSpec, securityResolvers),
   ];
 
