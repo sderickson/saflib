@@ -53,8 +53,22 @@ describe("OpsTokensAsync", () => {
 
   const inBody = (sel: string) => document.body.querySelector<HTMLElement>(sel);
 
+  it("shows only active tokens until All is picked", async () => {
+    const wrapper = await mount();
+    let rows = wrapper.findAll("tbody tr");
+    expect(rows).toHaveLength(2);
+    expect(wrapper.text()).not.toContain("old laptop");
+    await wrapper.find("[data-test=filter-all]").trigger("click");
+    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(3));
+    rows = wrapper.findAll("tbody tr");
+    expect(rows[1]!.text()).toContain("old laptop");
+    wrapper.unmount();
+  });
+
   it("lists tokens by prefix and state, with revoke only for active ones", async () => {
     const wrapper = await mount();
+    await wrapper.find("[data-test=filter-all]").trigger("click");
+    await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(3));
     const rows = wrapper.findAll("tbody tr");
     expect(rows).toHaveLength(3);
     expect(rows[0]!.text()).toContain("safops_AbCdEfGh…");
@@ -70,7 +84,7 @@ describe("OpsTokensAsync", () => {
     const wrapper = await mount();
     const rows = wrapper.findAll("tbody tr");
     expect(rows[0]!.find("[data-test=token-exchanged]").exists()).toBe(false);
-    expect(rows[2]!.find("[data-test=token-exchanged]").text()).toBe("exchanged");
+    expect(rows[1]!.find("[data-test=token-exchanged]").text()).toBe("exchanged");
     wrapper.unmount();
   });
 
