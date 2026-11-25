@@ -21,6 +21,9 @@
       "path": "../../errors/errors-vue"
     },
     {
+      "path": "../../ory-kratos/ory-kratos-vue"
+    },
+    {
       "path": "../../sdk"
     },
     {

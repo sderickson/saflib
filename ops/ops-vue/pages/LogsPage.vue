@@ -1,261 +1,296 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
-    <p class="text-body-2 mb-4">{{ strings.intro }}</p>
+    <h1 class="text-h4 mb-1">{{ strings.title }}</h1>
+    <p class="text-body-2 text-medium-emphasis mb-4">{{ strings.intro }}</p>
 
-    <v-form class="d-flex flex-wrap ga-2 mb-4 align-center" @submit.prevent="apply">
-      <v-select
-        v-model="draft.level"
-        :items="levelOptions"
-        :label="strings.levelLabel"
-        density="compact"
-        hide-details
-        style="max-width: 180px"
-      />
-      <v-text-field
-        v-model="draft.q"
-        :label="strings.searchLabel"
-        density="compact"
-        hide-details
-        data-test="logs-q"
-        style="min-width: 240px"
-      />
-      <v-text-field
-        v-model="draft.request_id"
-        :label="strings.requestLabel"
-        density="compact"
-        hide-details
-        style="max-width: 240px"
-      />
-      <v-btn type="submit" color="primary" data-test="logs-apply">{{ strings.apply }}</v-btn>
-    </v-form>
+    <v-card variant="outlined">
+      <v-toolbar density="compact" color="surface" class="logs-toolbar px-2" role="toolbar" :aria-label="strings.title">
+        <div class="d-flex flex-wrap align-center ga-2 w-100 py-2">
+          <v-btn-toggle
+            v-model="view"
+            mandatory
+            density="compact"
+            variant="outlined"
+            divided
+            color="primary"
+            :aria-label="strings.view_label"
+          >
+            <v-btn value="request" data-test="logs-view-request">{{ strings.by_request }}</v-btn>
+            <v-btn value="chrono" data-test="logs-view-chrono">{{ strings.chronological }}</v-btn>
+          </v-btn-toggle>
+          <v-text-field
+            v-model="draft.q"
+            :label="strings.searchLabel"
+            prepend-inner-icon="mdi-magnify"
+            density="compact"
+            variant="outlined"
+            hide-details
+            clearable
+            class="logs-toolbar__search"
+            data-test="logs-q"
+          />
+          <v-select
+            v-model="level"
+            :items="levelOptions"
+            :label="strings.levelLabel"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="logs-toolbar__level"
+          />
+          <v-text-field
+            v-model="draft.user"
+            :label="strings.userLabel"
+            density="compact"
+            variant="outlined"
+            hide-details
+            clearable
+            class="logs-toolbar__id"
+          />
+          <v-text-field
+            v-model="draft.id"
+            :label="strings.idLabel"
+            density="compact"
+            variant="outlined"
+            hide-details
+            clearable
+            class="logs-toolbar__id"
+            data-test="logs-id"
+          />
+          <v-spacer />
+          <v-switch v-model="live" :label="strings.live" color="primary" density="compact" hide-details inset />
+          <v-btn
+            icon="mdi-refresh"
+            variant="text"
+            size="small"
+            :aria-label="strings.refresh"
+            :loading="activeQuery.isFetching.value && !live"
+            @click="activeQuery.refetch()"
+          />
+        </div>
+      </v-toolbar>
+      <v-divider />
 
-    <!-- Fixed header: the table scrolls inside the viewport, column names stay put. -->
-    <v-table
-      v-if="lines.length > 0"
-      density="compact"
-      fixed-header
-      height="calc(100vh - 260px)"
-      class="elevation-1 logs-table"
-    >
-      <thead>
-        <tr>
-          <th class="text-no-wrap">{{ strings.columns.time }}</th>
-          <th>{{ strings.columns.level }}</th>
-          <th>{{ strings.columns.request }}</th>
-          <th>{{ strings.columns.operation }}</th>
-          <th class="log-message-col">{{ strings.columns.message }}</th>
-          <th>{{ strings.columns.fields }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <template v-for="line in lines" :key="line.id">
-          <tr data-test="log-line">
-            <td class="text-no-wrap text-caption">{{ formatTime(line.ts) }}</td>
-            <td>
-              <v-chip :color="levelColor(line.level)" size="x-small">{{ line.level }}</v-chip>
+      <v-alert v-if="activeQuery.error.value" type="error" variant="tonal" class="ma-3">
+        {{ activeQuery.error.value.message }}
+      </v-alert>
+
+      <v-table v-if="view === 'request'" density="compact" class="logs-table" data-test="logs-groups">
+        <thead>
+          <tr>
+            <th aria-hidden="true" />
+            <th>{{ strings.columns.time }}</th>
+            <th>{{ strings.columns.group }}</th>
+            <th>{{ strings.columns.status }}</th>
+            <th>{{ strings.columns.duration }}</th>
+            <th>{{ strings.columns.who }}</th>
+            <th>{{ strings.columns.id }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <LogGroupRow
+            v-for="g in groups"
+            :key="g.context_id ?? `line-${g.line_id}`"
+            :group="g"
+            :live="live"
+          />
+        </tbody>
+      </v-table>
+
+      <v-table v-else density="compact" class="logs-table" data-test="logs-chrono">
+        <thead>
+          <tr>
+            <th aria-hidden="true" class="logs-bar-col" />
+            <th>{{ strings.columns.time }}</th>
+            <th>{{ strings.columns.level }}</th>
+            <th>{{ strings.columns.id }}</th>
+            <th>{{ strings.columns.operation }}</th>
+            <th class="logs-message-col">{{ strings.columns.message }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="line in lines" :key="line.id" :class="`logs-line--${line.level}`" data-test="log-line">
+            <td class="logs-bar-col">
+              <span
+                v-if="line.context_id"
+                class="logs-bar"
+                :style="{ background: idColor(line.context_id) }"
+                aria-hidden="true"
+              />
             </td>
+            <td class="logs-mono text-medium-emphasis text-no-wrap">{{ formatTime(line.ts) }}</td>
             <td>
-              <!-- Same request, same color: a glance groups a request's lines. -->
-              <button
-                v-if="line.request_id"
-                type="button"
-                class="request-pill"
-                :style="requestPillStyle(line.request_id)"
-                :title="line.request_id"
-                :aria-label="`${strings.filterByRequest} ${line.request_id}`"
-                data-test="log-request-pill"
-                @click="filterByRequest(line.request_id)"
-              >
-                {{ line.request_id.slice(0, 3) }}
-              </button>
+              <span class="logs-level" :class="`text-${levelColor(line.level) ?? 'medium-emphasis'}`">{{ line.level }}</span>
             </td>
-            <td class="text-caption text-no-wrap">{{ line.operation_name ?? line.service_name ?? "" }}</td>
-            <td>
+            <td class="text-no-wrap">
+              <ShortId v-if="line.context_id" :id="line.context_id" :prefix="contextPrefix(line.context_kind)" />
+              <span v-else class="text-medium-emphasis">—</span>
+            </td>
+            <td class="logs-mono text-medium-emphasis text-no-wrap">{{ line.operation_name ?? "" }}</td>
+            <td class="logs-mono logs-message">
               <!-- Untrusted text: plain interpolation only (escaped), never v-html. -->
-              <span class="log-message">{{ line.untrusted.message }}</span>
-              <v-chip v-if="line.redactions > 0" size="x-small" color="warning" class="ml-2">
+              {{ line.untrusted.message }}
+              <v-chip v-if="line.redactions > 0" size="x-small" color="warning" class="ms-1">
                 {{ line.redactions }} {{ strings.redacted }}
               </v-chip>
-            </td>
-            <td class="log-fields-cell">
-              <!-- Fields collapse to their keys; click to see the whole object. -->
-              <button
-                v-if="line.untrusted.fields"
-                type="button"
-                class="text-caption text-medium-emphasis log-fields-toggle"
-                :aria-expanded="expanded.has(line.id)"
-                data-test="log-fields-toggle"
-                @click="toggleFields(line.id)"
-              >
-                <span class="log-fields-chevron">{{ expanded.has(line.id) ? "▾" : "▸" }}</span>
-                <span class="log-fields-keys" data-test="log-fields-keys">
-                  {{ fieldKeysSummary(line.untrusted.fields) }}
-                </span>
-              </button>
+              <LogLineFields :fields="line.untrusted.fields" />
             </td>
           </tr>
-          <tr
-            v-if="line.untrusted.fields && expanded.has(line.id)"
-            class="log-fields-row"
-            data-test="log-fields-row"
-          >
-            <td colspan="6">
-              <pre class="text-caption log-fields-json" data-test="log-fields-json">{{
-                JSON.stringify(line.untrusted.fields, null, 2)
-              }}</pre>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </v-table>
-    <p v-else class="text-body-1">{{ strings.empty }}</p>
+        </tbody>
+      </v-table>
 
-    <div class="mt-4">
-      <v-btn
-        v-if="logsQuery.hasNextPage.value"
-        :loading="logsQuery.isFetchingNextPage.value"
-        data-test="logs-more"
-        @click="logsQuery.fetchNextPage()"
-      >
-        {{ strings.loadMore }}
-      </v-btn>
-    </div>
+      <p v-if="isEmpty" class="text-body-2 text-medium-emphasis pa-4 mb-0">{{ strings.empty }}</p>
+      <div v-if="activeQuery.hasNextPage.value" class="pa-3">
+        <v-btn
+          variant="text"
+          :loading="activeQuery.isFetchingNextPage.value"
+          data-test="logs-more"
+          @click="activeQuery.fetchNextPage()"
+        >
+          {{ strings.loadMore }}
+        </v-btn>
+      </div>
+    </v-card>
+    <p v-if="view === 'chrono'" class="text-caption text-medium-emphasis mt-2">{{ strings.chrono_hint }}</p>
   </ContentWidth>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from "vue";
-import { ContentWidth } from "@saflib/vue/components";
+import { computed, reactive, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ContentWidth, ShortId } from "@saflib/vue/components";
+import { idColor } from "@saflib/vue";
 import { useLogsPageLoader } from "./Logs.loader.ts";
 import { ops_logs as strings } from "./Logs.strings.ts";
+import LogGroupRow from "./LogGroupRow.vue";
+import LogLineFields from "./LogLineFields.vue";
+import { contextPrefix, formatTime, levelColor } from "./log-format.ts";
 import type { AdminLogFilters } from "../requests/queries.ts";
 
-const { filters, logsQuery } = useLogsPageLoader();
-const lines = computed(() => logsQuery.data.value?.pages.flatMap((p) => p.logs) ?? []);
+const route = useRoute();
+const router = useRouter();
+const param = (name: string) => {
+  const raw = route?.query[name];
+  return typeof raw === "string" ? raw : "";
+};
 
-const ANY_LEVEL = "any";
+const { filters, live, logsQuery, groupsQuery } = useLogsPageLoader();
+
+// The URL is the source of truth for filters, so views and searches can be
+// linked to (e.g. a user's server logs from the Users page).
+const view = computed({
+  get: () => (param("view") === "chrono" ? "chrono" : "request"),
+  set: (v) => setParams({ view: v === "chrono" ? "chrono" : undefined }),
+});
+const LEVELS = ["error", "warn", "info"] as const;
+const level = computed({
+  get: () => (LEVELS as readonly string[]).includes(param("level")) ? param("level") : "any",
+  set: (v) => setParams({ level: v === "any" ? undefined : v }),
+});
 const levelOptions = [
-  // Not undefined: v-select falls back to the title ("Any") for an undefined
-  // value, which the API rejects as a level.
-  { title: strings.anyLevel, value: ANY_LEVEL },
-  { title: "error", value: "error" },
-  { title: "warn", value: "warn" },
-  { title: "info", value: "info" },
+  { title: strings.anyLevel, value: "any" },
+  { title: strings.warnUp, value: "warn" },
+  { title: strings.errorsOnly, value: "error" },
 ];
 
-const draft = reactive<AdminLogFilters>({ ...filters.value });
+// Text fields update the URL after a pause.
+const draft = reactive({ q: param("q"), user: param("user"), id: param("id") });
+let debounce: ReturnType<typeof setTimeout> | undefined;
+watch(
+  () => ({ ...draft }),
+  (d) => {
+    clearTimeout(debounce);
+    debounce = setTimeout(
+      () => setParams({ q: d.q?.trim() || undefined, user: d.user?.trim() || undefined, id: d.id?.trim() || undefined }),
+      300,
+    );
+  },
+);
 
-/** Log lines whose fields are expanded. */
-const expanded = reactive(new Set<number>());
-function toggleFields(id: number) {
-  if (expanded.has(id)) expanded.delete(id);
-  else expanded.add(id);
+function setParams(next: Record<string, string | undefined>) {
+  router?.replace({ query: { ...route.query, ...next } });
 }
 
-/** "{ key1, key2, … }": what a collapsed fields object shows. */
-function fieldKeysSummary(fields: unknown): string {
-  if (fields === null || typeof fields !== "object" || Array.isArray(fields)) return "{ … }";
-  const keys = Object.keys(fields);
-  return keys.length === 0 ? "{}" : `{ ${keys.join(", ")} }`;
-}
+watch(
+  () => [param("q"), param("level"), param("user"), param("id")],
+  () => {
+    const f: AdminLogFilters = {
+      q: param("q") || undefined,
+      level: (LEVELS as readonly string[]).includes(param("level"))
+        ? (param("level") as AdminLogFilters["level"])
+        : undefined,
+      user_id: param("user") || undefined,
+      context_id: param("id") || undefined,
+    };
+    filters.value = f;
+  },
+  { immediate: true },
+);
 
-function apply() {
-  filters.value = {
-    level: (draft.level as string | undefined) === ANY_LEVEL ? undefined : draft.level,
-    q: draft.q?.trim() || undefined,
-    request_id: draft.request_id?.trim() || undefined,
-  };
-}
-
-function filterByRequest(requestId: string) {
-  draft.request_id = requestId;
-  apply();
-}
-
-const formatTime = (ts: string) =>
-  new Intl.DateTimeFormat(undefined, { dateStyle: "short", timeStyle: "medium" }).format(new Date(ts));
-
-/** FNV-1a: a cheap, stable hash so a request id always gets the same hue. */
-function hashString(value: string): number {
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < value.length; i++) {
-    hash ^= value.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return hash >>> 0;
-}
-
-/** Background from the whole id (ids that share a prefix still differ); white text stays readable. */
-function requestPillStyle(requestId: string) {
-  const hash = hashString(requestId);
-  const hue = hash % 360;
-  const lightness = 32 + ((hash >>> 9) % 12);
-  return { backgroundColor: `hsl(${hue}, 65%, ${lightness}%)` };
-}
-
-const levelColor = (level: string) =>
-  ({ error: "error", warn: "warning", info: "info" })[level] ?? "grey";
+const groups = computed(() => groupsQuery.data.value?.pages.flatMap((p) => p.groups) ?? []);
+const lines = computed(() => logsQuery.data.value?.pages.flatMap((p) => p.logs) ?? []);
+const activeQuery = computed(() => (view.value === "request" ? groupsQuery : logsQuery));
+const isEmpty = computed(
+  () =>
+    activeQuery.value.isSuccess.value &&
+    (view.value === "request" ? groups.value.length === 0 : lines.value.length === 0),
+);
 </script>
 
 <style scoped>
-/* Without a floor the message column loses every width fight and wraps every
-   few characters. */
-.log-message-col {
+.logs-toolbar {
+  height: auto !important;
+}
+.logs-toolbar :deep(.v-toolbar__content) {
+  height: auto !important;
+}
+.logs-toolbar__search {
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+.logs-toolbar__level {
+  flex: 0 0 160px;
+}
+.logs-toolbar__id {
+  flex: 0 1 170px;
+  min-width: 130px;
+}
+.logs-table :deep(td) {
+  height: auto !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  vertical-align: top;
+}
+.logs-bar-col {
+  width: 6px;
+  padding: 0 !important;
+}
+.logs-bar {
+  display: block;
+  width: 4px;
+  min-height: 20px;
+  height: 100%;
+  border-radius: 2px;
+}
+.logs-message-col {
   min-width: 360px;
 }
-.log-message {
+.logs-message {
   white-space: pre-wrap;
   word-break: break-word;
 }
-/* Vuetify fixes cell height (36px compact); with top alignment the slack all
-   lands below the content. Size rows to content instead. */
-.logs-table td {
-  height: auto !important;
-  vertical-align: top;
-  padding-top: 2px !important;
-  padding-bottom: 2px !important;
+.logs-level {
+  font-size: 0.6875rem;
+  font-weight: 600;
 }
-.request-pill {
-  display: inline-block;
-  min-width: 3.2em;
-  padding: 0 6px;
-  border: 0;
-  border-radius: 999px;
-  color: #fff;
+.logs-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.75rem;
-  line-height: 1.4;
-  text-align: center;
-  cursor: pointer;
+  font-size: 0.8125rem;
 }
-.log-fields-cell {
-  max-width: 280px;
+.logs-line--error {
+  background: rgba(var(--v-theme-error), 0.04);
 }
-.log-fields-toggle {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  max-width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.log-fields-keys {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.log-fields-row td {
-  background: rgba(var(--v-theme-on-surface), 0.04);
-}
-.log-fields-json {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
+.logs-line--warn {
+  background: rgba(var(--v-theme-warning), 0.05);
 }
 </style>

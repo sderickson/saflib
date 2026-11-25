@@ -49,32 +49,79 @@ export interface AdminLogFilters {
   level?: "error" | "warn" | "info";
   q?: string;
   request_id?: string;
+  /** Lines from one request, job delivery, cron tick or process. */
+  context_id?: string;
+  /** Lines by one user. */
+  user_id?: string;
+}
+
+const LIVE_POLL_MS = 5000;
+
+function logQuery(f: AdminLogFilters) {
+  return {
+    ...(f.level ? { level: f.level } : {}),
+    ...(f.q ? { q: f.q } : {}),
+    ...(f.request_id ? { request_id: f.request_id } : {}),
+    ...(f.context_id ? { context_id: f.context_id } : {}),
+    ...(f.user_id ? { user_id: f.user_id } : {}),
+  };
 }
 
 /** Persisted logs, newest first, a page at a time (`fetchNextPage`). */
-export function useListAdminLogs(filters: Ref<AdminLogFilters>) {
+export function useListAdminLogs(filters: Ref<AdminLogFilters>, live?: Ref<boolean>) {
   const client = getClient();
   type Page = OpsResponseBody["listOpsLogs"][200];
   return useInfiniteQuery<Page, TanstackError, InfiniteData<Page, string | undefined>, readonly unknown[], string | undefined>({
     queryKey: computed(() => ["ops", "logs", { ...filters.value }] as const),
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) => {
-      const f = filters.value;
-      return handleClientMethod(
+    queryFn: ({ pageParam }) =>
+      handleClientMethod(
         client.GET("/ops/logs", {
           params: {
-            query: {
-              limit: 100,
-              ...(f.level ? { level: f.level } : {}),
-              ...(f.q ? { q: f.q } : {}),
-              ...(f.request_id ? { request_id: f.request_id } : {}),
-              ...(pageParam ? { cursor: pageParam } : {}),
-            },
+            query: { limit: 100, ...logQuery(filters.value), ...(pageParam ? { cursor: pageParam } : {}) },
           },
+        }),
+      ),
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    refetchInterval: computed(() => (live?.value ? LIVE_POLL_MS : false)),
+  });
+}
+
+/** Log lines grouped by request, job, cron tick or process, newest first. */
+export function useListLogGroups(filters: Ref<AdminLogFilters>, live?: Ref<boolean>) {
+  const client = getClient();
+  type Page = OpsResponseBody["listOpsLogGroups"][200];
+  return useInfiniteQuery<Page, TanstackError, InfiniteData<Page, string | undefined>, readonly unknown[], string | undefined>({
+    queryKey: computed(() => ["ops", "log-groups", { ...filters.value }] as const),
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) => {
+      const { request_id: _r, ...f } = filters.value;
+      return handleClientMethod(
+        client.GET("/ops/logs/groups", {
+          params: { query: { limit: 50, ...logQuery(f), ...(pageParam ? { cursor: pageParam } : {}) } },
         }),
       );
     },
     getNextPageParam: (last) => last.next_cursor ?? undefined,
+    refetchInterval: computed(() => (live?.value ? LIVE_POLL_MS : false)),
+  });
+}
+
+/** Every line of one group (oldest first), for an expanded row. */
+export function useLogGroupLines(contextId: Ref<string | null>, live?: Ref<boolean>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["listOpsLogs"][200]["logs"], TanstackError>({
+    queryKey: computed(() => ["ops", "logs", "group", contextId.value] as const),
+    enabled: computed(() => !!contextId.value),
+    queryFn: async () => {
+      const page = await handleClientMethod(
+        client.GET("/ops/logs", {
+          params: { query: { context_id: contextId.value!, level: "http", limit: 500 } },
+        }),
+      );
+      return [...page.logs].reverse();
+    },
+    refetchInterval: computed(() => (live?.value ? LIVE_POLL_MS : false)),
   });
 }
 
