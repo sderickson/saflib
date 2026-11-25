@@ -8,3 +8,4 @@ export { default as UsPhoneNumberDisplay } from "./UsPhoneNumberDisplay.vue";
 export { default as ContentWidth } from "./ContentWidth.vue";
 export type { ContentWidthVariant } from "./ContentWidth.vue";
 export { default as PageNotFound } from "./PageNotFound.vue";
+export { default as ShortId } from "./ShortId.vue";
