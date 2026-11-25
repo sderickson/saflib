@@ -97,8 +97,8 @@ export function buildBaseHttpApp(
         ],
       }),
       createBaseAuditRouter(),
-      // Site-admin identity lookups for UserRef. Pass resolveDisplayNames to
-      // show names; Kratos traits only hold the email.
+      // Site-admin identity routes (UserRef lookups, Users page). Pass
+      // resolveProfiles to show names; Kratos traits only hold the email.
       createKratosAdminRouter(),
       createJobsRouter({ dbKey: getBaseJobsDbKey() }),
       createCronRouter({

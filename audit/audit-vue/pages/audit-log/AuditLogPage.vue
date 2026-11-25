@@ -78,7 +78,7 @@
       <template #[`item.resource`]="{ item }">
         <span v-if="item.resource_type || item.resource_id" class="d-inline-flex align-center ga-1 text-no-wrap">
           <span v-if="item.resource_type">{{ item.resource_type }}</span>
-          <ShortId v-if="item.resource_id" :id="item.resource_id" />
+          <ShortId v-if="item.resource_id" :id="item.resource_id" :prefix="item.resource_type?.charAt(0)" />
         </span>
         <span v-else class="text-medium-emphasis">—</span>
       </template>

@@ -11,6 +11,7 @@ import { CronJobsAsync } from "@saflib/cron-vue";
 import { JobsAsync } from "@saflib/jobs-vue";
 import { SentEmailsAsync } from "@saflib/email-vue";
 import { AuditLogsAsync } from "@saflib/audit-vue";
+import { UsersAsync } from "@saflib/ory-kratos-vue";
 import {
   AlertsAsync,
   DependenciesAsync,
@@ -21,7 +22,6 @@ import {
   OpsTokensAsync,
 } from "@saflib/ops-vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
-import UsersAsync from "./pages/users/UsersAsync.vue";
 import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
