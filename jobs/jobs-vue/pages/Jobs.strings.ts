@@ -1,3 +1,4 @@
 export const jobs = {
-  documentTitle: "Jobs",
+  documentTitle: "Background jobs",
+  title: "Background jobs",
 };

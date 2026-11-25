@@ -44,7 +44,7 @@
           <th>{{ strings.columns.level }}</th>
           <th>{{ strings.columns.request }}</th>
           <th>{{ strings.columns.operation }}</th>
-          <th>{{ strings.columns.message }}</th>
+          <th class="log-message-col">{{ strings.columns.message }}</th>
           <th>{{ strings.columns.fields }}</th>
         </tr>
       </thead>
@@ -199,6 +199,11 @@ const levelColor = (level: string) =>
 </script>
 
 <style scoped>
+/* Without a floor the message column loses every width fight and wraps every
+   few characters. */
+.log-message-col {
+  min-width: 360px;
+}
 .log-message {
   white-space: pre-wrap;
   word-break: break-word;

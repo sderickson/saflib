@@ -185,7 +185,7 @@ describe("JobsPage", () => {
 
   it("should render the title and loading indicator initially", async () => {
     const wrapper = await mountComponent(false);
-    expect(wrapper.find("h1").text()).toBe("Jobs");
+    expect(wrapper.find("h1").text()).toBe("Background jobs");
     expect(getLoadingIndicator(wrapper).exists()).toBe(true);
     expect(getTable(wrapper).exists()).toBe(false);
     expect(getErrorAlert(wrapper).exists()).toBe(false);

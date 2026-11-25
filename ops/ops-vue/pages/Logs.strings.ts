@@ -1,6 +1,6 @@
 export const ops_logs = {
-  documentTitle: "Logs",
-  title: "Logs",
+  documentTitle: "Server logs",
+  title: "Server logs",
   intro: "Persisted application logs (redacted at write time, kept for 14 days).",
   levelLabel: "Minimum level",
   anyLevel: "Any",

@@ -1,6 +1,6 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-4">Jobs</h1>
+    <h1 class="text-h4 mb-4">{{ strings.title }}</h1>
 
     <v-row class="mb-4" density="comfortable">
       <v-col cols="12" sm="6" md="3">
@@ -185,6 +185,7 @@ import {
   useCancelJobsByOriginalRequest,
 } from "../requests/queries";
 import { useJobsPageLoader } from "./Jobs.loader.ts";
+import { jobs as strings } from "./Jobs.strings.ts";
 
 const {
   pageSize,
