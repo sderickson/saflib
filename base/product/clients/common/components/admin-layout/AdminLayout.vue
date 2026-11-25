@@ -59,7 +59,7 @@
       <nav :aria-label="admin_layout.nav_label">
         <v-list nav density="compact">
           <template v-for="(group, gi) in visibleGroups" :key="group.label ?? gi">
-            <v-list-subheader v-if="group.label" class="text-uppercase admin-nav-subheader">
+            <v-list-subheader v-if="group.label" class="text-uppercase admin-nav-subheader mt-3">
               {{ group.label }}
               <v-chip v-if="group.tag" size="x-small" variant="tonal" class="ms-2">
                 {{ group.tag }}
@@ -73,6 +73,8 @@
               :title="item.name"
               color="primary"
               rounded="lg"
+              min-height="32"
+              class="admin-nav-item"
             >
               <template v-if="item.badge" #append>
                 <v-chip size="x-small" variant="tonal" :color="item.badgeColor ?? 'primary'">
@@ -133,6 +135,11 @@ const initials = computed(() => {
 </script>
 
 <style scoped>
+/* Vuetify's compact nav items are 40px plus a 4px gap; the admin list is
+   long, so keep it tight enough for every group to fit on a laptop screen. */
+.admin-nav-item {
+  margin-bottom: 0 !important;
+}
 .admin-nav-subheader {
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
