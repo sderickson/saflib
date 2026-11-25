@@ -709,6 +709,17 @@ export interface components {
                 flags: ("error_rate_high" | "error_rate_up" | "p95_up")[];
                 error: string | null;
             };
+            /** @description Is anyone using it? Signed-in users with a logged request in the window (from the persisted logs; null without them), and user-facing requests per hour: GET requests outside the ops, health and metrics routes, since background work arrives as POSTs (null without metrics). Null when the product has neither. If Prometheus couldn't be queried, `error` says why. */
+            activity: null | {
+                distinct_users: number | null;
+                /** @description Oldest first; buckets widen past 48 hours to keep at most 48 points. */
+                requests_by_hour: null | {
+                    /** Format: date-time */
+                    start: string;
+                    requests: number;
+                }[];
+                error: string | null;
+            };
             /** @description Alertmanager alerts: everything firing now (unacknowledged firing alerts count toward `needs_attention`) and how many fired during the window. Null when the product has no alert store. */
             alerts: null | {
                 firing: components["schemas"]["ops-alert"][];

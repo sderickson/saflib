@@ -10,6 +10,7 @@ export {
 export { pruneLogs, usedBytes, type PruneResult, type RetentionOptions } from "./retention.ts";
 export { listLogs, toFtsQuery, type ListLogsParams, type ListLogsResult } from "./queries/list-logs.ts";
 export { countLogsByLevel, type CountLogsByLevelResult } from "./queries/count-by-level.ts";
+export { countActiveUsers, type CountActiveUsersResult } from "./queries/count-active-users.ts";
 export {
   listTemplates,
   type ListTemplatesParams,

@@ -114,6 +114,16 @@ describe("persistent log transport", () => {
     expect(await throwError(countLogsByLevel(dbKey, new Date(Date.now() - 60_000)))).toEqual({ info: 1, warn: 2 });
   });
 
+  it("counts distinct signed-in users in a window", async () => {
+    child("a").info("one");
+    child("b").info("two");
+    logger.child({ service_name: "svc", user_id: "u_2" }).info("three");
+    logger.child({ service_name: "svc" }).info("anonymous");
+    transport.flush();
+    const { countActiveUsers } = await import("./index.ts");
+    expect(await throwError(countActiveUsers(dbKey, new Date(Date.now() - 60_000)))).toBe(2);
+  });
+
   it("tracks templates with window counts and flags new ones", async () => {
     const before = new Date(Date.now() - 1000);
     child("a").info("job 1 done");

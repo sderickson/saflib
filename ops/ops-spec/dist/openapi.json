@@ -588,6 +588,7 @@
           "issues",
           "logs",
           "metrics",
+          "activity",
           "alerts",
           "dependencies"
         ],
@@ -796,6 +797,63 @@
                         "p95_up"
                       ]
                     }
+                  },
+                  "error": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "activity": {
+            "description": "Is anyone using it? Signed-in users with a logged request in the window (from the persisted logs; null without them), and user-facing requests per hour: GET requests outside the ops, health and metrics routes, since background work arrives as POSTs (null without metrics). Null when the product has neither. If Prometheus couldn't be queried, `error` says why.\n",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "distinct_users",
+                  "requests_by_hour",
+                  "error"
+                ],
+                "properties": {
+                  "distinct_users": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "requests_by_hour": {
+                    "description": "Oldest first; buckets widen past 48 hours to keep at most 48 points.",
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "start",
+                            "requests"
+                          ],
+                          "properties": {
+                            "start": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "requests": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      }
+                    ]
                   },
                   "error": {
                     "type": [

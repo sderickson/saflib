@@ -7,6 +7,7 @@ import { throwError } from "@saflib/utils";
 import { opsServiceStorage } from "../context.ts";
 import { runHealthChecks } from "../health/run-health-checks.ts";
 import { digestMetrics } from "../metrics/digest-metrics.ts";
+import { digestActivity } from "../metrics/digest-activity.ts";
 import { mapAlert, PIPELINE_STALE_MS, WATCHDOG_ALERTNAME } from "./alerts.ts";
 import { latestDependencies } from "./get-ops-dependencies.ts";
 import { mapIssue, mapLogTemplate, mapOpsBoot, queryDate } from "./_helpers.ts";
@@ -20,11 +21,12 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
   const since = queryDate(req.query.since) ?? new Date(Date.now() - DAY_MS);
   await currentBoot;
 
-  const [health, recentDeploys, boots, metrics, firing, activeInWindow, watchdog, deps] = await Promise.all([
+  const [health, recentDeploys, boots, metrics, activity, firing, activeInWindow, watchdog, deps] = await Promise.all([
     runHealthChecks(healthChecks),
     throwError(listBoots(dbKey, { newBuildsOnly: true, limit: 50 })),
     throwError(countBootsSince(dbKey, since)),
     metricsConfig ? digestMetrics(metricsConfig, since) : Promise.resolve(null),
+    digestActivity({ metrics: metricsConfig, logsDbKey }, since),
     throwError(listAlerts(dbKey, { statuses: ["firing"], excludeAlertnames: [WATCHDOG_ALERTNAME], limit: 200 })),
     throwError(listAlerts(dbKey, { activeSince: since, excludeAlertnames: [WATCHDOG_ALERTNAME], limit: 200 })),
     throwError(listAlerts(dbKey, { alertnames: [WATCHDOG_ALERTNAME], limit: 1 })),
@@ -132,6 +134,7 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
     issues,
     logs,
     metrics,
+    activity,
     alerts,
     dependencies,
   };
