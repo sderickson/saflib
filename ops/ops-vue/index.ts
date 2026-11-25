@@ -8,6 +8,7 @@ import AlertsAsync from "./pages/AlertsAsync.vue";
 import AlertsPage from "./pages/AlertsPage.vue";
 import OpsDigestPanel from "./components/OpsDigestPanel.vue";
 import OpsGraph from "./components/OpsGraph.vue";
+import BuildChip from "./components/BuildChip.vue";
 import OpsMetricsAsync from "./pages/OpsMetricsAsync.vue";
 import DependenciesAsync from "./pages/DependenciesAsync.vue";
 import DiagnosticsAsync from "./pages/DiagnosticsAsync.vue";
@@ -15,8 +16,16 @@ import DiagnosticsAsync from "./pages/DiagnosticsAsync.vue";
 export { configureOpsVue } from "./client.ts";
 export { useOpsAccess } from "./requests/access.ts";
 export {
+  getBuildCommits,
+  getDeploymentLabel,
+  DEFAULT_SAFLIB_REPO_URL,
+  type BuildCommit,
+  type BuildRepoUrls,
+} from "./components/build-info.ts";
+export {
   AlertsAsync,
   AlertsPage,
+  BuildChip,
   DependenciesAsync,
   DiagnosticsAsync,
   IssuesAsync,
