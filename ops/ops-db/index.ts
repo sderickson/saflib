@@ -43,9 +43,10 @@ export {
   ackAlert,
   listAlerts,
   pruneResolvedAlerts,
+  resolveAlert,
   upsertAlerts,
 } from "./queries/ops-alerts/alerts.ts";
-export type { AckAlertResult, IncomingAlert, ListAlertsParams } from "./queries/ops-alerts/alerts.ts";
+export type { AckAlertResult, IncomingAlert, ListAlertsParams, ResolveAlertResult } from "./queries/ops-alerts/alerts.ts";
 export {
   claimNotification,
   getNotifierState,

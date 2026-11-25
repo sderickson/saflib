@@ -1,0 +1,1 @@
+ALTER TABLE `ops_alerts` ADD `resolved_by` text;

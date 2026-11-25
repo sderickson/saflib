@@ -27,6 +27,8 @@ function parseTime(value: string | undefined): Date | null {
 /**
  * Record alerts from one webhook delivery. A fingerprint seen before updates
  * its row; if it starts firing again (new `startsAt`), the ack is cleared.
+ * A delivery always wins over a manual resolve: if Alertmanager still says
+ * firing, the alert is firing again.
  */
 export const upsertAlerts = queryWrapper(
   async (dbKey: DbKey, alerts: IncomingAlert[], now: Date = new Date()): Promise<ReturnsError<number, never>> => {
@@ -42,6 +44,7 @@ export const upsertAlerts = queryWrapper(
         starts_at: startsAt,
         ends_at: a.status === "resolved" ? (parseTime(a.endsAt) ?? now) : null,
         last_received_at: now,
+        resolved_by: null,
       };
       const existing = await db.query.opsAlerts.findFirst({ where: eq(opsAlerts.fingerprint, a.fingerprint) });
       if (!existing) {
@@ -108,6 +111,28 @@ export const ackAlert = queryWrapper(
       .where(eq(opsAlerts.id, id))
       .returning();
     return row ? { result: row } : { error: new OpsAlertNotFoundError(id) };
+  },
+);
+
+export type ResolveAlertResult = ReturnsError<OpsAlert, OpsAlertNotFoundError>;
+
+/**
+ * Mark an alert resolved by hand, for one Alertmanager will never resolve
+ * (e.g. its host is gone). If it is in fact still firing, the next webhook
+ * delivery sets it firing again. Resolving an already-resolved alert
+ * changes nothing.
+ */
+export const resolveAlert = queryWrapper(
+  async (dbKey: DbKey, id: string, resolvedBy: string, now: Date = new Date()): Promise<ResolveAlertResult> => {
+    const db = opsDbManager.get(dbKey)!;
+    const [row] = await db
+      .update(opsAlerts)
+      .set({ status: "resolved", ends_at: now, resolved_by: resolvedBy })
+      .where(and(eq(opsAlerts.id, id), eq(opsAlerts.status, "firing")))
+      .returning();
+    if (row) return { result: row };
+    const existing = await db.query.opsAlerts.findFirst({ where: eq(opsAlerts.id, id) });
+    return existing ? { result: existing } : { error: new OpsAlertNotFoundError(id) };
   },
 );
 

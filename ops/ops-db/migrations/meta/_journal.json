@@ -57,6 +57,13 @@
       "when": 1794764372854,
       "tag": "0007_solid_nico_minoru",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1795625483774,
+      "tag": "0008_last_tyrannus",
+      "breakpoints": true
     }
   ]
 }

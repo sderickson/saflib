@@ -157,6 +157,12 @@ export interface OpsAlert {
   last_received_at: Date;
   acked_at: Date | null;
   acked_by: string | null;
+  /**
+   * Who resolved it by hand (`POST /ops/alerts/{id}/resolve`), e.g. for an
+   * alert from a host that's gone and will never send "resolved". Null when
+   * Alertmanager resolved it, or while firing.
+   */
+  resolved_by: string | null;
 }
 
 export const opsAlerts = sqliteTable("ops_alerts", {
@@ -173,6 +179,7 @@ export const opsAlerts = sqliteTable("ops_alerts", {
   last_received_at: integer("last_received_at", { mode: "timestamp_ms" }).notNull(),
   acked_at: integer("acked_at", { mode: "timestamp_ms" }),
   acked_by: text("acked_by"),
+  resolved_by: text("resolved_by"),
 });
 
 export type OpsAlertTest1 = Expect<Equal<OpsAlert, typeof opsAlerts.$inferSelect>>;

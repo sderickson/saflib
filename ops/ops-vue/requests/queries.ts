@@ -152,7 +152,7 @@ export function useTriageOpsIssue() {
 const alertsKey = ["ops", "alerts"] as const;
 
 /** Firing alerts, or everything active since `since` when `all` is set. */
-export function useListOpsAlerts(view: Ref<{ all: boolean; since?: string }>) {
+export function useListOpsAlerts(view: Readonly<Ref<{ all: boolean; since?: string }>>) {
   const client = getClient();
   return useQuery<OpsResponseBody["listOpsAlerts"][200], TanstackError>({
     queryKey: computed(() => [...alertsKey, { ...view.value }] as const),
@@ -175,6 +175,20 @@ export function useAckOpsAlert() {
   return useMutation<OpsResponseBody["ackOpsAlert"][200], TanstackError, { id: string }>({
     mutationFn: ({ id }) =>
       handleClientMethod(client.POST("/ops/alerts/{id}/ack", { params: { path: { id } }, body: {} })),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: alertsKey });
+      void queryClient.invalidateQueries({ queryKey: ["ops", "digest"] });
+    },
+  });
+}
+
+/** Resolve an alert by hand (e.g. one from a host that's gone). */
+export function useResolveOpsAlert() {
+  const client = getClient();
+  const queryClient = useQueryClient();
+  return useMutation<OpsResponseBody["resolveOpsAlert"][200], TanstackError, { id: string }>({
+    mutationFn: ({ id }) =>
+      handleClientMethod(client.POST("/ops/alerts/{id}/resolve", { params: { path: { id } }, body: {} })),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: alertsKey });
       void queryClient.invalidateQueries({ queryKey: ["ops", "digest"] });

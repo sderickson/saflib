@@ -30,7 +30,7 @@ import {
 } from "./graphs.ts";
 import { getOpsAccessHandler } from "./get-ops-access.ts";
 import { getOpsDependenciesHandler } from "./get-ops-dependencies.ts";
-import { ackOpsAlertHandler, listOpsAlertsHandler, receiveOpsAlertsHandler } from "./alerts.ts";
+import { ackOpsAlertHandler, listOpsAlertsHandler, receiveOpsAlertsHandler, resolveOpsAlertHandler } from "./alerts.ts";
 
 /** Routes with full paths (`/ops/*`, `/admin/ops-tokens*`). */
 export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
@@ -57,6 +57,7 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.get("/ops/alerts", listOpsAlertsHandler);
   router.post("/ops/alerts/webhook", receiveOpsAlertsHandler);
   router.post("/ops/alerts/:id/ack", ackOpsAlertHandler);
+  router.post("/ops/alerts/:id/resolve", resolveOpsAlertHandler);
   router.get("/ops/issues", listOpsIssuesHandler);
   router.get("/ops/issues/:id", getOpsIssueHandler);
   router.get("/ops/issues/:id/occurrences", listOpsIssueOccurrencesHandler);
