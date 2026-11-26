@@ -9,7 +9,7 @@ export const ops_logs = {
   anyLevel: "All levels",
   warnUp: "Warn and up",
   errorsOnly: "Errors only",
-  userLabel: "User ID",
+  userLabel: "User",
   idLabel: "Request or job ID",
   live: "Live",
   live_on: "Live: updating every 5 seconds (click to stop)",

@@ -8,16 +8,19 @@ const STATUSES: Job["status"][] = ["pending", "running", "retrying", "succeeded"
 export function useJobsLoader() {
   const pageSize = 20;
   const offset = ref(0);
-  // Links can open the page filtered, e.g. /jobs?status=dead from the Overview.
-  const initialStatus = useRoute()?.query.status;
+  // Links can open the page filtered: /jobs?status=dead (the Overview),
+  // ?request=<original request id> (a request's jobs), ?user=<id>.
+  const query = useRoute()?.query ?? {};
+  const initialStatus = query.status;
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
   const statusFilter = ref<Job["status"] | null>(
     typeof initialStatus === "string" && STATUSES.includes(initialStatus as Job["status"])
       ? (initialStatus as Job["status"])
       : null,
   );
   const operationIdFilter = ref("");
-  const userIdFilter = ref("");
-  const originalRequestIdFilter = ref("");
+  const userIdFilter = ref(str(query.user));
+  const originalRequestIdFilter = ref(str(query.request));
 
   const listFilters = computed<ListJobsQuery>(() => {
     const filters: ListJobsQuery = {

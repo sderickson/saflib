@@ -6,9 +6,15 @@
         <h2>{{ strings.health_title }}</h2>
       </template>
       <template #actions>
-        <v-btn variant="text" size="small" prepend-icon="mdi-refresh" :loading="health.isFetching.value" @click="health.refetch()">
-          {{ strings.health_recheck }}
-        </v-btn>
+        <v-btn
+          icon="mdi-refresh"
+          variant="text"
+          size="small"
+          :title="strings.health_recheck"
+          :aria-label="strings.health_recheck"
+          :loading="health.isFetching.value"
+          @click="health.refetch()"
+        />
       </template>
       <v-progress-linear v-if="health.isPending.value" indeterminate />
       <v-table v-else-if="health.data.value">

@@ -113,6 +113,7 @@ const links = computed(() => {
     l.user && { label: strings.user_page, to: l.user(props.id) },
     l.auditLog && { label: strings.audit_log, to: l.auditLog(props.id) },
     l.serverLogs && { label: strings.server_logs, to: l.serverLogs(props.id) },
+    l.jobs && { label: strings.jobs, to: l.jobs(props.id) },
   ].filter((x): x is { label: string; to: string } => !!x);
 });
 

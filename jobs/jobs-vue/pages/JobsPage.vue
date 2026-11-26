@@ -9,14 +9,24 @@
         prepend-inner-icon="mdi-magnify"
         clearable
       />
+      <v-chip
+        v-if="originalRequestIdFilter"
+        closable
+        variant="outlined"
+        close-label="Show all requests"
+        data-test="jobs-request-filter"
+        @click:close="originalRequestIdFilter = ''"
+      >
+        <span class="text-medium-emphasis me-1">Request</span>
+        <ShortId :id="originalRequestIdFilter" prefix="r" />
+      </v-chip>
       <template #actions>
         <v-btn icon="mdi-chevron-left" size="small" variant="text" title="Previous page" aria-label="Previous page" :disabled="offset === 0" @click="prevPage" />
         <v-btn icon="mdi-chevron-right" size="small" variant="text" title="Next page" aria-label="Next page" :disabled="!hasNextPage" @click="nextPage" />
       </template>
       <template #filters>
         <v-select v-model="statusFilter" :items="statusOptions" label="Status" clearable />
-        <v-text-field v-model="userIdFilter" label="User" clearable />
-        <v-text-field v-model="originalRequestIdFilter" label="Original Request Id" clearable />
+        <UserPicker :model-value="userIdFilter || null" label="Started by" @update:model-value="(id) => (userIdFilter = id ?? '')" />
       </template>
     </AdminToolbar>
 
@@ -123,6 +133,7 @@
       :busy="isMutating"
       :chain-cancelling="isMassCancelling"
       @close="selectedJobId = null"
+      @show-chain="showChain"
       @cancel-chain="cancelChain"
       @retry="retryJob"
       @cancel="cancelJob"
@@ -132,7 +143,9 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { AdminPageTitle, AdminToolbar, ContentWidth } from "@saflib/vue/components";
+import { useRoute } from "vue-router";
+import { AdminPageTitle, AdminToolbar, ContentWidth, ShortId } from "@saflib/vue/components";
+import { UserPicker } from "@saflib/ory-kratos-vue";
 import JobActor from "./JobActor.vue";
 import JobDetailDialog from "./JobDetailDialog.vue";
 import { canCancel, canRetry, statusColor } from "./job-format.ts";
@@ -156,7 +169,9 @@ const {
   jobsQuery,
 } = useJobsPageLoader();
 
-const selectedJobId = ref<string | null>(null);
+// ?job=<id> opens that job (links from other pages' job ids).
+const routeJob = useRoute()?.query.job;
+const selectedJobId = ref<string | null>(typeof routeJob === "string" ? routeJob : null);
 const actingJobId = ref<string | null>(null);
 
 const statusOptions: Job["status"][] = [
@@ -209,7 +224,7 @@ const mutationError = computed(
 );
 
 const activeFilterCount = computed(
-  () => (statusFilter.value ? 1 : 0) + (userIdFilter.value ? 1 : 0) + (originalRequestIdFilter.value ? 1 : 0),
+  () => (statusFilter.value ? 1 : 0) + (userIdFilter.value ? 1 : 0),
 );
 
 // Bulk actions on the checked rows: each eligible job, one at a time.
@@ -252,6 +267,12 @@ const cancelJob = (id: string) => {
       actingJobId.value = null;
     },
   });
+};
+
+// From the job dialog: list every job from that request.
+const showChain = (originalRequestId: string) => {
+  originalRequestIdFilter.value = originalRequestId;
+  selectedJobId.value = null;
 };
 
 const cancelChain = (originalRequestId: string) => {

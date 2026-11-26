@@ -38,7 +38,7 @@
       </template>
       <template #filters>
         <v-select v-model="level" :items="levelOptions" :label="strings.levelLabel" />
-        <v-text-field v-model="draft.user" :label="strings.userLabel" clearable />
+        <UserPicker :model-value="draft.user || null" :label="strings.userLabel" @update:model-value="(id) => (draft.user = id ?? '')" />
         <v-text-field v-model="draft.id" :label="strings.idLabel" clearable data-test="logs-id" />
       </template>
     </AdminToolbar>
@@ -134,6 +134,7 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { UserPicker } from "@saflib/ory-kratos-vue";
 import { AdminPageTitle, AdminToolbar, ContentWidth, ShortId } from "@saflib/vue/components";
 import { idColor } from "@saflib/vue";
 import { useLogsPageLoader } from "./Logs.loader.ts";

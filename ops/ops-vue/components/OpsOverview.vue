@@ -4,9 +4,15 @@
       <h1 class="text-h4">{{ strings.title }}</h1>
       <div class="d-flex align-center ga-3 text-body-2 text-medium-emphasis">
         <span v-if="digest">{{ strings.checked }} {{ formatClock(digest.generated_at) }}</span>
-        <v-btn variant="text" size="small" :loading="query.isFetching.value" @click="query.refetch()">
-          {{ strings.refresh }}
-        </v-btn>
+        <v-btn
+          icon="mdi-refresh"
+          variant="text"
+          size="small"
+          :title="strings.refresh"
+          :aria-label="strings.refresh"
+          :loading="query.isFetching.value"
+          @click="query.refetch()"
+        />
       </div>
     </div>
 
@@ -41,11 +47,14 @@
             <tr class="overview-table__group">
               <th colspan="3" scope="colgroup">{{ group.label }}</th>
             </tr>
+            <!-- The whole row opens its page (the name stays a real link for
+                 keyboard and middle-click). -->
             <tr
               v-for="tile in group.tiles"
               :key="tile.key"
               class="overview-row"
-              :class="`overview-row--${tile.tone}`"
+              :class="[`overview-row--${tile.tone}`, { 'overview-row--link': linkFor(tile.key) }]"
+              @click="openRow(tile.key, $event)"
               data-test="overview-tile"
               :data-tone="tile.tone"
             >
@@ -84,7 +93,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import type { RouteLocationRaw } from "vue-router";
+import { useRouter, type RouteLocationRaw } from "vue-router";
 import { AdminPanel, ContentWidth } from "@saflib/vue/components";
 import StatusIcon from "./StatusIcon.vue";
 import { LEAST_RELIABLE_ENDPOINTS_QUERY, SLOWEST_ENDPOINTS_QUERY } from "../pages/OpsMetrics.presets.ts";
@@ -111,6 +120,14 @@ const GRAPH_MEMORY = 'process_resident_memory_bytes{saf_app!="host"}';
 
 const query = useOpsDigest();
 const digest = computed(() => query.data.value?.digest);
+
+const router = useRouter();
+function openRow(key: string, event: MouseEvent) {
+  const to = linkFor(key);
+  // Clicks on the link itself (or inside the note's own links) handle themselves.
+  if (!to || (event.target as HTMLElement).closest("a, button")) return;
+  void router.push(to);
+}
 
 // Endpoint rows open Metrics on the matching ranked query.
 const endpointQueries: Record<string, string> = {
@@ -194,6 +211,12 @@ const formatClock = (iso: string) =>
   font-weight: 500;
   white-space: nowrap;
   width: 220px;
+}
+.overview-row--link {
+  cursor: pointer;
+}
+.overview-row--link:hover {
+  background: rgba(var(--v-theme-on-surface), 0.03);
 }
 .overview-row__label a {
   color: inherit;

@@ -3,6 +3,8 @@ export interface UserLinks {
   user?: (id: string) => string;
   auditLog?: (id: string) => string;
   serverLogs?: (id: string) => string;
+  /** Background jobs they started. */
+  jobs?: (id: string) => string;
 }
 
 let links: UserLinks = {};

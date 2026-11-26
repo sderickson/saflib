@@ -6,7 +6,7 @@
       {{ strings.no_events }}
     </p>
 
-    <AdminToolbar :label="strings.title" :active-filters="fromInput ? 1 : 0">
+    <AdminToolbar :label="strings.title" :active-filters="(fromInput ? 1 : 0) + (userFilter ? 1 : 0)">
       <v-chip
         v-if="userFilter"
         closable
@@ -37,6 +37,7 @@
         />
       </template>
       <template #filters>
+        <UserPicker :model-value="userFilter ?? null" :label="strings.user_label" @update:model-value="setUserFilter" />
         <v-text-field v-model="fromInput" :label="strings.from_label" :hint="strings.from_hint" autocomplete="off" />
         <div>
           <v-btn color="primary" variant="flat" :loading="listLoading" :disabled="listLoading || sealPending" @click="reloadFromStart">
@@ -116,7 +117,7 @@
 import type { AuditLog } from "@saflib/audit-spec/types";
 import { AdminPageTitle, AdminToolbar, ContentWidth, ShortId } from "@saflib/vue/components";
 import AuditActor from "./AuditActor.vue";
-import { UserRef } from "@saflib/ory-kratos-vue";
+import { UserPicker, UserRef } from "@saflib/ory-kratos-vue";
 import { useRoute, useRouter } from "vue-router";
 import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
 import { formatShortDateTime, showError, showInfo } from "@saflib/vue";
@@ -152,6 +153,9 @@ const route = useRoute();
 const router = useRouter();
 function clearUserFilter() {
   router.replace({ query: { ...route.query, user: undefined } });
+}
+function setUserFilter(id: string | null) {
+  router.replace({ query: { ...route.query, user: id ?? undefined } });
 }
 
 const listLoading = computed(

@@ -49,6 +49,9 @@
             <dt>Chain</dt>
             <dd>
               <ShortId :id="job.original_request_id" prefix="r" />
+              <v-btn variant="text" size="x-small" color="primary" class="ms-1" data-test="job-show-chain" @click="emit('show-chain', job.original_request_id)">
+                all jobs
+              </v-btn>
               <template v-if="job.parent_job_id"> · parent <ShortId :id="job.parent_job_id" prefix="j" /></template>
               <span class="text-medium-emphasis"> · enqueued by <code>{{ job.enqueued_by_operation_id }}</code></span>
               <div v-if="chainPending > 0" class="mt-1">
@@ -126,7 +129,7 @@ import { useGetJob, useListJobs } from "../requests/queries";
 import { canCancel, canRetry, formatDateTime, humanize, prettyBody, requestParts, statusColor } from "./job-format.ts";
 
 const props = defineProps<{ jobId: string | null; busy?: boolean; chainCancelling?: boolean }>();
-const emit = defineEmits<{ close: []; retry: [id: string]; cancel: [id: string]; "cancel-chain": [originalRequestId: string] }>();
+const emit = defineEmits<{ close: []; retry: [id: string]; cancel: [id: string]; "cancel-chain": [originalRequestId: string]; "show-chain": [originalRequestId: string] }>();
 
 const query = useGetJob(toRef(props, "jobId"));
 const job = computed(() => query.data.value?.job);

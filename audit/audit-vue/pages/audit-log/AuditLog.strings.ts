@@ -7,6 +7,7 @@ export const audit_log = {
   from_hint: "Leave empty for all rows",
   apply: "Apply",
   seal: "Seal & ship archive",
+  user_label: "User",
   loaded: "Loaded:",
   load_more: "Load more",
   invalid_from: "Invalid start time — use ISO-8601.",

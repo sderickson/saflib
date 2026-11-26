@@ -5,7 +5,7 @@ import {
   type AdminNavGroup,
 } from "@saflib/base-clients-common/components";
 import { adminLinks } from "@saflib/base-links";
-import { isDevelopmentDeployment } from "@saflib/vue";
+import { configureIdLinks, isDevelopmentDeployment } from "@saflib/vue";
 import { adminRepos as repos } from "./repos.ts";
 import { sectionMatch } from "./sections.ts";
 import { configureUserLinks } from "@saflib/ory-kratos-vue";
@@ -21,6 +21,19 @@ configureUserLinks({
   user: (id) => `${adminLinks.users.path}?id=${encodeURIComponent(id)}`,
   auditLog: (id) => `${adminLinks.audit.path}?user=${encodeURIComponent(id)}`,
   serverLogs: (id) => `${adminLinks.opsLogs.path}?user=${encodeURIComponent(id)}`,
+  jobs: (id) => `${adminLinks.jobs.path}?user=${encodeURIComponent(id)}`,
+});
+
+// Request and job ids link to where you'd look next while debugging.
+configureIdLinks({
+  r: (id) => [
+    { label: "Server logs for this request", to: `${adminLinks.opsLogs.path}?id=${encodeURIComponent(id)}` },
+    { label: "Jobs from this request", to: `${adminLinks.jobs.path}?request=${encodeURIComponent(id)}` },
+  ],
+  j: (id) => [
+    { label: "Open job", to: `${adminLinks.jobs.path}?job=${encodeURIComponent(id)}` },
+    { label: "Server logs for this job", to: `${adminLinks.opsLogs.path}?id=${encodeURIComponent(id)}` },
+  ],
 });
 
 const groups = computed<AdminNavGroup[]>(() => [

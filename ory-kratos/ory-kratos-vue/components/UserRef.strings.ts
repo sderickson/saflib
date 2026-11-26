@@ -7,4 +7,5 @@ export const user_ref = {
   user_page: "User",
   audit_log: "Audit log",
   server_logs: "Server logs",
+  jobs: "Jobs",
 };

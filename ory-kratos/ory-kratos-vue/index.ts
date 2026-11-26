@@ -1,8 +1,9 @@
 import UserRef from "./components/UserRef.vue";
 import ActorChip from "./components/ActorChip.vue";
+import UserPicker from "./components/UserPicker.vue";
 import UsersAsync from "./pages/users/UsersAsync.vue";
 
-export { UserRef, ActorChip, UsersAsync };
+export { UserRef, ActorChip, UserPicker, UsersAsync };
 export type { ActorKind } from "./components/ActorChip.vue";
 export { configureOryKratosVue } from "./client.ts";
 export {
