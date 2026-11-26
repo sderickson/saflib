@@ -62,7 +62,7 @@ describe("createAuditRotationHealthCheck", () => {
     it("needs action when overdue where sealing is expected, else notes it", async () => {
       await seed(5 * 24 * HOUR);
       expect(await tile(true)).toMatchObject({ value: "Seal overdue", detail: "Oldest unsealed event 5 days old", tone: "bad" });
-      expect(await tile(false)).toMatchObject({ tone: "none", detail: "Oldest unsealed event 5 days old · sealing is off here" });
+      expect(await tile(false)).toMatchObject({ tone: "ok", value: "Sealing off here", detail: "Oldest unsealed event 5 days old" });
     });
   });
 });

@@ -1,11 +1,20 @@
 import { computed, inject, ref, type InjectionKey } from "vue";
+import { useRoute } from "vue-router";
 import type { Job } from "@saflib/jobs-spec";
 import { useListJobs, type ListJobsQuery } from "../requests/queries.ts";
+
+const STATUSES: Job["status"][] = ["pending", "running", "retrying", "succeeded", "dead", "cancelled"];
 
 export function useJobsLoader() {
   const pageSize = 20;
   const offset = ref(0);
-  const statusFilter = ref<Job["status"] | null>(null);
+  // Links can open the page filtered, e.g. /jobs?status=dead from the Overview.
+  const initialStatus = useRoute()?.query.status;
+  const statusFilter = ref<Job["status"] | null>(
+    typeof initialStatus === "string" && STATUSES.includes(initialStatus as Job["status"])
+      ? (initialStatus as Job["status"])
+      : null,
+  );
   const operationIdFilter = ref("");
   const userIdFilter = ref("");
   const originalRequestIdFilter = ref("");

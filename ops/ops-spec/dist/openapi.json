@@ -633,10 +633,9 @@
             "enum": [
               "ok",
               "warn",
-              "bad",
-              "none"
+              "bad"
             ],
-            "description": "`bad` needs action and counts toward attention; `none` is informational."
+            "description": "`ok` green, `warn` yellow (worth a look), `bad` red (needs action; counts toward attention). Every tile has one: a fact with no status belongs on its own page, not the Overview.\n"
           }
         }
       },

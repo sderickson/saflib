@@ -149,7 +149,10 @@ describe("GET /ops/digest tiles", () => {
     expect(tiles).toContainEqual(
       expect.objectContaining({ key: "inbox", group: "customers", value: "Couldn't check", detail: "db locked", tone: "warn" }),
     );
-    expect(tiles.map((t: { key: string }) => t.key)).toEqual(expect.arrayContaining(["health", "alerts", "deploys"]));
+    expect(tiles.map((t: { key: string }) => t.key)).toEqual(expect.arrayContaining(["health", "alerts"]));
+    // Every tile is green, yellow or red; deploys live in Diagnostics → Build.
+    expect(tiles.map((t: { key: string }) => t.key)).not.toContain("deploys");
+    expect(tiles.every((t: { tone: string }) => ["ok", "warn", "bad"].includes(t.tone))).toBe(true);
     expect(summary.needs_attention).toBe(true);
     expect(summary.attention).toContainEqual({ kind: "tile", key: "jobs", summary: "Background jobs: 3 failed", tone: "bad" });
     expect(proc.requests_total).toBeGreaterThanOrEqual(0);

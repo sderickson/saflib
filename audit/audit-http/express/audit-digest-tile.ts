@@ -15,7 +15,7 @@ export interface AuditDigestTileProvider {
     label: string;
     value: string;
     detail: string;
-    tone: "ok" | "warn" | "bad" | "none";
+    tone: "ok" | "warn" | "bad";
   }>;
 }
 
@@ -46,11 +46,16 @@ export function auditDigestTile(options: {
       if (!oldest) return { ...base, value: "Sealed", detail: "No unsealed events", tone: "ok" };
       const ageMs = (options.now?.() ?? new Date()).getTime() - oldest.getTime();
       const overdue = ageMs > ROTATION_STALE_THRESHOLD_MS;
+      // Without sealing in this environment (dev, test stacks) an old
+      // unsealed event is expected, not a problem.
+      if (overdue && !expectSealing) {
+        return { ...base, value: "Sealing off here", detail: `Oldest unsealed event ${age(ageMs)} old`, tone: "ok" };
+      }
       return {
         ...base,
         value: overdue ? "Seal overdue" : "Sealed on schedule",
-        detail: `Oldest unsealed event ${age(ageMs)} old${overdue && !expectSealing ? " · sealing is off here" : ""}`,
-        tone: overdue ? (expectSealing ? "bad" : "none") : "ok",
+        detail: `Oldest unsealed event ${age(ageMs)} old`,
+        tone: overdue ? "bad" : "ok",
       };
     },
   };

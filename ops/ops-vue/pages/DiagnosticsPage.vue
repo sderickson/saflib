@@ -94,6 +94,15 @@
         <dt>{{ strings.build_rows.env }}</dt>
         <dd>{{ deployment }}</dd>
       </dl>
+      <h3 class="diagnostics-build__section">{{ strings.deploys_title }}</h3>
+      <p v-if="!deploys.length" class="text-body-2 text-medium-emphasis" data-test="diagnostics-no-deploys">{{ strings.no_deploys }}</p>
+      <ul v-else class="diagnostics-deploys" data-test="diagnostics-deploys">
+        <li v-for="d in deploys" :key="d.id">
+          <span>{{ formatWhen(d.started_at) }}</span>
+          <code>{{ (d.commit_root ?? d.release_commit_root ?? d.build_ref ?? "").slice(0, 7) || "—" }}</code>
+          <span class="text-medium-emphasis">{{ d.service_name }}</span>
+        </li>
+      </ul>
     </AdminPanel>
 
     <MetricsCard v-else />
@@ -183,6 +192,9 @@ const resultLink = (p: OpsDiagnosticProbe): RouteLocationRaw | undefined => {
 const build = computed(() => getBuildCommits(props.repos));
 const deployment = getDeploymentName() ?? "unknown";
 const digest = useOpsDigest();
+const deploys = computed(() => digest.data.value?.digest.deploys ?? []);
+const formatWhen = (iso: string) =>
+  new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
 const startedAt = computed(() => {
   const iso = digest.data.value?.digest.process.started_at;
   return iso ? new Date(iso).toLocaleString() : "—";
@@ -195,6 +207,22 @@ const formatClock = (iso: string) =>
 <style scoped>
 .diagnostics-build {
   max-width: 560px;
+}
+.diagnostics-build__section {
+  margin: 20px 0 8px !important;
+}
+.diagnostics-deploys {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  display: grid;
+  gap: 6px;
+}
+.diagnostics-deploys li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
 }
 .build-grid {
   display: grid;

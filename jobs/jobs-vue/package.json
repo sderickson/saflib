@@ -15,7 +15,8 @@
     "@saflib/ory-kratos-vue": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
-    "@tanstack/vue-query": "*"
+    "@tanstack/vue-query": "*",
+    "vue-router": "*"
   },
   "sideEffects": false
 }

@@ -77,9 +77,7 @@ export function builtInTiles(d: Omit<OpsDigest, "tiles" | "summary" | "process">
           ? "bad"
           : a.pipeline_stale || (a.pipeline_missing && expectAlerting)
             ? "warn"
-            : a.pipeline_missing
-              ? "none"
-              : "ok",
+            : "ok",
     });
   }
   if (d.issues) {
@@ -105,15 +103,6 @@ export function builtInTiles(d: Omit<OpsDigest, "tiles" | "summary" | "process">
       tone: dep.actionable > 0 || dep.runtime_eol_soon > 0 ? "bad" : dep.stale ? "warn" : "ok",
     });
   }
-  const latest = d.deploys[0];
-  tiles.push({
-    key: "deploys",
-    group: "system",
-    label: "Deploys",
-    value: `${d.deploys.length} in window`,
-    detail: latest ? `Latest ${latest.commit_root?.slice(0, 7) ?? ""}`.trim() : "No new builds",
-    tone: "none",
-  });
   return tiles;
 }
 

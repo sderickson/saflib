@@ -18,5 +18,8 @@ properties:
     description: A line of context, e.g. "Last 24h · none stuck".
   tone:
     type: string
-    enum: [ ok, warn, bad, none ]
-    description: "`bad` needs action and counts toward attention; `none` is informational."
+    enum: [ ok, warn, bad ]
+    description: >
+      `ok` green, `warn` yellow (worth a look), `bad` red (needs action;
+      counts toward attention). Every tile has one: a fact with no status
+      belongs on its own page, not the Overview.

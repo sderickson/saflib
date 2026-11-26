@@ -15,5 +15,5 @@ export const ops_overview = {
   right_now: "right now",
   builds: "Builds",
   self_test: "Run observability self-test",
-  tone_labels: { ok: "OK", warn: "Check", bad: "Needs action", none: "" } as Record<string, string>,
+  tone_labels: { ok: "OK", warn: "Check", bad: "Needs action" } as Record<string, string>,
 };

@@ -812,10 +812,10 @@ export interface components {
             /** @description A line of context, e.g. "Last 24h · none stuck". */
             detail: string;
             /**
-             * @description `bad` needs action and counts toward attention; `none` is informational.
+             * @description `ok` green, `warn` yellow (worth a look), `bad` red (needs action; counts toward attention). Every tile has one: a fact with no status belongs on its own page, not the Overview.
              * @enum {string}
              */
-            tone: "ok" | "warn" | "bad" | "none";
+            tone: "ok" | "warn" | "bad";
         };
         "ops-digest": {
             /** Format: date-time */

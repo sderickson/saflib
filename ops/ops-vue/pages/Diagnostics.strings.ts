@@ -34,6 +34,8 @@ export const ops_diagnostics = {
     metrics: "View in Metrics",
   } as Record<string, string>,
   build: "Build",
+  deploys_title: "Deploys in the last 24 hours",
+  no_deploys: "No new builds in the last 24 hours.",
   tabs: { test: "Test", build: "Build", metrics: "Metrics" },
   build_rows: { root: "root", saflib: "saflib", started: "Server started", env: "Env" },
   metrics_title: "/metrics",
