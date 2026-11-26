@@ -66,3 +66,22 @@ describe("createAuditRotationHealthCheck", () => {
     });
   });
 });
+
+describe("auditDiagnosticProbe", () => {
+  it("appends a diagnostics.test event and finds it by run", async () => {
+    const { auditDb: db } = await import("@saflib/audit-db/instances");
+    const { auditDiagnosticProbe } = await import("./audit-diagnostic-probe.ts");
+    const prev = process.env.DEPLOYMENT_NAME;
+    process.env.DEPLOYMENT_NAME = "audit-probe-test";
+    const key = db.connect();
+    const probe = auditDiagnosticProbe({ getAuditDbKey: () => key });
+    const since = new Date(Date.now() - 1000);
+    expect(await probe.find({ runId: "runAAAA1", since })).toBeNull();
+    await probe.run({ runId: "runAAAA1", tag: "[diag:runAAAA1] audit-event" });
+    expect(await probe.find({ runId: "runAAAA1", since })).toMatchObject({ ref: { kind: "audit" } });
+    expect(await probe.find({ runId: "other999", since })).toBeNull();
+    db.disconnect(key);
+    if (prev === undefined) delete process.env.DEPLOYMENT_NAME;
+    else process.env.DEPLOYMENT_NAME = prev;
+  });
+});
