@@ -9,6 +9,8 @@
     ".": "./index.ts"
   },
   "dependencies": {
+    "@saflib/audit-http": "*",
+    "@saflib/base-audit": "*",
     "@saflib/base-email": "*",
     "@saflib/base-service-common": "*",
     "@saflib/node": "*",

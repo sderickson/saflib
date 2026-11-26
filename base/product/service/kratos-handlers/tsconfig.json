@@ -20,10 +20,16 @@
   },
   "references": [
     {
+      "path": "../../../../audit/audit-http"
+    },
+    {
       "path": "../../../../node"
     },
     {
       "path": "../../../../ory-kratos/ory-kratos-http"
+    },
+    {
+      "path": "../audit"
     },
     {
       "path": "../common"
