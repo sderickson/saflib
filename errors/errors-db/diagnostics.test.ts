@@ -33,10 +33,11 @@ describe("diagnostics test signals", () => {
     expect(second.group.id).toBe(first.group.id);
     const real = recordOccurrence(dbKey, { ...base, message: "real failure" });
 
-    const found = findOccurrenceContaining(dbKey, "run2bbbb", new Date(Date.now() - 60_000));
+    const found = findOccurrenceContaining(dbKey, "[diag:run2bbbb] server-500", new Date(Date.now() - 60_000));
     expect(found).toMatchObject({ groupId: first.group.id, occurrenceId: second.occurrenceId });
-    expect(findOccurrenceContaining(dbKey, "nope1234", new Date(0))).toBeNull();
-    expect(findOccurrenceContaining(dbKey, "bad%id", new Date(0))).toBeNull();
+    expect(findOccurrenceContaining(dbKey, "[diag:run2bbbb] client-vue", new Date(0))).toBeNull();
+    // LIKE wildcards are literal.
+    expect(findOccurrenceContaining(dbKey, "run_bbbb", new Date(0))).toBeNull();
 
     expect(await resolveDiagnosticIssues(dbKey, "admin")).toBe(1);
     expect((await throwError(getIssue(dbKey, first.group.id)))?.status).toBe("resolved");

@@ -20,6 +20,7 @@ import type { BuildInfo, ReleaseInfo } from "@saflib/node/git-hashes";
 import type { HealthCheck } from "./health/types.ts";
 import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
 import type { DigestTileProvider } from "./digest/tiles.ts";
+import { builtInProbes, RunRegistry, type DiagnosticProbe } from "./diagnostics/probes.ts";
 
 export interface OpsRouterOptions {
   /** Connection to the ops database; connects with `dbOptions` when omitted. */
@@ -56,6 +57,12 @@ export interface OpsRouterOptions {
    * customer queues. A tile with tone `bad` counts toward needs_attention.
    */
   digestTiles?: DigestTileProvider[];
+  /**
+   * Self-test probes beyond the ops API's own (client errors, server error,
+   * warn log, slow request, test alert): e.g. a failing background job or an
+   * audit event (see the jobs and audit packages' providers).
+   */
+  diagnosticProbes?: DiagnosticProbe[];
   /**
    * Daily dependency checks (OSV advisories, npm latest) of the image's
    * lockfile. On by default when a lockfile exists at
@@ -122,6 +129,20 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
     issuesDbKey: options.issuesDbKey,
     metrics,
     digestTiles: options.digestTiles,
+    diagnostics: {
+      probes: [
+        ...builtInProbes({
+          dbKey,
+          issuesDbKey: options.issuesDbKey,
+          logsDbKey: options.logsDbKey,
+          metricsEnabled: !!metrics,
+          alertmanagerUrl: process.env.ALERTMANAGER_URL,
+          saf_app: metrics?.app,
+        }),
+        ...(options.diagnosticProbes ?? []),
+      ],
+      registry: new RunRegistry(),
+    },
     // Each router creation is one process start in production.
     currentBoot: recordCurrentBoot(dbKey, options.buildInfo, options.releaseInfo),
     acceptedAdvisories: [

@@ -37,3 +37,11 @@ export {
   type DigestTileProvider,
 } from "./digest/tiles.ts";
 export { effectiveMetricsConfig } from "./http.ts";
+export {
+  builtInProbes,
+  diagTag,
+  RunRegistry,
+  type DiagnosticFound,
+  type DiagnosticProbe,
+  type DiagnosticRef,
+} from "./diagnostics/probes.ts";

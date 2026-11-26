@@ -10,18 +10,17 @@ export interface FoundOccurrence {
 }
 
 /**
- * The newest occurrence since `since` whose message or fields contain
- * `text` (a Diagnostics run id), or null. Ids are alphanumeric; anything
- * else is rejected so the LIKE pattern stays literal.
+ * The newest occurrence since `since` whose message, fields or stack contain
+ * `text` (a Diagnostics tag), matched literally, or null.
  */
 export function findOccurrenceContaining(dbKey: DbKey, text: string, since: Date): FoundOccurrence | null {
-  if (!/^[A-Za-z0-9_-]{4,64}$/.test(text)) return null;
+  if (text.length < 4 || text.length > 200) return null;
   const client = issuesDbManager.get(dbKey)!.$client;
-  const pattern = `%${text}%`;
+  const pattern = `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
   const row = client
     .prepare(
       `SELECT id, group_id, ts FROM issue_occurrences
-       WHERE ts >= ? AND (message LIKE ? OR fields LIKE ? OR stack LIKE ?)
+       WHERE ts >= ? AND (message LIKE ? ESCAPE '\\' OR fields LIKE ? ESCAPE '\\' OR stack LIKE ? ESCAPE '\\')
        ORDER BY id DESC LIMIT 1`,
     )
     .get(since.getTime(), pattern, pattern, pattern) as { id: number; group_id: string; ts: number } | undefined;

@@ -43,6 +43,8 @@ components:
       $ref: "./schemas/ops-digest.yaml"
     OpsDigestTile:
       $ref: "./schemas/ops-digest-tile.yaml"
+    OpsDiagnosticProbe:
+      $ref: "./schemas/ops-diagnostic-probe.yaml"
     OpsDependencies:
       $ref: "./schemas/ops-dependencies.yaml"
     OpsAlert:
@@ -71,6 +73,18 @@ paths:
   /ops/logs:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogs"
+  /ops/diagnostics:
+    get:
+      $ref: "./routes/diagnostics.yaml#/listOpsDiagnostics"
+  /ops/diagnostics/runs/{run_id}:
+    get:
+      $ref: "./routes/diagnostics.yaml#/getOpsDiagnosticRun"
+  /ops/diagnostics/runs/{run_id}/probes/{probe_id}:
+    post:
+      $ref: "./routes/diagnostics.yaml#/runOpsDiagnosticProbe"
+  /ops/diagnostics/clear:
+    post:
+      $ref: "./routes/diagnostics.yaml#/clearOpsDiagnostics"
   /ops/logs/groups:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogGroups"

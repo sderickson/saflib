@@ -1,0 +1,26 @@
+type: object
+description: One observability self-test probe.
+required: [ id, side, label, what, destination, link, skip_reason ]
+properties:
+  id:
+    type: string
+    description: e.g. `client-vue`, `server-500`, `job-failure`.
+  side:
+    type: string
+    enum: [ client, server ]
+    description: Client probes run in the browser; server probes via `runOpsDiagnosticProbe`.
+  label:
+    type: string
+  what:
+    type: string
+    description: What it does, in a phrase.
+  destination:
+    type: string
+    description: Where its signal should land, e.g. "Issues".
+  link:
+    type: string
+    enum: [ issues, logs, jobs, audit, alerts, metrics ]
+    description: Which admin page to link a landed signal to.
+  skip_reason:
+    type: [ string, "null" ]
+    description: Why it can't run here (e.g. "Needs Prometheus"), or null.

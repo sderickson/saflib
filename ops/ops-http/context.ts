@@ -4,6 +4,7 @@ import type { OpsBoot } from "@saflib/ops-db";
 import type { HealthCheck } from "./health/types.ts";
 import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
 import type { DigestTileProvider } from "./digest/tiles.ts";
+import type { DiagnosticProbe, RunRegistry } from "./diagnostics/probes.ts";
 import type { AcceptedAdvisory } from "./dependencies/accepted.ts";
 
 /** Per-router state for ops handlers. */
@@ -22,6 +23,8 @@ export interface OpsServiceContext {
   metrics?: OpsMetricsConfig;
   /** Product tiles for the admin Overview (see `OpsRouterOptions.digestTiles`). */
   digestTiles?: DigestTileProvider[];
+  /** Observability self-test probes and what each run triggered. */
+  diagnostics?: { probes: DiagnosticProbe[]; registry: RunRegistry };
   /** This process's boot record, once written. */
   currentBoot: Promise<OpsBoot | undefined>;
 }
