@@ -355,13 +355,14 @@ describe("JobsPage", () => {
         return HttpResponse.json({ job: makeJob({ id: String(params.id), status: "cancelled" }) });
       }),
     );
-    // Check every row: job-1 is pending (cancellable), job-2 dead (retryable).
+    // Check every row: job-1 is pending (cancellable), job-2 dead (retryable,
+    // or cancellable to give up on it), job-3 succeeded (neither).
     await wrapper.find("thead input[type=checkbox]").setValue(true);
     await vi.waitFor(() => expect(wrapper.find("[data-test=jobs-bulk]").text()).toContain("3 selected"));
     expect(wrapper.find("[data-test=jobs-bulk-retry]").text()).toContain("Retry 1");
-    expect(wrapper.find("[data-test=jobs-bulk-cancel]").text()).toContain("Cancel 1");
+    expect(wrapper.find("[data-test=jobs-bulk-cancel]").text()).toContain("Cancel 2");
     await wrapper.find("[data-test=jobs-bulk-cancel]").trigger("click");
-    await vi.waitFor(() => expect(cancelled).toEqual(["job-1"]));
+    await vi.waitFor(() => expect(cancelled).toEqual(["job-1", "job-2"]));
     expect(retried).toEqual([]);
     await vi.waitFor(() => expect(wrapper.find("[data-test=jobs-bulk]").exists()).toBe(false));
   });

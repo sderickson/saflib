@@ -17,7 +17,8 @@ export const statusColor = (status: Job["status"] | null | undefined): string =>
 };
 
 export const canRetry = (status: Job["status"]) => status === "dead" || status === "cancelled";
-export const canCancel = (status: Job["status"]) => status === "pending" || status === "retrying";
+/** Pending/retrying jobs can be cancelled; dead ones given up on (they stop counting as failed). */
+export const canCancel = (status: Job["status"]) => status === "pending" || status === "retrying" || status === "dead";
 
 export const formatDateTime = (iso: string | null | undefined): string => {
   if (!iso) return "—";

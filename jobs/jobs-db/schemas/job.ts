@@ -26,6 +26,7 @@ const jobTerminalReason = [
   "auth-unresolvable",
   "cancelled-by-admin",
   "cancelled-by-chain",
+  "given-up-by-admin",
 ] as const;
 export type JobTerminalReason = (typeof jobTerminalReason)[number];
 

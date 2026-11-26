@@ -189,6 +189,7 @@ properties:
           - auth-unresolvable
           - cancelled-by-admin
           - cancelled-by-chain
+          - given-up-by-admin
           - null
         description: >
           Why the job became terminal. Null when the job succeeded or result is from a non-terminal retryable failure mid-flight.
