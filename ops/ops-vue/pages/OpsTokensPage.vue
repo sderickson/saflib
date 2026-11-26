@@ -7,7 +7,6 @@
         {{ strings.create }}
       </v-btn>
     </div>
-    <p class="text-body-2 mb-4">{{ strings.intro }}</p>
 
     <v-chip-group
       v-if="tokens.length > 0"

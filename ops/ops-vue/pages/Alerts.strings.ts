@@ -1,8 +1,6 @@
 export const ops_alerts = {
   documentTitle: "Alerts",
   title: "Alerts",
-  intro:
-    "Alerts from the host's Prometheus rules. Acknowledging one stops it counting as needing attention until it fires again. Resolve one by hand only if Alertmanager never will (e.g. its host is gone); if it's still firing, it comes back.",
   tabFiring: "Firing",
   tabRecent: "Last 7 days",
   empty: "Nothing here.",

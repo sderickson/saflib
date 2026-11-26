@@ -1,7 +1,6 @@
 export const users_page = {
   documentTitle: "Users",
   title: "Users",
-  intro: "Everyone with an account.",
   search: "Search by name, email or ID",
   columns: {
     user: "User",

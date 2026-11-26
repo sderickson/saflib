@@ -1,7 +1,6 @@
 <template>
   <ContentWidth variant="full">
     <h1 class="text-h4 mb-1">{{ strings.title }}</h1>
-    <p class="text-body-2 text-medium-emphasis mb-4">{{ strings.intro }}</p>
 
     <v-card variant="outlined">
       <v-toolbar density="compact" color="surface" class="logs-toolbar px-2" role="toolbar" :aria-label="strings.title">

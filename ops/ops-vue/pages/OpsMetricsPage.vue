@@ -1,7 +1,6 @@
 <template>
   <ContentWidth variant="full">
     <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
-    <p class="text-body-2 mb-4">{{ strings.intro }}</p>
 
     <div class="mb-4">
       <div v-for="group in groups" :key="group.name" class="d-flex flex-wrap align-center ga-1 mb-1">

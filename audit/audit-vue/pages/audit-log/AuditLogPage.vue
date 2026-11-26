@@ -1,9 +1,6 @@
 <template>
   <ContentWidth variant="full" class="audit-log-page">
     <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
-    <p v-if="description" class="text-body-1 text-medium-emphasis mb-4">
-      {{ description }}
-    </p>
 
     <p v-if="spanHead || spanTail" class="text-body-2 text-medium-emphasis mb-4">
       {{ strings.stored_span }}
@@ -110,7 +107,6 @@ import { useAuditLogsPageLoader } from "./AuditLog.loader.ts";
 
 withDefaults(
   defineProps<{
-    description?: string;
     sealEnabled?: boolean;
   }>(),
   {

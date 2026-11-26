@@ -1,8 +1,6 @@
 export const ops_dependencies = {
   documentTitle: "Dependencies",
   title: "Dependencies",
-  intro:
-    "What this app's server runs, checked against OSV.dev advisories, the npm registry, and endoflife.date a few minutes after each deploy and then daily. Renovate opens the update PRs; this shows what's actually deployed.",
   none: "No check yet. Checks run in built images a couple of minutes after a deploy.",
   checked: "Checked",
   stale: "stale",

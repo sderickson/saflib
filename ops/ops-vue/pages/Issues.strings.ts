@@ -1,7 +1,6 @@
 export const ops_issues = {
   documentTitle: "Issues",
   title: "Issues",
-  intro: "Server and client errors and warnings, grouped. Messages and stacks are redacted at write time.",
   tabActive: "Open",
   tabResolved: "Resolved",
   tabIgnored: "Ignored",

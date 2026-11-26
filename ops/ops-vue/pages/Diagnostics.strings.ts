@@ -1,8 +1,6 @@
 export const ops_diagnostics = {
   documentTitle: "Diagnostics",
   title: "Diagnostics",
-  intro:
-    "Send harmless test signals through every observability path, then check each one landed where it should. They show up for real in Issues, Server logs and the rest, tagged diag so you can find them, and never page anyone.",
   clear: "Clear test signals",
   cleared: (n: number) => `Resolved ${n} test ${n === 1 ? "issue" : "issues"}`,
   run_all: "Run all checks",

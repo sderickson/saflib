@@ -1,7 +1,6 @@
 <template>
   <ContentWidth variant="full">
     <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
-    <p class="text-body-2 mb-4">{{ strings.intro }}</p>
 
     <p v-if="!deps" class="text-body-1">{{ strings.none }}</p>
     <template v-else>

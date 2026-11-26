@@ -1,7 +1,6 @@
 <template>
   <ContentWidth variant="full">
     <h1 class="text-h4 mb-1">{{ strings.title }}</h1>
-    <p class="text-body-2 text-medium-emphasis mb-4">{{ strings.intro }}</p>
 
     <div class="users-split" :class="{ 'users-split--stacked': stacked }">
       <section v-show="showList" class="users-list" :aria-label="strings.title">

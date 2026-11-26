@@ -1,7 +1,6 @@
 <template>
   <ContentWidth variant="full">
     <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
-    <p class="text-body-2 mb-4">{{ strings.intro }}</p>
 
     <v-tabs :model-value="tab" class="mb-4" density="compact" @update:model-value="goToTab">
       <v-tab value="active" data-test="issues-tab-active">{{ strings.tabActive }}</v-tab>

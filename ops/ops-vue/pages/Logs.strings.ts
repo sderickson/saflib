@@ -1,7 +1,6 @@
 export const ops_logs = {
   documentTitle: "Server logs",
   title: "Server logs",
-  intro: "Requests, background jobs and application logs, redacted at write time. Kept 14 days (requests 7).",
   view_label: "View",
   by_request: "By request",
   chronological: "Chronological",

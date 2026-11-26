@@ -3,7 +3,6 @@
     <div class="d-flex flex-wrap align-start justify-space-between ga-4 mb-4">
       <div style="max-width: 760px">
         <h1 class="text-h4 mb-1">{{ strings.title }}</h1>
-        <p class="text-body-2 text-medium-emphasis mb-0">{{ strings.intro }}</p>
       </div>
       <div class="d-flex ga-2">
         <v-btn variant="text" :loading="clear.isPending.value" data-test="diagnostics-clear" @click="onClear">
