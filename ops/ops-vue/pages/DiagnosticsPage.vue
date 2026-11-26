@@ -1,10 +1,8 @@
 <template>
   <ContentWidth variant="full">
-    <div class="d-flex flex-wrap align-start justify-space-between ga-4 mb-4">
-      <div style="max-width: 760px">
-        <h1 class="text-h4 mb-1">{{ strings.title }}</h1>
-      </div>
-      <div class="d-flex ga-2">
+    <div class="d-flex flex-wrap align-center justify-space-between ga-4 mb-2">
+      <h1 class="text-h4">{{ strings.title }}</h1>
+      <div v-if="tab === 'test'" class="d-flex ga-2">
         <v-btn variant="text" :loading="clear.isPending.value" data-test="diagnostics-clear" @click="onClear">
           {{ strings.clear }}
         </v-btn>
@@ -14,7 +12,13 @@
       </div>
     </div>
 
-    <AdminPanel class="mb-6">
+    <v-tabs :model-value="tab" class="mb-4" density="compact" @update:model-value="goToTab">
+      <v-tab value="test" data-test="diagnostics-tab-test">{{ strings.tabs.test }}</v-tab>
+      <v-tab value="build" data-test="diagnostics-tab-build">{{ strings.tabs.build }}</v-tab>
+      <v-tab value="metrics" data-test="diagnostics-tab-metrics">{{ strings.tabs.metrics }}</v-tab>
+    </v-tabs>
+
+    <AdminPanel v-if="tab === 'test'">
       <template #title>
         <h2 class="text-subtitle-1 font-weight-medium">
           <template v-if="run.startedAt.value">
@@ -76,25 +80,23 @@
       </v-table>
     </AdminPanel>
 
-    <div class="diagnostics-cards">
-      <v-card class="pa-4">
-        <h2 class="text-subtitle-1 font-weight-medium mb-3">{{ strings.build }}</h2>
-        <dl class="build-grid">
-          <template v-for="c in [build.root, build.saflib]" :key="c.label">
-            <dt>{{ c.label }}</dt>
-            <dd>
-              <a v-if="c.href" :href="c.href" target="_blank" rel="noopener noreferrer"><code>{{ c.sha.slice(0, 12) }}</code></a>
-              <code v-else>{{ c.sha }}</code>
-            </dd>
-          </template>
-          <dt>{{ strings.build_rows.started }}</dt>
-          <dd>{{ startedAt }}</dd>
-          <dt>{{ strings.build_rows.env }}</dt>
-          <dd>{{ deployment }}</dd>
-        </dl>
-      </v-card>
-      <MetricsCard />
-    </div>
+    <AdminPanel v-else-if="tab === 'build'" padded class="diagnostics-build">
+      <dl class="build-grid">
+        <template v-for="c in [build.root, build.saflib]" :key="c.label">
+          <dt>{{ c.label }}</dt>
+          <dd>
+            <a v-if="c.href" :href="c.href" target="_blank" rel="noopener noreferrer"><code>{{ c.sha.slice(0, 12) }}</code></a>
+            <code v-else>{{ c.sha }}</code>
+          </dd>
+        </template>
+        <dt>{{ strings.build_rows.started }}</dt>
+        <dd>{{ startedAt }}</dd>
+        <dt>{{ strings.build_rows.env }}</dt>
+        <dd>{{ deployment }}</dd>
+      </dl>
+    </AdminPanel>
+
+    <MetricsCard v-else />
 
     <!-- The client-vue probe mounts this; it throws while setting up. -->
     <DiagnosticThrower v-if="throwMessage" :key="throwMessage" :message="throwMessage" />
@@ -103,13 +105,26 @@
 
 <script setup lang="ts">
 import { computed, onUnmounted, ref } from "vue";
-import type { RouteLocationRaw } from "vue-router";
+import { useRoute, useRouter, type RouteLocationRaw } from "vue-router";
 import type { OpsDiagnosticProbe } from "@saflib/ops-spec";
 import { AdminPanel, ContentWidth } from "@saflib/vue/components";
 import { getDeploymentName, showInfo } from "@saflib/vue";
 import { useClearOpsDiagnostics, useOpsDiagnostics, useOpsDigest } from "../requests/queries.ts";
 import { getBuildCommits, type BuildRepoUrls } from "../components/build-info.ts";
 import { useDiagnosticRun } from "./diagnostic-run.ts";
+
+type DiagnosticsTab = "test" | "build" | "metrics";
+const TABS: DiagnosticsTab[] = ["test", "build", "metrics"];
+const route = useRoute();
+const router = useRouter();
+const tab = computed<DiagnosticsTab>(() => {
+  const t = route.query.tab;
+  return typeof t === "string" && (TABS as string[]).includes(t) ? (t as DiagnosticsTab) : "test";
+});
+function goToTab(t: unknown) {
+  const { tab: _tab, ...rest } = route.query;
+  void router.push({ query: t === "test" ? rest : { ...rest, tab: t as DiagnosticsTab } });
+}
 import DiagnosticThrower from "./DiagnosticThrower.vue";
 import MetricsCard from "./MetricsCard.vue";
 import { ops_diagnostics as strings } from "./Diagnostics.strings.ts";
@@ -178,16 +193,8 @@ const formatClock = (iso: string) =>
 </script>
 
 <style scoped>
-.diagnostics-cards {
-  display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(0, 2.5fr);
-  gap: 16px;
-  align-items: start;
-}
-@media (max-width: 960px) {
-  .diagnostics-cards {
-    grid-template-columns: 1fr;
-  }
+.diagnostics-build {
+  max-width: 560px;
 }
 .build-grid {
   display: grid;

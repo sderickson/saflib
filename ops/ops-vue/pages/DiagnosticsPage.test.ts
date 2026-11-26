@@ -51,6 +51,7 @@ describe("DiagnosticsPage", () => {
         raw: null,
         metrics: [
           { name: "jobs_total", help: "Jobs", type: "counter", series: 2, total: 5, histogram: null },
+          { name: "process_resident_memory_bytes", help: "RSS", type: "gauge", series: 1, total: 301_989_888, histogram: null },
           {
             name: "http_request_duration_seconds",
             help: "Latency",
@@ -86,10 +87,13 @@ describe("DiagnosticsPage", () => {
     expect(wrapper.find("[data-test=result-server-500]").text()).toContain("Waiting");
     expect(wrapper.find("[data-test=diagnostics-counts]").text()).toContain("2 landed");
 
+    await wrapper.find("[data-test=diagnostics-tab-metrics]").trigger("click");
+    await vi.waitFor(() => expect(wrapper.findAll("[data-test=metric-row]")).toHaveLength(3));
     const metrics = wrapper.find("[data-test=diagnostics-metrics]");
-    await vi.waitFor(() => expect(metrics.findAll("[data-test=metric-row]")).toHaveLength(2));
     expect(metrics.text()).toContain("20 obs");
     expect(metrics.text()).toContain("5");
+    // *_bytes metrics read in KB/MB.
+    expect(metrics.text()).toContain("288 MB");
     wrapper.unmount();
     window.removeEventListener("unhandledrejection", swallow);
   });

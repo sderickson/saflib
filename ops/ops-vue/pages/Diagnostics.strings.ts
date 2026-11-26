@@ -34,6 +34,7 @@ export const ops_diagnostics = {
     metrics: "View in Metrics",
   } as Record<string, string>,
   build: "Build",
+  tabs: { test: "Test", build: "Build", metrics: "Metrics" },
   build_rows: { root: "root", saflib: "saflib", started: "Server started", env: "Env" },
   metrics_title: "/metrics",
   metrics_sub: (time: string, n: number) => `this process, since ${time} · ${n} metrics`,
