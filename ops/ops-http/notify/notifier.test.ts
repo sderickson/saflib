@@ -67,6 +67,18 @@ describe("ops notifier", () => {
     expect(await runNotifierOnce(options, new Date(t0.getTime() + 40 * 60_000))).toBe("nothing");
   });
 
+  it("never notifies about Diagnostics test signals", async () => {
+    const { dbKey, issuesDbKey, sent, options } = setup();
+    const t0 = new Date(Date.now() - 60 * 60_000);
+    expect(await runNotifierOnce(options, t0)).toBe("nothing");
+    const t1 = new Date(t0.getTime() + 60_000);
+    const testAlert = { ...firing("d1", "SafDiagnosticsTest", t1), labels: { alertname: "SafDiagnosticsTest", severity: "warning", saf_diagnostics: "run1" } };
+    await throwError(upsertAlerts(dbKey, [testAlert], t1));
+    recordOccurrence(issuesDbKey, { level: "error", kind: "server", serviceName: "hub", message: "[diag:run1aaaa] server-500: thrown on purpose", ts: t1 });
+    expect(await runNotifierOnce(options, new Date(t0.getTime() + 2 * 60_000))).toBe("nothing");
+    expect(sent).toHaveLength(0);
+  });
+
   it("keeps events for the next pass when sending fails", async () => {
     const { dbKey, sent, options, setFail } = setup();
     const t0 = new Date(Date.now() - 60 * 60_000);

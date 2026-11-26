@@ -55,8 +55,13 @@ export interface FingerprintInput {
 export function computeFingerprint(input: FingerprintInput): string {
   const service = input.serviceName ?? "";
   let key: string;
+  const diag = diagnosticProbeOf(input.message);
   if (input.fingerprint) {
     key = `explicit|${input.fingerprint}`;
+  } else if (diag) {
+    // Diagnostics test signals group per probe, so repeated runs don't
+    // pile up new issues.
+    key = `diag|${diag}`;
   } else {
     const frames = input.stack ? inAppFrames(input.stack) : [];
     key =
@@ -65,4 +70,22 @@ export function computeFingerprint(input: FingerprintInput): string {
         : `message|${normalizeTemplate(input.message)}`;
   }
   return createHash("sha256").update(`${service}\u0000${key}`).digest("hex").slice(0, 24);
+}
+
+/** A diagnostics test signal's message starts `[diag:<runId>] <probe>`. */
+const DIAG_MESSAGE = /^\[diag:[A-Za-z0-9_-]+\] ([a-z0-9-]+)/;
+
+/** The probe id of a diagnostics test signal's message, if it is one. */
+export function diagnosticProbeOf(message: string): string | undefined {
+  return DIAG_MESSAGE.exec(message)?.[1];
+}
+
+/**
+ * Whether an issue came from a Diagnostics self-test: its title is a tagged
+ * message, or (for CSP probes) names the `diag-<runId>.invalid` host. These
+ * show in Issues like any other but never notify, and "Clear test signals"
+ * resolves them.
+ */
+export function isDiagnosticIssueTitle(title: string): boolean {
+  return title.includes("[diag:") || /\bdiag-[A-Za-z0-9_-]+\.invalid\b/.test(title);
 }
