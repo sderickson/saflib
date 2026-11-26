@@ -172,3 +172,68 @@ clearOpsDiagnostics:
         application/json:
           schema:
             $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+
+getOpsDiagnosticMetrics:
+  summary: This process's metrics
+  description: >
+    What this server process exposes on /metrics, summarized: per metric its
+    type, series and total; for histograms the per-bucket counts (across
+    series), count, sum and the bucket holding p95. `raw=1` adds the text
+    exposition. Site admins only.
+  operationId: getOpsDiagnosticMetrics
+  security:
+    - session: [ site-admin ]
+  parameters:
+    - { name: raw, in: query, required: false, schema: { type: string, enum: [ "1" ] } }
+  responses:
+    "200":
+      description: The metrics.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ started_at, metrics, raw ]
+            properties:
+              started_at: { type: string, format: date-time }
+              raw: { type: [ string, "null" ] }
+              metrics:
+                type: array
+                items:
+                  type: object
+                  required: [ name, help, type, series, total, histogram ]
+                  properties:
+                    name: { type: string }
+                    help: { type: string }
+                    type: { type: string }
+                    series: { type: integer }
+                    total: { type: [ number, "null" ], description: "Sum across series (counters and gauges)." }
+                    histogram:
+                      oneOf:
+                        - type: "null"
+                        - type: object
+                          required: [ buckets, count, sum, p95_le ]
+                          properties:
+                            buckets:
+                              type: array
+                              description: Count per bucket (not cumulative), ordered by bound.
+                              items:
+                                type: object
+                                required: [ le, count ]
+                                properties:
+                                  le: { type: string }
+                                  count: { type: number }
+                            count: { type: number }
+                            sum: { type: number }
+                            p95_le: { type: [ string, "null" ] }
+    "401":
+      description: Not signed in.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
+    "403":
+      description: Site admin required.
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"

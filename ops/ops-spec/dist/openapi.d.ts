@@ -186,6 +186,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/diagnostics/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * This process's metrics
+         * @description What this server process exposes on /metrics, summarized: per metric its type, series and total; for histograms the per-bucket counts (across series), count, sum and the bucket holding p95. `raw=1` adds the text exposition. Site admins only.
+         */
+        get: operations["getOpsDiagnosticMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ops/diagnostics/clear": {
         parameters: {
             query?: never;
@@ -1585,6 +1605,68 @@ export interface operations {
             };
             /** @description The server-500 probe's intentional error. */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getOpsDiagnosticMetrics: {
+        parameters: {
+            query?: {
+                raw?: "1";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The metrics. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: date-time */
+                        started_at: string;
+                        raw: string | null;
+                        metrics: {
+                            name: string;
+                            help: string;
+                            type: string;
+                            series: number;
+                            /** @description Sum across series (counters and gauges). */
+                            total: number | null;
+                            histogram: null | {
+                                /** @description Count per bucket (not cumulative), ordered by bound. */
+                                buckets: {
+                                    le: string;
+                                    count: number;
+                                }[];
+                                count: number;
+                                sum: number;
+                                p95_le: string | null;
+                            };
+                        }[];
+                    };
+                };
+            };
+            /** @description Not signed in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Site admin required. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

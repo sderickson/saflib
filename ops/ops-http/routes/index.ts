@@ -7,6 +7,7 @@ import { listOpsDeploysHandler } from "./list-ops-deploys.ts";
 import { listOpsLogGroupsHandler, listOpsLogsHandler } from "./list-ops-logs.ts";
 import {
   clearOpsDiagnosticsHandler,
+  getOpsDiagnosticMetricsHandler,
   getOpsDiagnosticRunHandler,
   listOpsDiagnosticsHandler,
   runOpsDiagnosticProbeHandler,
@@ -57,6 +58,7 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.get("/ops/diagnostics", listOpsDiagnosticsHandler);
   router.get("/ops/diagnostics/runs/:run_id", getOpsDiagnosticRunHandler);
   router.post("/ops/diagnostics/runs/:run_id/probes/:probe_id", runOpsDiagnosticProbeHandler);
+  router.get("/ops/diagnostics/metrics", getOpsDiagnosticMetricsHandler);
   router.post("/ops/diagnostics/clear", clearOpsDiagnosticsHandler);
   router.get("/ops/logs/templates", listOpsLogTemplatesHandler);
   router.get("/ops/metrics/query", queryOpsMetricsHandler);

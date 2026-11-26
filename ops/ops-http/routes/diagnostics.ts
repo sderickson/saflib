@@ -6,6 +6,8 @@ import { resolveDiagnosticIssues } from "@saflib/errors-db";
 import { opsServiceStorage } from "../context.ts";
 import { diagTag } from "../diagnostics/probes.ts";
 import { queryDate } from "./_helpers.ts";
+import client from "@prometheus-io/client";
+import { metricsSummary } from "../metrics/metrics-summary.ts";
 
 const RUN_ID = /^[A-Za-z0-9]{6,32}$/;
 
@@ -69,4 +71,14 @@ export const clearOpsDiagnosticsHandler = createHandler(async (_req, res) => {
   const actor = getSafContext().auth?.userId ?? "diagnostics";
   const resolved = issuesDbKey ? await resolveDiagnosticIssues(issuesDbKey, actor) : 0;
   res.status(200).json({ resolved_issues: resolved } satisfies OpsResponseBody["clearOpsDiagnostics"][200]);
+});
+
+export const getOpsDiagnosticMetricsHandler = createHandler(async (req, res) => {
+  const startedAt = new Date(Date.now() - process.uptime() * 1000);
+  const response: OpsResponseBody["getOpsDiagnosticMetrics"][200] = {
+    started_at: startedAt.toISOString(),
+    metrics: await metricsSummary(),
+    raw: req.query.raw === "1" ? await client.register.metrics() : null,
+  };
+  res.status(200).json(response);
 });

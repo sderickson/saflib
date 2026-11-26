@@ -82,6 +82,9 @@ paths:
   /ops/diagnostics/runs/{run_id}/probes/{probe_id}:
     post:
       $ref: "./routes/diagnostics.yaml#/runOpsDiagnosticProbe"
+  /ops/diagnostics/metrics:
+    get:
+      $ref: "./routes/diagnostics.yaml#/getOpsDiagnosticMetrics"
   /ops/diagnostics/clear:
     post:
       $ref: "./routes/diagnostics.yaml#/clearOpsDiagnostics"
