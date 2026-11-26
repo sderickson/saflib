@@ -2,73 +2,34 @@
   <ContentWidth variant="full">
     <AdminPageTitle class="mb-4">{{ strings.title }}</AdminPageTitle>
 
-    <v-row class="mb-4" density="comfortable">
-      <v-col cols="6" md="3">
-        <v-select
-          v-model="statusFilter"
-          :items="statusOptions"
-          label="Status"
-          clearable
-          density="compact"
-          hide-details
-        />
-      </v-col>
-      <v-col cols="6" md="3">
-        <v-text-field
-          v-model="operationIdFilter"
-          label="Operation"
-          clearable
-          density="compact"
-          hide-details
-        />
-      </v-col>
-      <v-col cols="6" md="3">
-        <v-text-field
-          v-model="userIdFilter"
-          label="User"
-          clearable
-          density="compact"
-          hide-details
-        />
-      </v-col>
-      <v-col cols="6" md="3">
-        <v-text-field
-          v-model="originalRequestIdFilter"
-          label="Original Request Id"
-          clearable
-          density="compact"
-          hide-details
-        />
-      </v-col>
-    </v-row>
-
-    <v-row class="mb-4" density="comfortable" align="center">
-      <v-col cols="auto">
+    <AdminToolbar label="Job filters" :active-filters="activeFilterCount">
+      <v-text-field
+        v-model="operationIdFilter"
+        placeholder="Filter by operation"
+        prepend-inner-icon="mdi-magnify"
+        clearable
+      />
+      <template #actions>
+        <v-btn icon="mdi-chevron-left" size="small" variant="text" title="Previous page" aria-label="Previous page" :disabled="offset === 0" @click="prevPage" />
+        <v-btn icon="mdi-chevron-right" size="small" variant="text" title="Next page" aria-label="Next page" :disabled="!hasNextPage" @click="nextPage" />
+      </template>
+      <template #filters>
+        <v-select v-model="statusFilter" :items="statusOptions" label="Status" clearable />
+        <v-text-field v-model="userIdFilter" label="User" clearable />
+        <v-text-field v-model="originalRequestIdFilter" label="Original Request Id" clearable />
         <v-btn
-          size="small"
           variant="outlined"
           color="error"
+          prepend-icon="mdi-cancel"
           :disabled="!originalRequestIdFilter"
           :loading="isMassCancelling"
+          title="Cancel every pending job started by this request"
           @click="massCancelChain"
         >
           Mass Cancel Chain
         </v-btn>
-      </v-col>
-      <v-col cols="auto">
-        <v-btn size="small" variant="text" :disabled="offset === 0" @click="prevPage">
-          Previous
-        </v-btn>
-        <v-btn
-          size="small"
-          variant="text"
-          :disabled="!hasNextPage"
-          @click="nextPage"
-        >
-          Next
-        </v-btn>
-      </v-col>
-    </v-row>
+      </template>
+    </AdminToolbar>
 
     <v-progress-linear
       v-if="isLoadingJobs"
@@ -180,7 +141,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { AdminPageTitle, ContentWidth } from "@saflib/vue/components";
+import { AdminPageTitle, AdminToolbar, ContentWidth } from "@saflib/vue/components";
 import JobActor from "./JobActor.vue";
 import JobDetailDialog from "./JobDetailDialog.vue";
 import { canCancel, canRetry, statusColor } from "./job-format.ts";
@@ -254,6 +215,10 @@ const isMutating = computed(
 
 const mutationError = computed(
   () => retryError.value || cancelError.value || massCancelError.value,
+);
+
+const activeFilterCount = computed(
+  () => (statusFilter.value ? 1 : 0) + (userIdFilter.value ? 1 : 0) + (originalRequestIdFilter.value ? 1 : 0),
 );
 
 // Bulk actions on the checked rows: each eligible job, one at a time.

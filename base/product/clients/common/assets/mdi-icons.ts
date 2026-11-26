@@ -15,6 +15,8 @@ import { oryKratosVueMdiIconPaths } from "@saflib/ory-kratos-vue/mdi-icons";
 import { opsVueMdiIconPaths } from "@saflib/ops-vue/mdi-icons";
 import { jobsVueMdiIconPaths } from "@saflib/jobs-vue/mdi-icons";
 import { cronVueMdiIconPaths } from "@saflib/cron-vue/mdi-icons";
+import { vueMdiIconPaths } from "@saflib/vue/mdi-icons";
+import { auditVueMdiIconPaths } from "@saflib/audit-vue/mdi-icons";
 
 export const mdiIconPaths: Record<string, string> = {
   ...kratosMdiIconPaths,
@@ -22,6 +24,8 @@ export const mdiIconPaths: Record<string, string> = {
   ...opsVueMdiIconPaths,
   ...jobsVueMdiIconPaths,
   ...cronVueMdiIconPaths,
+  ...vueMdiIconPaths,
+  ...auditVueMdiIconPaths,
   "mdi-arrow-right": mdiArrowRight,
   "mdi-chevron-left": mdiChevronLeft,
   "mdi-close": mdiClose,

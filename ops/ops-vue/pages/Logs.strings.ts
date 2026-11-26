@@ -12,6 +12,8 @@ export const ops_logs = {
   userLabel: "User ID",
   idLabel: "Request or job ID",
   live: "Live",
+  live_on: "Live: updating every 5 seconds (click to stop)",
+  live_off: "Live updates (every 5 seconds)",
   refresh: "Refresh",
   empty: "No matching logs.",
   loadMore: "Load more",

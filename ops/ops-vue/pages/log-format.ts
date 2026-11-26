@@ -5,6 +5,22 @@ export const contextPrefix = (kind: string | null | undefined) =>
   ({ request: "r", job: "j", cron: "c", process: "p" })[kind ?? ""] ?? undefined;
 
 /** Chip label for a group's kind; requests show their method. */
+/** A colour per request method / group kind, so GET, POST and jobs read apart. */
+export function groupKindColor(label: string): string | undefined {
+  return (
+    {
+      GET: "#3f6fd8",
+      HEAD: "#3f6fd8",
+      POST: "#1f8a4c",
+      PUT: "#b26a00",
+      PATCH: "#b26a00",
+      DELETE: "#c0392b",
+      JOB: "#7b4fc9",
+      CRON: "#0f8a8a",
+    } as Record<string, string>
+  )[label.toUpperCase()];
+}
+
 export function groupKindLabel(g: OpsLogGroupResponse): string {
   if (g.kind === "request") return g.request?.method ?? "REQ";
   return ({ job: "JOB", cron: "CRON", process: "START" })[g.kind ?? ""] ?? "LOG";
@@ -76,6 +92,17 @@ export function formatTime(ts: string, now = new Date()): string {
     hour: "numeric",
     minute: "2-digit",
     second: "2-digit",
+  }).format(d);
+}
+
+/** formatTime without seconds, for narrow screens: "4:47 PM", "Nov 24, 4:47 PM". */
+export function formatClock(ts: string, now = new Date()): string {
+  const d = new Date(ts);
+  const sameDay = d.toDateString() === now.toDateString();
+  return new Intl.DateTimeFormat(undefined, {
+    ...(sameDay ? {} : { month: "short", day: "numeric" }),
+    hour: "numeric",
+    minute: "2-digit",
   }).format(d);
 }
 

@@ -2,55 +2,50 @@
   <ContentWidth variant="full" class="audit-log-page">
     <AdminPageTitle class="mb-2">{{ strings.title }}</AdminPageTitle>
 
-    <p v-if="spanHead || spanTail" class="text-body-2 text-medium-emphasis mb-4">
-      {{ strings.stored_span }}
-      <span class="saf-admin-mono">{{ spanHead ?? "—" }} → {{ spanTail ?? "—" }}</span>
-    </p>
-    <p v-else-if="spanChecked && !spanHead && !spanTail" class="saf-admin-empty mb-4">
+    <p v-if="spanChecked && !spanHead && !spanTail" class="saf-admin-empty mb-4">
       {{ strings.no_events }}
     </p>
 
-    <div class="d-flex flex-wrap ga-3 align-end mb-4">
-      <v-text-field
-        v-model="fromInput"
-        :label="strings.from_label"
-        :hint="strings.from_hint"
-        density="comfortable"
-        hide-details="auto"
-        class="flex-grow-1"
-        style="max-width: 28rem"
-        autocomplete="off"
-      />
-      <v-btn
-        color="primary"
-        variant="flat"
-        :loading="listLoading"
-        :disabled="listLoading || sealPending"
-        @click="reloadFromStart"
-      >
-        {{ strings.apply }}
-      </v-btn>
-      <v-btn
-        v-if="sealEnabled"
+    <AdminToolbar :label="strings.title" :active-filters="fromInput ? 1 : 0">
+      <v-chip
+        v-if="userFilter"
+        closable
         variant="outlined"
-        :loading="sealPending"
-        :disabled="listLoading || sealPending || loadMorePending"
-        @click="onSeal"
+        :close-label="strings.clear_user"
+        data-test="audit-user-filter"
+        @click:close="clearUserFilter"
       >
-        {{ strings.seal }}
-      </v-btn>
-    </div>
-
-    <div v-if="userFilter" class="d-flex align-center ga-2 mb-3" data-test="audit-user-filter">
-      <span class="text-body-2 text-medium-emphasis">{{ strings.filtered_to }}</span>
-      <v-chip closable variant="outlined" :close-label="strings.clear_user" @click:close="clearUserFilter">
+        <span class="text-medium-emphasis me-1">{{ strings.filtered_to }}</span>
         <UserRef :id="userFilter" />
       </v-chip>
-    </div>
+      <span v-if="spanHead || spanTail" class="text-body-2 text-medium-emphasis text-truncate">
+        <template v-if="rows.length > 0">{{ strings.loaded }} {{ rows.length }} · </template>
+        {{ strings.stored_span }}
+        <span class="saf-admin-mono">{{ formatShortDateTime(spanHead) }} → {{ formatShortDateTime(spanTail) }}</span>
+      </span>
+      <template #actions>
+        <v-btn
+          v-if="sealEnabled"
+          icon="mdi-archive-arrow-up-outline"
+          size="small"
+          variant="text"
+          :title="strings.seal"
+          :aria-label="strings.seal"
+          :loading="sealPending"
+          :disabled="listLoading || sealPending || loadMorePending"
+          @click="onSeal"
+        />
+      </template>
+      <template #filters>
+        <v-text-field v-model="fromInput" :label="strings.from_label" :hint="strings.from_hint" autocomplete="off" />
+        <div>
+          <v-btn color="primary" variant="flat" :loading="listLoading" :disabled="listLoading || sealPending" @click="reloadFromStart">
+            {{ strings.apply }}
+          </v-btn>
+        </div>
+      </template>
+    </AdminToolbar>
 
-    <p v-if="rows.length > 0" class="text-body-2 text-medium-emphasis mb-2">
-      {{ strings.loaded }} {{ rows.length }}
-    </p>
 
     <v-data-table
       v-model:expanded="expanded"
@@ -119,7 +114,7 @@
 
 <script setup lang="ts">
 import type { AuditLog } from "@saflib/audit-spec/types";
-import { AdminPageTitle, ContentWidth, ShortId } from "@saflib/vue/components";
+import { AdminPageTitle, AdminToolbar, ContentWidth, ShortId } from "@saflib/vue/components";
 import AuditActor from "./AuditActor.vue";
 import { UserRef } from "@saflib/ory-kratos-vue";
 import { useRoute, useRouter } from "vue-router";

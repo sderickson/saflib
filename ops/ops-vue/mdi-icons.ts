@@ -3,6 +3,7 @@
  * into their Vuetify SVG iconset.
  */
 import {
+  mdiAccessPoint,
   mdiAlert,
   mdiCheck,
   mdiCheckCircle,
@@ -11,15 +12,18 @@ import {
   mdiChevronRight,
   mdiChevronUp,
   mdiCloseCircle,
+  mdiFormatListGroup,
   mdiHelpCircle,
   mdiInfinity,
   mdiMagnify,
   mdiPlay,
   mdiRefresh,
   mdiRestore,
+  mdiSortClockDescending,
 } from "@mdi/js";
 
 export const opsVueMdiIconPaths: Record<string, string> = {
+  "mdi-access-point": mdiAccessPoint,
   "mdi-alert": mdiAlert,
   "mdi-check": mdiCheck,
   "mdi-check-circle": mdiCheckCircle,
@@ -28,10 +32,12 @@ export const opsVueMdiIconPaths: Record<string, string> = {
   "mdi-chevron-right": mdiChevronRight,
   "mdi-chevron-up": mdiChevronUp,
   "mdi-close-circle": mdiCloseCircle,
+  "mdi-format-list-group": mdiFormatListGroup,
   "mdi-help-circle": mdiHelpCircle,
   "mdi-infinity": mdiInfinity,
   "mdi-magnify": mdiMagnify,
   "mdi-play": mdiPlay,
   "mdi-refresh": mdiRefresh,
   "mdi-restore": mdiRestore,
+  "mdi-sort-clock-descending": mdiSortClockDescending,
 };

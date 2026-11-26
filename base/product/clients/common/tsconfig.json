@@ -19,6 +19,9 @@
   ],
   "references": [
     {
+      "path": "../../../../audit/audit-vue"
+    },
+    {
       "path": "../../../../cron/cron-vue"
     },
     {

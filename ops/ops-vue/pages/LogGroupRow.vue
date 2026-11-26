@@ -9,10 +9,13 @@
     @keydown.enter="toggle"
   >
     <td class="log-group__caret saf-admin-hide-xs" aria-hidden="true">{{ expandable ? (open ? "▾" : "▸") : "" }}</td>
-    <td class="log-mono text-medium-emphasis text-no-wrap">{{ formatTime(group.first_ts) }}</td>
+    <td class="log-mono text-medium-emphasis text-no-wrap">
+      <span class="saf-admin-hide-xs">{{ formatTime(group.first_ts) }}</span>
+      <span class="saf-admin-only-xs">{{ formatClock(group.first_ts) }}</span>
+    </td>
     <td class="log-group__title-cell">
       <span class="d-flex align-center ga-2" style="min-width: 0">
-        <v-chip size="x-small" label variant="tonal" class="flex-shrink-0">{{ groupKindLabel(group) }}</v-chip>
+        <v-chip size="x-small" label variant="tonal" class="flex-shrink-0" :color="groupKindColor(groupKindLabel(group))">{{ groupKindLabel(group) }}</v-chip>
         <span class="log-mono text-truncate">{{ groupTitle(group) }}</span>
         <v-chip v-if="group.request?.internal" size="x-small" variant="outlined" class="flex-shrink-0 saf-admin-hide-xs">internal</v-chip>
         <span v-if="group.count > 0 && group.kind" class="text-caption text-medium-emphasis text-no-wrap saf-admin-hide-xs">
@@ -74,8 +77,10 @@ import LogLineFields from "./LogLineFields.vue";
 import {
   contextPrefix,
   formatOffset,
+  formatClock,
   formatTime,
   groupDuration,
+  groupKindColor,
   groupKindLabel,
   groupStatus,
   groupTitle,

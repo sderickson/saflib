@@ -2,73 +2,48 @@
   <ContentWidth variant="full">
     <AdminPageTitle class="mb-1">{{ strings.title }}</AdminPageTitle>
 
-    <v-card variant="outlined">
-      <v-toolbar density="compact" color="surface" class="logs-toolbar px-2" role="toolbar" :aria-label="strings.title">
-        <div class="d-flex flex-wrap align-center ga-2 w-100 py-2">
-          <v-btn-toggle
-            v-model="view"
-            mandatory
-            density="compact"
-            variant="outlined"
-            divided
-            color="primary"
-            :aria-label="strings.view_label"
-          >
-            <v-btn value="request" data-test="logs-view-request">{{ strings.by_request }}</v-btn>
-            <v-btn value="chrono" data-test="logs-view-chrono">{{ strings.chronological }}</v-btn>
-          </v-btn-toggle>
-          <v-text-field
-            v-model="draft.q"
-            :label="strings.searchLabel"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            hide-details
-            clearable
-            class="logs-toolbar__search"
-            data-test="logs-q"
-          />
-          <v-select
-            v-model="level"
-            :items="levelOptions"
-            :label="strings.levelLabel"
-            density="compact"
-            variant="outlined"
-            hide-details
-            class="logs-toolbar__level"
-          />
-          <v-text-field
-            v-model="draft.user"
-            :label="strings.userLabel"
-            density="compact"
-            variant="outlined"
-            hide-details
-            clearable
-            class="logs-toolbar__id"
-          />
-          <v-text-field
-            v-model="draft.id"
-            :label="strings.idLabel"
-            density="compact"
-            variant="outlined"
-            hide-details
-            clearable
-            class="logs-toolbar__id"
-            data-test="logs-id"
-          />
-          <v-spacer />
-          <v-switch v-model="live" :label="strings.live" color="primary" density="compact" hide-details inset />
-          <v-btn
-            icon="mdi-refresh"
-            variant="text"
-            size="small"
-            :aria-label="strings.refresh"
-            :loading="activeQuery.isFetching.value && !live"
-            @click="activeQuery.refetch()"
-          />
-        </div>
-      </v-toolbar>
-      <v-divider />
+    <AdminToolbar :label="strings.title" :active-filters="activeFilterCount">
+      <v-text-field
+        v-model="draft.q"
+        :placeholder="strings.searchLabel"
+        prepend-inner-icon="mdi-magnify"
+        clearable
+        data-test="logs-q"
+      />
+      <template #actions>
+        <v-btn-toggle v-model="view" mandatory density="compact" variant="text" :aria-label="strings.view_label">
+          <v-btn value="request" icon="mdi-format-list-group" size="small" :title="strings.by_request" :aria-label="strings.by_request" data-test="logs-view-request" />
+          <v-btn value="chrono" icon="mdi-sort-clock-descending" size="small" :title="strings.chronological" :aria-label="strings.chronological" data-test="logs-view-chrono" />
+        </v-btn-toggle>
+        <v-btn
+          icon="mdi-access-point"
+          size="small"
+          variant="text"
+          :color="live ? 'success' : undefined"
+          :title="live ? strings.live_on : strings.live_off"
+          :aria-label="strings.live"
+          :aria-pressed="live"
+          data-test="logs-live"
+          @click="live = !live"
+        />
+        <v-btn
+          icon="mdi-refresh"
+          variant="text"
+          size="small"
+          :title="strings.refresh"
+          :aria-label="strings.refresh"
+          :loading="activeQuery.isFetching.value && !live"
+          @click="activeQuery.refetch()"
+        />
+      </template>
+      <template #filters>
+        <v-select v-model="level" :items="levelOptions" :label="strings.levelLabel" />
+        <v-text-field v-model="draft.user" :label="strings.userLabel" clearable />
+        <v-text-field v-model="draft.id" :label="strings.idLabel" clearable data-test="logs-id" />
+      </template>
+    </AdminToolbar>
+
+    <v-card>
 
       <v-alert v-if="activeQuery.error.value" type="error" variant="tonal" class="ma-3">
         {{ activeQuery.error.value.message }}
@@ -116,7 +91,10 @@
                 aria-hidden="true"
               />
             </td>
-            <td class="logs-mono text-medium-emphasis text-no-wrap">{{ formatTime(line.ts) }}</td>
+            <td class="logs-mono text-medium-emphasis text-no-wrap">
+              <span class="saf-admin-hide-xs">{{ formatTime(line.ts) }}</span>
+              <span class="saf-admin-only-xs">{{ formatClock(line.ts) }}</span>
+            </td>
             <td>
               <span class="logs-level" :class="`text-${levelColor(line.level) ?? 'medium-emphasis'}`">{{ line.level }}</span>
             </td>
@@ -156,13 +134,13 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { AdminPageTitle, ContentWidth, ShortId } from "@saflib/vue/components";
+import { AdminPageTitle, AdminToolbar, ContentWidth, ShortId } from "@saflib/vue/components";
 import { idColor } from "@saflib/vue";
 import { useLogsPageLoader } from "./Logs.loader.ts";
 import { ops_logs as strings } from "./Logs.strings.ts";
 import LogGroupRow from "./LogGroupRow.vue";
 import LogLineFields from "./LogLineFields.vue";
-import { contextPrefix, formatTime, levelColor } from "./log-format.ts";
+import { contextPrefix, formatTime, levelColor, formatClock } from "./log-format.ts";
 import type { AdminLogFilters } from "../requests/queries.ts";
 
 const route = useRoute();
@@ -190,6 +168,11 @@ const levelOptions = [
   { title: strings.warnUp, value: "warn" },
   { title: strings.errorsOnly, value: "error" },
 ];
+
+// Filters behind the toolbar's filter button (search stays in the row).
+const activeFilterCount = computed(
+  () => (level.value !== "any" ? 1 : 0) + (param("user") ? 1 : 0) + (param("id") ? 1 : 0),
+);
 
 // Text fields update the URL after a pause.
 const draft = reactive({ q: param("q"), user: param("user"), id: param("id") });

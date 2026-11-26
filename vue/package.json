@@ -17,7 +17,8 @@
     "./tsconfig.app.json": "./tsconfig.app.base.json",
     "./tsconfig.node.json": "./tsconfig.node.json",
     "./workflows": "./workflows/index.ts",
-    "./vitest-config": "./testing/vitest-config.js"
+    "./vitest-config": "./testing/vitest-config.js",
+    "./mdi-icons": "./mdi-icons.ts"
   },
   "scripts": {
     "test": "vitest run",
