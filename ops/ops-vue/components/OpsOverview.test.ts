@@ -70,7 +70,7 @@ describe("OpsOverview", () => {
     const pill = mountTestApp(HealthPill);
     const traffic = mountTestApp(TrafficChip);
     await vi.waitFor(() => expect(pill.find("[data-test=health-pill]").text()).toContain("1 needs attention"));
-    await vi.waitFor(() => expect(traffic.find("[data-test=traffic-chip]").text()).toContain("2,712 requests since start"));
+    await vi.waitFor(() => expect(traffic.find("[data-test=traffic-chip]").text()).toContain("2.7K requests since start"));
     pill.unmount();
     traffic.unmount();
   });

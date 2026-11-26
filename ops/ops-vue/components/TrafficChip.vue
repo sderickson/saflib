@@ -9,6 +9,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useOpsDigest } from "../requests/queries.ts";
+import { compactNumber } from "./compact-number.ts";
 
 const query = useOpsDigest();
 const digest = computed(() => query.data.value?.digest);
@@ -23,13 +24,13 @@ const perMinute = computed(() => {
 const label = computed(() => {
   const d = digest.value;
   if (!d) return "";
-  if (d.metrics && !d.metrics.error && perMinute.value !== null) return `${perMinute.value} req/min`;
-  return `${d.process.requests_total.toLocaleString()} requests since start`;
+  if (d.metrics && !d.metrics.error && perMinute.value !== null) return `${compactNumber(perMinute.value)} req/min`;
+  return `${compactNumber(d.process.requests_total)} requests since start`;
 });
 
 const tooltip = computed(() =>
   digest.value?.metrics && !digest.value.metrics.error
     ? "User-facing requests per minute, last hour (Prometheus)"
-    : "From this process's /metrics; Prometheus isn't configured here",
+    : `${digest.value?.process.requests_total.toLocaleString() ?? 0} requests since this process started (Prometheus isn't configured here)`,
 );
 </script>
