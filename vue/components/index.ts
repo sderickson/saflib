@@ -14,5 +14,6 @@ export { default as AdminPanel } from "./admin/AdminPanel.vue";
 export { adminDefaults } from "./admin/admin-defaults.ts";
 export { default as AdminSection } from "./admin/AdminSection.vue";
 export { default as AdminPageTitle } from "./admin/AdminPageTitle.vue";
+export { default as AdminSubTabs } from "./admin/AdminSubTabs.vue";
 export { adminSectionKey, type AdminSectionTab } from "./admin/admin-section.ts";
 export { adminSectionRoute, adminSectionPaths, type AdminSectionRouteTab } from "./admin/admin-section-route.ts";

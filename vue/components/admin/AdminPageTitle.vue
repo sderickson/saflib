@@ -10,5 +10,5 @@
 import { inject } from "vue";
 import { adminSectionKey } from "./admin-section.ts";
 
-const inSection = inject(adminSectionKey, false);
+const inSection = !!inject(adminSectionKey, null);
 </script>

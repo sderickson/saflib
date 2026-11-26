@@ -2,11 +2,13 @@
   <ContentWidth variant="full">
     <AdminPageTitle class="mb-2">{{ strings.title }}</AdminPageTitle>
 
+    <AdminSubTabs>
     <v-tabs :model-value="tab" class="mb-4" density="compact" @update:model-value="goToTab">
       <v-tab value="active" data-test="issues-tab-active">{{ strings.tabActive }}</v-tab>
       <v-tab value="resolved" data-test="issues-tab-resolved">{{ strings.tabResolved }}</v-tab>
       <v-tab value="ignored" data-test="issues-tab-ignored">{{ strings.tabIgnored }}</v-tab>
     </v-tabs>
+    </AdminSubTabs>
 
     <div v-if="selected.length" class="d-flex flex-wrap align-center ga-2 mb-2" data-test="issues-bulk">
       <span class="text-body-2">{{ strings.selected(selected.length) }}</span>
@@ -135,7 +137,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { AdminPageTitle, ContentWidth, ShortId } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth, ShortId, AdminSubTabs } from "@saflib/vue/components";
 import { useIssuesPageLoader, type IssueTab } from "./Issues.loader.ts";
 import { ops_issues as strings } from "./Issues.strings.ts";
 import { useListOpsIssueOccurrences, useTriageOpsIssue } from "../requests/queries.ts";

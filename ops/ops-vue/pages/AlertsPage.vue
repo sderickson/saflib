@@ -2,10 +2,12 @@
   <ContentWidth variant="full">
     <AdminPageTitle class="mb-2">{{ strings.title }}</AdminPageTitle>
 
+    <AdminSubTabs>
     <v-tabs :model-value="tab" class="mb-4" density="compact" @update:model-value="goToTab">
       <v-tab value="firing" data-test="alerts-tab-firing">{{ strings.tabFiring }}</v-tab>
       <v-tab value="recent" data-test="alerts-tab-recent">{{ strings.tabRecent }}</v-tab>
     </v-tabs>
+    </AdminSubTabs>
 
     <v-table v-if="alerts.length > 0" density="compact" class="elevation-1">
       <tbody>
@@ -65,7 +67,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { AdminPageTitle, ContentWidth } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth, AdminSubTabs } from "@saflib/vue/components";
 import { useAlertsPageLoader } from "./Alerts.loader.ts";
 import { ops_alerts as strings } from "./Alerts.strings.ts";
 import { useAckOpsAlert, useResolveOpsAlert } from "../requests/queries.ts";
