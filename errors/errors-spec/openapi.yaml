@@ -18,6 +18,9 @@ paths:
   /errors/record:
     post:
       $ref: "./routes/errors.yaml#/recordReportedError"
+  /errors/report:
+    post:
+      $ref: "./routes/errors.yaml#/reportClientError"
   /csp-violations:
     post:
       $ref: "./routes/errors.yaml#/postCspViolationReport"

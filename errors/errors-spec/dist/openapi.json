@@ -150,6 +150,91 @@
         }
       }
     },
+    "/errors/report": {
+      "post": {
+        "summary": "Report a browser error (signed-in users)",
+        "description": "How client errors reach Issues outside local development: the SPA posts uncaught errors and unhandled rejections here. Requires a session, so only signed-in users can report; reports are redacted, size-capped and grouped like server errors.\n",
+        "operationId": "reportClientError",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "reported_error": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "client"
+                        ]
+                      },
+                      "message": {
+                        "type": "string",
+                        "maxLength": 2000
+                      },
+                      "stack": {
+                        "type": "string",
+                        "maxLength": 8000
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "source": {
+                        "type": "string",
+                        "maxLength": 100
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "message"
+                    ]
+                  }
+                },
+                "required": [
+                  "reported_error"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Recorded."
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/csp-violations": {
       "post": {
         "summary": "Ingest a Content-Security-Policy violation report",

@@ -23,6 +23,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/errors/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a browser error (signed-in users)
+         * @description How client errors reach Issues outside local development: the SPA posts uncaught errors and unhandled rejections here. Requires a session, so only signed-in users can report; reports are redacted, size-capped and grouped like server errors.
+         */
+        post: operations["reportClientError"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/csp-violations": {
         parameters: {
             query?: never;
@@ -152,6 +172,57 @@ export interface operations {
             };
             /** @description Invalid request body. */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    reportClientError: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reported_error: {
+                        /** @enum {string} */
+                        kind: "client";
+                        message: string;
+                        stack?: string;
+                        metadata?: {
+                            [key: string]: unknown;
+                        };
+                        source?: string;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description Recorded. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid request body. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Not signed in. */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

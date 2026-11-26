@@ -1,4 +1,4 @@
-import { recordReportedError } from "@saflib/errors-sdk";
+import { recordReportedError, reportClientError } from "@saflib/errors-sdk";
 import type { ErrorsRequestBody } from "@saflib/errors-spec";
 
 export interface ClientErrorReporterOptions {
@@ -15,14 +15,14 @@ function errorToReportedError(
   if (error instanceof Error) {
     return {
       kind: "client",
-      message: error.message,
-      stack: error.stack,
+      message: error.message.slice(0, 2000),
+      stack: error.stack?.slice(0, 8000),
       source,
     };
   }
   return {
     kind: "client",
-    message: String(error),
+    message: String(error).slice(0, 2000),
     source,
   };
 }
@@ -35,8 +35,10 @@ export function isLocalhostHostname(
 }
 
 /**
- * Always `console.error`s. POSTs to the backend ring buffer only on localhost
- * hosts (e.g. local Docker dev stacks) — not production.
+ * Always `console.error`s, then reports the error so it becomes an issue: on
+ * local dev hosts to `POST /errors/record` (no session needed), elsewhere to
+ * `POST /errors/report` (signed-in users only; anonymous reports are
+ * dropped by the server).
  */
 export async function reportClientErrorToBackend(
   error: unknown,
@@ -48,16 +50,29 @@ export async function reportClientErrorToBackend(
     console.error(error);
   }
 
-  if (!isLocalhostHostname()) {
-    return;
-  }
-
   const source = options.source ?? "client";
+  const body = { reported_error: errorToReportedError(error, source) };
   try {
-    await recordReportedError({
-      reported_error: errorToReportedError(error, source),
-    });
-  } catch (reportError) {
-    console.error("Failed to record client error to backend", reportError);
+    if (isLocalhostHostname()) {
+      await recordReportedError(body);
+    } else {
+      await reportClientError(body);
+    }
+  } catch {
+    // Reporting is best-effort; signed-out users get a 401 here by design.
   }
+}
+
+let rejectionsInstalled = false;
+
+/**
+ * Report promise rejections nobody handled (they never reach Vue's
+ * errorHandler). Idempotent: installs one window listener per page.
+ */
+export function reportUnhandledRejections(source: string): void {
+  if (rejectionsInstalled || typeof window === "undefined") return;
+  rejectionsInstalled = true;
+  window.addEventListener("unhandledrejection", (event) => {
+    void reportClientErrorToBackend(event.reason, { source, info: "unhandledrejection" });
+  });
 }

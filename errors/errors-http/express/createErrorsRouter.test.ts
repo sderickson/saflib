@@ -151,4 +151,21 @@ describe("errors routers", () => {
       "Intentional admin test error",
     );
   });
+
+  it("accepts browser errors from signed-in users via /errors/report", async () => {
+    await request(makeApp())
+      .post("/errors/report")
+      .set({ ...siteAdminHeaders, "x-user-is-admin": "false" })
+      .send({ reported_error: { kind: "client", message: "[diag:run1aaaa] client-vue: thrown", source: "admin" } })
+      .expect(204);
+    expect(sunk).toHaveLength(1);
+    expect(sunk[0]).toMatchObject({ kind: "client", source: "admin" });
+
+    await request(makeApp())
+      .post("/errors/report")
+      .set("x-requested-with", "XMLHttpRequest")
+      .send({ reported_error: { kind: "client", message: "anon" } })
+      .expect(401);
+    expect(sunk).toHaveLength(1);
+  });
 });
