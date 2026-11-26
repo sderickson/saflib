@@ -51,6 +51,23 @@
               <ShortId :id="job.original_request_id" prefix="r" />
               <template v-if="job.parent_job_id"> · parent <ShortId :id="job.parent_job_id" prefix="j" /></template>
               <span class="text-medium-emphasis"> · enqueued by <code>{{ job.enqueued_by_operation_id }}</code></span>
+              <div v-if="chainPending > 0" class="mt-1">
+                <v-btn
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  prepend-icon="mdi-cancel"
+                  :loading="chainCancelling"
+                  data-test="job-cancel-chain"
+                  @click="emit('cancel-chain', job.original_request_id)"
+                >
+                  Cancel chain ({{ chainPending }} pending)
+                  <v-tooltip activator="parent" location="top" max-width="320">
+                    Cancels every pending or retrying job started by the same request, including ones
+                    this job's children enqueued. Running jobs finish; nothing new from this chain will run.
+                  </v-tooltip>
+                </v-btn>
+              </div>
             </dd>
             <template v-if="queueing.length">
               <dt>Queueing</dt>
@@ -105,11 +122,11 @@ import { computed, toRef } from "vue";
 import { ShortId } from "@saflib/vue/components";
 import { UserRef } from "@saflib/ory-kratos-vue";
 import JobActor from "./JobActor.vue";
-import { useGetJob } from "../requests/queries";
+import { useGetJob, useListJobs } from "../requests/queries";
 import { canCancel, canRetry, formatDateTime, humanize, prettyBody, requestParts, statusColor } from "./job-format.ts";
 
-const props = defineProps<{ jobId: string | null; busy?: boolean }>();
-const emit = defineEmits<{ close: []; retry: [id: string]; cancel: [id: string] }>();
+const props = defineProps<{ jobId: string | null; busy?: boolean; chainCancelling?: boolean }>();
+const emit = defineEmits<{ close: []; retry: [id: string]; cancel: [id: string]; "cancel-chain": [originalRequestId: string] }>();
 
 const query = useGetJob(toRef(props, "jobId"));
 const job = computed(() => query.data.value?.job);
@@ -117,6 +134,16 @@ const job = computed(() => query.data.value?.job);
 // only need to know it's there and which key signed it.
 const assertionKey = computed(() => query.data.value?.authority_assertion?.key_id);
 const errorBody = computed(() => prettyBody(job.value?.result?.error_body));
+// Other work from the same request that hasn't run yet: a runaway chain is
+// stopped from here, where you'd notice it.
+const chainId = computed(() => job.value?.original_request_id ?? "");
+const chainQuery = useListJobs(computed(() => ({ original_request_id: chainId.value, limit: 200 })), {
+  enabled: computed(() => !!chainId.value),
+});
+const chainPending = computed(
+  () => (chainQuery.data.value?.jobs ?? []).filter((j) => j.status === "pending" || j.status === "retrying").length,
+);
+
 const queueing = computed(() => {
   const j = job.value;
   if (!j) return [];

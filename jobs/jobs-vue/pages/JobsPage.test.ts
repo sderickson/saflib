@@ -275,14 +275,8 @@ describe("JobsPage", () => {
     });
   });
 
-  it("should mass-cancel a chain when Mass Cancel Chain is clicked", async () => {
+  it("cancels a job's whole chain from its dialog", async () => {
     const wrapper = await mountComponent();
-
-    const originalRequestInput = wrapper
-      .findAllComponents({ name: "v-text-field" })
-      .find((field) => field.props("label") === "Original Request Id");
-    expect(originalRequestInput).toBeDefined();
-    await originalRequestInput!.vm.$emit("update:modelValue", "r-abc");
 
     let receivedBody: CancelByOriginalRequestBody | null = null;
     server.use(
@@ -301,17 +295,14 @@ describe("JobsPage", () => {
       ),
     );
 
+    // job-1 is pending, and its request (r-abc) still has pending work.
+    await getActionButton(wrapper, "job-1", "View").trigger("click");
+    let chainButton: HTMLElement | null = null;
     await vi.waitFor(() => {
-      const massCancelButton = wrapper
-        .findAllComponents({ name: "v-btn" })
-        .find((btn: VueWrapper) => btn.text() === "Mass Cancel Chain");
-      expect(massCancelButton?.attributes("disabled")).toBeUndefined();
+      chainButton = document.querySelector<HTMLElement>("[data-test=job-cancel-chain]");
+      expect(chainButton?.textContent).toMatch(/Cancel chain \(\d+ pending\)/);
     });
-
-    const massCancelButton = wrapper
-      .findAllComponents({ name: "v-btn" })
-      .find((btn: VueWrapper) => btn.text() === "Mass Cancel Chain")!;
-    await massCancelButton.trigger("click");
+    chainButton!.click();
 
     await vi.waitFor(() => {
       expect(receivedBody).toEqual({ original_request_id: "r-abc" });

@@ -17,17 +17,6 @@
         <v-select v-model="statusFilter" :items="statusOptions" label="Status" clearable />
         <v-text-field v-model="userIdFilter" label="User" clearable />
         <v-text-field v-model="originalRequestIdFilter" label="Original Request Id" clearable />
-        <v-btn
-          variant="outlined"
-          color="error"
-          prepend-icon="mdi-cancel"
-          :disabled="!originalRequestIdFilter"
-          :loading="isMassCancelling"
-          title="Cancel every pending job started by this request"
-          @click="massCancelChain"
-        >
-          Mass Cancel Chain
-        </v-btn>
       </template>
     </AdminToolbar>
 
@@ -132,7 +121,9 @@
     <JobDetailDialog
       :job-id="selectedJobId"
       :busy="isMutating"
+      :chain-cancelling="isMassCancelling"
       @close="selectedJobId = null"
+      @cancel-chain="cancelChain"
       @retry="retryJob"
       @cancel="cancelJob"
     />
@@ -263,9 +254,8 @@ const cancelJob = (id: string) => {
   });
 };
 
-const massCancelChain = () => {
-  if (!originalRequestIdFilter.value) return;
-  massCancelMutate({ original_request_id: originalRequestIdFilter.value });
+const cancelChain = (originalRequestId: string) => {
+  massCancelMutate({ original_request_id: originalRequestId });
 };
 
 const prevPage = () => {
