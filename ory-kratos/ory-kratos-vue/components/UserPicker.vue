@@ -16,7 +16,8 @@
     <template #item="{ props: itemProps, item }">
       <v-list-item v-bind="itemProps" :title="item.title" :subtitle="item.subtitle">
         <template #prepend>
-          <UserRef :id="item.id" variant="avatar" class="me-2" />
+          <!-- UserRef's root is a menu, so space it with a wrapper. -->
+          <span class="d-inline-flex me-3"><UserRef :id="item.id" variant="avatar" /></span>
         </template>
       </v-list-item>
     </template>
