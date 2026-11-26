@@ -129,6 +129,10 @@ export function useLogGroupLines(contextId: Ref<string | null>, live?: Ref<boole
 export function useOpsDigest(since?: Ref<string | undefined>) {
   const client = getClient();
   return useQuery<OpsResponseBody["getOpsDigest"][200], TanstackError>({
+    // Shared by the Overview, the top bar and sidebar badges: one request a
+    // minute however many of them are on screen.
+    staleTime: 60_000,
+    refetchInterval: 60_000,
     queryKey: computed(() => ["ops", "digest", since?.value ?? null] as const),
     queryFn: () =>
       handleClientMethod(

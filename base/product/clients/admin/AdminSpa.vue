@@ -6,8 +6,12 @@ import {
 } from "@saflib/base-clients-common/components";
 import { adminLinks } from "@saflib/base-links";
 import { isDevelopmentDeployment } from "@saflib/vue";
-import type { BuildRepoUrls } from "@saflib/ops-vue";
+import { adminRepos as repos } from "./repos.ts";
 import { configureUserLinks } from "@saflib/ory-kratos-vue";
+import { HealthPill, TrafficChip, useAdminBadges } from "@saflib/ops-vue";
+
+// Counts from the Overview's digest (one cached query).
+const badges = useAdminBadges();
 
 // UserRef hover cards and the Users page link to a person's pages.
 configureUserLinks({
@@ -16,13 +20,17 @@ configureUserLinks({
   serverLogs: (id) => `${adminLinks.opsLogs.path}?user=${encodeURIComponent(id)}`,
 });
 
-/** Where this product's commits live, for the build chip's links. */
-const repos: BuildRepoUrls = {
-  // root: "https://github.com/<org>/<repo>",
-};
-
 const groups = computed<AdminNavGroup[]>(() => [
-  { items: [{ ...adminLinks.home, name: "Overview" }] },
+  {
+    items: [
+      {
+        ...adminLinks.home,
+        name: "Overview",
+        badge: badges.value.attention,
+        badgeColor: badges.value.attentionBad ? "error" : "warning",
+      },
+    ],
+  },
   {
     label: "Customers",
     items: [{ ...adminLinks.users, name: "Users" }],
@@ -30,7 +38,7 @@ const groups = computed<AdminNavGroup[]>(() => [
   {
     label: "System",
     items: [
-      { ...adminLinks.opsIssues, name: "Issues" },
+      { ...adminLinks.opsIssues, name: "Issues", badge: badges.value.newIssues, badgeColor: "error" },
       { ...adminLinks.opsAlerts, name: "Alerts" },
       { ...adminLinks.opsLogs, name: "Server logs" },
       { ...adminLinks.opsMetrics, name: "Metrics" },
@@ -56,6 +64,10 @@ const groups = computed<AdminNavGroup[]>(() => [
 
 <template>
   <DynamicAdminLayout :groups="groups" :repos="repos">
+    <template #chips>
+      <HealthPill :to="adminLinks.home.path" />
+      <TrafficChip class="d-none d-md-flex" />
+    </template>
     <router-view />
   </DynamicAdminLayout>
 </template>

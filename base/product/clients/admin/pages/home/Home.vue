@@ -1,37 +1,28 @@
 <template>
-  <ContentWidth>
-    <h1>{{ t(strings.title) }}</h1>
-    <p>{{ t(strings.description) }}</p>
-
-    <!-- What the daily check sees: health, alerts, issues, traffic, graphs. -->
-    <OpsDigestPanel class="mt-4" :issues-to="adminLinks.opsIssues.path" :alerts-to="adminLinks.opsAlerts.path" :dependencies-to="adminLinks.opsDependencies.path" />
-
-    <div class="mt-4 text-body-2">
-      <p class="text-medium-emphasis mb-1">{{ t(strings.gitHashesHeading) }}</p>
-      <p class="mb-0">
-        <span class="text-medium-emphasis">{{ t(strings.gitHashRoot) }}:</span>
-        <code class="ms-1">{{ git_hashes.root }}</code>
-      </p>
-      <p class="mb-0">
-        <span class="text-medium-emphasis">{{ t(strings.gitHashSaflib) }}:</span>
-        <code class="ms-1">{{ git_hashes.saflib }}</code>
-      </p>
-    </div>
-  </ContentWidth>
+  <OpsOverview :links="links" :repos="repos" />
 </template>
 
 <script setup lang="ts">
-import { OpsDigestPanel } from "@saflib/ops-vue";
 import { adminLinks } from "@saflib/base-links";
-import { getGitHashes } from "@saflib/vue";
-import { ContentWidth } from "@saflib/vue/components";
-import { home as strings } from "./Home.strings.ts";
+import { OpsOverview } from "@saflib/ops-vue";
 import { useHomeLoader } from "./Home.loader.ts";
-import { useReverseT } from "@saflib/base-admin-spa/i18n";
-
-const { t } = useReverseT();
+import { adminRepos as repos } from "../../repos.ts";
 
 useHomeLoader();
 
-const git_hashes = getGitHashes();
+/** Where each Overview tile and attention item leads. Add the product's own tiles here. */
+const links = {
+  health: adminLinks.diagnostics.path,
+  issues: adminLinks.opsIssues.path,
+  alerts: adminLinks.opsAlerts.path,
+  heartbeat: adminLinks.opsAlerts.path,
+  logs: `${adminLinks.opsLogs.path}?level=warn`,
+  metrics: adminLinks.opsMetrics.path,
+  dependencies: adminLinks.opsDependencies.path,
+  deploys: `${adminLinks.opsLogs.path}?q=startup`,
+  jobs: adminLinks.jobs.path,
+  cron: adminLinks.cronJobs.path,
+  audit: adminLinks.audit.path,
+  diagnostics: adminLinks.diagnostics.path,
+};
 </script>
