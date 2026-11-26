@@ -32,7 +32,8 @@ export function nextDueAfter(schedule: string, lastRun: Date): Date | null {
 
 /**
  * Cron jobs tile for the admin Overview: enabled jobs whose last run failed
- * or that missed their slot need action; disabled ones are noted.
+ * need action (red); ones that missed their slot are worth a look (yellow,
+ * e.g. the process was down). Disabled jobs are a choice, not a problem.
  */
 export function cronDigestTile(options: {
   getDbKey: () => DbKey;
@@ -47,7 +48,6 @@ export function cronDigestTile(options: {
       const settings = await throwError(getAll(options.getDbKey()));
       const known = settings.filter((s) => s.job_name in options.jobs);
       const enabled = known.filter((s) => s.enabled);
-      const disabled = known.length - enabled.length;
       const failed = enabled.filter((s) => s.last_run_status === "fail" || s.last_run_status === "timed out").length;
       const late = enabled.filter((s) => {
         if (!s.last_run_at) return false;
@@ -60,8 +60,8 @@ export function cronDigestTile(options: {
         group: "system",
         label: "Cron jobs",
         value: problems || `${enabled.length} on schedule`,
-        detail: `${disabled} disabled${problems ? ` · ${enabled.length} enabled` : ""}`,
-        tone: failed || late ? "bad" : "ok",
+        detail: problems ? `${enabled.length} enabled` : "",
+        tone: failed ? "bad" : late ? "warn" : "ok",
       };
     },
   };
