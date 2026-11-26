@@ -3,6 +3,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { jobsDbManager } from "@saflib/jobs-db/instances";
 import { createJob, type CreateJobParams } from "@saflib/jobs-db/queries/job/create";
 import { createJobsHealthCheck } from "./health-check.ts";
+import { jobsDigestTile } from "./digest-tile.ts";
 
 function job(id: string, overrides: Partial<CreateJobParams> = {}): CreateJobParams {
   const now = new Date();
@@ -65,5 +66,33 @@ describe("createJobsHealthCheck", () => {
     const outcome = await run();
     expect(outcome.status).toBe("warn");
     expect(outcome.summary).toMatch(/1 job\(s\) went dead/);
+  });
+});
+
+describe("jobsDigestTile", () => {
+  let dbKey: DbKey;
+  beforeAll(() => {
+    dbKey = jobsDbManager.connect();
+  });
+  afterAll(() => {
+    jobsDbManager.disconnect(dbKey);
+  });
+  beforeEach(() => {
+    jobsDbManager.clearAllTablesForTests(dbKey);
+  });
+
+  const since = () => new Date(Date.now() - 86_400_000);
+  const tile = () => jobsDigestTile({ getDbKey: () => dbKey }).tiles({ since: since() });
+
+  it("is ok with nothing failed or stuck", async () => {
+    await createJob(dbKey, job("p1"));
+    await createJob(dbKey, job("r1", { status: "running", heartbeat_at: new Date() }));
+    expect(await tile()).toMatchObject({ value: "0 failed", detail: "None stuck · 1 queued", tone: "ok" });
+  });
+
+  it("needs action for failed jobs in the window or stuck ones", async () => {
+    await createJob(dbKey, job("dead", { status: "dead", finished_at: new Date() }));
+    await createJob(dbKey, job("stuck", { status: "running", heartbeat_at: new Date(Date.now() - 10 * 60_000) }));
+    expect(await tile()).toMatchObject({ value: "1 failed", detail: "1 stuck · 0 queued", tone: "bad" });
   });
 });

@@ -3,6 +3,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { appendAuditEvent } from "@saflib/audit-db/queries/audit-event/append";
 import { auditDb } from "@saflib/audit-db/instances";
 import { createAuditRotationHealthCheck } from "./audit-rotation-health-check.ts";
+import { auditDigestTile } from "./audit-digest-tile.ts";
 
 const HOUR = 60 * 60 * 1000;
 
@@ -46,5 +47,22 @@ describe("createAuditRotationHealthCheck", () => {
     const outcome = await run();
     expect(outcome.status).toBe(status);
     expect(outcome.observed?.oldest_age_hours).toBeCloseTo(age / HOUR, 0);
+  });
+
+  describe("auditDigestTile", () => {
+    const tile = (expectSealing: boolean) =>
+      auditDigestTile({ getAuditDbKey: () => dbKey, expectSealing }).tiles({ since: new Date(0) });
+
+    it("is ok when empty or sealed on schedule", async () => {
+      expect(await tile(true)).toMatchObject({ value: "Sealed", tone: "ok" });
+      await seed(2 * HOUR);
+      expect(await tile(true)).toMatchObject({ value: "Sealed on schedule", detail: "Oldest unsealed event 2h old", tone: "ok" });
+    });
+
+    it("needs action when overdue where sealing is expected, else notes it", async () => {
+      await seed(5 * 24 * HOUR);
+      expect(await tile(true)).toMatchObject({ value: "Seal overdue", detail: "Oldest unsealed event 5 days old", tone: "bad" });
+      expect(await tile(false)).toMatchObject({ tone: "none", detail: "Oldest unsealed event 5 days old · sealing is off here" });
+    });
   });
 });

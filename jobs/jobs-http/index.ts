@@ -46,3 +46,4 @@ export { mapJobToWire } from "./src/mapJob.ts";
 export { jobsServiceStorage, type JobsServiceContext } from "./src/context.ts";
 
 export { createJobsHealthCheck } from "./src/health-check.ts";
+export { jobsDigestTile, type JobsDigestTileProvider } from "./src/digest-tile.ts";
