@@ -9,6 +9,7 @@ import { mountTestApp } from "../test-app.ts";
 const API = "http://api.localhost:3000";
 const queries: string[] = [];
 const graphQueries: string[] = [];
+let metricsOn = true;
 
 describe("OpsMetricsAsync", () => {
   stubGlobals();
@@ -32,6 +33,7 @@ describe("OpsMetricsAsync", () => {
         },
       });
     }),
+    http.get(`${API}/ops/digest`, () => HttpResponse.json({ digest: { metrics: metricsOn ? { requests_per_min: 1 } : null } })),
     http.post(`${API}/ops/metrics/graph-links`, async ({ request }) => {
       const body = (await request.json()) as { query: string };
       graphQueries.push(body.query);
@@ -57,5 +59,15 @@ describe("OpsMetricsAsync", () => {
     await wrapper.find("[data-test=metric-run]").trigger("click");
     await vi.waitFor(() => expect(wrapper.find("[data-test=metric-error]").text()).toContain("parse error"));
     wrapper.unmount();
+  });
+
+  it("says once that metrics aren't set up, instead of erroring per query", async () => {
+    metricsOn = false;
+    await router.push("/ops/metrics");
+    const wrapper = mountTestApp(OpsMetricsAsync, { attachTo: document.body });
+    await vi.waitFor(() => expect(wrapper.find("[data-test=metrics-off]").exists()).toBe(true));
+    expect(wrapper.find("[data-test=metric-preset]").exists()).toBe(false);
+    wrapper.unmount();
+    metricsOn = true;
   });
 });

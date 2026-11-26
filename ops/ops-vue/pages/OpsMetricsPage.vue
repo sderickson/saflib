@@ -1,80 +1,93 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
+    <h1 class="text-h4 mb-4">{{ strings.title }}</h1>
 
-    <div class="mb-4">
-      <div v-for="group in groups" :key="group.name" class="d-flex flex-wrap align-center ga-1 mb-1">
-        <span class="text-caption text-medium-emphasis preset-group">{{ group.name }}</span>
-        <v-chip
-          v-for="p in group.presets"
-          :key="p.label"
-          size="small"
-          :color="p.query === applied.query ? 'primary' : undefined"
-          :variant="p.query === applied.query ? 'flat' : 'outlined'"
-          data-test="metric-preset"
-          @click="pick(p)"
-        >
-          {{ p.label }}
-        </v-chip>
+    <p v-if="metricsOff" class="saf-admin-empty" data-test="metrics-off">{{ strings.off }}</p>
+
+    <div v-else class="metrics-layout">
+      <AdminPanel class="metrics-presets" :title="strings.presets">
+        <nav :aria-label="strings.presets">
+          <div v-for="group in groups" :key="group.name" class="metrics-presets__group">
+            <div class="metrics-presets__label">{{ group.name }}</div>
+            <button
+              v-for="p in group.presets"
+              :key="p.label"
+              type="button"
+              class="metrics-presets__item"
+              :class="{ 'metrics-presets__item--active': p.query === applied.query }"
+              :aria-pressed="p.query === applied.query"
+              data-test="metric-preset"
+              @click="pick(p)"
+            >
+              {{ p.label }}
+            </button>
+          </div>
+        </nav>
+      </AdminPanel>
+
+      <div class="metrics-main">
+        <AdminPanel :title="applied.title">
+          <template #actions>
+            <v-btn-toggle v-model="hours" mandatory density="compact" variant="outlined" divided>
+              <v-btn v-for="r in ranges" :key="r.label" :value="r.hours" size="small">{{ r.label }}</v-btn>
+            </v-btn-toggle>
+          </template>
+          <div class="metrics-query">
+            <v-form class="d-flex align-start ga-2" @submit.prevent="run">
+              <v-textarea
+                v-model="draft"
+                :placeholder="strings.queryLabel"
+                rows="1"
+                auto-grow
+                class="promql"
+                data-test="metric-query"
+                @keydown.enter.exact.prevent="run"
+              />
+              <v-btn type="submit" color="primary" variant="flat" data-test="metric-run">{{ strings.run }}</v-btn>
+            </v-form>
+            <OpsGraph
+              v-if="applied.query"
+              :key="`${applied.query}|${applied.hours}`"
+              :query="applied.query"
+              :title="applied.title"
+              :hours="applied.hours"
+              :width="960"
+              :height="320"
+              class="metrics-graph"
+            />
+          </div>
+        </AdminPanel>
+
+        <AdminPanel v-if="applied.query" :title="strings.current">
+          <v-alert v-if="instant.error.value" type="error" variant="tonal" density="compact" class="ma-3" data-test="metric-error">
+            {{ instant.error.value.message }}
+          </v-alert>
+          <p v-else-if="rows.length === 0 && !instant.isFetching.value" class="text-body-2 text-medium-emphasis pa-4 ma-0">
+            {{ strings.noSeries }}
+          </p>
+          <v-table v-else>
+            <thead>
+              <tr><th>{{ strings.series }}</th><th class="text-right">{{ strings.value }}</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="(r, i) in rows" :key="i" data-test="metric-row">
+                <td><code class="metrics-series">{{ r.label }}</code></td>
+                <td class="text-right">{{ r.value }}</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </AdminPanel>
       </div>
     </div>
-
-    <v-form class="mb-4" @submit.prevent="run">
-      <v-textarea
-        v-model="draft"
-        :label="strings.queryLabel"
-        rows="2"
-        auto-grow
-        hide-details
-        class="promql mb-2"
-        data-test="metric-query"
-        @keydown.enter.exact.prevent="run"
-      />
-      <div class="d-flex align-center ga-3">
-        <v-btn type="submit" color="primary" data-test="metric-run">{{ strings.run }}</v-btn>
-        <v-btn-toggle v-model="hours" mandatory density="compact" variant="outlined" divided>
-          <v-btn v-for="r in ranges" :key="r.label" :value="r.hours" size="small">{{ r.label }}</v-btn>
-        </v-btn-toggle>
-      </div>
-    </v-form>
-
-    <template v-if="applied.query">
-      <OpsGraph
-        :key="`${applied.query}|${applied.hours}`"
-        :query="applied.query"
-        :title="applied.title"
-        :hours="applied.hours"
-        :width="960"
-        :height="340"
-        class="mb-4"
-      />
-
-      <h2 class="text-subtitle-1 mb-2">{{ strings.current }}</h2>
-      <v-alert v-if="instant.error.value" type="error" variant="tonal" density="compact" data-test="metric-error">
-        {{ instant.error.value.message }}
-      </v-alert>
-      <p v-else-if="rows.length === 0 && !instant.isFetching.value" class="text-body-2">{{ strings.noSeries }}</p>
-      <v-table v-else density="compact" class="elevation-1">
-        <thead>
-          <tr><th>{{ strings.series }}</th><th class="text-right">{{ strings.value }}</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="(r, i) in rows" :key="i" data-test="metric-row">
-            <td class="text-caption">{{ r.label }}</td>
-            <td class="text-right">{{ r.value }}</td>
-          </tr>
-        </tbody>
-      </v-table>
-    </template>
   </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ContentWidth } from "@saflib/vue/components";
+import { AdminPanel, ContentWidth } from "@saflib/vue/components";
 import OpsGraph from "../components/OpsGraph.vue";
-import { useOpsMetricsInstant } from "../requests/queries.ts";
+import { useOpsDigest, useOpsMetricsInstant } from "../requests/queries.ts";
 import { METRIC_PRESETS, METRIC_RANGES, type MetricPreset } from "./OpsMetrics.presets.ts";
 import { ops_metrics as strings } from "./OpsMetrics.strings.ts";
 
@@ -114,6 +127,13 @@ function pick(p: MetricPreset) {
 watch(hours, () => run());
 
 const appliedQuery = computed(() => applied.value.query);
+// Without Prometheus (dev, or a product with metrics off) say so once,
+// rather than a red error under every query.
+const digest = useOpsDigest();
+const metricsOff = computed(() => {
+  const d = digest.data.value?.digest;
+  return !!d && !d.metrics;
+});
 const instant = useOpsMetricsInstant(appliedQuery);
 
 const unit = computed(() => METRIC_PRESETS.find((p) => p.query === applied.value.query)?.unit);
@@ -152,8 +172,66 @@ const rows = computed(() => {
 </script>
 
 <style scoped>
-.preset-group {
-  width: 96px;
+.metrics-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .metrics-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.metrics-main {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.metrics-presets nav {
+  padding: 8px;
+}
+.metrics-presets__group + .metrics-presets__group {
+  margin-top: 8px;
+}
+.metrics-presets__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  padding: 4px 8px;
+}
+.metrics-presets__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 5px 8px;
+  border-radius: 6px;
+  color: rgb(var(--v-theme-on-surface));
+  cursor: pointer;
+}
+.metrics-presets__item:hover {
+  background: rgba(var(--v-theme-on-surface), 0.04);
+}
+.metrics-presets__item--active {
+  background: rgb(var(--v-theme-secondary-container));
+  font-weight: 500;
+}
+.metrics-query {
+  padding: 12px 16px 16px;
+}
+.metrics-graph {
+  margin-top: 12px;
+}
+.metrics-graph :deep(img) {
+  width: 100%;
+  height: auto;
+}
+.metrics-series {
+  font-size: 0.75rem;
 }
 .promql :deep(textarea) {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;

@@ -2,7 +2,7 @@
   <ContentWidth variant="full">
     <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
 
-    <p v-if="!deps" class="text-body-1">{{ strings.none }}</p>
+    <p v-if="!deps" class="saf-admin-empty">{{ strings.none }}</p>
     <template v-else>
       <p class="text-body-2 text-medium-emphasis mb-4" data-test="deps-summary">
         {{ strings.checked }} {{ formatTime(deps.checked_at) }}
@@ -14,8 +14,8 @@
       </v-alert>
 
       <template v-if="deps.runtime.length">
-        <h2 class="text-h6 mb-2">{{ strings.runtime }}</h2>
-        <v-table density="compact" class="elevation-1 mb-6">
+        <AdminPanel :title="strings.runtime" class="mb-4">
+        <v-table>
           <tbody>
             <tr v-for="c in deps.runtime" :key="c.name" data-test="runtime-row">
               <td>
@@ -32,11 +32,12 @@
             </tr>
           </tbody>
         </v-table>
+        </AdminPanel>
       </template>
 
-      <h2 class="text-h6 mb-2">{{ strings.advisories }} ({{ deps.advisories.length }})</h2>
-      <p v-if="deps.advisories.length === 0" class="text-body-2 mb-4">{{ strings.noAdvisories }}</p>
-      <v-table v-else density="compact" class="elevation-1 mb-6">
+      <AdminPanel :title="`${strings.advisories} (${deps.advisories.length})`" class="mb-4">
+      <p v-if="deps.advisories.length === 0" class="text-body-2 text-medium-emphasis pa-4 ma-0">{{ strings.noAdvisories }}</p>
+      <v-table v-else>
         <tbody>
           <tr v-for="a in deps.advisories" :key="`${a.id}-${a.package}-${a.deployed}`" data-test="advisory-row">
             <td><v-chip :color="severityColor(a.severity)" size="x-small">{{ a.severity }}</v-chip></td>
@@ -57,10 +58,11 @@
           </tr>
         </tbody>
       </v-table>
+      </AdminPanel>
 
-      <h2 class="text-h6 mb-2">{{ strings.outdated }} ({{ deps.outdated.length }})</h2>
-      <p v-if="deps.outdated.length === 0" class="text-body-2">{{ strings.noOutdated }}</p>
-      <v-table v-else density="compact" class="elevation-1">
+      <AdminPanel :title="`${strings.outdated} (${deps.outdated.length})`">
+      <p v-if="deps.outdated.length === 0" class="text-body-2 text-medium-emphasis pa-4 ma-0">{{ strings.noOutdated }}</p>
+      <v-table v-else>
         <tbody>
           <tr v-for="o in deps.outdated" :key="o.name" data-test="outdated-row">
             <td><code>{{ o.name }}</code></td>
@@ -73,13 +75,14 @@
           </tr>
         </tbody>
       </v-table>
+      </AdminPanel>
     </template>
   </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { ContentWidth } from "@saflib/vue/components";
+import { AdminPanel, ContentWidth } from "@saflib/vue/components";
 import { useDependenciesPageLoader } from "./Dependencies.loader.ts";
 import { ops_dependencies as strings } from "./Dependencies.strings.ts";
 
