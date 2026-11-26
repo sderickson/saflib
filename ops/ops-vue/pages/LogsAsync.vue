@@ -14,7 +14,7 @@ useAsyncPageDocumentTitle(strings.documentTitle);
 const loader = useLogsLoader();
 provide(logsLoaderKey, loader);
 
-const asyncLoader = () => ({ logsQuery: loader.logsQuery });
+const asyncLoader = () => ({ groupsQuery: loader.groupsQuery });
 
 const LogsPage = defineAsyncComponent(() => import("./LogsPage.vue"));
 </script>

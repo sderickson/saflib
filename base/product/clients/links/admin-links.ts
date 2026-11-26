@@ -24,10 +24,6 @@ export const adminLinks: LinkMap = {
     path: "/emails",
     params: ["userEmail"],
   },
-  logs: {
-    subdomain,
-    path: "/logs",
-  },
   audit: {
     subdomain,
     path: "/audit",

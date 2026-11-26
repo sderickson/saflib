@@ -31,7 +31,6 @@
     "@saflib/errors-vue": "*",
     "@saflib/jobs-vue": "*",
     "@saflib/links": "*",
-    "@saflib/node-log-vue": "*",
     "@saflib/ops-vue": "*",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/ory-kratos-spa": "*",

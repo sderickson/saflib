@@ -61,8 +61,15 @@ export const makeRequestLineLogger =
     // fires outside it.
     const { log } = getReporters();
     const operationId = req.openapi?.schema?.operationId;
+    // Operations that read the logs (and would flood them when polled) opt
+    // out in their OpenAPI fragment.
+    const skip =
+      (req.openapi?.schema as Record<string, unknown> | undefined)?.[
+        "x-skip-request-log"
+      ] === true;
     res.on("finish", () => {
       const route = req.openapi?.openApiRoute ?? "(unmatched)";
+      if (skip) return;
       const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
       log.http(`${req.method} ${route}`, {
         method: req.method,

@@ -4,6 +4,8 @@ listOpsLogs:
     Newest first. Filters combine with AND. `q` is free text matched word by
     word against messages. Page with `cursor` from `next_cursor`.
   operationId: listOpsLogs
+  # Reading the logs (often polled) shouldn't add to them.
+  x-skip-request-log: true
   security:
     - ops-token: [ "ops:read" ]
     - session: [ site-admin ]
@@ -125,6 +127,8 @@ listOpsLogGroups:
     counts cover all of a group's lines. Lines with no context come back as
     single-line groups. Read a group's lines with `GET /ops/logs?context_id=`.
   operationId: listOpsLogGroups
+  # Reading the logs (often polled) shouldn't add to them.
+  x-skip-request-log: true
   security:
     - ops-token: [ "ops:read" ]
     - session: [ site-admin ]

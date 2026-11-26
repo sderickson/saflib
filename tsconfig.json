@@ -320,13 +320,7 @@
       "path": "./node-log/node-log-http"
     },
     {
-      "path": "./node-log/node-log-sdk"
-    },
-    {
       "path": "./node-log/node-log-spec"
-    },
-    {
-      "path": "./node-log/node-log-vue"
     },
     {
       "path": "./node-metrics/node-metrics-http"

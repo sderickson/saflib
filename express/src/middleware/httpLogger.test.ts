@@ -9,13 +9,13 @@ import { makeRequestLineLogger } from "./httpLogger.ts";
 let current: SafReporters;
 const requestLineLogger = makeRequestLineLogger(() => current);
 
-function appWith(reporters: SafReporters, operationId?: string) {
+function appWith(reporters: SafReporters, operationId?: string, extra: Record<string, unknown> = {}) {
   const app = express();
   app.use((req, _res, next) => {
     // Stand-in for route matching and context middleware.
     (req as unknown as { openapi: unknown }).openapi = {
       openApiRoute: "/matters/{id}",
-      schema: operationId ? { operationId } : {},
+      schema: { ...(operationId ? { operationId } : {}), ...extra },
     };
     current = reporters;
     next();
@@ -48,5 +48,13 @@ describe("requestLineLogger", () => {
     const reporters = { log: { http, warn }, logError: vi.fn() } as unknown as SafReporters;
     await request(appWith(reporters)).post("/matters/x").expect(201);
     await vi.waitFor(() => expect(warn).toHaveBeenCalledWith("Unknown operation name", expect.any(Object)));
+  });
+
+  it("skips operations marked x-skip-request-log", async () => {
+    const http = vi.fn();
+    const reporters = { log: { http, warn: vi.fn() }, logError: vi.fn() } as unknown as SafReporters;
+    await request(appWith(reporters, "listOpsLogs", { "x-skip-request-log": true })).get("/matters/x").expect(201);
+    await new Promise((r) => setTimeout(r, 20));
+    expect(http).not.toHaveBeenCalled();
   });
 });

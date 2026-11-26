@@ -13,6 +13,7 @@ import { configureUserLinks } from "@saflib/ory-kratos-vue";
 configureUserLinks({
   user: (id) => `${adminLinks.users.path}?id=${encodeURIComponent(id)}`,
   auditLog: (id) => `${adminLinks.audit.path}?user=${encodeURIComponent(id)}`,
+  serverLogs: (id) => `${adminLinks.opsLogs.path}?user=${encodeURIComponent(id)}`,
 });
 
 /** Where this product's commits live, for the build chip's links. */
@@ -47,7 +48,6 @@ const groups = computed<AdminNavGroup[]>(() => [
     items: isDevelopmentDeployment()
       ? [
           { ...adminLinks.emails, name: "Emails" },
-          { ...adminLinks.logs, name: "Live server logs" },
         ]
       : [],
   },

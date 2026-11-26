@@ -22,7 +22,6 @@ import {
   OpsTokensAsync,
 } from "@saflib/ops-vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
-import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 // END WORKFLOW AREA
@@ -32,10 +31,6 @@ const devObservabilityRoutes: RouteRecordRaw[] = isDevelopmentDeployment()
       {
         path: adminLinks.emails.path,
         component: SentEmailsAsync,
-      },
-      {
-        path: adminLinks.logs.path,
-        component: DevLogsAsync,
       },
     ]
   : [];

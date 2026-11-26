@@ -58,7 +58,7 @@ export function formatOffset(ts: string, start: string): string {
 export const startsOpen = (g: OpsLogGroupResponse) => g.kind !== null && (g.errors > 0 || g.warnings > 0);
 
 export const levelColor = (level: string) =>
-  ({ error: "error", warn: "warning", info: "info" })[level] ?? undefined;
+  ({ error: "error", warn: "warning" })[level] ?? undefined;
 
 /** "{ key1, key2 }": what a collapsed fields object shows. */
 export function fieldKeysSummary(fields: unknown): string {

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { http, HttpResponse } from "msw";
-import type { OpsLogEntryResponse } from "@saflib/ops-spec";
+import type { OpsLogEntryResponse, OpsLogGroupResponse } from "@saflib/ops-spec";
 import LogsAsync from "./LogsAsync.vue";
 import { router } from "./test_router.ts";
 import { mountTestApp } from "../test-app.ts";
@@ -16,11 +16,30 @@ const line = (id: number, message: string, extra: Partial<OpsLogEntryResponse> =
   service_name: "svc",
   subsystem_name: "svc.http",
   operation_name: "getThing",
-  request_id: `req-${id}`,
+  request_id: "req-1",
   user_id: null,
+  context_kind: "request",
+  context_id: "req-1",
   template_hash: "h",
   redactions: 0,
   untrusted: { message, fields: null },
+  ...extra,
+});
+
+const group = (extra: Partial<OpsLogGroupResponse> = {}): OpsLogGroupResponse => ({
+  kind: "request",
+  context_id: "req-1",
+  line_id: null,
+  first_ts: "2026-11-08T10:00:00.000Z",
+  last_ts: "2026-11-08T10:00:03.000Z",
+  count: 2,
+  errors: 0,
+  warnings: 1,
+  user_id: null,
+  operation_name: "getThing",
+  service_name: "svc",
+  request: { method: "GET", route: "/things/{id}", status: 502, duration_ms: 3012, internal: false },
+  untrusted: { first_message: "loading" },
   ...extra,
 });
 
@@ -29,99 +48,87 @@ const requests: URL[] = [];
 describe("LogsAsync", () => {
   stubGlobals();
   setupMockServer([
+    http.get(`${API}/ops/logs/groups`, ({ request }) => {
+      requests.push(new URL(request.url));
+      return HttpResponse.json({
+        groups: [
+          group(),
+          group({ kind: null, context_id: null, line_id: 7, count: 1, warnings: 0, request: null, untrusted: { first_message: "cache evicted" } }),
+        ],
+        next_cursor: null,
+      });
+    }),
     http.get(`${API}/ops/logs`, ({ request }) => {
       const url = new URL(request.url);
       requests.push(url);
-      if (url.searchParams.get("cursor") === "2") {
-        return HttpResponse.json({ logs: [line(1, "first line")], next_cursor: null });
+      if (url.searchParams.get("context_id") === "req-1") {
+        return HttpResponse.json({
+          logs: [
+            line(3, "<img src=x onerror=alert(1)> rendered as text", { ts: "2026-11-08T10:00:03.000Z", level: "warn", redactions: 2 }),
+            line(2, "loading", { untrusted: { message: "loading", fields: { note: "<b>plain</b>" } } }),
+          ],
+          next_cursor: null,
+        });
       }
-      if (url.searchParams.get("q") === "boom") {
-        return HttpResponse.json({ logs: [line(9, "boom happened", { level: "error" })], next_cursor: null });
-      }
-      return HttpResponse.json({
-        logs: [
-          line(3, "<img src=x onerror=alert(1)> rendered as text", { redactions: 2 }),
-          line(2, "second line", {
-            untrusted: {
-              message: "second line",
-              fields: { migration: "0002_fts_fields", tables: ["log_entries"], note: "<b>plain</b>" },
-            },
-          }),
-        ],
-        next_cursor: "2",
-      });
+      return HttpResponse.json({ logs: [line(5, "chrono line")], next_cursor: null });
     }),
   ]);
 
-  async function mount() {
+  async function mount(path = "/ops/logs") {
     requests.length = 0;
-    await router.push("/ops/logs");
+    await router.push(path);
     const wrapper = mountTestApp(LogsAsync, { attachTo: document.body });
-    await vi.waitFor(() => expect(wrapper.findAll("[data-test=log-line]").length).toBeGreaterThan(0));
+    await vi.waitFor(() => expect(wrapper.findAll("[data-test=log-group]").length).toBeGreaterThan(0));
     return wrapper;
   }
 
-  it("renders lines as plain text, with redaction badges", async () => {
+  it("lists groups by request; groups with warnings open showing their lines as plain text", async () => {
     const wrapper = await mount();
-    const rows = wrapper.findAll("[data-test=log-line]");
+    const rows = wrapper.findAll("[data-test=log-group]");
     expect(rows).toHaveLength(2);
-    expect(rows[0]!.text()).toContain("<img src=x onerror=alert(1)> rendered as text");
-    expect(rows[0]!.find("img").exists()).toBe(false);
-    expect(rows[0]!.text()).toContain("2 redacted");
+    expect(rows[0]!.text()).toContain("/things/{id}");
+    expect(rows[0]!.text()).toContain("502");
+    expect(rows[0]!.text()).toContain("3.0 s");
+    expect(rows[1]!.text()).toContain("cache evicted");
+
+    await vi.waitFor(() => expect(wrapper.findAll("[data-test=log-line]")).toHaveLength(2));
+    const lines = wrapper.find("[data-test=log-group-lines]");
+    expect(lines.text()).toContain("<img src=x onerror=alert(1)> rendered as text");
+    expect(lines.find("img").exists()).toBe(false);
+    expect(lines.text()).toContain("+3.0 s");
+    expect(lines.text()).toContain("2 redacted");
     wrapper.unmount();
   });
 
-  it("shows fields in their own column, expanding into a row below", async () => {
+  it("collapses a group on click", async () => {
     const wrapper = await mount();
-    const row = wrapper.findAll("[data-test=log-line]")[1]!;
-    expect(row.find("[data-test=log-fields-keys]").text()).toBe("{ migration, tables, note }");
-    expect(wrapper.find("[data-test=log-fields-json]").exists()).toBe(false);
-
-    await row.find("[data-test=log-fields-toggle]").trigger("click");
-    const json = wrapper.find("[data-test=log-fields-row] [data-test=log-fields-json]");
-    expect(json.text()).toContain('"migration": "0002_fts_fields"');
-    expect(json.find("b").exists()).toBe(false);
-    expect(row.find("[data-test=log-fields-toggle]").attributes("aria-expanded")).toBe("true");
-
-    await row.find("[data-test=log-fields-toggle]").trigger("click");
-    expect(wrapper.find("[data-test=log-fields-json]").exists()).toBe(false);
+    await vi.waitFor(() => expect(wrapper.find("[data-test=log-group-lines]").exists()).toBe(true));
+    await wrapper.findAll("[data-test=log-group]")[0]!.trigger("click");
+    expect(wrapper.find("[data-test=log-group-lines]").exists()).toBe(false);
     wrapper.unmount();
   });
 
-  it("labels columns in a header", async () => {
+  it("switches to the chronological view and back via the URL", async () => {
     const wrapper = await mount();
-    const headers = wrapper.findAll("thead th").map((th) => th.text());
-    expect(headers).toEqual(["Time", "Level", "Req", "Operation", "Message", "Fields"]);
+    await wrapper.find("[data-test=logs-view-chrono]").trigger("click");
+    await vi.waitFor(() => expect(router.currentRoute.value.query.view).toBe("chrono"));
+    await vi.waitFor(() => expect(wrapper.find("[data-test=logs-chrono]").text()).toContain("chrono line"));
     wrapper.unmount();
   });
 
-  it("shows request ids as colored three-character pills that filter", async () => {
-    const wrapper = await mount();
-    const pills = wrapper.findAll("[data-test=log-request-pill]");
-    expect(pills.map((p) => p.text())).toEqual(["req", "req"]);
-    expect(pills[0]!.attributes("title")).toBe("req-3");
-    // Same prefix, different ids: different colors.
-    expect(pills[0]!.attributes("style")).not.toBe(pills[1]!.attributes("style"));
-
-    await pills[0]!.trigger("click");
-    await vi.waitFor(() => expect(requests.at(-1)!.searchParams.get("request_id")).toBe("req-3"));
-    wrapper.unmount();
-  });
-
-  it("loads more with the cursor", async () => {
-    const wrapper = await mount();
-    await wrapper.find("[data-test=logs-more]").trigger("click");
-    await vi.waitFor(() => expect(wrapper.findAll("[data-test=log-line]")).toHaveLength(3));
-    expect(requests.at(-1)!.searchParams.get("cursor")).toBe("2");
-    wrapper.unmount();
-  });
-
-  it("applies the search filter", async () => {
-    const wrapper = await mount();
-    await wrapper.find("[data-test=logs-q] input").setValue("boom");
-    await wrapper.find("[data-test=logs-apply]").trigger("click");
-    await vi.waitFor(() => expect(wrapper.text()).toContain("boom happened"));
-    expect(requests.at(-1)!.searchParams.get("q")).toBe("boom");
+  it("filters from the URL", async () => {
+    const wrapper = await mount("/ops/logs?user=u_1&level=warn&q=boom");
+    await vi.waitFor(() =>
+      expect(
+        requests.some(
+          (u) =>
+            u.pathname === "/ops/logs/groups" &&
+            u.searchParams.get("user_id") === "u_1" &&
+            u.searchParams.get("level") === "warn" &&
+            u.searchParams.get("q") === "boom",
+        ),
+      ).toBe(true),
+    );
     wrapper.unmount();
   });
 });

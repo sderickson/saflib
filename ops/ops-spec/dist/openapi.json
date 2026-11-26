@@ -2047,6 +2047,7 @@
         "summary": "Search persisted logs",
         "description": "Newest first. Filters combine with AND. `q` is free text matched word by word against messages. Page with `cursor` from `next_cursor`.\n",
         "operationId": "listOpsLogs",
+        "x-skip-request-log": true,
         "security": [
           {
             "ops-token": [
@@ -2253,6 +2254,7 @@
         "summary": "Logs grouped by request, job, cron tick or process",
         "description": "Newest group first. Filters pick groups that have a matching line; counts cover all of a group's lines. Lines with no context come back as single-line groups. Read a group's lines with `GET /ops/logs?context_id=`.\n",
         "operationId": "listOpsLogGroups",
+        "x-skip-request-log": true,
         "security": [
           {
             "ops-token": [
