@@ -7,7 +7,16 @@
     </v-alert>
 
     <div class="metrics-layout">
-      <AdminPanel class="metrics-presets" :title="strings.presets">
+      <v-select
+        v-if="!mdAndUp"
+        :model-value="applied.query"
+        :items="presetItems"
+        :label="strings.presets"
+        class="metrics-preset-select"
+        data-test="metric-preset-select"
+        @update:model-value="(q) => pickQuery(q)"
+      />
+      <AdminPanel v-else class="metrics-presets" :title="strings.presets">
         <nav :aria-label="strings.presets">
           <div v-for="group in groups" :key="group.name" class="metrics-presets__group">
             <div class="metrics-presets__label">{{ group.name }}</div>
@@ -89,6 +98,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useDisplay } from "vuetify";
 import { AdminPageTitle, AdminPanel, ContentWidth } from "@saflib/vue/components";
 import OpsGraph from "../components/OpsGraph.vue";
 import { useOpsDigest, useOpsMetricsInstant } from "../requests/queries.ts";
@@ -121,6 +131,15 @@ function run() {
   if (!query) return;
   applied.value = { query, hours: hours.value, title: titleFor(query) };
   void router.replace({ query: { ...route.query, q: query, hours: String(hours.value) } });
+}
+
+const { mdAndUp } = useDisplay();
+const presetItems = computed(() =>
+  groups.value.flatMap((g) => g.presets.map((p) => ({ title: `${g.name}: ${p.label}`, value: p.query }))),
+);
+function pickQuery(q: unknown) {
+  const p = METRIC_PRESETS.find((x) => x.query === q);
+  if (p) pick(p);
 }
 
 function pick(p: MetricPreset) {
@@ -209,6 +228,10 @@ const rows = computed(() => {
   padding: 4px 8px;
 }
 .metrics-presets__item {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
   display: block;
   width: 100%;
   text-align: left;

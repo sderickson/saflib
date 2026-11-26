@@ -3,7 +3,7 @@
     <AdminPageTitle class="mb-4">{{ strings.title }}</AdminPageTitle>
 
     <v-row class="mb-4" density="comfortable">
-      <v-col cols="12" sm="6" md="3">
+      <v-col cols="6" md="3">
         <v-select
           v-model="statusFilter"
           :items="statusOptions"
@@ -13,7 +13,7 @@
           hide-details
         />
       </v-col>
-      <v-col cols="12" sm="6" md="3">
+      <v-col cols="6" md="3">
         <v-text-field
           v-model="operationIdFilter"
           label="Operation"
@@ -22,7 +22,7 @@
           hide-details
         />
       </v-col>
-      <v-col cols="12" sm="6" md="3">
+      <v-col cols="6" md="3">
         <v-text-field
           v-model="userIdFilter"
           label="User"
@@ -31,7 +31,7 @@
           hide-details
         />
       </v-col>
-      <v-col cols="12" sm="6" md="3">
+      <v-col cols="6" md="3">
         <v-text-field
           v-model="originalRequestIdFilter"
           label="Original Request Id"

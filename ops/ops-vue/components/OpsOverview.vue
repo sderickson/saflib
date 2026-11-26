@@ -213,9 +213,44 @@ const formatClock = (iso: string) =>
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
-@media (max-width: 960px) {
-  .overview-graphs {
-    grid-template-columns: 1fr;
+@media (max-width: 599px) {
+  /* Three small numbers in a row; the notes go. */
+  .overview-graphs .v-card {
+    padding: 8px 10px !important;
+  }
+  .overview-graphs .text-h5 {
+    font-size: 1.05rem !important;
+  }
+  .overview-graphs .text-caption {
+    display: none;
+  }
+  /* Rows: icon, then the name with its note underneath. */
+  .overview-row {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    border-top: 1px solid var(--saf-admin-row-border, #f2eee2);
+  }
+  .overview-row td,
+  .overview-row th {
+    border-top: 0;
+    padding: 6px 12px;
+  }
+  .overview-row__icon {
+    grid-row: span 2;
+    align-self: start;
+    padding-top: 8px !important;
+  }
+  .overview-row__label {
+    width: auto;
+    padding-bottom: 0 !important;
+  }
+  .overview-row__note {
+    grid-column: 2;
+    padding-top: 0 !important;
+    font-size: 0.8125rem;
+  }
+  .overview-row__note:empty {
+    display: none;
   }
 }
 .overview-graphs :deep(img) {

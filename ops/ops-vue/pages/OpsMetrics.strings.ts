@@ -4,7 +4,7 @@ export const ops_metrics = {
   queryLabel: "PromQL",
   run: "Run",
   presets: "Presets",
-  off: "Prometheus isn't set up here, so queries are off. This is the page you get in production; Diagnostics → Metrics shows this process's own numbers.",
+  off: "Prometheus isn't set up here, so queries are off. This is the page you get in production; This process (next tab) shows the server's own numbers.",
   graph_off: "The graph for this query appears here when Prometheus is set up.",
   values_off: "Current values appear here when Prometheus is set up.",
   range: "Range",
