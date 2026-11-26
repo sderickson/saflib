@@ -32,14 +32,19 @@ export function nextDueAfter(schedule: string, lastRun: Date): Date | null {
 
 /**
  * Cron jobs tile for the admin Overview: enabled jobs whose last run failed
- * need action (red); ones that missed their slot are worth a look (yellow,
- * e.g. the process was down). Disabled jobs are a choice, not a problem.
+ * need action (red); ones that missed their slot are worth a look (yellow)
+ * where the server is meant to be up around the clock (production by
+ * default; a laptop's dev stack sleeps through nightly slots). Disabled
+ * jobs are a choice, not a problem.
  */
 export function cronDigestTile(options: {
   getDbKey: () => DbKey;
   jobs: JobsMap;
   now?: () => Date;
+  /** Count missed slots as late. Default: DEPLOYMENT_NAME is "production". */
+  expectSchedule?: boolean;
 }): CronDigestTileProvider {
+  const expectSchedule = options.expectSchedule ?? process.env.DEPLOYMENT_NAME === "production";
   return {
     key: "cron",
     label: "Cron jobs",
@@ -50,7 +55,7 @@ export function cronDigestTile(options: {
       const enabled = known.filter((s) => s.enabled);
       const failed = enabled.filter((s) => s.last_run_status === "fail" || s.last_run_status === "timed out").length;
       const late = enabled.filter((s) => {
-        if (!s.last_run_at) return false;
+        if (!expectSchedule || !s.last_run_at) return false;
         const due = nextDueAfter(options.jobs[s.job_name]!.schedule, s.last_run_at);
         return due !== null && due.getTime() + CRON_LATE_GRACE_MS < now;
       }).length;
