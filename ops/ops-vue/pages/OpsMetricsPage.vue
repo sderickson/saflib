@@ -57,14 +57,15 @@
               <v-btn type="submit" color="primary" variant="flat" :disabled="metricsOff" data-test="metric-run">{{ strings.run }}</v-btn>
             </v-form>
             <div v-if="metricsOff" class="metrics-placeholder">{{ strings.graph_off }}</div>
-            <OpsGraph
+            <OpsSparkChart
               v-else-if="applied.query"
               :key="`${applied.query}|${applied.hours}`"
               :query="applied.query"
               :title="applied.title"
               :hours="applied.hours"
+              :unit="unit ?? 'count'"
               :width="960"
-              :height="320"
+              :height="200"
               class="metrics-graph"
             />
           </div>
@@ -100,7 +101,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDisplay } from "vuetify";
 import { AdminPageTitle, AdminPanel, ContentWidth } from "@saflib/vue/components";
-import OpsGraph from "../components/OpsGraph.vue";
+import OpsSparkChart from "../components/OpsSparkChart.vue";
 import { useOpsDigest, useOpsMetricsInstant } from "../requests/queries.ts";
 import { METRIC_PRESETS, METRIC_RANGES, type MetricPreset } from "./OpsMetrics.presets.ts";
 import { ops_metrics as strings } from "./OpsMetrics.strings.ts";

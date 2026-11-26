@@ -34,6 +34,13 @@ describe("OpsMetricsAsync", () => {
       });
     }),
     http.get(`${API}/ops/digest`, () => HttpResponse.json({ digest: { metrics: metricsOn ? { requests_per_min: 1 } : null } })),
+    http.get(`${API}/ops/metrics/query_range`, ({ request }) => {
+      const q = new URL(request.url).searchParams.get("query") ?? "";
+      const series = (n: number) =>
+        Array.from({ length: n }, (_, i) => ({ metric: { path: `/r${i}` }, values: [[1, "1"], [2, "3"], [3, "2"]] }));
+      // One series (the default preset) or several (anything "by" something).
+      return HttpResponse.json({ metrics: { result_type: "matrix", result: series(q.includes(" by ") ? 2 : 1) } });
+    }),
     http.post(`${API}/ops/metrics/graph-links`, async ({ request }) => {
       const body = (await request.json()) as { query: string };
       graphQueries.push(body.query);
@@ -48,6 +55,13 @@ describe("OpsMetricsAsync", () => {
     // Sorted by value, labelled without the scrape's identity labels.
     const rows = wrapper.findAll("[data-test=metric-row]");
     expect(rows[0]!.text()).toContain("path=/ops/health");
+    // One series: an interactive sparkline, no image.
+    await vi.waitFor(() => expect(wrapper.find("[data-test=ops-spark-line]").exists()).toBe(true));
+    expect(graphQueries).toHaveLength(0);
+
+    // Several series: the rendered graph instead.
+    const byRoute = wrapper.findAll("[data-test=metric-preset]").find((c) => c.text() === "Requests per minute by route")!;
+    await byRoute.trigger("click");
     await vi.waitFor(() => expect(graphQueries.length).toBeGreaterThan(0));
 
     const memory = wrapper.findAll("[data-test=metric-preset]").find((c) => c.text() === "Memory available %")!;

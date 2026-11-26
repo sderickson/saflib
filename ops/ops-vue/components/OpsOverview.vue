@@ -28,9 +28,9 @@
           <router-link v-if="links.metrics && metricsOn" :to="links.metrics" class="text-body-2">{{ strings.open_metrics }}</router-link>
         </div>
         <div v-if="metricsOn" class="overview-graphs">
-          <OpsGraph :title="strings.requests" :query="GRAPH_REQUESTS" :width="420" :height="160" />
-          <OpsGraph :title="strings.p95" :query="GRAPH_P95" :width="420" :height="160" />
-          <OpsGraph :title="strings.memory" :query="GRAPH_MEMORY" :width="420" :height="160" />
+          <v-card v-for="g in graphs" :key="g.title" class="pa-3">
+            <OpsSparkChart :title="g.title" :query="g.query" :unit="g.unit" />
+          </v-card>
         </div>
         <div v-else class="overview-graphs" data-test="overview-since-start">
           <v-card v-for="n in sinceStart" :key="n.label" variant="outlined" class="pa-3">
@@ -98,7 +98,7 @@ import { AdminPanel, ContentWidth } from "@saflib/vue/components";
 import StatusIcon from "./StatusIcon.vue";
 import { LEAST_RELIABLE_ENDPOINTS_QUERY, SLOWEST_ENDPOINTS_QUERY } from "../pages/OpsMetrics.presets.ts";
 import { useOpsDigest } from "../requests/queries.ts";
-import OpsGraph from "./OpsGraph.vue";
+import OpsSparkChart from "./OpsSparkChart.vue";
 import { getBuildCommits, type BuildRepoUrls } from "./build-info.ts";
 import { ops_overview as strings } from "./OpsOverview.strings.ts";
 
@@ -117,6 +117,13 @@ const props = withDefaults(
 const GRAPH_REQUESTS = 'sum(rate(http_request_duration_seconds_count{path!="unspecified"}[5m])) * 60';
 const GRAPH_P95 = 'histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{path!="unspecified"}[5m])))';
 const GRAPH_MEMORY = 'process_resident_memory_bytes{saf_app!="host"}';
+
+// Over the last day, interactive (hover for each point's time and value).
+const graphs = [
+  { title: strings.requests, query: GRAPH_REQUESTS, unit: "count" as const },
+  { title: strings.p95, query: GRAPH_P95, unit: "seconds" as const },
+  { title: strings.memory, query: GRAPH_MEMORY, unit: "bytes" as const },
+];
 
 const query = useOpsDigest();
 const digest = computed(() => query.data.value?.digest);

@@ -125,6 +125,34 @@ export function useLogGroupLines(contextId: Ref<string | null>, live?: Ref<boole
   });
 }
 
+/** A PromQL range query over the last `hours` (about 120 points). */
+export function useOpsMetricsRange(query: Ref<string>, hours: Ref<number>, enabled?: Ref<boolean>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["queryOpsMetricsRange"][200], TanstackError>({
+    queryKey: computed(() => ["ops", "metrics", "range", query.value, hours.value] as const),
+    enabled: computed(() => query.value.trim() !== "" && (enabled?.value ?? true)),
+    retry: false,
+    staleTime: 60_000,
+    queryFn: () => {
+      const end = Math.floor(Date.now() / 1000);
+      const start = end - hours.value * 3600;
+      const step = Math.max(60, Math.floor((end - start) / 120));
+      return handleClientMethod(
+        client.GET("/ops/metrics/query_range", {
+          params: {
+            query: {
+              query: query.value,
+              start: new Date(start * 1000).toISOString(),
+              end: new Date(end * 1000).toISOString(),
+              step,
+            },
+          },
+        }),
+      );
+    },
+  });
+}
+
 /** Deploy history: new builds, newest first. */
 export function useOpsDeploys(limit = 20) {
   const client = getClient();
