@@ -168,4 +168,19 @@ describe("errors routers", () => {
       .expect(401);
     expect(sunk).toHaveLength(1);
   });
+
+  it("accepts stacks with <anonymous> frames (not HTML)", async () => {
+    await request(makeApp())
+      .post("/errors/record")
+      .set("x-requested-with", "XMLHttpRequest")
+      .send({
+        reported_error: {
+          kind: "client",
+          message: "boom",
+          stack: "Error: boom\n    at Array.map (<anonymous>)\n    at run (app.js:1:1)",
+          source: "admin",
+        },
+      })
+      .expect(204);
+  });
 });

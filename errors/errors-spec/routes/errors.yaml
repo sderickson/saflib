@@ -1,6 +1,9 @@
 recordReportedError:
   summary: Record a client-reported error
   operationId: recordReportedError
+  # Stack traces and messages routinely contain things like <anonymous>; they
+  # are stored and shown as escaped text.
+  tags: [ block-html-exempt ]
   x-public: true
   requestBody:
     required: true
@@ -114,6 +117,9 @@ reportClientError:
     only signed-in users can report; reports are redacted, size-capped and
     grouped like server errors.
   operationId: reportClientError
+  # Stack traces and messages routinely contain things like <anonymous>; they
+  # are stored and shown as escaped text.
+  tags: [ block-html-exempt ]
   security:
     - session: []
   requestBody:

@@ -89,6 +89,9 @@
       "post": {
         "summary": "Record a client-reported error",
         "operationId": "recordReportedError",
+        "tags": [
+          "block-html-exempt"
+        ],
         "x-public": true,
         "requestBody": {
           "required": true,
@@ -155,6 +158,9 @@
         "summary": "Report a browser error (signed-in users)",
         "description": "How client errors reach Issues outside local development: the SPA posts uncaught errors and unhandled rejections here. Requires a session, so only signed-in users can report; reports are redacted, size-capped and grouped like server errors.\n",
         "operationId": "reportClientError",
+        "tags": [
+          "block-html-exempt"
+        ],
         "security": [
           {
             "session": []
