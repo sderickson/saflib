@@ -33,8 +33,11 @@ export function jobsDiagnosticProbe(options: {
     what: "Enqueues a job that fails once, with no retry",
     destination: "Background jobs",
     link: "jobs",
-    async run() {
-      const { job } = await enqueue({ operation_id: operationId, request: { body: {} } });
+    async run({ tag }) {
+      // The tag rides along as the dedupe key, so the "job went dead"
+      // warning this causes is a tagged test signal (never notifies,
+      // cleared with the rest).
+      const { job } = await enqueue({ operation_id: operationId, request: { body: {} }, dedupe_key: tag });
       return { kind: "job", id: job.id };
     },
     async find({ remembered }) {

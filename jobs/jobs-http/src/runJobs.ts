@@ -391,9 +391,12 @@ export async function runJobs(
           if (error) {
             logError(error);
           }
-          // Retries exhausted (or a permanent failure): worth an issue.
-          reportWarning(`job went dead: ${job.operation_id}`, {
-            fingerprint: `jobs.dead:${job.operation_id}`,
+          // Retries exhausted (or a permanent failure): worth an issue. A
+          // Diagnostics test job carries its `[diag:…]` tag as the dedupe
+          // key; keep the tag so it groups and clears as a test signal.
+          const diagTag = job.dedupe_key?.startsWith("[diag:") ? job.dedupe_key : null;
+          reportWarning(diagTag ? `${diagTag}: job went dead: ${job.operation_id}` : `job went dead: ${job.operation_id}`, {
+            fingerprint: diagTag ? undefined : `jobs.dead:${job.operation_id}`,
             extra: {
               jobId: job.id,
               statusCode: classification.status_code,

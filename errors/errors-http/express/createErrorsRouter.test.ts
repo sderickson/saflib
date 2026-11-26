@@ -140,6 +140,24 @@ describe("errors routers", () => {
     ]);
   });
 
+  it("skips reports from the Vue devtools panel", async () => {
+    await request(makeApp())
+      .post("/csp-violations")
+      .set("content-type", "application/csp-report")
+      .send(
+        JSON.stringify({
+          "csp-report": {
+            "document-uri": "http://admin.localhost/__devtools__/",
+            "effective-directive": "img-src",
+            "blocked-uri": "https://raw.githubusercontent.com/x/logo.svg",
+          },
+        }),
+      )
+      .expect(204);
+
+    expect(sunk).toHaveLength(0);
+  });
+
   it("records admin test errors as kind test", async () => {
     await request(makeApp())
       .post("/admin/test-error")
