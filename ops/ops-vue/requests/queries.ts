@@ -125,6 +125,15 @@ export function useLogGroupLines(contextId: Ref<string | null>, live?: Ref<boole
   });
 }
 
+/** Deploy history: new builds, newest first. */
+export function useOpsDeploys(limit = 20) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["listOpsDeploys"][200], TanstackError>({
+    queryKey: ["ops", "deploys", limit],
+    queryFn: () => handleClientMethod(client.GET("/ops/deploys", { params: { query: { limit } } })),
+  });
+}
+
 /** Every health check's latest result (runs them). */
 export function useOpsHealth(enabled?: Ref<boolean>) {
   const client = getClient();

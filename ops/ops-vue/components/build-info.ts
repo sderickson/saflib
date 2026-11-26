@@ -22,6 +22,15 @@ const isSha = (s: string) => /^[0-9a-f]{7,40}$/i.test(s);
 export const commitHref = (repoUrl: string | undefined, sha: string) =>
   repoUrl && isSha(sha) ? `${repoUrl.replace(/\/+$/, "")}/commit/${sha}` : undefined;
 
+const cleanSha = (s: string | null | undefined) => (s ?? "").replace(/-dirty$/, "");
+
+/** What changed between two commits, e.g. between consecutive deploys. */
+export const compareHref = (repoUrl: string | undefined, from: string | null | undefined, to: string | null | undefined) => {
+  const a = cleanSha(from);
+  const b = cleanSha(to);
+  return repoUrl && isSha(a) && isSha(b) && a !== b ? `${repoUrl.replace(/\/+$/, "")}/compare/${a}...${b}` : undefined;
+};
+
 /** The commits this bundle was built from, with links where possible. */
 export function getBuildCommits(repos: BuildRepoUrls = {}): {
   root: BuildCommit;

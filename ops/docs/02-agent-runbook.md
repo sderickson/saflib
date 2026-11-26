@@ -63,6 +63,7 @@ alert wakes you.
 | Cron failing | `GET /ops/health` (`cron` check) | A scheduled job's last run failed |
 | Dependencies: advisories | `GET /ops/dependencies` | A vulnerable package; `fixed_in` says what to bump to |
 | Slow or unreliable endpoint | the digest's `endpoints`, then PromQL below | One route regressed |
+| Trouble started recently | `GET /ops/deploys` (each deploy's commits) | A deploy; compare its commits with the one before |
 
 ## Reading logs
 
