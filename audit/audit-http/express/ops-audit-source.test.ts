@@ -28,7 +28,7 @@ describe("opsAuditSource", () => {
         outcome: "success",
         actor_user_id: "u1",
         client_ip: "203.0.113.9",
-        details: { source: "kratos", user_agent: "Firefox" },
+        details: { source: "kratos", stage: event_type, flow_id: "f", identity_id: "u1", success: true, user_agent: "Firefox" },
       });
     await add("2026-11-25T00:00:00Z", "kratos.login.password.success");
     await add("2026-11-26T00:00:00Z", "kratos.settings.totp.success");
