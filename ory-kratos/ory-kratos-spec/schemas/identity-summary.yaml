@@ -34,3 +34,8 @@ properties:
   role:
     type: [ string, "null" ]
     description: Their role in that org, when the product has roles.
+  admin:
+    type: boolean
+    description: >
+      A site admin: the email is in ADMIN_EMAILS and verified (the same rule
+      the server's auth uses). Admin lists put admins first.

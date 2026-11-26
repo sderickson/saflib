@@ -91,6 +91,8 @@ export interface components {
             org: string | null;
             /** @description Their role in that org, when the product has roles. */
             role: string | null;
+            /** @description A site admin: the email is in ADMIN_EMAILS and verified (the same rule the server's auth uses). Admin lists put admins first. */
+            admin?: boolean;
         };
         /** @description An identity as the Users page lists it. */
         "identity-record": components["schemas"]["identity-summary"] & {

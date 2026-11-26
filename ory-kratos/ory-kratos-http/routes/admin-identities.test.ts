@@ -101,6 +101,7 @@ describe("identity admin routes", () => {
         org: "Analytical",
         role: "owner",
         verified: true,
+        admin: false,
         state: "active",
         created_at: "2026-10-30T00:00:00Z",
       },
@@ -118,6 +119,22 @@ describe("identity admin routes", () => {
     const ada = res.body.identities[1];
     expect(ada).toMatchObject({ name: "Ada Lovelace", mfa: true, last_sign_in_at: "2026-11-24T10:00:00Z" });
     expect(res.body.identities[0]).toMatchObject({ mfa: false, last_sign_in_at: null });
+  });
+
+  it("pins site admins (ADMIN_EMAILS and verified) to the top", async () => {
+    const previous = process.env.ADMIN_EMAILS;
+    // Grace is listed but unverified, so she isn't an admin.
+    process.env.ADMIN_EMAILS = "Ada@example.com, grace@example.com";
+    try {
+      const res = await request(makeApp(profiles)).get("/admin/identities").set(siteAdminHeaders).expect(200);
+      expect(res.body.identities.map((i: { id: string; admin: boolean }) => [i.id, i.admin])).toEqual([
+        [ADA, true],
+        [GRACE, false],
+      ]);
+    } finally {
+      if (previous === undefined) delete process.env.ADMIN_EMAILS;
+      else process.env.ADMIN_EMAILS = previous;
+    }
   });
 
   it("searches by name, email or id prefix, and pages", async () => {

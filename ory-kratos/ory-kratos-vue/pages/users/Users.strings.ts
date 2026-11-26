@@ -1,4 +1,5 @@
 export const users_page = {
+  admin: "admin",
   documentTitle: "Users",
   title: "Users",
   search: "Search by name, email or ID",

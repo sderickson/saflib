@@ -40,6 +40,16 @@ export function mfaMethods(raw: unknown): string[] {
   );
 }
 
+/** Site-admin emails (ADMIN_EMAILS), lowercased. */
+function adminEmails(): Set<string> {
+  return new Set(
+    (process.env.ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
 /** Maps a Kratos admin identity to what admin pages show. */
 export function toIdentitySummary(
   raw: unknown,
@@ -48,13 +58,17 @@ export function toIdentitySummary(
   const identity = raw as KratosIdentityLike;
   if (!identity || typeof identity.id !== "string") return null;
   const email = identity.traits?.email;
+  const cleanEmail = typeof email === "string" && email.trim() ? email.trim() : null;
+  const verified = (identity.verifiable_addresses ?? []).some((a) => a.verified === true);
   return {
     id: identity.id,
-    email: typeof email === "string" && email.trim() ? email.trim() : null,
+    email: cleanEmail,
     name: profile.name ?? null,
     org: profile.org ?? null,
     role: profile.role ?? null,
-    verified: (identity.verifiable_addresses ?? []).some((a) => a.verified === true),
+    verified,
+    // Same rule as the server's auth: listed in ADMIN_EMAILS and verified.
+    admin: verified && cleanEmail !== null && adminEmails().has(cleanEmail.toLowerCase()),
     state: typeof identity.state === "string" ? identity.state : "active",
     created_at:
       typeof identity.created_at === "string"

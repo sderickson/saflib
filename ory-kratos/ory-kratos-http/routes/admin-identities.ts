@@ -77,7 +77,10 @@ export function createKratosAdminRouter(
       } catch {
         throw createError(502, "Identity service error");
       }
-      const matching = q ? all.filter((r) => matchesIdentitySearch(r, q)) : all;
+      // Admins are pinned to the top (who can reach the admin is worth
+      // seeing at a glance); otherwise the directory's order.
+      const found = q ? all.filter((r) => matchesIdentitySearch(r, q)) : all;
+      const matching = [...found.filter((r) => r.admin), ...found.filter((r) => !r.admin)];
       const page = matching.slice(offset, offset + limit);
       const nextOffset = offset + page.length;
       res.status(200).json({

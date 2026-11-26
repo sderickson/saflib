@@ -43,7 +43,15 @@
                 @click="select(u.id)"
                 @keydown.enter="select(u.id)"
               >
-                <td class="py-2"><UserRef :id="u.id" variant="full" /></td>
+                <td class="py-2">
+                  <span class="d-inline-flex align-center ga-2">
+                    <UserRef :id="u.id" variant="full" />
+                    <!-- Admins are pinned to the top of the list. -->
+                    <v-chip v-if="u.admin" size="x-small" variant="tonal" color="primary" data-test="users-admin">
+                      {{ strings.admin }}
+                    </v-chip>
+                  </span>
+                </td>
                 <template v-if="wideColumns">
                   <td class="text-body-2 saf-admin-hide-xs">{{ u.org ?? strings.none }}</td>
                   <td class="text-body-2 text-no-wrap">{{ formatRelative(u.last_sign_in_at) }}</td>
