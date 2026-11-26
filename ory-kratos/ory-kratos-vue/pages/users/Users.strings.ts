@@ -5,11 +5,8 @@ export const users_page = {
   columns: {
     user: "User",
     org: "Org",
-    mfa: "MFA",
     last_sign_in: "Last sign-in",
   },
-  mfa_on: "On",
-  mfa_off: "Off",
   none: "—",
   empty: "No one matches that search.",
   load_more: "Load more",

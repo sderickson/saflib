@@ -14,6 +14,7 @@ export * from "./test-mode.ts";
 export * from "./wip-env.ts";
 export * from "./git-hash.ts";
 export * from "./id-color.ts";
+export * from "./date-format.ts";
 export * from "./useResolvedHref.ts";
 export * from "./document-title.ts";
 export * from "./scroll-behavior.ts";

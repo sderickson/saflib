@@ -21,7 +21,7 @@
             <div class="text-body-2 alert-text">{{ a.untrusted.annotations.summary ?? "" }}</div>
             <div class="text-caption text-medium-emphasis">{{ labelText(a.labels) }}</div>
           </td>
-          <td class="text-caption text-no-wrap">
+          <td class="text-caption text-no-wrap saf-admin-hide-xs">
             {{ strings.started }} {{ formatTime(a.starts_at) }}
             <div v-if="a.ends_at">{{ strings.ended }} {{ formatTime(a.ends_at) }}</div>
           </td>

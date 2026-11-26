@@ -73,9 +73,13 @@ describe("AuditLogPage", () => {
     });
 
     expect(wrapper.text()).toContain("Audit log");
-    // Not a Kratos id, so the actor shows as a ShortId; the request too.
+    // Not a Kratos id, so the actor shows as a ShortId.
     expect(wrapper.text()).toContain("u·user");
-    expect(wrapper.text()).toContain("r·req1");
+    // Source, request and details are in the row's expanded view.
+    expect(wrapper.text()).not.toContain("r·req1");
+    await wrapper.find("tbody tr").trigger("click");
+    await vi.waitFor(() => expect(wrapper.find("[data-test=audit-expanded]").exists()).toBe(true));
+    expect(wrapper.find("[data-test=audit-expanded]").text()).toContain("r·req1");
   });
 
   it("filters to ?user= and shows a removable chip", async () => {

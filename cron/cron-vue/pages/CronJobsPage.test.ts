@@ -1,3 +1,4 @@
+import { formatShortDateTime } from "@saflib/vue";
 import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
@@ -48,17 +49,6 @@ const mockJobs: ListCronJobsResponse = [
   },
 ];
 
-const formatDateTime = (dateTimeString: string | null | undefined): string => {
-  if (!dateTimeString) return "N/A";
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(dateTimeString));
-  } catch (e) {
-    return dateTimeString;
-  }
-};
 
 // MSW Handlers
 const handlers = [
@@ -151,15 +141,7 @@ describe("CronJobsAsync", () => {
 
     // Check headers
     const headers = table.findAll("thead th");
-    expect(headers.map((h) => h.text())).toEqual([
-      "Job",
-      "Status",
-      "Enabled by",
-      "Last run",
-      "Last run at",
-      "Runs next",
-      "Actions",
-    ]);
+    expect(headers.map((h) => h.text())).toEqual(["Job", "Status", "Last run", "Next run", ""]);
 
     // Check rows
     const rows = getRows(wrapper);
@@ -171,13 +153,12 @@ describe("CronJobsAsync", () => {
     expect(
       row1.findComponent({ name: "v-chip", text: "Enabled" }).exists(),
     ).toBe(true); // Status Chip
-    // Not a Kratos id, so UserRef shows it as a ShortId.
-    expect(row1.text()).toContain("u·admi");
+    // Who enabled it is on hover over the status chip.
     expect(
       row1.findComponent({ name: "v-chip", text: "success" }).exists(),
     ).toBe(true); // Last Run Status Chip
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].last_run_at));
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].runs_next_at));
+    expect(row1.text()).toContain(formatShortDateTime(mockJobs[0].last_run_at));
+    expect(row1.text()).toContain(formatShortDateTime(mockJobs[0].runs_next_at));
     expect(getActionButton(wrapper, "job-1", "Disable").exists()).toBe(true);
   });
 
@@ -188,7 +169,7 @@ describe("CronJobsAsync", () => {
       row3.findComponent({ name: "v-chip", text: "Re-enable required" }).exists(),
     ).toBe(true);
     expect(row3.text()).toContain(
-      "Missing — re-enable to record authority (job is not running)",
+      "Re-enable required",
     );
   });
 

@@ -11,7 +11,13 @@
       density="compact"
     >
       <template #[`item.enabled`]="{ item }">
-        <v-chip :color="item.enabled ? 'success' : 'error'">
+        <v-tooltip v-if="item.enabled && item.enabled_by" location="top">
+          <template #activator="{ props: tip }">
+            <v-chip v-bind="tip" color="success" size="small" data-test="cron-status">Enabled</v-chip>
+          </template>
+          <span>Enabled by <UserRef :id="item.enabled_by" variant="compact" /></span>
+        </v-tooltip>
+        <v-chip v-else :color="item.enabled ? 'success' : undefined" size="small" data-test="cron-status">
           {{ item.enabled ? "Enabled" : "Disabled" }}
         </v-chip>
         <v-chip
@@ -24,26 +30,12 @@
         </v-chip>
       </template>
 
-      <template #[`item.enabled_by`]="{ item }">
-        <UserRef v-if="item.enabled_by" :id="item.enabled_by" />
-        <span v-else-if="item.enabled" class="text-warning">
-          Missing — re-enable to record authority (job is not running)
-        </span>
-        <span v-else>N/A</span>
-      </template>
-
       <template #[`item.last_run_status`]="{ item }">
-        <v-chip
-          v-if="item.last_run_status"
-          :color="statusColor(item.last_run_status)"
-        >
-          {{ item.last_run_status }}
-        </v-chip>
-        <span v-else>N/A</span>
-      </template>
-
-      <template #[`item.last_run_at`]="{ item }">
-        <span class="text-no-wrap">{{ formatDateTime(item.last_run_at) }}</span>
+        <span v-if="item.last_run_status" class="d-inline-flex align-center ga-2 text-no-wrap">
+          <v-chip :color="statusColor(item.last_run_status)" size="small">{{ item.last_run_status }}</v-chip>
+          <span class="text-medium-emphasis">{{ formatShortDateTime(item.last_run_at) }}</span>
+        </span>
+        <span v-else class="text-medium-emphasis">Never</span>
       </template>
 
       <template #[`item.runs_next_at`]="{ item }">
@@ -74,19 +66,20 @@ import { computed, ref } from "vue";
 import { AdminPageTitle, ContentWidth } from "@saflib/vue/components";
 import { UserRef } from "@saflib/ory-kratos-vue";
 import type { JobSettings } from "@saflib/cron-spec";
+import { formatShortDateTime } from "@saflib/vue";
 import { useCronJobsPageLoader } from "./CronJobs.loader.ts";
 import { cron_jobs as strings } from "./CronJobs.strings.ts";
 
 const updatingJobId = ref<string | null>(null);
 
+// Who enabled a job is on hover over its status.
+const wide = { headerProps: { class: "saf-admin-hide-xs" }, cellProps: { class: "saf-admin-hide-xs" } };
 const headers = [
   { title: "Job", key: "job_name", sortable: true },
-  { title: "Status", key: "enabled", sortable: true },
-  { title: "Enabled by", key: "enabled_by", sortable: true },
+  { title: "Status", key: "enabled", sortable: true, ...wide },
   { title: "Last run", key: "last_run_status", sortable: true },
-  { title: "Last run at", key: "last_run_at", sortable: true },
-  { title: "Runs next", key: "runs_next_at", sortable: true },
-  { title: "Actions", key: "actions", sortable: false },
+  { title: "Next run", key: "runs_next_at", sortable: true, ...wide },
+  { title: "", key: "actions", sortable: false, align: "end" as const },
 ];
 
 const { jobsQuery, updateMutation } = useCronJobsPageLoader();
@@ -106,18 +99,6 @@ const toggleJobStatus = (jobName: string, enabled: boolean) => {
   );
 };
 
-const formatDateTime = (dateTimeString: string | null | undefined): string => {
-  if (!dateTimeString) return "N/A";
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(dateTimeString));
-  } catch (e) {
-    console.error("Error formatting date:", e);
-    return dateTimeString;
-  }
-};
 
 const formatRunsNext = (item: JobSettings): string => {
   if (!item.enabled) {
@@ -129,7 +110,7 @@ const formatRunsNext = (item: JobSettings): string => {
   if (!item.runs_next_at) {
     return item.schedule ? "Unknown" : "—";
   }
-  return formatDateTime(item.runs_next_at);
+  return formatShortDateTime(item.runs_next_at);
 };
 
 const statusColor = (status: string | null | undefined): string => {

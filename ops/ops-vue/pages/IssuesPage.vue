@@ -36,8 +36,8 @@
             />
           </th>
           <th>{{ strings.cols.issue }}</th>
-          <th class="text-right">{{ strings.cols.events }}</th>
-          <th>{{ strings.cols.lastSeen }}</th>
+          <th class="text-right saf-admin-hide-xs">{{ strings.cols.events }}</th>
+          <th class="saf-admin-hide-xs">{{ strings.cols.lastSeen }}</th>
           <th aria-hidden="true" />
         </tr>
       </thead>
@@ -54,9 +54,12 @@
                 <!-- Untrusted text: plain interpolation only (escaped), never v-html. -->
                 <span class="issue-title">{{ issue.untrusted.title }}</span>
               </button>
+              <div class="text-caption text-medium-emphasis saf-admin-only-xs">
+                {{ issue.count.toLocaleString() }} {{ strings.times }} · {{ formatTime(issue.last_seen) }}
+              </div>
             </td>
-            <td class="text-right text-no-wrap">{{ issue.count.toLocaleString() }}</td>
-            <td class="text-no-wrap text-medium-emphasis">{{ formatTime(issue.last_seen) }}</td>
+            <td class="text-right text-no-wrap saf-admin-hide-xs">{{ issue.count.toLocaleString() }}</td>
+            <td class="text-no-wrap text-medium-emphasis saf-admin-hide-xs">{{ formatTime(issue.last_seen) }}</td>
             <td class="issues-table__chevron">
               <v-icon :icon="openId === issue.id ? 'mdi-chevron-up' : 'mdi-chevron-down'" size="18" />
             </td>

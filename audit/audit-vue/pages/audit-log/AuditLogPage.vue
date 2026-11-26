@@ -53,15 +53,43 @@
     </p>
 
     <v-data-table
+      v-model:expanded="expanded"
       class="audit-log-table"
       :headers="headers"
       :items="tableItems"
+      item-value="id"
       :items-per-page="-1"
       hide-default-footer
       density="compact"
+      show-expand
+      expand-on-click
     >
       <template #[`item.ts`]="{ item }">
-        <span class="text-no-wrap">{{ formatTime(item.ts) }}</span>
+        <span class="text-no-wrap">{{ formatShortDateTime(item.ts) }}</span>
+      </template>
+      <template #[`item.outcome`]="{ item }">
+        <!-- Only worth a look when it isn't a success. -->
+        <v-chip v-if="item.outcome !== 'success'" size="x-small" color="error" variant="tonal">{{ item.outcome }}</v-chip>
+      </template>
+      <template #expanded-row="{ columns, item }">
+        <tr class="audit-expanded" data-test="audit-expanded">
+          <td :colspan="columns.length">
+            <dl class="audit-facts">
+              <dt>{{ strings.columns.time }}</dt>
+              <dd>{{ formatTime(item.ts) }}</dd>
+              <dt>{{ strings.columns.source }}</dt>
+              <dd>{{ item.source }}</dd>
+              <dt>{{ strings.columns.outcome }}</dt>
+              <dd>{{ item.outcome }}</dd>
+              <dt>{{ strings.columns.request }}</dt>
+              <dd>
+                <ShortId v-if="item.request_id" :id="item.request_id" prefix="r" />
+                <span v-else class="text-medium-emphasis">—</span>
+              </dd>
+            </dl>
+            <pre v-if="item.detailsPretty" class="audit-details-full">{{ item.detailsPretty }}</pre>
+          </td>
+        </tr>
       </template>
       <template #[`item.actor_user_id`]="{ item }">
         <AuditActor :row="item" />
@@ -71,13 +99,6 @@
           <span v-if="item.resource_type">{{ item.resource_type }}</span>
           <ShortId v-if="item.resource_id" :id="item.resource_id" :prefix="item.resource_type?.charAt(0)" />
         </span>
-        <span v-else class="text-medium-emphasis">—</span>
-      </template>
-      <template #[`item.details`]="{ item }">
-        <span class="audit-details" :title="item.details">{{ item.details }}</span>
-      </template>
-      <template #[`item.request_id`]="{ item }">
-        <ShortId v-if="item.request_id" :id="item.request_id" prefix="r" />
         <span v-else class="text-medium-emphasis">—</span>
       </template>
     </v-data-table>
@@ -103,8 +124,8 @@ import AuditActor from "./AuditActor.vue";
 import { UserRef } from "@saflib/ory-kratos-vue";
 import { useRoute, useRouter } from "vue-router";
 import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
-import { showError, showInfo } from "@saflib/vue";
-import { computed } from "vue";
+import { formatShortDateTime, showError, showInfo } from "@saflib/vue";
+import { computed, ref } from "vue";
 import { audit_log as strings } from "./AuditLog.strings.ts";
 import { useAuditLogsPageLoader } from "./AuditLog.loader.ts";
 
@@ -144,22 +165,23 @@ const listLoading = computed(
 );
 const sealPending = computed(() => sealMutation.isPending.value);
 
+// Source, request and the full details are in each row's expanded view.
+const wide = { headerProps: { class: "saf-admin-hide-xs" }, cellProps: { class: "saf-admin-hide-xs" } };
 const headers = [
   { title: strings.columns.time, key: "ts", sortable: false },
-  { title: strings.columns.source, key: "source", sortable: false },
   { title: strings.columns.event, key: "event_type", sortable: false },
-  { title: strings.columns.outcome, key: "outcome", sortable: false },
   { title: strings.columns.actor, key: "actor_user_id", sortable: false },
-  { title: strings.columns.resource, key: "resource", sortable: false },
-  { title: strings.columns.request, key: "request_id", sortable: false },
-  { title: strings.columns.details, key: "details", sortable: false },
+  { title: strings.columns.resource, key: "resource", sortable: false, ...wide },
+  { title: strings.columns.outcome, key: "outcome", sortable: false, ...wide },
+  { title: "", key: "data-table-expand", sortable: false, align: "end" as const },
 ];
+const expanded = ref<string[]>([]);
 
 const tableItems = computed(() =>
   rows.value.map((r) => ({
     ...r,
     resource: [r.resource_type, r.resource_id].filter(Boolean).join(" "),
-    details: formatDetails(r.details),
+    detailsPretty: formatDetails(r.details),
   })),
 );
 
@@ -170,13 +192,12 @@ function formatTime(iso: string): string {
   }).format(new Date(iso));
 }
 
-function formatDetails(details: AuditLog["details"]): string {
-  if (details == null) return "—";
+function formatDetails(details: AuditLog["details"]): string | null {
+  if (details == null) return null;
   try {
-    // Full JSON; the cell truncates to one line and shows it all on hover.
-    return JSON.stringify(details);
+    return JSON.stringify(details, null, 2);
   } catch {
-    return "—";
+    return null;
   }
 }
 
@@ -208,15 +229,34 @@ async function onSeal() {
 .audit-log-table :deep(th) {
   white-space: nowrap;
 }
-/* One line per event, so rows line up; the full details are on hover. */
-.audit-details {
-  display: block;
-  max-width: 32rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.audit-expanded > td {
+  background: #fcfaf3;
+  padding: 12px 16px !important;
+}
+.audit-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+}
+.audit-facts dt {
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+}
+.audit-facts dd {
+  margin: 0;
+}
+.audit-details-full {
   font-family: ui-monospace, Menlo, monospace;
   font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 </style>

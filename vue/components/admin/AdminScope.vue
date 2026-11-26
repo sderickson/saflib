@@ -94,6 +94,19 @@ import { adminDefaults } from "./admin-defaults.ts";
   vertical-align: middle;
 }
 
+/* Columns that only fit on wider screens: put on the th and its tds. */
+@media (max-width: 599px) {
+  .saf-admin .saf-admin-hide-xs {
+    display: none !important;
+  }
+}
+/* Shown only on phones (e.g. a detail tucked under the main cell). */
+@media (min-width: 600px) {
+  .saf-admin .saf-admin-only-xs {
+    display: none !important;
+  }
+}
+
 /* Inputs: white, warm hairline, primary when focused. */
 .saf-admin .v-field--variant-outlined {
   background: var(--saf-admin-surface);

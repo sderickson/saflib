@@ -17,7 +17,6 @@
             <th style="width: 40px" aria-hidden="true" />
             <th>{{ strings.health_cols.check }}</th>
             <th>{{ strings.health_cols.reading }}</th>
-            <th class="text-right">{{ strings.health_cols.took }}</th>
           </tr>
         </thead>
         <tbody>
@@ -25,7 +24,6 @@
             <td><StatusIcon :tone="c.status" /></td>
             <td><code>{{ c.name }}</code></td>
             <td>{{ c.summary }}</td>
-            <td class="text-right text-medium-emphasis">{{ c.duration_ms != null ? `${Math.round(c.duration_ms)} ms` : "" }}</td>
           </tr>
         </tbody>
       </v-table>

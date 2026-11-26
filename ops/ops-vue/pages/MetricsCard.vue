@@ -25,18 +25,16 @@
       <thead>
         <tr>
           <th>{{ strings.metric_cols.metric }}</th>
-          <th>{{ strings.metric_cols.type }}</th>
           <th>{{ strings.metric_cols.distribution }}</th>
-          <th>{{ strings.metric_cols.summary }}</th>
+          <th class="saf-admin-hide-xs">{{ strings.metric_cols.summary }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="m in rows" :key="m.name" data-test="metric-row">
           <td>
             <code class="text-body-2">{{ m.name }}</code>
-            <div class="text-caption text-medium-emphasis">{{ strings.series(m.series) }}</div>
+            <div class="text-caption text-medium-emphasis">{{ m.type }} · {{ strings.series(m.series) }}</div>
           </td>
-          <td class="text-body-2">{{ m.type }}</td>
           <td>
             <div v-if="m.histogram" class="metrics-bars" role="img" :aria-label="`${m.name} buckets`">
               <span
@@ -49,8 +47,11 @@
               />
             </div>
             <span v-else class="text-body-2">{{ formatMetricValue(m.name, m.total) }}</span>
+            <div v-if="m.histogram" class="text-caption text-medium-emphasis saf-admin-only-xs">
+              p95 ≤ {{ formatMetricValue(m.name, m.histogram.p95_le) }} · {{ formatMetricValue("count", m.histogram.count) }} obs
+            </div>
           </td>
-          <td class="text-caption text-medium-emphasis">
+          <td class="text-caption text-medium-emphasis saf-admin-hide-xs">
             <template v-if="m.histogram">
               {{ formatMetricValue("count", m.histogram.count) }} obs · mean
               {{ formatMetricValue(m.name, m.histogram.count ? m.histogram.sum / m.histogram.count : null) }} · p95 ≤

@@ -118,26 +118,20 @@
       :items-per-page="pageSize"
       hide-default-footer
     >
-      <template #[`item.id`]="{ item }">
-        <ShortId :id="item.id" prefix="j" />
-      </template>
 
       <template #[`item.user_id`]="{ item }">
         <JobActor :job="item" />
       </template>
 
-      <template #[`item.original_request_id`]="{ item }">
-        <ShortId :id="item.original_request_id" prefix="r" />
-      </template>
 
       <template #[`item.status`]="{ item }">
         <v-chip :color="statusColor(item.status)" size="small">
-          {{ item.status }}
+          {{ item.status }}<template v-if="item.status === 'retrying'">&nbsp;{{ item.attempt }}/{{ item.max_attempts }}</template>
         </v-chip>
       </template>
 
       <template #[`item.created_at`]="{ item }">
-        <span class="text-no-wrap">{{ formatDateTime(item.created_at) }}</span>
+        <span class="text-no-wrap">{{ formatShortDateTime(item.created_at) }}</span>
       </template>
 
       <template #[`item.actions`]="{ item }">
@@ -186,10 +180,11 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { AdminPageTitle, ContentWidth, ShortId } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth } from "@saflib/vue/components";
 import JobActor from "./JobActor.vue";
 import JobDetailDialog from "./JobDetailDialog.vue";
-import { canCancel, canRetry, formatDateTime, statusColor } from "./job-format.ts";
+import { canCancel, canRetry, statusColor } from "./job-format.ts";
+import { formatShortDateTime } from "@saflib/vue";
 import type { Job } from "@saflib/jobs-spec";
 import {
   useRetryJob,
@@ -221,14 +216,13 @@ const statusOptions: Job["status"][] = [
   "cancelled",
 ];
 
+// Job id, request and attempts are in the job dialog (View).
+const wide = { headerProps: { class: "saf-admin-hide-xs" }, cellProps: { class: "saf-admin-hide-xs" } };
 const headers = [
-  { title: "Job", key: "id", sortable: true },
   { title: "Status", key: "status", sortable: true },
   { title: "Operation", key: "operation_id", sortable: true },
-  { title: "Started by", key: "user_id", sortable: true },
-  { title: "Request", key: "original_request_id", sortable: true },
-  { title: "Attempt", key: "attempt", sortable: true },
-  { title: "Created", key: "created_at", sortable: true },
+  { title: "Started by", key: "user_id", sortable: true, ...wide },
+  { title: "Created", key: "created_at", sortable: true, ...wide },
   { title: "", key: "actions", sortable: false, align: "end" as const },
 ];
 

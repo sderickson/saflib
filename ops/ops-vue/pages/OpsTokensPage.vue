@@ -32,6 +32,9 @@
     >
       <template #[`item.name`]="{ item }">
         {{ item.name }}
+        <v-chip v-if="stateOf(item) !== 'active'" :color="stateColor(item)" size="x-small" class="ml-1" data-test="token-state">
+          {{ stateLabel(item) }}
+        </v-chip>
         <v-chip
           v-if="item.exchanged_from"
           size="x-small"
@@ -43,22 +46,22 @@
           {{ strings.exchanged }}
         </v-chip>
       </template>
-      <template #[`item.token_prefix`]="{ item }">
-        <code>safops_{{ item.token_prefix }}…</code>
+      <template #[`item.lifetime`]="{ item }">
+        <span class="d-inline-flex align-center ga-1 text-no-wrap" :title="strings.lifetimeHint" data-test="token-lifetime">
+          <v-icon v-if="!item.expires_at" icon="mdi-infinity" size="18" :aria-label="strings.noExpiry" />
+          <template v-else>{{ tokenLifetime(item.created_at, item.expires_at) }}</template>
+        </span>
       </template>
       <template #[`item.scopes`]="{ item }">
         <v-chip v-for="scope in item.scopes" :key="scope" size="small" class="mr-1">
           {{ scope }}
         </v-chip>
       </template>
-      <template #[`item.state`]="{ item }">
-        <v-chip :color="stateColor(item)" size="small">{{ stateLabel(item) }}</v-chip>
-      </template>
       <template #[`item.last_used_at`]="{ item }">
-        {{ formatDateTime(item.last_used_at) }}
+        {{ item.last_used_at ? formatShortDateTime(item.last_used_at) : strings.never }}
       </template>
       <template #[`item.expires_at`]="{ item }">
-        {{ formatDateTime(item.expires_at) }}
+        {{ item.expires_at ? formatShortDateTime(item.expires_at) : strings.never }}
       </template>
       <template #[`item.actions`]="{ item }">
         <v-btn
@@ -143,6 +146,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 import { AdminPageTitle, ContentWidth } from "@saflib/vue/components";
+import { formatShortDateTime } from "@saflib/vue";
 import type { OpsTokenResponse } from "@saflib/ops-spec";
 import { useOpsTokensPageLoader } from "./OpsTokens.loader.ts";
 import { ops_tokens as strings } from "./OpsTokens.strings.ts";
@@ -150,14 +154,14 @@ import { ops_tokens as strings } from "./OpsTokens.strings.ts";
 type Scope = OpsTokenResponse["scopes"][number];
 const scopeOptions: Scope[] = ["ops:read", "ops:triage", "ops:alerts-ingest", "ops:exchange"];
 
+const wide = { headerProps: { class: "saf-admin-hide-xs" }, cellProps: { class: "saf-admin-hide-xs" } };
 const headers = [
   { title: "Name", key: "name", sortable: true },
-  { title: "Token", key: "token_prefix", sortable: false },
-  { title: "Scopes", key: "scopes", sortable: false },
-  { title: "State", key: "state", sortable: false },
+  { title: "Scopes", key: "scopes", sortable: false, ...wide },
+  { title: "Lifetime", key: "lifetime", sortable: false },
   { title: "Last used", key: "last_used_at", sortable: true },
-  { title: "Expires", key: "expires_at", sortable: true },
-  { title: "", key: "actions", sortable: false },
+  { title: "Expires", key: "expires_at", sortable: true, ...wide },
+  { title: "", key: "actions", sortable: false, align: "end" as const },
 ];
 
 const { tokensQuery, createMutation, revokeMutation } = useOpsTokensPageLoader();
@@ -180,12 +184,15 @@ const stateLabel = (t: OpsTokenResponse) => strings[stateOf(t)];
 const stateColor = (t: OpsTokenResponse) =>
   ({ active: "success", revoked: "error", expired: "grey" })[stateOf(t)];
 
-const formatDateTime = (value: string | null): string =>
-  value
-    ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-        new Date(value),
-      )
-    : strings.never;
+// How long a token was issued for: "8h", "30d", "1y" (no expiry shows ∞).
+const tokenLifetime = (createdAt: string, expiresAt: string): string => {
+  const hours = (new Date(expiresAt).getTime() - new Date(createdAt).getTime()) / 3_600_000;
+  if (hours < 1) return `${Math.max(1, Math.round(hours * 60))}m`;
+  if (hours < 48) return `${Math.round(hours)}h`;
+  const days = hours / 24;
+  if (days < 365) return `${Math.round(days)}d`;
+  return `${Math.round(days / 365)}y`;
+};
 
 // Create
 const createOpen = ref(false);

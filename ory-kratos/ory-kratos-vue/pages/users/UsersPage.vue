@@ -26,8 +26,7 @@
               <tr>
                 <th>{{ strings.columns.user }}</th>
                 <template v-if="wideColumns">
-                  <th>{{ strings.columns.org }}</th>
-                  <th>{{ strings.columns.mfa }}</th>
+                  <th class="saf-admin-hide-xs">{{ strings.columns.org }}</th>
                   <th class="text-no-wrap">{{ strings.columns.last_sign_in }}</th>
                 </template>
               </tr>
@@ -46,17 +45,12 @@
               >
                 <td class="py-2"><UserRef :id="u.id" variant="full" /></td>
                 <template v-if="wideColumns">
-                  <td class="text-body-2">{{ u.org ?? strings.none }}</td>
-                  <td>
-                    <v-chip size="x-small" variant="tonal" :color="u.mfa ? 'success' : undefined">
-                      {{ u.mfa ? strings.mfa_on : strings.mfa_off }}
-                    </v-chip>
-                  </td>
+                  <td class="text-body-2 saf-admin-hide-xs">{{ u.org ?? strings.none }}</td>
                   <td class="text-body-2 text-no-wrap">{{ formatRelative(u.last_sign_in_at) }}</td>
                 </template>
               </tr>
               <tr v-if="listQuery.isSuccess.value && users.length === 0">
-                <td :colspan="wideColumns ? 4 : 1" class="text-body-2 text-medium-emphasis py-4">
+                <td :colspan="wideColumns ? 3 : 1" class="text-body-2 text-medium-emphasis py-4">
                   {{ strings.empty }}
                 </td>
               </tr>

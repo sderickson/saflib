@@ -39,9 +39,7 @@
           <tr>
             <th aria-hidden="true" style="width: 48px" />
             <th>{{ strings.columns.check }}</th>
-            <th>{{ strings.columns.side }}</th>
-            <th>{{ strings.columns.what }}</th>
-            <th>{{ strings.columns.dest }}</th>
+            <th class="saf-admin-hide-xs">{{ strings.columns.dest }}</th>
             <th>{{ strings.columns.result }}</th>
           </tr>
         </thead>
@@ -59,10 +57,11 @@
                 @click="run.fire(p)"
               />
             </td>
-            <td class="text-body-2 font-weight-medium">{{ p.label }}</td>
-            <td><v-chip size="x-small" variant="tonal">{{ strings.side[p.side] }}</v-chip></td>
-            <td class="text-body-2">{{ p.what }}</td>
-            <td class="text-body-2">{{ p.destination }}</td>
+            <td class="text-body-2 font-weight-medium">
+              <!-- What it does, and whether it runs in the browser or on the server, on hover. -->
+              <span :title="`${p.what} (${strings.side[p.side].toLowerCase()})`">{{ p.label }}</span>
+            </td>
+            <td class="text-body-2 saf-admin-hide-xs">{{ p.destination }}</td>
             <td class="text-body-2" :data-test="`result-${p.id}`">
               <span class="d-inline-flex align-center ga-2">
                 <span class="result-dot" :class="`result-dot--${tone(p)}`" aria-hidden="true" />

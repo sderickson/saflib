@@ -10,7 +10,7 @@
   >
     <td class="log-group__caret" aria-hidden="true">{{ expandable ? (open ? "▾" : "▸") : "" }}</td>
     <td class="log-mono text-medium-emphasis text-no-wrap">{{ formatTime(group.first_ts) }}</td>
-    <td class="log-group__title-cell">
+    <td class="log-group__title-cell saf-admin-hide-xs">
       <span class="d-flex align-center ga-2" style="min-width: 0">
         <v-chip size="x-small" label variant="tonal" class="flex-shrink-0">{{ groupKindLabel(group) }}</v-chip>
         <span class="log-mono text-truncate">{{ groupTitle(group) }}</span>
@@ -23,19 +23,20 @@
     <td>
       <v-chip size="x-small" variant="tonal" :color="status.tone">{{ status.label }}</v-chip>
     </td>
-    <td class="log-mono text-no-wrap">{{ groupDuration(group) }}</td>
-    <td class="log-group__who">
+    <td class="log-mono text-no-wrap saf-admin-hide-xs">{{ groupDuration(group) }}</td>
+    <td class="log-group__who saf-admin-hide-xs">
       <UserRef v-if="group.user_id" :id="group.user_id" />
       <ActorChip v-else-if="group.kind === 'cron'" kind="cron" />
       <ActorChip v-else-if="group.kind === 'process' || group.kind === 'job' || group.kind === null" kind="system" />
     </td>
-    <td>
-      <ShortId v-if="group.context_id" :id="group.context_id" :prefix="contextPrefix(group.kind)" />
-    </td>
   </tr>
   <tr v-if="open && expandable" class="log-group__lines-row">
-    <td colspan="7">
+    <td colspan="6">
       <div class="log-group__lines" :style="{ borderLeftColor: color }" data-test="log-group-lines">
+        <div v-if="group.context_id" class="text-caption text-medium-emphasis mb-1" data-test="log-group-id">
+          <span class="saf-admin-only-xs log-mono">{{ groupTitle(group) }} · </span>
+          <ShortId :id="group.context_id" :prefix="contextPrefix(group.kind)" />
+        </div>
         <v-progress-linear v-if="lines.isPending.value" indeterminate />
         <div v-for="line in lines.data.value ?? []" :key="line.id" class="log-line" data-test="log-line">
           <span class="log-mono text-medium-emphasis">{{ formatOffset(line.ts, group.first_ts) }}</span>

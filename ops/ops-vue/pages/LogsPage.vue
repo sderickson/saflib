@@ -79,11 +79,10 @@
           <tr>
             <th aria-hidden="true" />
             <th>{{ strings.columns.time }}</th>
-            <th>{{ strings.columns.group }}</th>
+            <th class="saf-admin-hide-xs">{{ strings.columns.group }}</th>
             <th>{{ strings.columns.status }}</th>
-            <th>{{ strings.columns.duration }}</th>
-            <th>{{ strings.columns.who }}</th>
-            <th>{{ strings.columns.id }}</th>
+            <th class="saf-admin-hide-xs">{{ strings.columns.duration }}</th>
+            <th class="saf-admin-hide-xs">{{ strings.columns.who }}</th>
           </tr>
         </thead>
         <tbody>
@@ -102,8 +101,8 @@
             <th aria-hidden="true" class="logs-bar-col" />
             <th>{{ strings.columns.time }}</th>
             <th>{{ strings.columns.level }}</th>
-            <th>{{ strings.columns.id }}</th>
-            <th>{{ strings.columns.operation }}</th>
+            <th class="saf-admin-hide-xs">{{ strings.columns.id }}</th>
+            <th class="saf-admin-hide-xs">{{ strings.columns.operation }}</th>
             <th class="logs-message-col">{{ strings.columns.message }}</th>
           </tr>
         </thead>
@@ -121,11 +120,11 @@
             <td>
               <span class="logs-level" :class="`text-${levelColor(line.level) ?? 'medium-emphasis'}`">{{ line.level }}</span>
             </td>
-            <td class="text-no-wrap">
+            <td class="text-no-wrap saf-admin-hide-xs">
               <ShortId v-if="line.context_id" :id="line.context_id" :prefix="contextPrefix(line.context_kind)" />
               <span v-else class="text-medium-emphasis">—</span>
             </td>
-            <td class="logs-mono text-medium-emphasis text-no-wrap">{{ line.operation_name ?? "" }}</td>
+            <td class="logs-mono text-medium-emphasis text-no-wrap saf-admin-hide-xs">{{ line.operation_name ?? "" }}</td>
             <td class="logs-mono logs-message">
               <!-- Untrusted text: plain interpolation only (escaped), never v-html. -->
               {{ line.untrusted.message }}

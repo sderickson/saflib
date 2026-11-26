@@ -26,7 +26,7 @@
                 {{ c.eol ? `${strings.eol} ${formatDate(c.eol)}` : strings.eolUnknown }}
                 <v-chip v-if="c.eol_soon" color="warning" size="x-small" class="ml-1">{{ strings.eolSoon }}</v-chip>
               </td>
-              <td class="text-caption text-medium-emphasis text-no-wrap">
+              <td class="text-caption text-medium-emphasis text-no-wrap saf-admin-hide-xs">
                 {{ c.latest_in_cycle && c.latest_in_cycle !== c.version ? `${strings.latestInCycle} ${c.latest_in_cycle}` : "" }}
               </td>
             </tr>
@@ -45,7 +45,7 @@
               <code>{{ a.package }}@{{ a.deployed }}</code>
               <span v-if="!a.direct" class="text-caption text-medium-emphasis"> ({{ strings.transitive }})</span>
             </td>
-            <td class="text-no-wrap">{{ a.fixed_in ? `${strings.fixedIn} ${a.fixed_in}` : strings.noFix }}</td>
+            <td class="text-no-wrap saf-admin-hide-xs">{{ a.fixed_in ? `${strings.fixedIn} ${a.fixed_in}` : strings.noFix }}</td>
             <td>
               <!-- Untrusted text: plain interpolation only (escaped), never v-html. -->
               <div class="text-body-2 dep-text">{{ a.untrusted.summary }}</div>
@@ -67,8 +67,8 @@
           <tr v-for="o in deps.outdated" :key="o.name" data-test="outdated-row">
             <td><code>{{ o.name }}</code></td>
             <td class="text-no-wrap">{{ o.deployed }} → {{ o.latest }}</td>
-            <td><v-chip :color="o.update === 'major' ? 'warning' : undefined" size="x-small">{{ o.update }}</v-chip></td>
-            <td class="text-caption text-medium-emphasis text-no-wrap">
+            <td class="saf-admin-hide-xs"><v-chip :color="o.update === 'major' ? 'warning' : undefined" size="x-small">{{ o.update }}</v-chip></td>
+            <td class="text-caption text-medium-emphasis text-no-wrap saf-admin-hide-xs">
               {{ o.latest_published_at ? formatDate(o.latest_published_at) : "" }}
               <v-chip v-if="o.renovate_due" size="x-small" variant="outlined" class="ml-1">{{ strings.renovateDue }}</v-chip>
             </td>

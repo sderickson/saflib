@@ -23,6 +23,8 @@ export const ops_tokens = {
   revoked: "Revoked",
   expired: "Expired",
   never: "Never",
+  noExpiry: "Never expires",
+  lifetimeHint: "How long the token was issued for",
   exchanged: "exchanged",
   exchangedHint:
     "Short-lived token from POST /ops/tokens/exchange; revoked when the token it was exchanged for is.",

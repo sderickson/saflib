@@ -1,4 +1,4 @@
-import { shortId } from "@saflib/vue";
+import { formatShortDateTime } from "@saflib/vue";
 import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
@@ -68,17 +68,6 @@ const mockJobs: Job[] = [
   }),
 ];
 
-const formatDateTime = (dateTimeString: string | null | undefined): string => {
-  if (!dateTimeString) return "N/A";
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(dateTimeString));
-  } catch {
-    return dateTimeString;
-  }
-};
 
 const handlers = [
   http.get<PathParams, never, ListJobsResponse>(
@@ -160,8 +149,8 @@ describe("JobsPage", () => {
     getTable(wrapper).findAll("tbody tr");
   const getRowByJobId = (wrapper: VueWrapper, jobId: string) => {
     const rows = getRows(wrapper);
-    // The table shows jobs as ShortIds (j·job1); the full id is on hover.
-    const row = rows.find((r) => r.text().includes(shortId(jobId, "j")));
+    // Rows follow the list order (the id itself is in the job dialog).
+    const row = rows[mockJobs.findIndex((j) => j.id === jobId)];
     expect(row, `Row for job "${jobId}" not found`).toBeDefined();
     return row!;
   };
@@ -202,31 +191,19 @@ describe("JobsPage", () => {
     expect(table.exists()).toBe(true);
 
     const headers = table.findAll("thead th");
-    expect(headers.map((h) => h.text())).toEqual([
-      "",
-      "Job",
-      "Status",
-      "Operation",
-      "Started by",
-      "Request",
-      "Attempt",
-      "Created",
-      "",
-    ]);
+    expect(headers.map((h) => h.text())).toEqual(["", "Status", "Operation", "Started by", "Created", ""]);
 
     const rows = getRows(wrapper);
     expect(rows).toHaveLength(mockJobs.length);
 
     const row1 = getRowByJobId(wrapper, "job-1");
-    expect(row1.text()).toContain("j·job1");
     expect(row1.text()).toContain("jobsDemoStepB");
     // "user-1" isn't a Kratos id, so UserRef shows it as a ShortId.
     expect(row1.text()).toContain("u·user");
-    expect(row1.text()).toContain("r·rabc");
     expect(
       row1.findComponent({ name: "v-chip", text: "pending" }).exists(),
     ).toBe(true);
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].created_at));
+    expect(row1.text()).toContain(formatShortDateTime(mockJobs[0].created_at));
     expect(getActionButton(wrapper, "job-1", "Cancel").exists()).toBe(true);
     expect(getActionButton(wrapper, "job-2", "Retry").exists()).toBe(true);
   });
