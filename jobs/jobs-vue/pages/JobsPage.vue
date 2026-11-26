@@ -145,49 +145,13 @@
     </v-data-table>
     <p v-else-if="!isLoadingJobs" class="text-body-1">No jobs found.</p>
 
-    <v-card v-if="selectedJobId" class="mt-6 elevation-1">
-      <v-card-title class="d-flex align-center justify-space-between">
-        <span>Job {{ selectedJobId }}</span>
-        <v-btn size="small" variant="text" @click="selectedJobId = null">
-          Close
-        </v-btn>
-      </v-card-title>
-      <v-card-text>
-        <v-progress-linear v-if="isLoadingDetail" indeterminate class="mb-4" />
-        <v-alert v-if="detailError" type="error" class="mb-4">
-          Error loading job: {{ detailError.message }}
-        </v-alert>
-        <template v-if="jobDetail">
-          <h2 class="text-h6 mb-2">Status</h2>
-          <v-chip :color="statusColor(jobDetail.job.status)" class="mb-4" size="small">
-            {{ jobDetail.job.status }}
-          </v-chip>
-
-          <h2 class="text-h6 mb-2">Request</h2>
-          <pre class="detail-block mb-4">{{ formatJson(jobDetail.job.request) }}</pre>
-
-          <h2 class="text-h6 mb-2">Result</h2>
-          <pre class="detail-block mb-4">{{ formatJson(jobDetail.job.result) }}</pre>
-
-          <h2 class="text-h6 mb-2">Authority</h2>
-          <pre class="detail-block mb-4">{{ formatJson(jobDetail.job.authority) }}</pre>
-
-          <h2 class="text-h6 mb-2">Lineage</h2>
-          <pre class="detail-block mb-4">{{
-            formatJson({
-              original_request_id: jobDetail.job.original_request_id,
-              parent_job_id: jobDetail.job.parent_job_id,
-              enqueued_by_operation_id: jobDetail.job.enqueued_by_operation_id,
-            })
-          }}</pre>
-
-          <h2 class="text-h6 mb-2">Authority Assertion</h2>
-          <pre class="detail-block">{{
-            formatJson(jobDetail.authority_assertion)
-          }}</pre>
-        </template>
-      </v-card-text>
-    </v-card>
+    <JobDetailDialog
+      :job-id="selectedJobId"
+      :busy="isMutating"
+      @close="selectedJobId = null"
+      @retry="retryJob"
+      @cancel="cancelJob"
+    />
   </ContentWidth>
 </template>
 
@@ -195,9 +159,10 @@
 import { computed, ref } from "vue";
 import { ContentWidth, ShortId } from "@saflib/vue/components";
 import JobActor from "./JobActor.vue";
+import JobDetailDialog from "./JobDetailDialog.vue";
+import { canCancel, canRetry, formatDateTime, statusColor } from "./job-format.ts";
 import type { Job } from "@saflib/jobs-spec";
 import {
-  useGetJob,
   useRetryJob,
   useCancelJob,
   useCancelJobsByOriginalRequest,
@@ -241,12 +206,6 @@ const headers = [
 const isLoadingJobs = computed(() => jobsQuery.isLoading.value);
 const jobs = computed(() => jobsQuery.data.value?.jobs ?? []);
 const hasNextPage = computed(() => jobs.value.length >= pageSize);
-
-const {
-  data: jobDetail,
-  isLoading: isLoadingDetail,
-  error: detailError,
-} = useGetJob(selectedJobId);
 
 const {
   mutate: retryMutate,
@@ -310,61 +269,5 @@ const nextPage = () => {
     offset.value += pageSize;
   }
 };
-
-const canRetry = (status: Job["status"]) =>
-  status === "dead" || status === "cancelled";
-
-const canCancel = (status: Job["status"]) =>
-  status === "pending" || status === "retrying";
-
-const formatDateTime = (dateTimeString: string | null | undefined): string => {
-  if (!dateTimeString) return "N/A";
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(dateTimeString));
-  } catch {
-    return dateTimeString;
-  }
-};
-
-const formatJson = (value: unknown): string => {
-  if (value === null || value === undefined) return "N/A";
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return String(value);
-  }
-};
-
-const statusColor = (status: Job["status"] | null | undefined): string => {
-  switch (status) {
-    case "succeeded":
-      return "success";
-    case "dead":
-    case "cancelled":
-      return "error";
-    case "running":
-      return "info";
-    case "retrying":
-      return "warning";
-    case "pending":
-      return "grey";
-    default:
-      return "grey";
-  }
-};
 </script>
 
-<style scoped>
-.detail-block {
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 4px;
-  font-size: 0.75rem;
-  overflow-x: auto;
-  padding: 12px;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-</style>

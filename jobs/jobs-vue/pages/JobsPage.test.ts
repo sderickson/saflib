@@ -235,10 +235,15 @@ describe("JobsPage", () => {
     const viewButton = getActionButton(wrapper, "job-1", "View");
     await viewButton.trigger("click");
 
+    // The dialog teleports to the body.
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("Job job-1");
-      expect(wrapper.text()).toContain("Authority Assertion");
-      expect(wrapper.text()).toContain("eyJ1c2VySWQiOiJ1c2VyLTEifQ");
+      const dialog = document.querySelector("[data-test=job-detail]");
+      expect(dialog?.textContent).toContain("jobsDemoStepB");
+      expect(dialog?.textContent).toContain("0 of 5");
+      // Authority reads as who and why, with the signing key, not the raw token.
+      expect(dialog?.querySelector("[data-test=job-authority]")?.textContent).toContain("signed (k1)");
+      expect(dialog?.textContent).not.toContain("eyJ1c2VySWQiOiJ1c2VyLTEifQ");
+      expect(dialog?.textContent).toContain("failures_before_success");
     });
   });
 
