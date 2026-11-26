@@ -25,7 +25,7 @@ import {
 } from "@saflib/base-service-common/context";
 import { createCronHealthCheck, createCronRouter, cronDigestTile } from "@saflib/cron-http";
 import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
-import { createJobsHealthCheck, createJobsRouter, jobsDigestTile } from "@saflib/jobs-http";
+import { createJobsHealthCheck, createJobsRouter, jobsDiagnosticProbe, jobsDigestTile } from "@saflib/jobs-http";
 import { getBaseJobsDbKey } from "@saflib/base-jobs";
 import { createMetricsRouter } from "@saflib/node-metrics-http";
 
@@ -104,12 +104,12 @@ export function buildBaseHttpApp(
           cronDigestTile({ getDbKey: getBaseCronDbKey, jobs: baseJobs }),
           auditDigestTile({ getAuditDbKey: () => context.auditDbKey }),
         ],
-        // Self-test probes beyond the ops API's own. For a failing-job probe,
-        // add jobsDiagnosticProbe from @saflib/jobs-http once the jobs runtime
-        // knows raiseTestErrorMaintenance (its spec, operation config, and
-        // `runOpsDiagnosticProbe: ["raiseTestErrorMaintenance"]` in the
-        // trigger map).
-        diagnosticProbes: [auditDiagnosticProbe({ getAuditDbKey: () => context.auditDbKey })],
+        // Self-test probes beyond the ops API's own: a job that fails on
+        // purpose (allowed in base-jobs' trigger map) and an audit event.
+        diagnosticProbes: [
+          jobsDiagnosticProbe({ getDbKey: getBaseJobsDbKey }),
+          auditDiagnosticProbe({ getAuditDbKey: () => context.auditDbKey }),
+        ],
       }),
       createBaseAuditRouter(),
       // Site-admin identity routes (UserRef lookups, Users page). Pass

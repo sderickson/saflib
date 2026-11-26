@@ -19,9 +19,11 @@
     "@saflib/base-service-common": "*",
     "@saflib/drizzle": "*",
     "@saflib/env": "*",
+    "@saflib/errors-spec": "*",
     "@saflib/jobs-db": "*",
     "@saflib/jobs-http": "*",
-    "@saflib/openapi": "*"
+    "@saflib/openapi": "*",
+    "@saflib/ops-spec": "*"
   },
   "devDependencies": {
     "@saflib/base-spec": "*",
