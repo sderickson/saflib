@@ -3,6 +3,8 @@ import { http, HttpResponse } from "msw";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import DiagnosticsPage from "./DiagnosticsPage.vue";
+import HealthPage from "./HealthPage.vue";
+import ProcessMetricsPage from "./ProcessMetricsPage.vue";
 import { mountTestApp } from "../test-app.ts";
 
 const API = "http://api.localhost:3000";
@@ -99,7 +101,12 @@ describe("DiagnosticsPage", () => {
     expect(wrapper.find("[data-test=result-server-500]").text()).toContain("Waiting");
     expect(wrapper.find("[data-test=diagnostics-counts]").text()).toContain("2 landed");
 
-    await wrapper.find("[data-test=diagnostics-tab-metrics]").trigger("click");
+    wrapper.unmount();
+    window.removeEventListener("unhandledrejection", swallow);
+  });
+
+  it("shows this process's metrics, with *_bytes in KB/MB", async () => {
+    const wrapper = mountTestApp(ProcessMetricsPage);
     await vi.waitFor(() => expect(wrapper.findAll("[data-test=metric-row]")).toHaveLength(3));
     const metrics = wrapper.find("[data-test=diagnostics-metrics]");
     expect(metrics.text()).toContain("20 obs");
@@ -107,18 +114,14 @@ describe("DiagnosticsPage", () => {
     // *_bytes metrics read in KB/MB.
     expect(metrics.text()).toContain("288 MB");
     wrapper.unmount();
-    window.removeEventListener("unhandledrejection", swallow);
   });
 
-  it("lists every health check with its status on the Health tab", async () => {
-    const { router } = await import("./test_router.ts");
-    await router.push("/?tab=health");
-    const wrapper = mountTestApp(DiagnosticsPage);
+  it("lists every health check with its status", async () => {
+    const wrapper = mountTestApp(HealthPage);
     await vi.waitFor(() => expect(wrapper.find("[data-test=health-disk]").exists()).toBe(true));
     expect(wrapper.find("[data-test=health-disk]").text()).toContain("18% free");
     expect(wrapper.find("[data-test=health-disk] .status-icon").attributes("aria-label")).toBe("Warning");
     expect(wrapper.find("[data-test=health-daemon-db] .status-icon").attributes("aria-label")).toBe("OK");
     wrapper.unmount();
-    await router.push("/");
   });
 });

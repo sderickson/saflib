@@ -1,6 +1,6 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
+    <AdminPageTitle class="mb-2">{{ strings.title }}</AdminPageTitle>
 
     <v-tabs :model-value="tab" class="mb-4" density="compact" @update:model-value="goToTab">
       <v-tab value="firing" data-test="alerts-tab-firing">{{ strings.tabFiring }}</v-tab>
@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ContentWidth } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth } from "@saflib/vue/components";
 import { useAlertsPageLoader } from "./Alerts.loader.ts";
 import { ops_alerts as strings } from "./Alerts.strings.ts";
 import { useAckOpsAlert, useResolveOpsAlert } from "../requests/queries.ts";

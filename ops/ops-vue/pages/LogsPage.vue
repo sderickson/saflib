@@ -1,6 +1,6 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-1">{{ strings.title }}</h1>
+    <AdminPageTitle class="mb-1">{{ strings.title }}</AdminPageTitle>
 
     <v-card variant="outlined">
       <v-toolbar density="compact" color="surface" class="logs-toolbar px-2" role="toolbar" :aria-label="strings.title">
@@ -157,7 +157,7 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ContentWidth, ShortId } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth, ShortId } from "@saflib/vue/components";
 import { idColor } from "@saflib/vue";
 import { useLogsPageLoader } from "./Logs.loader.ts";
 import { ops_logs as strings } from "./Logs.strings.ts";

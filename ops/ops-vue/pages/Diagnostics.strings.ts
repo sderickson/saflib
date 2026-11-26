@@ -1,6 +1,6 @@
 export const ops_diagnostics = {
-  documentTitle: "Diagnostics",
-  title: "Diagnostics",
+  documentTitle: "Self-test",
+  title: "Self-test",
   clear: "Clear test signals",
   cleared: (n: number) => `Resolved ${n} test ${n === 1 ? "issue" : "issues"}`,
   run_all: "Run all checks",
@@ -36,7 +36,8 @@ export const ops_diagnostics = {
   build: "Build",
   deploys_title: "Deploys in the last 24 hours",
   no_deploys: "No new builds in the last 24 hours.",
-  tabs: { test: "Test", health: "Health", build: "Build", metrics: "Metrics" },
+  health_page_title: "Health",
+  process_metrics_title: "This process",
   health_title: "Health checks",
   health_recheck: "Check again",
   health_cols: { check: "Check", reading: "Reading", took: "Took" },

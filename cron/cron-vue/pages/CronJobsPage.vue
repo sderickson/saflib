@@ -1,6 +1,6 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-4">{{ strings.title }}</h1>
+    <AdminPageTitle class="mb-4">{{ strings.title }}</AdminPageTitle>
 
     <v-data-table
       v-if="jobs && jobs.length > 0"
@@ -71,7 +71,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ContentWidth } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth } from "@saflib/vue/components";
 import { UserRef } from "@saflib/ory-kratos-vue";
 import type { JobSettings } from "@saflib/cron-spec";
 import { useCronJobsPageLoader } from "./CronJobs.loader.ts";

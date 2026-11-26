@@ -1,6 +1,6 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
+    <AdminPageTitle class="mb-2">{{ strings.title }}</AdminPageTitle>
 
     <p v-if="!deps" class="saf-admin-empty">{{ strings.none }}</p>
     <template v-else>
@@ -82,7 +82,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { AdminPanel, ContentWidth } from "@saflib/vue/components";
+import { AdminPageTitle, AdminPanel, ContentWidth } from "@saflib/vue/components";
 import { useDependenciesPageLoader } from "./Dependencies.loader.ts";
 import { ops_dependencies as strings } from "./Dependencies.strings.ts";
 

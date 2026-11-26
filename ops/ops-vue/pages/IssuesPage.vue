@@ -1,6 +1,6 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
+    <AdminPageTitle class="mb-2">{{ strings.title }}</AdminPageTitle>
 
     <v-tabs :model-value="tab" class="mb-4" density="compact" @update:model-value="goToTab">
       <v-tab value="active" data-test="issues-tab-active">{{ strings.tabActive }}</v-tab>
@@ -132,7 +132,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ContentWidth, ShortId } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth, ShortId } from "@saflib/vue/components";
 import { useIssuesPageLoader, type IssueTab } from "./Issues.loader.ts";
 import { ops_issues as strings } from "./Issues.strings.ts";
 import { useListOpsIssueOccurrences, useTriageOpsIssue } from "../requests/queries.ts";

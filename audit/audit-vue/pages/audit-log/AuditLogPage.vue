@@ -1,6 +1,6 @@
 <template>
   <ContentWidth variant="full" class="audit-log-page">
-    <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
+    <AdminPageTitle class="mb-2">{{ strings.title }}</AdminPageTitle>
 
     <p v-if="spanHead || spanTail" class="text-body-2 text-medium-emphasis mb-4">
       {{ strings.stored_span }}
@@ -98,7 +98,7 @@
 
 <script setup lang="ts">
 import type { AuditLog } from "@saflib/audit-spec/types";
-import { ContentWidth, ShortId } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth, ShortId } from "@saflib/vue/components";
 import AuditActor from "./AuditActor.vue";
 import { UserRef } from "@saflib/ory-kratos-vue";
 import { useRoute, useRouter } from "vue-router";

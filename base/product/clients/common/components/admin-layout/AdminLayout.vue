@@ -7,20 +7,29 @@
         @click="drawerOpen = !drawerOpen"
       />
       <v-btn
+        v-if="mdAndUp"
         variant="text"
         prepend-icon="mdi-chevron-left"
         :href="linkToHrefWithHost(appLinks.home)"
       >
         {{ admin_layout.back_to_app }}
       </v-btn>
+      <v-btn
+        v-else
+        icon="mdi-chevron-left"
+        variant="text"
+        size="small"
+        :aria-label="admin_layout.back_to_app"
+        :href="linkToHrefWithHost(appLinks.home)"
+      />
       <v-divider vertical inset class="mx-2" />
       <span class="text-subtitle-1 font-weight-medium">{{ base_layout.nav_title }}</span>
-      <span class="text-subtitle-1 text-medium-emphasis ms-2">{{ admin_layout.admin }}</span>
+      <span v-if="smAndUp" class="text-subtitle-1 text-medium-emphasis ms-2">{{ admin_layout.admin }}</span>
 
       <template #append>
         <div class="d-flex align-center ga-2">
-          <!-- Health pill and traffic chip land here. -->
-          <slot name="chips" />
+          <!-- Health pill and traffic chip; no room for them on a phone. -->
+          <div v-if="smAndUp" class="d-flex align-center ga-2"><slot name="chips" /></div>
           <BuildChip v-if="mdAndUp" :repos="repos" />
           <v-menu location="bottom end">
             <template #activator="{ props: menuProps }">
@@ -70,6 +79,7 @@
               :key="item.path"
               :to="item.path"
               :exact="item.path === '/'"
+              :active="isNavItemActive(item, route.path)"
               :title="item.name"
               color="primary"
               rounded="lg"
@@ -99,6 +109,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useDisplay } from "vuetify";
+import { useRoute } from "vue-router";
 import { AdminScope } from "@saflib/vue/components";
 import { linkToHrefWithHost } from "@saflib/links";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
@@ -107,7 +118,7 @@ import { BuildChip, type BuildRepoUrls } from "@saflib/ops-vue";
 import { useRequireAuth } from "#composables/useRequireAuth.ts";
 import { admin_layout } from "./AdminLayout.strings.ts";
 import { base_layout } from "../base-layout/BaseLayout.strings.ts";
-import { nonEmptyGroups, type AdminNavGroup } from "./admin-nav.ts";
+import { isNavItemActive, nonEmptyGroups, type AdminNavGroup } from "./admin-nav.ts";
 
 const props = defineProps<{
   groups: AdminNavGroup[];
@@ -116,7 +127,7 @@ const props = defineProps<{
 }>();
 
 const { session } = useRequireAuth(true);
-const { mdAndUp } = useDisplay();
+const { mdAndUp, smAndUp } = useDisplay();
 
 const drawerOpen = ref(mdAndUp.value);
 watch(mdAndUp, (wide) => {
@@ -128,6 +139,14 @@ onMounted(() => {
   mounted.value = true;
 });
 
+const route = useRoute();
+// On a phone the drawer slides over the page; close it once you pick one.
+watch(
+  () => route.path,
+  () => {
+    if (!mdAndUp.value) drawerOpen.value = false;
+  },
+);
 const visibleGroups = computed(() => nonEmptyGroups(props.groups));
 
 const initials = computed(() => {

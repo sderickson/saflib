@@ -14,6 +14,9 @@ import TrafficChip from "./components/TrafficChip.vue";
 import OpsMetricsAsync from "./pages/OpsMetricsAsync.vue";
 import DependenciesAsync from "./pages/DependenciesAsync.vue";
 import DiagnosticsAsync from "./pages/DiagnosticsAsync.vue";
+import HealthAsync from "./pages/HealthAsync.vue";
+import BuildAsync from "./pages/BuildAsync.vue";
+import ProcessMetricsAsync from "./pages/ProcessMetricsAsync.vue";
 
 export { configureOpsVue } from "./client.ts";
 export { useOpsAccess } from "./requests/access.ts";
@@ -37,6 +40,9 @@ export {
   TrafficChip,
   DependenciesAsync,
   DiagnosticsAsync,
+  HealthAsync,
+  BuildAsync,
+  ProcessMetricsAsync,
   IssuesAsync,
   IssuesPage,
   LogsAsync,

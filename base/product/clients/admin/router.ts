@@ -5,23 +5,12 @@ import {
   type RouteRecordRaw,
 } from "vue-router";
 import { adminLinks } from "@saflib/base-links";
-import { adminRepos } from "./repos.ts";
+import { adminSectionRoutes } from "./sections.ts";
 import { PageNotFound } from "@saflib/vue/components";
 import { isDevelopmentDeployment, scrollBehavior } from "@saflib/vue";
-import { CronJobsAsync } from "@saflib/cron-vue";
-import { JobsAsync } from "@saflib/jobs-vue";
 import { SentEmailsAsync } from "@saflib/email-vue";
-import { AuditLogsAsync } from "@saflib/audit-vue";
 import { UsersAsync } from "@saflib/ory-kratos-vue";
-import {
-  AlertsAsync,
-  DependenciesAsync,
-  DiagnosticsAsync,
-  IssuesAsync,
-  LogsAsync,
-  OpsMetricsAsync,
-  OpsTokensAsync,
-} from "@saflib/ops-vue";
+import { OpsTokensAsync } from "@saflib/ops-vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
@@ -48,57 +37,12 @@ export const createAdminRouter = (options?: {
       path: adminLinks.users.path,
       component: UsersAsync,
     },
-    {
-      path: adminLinks.cronJobs.path,
-      component: CronJobsAsync,
-    },
-    {
-      path: adminLinks.jobs.path,
-      component: JobsAsync,
-    },
     ...devObservabilityRoutes,
-    {
-      path: adminLinks.audit.path,
-      component: AuditLogsAsync,
-    },
-    {
-      path: adminLinks.opsLogs.path,
-      component: LogsAsync,
-    },
-    {
-      path: adminLinks.opsIssues.path,
-      component: IssuesAsync,
-    },
-    {
-      path: adminLinks.opsAlerts.path,
-      component: AlertsAsync,
-    },
-    {
-      path: adminLinks.opsMetrics.path,
-      component: OpsMetricsAsync,
-    },
-    {
-      path: adminLinks.opsDependencies.path,
-      component: DependenciesAsync,
-    },
+    // System sections (Issues, Logs, Jobs, Metrics, Status): tabbed pages.
+    ...adminSectionRoutes,
     {
       path: adminLinks.opsTokens.path,
       component: OpsTokensAsync,
-    },
-    {
-      path: adminLinks.diagnostics.path,
-      component: DiagnosticsAsync,
-      props: {
-        repos: adminRepos,
-        links: {
-          issues: adminLinks.opsIssues.path,
-          logs: adminLinks.opsLogs.path,
-          jobs: adminLinks.jobs.path,
-          audit: adminLinks.audit.path,
-          alerts: adminLinks.opsAlerts.path,
-          metrics: adminLinks.opsMetrics.path,
-        },
-      },
     },
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
     // END WORKFLOW AREA

@@ -1,7 +1,7 @@
 <template>
   <ContentWidth variant="full">
     <div class="d-flex align-center mb-2">
-      <h1 class="text-h4">{{ strings.title }}</h1>
+      <AdminPageTitle>{{ strings.title }}</AdminPageTitle>
       <v-spacer />
       <v-btn color="primary" data-test="create-token" @click="openCreate">
         {{ strings.create }}
@@ -142,7 +142,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
-import { ContentWidth } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth } from "@saflib/vue/components";
 import type { OpsTokenResponse } from "@saflib/ops-spec";
 import { useOpsTokensPageLoader } from "./OpsTokens.loader.ts";
 import { ops_tokens as strings } from "./OpsTokens.strings.ts";

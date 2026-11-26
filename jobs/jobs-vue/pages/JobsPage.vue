@@ -1,6 +1,6 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-4">{{ strings.title }}</h1>
+    <AdminPageTitle class="mb-4">{{ strings.title }}</AdminPageTitle>
 
     <v-row class="mb-4" density="comfortable">
       <v-col cols="12" sm="6" md="3">
@@ -186,7 +186,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ContentWidth, ShortId } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth, ShortId } from "@saflib/vue/components";
 import JobActor from "./JobActor.vue";
 import JobDetailDialog from "./JobDetailDialog.vue";
 import { canCancel, canRetry, formatDateTime, statusColor } from "./job-format.ts";

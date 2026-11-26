@@ -1,6 +1,6 @@
 export const ops_tokens = {
-  documentTitle: "Ops tokens",
-  title: "Ops tokens",
+  documentTitle: "Admin API",
+  title: "Admin API",
   empty: "No ops tokens yet.",
   noActive: "No active tokens. Show all to see expired and revoked ones.",
   filterActive: "Active",

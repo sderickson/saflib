@@ -1,6 +1,6 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-4">{{ strings.title }}</h1>
+    <AdminPageTitle class="mb-4">{{ strings.title }}</AdminPageTitle>
 
     <v-alert v-if="metricsOff" type="info" variant="tonal" density="compact" class="mb-4" data-test="metrics-off">
       {{ strings.off }}
@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { AdminPanel, ContentWidth } from "@saflib/vue/components";
+import { AdminPageTitle, AdminPanel, ContentWidth } from "@saflib/vue/components";
 import OpsGraph from "../components/OpsGraph.vue";
 import { useOpsDigest, useOpsMetricsInstant } from "../requests/queries.ts";
 import { METRIC_PRESETS, METRIC_RANGES, type MetricPreset } from "./OpsMetrics.presets.ts";

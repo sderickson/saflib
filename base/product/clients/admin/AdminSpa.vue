@@ -7,6 +7,7 @@ import {
 import { adminLinks } from "@saflib/base-links";
 import { isDevelopmentDeployment } from "@saflib/vue";
 import { adminRepos as repos } from "./repos.ts";
+import { sectionMatch } from "./sections.ts";
 import { configureUserLinks } from "@saflib/ory-kratos-vue";
 import { HealthPill, TrafficChip, useAdminBadges } from "@saflib/ops-vue";
 
@@ -38,16 +39,24 @@ const groups = computed<AdminNavGroup[]>(() => [
   {
     label: "System",
     items: [
-      { ...adminLinks.opsIssues, name: "Issues", badge: badges.value.newIssues, badgeColor: "error" },
-      { ...adminLinks.opsAlerts, name: "Alerts" },
-      { ...adminLinks.opsLogs, name: "Server logs" },
-      { ...adminLinks.opsMetrics, name: "Metrics" },
-      { ...adminLinks.jobs, name: "Background jobs" },
-      { ...adminLinks.cronJobs, name: "Cron jobs" },
-      { ...adminLinks.opsDependencies, name: "Dependencies" },
-      { ...adminLinks.audit, name: "Audit log" },
-      { ...adminLinks.opsTokens, name: "Ops tokens" },
-      { ...adminLinks.diagnostics, name: "Diagnostics" },
+      {
+        ...adminLinks.opsIssues,
+        name: "Issues",
+        badge: badges.value.newIssues + badges.value.firingAlerts,
+        badgeColor: "error",
+        match: sectionMatch("issues"),
+      },
+      { ...adminLinks.opsLogs, name: "Logs", match: sectionMatch("logs") },
+      {
+        ...adminLinks.jobs,
+        name: "Jobs",
+        badge: badges.value.tiles["jobs"],
+        badgeColor: "error",
+        match: sectionMatch("jobs"),
+      },
+      { ...adminLinks.opsMetrics, name: "Metrics", match: sectionMatch("metrics") },
+      { ...adminLinks.statusHealth, name: "Status", match: sectionMatch("status") },
+      { ...adminLinks.opsTokens, name: "Admin API" },
     ],
   },
   {

@@ -6,6 +6,8 @@ export interface AdminNavItem extends Link {
   badge?: number;
   /** Vuetify color for the badge (e.g. "warning", "error"). */
   badgeColor?: string;
+  /** Other paths this item is active for (a section's other tabs). */
+  match?: string[];
 }
 
 export interface AdminNavGroup {
@@ -19,3 +21,9 @@ export interface AdminNavGroup {
 /** Drops empty groups so callers can build them conditionally. */
 export const nonEmptyGroups = (groups: AdminNavGroup[]) =>
   groups.filter((g) => g.items.length > 0);
+
+/** Whether `item` is the current page: its path, or one of its `match` paths, or below one. */
+export function isNavItemActive(item: AdminNavItem, path: string): boolean {
+  const paths = [item.path, ...(item.match ?? [])];
+  return paths.some((p) => (p === "/" ? path === "/" : path === p || path.startsWith(`${p}/`)));
+}
