@@ -45,3 +45,4 @@ export {
   type DiagnosticProbe,
   type DiagnosticRef,
 } from "./diagnostics/probes.ts";
+export type { OpsAuditSource } from "./audit/source.ts";

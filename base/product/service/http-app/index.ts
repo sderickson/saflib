@@ -14,6 +14,7 @@ import { kratosCheck, probeCheck } from "@saflib/ops-http";
 import { createAuditRotationHealthCheck } from "@saflib/audit-http/express/audit-rotation-health-check";
 import { auditDigestTile } from "@saflib/audit-http/express/audit-digest-tile";
 import { auditDiagnosticProbe } from "@saflib/audit-http/express/audit-diagnostic-probe";
+import { opsAuditSource } from "@saflib/audit-http/express/ops-audit-source";
 import {
   baseAuditRecorderMiddleware,
   createBaseAuditRouter,
@@ -110,6 +111,8 @@ export function buildBaseHttpApp(
           jobsDiagnosticProbe({ getDbKey: getBaseJobsDbKey }),
           auditDiagnosticProbe({ getAuditDbKey: () => context.auditDbKey }),
         ],
+        // Sign-ins, account changes and admin actions for agents (GET /ops/audit).
+        audit: opsAuditSource({ getAuditDbKey: () => context.auditDbKey }),
       }),
       createBaseAuditRouter(),
       // Site-admin identity routes (UserRef lookups, Users page). Pass

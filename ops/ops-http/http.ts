@@ -21,6 +21,7 @@ import type { HealthCheck } from "./health/types.ts";
 import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
 import type { DigestTileProvider } from "./digest/tiles.ts";
 import { builtInProbes, RunRegistry, type DiagnosticProbe } from "./diagnostics/probes.ts";
+import type { OpsAuditSource } from "./audit/source.ts";
 
 export interface OpsRouterOptions {
   /** Connection to the ops database; connects with `dbOptions` when omitted. */
@@ -63,6 +64,12 @@ export interface OpsRouterOptions {
    * audit event (see the jobs and audit packages' providers).
    */
   diagnosticProbes?: DiagnosticProbe[];
+  /**
+   * The product's audit log, readable at `GET /ops/audit` (sign-ins, account
+   * changes, admin actions) so an agent can spot unusual activity. See
+   * `opsAuditSource` in `@saflib/audit-http`. Omitted: the endpoint 404s.
+   */
+  audit?: OpsAuditSource;
   /**
    * Daily dependency checks (OSV advisories, npm latest) of the image's
    * lockfile. On by default when a lockfile exists at
@@ -129,6 +136,7 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
     issuesDbKey: options.issuesDbKey,
     metrics,
     digestTiles: options.digestTiles,
+    audit: options.audit,
     diagnostics: {
       probes: [
         ...builtInProbes({

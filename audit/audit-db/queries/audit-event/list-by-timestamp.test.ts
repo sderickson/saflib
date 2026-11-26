@@ -269,4 +269,18 @@ describe("listAuditEventsByTimestamp", () => {
     assert(result);
     expect(result.events.map((e) => e.event_type).sort()).toEqual(["by-ada", "for-ada"]);
   });
+
+  it("filters to event types with a prefix, exactly", async () => {
+    const t = new Date("2026-01-02T00:00:00.000Z");
+    await appendSystem(t, "kratos.login.password.success");
+    await appendSystem(t, "kratos.settings.totp.success");
+    await appendSystem(t, "KRATOS.upper");
+    await appendSystem(t, "http.GET /x");
+    const { result } = await listAuditEventsByTimestamp(dbKey, { eventPrefix: "kratos." });
+    assert(result);
+    expect(result.events.map((e) => e.event_type).sort()).toEqual([
+      "kratos.login.password.success",
+      "kratos.settings.totp.success",
+    ]);
+  });
 });

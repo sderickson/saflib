@@ -22,6 +22,7 @@ import {
   type DigestTileProvider,
   type DiagnosticProbe,
 } from "@saflib/ops-http";
+import type { OpsAuditSource } from "@saflib/ops-http";
 
 export { isOpsApiRequest };
 
@@ -88,6 +89,8 @@ export interface CreateBaseOpsRouterOptions {
   digestTiles?: DigestTileProvider[];
   /** Self-test probes beyond the ops API's own (failing job, audit event). */
   diagnosticProbes?: DiagnosticProbe[];
+  /** The audit log for `GET /ops/audit` (`opsAuditSource` from audit-http). */
+  audit?: OpsAuditSource;
 }
 
 /**
@@ -107,6 +110,7 @@ export function createBaseOpsRouter(options: CreateBaseOpsRouterOptions = {}) {
     metrics: { app: "base" },
     digestTiles: options.digestTiles,
     diagnosticProbes: options.diagnosticProbes,
+    audit: options.audit,
   });
 }
 

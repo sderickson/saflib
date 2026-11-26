@@ -29,6 +29,8 @@ components:
       $ref: "./schemas/ops-token.yaml"
     OpsBoot:
       $ref: "./schemas/ops-boot.yaml"
+    OpsAuditEvent:
+      $ref: "./schemas/ops-audit-event.yaml"
     OpsLogEntry:
       $ref: "./schemas/ops-log-entry.yaml"
     OpsLogGroup:
@@ -67,6 +69,9 @@ paths:
   /ops/deploys:
     get:
       $ref: "./routes/deploys.yaml#/listOpsDeploys"
+  /ops/audit:
+    get:
+      $ref: "./routes/audit.yaml#/listOpsAuditEvents"
   /ops/dependencies:
     get:
       $ref: "./routes/dependencies.yaml#/getOpsDependencies"
