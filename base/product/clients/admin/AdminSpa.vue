@@ -9,10 +9,12 @@ import { isDevelopmentDeployment } from "@saflib/vue";
 import { adminRepos as repos } from "./repos.ts";
 import { sectionMatch } from "./sections.ts";
 import { configureUserLinks } from "@saflib/ory-kratos-vue";
-import { HealthPill, TrafficChip, useAdminBadges } from "@saflib/ops-vue";
+import { HealthPill, TrafficChip, useAdminBadges, useRefreshOpsAfterMutations } from "@saflib/ops-vue";
 
 // Counts from the Overview's digest (one cached query).
 const badges = useAdminBadges();
+// Any change made in the admin refreshes the Overview, badges and top bar.
+useRefreshOpsAfterMutations();
 
 // UserRef hover cards and the Users page link to a person's pages.
 configureUserLinks({

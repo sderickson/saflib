@@ -21,6 +21,7 @@ import ProcessMetricsAsync from "./pages/ProcessMetricsAsync.vue";
 export { configureOpsVue } from "./client.ts";
 export { useOpsAccess } from "./requests/access.ts";
 export { useAdminBadges } from "./composables/useAdminBadges.ts";
+export { useRefreshOpsAfterMutations } from "./composables/useRefreshOpsAfterMutations.ts";
 export { useOpsDigest } from "./requests/queries.ts";
 export { default as StatusIcon } from "./components/StatusIcon.vue";
 export type { StatusTone } from "./components/StatusIcon.vue";
