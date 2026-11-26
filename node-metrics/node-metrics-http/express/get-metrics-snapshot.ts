@@ -1,11 +1,11 @@
-import client from "prom-client";
+import client from "@prometheus-io/client";
 import { assertDevelopmentObservabilityAvailable } from "@saflib/env";
 import { createHandler } from "./handler.ts";
 import type { MetricsResponseBody } from "@saflib/node-metrics-spec";
 import { parsePromText } from "../lib/parsePromText.ts";
 
 export interface GetMetricsSnapshotOptions {
-  /** Override for tests; defaults to the global prom-client registry. */
+  /** Override for tests; defaults to the global @prometheus-io/client registry. */
   collectMetrics?: () => Promise<string>;
 }
 

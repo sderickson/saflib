@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { cronDb, setEnabled, setLastRunStatus } from "@saflib/cron-db";
 import { createCronHealthCheck } from "./health-check.ts";
@@ -56,11 +56,16 @@ describe("cronDigestTile", () => {
   });
 
   it("needs action for failed and late jobs", async () => {
+    // A fixed clock, so the nightly job's slot doesn't fall inside the
+    // two hours depending on when the test runs.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-06-01T12:00:00Z"));
     await setEnabled(dbKey, "hourly", true, "admin");
     await setLastRunStatus(dbKey, "hourly", "success");
     await setEnabled(dbKey, "nightly", true, "admin");
     await setLastRunStatus(dbKey, "nightly", "fail");
     const twoHoursLater = new Date(Date.now() + 2 * 3600_000);
     expect(await tile(twoHoursLater)).toMatchObject({ value: "1 failed · 1 late", tone: "bad" });
+    vi.useRealTimers();
   });
 });

@@ -17,15 +17,16 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@prometheus-io/client": "^0.16.1",
     "@saflib/drizzle": "*",
     "@saflib/express": "*",
-    "@saflib/node": "*",
-    "@saflib/openapi": "*",
-    "http-errors": "^2.0.0",
     "@saflib/jobs-db": "*",
     "@saflib/jobs-spec": "*",
-    "undici": "^8.0.0",
-    "@saflib/utils": "*"
+    "@saflib/node": "*",
+    "@saflib/openapi": "*",
+    "@saflib/utils": "*",
+    "http-errors": "^2.0.0",
+    "undici": "^8.0.0"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

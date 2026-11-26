@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import winston from "winston";
-import client from "prom-client";
+import client from "@prometheus-io/client";
 import type { DbKey } from "@saflib/drizzle";
 import { throwError } from "@saflib/utils";
 import {

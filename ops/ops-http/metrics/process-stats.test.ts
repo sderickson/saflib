@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import client from "prom-client";
+import client from "@prometheus-io/client";
 import { histogramTotals, p95UpperMs, processStats } from "./process-stats.ts";
 
 describe("process stats", () => {

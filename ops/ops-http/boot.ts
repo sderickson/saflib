@@ -1,4 +1,4 @@
-import client from "prom-client";
+import client from "@prometheus-io/client";
 import type { DbKey } from "@saflib/drizzle";
 import { getServiceName, getSafReporters } from "@saflib/node";
 import {

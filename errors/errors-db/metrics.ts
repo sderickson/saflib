@@ -1,4 +1,4 @@
-import client from "prom-client";
+import client from "@prometheus-io/client";
 
 function counter(name: string, help: string, labelNames: string[]) {
   return (

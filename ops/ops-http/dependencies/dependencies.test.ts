@@ -208,7 +208,7 @@ describe("accepted advisories", () => {
 
 describe("dependency metrics", () => {
   it("exports advisory counts (accepted separately), runtime EOL and check time", async () => {
-    const client = (await import("prom-client")).default;
+    const client = (await import("@prometheus-io/client")).default;
     const { registerDependencyMetrics } = await import("./metrics.ts");
     const dbKey = opsDb.connect();
     const manifest = { ...parseLockfile(lockfile, "v24.11.0"), osRelease: { id: "debian", versionId: "12" } };

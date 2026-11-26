@@ -19,11 +19,11 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@prometheus-io/client": "^0.16.1",
     "@saflib/commander": "*",
     "@saflib/env": "*",
     "@saflib/node-log-http": "*",
     "@saflib/secret-store": "*",
-    "prom-client": "^15.1.3",
     "winston": "^3.0.0"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import client from "prom-client";
+import client from "@prometheus-io/client";
 import type { DbKey } from "@saflib/drizzle";
 import { latestDependencies } from "../routes/get-ops-dependencies.ts";
 import type { AcceptedAdvisory } from "./accepted.ts";

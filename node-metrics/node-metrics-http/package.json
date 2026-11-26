@@ -15,11 +15,11 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@prometheus-io/client": "^0.16.1",
     "@saflib/env": "*",
     "@saflib/node-metrics-spec": "*",
     "express": "^5.0.0",
-    "http-errors": "^2.0.0",
-    "prom-client": "^15.0.0"
+    "http-errors": "^2.0.0"
   },
   "devDependencies": {
     "@saflib/express": "*",

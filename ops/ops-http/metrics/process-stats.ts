@@ -1,4 +1,4 @@
-import client from "prom-client";
+import client from "@prometheus-io/client";
 import type { OpsDigest } from "@saflib/ops-spec";
 
 type Sample = { value: number; labels: Record<string, string | number | undefined>; metricName?: string };
