@@ -31,3 +31,9 @@ export { parseLockfile, readManifest, type DependencyManifest } from "./dependen
 export { runDependencyCheckOnce, startDependencyChecks } from "./dependencies/scheduler.ts";
 export { SAFLIB_ACCEPTED_ADVISORIES, findAcceptance, type AcceptedAdvisory } from "./dependencies/accepted.ts";
 export { checkRuntime, readOsRelease, type RuntimeComponent, type OsRelease } from "./dependencies/runtime.ts";
+export {
+  runTileProviders,
+  type DigestTile,
+  type DigestTileProvider,
+} from "./digest/tiles.ts";
+export { effectiveMetricsConfig } from "./http.ts";

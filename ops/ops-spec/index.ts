@@ -32,3 +32,4 @@ export type OpsResponseBody = ExtractResponseBody<operations>;
 
 /** Request bodies for ops API routes, by operationId. */
 export type OpsRequestBody = ExtractRequestBody<operations>;
+export type OpsDigestTile = components["schemas"]["OpsDigestTile"];

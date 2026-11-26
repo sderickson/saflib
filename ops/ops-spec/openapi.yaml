@@ -41,6 +41,8 @@ components:
       $ref: "./schemas/ops-issue-occurrence.yaml"
     OpsDigest:
       $ref: "./schemas/ops-digest.yaml"
+    OpsDigestTile:
+      $ref: "./schemas/ops-digest-tile.yaml"
     OpsDependencies:
       $ref: "./schemas/ops-dependencies.yaml"
     OpsAlert:

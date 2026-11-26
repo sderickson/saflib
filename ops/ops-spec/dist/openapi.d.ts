@@ -555,6 +555,7 @@ export interface components {
         OpsIssue: components["schemas"]["ops-issue"];
         OpsIssueOccurrence: components["schemas"]["ops-issue-occurrence"];
         OpsDigest: components["schemas"]["ops-digest"];
+        OpsDigestTile: components["schemas"]["ops-digest-tile"];
         OpsDependencies: components["schemas"]["ops-dependencies"];
         OpsAlert: components["schemas"]["ops-alert"];
         OpsMetricsResult: components["schemas"]["ops-metrics-result"];
@@ -698,13 +699,42 @@ export interface components {
                 };
             };
         };
+        /** @description One status tile on the admin Overview. */
+        "ops-digest-tile": {
+            /** @description Stable id, e.g. `issues`, `jobs`, `whatsapp-inbox`. The admin maps it to a page. */
+            key: string;
+            /** @enum {string} */
+            group: "system" | "customers";
+            label: string;
+            /** @description The headline, e.g. "0 failed". */
+            value: string;
+            /** @description A line of context, e.g. "Last 24h · none stuck". */
+            detail: string;
+            /**
+             * @description `bad` needs action and counts toward attention; `none` is informational.
+             * @enum {string}
+             */
+            tone: "ok" | "warn" | "bad" | "none";
+        };
         "ops-digest": {
             /** Format: date-time */
             since: string;
             /** Format: date-time */
             generated_at: string;
             summary: {
+                /** @description True exactly when `attention` is non-empty. */
                 needs_attention: boolean;
+                /** @description Each thing that needs a look, most severe first. The admin Overview lists these; `kind` tells it which page fixes each. */
+                attention: {
+                    /** @enum {string} */
+                    kind: "health" | "issues" | "alerts" | "heartbeat" | "logs" | "metrics" | "dependencies" | "tile";
+                    /** @description For `tile`, the tile's key; otherwise the same as `kind`. */
+                    key: string;
+                    /** @description One line, e.g. "1 open issue: Prometheus unreachable". */
+                    summary: string;
+                    /** @enum {string} */
+                    tone: "warn" | "bad";
+                }[];
                 /** @enum {string} */
                 health_status: "ok" | "warn" | "fail";
                 new_issues: number;
@@ -773,6 +803,8 @@ export interface components {
                  * @description Last delivery of the always-firing Watchdog, which proves Prometheus, Alertmanager and this webhook (and its token) work. Null if it has never arrived.
                  */
                 pipeline_last_seen_at: string | null;
+                /** @description The Watchdog has never arrived, so alerts may not reach anyone. Counts toward `needs_attention` outside development deployments. */
+                pipeline_missing: boolean;
                 /** @description The Watchdog has arrived before but not in the last 15 minutes: alerting is broken. Counts toward `needs_attention`. */
                 pipeline_stale: boolean;
             };
@@ -796,6 +828,18 @@ export interface components {
                 renovate_due: number;
                 /** @description Runtime components (Node, base OS) past or within 90 days of end of life. */
                 runtime_eol_soon: number;
+            };
+            /** @description Status tiles for the admin Overview: the ops API's own (health, alerts, issues, dependencies, deploys) plus any the product registers (background jobs, cron, audit log, and customer queues). A `bad` tile also appears in `summary.attention`. */
+            tiles: components["schemas"]["ops-digest-tile"][];
+            /** @description This server process since it started, from its own metrics: works without Prometheus (the Overview's fallback when metrics are off). */
+            process: {
+                /** Format: date-time */
+                started_at: string;
+                /** @description HTTP requests handled since start. */
+                requests_total: number;
+                /** @description Upper bound of the latency histogram bucket holding the 95th percentile. */
+                p95_upper_ms: number | null;
+                rss_bytes: number | null;
             };
         };
         /** @description The latest check of this image's installed packages (its lockfile) against OSV.dev advisories and the npm registry, and of its runtime (Node, base OS) against endoflife.date. Checked a couple of minutes after a deploy and then daily. */

@@ -1,5 +1,5 @@
 type: object
-required: [ since, generated_at, summary, health, deploys, issues, logs, metrics, activity, alerts, dependencies ]
+required: [ since, generated_at, summary, health, deploys, issues, logs, metrics, activity, alerts, dependencies, tiles, process ]
 properties:
   since:
     type: string
@@ -9,10 +9,32 @@ properties:
     format: date-time
   summary:
     type: object
-    required: [ needs_attention, health_status, new_issues, regressed_issues, open_issues, new_log_templates, deploys, boots, firing_alerts ]
+    required: [ needs_attention, attention, health_status, new_issues, regressed_issues, open_issues, new_log_templates, deploys, boots, firing_alerts ]
     properties:
       needs_attention:
         type: boolean
+        description: True exactly when `attention` is non-empty.
+      attention:
+        type: array
+        description: >
+          Each thing that needs a look, most severe first. The admin Overview
+          lists these; `kind` tells it which page fixes each.
+        items:
+          type: object
+          required: [ kind, key, summary, tone ]
+          properties:
+            kind:
+              type: string
+              enum: [ health, issues, alerts, heartbeat, logs, metrics, dependencies, tile ]
+            key:
+              type: string
+              description: For `tile`, the tile's key; otherwise the same as `kind`.
+            summary:
+              type: string
+              description: "One line, e.g. \"1 open issue: Prometheus unreachable\"."
+            tone:
+              type: string
+              enum: [ warn, bad ]
       health_status:
         type: string
         enum: [ ok, warn, fail ]
@@ -157,7 +179,7 @@ properties:
     oneOf:
       - type: "null"
       - type: object
-        required: [ firing, firing_unacked, fired_in_window, pipeline_last_seen_at, pipeline_stale ]
+        required: [ firing, firing_unacked, fired_in_window, pipeline_last_seen_at, pipeline_missing, pipeline_stale ]
         properties:
           firing:
             type: array
@@ -174,6 +196,11 @@ properties:
               Last delivery of the always-firing Watchdog, which proves
               Prometheus, Alertmanager and this webhook (and its token) work.
               Null if it has never arrived.
+          pipeline_missing:
+            type: boolean
+            description: >
+              The Watchdog has never arrived, so alerts may not reach anyone.
+              Counts toward `needs_attention` outside development deployments.
           pipeline_stale:
             type: boolean
             description: >
@@ -215,3 +242,30 @@ properties:
           runtime_eol_soon:
             type: integer
             description: Runtime components (Node, base OS) past or within 90 days of end of life.
+  tiles:
+    description: >
+      Status tiles for the admin Overview: the ops API's own (health,
+      alerts, issues, dependencies, deploys) plus any the product registers
+      (background jobs, cron, audit log, and customer queues). A `bad` tile
+      also appears in `summary.attention`.
+    type: array
+    items:
+      $ref: "./ops-digest-tile.yaml"
+  process:
+    description: >
+      This server process since it started, from its own metrics: works
+      without Prometheus (the Overview's fallback when metrics are off).
+    type: object
+    required: [ started_at, requests_total, p95_upper_ms, rss_bytes ]
+    properties:
+      started_at:
+        type: string
+        format: date-time
+      requests_total:
+        type: integer
+        description: HTTP requests handled since start.
+      p95_upper_ms:
+        type: [ number, "null" ]
+        description: Upper bound of the latency histogram bucket holding the 95th percentile.
+      rss_bytes:
+        type: [ integer, "null" ]

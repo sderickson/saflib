@@ -19,6 +19,7 @@ import { registerDependencyMetrics } from "./dependencies/metrics.ts";
 import type { BuildInfo, ReleaseInfo } from "@saflib/node/git-hashes";
 import type { HealthCheck } from "./health/types.ts";
 import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
+import type { DigestTileProvider } from "./digest/tiles.ts";
 
 export interface OpsRouterOptions {
   /** Connection to the ops database; connects with `dbOptions` when omitted. */
@@ -49,6 +50,12 @@ export interface OpsRouterOptions {
    * prom-label-proxy; when omitted, the metrics endpoints respond 404.
    */
   metrics?: OpsMetricsConfig;
+  /**
+   * Status tiles for the admin Overview beyond the ops API's own: background
+   * jobs, cron, audit log (see their packages' providers) and the product's
+   * customer queues. A tile with tone `bad` counts toward needs_attention.
+   */
+  digestTiles?: DigestTileProvider[];
   /**
    * Daily dependency checks (OSV advisories, npm latest) of the image's
    * lockfile. On by default when a lockfile exists at
@@ -90,14 +97,31 @@ function isOpsPath(path: string): boolean {
  * Router for the ops API and ops token admin. Only handles its own paths;
  * everything else falls through to sibling routers.
  */
+/**
+ * Development stacks don't run Prometheus. Without an explicit proxy URL
+ * there, metrics are off (endpoints 404, the digest skips them) rather than
+ * failing every query with a 502 that becomes an issue.
+ */
+export function effectiveMetricsConfig(
+  metrics: OpsMetricsConfig | undefined,
+  env: NodeJS.ProcessEnv = process.env,
+): OpsMetricsConfig | undefined {
+  if (!metrics) return undefined;
+  const explicit = metrics.proxyUrl ?? env.PROM_LABEL_PROXY_URL;
+  if (!explicit && env.DEPLOYMENT_NAME === "development") return undefined;
+  return metrics;
+}
+
 export function createOpsRouter(options: OpsRouterOptions = {}) {
   const dbKey = options.dbKey ?? opsDb.connect(options.dbOptions);
+  const metrics = effectiveMetricsConfig(options.metrics);
   const context: OpsServiceContext = {
     dbKey,
     healthChecks: [processCheck(), ...(options.healthChecks ?? [])],
     logsDbKey: options.logsDbKey,
     issuesDbKey: options.issuesDbKey,
-    metrics: options.metrics,
+    metrics,
+    digestTiles: options.digestTiles,
     // Each router creation is one process start in production.
     currentBoot: recordCurrentBoot(dbKey, options.buildInfo, options.releaseInfo),
     acceptedAdvisories: [
@@ -111,7 +135,7 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
       ? undefined
       : readManifest(options.dependencies?.lockfilePath);
   if (manifest) {
-    const metricsConfig = options.metrics;
+    const metricsConfig = metrics;
     startDependencyChecks({
       dbKey,
       manifest,

@@ -50,6 +50,9 @@
       "OpsDigest": {
         "$ref": "#/components/schemas/ops-digest"
       },
+      "OpsDigestTile": {
+        "$ref": "#/components/schemas/ops-digest-tile"
+      },
       "OpsDependencies": {
         "$ref": "#/components/schemas/ops-dependencies"
       },
@@ -588,6 +591,52 @@
           }
         }
       },
+      "ops-digest-tile": {
+        "type": "object",
+        "description": "One status tile on the admin Overview.",
+        "required": [
+          "key",
+          "group",
+          "label",
+          "value",
+          "detail",
+          "tone"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Stable id, e.g. `issues`, `jobs`, `whatsapp-inbox`. The admin maps it to a page."
+          },
+          "group": {
+            "type": "string",
+            "enum": [
+              "system",
+              "customers"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string",
+            "description": "The headline, e.g. \"0 failed\"."
+          },
+          "detail": {
+            "type": "string",
+            "description": "A line of context, e.g. \"Last 24h · none stuck\"."
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "warn",
+              "bad",
+              "none"
+            ],
+            "description": "`bad` needs action and counts toward attention; `none` is informational."
+          }
+        }
+      },
       "ops-digest": {
         "type": "object",
         "required": [
@@ -601,7 +650,9 @@
           "metrics",
           "activity",
           "alerts",
-          "dependencies"
+          "dependencies",
+          "tiles",
+          "process"
         ],
         "properties": {
           "since": {
@@ -616,6 +667,7 @@
             "type": "object",
             "required": [
               "needs_attention",
+              "attention",
               "health_status",
               "new_issues",
               "regressed_issues",
@@ -627,7 +679,51 @@
             ],
             "properties": {
               "needs_attention": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "True exactly when `attention` is non-empty."
+              },
+              "attention": {
+                "type": "array",
+                "description": "Each thing that needs a look, most severe first. The admin Overview lists these; `kind` tells it which page fixes each.\n",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "kind",
+                    "key",
+                    "summary",
+                    "tone"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "health",
+                        "issues",
+                        "alerts",
+                        "heartbeat",
+                        "logs",
+                        "metrics",
+                        "dependencies",
+                        "tile"
+                      ]
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "For `tile`, the tile's key; otherwise the same as `kind`."
+                    },
+                    "summary": {
+                      "type": "string",
+                      "description": "One line, e.g. \"1 open issue: Prometheus unreachable\"."
+                    },
+                    "tone": {
+                      "type": "string",
+                      "enum": [
+                        "warn",
+                        "bad"
+                      ]
+                    }
+                  }
+                }
               },
               "health_status": {
                 "type": "string",
@@ -889,6 +985,7 @@
                   "firing_unacked",
                   "fired_in_window",
                   "pipeline_last_seen_at",
+                  "pipeline_missing",
                   "pipeline_stale"
                 ],
                 "properties": {
@@ -911,6 +1008,10 @@
                     ],
                     "format": "date-time",
                     "description": "Last delivery of the always-firing Watchdog, which proves Prometheus, Alertmanager and this webhook (and its token) work. Null if it has never arrived.\n"
+                  },
+                  "pipeline_missing": {
+                    "type": "boolean",
+                    "description": "The Watchdog has never arrived, so alerts may not reach anyone. Counts toward `needs_attention` outside development deployments.\n"
                   },
                   "pipeline_stale": {
                     "type": "boolean",
@@ -992,6 +1093,46 @@
                 }
               }
             ]
+          },
+          "tiles": {
+            "description": "Status tiles for the admin Overview: the ops API's own (health, alerts, issues, dependencies, deploys) plus any the product registers (background jobs, cron, audit log, and customer queues). A `bad` tile also appears in `summary.attention`.\n",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ops-digest-tile"
+            }
+          },
+          "process": {
+            "description": "This server process since it started, from its own metrics: works without Prometheus (the Overview's fallback when metrics are off).\n",
+            "type": "object",
+            "required": [
+              "started_at",
+              "requests_total",
+              "p95_upper_ms",
+              "rss_bytes"
+            ],
+            "properties": {
+              "started_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "requests_total": {
+                "type": "integer",
+                "description": "HTTP requests handled since start."
+              },
+              "p95_upper_ms": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Upper bound of the latency histogram bucket holding the 95th percentile."
+              },
+              "rss_bytes": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            }
           }
         }
       },
