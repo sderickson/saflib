@@ -13,11 +13,13 @@ import {
 import { kratosMdiIconPaths } from "@saflib/ory-kratos-spa/mdi-icons";
 import { oryKratosVueMdiIconPaths } from "@saflib/ory-kratos-vue/mdi-icons";
 import { opsVueMdiIconPaths } from "@saflib/ops-vue/mdi-icons";
+import { jobsVueMdiIconPaths } from "@saflib/jobs-vue/mdi-icons";
 
 export const mdiIconPaths: Record<string, string> = {
   ...kratosMdiIconPaths,
   ...oryKratosVueMdiIconPaths,
   ...opsVueMdiIconPaths,
+  ...jobsVueMdiIconPaths,
   "mdi-arrow-right": mdiArrowRight,
   "mdi-chevron-left": mdiChevronLeft,
   "mdi-close": mdiClose,

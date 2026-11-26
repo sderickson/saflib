@@ -22,6 +22,9 @@
       "path": "../../../../errors/errors-vue"
     },
     {
+      "path": "../../../../jobs/jobs-vue"
+    },
+    {
       "path": "../../../../links"
     },
     {

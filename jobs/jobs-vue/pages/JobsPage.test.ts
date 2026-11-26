@@ -173,7 +173,7 @@ describe("JobsPage", () => {
     const row = getRowByJobId(wrapper, jobId);
     const button = row
       .findAllComponents({ name: "v-btn" })
-      .find((btn: VueWrapper) => btn.text().trim() === expectedText);
+      .find((btn: VueWrapper) => btn.attributes("title") === expectedText);
     expect(
       button,
       `Button with text "${expectedText}" for job "${jobId}" not found`,
@@ -203,6 +203,7 @@ describe("JobsPage", () => {
 
     const headers = table.findAll("thead th");
     expect(headers.map((h) => h.text())).toEqual([
+      "",
       "Job",
       "Status",
       "Operation",
@@ -210,7 +211,7 @@ describe("JobsPage", () => {
       "Request",
       "Attempt",
       "Created",
-      "Actions",
+      "",
     ]);
 
     const rows = getRows(wrapper);
@@ -338,5 +339,30 @@ describe("JobsPage", () => {
     await vi.waitFor(() => {
       expect(receivedBody).toEqual({ original_request_id: "r-abc" });
     });
+  });
+
+  it("retries or cancels the checked jobs in bulk", async () => {
+    const wrapper = await mountComponent();
+    const retried: string[] = [];
+    const cancelled: string[] = [];
+    server.use(
+      http.post<PathParams, never, RetryJobResponse>("http://api.localhost:3000/jobs/:id/retry", ({ params }) => {
+        retried.push(String(params.id));
+        return HttpResponse.json({ job: makeJob({ id: String(params.id) }) });
+      }),
+      http.post<PathParams, never, CancelJobResponse>("http://api.localhost:3000/jobs/:id/cancel", ({ params }) => {
+        cancelled.push(String(params.id));
+        return HttpResponse.json({ job: makeJob({ id: String(params.id), status: "cancelled" }) });
+      }),
+    );
+    // Check every row: job-1 is pending (cancellable), job-2 dead (retryable).
+    await wrapper.find("thead input[type=checkbox]").setValue(true);
+    await vi.waitFor(() => expect(wrapper.find("[data-test=jobs-bulk]").text()).toContain("3 selected"));
+    expect(wrapper.find("[data-test=jobs-bulk-retry]").text()).toContain("Retry 1");
+    expect(wrapper.find("[data-test=jobs-bulk-cancel]").text()).toContain("Cancel 1");
+    await wrapper.find("[data-test=jobs-bulk-cancel]").trigger("click");
+    await vi.waitFor(() => expect(cancelled).toEqual(["job-1"]));
+    expect(retried).toEqual([]);
+    await vi.waitFor(() => expect(wrapper.find("[data-test=jobs-bulk]").exists()).toBe(false));
   });
 });

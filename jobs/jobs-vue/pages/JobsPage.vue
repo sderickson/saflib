@@ -80,13 +80,41 @@
       Error updating job: {{ mutationError.message }}
     </v-alert>
 
+    <div v-if="selected.length" class="jobs-bulk d-flex flex-wrap align-center ga-2 mb-2" data-test="jobs-bulk">
+      <span class="text-body-2">{{ selected.length }} selected</span>
+      <v-btn
+        size="small"
+        variant="outlined"
+        prepend-icon="mdi-replay"
+        :disabled="!retryable.length || isMutating"
+        :loading="bulkAction === 'retry'"
+        data-test="jobs-bulk-retry"
+        @click="bulk('retry')"
+      >
+        Retry {{ retryable.length }}
+      </v-btn>
+      <v-btn
+        size="small"
+        variant="outlined"
+        color="error"
+        prepend-icon="mdi-cancel"
+        :disabled="!cancellable.length || isMutating"
+        :loading="bulkAction === 'cancel'"
+        data-test="jobs-bulk-cancel"
+        @click="bulk('cancel')"
+      >
+        Cancel {{ cancellable.length }}
+      </v-btn>
+      <v-btn size="small" variant="text" @click="selected = []">Clear</v-btn>
+    </div>
+
     <v-data-table
       v-if="jobs.length > 0"
+      v-model="selected"
       :headers="headers"
       :items="jobs"
       item-value="id"
-      class="elevation-1"
-      density="compact"
+      show-select
       :items-per-page="pageSize"
       hide-default-footer
     >
@@ -113,32 +141,33 @@
       </template>
 
       <template #[`item.actions`]="{ item }">
-        <v-btn size="small" variant="text" class="me-1" @click="selectJob(item.id)">
-          View
-        </v-btn>
-        <v-btn
-          v-if="canRetry(item.status)"
-          size="small"
-          variant="text"
-          color="primary"
-          class="me-1"
-          :loading="isRetrying && actingJobId === item.id"
-          :disabled="isMutating"
-          @click="retryJob(item.id)"
-        >
-          Retry
-        </v-btn>
-        <v-btn
-          v-if="canCancel(item.status)"
-          size="small"
-          variant="text"
-          color="error"
-          :loading="isCancelling && actingJobId === item.id"
-          :disabled="isMutating"
-          @click="cancelJob(item.id)"
-        >
-          Cancel
-        </v-btn>
+        <div class="d-flex justify-end">
+          <v-btn icon="mdi-eye" size="small" variant="text" :aria-label="`View job ${item.id}`" title="View" @click="selectJob(item.id)" />
+          <v-btn
+            v-if="canRetry(item.status)"
+            icon="mdi-replay"
+            size="small"
+            variant="text"
+            color="primary"
+            title="Retry"
+            :aria-label="`Retry job ${item.id}`"
+            :loading="isRetrying && actingJobId === item.id"
+            :disabled="isMutating"
+            @click="retryJob(item.id)"
+          />
+          <v-btn
+            v-if="canCancel(item.status)"
+            icon="mdi-cancel"
+            size="small"
+            variant="text"
+            color="error"
+            title="Cancel"
+            :aria-label="`Cancel job ${item.id}`"
+            :loading="isCancelling && actingJobId === item.id"
+            :disabled="isMutating"
+            @click="cancelJob(item.id)"
+          />
+        </div>
       </template>
 
       <template #bottom></template>
@@ -200,7 +229,7 @@ const headers = [
   { title: "Request", key: "original_request_id", sortable: true },
   { title: "Attempt", key: "attempt", sortable: true },
   { title: "Created", key: "created_at", sortable: true },
-  { title: "Actions", key: "actions", sortable: false },
+  { title: "", key: "actions", sortable: false, align: "end" as const },
 ];
 
 const isLoadingJobs = computed(() => jobsQuery.isLoading.value);
@@ -232,6 +261,26 @@ const isMutating = computed(
 const mutationError = computed(
   () => retryError.value || cancelError.value || massCancelError.value,
 );
+
+// Bulk actions on the checked rows: each eligible job, one at a time.
+const selected = ref<string[]>([]);
+const selectedJobs = computed(() => jobs.value.filter((j) => selected.value.includes(j.id)));
+const retryable = computed(() => selectedJobs.value.filter((j) => canRetry(j.status)));
+const cancellable = computed(() => selectedJobs.value.filter((j) => canCancel(j.status)));
+const bulkAction = ref<"retry" | "cancel" | null>(null);
+const { mutateAsync: retryAsync } = useRetryJob();
+const { mutateAsync: cancelAsync } = useCancelJob();
+async function bulk(action: "retry" | "cancel") {
+  bulkAction.value = action;
+  try {
+    for (const j of action === "retry" ? retryable.value : cancellable.value) {
+      await (action === "retry" ? retryAsync(j.id) : cancelAsync(j.id));
+    }
+    selected.value = [];
+  } finally {
+    bulkAction.value = null;
+  }
+}
 
 const selectJob = (id: string) => {
   selectedJobId.value = id;
