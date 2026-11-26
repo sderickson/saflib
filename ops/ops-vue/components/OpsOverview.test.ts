@@ -42,17 +42,12 @@ describe("OpsOverview", () => {
   stubGlobals();
   setupMockServer([http.get(`${API}/ops/digest`, () => HttpResponse.json({ digest: digest() }))]);
 
-  it("lists what needs attention with links, tiles by group, and since-start numbers without Prometheus", async () => {
+  it("shows tiles by group with links, and since-start numbers without Prometheus", async () => {
     attention = [{ kind: "issues", key: "issues", summary: "1 open issue: Prometheus unreachable", tone: "bad" }];
     const wrapper = mountTestApp(OpsOverview, {
       props: { links: { issues: "/ops-issues", jobs: "/jobs?status=failed", diagnostics: "/diagnostics" } },
     });
-    await vi.waitFor(() => expect(wrapper.find("[data-test=overview-attention]").exists()).toBe(true));
-    const status = wrapper.find("[data-test=overview-attention]");
-    expect(status.text()).toContain("1 thing needs attention");
-    expect(status.text()).toContain("1 open issue: Prometheus unreachable");
-    expect(status.find("a").attributes("href")).toBe("/ops-issues");
-
+    await vi.waitFor(() => expect(wrapper.findAll("[data-test=overview-tile]").length).toBe(3));
     const tiles = wrapper.findAll("[data-test=overview-tile]");
     expect(tiles.map((t) => t.text())).toEqual([
       expect.stringContaining("1 open issue"),
@@ -67,13 +62,6 @@ describe("OpsOverview", () => {
     expect(sinceStart).toContain("2,712");
     expect(sinceStart).toContain("≤ 100 ms");
     expect(sinceStart).toContain("212 MB");
-    wrapper.unmount();
-  });
-
-  it("says all clear when nothing needs attention", async () => {
-    attention = [];
-    const wrapper = mountTestApp(OpsOverview);
-    await vi.waitFor(() => expect(wrapper.find("[data-test=overview-all-clear]").exists()).toBe(true));
     wrapper.unmount();
   });
 

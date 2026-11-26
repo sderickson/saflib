@@ -73,6 +73,9 @@
         </span>
         <span v-else class="text-medium-emphasis">—</span>
       </template>
+      <template #[`item.details`]="{ item }">
+        <span class="audit-details" :title="item.details">{{ item.details }}</span>
+      </template>
       <template #[`item.request_id`]="{ item }">
         <ShortId v-if="item.request_id" :id="item.request_id" prefix="r" />
         <span v-else class="text-medium-emphasis">—</span>
@@ -170,8 +173,8 @@ function formatTime(iso: string): string {
 function formatDetails(details: AuditLog["details"]): string {
   if (details == null) return "—";
   try {
-    const s = JSON.stringify(details);
-    return s.length > 120 ? `${s.slice(0, 117)}…` : s;
+    // Full JSON; the cell truncates to one line and shows it all on hover.
+    return JSON.stringify(details);
   } catch {
     return "—";
   }
@@ -205,7 +208,15 @@ async function onSeal() {
 .audit-log-table :deep(th) {
   white-space: nowrap;
 }
-.audit-log-table :deep(td) {
-  vertical-align: top;
+/* One line per event, so rows line up; the full details are on hover. */
+.audit-details {
+  display: block;
+  max-width: 32rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 </style>

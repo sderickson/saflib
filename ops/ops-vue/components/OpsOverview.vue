@@ -16,36 +16,6 @@
     <v-skeleton-loader v-else-if="!digest" type="article" />
 
     <template v-if="digest">
-      <v-alert
-        v-if="attention.length > 0"
-        type="warning"
-        variant="tonal"
-        class="mb-6"
-        data-test="overview-attention"
-      >
-        <div class="text-subtitle-1 font-weight-medium mb-2">{{ strings.needs_attention(attention.length) }}</div>
-        <v-list density="compact" bg-color="transparent" class="py-0">
-          <v-list-item v-for="(item, i) in attention" :key="`${item.key}-${i}`" class="px-0">
-            <div class="d-flex flex-wrap align-center ga-3">
-              <v-chip size="x-small" :color="item.tone === 'bad' ? 'error' : 'warning'" variant="flat">
-                {{ strings.kinds[item.kind] ?? item.kind }}
-              </v-chip>
-              <span class="flex-grow-1 text-body-2 overview-attention__summary">{{ item.summary }}</span>
-              <router-link
-                v-if="linkFor(item.key, item.kind)"
-                :to="linkFor(item.key, item.kind)!"
-                class="text-body-2 overview-attention__link"
-              >
-                {{ strings.open }}
-              </router-link>
-            </div>
-          </v-list-item>
-        </v-list>
-      </v-alert>
-      <v-alert v-else type="success" variant="tonal" class="mb-6" data-test="overview-all-clear">
-        {{ strings.all_clear }}
-      </v-alert>
-
       <section v-for="group in groups" :key="group.key" class="mb-6" :aria-label="group.label">
         <h2 class="overview-heading mb-2">{{ group.label }}</h2>
         <div class="overview-tiles">
@@ -116,9 +86,8 @@ import { ops_overview as strings } from "./OpsOverview.strings.ts";
 const props = withDefaults(
   defineProps<{
     /**
-     * Where each tile and attention item leads: keys are tile keys
-     * (`issues`, `jobs`, `whatsapp-inbox`, …) and attention kinds
-     * (`health`, `alerts`, `heartbeat`, …), plus `metrics` and `diagnostics`.
+     * Where each tile leads, by tile key (`issues`, `jobs`,
+     * `whatsapp-inbox`, …), plus `metrics` and `diagnostics`.
      */
     links?: Partial<Record<string, RouteLocationRaw>>;
     repos?: BuildRepoUrls;
@@ -132,9 +101,8 @@ const GRAPH_MEMORY = 'process_resident_memory_bytes{saf_app!="host"}';
 
 const query = useOpsDigest();
 const digest = computed(() => query.data.value?.digest);
-const attention = computed(() => digest.value?.summary.attention ?? []);
 
-const linkFor = (key: string, kind?: string) => props.links[key] ?? (kind ? props.links[kind] : undefined);
+const linkFor = (key: string) => props.links[key];
 
 const groups = computed(() => {
   const tiles = digest.value?.tiles ?? [];
@@ -169,14 +137,6 @@ const formatClock = (iso: string) =>
 </script>
 
 <style scoped>
-/* The tonal alert tints its text; keep the rows at normal contrast. */
-.overview-attention__summary {
-  color: rgb(var(--v-theme-on-surface));
-}
-.overview-attention__link {
-  color: rgb(var(--v-theme-primary));
-  font-weight: 500;
-}
 .overview-heading {
   font-size: 0.8125rem;
   font-weight: 600;

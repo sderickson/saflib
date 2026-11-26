@@ -36,7 +36,8 @@
               <v-btn
                 v-if="!a.acked_at"
                 size="small"
-                variant="outlined"
+                variant="text"
+                color="primary"
                 :loading="ack.isPending.value"
                 data-test="alert-ack"
                 @click="ack.mutate({ id: a.id })"

@@ -74,6 +74,26 @@ import { adminDefaults } from "./admin-defaults.ts";
   border-bottom: 0 !important;
 }
 
+/* Controls inside table rows stay well inside the row height. */
+.saf-admin .v-table td .v-btn:not(.v-btn--icon) {
+  height: 26px;
+  padding: 0 8px;
+  font-size: 0.8125rem;
+  min-width: 0;
+}
+.saf-admin .v-table td .v-btn--icon {
+  width: 28px;
+  height: 28px;
+}
+.saf-admin .v-table td .v-chip {
+  height: 20px;
+  padding: 0 8px;
+  font-size: 0.6875rem;
+}
+.saf-admin .v-table > .v-table__wrapper > table > tbody > tr > td {
+  vertical-align: middle;
+}
+
 /* Inputs: white, warm hairline, primary when focused. */
 .saf-admin .v-field--variant-outlined {
   background: var(--saf-admin-surface);

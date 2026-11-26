@@ -119,7 +119,8 @@
         <v-btn
           v-if="canRetry(item.status)"
           size="small"
-          variant="outlined"
+          variant="text"
+          color="primary"
           class="me-1"
           :loading="isRetrying && actingJobId === item.id"
           :disabled="isMutating"
@@ -130,7 +131,7 @@
         <v-btn
           v-if="canCancel(item.status)"
           size="small"
-          variant="outlined"
+          variant="text"
           color="error"
           :loading="isCancelling && actingJobId === item.id"
           :disabled="isMutating"

@@ -53,7 +53,8 @@
       <template #[`item.actions`]="{ item }">
         <v-btn
           size="small"
-          variant="outlined"
+          variant="text"
+          color="primary"
           :loading="isUpdating && updatingJobId === item.job_name"
           :disabled="isUpdating"
           @click="toggleJobStatus(item.job_name, !item.enabled)"
