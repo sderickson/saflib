@@ -185,7 +185,11 @@ export function builtInProbes(ctx: BuiltInContext): DiagnosticProbe[] {
 /** What server probes triggered per run, for probes whose signal can't carry the tag. */
 export class RunRegistry {
   private runs = new Map<string, { at: number; refs: Map<string, DiagnosticRef> }>();
-  constructor(private readonly ttlMs = 2 * 3_600_000) {}
+  private readonly ttlMs: number;
+  // No parameter properties: the dev stack runs this with Node's type stripping.
+  constructor(ttlMs = 2 * 3_600_000) {
+    this.ttlMs = ttlMs;
+  }
 
   remember(runId: string, probeId: string, ref: DiagnosticRef) {
     this.prune();

@@ -1,1 +1,6 @@
-export { default as ErrorSmokeWidgets } from "./pages/ErrorSmokeWidgets.vue";
+export {
+  isLocalhostHostname,
+  reportClientErrorToBackend,
+  reportUnhandledRejections,
+} from "./lib/reportClientErrorToBackend.ts";
+export { createClientErrorCallback } from "./lib/createClientErrorCallback.ts";

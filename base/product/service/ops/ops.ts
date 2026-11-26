@@ -20,6 +20,7 @@ import {
   startOpsNotifier,
   type EmailSenderLike,
   type DigestTileProvider,
+  type DiagnosticProbe,
 } from "@saflib/ops-http";
 
 export { isOpsApiRequest };
@@ -85,6 +86,8 @@ export interface CreateBaseOpsRouterOptions {
   healthChecks?: HealthCheck[];
   /** Overview tiles beyond the ops API's own (jobs, cron, audit, product queues). */
   digestTiles?: DigestTileProvider[];
+  /** Self-test probes beyond the ops API's own (failing job, audit event). */
+  diagnosticProbes?: DiagnosticProbe[];
 }
 
 /**
@@ -103,6 +106,7 @@ export function createBaseOpsRouter(options: CreateBaseOpsRouterOptions = {}) {
     // (set by this app's scrape config) plus host metrics.
     metrics: { app: "base" },
     digestTiles: options.digestTiles,
+    diagnosticProbes: options.diagnosticProbes,
   });
 }
 

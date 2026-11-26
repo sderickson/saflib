@@ -1585,6 +1585,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Site admin required, or the product refused the probe's work (e.g. a job it may not enqueue). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
             /** @description No such probe. */
             404: {
                 headers: {

@@ -8,6 +8,7 @@ import {
   mdiCloseCircle,
   mdiHelpCircle,
   mdiMagnify,
+  mdiPlay,
   mdiRefresh,
 } from "@mdi/js";
 
@@ -17,5 +18,6 @@ export const opsVueMdiIconPaths: Record<string, string> = {
   "mdi-close-circle": mdiCloseCircle,
   "mdi-help-circle": mdiHelpCircle,
   "mdi-magnify": mdiMagnify,
+  "mdi-play": mdiPlay,
   "mdi-refresh": mdiRefresh,
 };

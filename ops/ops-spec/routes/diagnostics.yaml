@@ -62,6 +62,12 @@ runOpsDiagnosticProbe:
             required: [ started_at ]
             properties:
               started_at: { type: string, format: date-time }
+    "403":
+      description: Site admin required, or the product refused the probe's work (e.g. a job it may not enqueue).
+      content:
+        application/json:
+          schema:
+            $ref: "pkg:@saflib/openapi/schemas/error.yaml"
     "404":
       description: No such probe.
       content:

@@ -1,13 +1,12 @@
 {
   "name": "@saflib/errors-vue",
-  "description": "Client error reporting helpers and smoke widgets",
+  "description": "Browser error reporting: Vue errors and unhandled rejections to Issues",
   "private": true,
   "type": "module",
   "main": "./index.ts",
   "exports": {
     ".": "./index.ts",
-    "./lib/*": "./lib/*",
-    "./pages/*": "./pages/*"
+    "./lib/*": "./lib/*"
   },
   "scripts": {
     "test": "vitest run",

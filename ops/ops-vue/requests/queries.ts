@@ -287,3 +287,53 @@ export function useOpsDependencies() {
     queryFn: () => handleClientMethod(client.GET("/ops/dependencies", {})),
   });
 }
+
+/** The self-test probes and why any can't run here. */
+export function useOpsDiagnostics() {
+  const client = getClient();
+  return useQuery<OpsResponseBody["listOpsDiagnostics"][200], TanstackError>({
+    queryKey: ["ops", "diagnostics"],
+    queryFn: () => handleClientMethod(client.GET("/ops/diagnostics", {})),
+  });
+}
+
+/** Fire one server probe. The server-500 probe's 500 is its signal, not a failure. */
+export async function runOpsDiagnosticProbe(runId: string, probeId: string): Promise<void> {
+  const { response } = await getClient().POST("/ops/diagnostics/runs/{run_id}/probes/{probe_id}", {
+    params: { path: { run_id: runId, probe_id: probeId } },
+    body: {},
+  });
+  if (!response.ok && !(probeId === "server-500" && response.status === 500)) {
+    throw new Error(`Probe ${probeId} answered ${response.status}`);
+  }
+}
+
+/** Where a run's signals have landed so far. */
+export async function getOpsDiagnosticRun(runId: string, since: string) {
+  return handleClientMethod(
+    getClient().GET("/ops/diagnostics/runs/{run_id}", {
+      params: { path: { run_id: runId }, query: { since } },
+    }),
+  );
+}
+
+export function useClearOpsDiagnostics() {
+  const client = getClient();
+  const queryClient = useQueryClient();
+  return useMutation<OpsResponseBody["clearOpsDiagnostics"][200], TanstackError>({
+    mutationFn: () => handleClientMethod(client.POST("/ops/diagnostics/clear", { body: {} })),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["ops"] }),
+  });
+}
+
+/** This process's /metrics, summarized; `raw` adds the text exposition. */
+export function useOpsDiagnosticMetrics(raw: Ref<boolean>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["getOpsDiagnosticMetrics"][200], TanstackError>({
+    queryKey: computed(() => ["ops", "diagnostics", "metrics", raw.value] as const),
+    queryFn: () =>
+      handleClientMethod(
+        client.GET("/ops/diagnostics/metrics", { params: { query: raw.value ? { raw: "1" } : {} } }),
+      ),
+  });
+}

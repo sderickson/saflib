@@ -5,6 +5,7 @@ import {
   type RouteRecordRaw,
 } from "vue-router";
 import { adminLinks } from "@saflib/base-links";
+import { adminRepos } from "./repos.ts";
 import { PageNotFound } from "@saflib/vue/components";
 import { isDevelopmentDeployment, scrollBehavior } from "@saflib/vue";
 import { CronJobsAsync } from "@saflib/cron-vue";
@@ -87,6 +88,17 @@ export const createAdminRouter = (options?: {
     {
       path: adminLinks.diagnostics.path,
       component: DiagnosticsAsync,
+      props: {
+        repos: adminRepos,
+        links: {
+          issues: adminLinks.opsIssues.path,
+          logs: adminLinks.opsLogs.path,
+          jobs: adminLinks.jobs.path,
+          audit: adminLinks.audit.path,
+          alerts: adminLinks.opsAlerts.path,
+          metrics: adminLinks.opsMetrics.path,
+        },
+      },
     },
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
     // END WORKFLOW AREA

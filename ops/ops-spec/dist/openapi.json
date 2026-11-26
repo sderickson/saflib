@@ -2697,6 +2697,16 @@
               }
             }
           },
+          "403": {
+            "description": "Site admin required, or the product refused the probe's work (e.g. a job it may not enqueue).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "No such probe.",
             "content": {

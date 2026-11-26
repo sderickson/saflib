@@ -13,6 +13,7 @@ import { createBaseOpsRouter, isOpsApiRequest } from "@saflib/base-ops";
 import { kratosCheck, probeCheck } from "@saflib/ops-http";
 import { createAuditRotationHealthCheck } from "@saflib/audit-http/express/audit-rotation-health-check";
 import { auditDigestTile } from "@saflib/audit-http/express/audit-digest-tile";
+import { auditDiagnosticProbe } from "@saflib/audit-http/express/audit-diagnostic-probe";
 import {
   baseAuditRecorderMiddleware,
   createBaseAuditRouter,
@@ -103,6 +104,12 @@ export function buildBaseHttpApp(
           cronDigestTile({ getDbKey: getBaseCronDbKey, jobs: baseJobs }),
           auditDigestTile({ getAuditDbKey: () => context.auditDbKey }),
         ],
+        // Self-test probes beyond the ops API's own. For a failing-job probe,
+        // add jobsDiagnosticProbe from @saflib/jobs-http once the jobs runtime
+        // knows raiseTestErrorMaintenance (its spec, operation config, and
+        // `runOpsDiagnosticProbe: ["raiseTestErrorMaintenance"]` in the
+        // trigger map).
+        diagnosticProbes: [auditDiagnosticProbe({ getAuditDbKey: () => context.auditDbKey })],
       }),
       createBaseAuditRouter(),
       // Site-admin identity routes (UserRef lookups, Users page). Pass
