@@ -1,5 +1,5 @@
 <template>
-  <v-card variant="outlined" tag="aside" :aria-label="strings.detail.label" data-test="user-detail">
+  <v-card tag="aside" :aria-label="strings.detail.label" data-test="user-detail">
     <div class="d-flex align-start ga-3 pa-4">
       <v-avatar size="44" :style="{ background: tintColor }" class="detail-avatar" aria-hidden="true">
         {{ initials }}

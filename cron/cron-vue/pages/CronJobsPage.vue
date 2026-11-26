@@ -53,6 +53,7 @@
       <template #[`item.actions`]="{ item }">
         <v-btn
           size="small"
+          variant="outlined"
           :loading="isUpdating && updatingJobId === item.job_name"
           :disabled="isUpdating"
           @click="toggleJobStatus(item.job_name, !item.enabled)"
@@ -78,12 +79,12 @@ import { cron_jobs as strings } from "./CronJobs.strings.ts";
 const updatingJobId = ref<string | null>(null);
 
 const headers = [
-  { title: "Job Name", key: "job_name", sortable: true },
+  { title: "Job", key: "job_name", sortable: true },
   { title: "Status", key: "enabled", sortable: true },
-  { title: "Enabled By", key: "enabled_by", sortable: true },
-  { title: "Last Run Status", key: "last_run_status", sortable: true },
-  { title: "Last Run At", key: "last_run_at", sortable: true },
-  { title: "Runs Next", key: "runs_next_at", sortable: true },
+  { title: "Enabled by", key: "enabled_by", sortable: true },
+  { title: "Last run", key: "last_run_status", sortable: true },
+  { title: "Last run at", key: "last_run_at", sortable: true },
+  { title: "Runs next", key: "runs_next_at", sortable: true },
   { title: "Actions", key: "actions", sortable: false },
 ];
 

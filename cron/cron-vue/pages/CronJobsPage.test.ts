@@ -139,7 +139,7 @@ describe("CronJobsAsync", () => {
 
   it("should render the title after loading", async () => {
     const wrapper = await mountComponent();
-    expect(wrapper.find("h1").text()).toBe("Cron Jobs");
+    expect(wrapper.find("h1").text()).toBe("Cron jobs");
   });
 
   it("should render the table with job data after loading", async () => {
@@ -152,12 +152,12 @@ describe("CronJobsAsync", () => {
     // Check headers
     const headers = table.findAll("thead th");
     expect(headers.map((h) => h.text())).toEqual([
-      "Job Name",
+      "Job",
       "Status",
-      "Enabled By",
-      "Last Run Status",
-      "Last Run At",
-      "Runs Next",
+      "Enabled by",
+      "Last run",
+      "Last run at",
+      "Runs next",
       "Actions",
     ]);
 

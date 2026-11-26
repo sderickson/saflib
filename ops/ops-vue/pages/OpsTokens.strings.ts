@@ -1,6 +1,6 @@
 export const ops_tokens = {
-  documentTitle: "Ops Tokens",
-  title: "Ops Tokens",
+  documentTitle: "Ops tokens",
+  title: "Ops tokens",
   intro:
     "Machine credentials for the ops API (health, deploys, and later logs, issues and metrics). Give each agent or integration its own token.",
   empty: "No ops tokens yet.",

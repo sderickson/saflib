@@ -77,7 +77,7 @@
       <template #no-data>{{ strings.noActive }}</template>
       <template #bottom></template>
     </v-data-table>
-    <p v-else class="text-body-1">{{ strings.empty }}</p>
+    <p v-else class="saf-admin-empty">{{ strings.empty }}</p>
 
     <v-dialog v-model="createOpen" max-width="560">
       <v-card v-if="!createdSecret">

@@ -5,25 +5,13 @@
       {{ description }}
     </p>
 
-    <v-alert
-      v-if="spanHead || spanTail"
-      type="info"
-      variant="tonal"
-      class="mb-4"
-      density="comfortable"
-    >
-      <strong>{{ strings.stored_span }}</strong>
-      {{ spanHead ?? "—" }} → {{ spanTail ?? "—" }}
-    </v-alert>
-    <v-alert
-      v-else-if="spanChecked && !spanHead && !spanTail"
-      type="info"
-      variant="tonal"
-      class="mb-4"
-      density="comfortable"
-    >
+    <p v-if="spanHead || spanTail" class="text-body-2 text-medium-emphasis mb-4">
+      {{ strings.stored_span }}
+      <span class="saf-admin-mono">{{ spanHead ?? "—" }} → {{ spanTail ?? "—" }}</span>
+    </p>
+    <p v-else-if="spanChecked && !spanHead && !spanTail" class="saf-admin-empty mb-4">
       {{ strings.no_events }}
-    </v-alert>
+    </p>
 
     <div class="d-flex flex-wrap ga-3 align-end mb-4">
       <v-text-field
@@ -47,8 +35,7 @@
       </v-btn>
       <v-btn
         v-if="sealEnabled"
-        color="secondary"
-        variant="tonal"
+        variant="outlined"
         :loading="sealPending"
         :disabled="listLoading || sealPending || loadMorePending"
         @click="onSeal"

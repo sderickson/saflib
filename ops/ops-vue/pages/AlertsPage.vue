@@ -58,7 +58,7 @@
         </tr>
       </tbody>
     </v-table>
-    <p v-else class="text-body-1">{{ strings.empty }}</p>
+    <p v-else class="saf-admin-empty">{{ strings.empty }}</p>
   </ContentWidth>
 </template>
 

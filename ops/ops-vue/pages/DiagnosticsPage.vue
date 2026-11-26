@@ -15,8 +15,8 @@
       </div>
     </div>
 
-    <v-card variant="outlined" class="mb-6">
-      <div class="d-flex flex-wrap align-baseline justify-space-between ga-2 px-4 pt-3 pb-2">
+    <AdminPanel class="mb-6">
+      <template #title>
         <h2 class="text-subtitle-1 font-weight-medium">
           <template v-if="run.startedAt.value">
             {{ strings.last_run }} · {{ formatClock(run.startedAt.value.toISOString()) }}
@@ -24,7 +24,9 @@
           </template>
           <template v-else>{{ strings.no_run }}</template>
         </h2>
-        <div v-if="run.startedAt.value" class="d-flex ga-2" data-test="diagnostics-counts">
+      </template>
+      <template v-if="run.startedAt.value" #actions>
+        <div class="d-flex ga-2" data-test="diagnostics-counts">
           <v-chip size="small" variant="tonal" color="success">{{ run.counts.value.landed }} {{ strings.landed }}</v-chip>
           <v-chip size="small" variant="tonal">{{ run.counts.value.skipped }} {{ strings.skipped }}</v-chip>
           <v-chip size="small" variant="tonal" :color="run.counts.value.missing ? 'error' : undefined">
@@ -32,7 +34,7 @@
           </v-chip>
           <v-chip v-if="run.counts.value.waiting" size="small" variant="tonal">{{ run.counts.value.waiting }} {{ strings.waiting }}</v-chip>
         </div>
-      </div>
+      </template>
       <v-progress-linear v-if="list.isPending.value" indeterminate />
       <v-table density="compact">
         <thead>
@@ -73,10 +75,10 @@
           </tr>
         </tbody>
       </v-table>
-    </v-card>
+    </AdminPanel>
 
     <div class="diagnostics-cards">
-      <v-card variant="outlined" class="pa-4">
+      <v-card class="pa-4">
         <h2 class="text-subtitle-1 font-weight-medium mb-3">{{ strings.build }}</h2>
         <dl class="build-grid">
           <template v-for="c in [build.root, build.saflib]" :key="c.label">
@@ -104,7 +106,7 @@
 import { computed, onUnmounted, ref } from "vue";
 import type { RouteLocationRaw } from "vue-router";
 import type { OpsDiagnosticProbe } from "@saflib/ops-spec";
-import { ContentWidth } from "@saflib/vue/components";
+import { AdminPanel, ContentWidth } from "@saflib/vue/components";
 import { getDeploymentName, showInfo } from "@saflib/vue";
 import { useClearOpsDiagnostics, useOpsDiagnostics, useOpsDigest } from "../requests/queries.ts";
 import { getBuildCommits, type BuildRepoUrls } from "../components/build-info.ts";

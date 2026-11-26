@@ -9,3 +9,6 @@ export { default as ContentWidth } from "./ContentWidth.vue";
 export type { ContentWidthVariant } from "./ContentWidth.vue";
 export { default as PageNotFound } from "./PageNotFound.vue";
 export { default as ShortId } from "./ShortId.vue";
+export { default as AdminScope } from "./admin/AdminScope.vue";
+export { default as AdminPanel } from "./admin/AdminPanel.vue";
+export { adminDefaults } from "./admin/admin-defaults.ts";

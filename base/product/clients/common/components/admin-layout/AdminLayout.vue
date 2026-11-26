@@ -88,7 +88,10 @@
     </v-navigation-drawer>
 
     <v-main>
-      <slot />
+      <!-- Shared admin look: defaults and styles for panels, tables, inputs. -->
+      <AdminScope>
+        <slot />
+      </AdminScope>
     </v-main>
   </v-app>
 </template>
@@ -96,6 +99,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useDisplay } from "vuetify";
+import { AdminScope } from "@saflib/vue/components";
 import { linkToHrefWithHost } from "@saflib/links";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
 import { accountLinks, appLinks } from "@saflib/base-links";

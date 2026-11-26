@@ -17,7 +17,7 @@
           data-test="users-search"
         />
 
-        <v-card variant="outlined">
+        <v-card>
           <v-progress-linear v-if="listQuery.isFetching.value" indeterminate absolute />
           <v-alert v-if="listQuery.error.value" type="error" variant="tonal" class="ma-3">
             {{ listQuery.error.value.message }}

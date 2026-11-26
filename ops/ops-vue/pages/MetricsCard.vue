@@ -1,5 +1,5 @@
 <template>
-  <v-card variant="outlined" class="pa-4" data-test="diagnostics-metrics">
+  <v-card class="pa-4" data-test="diagnostics-metrics">
     <div class="d-flex flex-wrap align-baseline justify-space-between ga-2 mb-3">
       <h2 class="text-subtitle-1 font-weight-medium">
         <code>{{ strings.metrics_title }}</code>

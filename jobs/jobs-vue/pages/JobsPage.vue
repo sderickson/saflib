@@ -46,7 +46,8 @@
       <v-col cols="auto">
         <v-btn
           size="small"
-          color="warning"
+          variant="outlined"
+          color="error"
           :disabled="!originalRequestIdFilter"
           :loading="isMassCancelling"
           @click="massCancelChain"
@@ -118,6 +119,7 @@
         <v-btn
           v-if="canRetry(item.status)"
           size="small"
+          variant="outlined"
           class="me-1"
           :loading="isRetrying && actingJobId === item.id"
           :disabled="isMutating"
@@ -128,7 +130,8 @@
         <v-btn
           v-if="canCancel(item.status)"
           size="small"
-          color="warning"
+          variant="outlined"
+          color="error"
           :loading="isCancelling && actingJobId === item.id"
           :disabled="isMutating"
           @click="cancelJob(item.id)"
