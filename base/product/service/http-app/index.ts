@@ -12,6 +12,7 @@ import { baseDb, baseDbManager } from "@saflib/base-db/instances";
 import { createBaseOpsRouter, isOpsApiRequest } from "@saflib/base-ops";
 import { kratosCheck, probeCheck } from "@saflib/ops-http";
 import { createAuditRotationHealthCheck } from "@saflib/audit-http/express/audit-rotation-health-check";
+import { auditDigestTile } from "@saflib/audit-http/express/audit-digest-tile";
 import {
   baseAuditRecorderMiddleware,
   createBaseAuditRouter,
@@ -21,9 +22,9 @@ import {
   type BaseServiceContextOptions,
   makeContext,
 } from "@saflib/base-service-common/context";
-import { createCronHealthCheck, createCronRouter } from "@saflib/cron-http";
+import { createCronHealthCheck, createCronRouter, cronDigestTile } from "@saflib/cron-http";
 import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
-import { createJobsHealthCheck, createJobsRouter } from "@saflib/jobs-http";
+import { createJobsHealthCheck, createJobsRouter, jobsDigestTile } from "@saflib/jobs-http";
 import { getBaseJobsDbKey } from "@saflib/base-jobs";
 import { createMetricsRouter } from "@saflib/node-metrics-http";
 
@@ -94,6 +95,13 @@ export function buildBaseHttpApp(
           createJobsHealthCheck({ getDbKey: getBaseJobsDbKey }),
           createCronHealthCheck({ getDbKey: getBaseCronDbKey }),
           kratosCheck(),
+        ],
+        // Overview tiles beyond the ops API's own; add the product's
+        // customer queues here too.
+        digestTiles: [
+          jobsDigestTile({ getDbKey: getBaseJobsDbKey }),
+          cronDigestTile({ getDbKey: getBaseCronDbKey, jobs: baseJobs }),
+          auditDigestTile({ getAuditDbKey: () => context.auditDbKey }),
         ],
       }),
       createBaseAuditRouter(),

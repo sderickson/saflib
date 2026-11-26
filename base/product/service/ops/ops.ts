@@ -19,6 +19,7 @@ import {
   adminEmailSender,
   startOpsNotifier,
   type EmailSenderLike,
+  type DigestTileProvider,
 } from "@saflib/ops-http";
 
 export { isOpsApiRequest };
@@ -82,6 +83,8 @@ export function enableBasePersistentLogs() {
 export interface CreateBaseOpsRouterOptions {
   /** Checks beyond the defaults (process, and disk for this package's data volume). */
   healthChecks?: HealthCheck[];
+  /** Overview tiles beyond the ops API's own (jobs, cron, audit, product queues). */
+  digestTiles?: DigestTileProvider[];
 }
 
 /**
@@ -99,6 +102,7 @@ export function createBaseOpsRouter(options: CreateBaseOpsRouterOptions = {}) {
     // PromQL via the host's prom-label-proxy, confined to saf_app="base"
     // (set by this app's scrape config) plus host metrics.
     metrics: { app: "base" },
+    digestTiles: options.digestTiles,
   });
 }
 
