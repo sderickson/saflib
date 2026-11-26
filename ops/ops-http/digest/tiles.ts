@@ -122,12 +122,12 @@ export function endpointTiles(e: OpsDigest["endpoints"]): DigestTile[] {
     {
       key: "slowest-endpoint",
       group: "traffic",
-      label: "Slowest endpoint",
+      label: "Performance",
       always_show: true,
       ...(slow && slow.p95_ms !== null
         ? {
-            value: `${slow.method} ${slow.path}`,
-            detail: `p95 ${e.source === "process" ? "≤ " : ""}${fmtMs(slow.p95_ms)} · ${slow.requests.toLocaleString()} requests ${where}`,
+            value: `Slowest: ${slow.method} ${slow.path} at p95 ${e.source === "process" ? "≤ " : ""}${fmtMs(slow.p95_ms)}`,
+            detail: `${slow.requests.toLocaleString()} requests ${where}`,
             tone: slow.p95_ms > t.p95BadMs ? "bad" : slow.p95_ms > t.p95WarnMs ? "warn" : "ok",
           }
         : none),
@@ -135,12 +135,15 @@ export function endpointTiles(e: OpsDigest["endpoints"]): DigestTile[] {
     {
       key: "least-available-endpoint",
       group: "traffic",
-      label: "Least available endpoint",
+      label: "Reliability",
       always_show: true,
       ...(avail
         ? {
-            value: `${avail.method} ${avail.path}`,
-            detail: `${fmtPct(avail.availability_pct)} non-5xx · ${avail.requests.toLocaleString()} requests ${where}`,
+            value:
+              avail.availability_pct >= 100
+                ? "No 5xx errors"
+                : `Most errors: ${avail.method} ${avail.path} at ${fmtPct(100 - avail.availability_pct)} 5xx`,
+            detail: `${fmtPct(avail.availability_pct)} available · ${avail.requests.toLocaleString()} requests ${where}`,
             tone: avail.availability_pct < t.availabilityBadPct ? "bad" : avail.availability_pct < t.availabilityWarnPct ? "warn" : "ok",
           }
         : none),

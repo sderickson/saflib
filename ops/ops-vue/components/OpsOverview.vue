@@ -16,6 +16,25 @@
     <v-skeleton-loader v-else-if="!digest" type="article" />
 
     <template v-if="digest">
+      <section class="mb-6" :aria-label="graphsTitle">
+        <div class="d-flex justify-space-between align-baseline mb-2">
+          <h2 class="overview-heading">{{ graphsTitle }}</h2>
+          <router-link v-if="links.metrics && metricsOn" :to="links.metrics" class="text-body-2">{{ strings.open_metrics }}</router-link>
+        </div>
+        <div v-if="metricsOn" class="overview-graphs">
+          <OpsGraph :title="strings.requests" :query="GRAPH_REQUESTS" :width="420" :height="160" />
+          <OpsGraph :title="strings.p95" :query="GRAPH_P95" :width="420" :height="160" />
+          <OpsGraph :title="strings.memory" :query="GRAPH_MEMORY" :width="420" :height="160" />
+        </div>
+        <div v-else class="overview-graphs" data-test="overview-since-start">
+          <v-card v-for="n in sinceStart" :key="n.label" variant="outlined" class="pa-3">
+            <div class="text-body-2 text-medium-emphasis">{{ n.label }}</div>
+            <div class="text-h5 font-weight-bold">{{ n.value }}</div>
+            <div class="text-caption text-medium-emphasis">{{ n.note }}</div>
+          </v-card>
+        </div>
+      </section>
+
       <AdminPanel class="mb-6">
         <table class="overview-table" data-test="overview-table">
           <tbody v-for="group in groups" :key="group.key">
@@ -45,25 +64,6 @@
           </tbody>
         </table>
       </AdminPanel>
-
-      <section class="mb-6" :aria-label="graphsTitle">
-        <div class="d-flex justify-space-between align-baseline mb-2">
-          <h2 class="overview-heading">{{ graphsTitle }}</h2>
-          <router-link v-if="links.metrics && metricsOn" :to="links.metrics" class="text-body-2">{{ strings.open_metrics }}</router-link>
-        </div>
-        <div v-if="metricsOn" class="overview-graphs">
-          <OpsGraph :title="strings.requests" :query="GRAPH_REQUESTS" :width="420" :height="160" />
-          <OpsGraph :title="strings.p95" :query="GRAPH_P95" :width="420" :height="160" />
-          <OpsGraph :title="strings.memory" :query="GRAPH_MEMORY" :width="420" :height="160" />
-        </div>
-        <div v-else class="overview-graphs" data-test="overview-since-start">
-          <v-card v-for="n in sinceStart" :key="n.label" variant="outlined" class="pa-3">
-            <div class="text-body-2 text-medium-emphasis">{{ n.label }}</div>
-            <div class="text-h5 font-weight-bold">{{ n.value }}</div>
-            <div class="text-caption text-medium-emphasis">{{ n.note }}</div>
-          </v-card>
-        </div>
-      </section>
 
       <div class="overview-footer d-flex flex-wrap align-center justify-space-between ga-3">
         <span class="text-body-2 text-medium-emphasis d-flex flex-wrap align-center ga-2">
@@ -210,8 +210,17 @@ const formatClock = (iso: string) =>
 }
 .overview-graphs {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+}
+@media (max-width: 960px) {
+  .overview-graphs {
+    grid-template-columns: 1fr;
+  }
+}
+.overview-graphs :deep(img) {
+  width: 100%;
+  height: auto;
 }
 .overview-footer {
   padding: 4px 2px;

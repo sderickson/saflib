@@ -44,7 +44,9 @@ describe("endpoint stats", () => {
     expect(tiles(400, 100).map((t) => t.tone)).toEqual(["ok", "ok"]);
     expect(tiles(1500, 99.2).map((t) => t.tone)).toEqual(["warn", "warn"]);
     expect(tiles(3500, 98).map((t) => t.tone)).toEqual(["bad", "bad"]);
-    expect(tiles(400, 100)[0]).toMatchObject({ value: "GET /a", always_show: true, group: "traffic" });
+    expect(tiles(400, 100)[0]).toMatchObject({ label: "Performance", value: "Slowest: GET /a at p95 400 ms", always_show: true, group: "traffic" });
+    expect(tiles(400, 98)[1]).toMatchObject({ label: "Reliability", value: "Most errors: GET /b at 2% 5xx" });
+    expect(tiles(400, 100)[1]!.value).toBe("No 5xx errors");
     expect(endpointTiles({ source: "process", slowest: null, least_available: null })[0]!.value).toBe("Not enough traffic yet");
   });
 });
