@@ -152,11 +152,7 @@ const filledAreaHosts: { rel: string; mustInclude: string[] }[] = [
 const seedOutsideWorkflowAreas: { rel: string; mustInclude: string[] }[] = [
   {
     rel: "service/http/handlers/admin/index.ts",
-    mustInclude: [
-      "getUsersByIdAdminHandler",
-      "createAdminRouter",
-      "/admin/users/by-id",
-    ],
+    mustInclude: ["createAdminRouter"],
   },
   {
     rel: "service/db/schema.ts",
@@ -200,7 +196,7 @@ const seedOutsideWorkflowAreas: { rel: string; mustInclude: string[] }[] = [
   },
   {
     rel: "clients/admin/strings.ts",
-    mustInclude: ["home,", "users,"],
+    mustInclude: ["home,"],
   },
   {
     rel: "service/sdk/requests/user-configs/index.fakes.ts",
@@ -209,10 +205,6 @@ const seedOutsideWorkflowAreas: { rel: string; mustInclude: string[] }[] = [
       "putMineUserConfigsHandler",
       "unsubscribeMarketingEmailsUserConfigsHandler",
     ],
-  },
-  {
-    rel: "service/sdk/requests/admin/index.fakes.ts",
-    mustInclude: ["getUsersByIdAdminHandler"],
   },
 ];
 

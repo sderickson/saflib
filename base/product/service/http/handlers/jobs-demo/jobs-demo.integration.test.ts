@@ -37,6 +37,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { jsonSpec } from "@saflib/base-spec";
 import {
   baseJobOperations,
+  baseJobsApiSpec,
   baseTriggerMap,
 } from "@saflib/base-jobs";
 import {
@@ -161,7 +162,7 @@ describe("jobs-demo integration", () => {
       runJobs({
         triggerMap: baseTriggerMap,
         operationConfig: baseJobOperations,
-        apiSpec: jsonSpec,
+        apiSpec: baseJobsApiSpec(jsonSpec),
         targetSocketPath: internalSocketPath,
         dbKey: jobsDbKey,
       }),
@@ -170,7 +171,7 @@ describe("jobs-demo integration", () => {
     const jobsApp = createJobsApp({
       triggerMap: baseTriggerMap,
       operationConfig: baseJobOperations,
-      apiSpec: jsonSpec,
+      apiSpec: baseJobsApiSpec(jsonSpec),
       targetSocketPath: internalSocketPath,
       dbKey: jobsDbKey,
     });

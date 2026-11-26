@@ -55,9 +55,6 @@
       "path": "../../../../vue"
     },
     {
-      "path": "../../service/sdk"
-    },
-    {
       "path": "../common"
     },
     {

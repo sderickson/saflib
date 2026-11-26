@@ -25,7 +25,6 @@
     "@saflib/audit-vue": "*",
     "@saflib/base-clients-common": "*",
     "@saflib/base-links": "*",
-    "@saflib/base-sdk": "*",
     "@saflib/cron-vue": "*",
     "@saflib/email-vue": "*",
     "@saflib/errors-vue": "*",
