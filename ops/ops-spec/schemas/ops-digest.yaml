@@ -1,5 +1,5 @@
 type: object
-required: [ since, generated_at, summary, health, deploys, issues, logs, metrics, activity, alerts, dependencies, tiles, process ]
+required: [ since, generated_at, summary, health, deploys, issues, logs, metrics, activity, alerts, dependencies, tiles, process, endpoints ]
 properties:
   since:
     type: string
@@ -251,6 +251,25 @@ properties:
     type: array
     items:
       $ref: "./ops-digest-tile.yaml"
+  endpoints:
+    type: object
+    description: >
+      The slowest and least available endpoints with enough traffic to
+      judge (at least 20 requests): over the window from Prometheus when it's
+      set up, else this process since it started.
+    required: [ source, slowest, least_available ]
+    properties:
+      source:
+        type: string
+        enum: [ prometheus, process ]
+      slowest:
+        oneOf:
+          - $ref: "./ops-endpoint-stat.yaml"
+          - type: "null"
+      least_available:
+        oneOf:
+          - $ref: "./ops-endpoint-stat.yaml"
+          - type: "null"
   process:
     description: >
       This server process since it started, from its own metrics: works

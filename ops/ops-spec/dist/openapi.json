@@ -614,6 +614,7 @@
             "type": "string",
             "enum": [
               "system",
+              "traffic",
               "customers"
             ]
           },
@@ -628,6 +629,10 @@
             "type": "string",
             "description": "A line of context, e.g. \"Last 24h · none stuck\"."
           },
+          "always_show": {
+            "type": "boolean",
+            "description": "Show value and detail even when `ok`. Most rows say nothing when healthy; this is for rows whose value is the point (e.g. which endpoint is slowest).\n"
+          },
           "tone": {
             "type": "string",
             "enum": [
@@ -636,6 +641,41 @@
               "bad"
             ],
             "description": "`ok` green, `warn` yellow (worth a look), `bad` red (needs action; counts toward attention). Every tile has one: a fact with no status belongs on its own page, not the Overview.\n"
+          }
+        }
+      },
+      "ops-endpoint-stat": {
+        "type": "object",
+        "description": "One endpoint's traffic, latency and availability.",
+        "required": [
+          "method",
+          "path",
+          "requests",
+          "p95_ms",
+          "availability_pct"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "example": "GET"
+          },
+          "path": {
+            "type": "string",
+            "description": "Route template, e.g. `/matters/{id}`."
+          },
+          "requests": {
+            "type": "integer"
+          },
+          "p95_ms": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "95th percentile latency (from Prometheus), or the upper bound of the bucket holding it (from this process's histogram)."
+          },
+          "availability_pct": {
+            "type": "number",
+            "description": "Share of requests that weren't 5xx, 0–100."
           }
         }
       },
@@ -654,7 +694,8 @@
           "alerts",
           "dependencies",
           "tiles",
-          "process"
+          "process",
+          "endpoints"
         ],
         "properties": {
           "since": {
@@ -1101,6 +1142,44 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ops-digest-tile"
+            }
+          },
+          "endpoints": {
+            "type": "object",
+            "description": "The slowest and least available endpoints with enough traffic to judge (at least 20 requests): over the window from Prometheus when it's set up, else this process since it started.\n",
+            "required": [
+              "source",
+              "slowest",
+              "least_available"
+            ],
+            "properties": {
+              "source": {
+                "type": "string",
+                "enum": [
+                  "prometheus",
+                  "process"
+                ]
+              },
+              "slowest": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ops-endpoint-stat"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "least_available": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ops-endpoint-stat"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
             }
           },
           "process": {

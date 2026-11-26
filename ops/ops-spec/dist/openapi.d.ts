@@ -805,17 +805,31 @@ export interface components {
             /** @description Stable id, e.g. `issues`, `jobs`, `whatsapp-inbox`. The admin maps it to a page. */
             key: string;
             /** @enum {string} */
-            group: "system" | "customers";
+            group: "system" | "traffic" | "customers";
             label: string;
             /** @description The headline, e.g. "0 failed". */
             value: string;
             /** @description A line of context, e.g. "Last 24h · none stuck". */
             detail: string;
+            /** @description Show value and detail even when `ok`. Most rows say nothing when healthy; this is for rows whose value is the point (e.g. which endpoint is slowest). */
+            always_show?: boolean;
             /**
              * @description `ok` green, `warn` yellow (worth a look), `bad` red (needs action; counts toward attention). Every tile has one: a fact with no status belongs on its own page, not the Overview.
              * @enum {string}
              */
             tone: "ok" | "warn" | "bad";
+        };
+        /** @description One endpoint's traffic, latency and availability. */
+        "ops-endpoint-stat": {
+            /** @example GET */
+            method: string;
+            /** @description Route template, e.g. `/matters/{id}`. */
+            path: string;
+            requests: number;
+            /** @description 95th percentile latency (from Prometheus), or the upper bound of the bucket holding it (from this process's histogram). */
+            p95_ms: number | null;
+            /** @description Share of requests that weren't 5xx, 0–100. */
+            availability_pct: number;
         };
         "ops-digest": {
             /** Format: date-time */
@@ -932,6 +946,13 @@ export interface components {
             };
             /** @description Status tiles for the admin Overview: the ops API's own (health, alerts, issues, dependencies, deploys) plus any the product registers (background jobs, cron, audit log, and customer queues). A `bad` tile also appears in `summary.attention`. */
             tiles: components["schemas"]["ops-digest-tile"][];
+            /** @description The slowest and least available endpoints with enough traffic to judge (at least 20 requests): over the window from Prometheus when it's set up, else this process since it started. */
+            endpoints: {
+                /** @enum {string} */
+                source: "prometheus" | "process";
+                slowest: components["schemas"]["ops-endpoint-stat"] | null;
+                least_available: components["schemas"]["ops-endpoint-stat"] | null;
+            };
             /** @description This server process since it started, from its own metrics: works without Prometheus (the Overview's fallback when metrics are off). */
             process: {
                 /** Format: date-time */

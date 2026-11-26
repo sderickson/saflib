@@ -3,6 +3,7 @@ export const ops_overview = {
   checked: "Checked",
   refresh: "Refresh",
   system: "System",
+  traffic: "Traffic",
   customers: "Customers",
   last_24h: "Last 24 hours",
   since_start: (time: string) => `Since server start · ${time} · from /metrics`,
@@ -15,5 +16,4 @@ export const ops_overview = {
   right_now: "right now",
   builds: "Builds",
   self_test: "Run observability self-test",
-  tone_labels: { ok: "OK", warn: "Check", bad: "Needs action" } as Record<string, string>,
 };

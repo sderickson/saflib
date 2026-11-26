@@ -61,12 +61,14 @@ describe("OpsMetricsAsync", () => {
     wrapper.unmount();
   });
 
-  it("says once that metrics aren't set up, instead of erroring per query", async () => {
+  it("shows the page with queries off when metrics aren't set up", async () => {
     metricsOn = false;
     await router.push("/ops/metrics");
     const wrapper = mountTestApp(OpsMetricsAsync, { attachTo: document.body });
     await vi.waitFor(() => expect(wrapper.find("[data-test=metrics-off]").exists()).toBe(true));
-    expect(wrapper.find("[data-test=metric-preset]").exists()).toBe(false);
+    expect(wrapper.findAll("[data-test=metric-preset]").length).toBeGreaterThan(0);
+    expect(wrapper.find("[data-test=metric-run]").attributes("disabled")).toBeDefined();
+    expect(wrapper.find("[data-test=metric-error]").exists()).toBe(false);
     wrapper.unmount();
     metricsOn = true;
   });

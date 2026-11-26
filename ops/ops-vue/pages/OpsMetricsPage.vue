@@ -2,9 +2,11 @@
   <ContentWidth variant="full">
     <h1 class="text-h4 mb-4">{{ strings.title }}</h1>
 
-    <p v-if="metricsOff" class="saf-admin-empty" data-test="metrics-off">{{ strings.off }}</p>
+    <v-alert v-if="metricsOff" type="info" variant="tonal" density="compact" class="mb-4" data-test="metrics-off">
+      {{ strings.off }}
+    </v-alert>
 
-    <div v-else class="metrics-layout">
+    <div class="metrics-layout">
       <AdminPanel class="metrics-presets" :title="strings.presets">
         <nav :aria-label="strings.presets">
           <div v-for="group in groups" :key="group.name" class="metrics-presets__group">
@@ -43,10 +45,11 @@
                 data-test="metric-query"
                 @keydown.enter.exact.prevent="run"
               />
-              <v-btn type="submit" color="primary" variant="flat" data-test="metric-run">{{ strings.run }}</v-btn>
+              <v-btn type="submit" color="primary" variant="flat" :disabled="metricsOff" data-test="metric-run">{{ strings.run }}</v-btn>
             </v-form>
+            <div v-if="metricsOff" class="metrics-placeholder">{{ strings.graph_off }}</div>
             <OpsGraph
-              v-if="applied.query"
+              v-else-if="applied.query"
               :key="`${applied.query}|${applied.hours}`"
               :query="applied.query"
               :title="applied.title"
@@ -59,7 +62,8 @@
         </AdminPanel>
 
         <AdminPanel v-if="applied.query" :title="strings.current">
-          <v-alert v-if="instant.error.value" type="error" variant="tonal" density="compact" class="ma-3" data-test="metric-error">
+          <p v-if="metricsOff" class="text-body-2 text-medium-emphasis pa-4 ma-0">{{ strings.values_off }}</p>
+          <v-alert v-else-if="instant.error.value" type="error" variant="tonal" density="compact" class="ma-3" data-test="metric-error">
             {{ instant.error.value.message }}
           </v-alert>
           <p v-else-if="rows.length === 0 && !instant.isFetching.value" class="text-body-2 text-medium-emphasis pa-4 ma-0">
@@ -126,7 +130,6 @@ function pick(p: MetricPreset) {
 
 watch(hours, () => run());
 
-const appliedQuery = computed(() => applied.value.query);
 // Without Prometheus (dev, or a product with metrics off) say so once,
 // rather than a red error under every query.
 const digest = useOpsDigest();
@@ -134,6 +137,9 @@ const metricsOff = computed(() => {
   const d = digest.data.value?.digest;
   return !!d && !d.metrics;
 });
+// Nothing to query without Prometheus; the page still shows what's there.
+const appliedQuery = computed(() => (digest.data.value && !metricsOff.value ? applied.value.query : ""));
+
 const instant = useOpsMetricsInstant(appliedQuery);
 
 const unit = computed(() => METRIC_PRESETS.find((p) => p.query === applied.value.query)?.unit);
@@ -222,6 +228,17 @@ const rows = computed(() => {
 }
 .metrics-query {
   padding: 12px 16px 16px;
+}
+.metrics-placeholder {
+  margin-top: 12px;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #ddd6bf;
+  border-radius: 6px;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  font-size: 0.875rem;
 }
 .metrics-graph {
   margin-top: 12px;

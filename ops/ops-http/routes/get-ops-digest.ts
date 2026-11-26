@@ -12,6 +12,7 @@ import { mapAlert, PIPELINE_STALE_MS, WATCHDOG_ALERTNAME } from "./alerts.ts";
 import { latestDependencies } from "./get-ops-dependencies.ts";
 import { attentionItems, builtInTiles, runTileProviders } from "../digest/tiles.ts";
 import { processStats } from "../metrics/process-stats.ts";
+import { digestEndpoints } from "../metrics/endpoint-stats.ts";
 import { mapIssue, mapLogTemplate, mapOpsBoot, queryDate } from "./_helpers.ts";
 
 const DAY_MS = 86_400_000;
@@ -26,7 +27,7 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
   const since = queryDate(req.query.since) ?? new Date(Date.now() - DAY_MS);
   await currentBoot;
 
-  const [health, recentDeploys, boots, metrics, activity, firing, activeInWindow, watchdog, deps, productTiles, processInfo] = await Promise.all([
+  const [health, recentDeploys, boots, metrics, activity, firing, activeInWindow, watchdog, deps, productTiles, processInfo, endpoints] = await Promise.all([
     runHealthChecks(healthChecks),
     throwError(listBoots(dbKey, { newBuildsOnly: true, limit: 50 })),
     throwError(countBootsSince(dbKey, since)),
@@ -38,6 +39,7 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
     latestDependencies(dbKey, new Date(), acceptedAdvisories),
     runTileProviders(digestTiles ?? [], since),
     processStats(),
+    digestEndpoints(metricsConfig ?? null, since),
   ]);
   const dependencies: OpsDigest["dependencies"] =
     deps || dependencyChecks
@@ -138,6 +140,7 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
     activity,
     alerts,
     dependencies,
+    endpoints,
   };
   const tiles = [...builtInTiles({ ...parts, summary: summaryCounts }, expectAlerting), ...productTiles];
   // One list drives needs_attention, the Overview's status line and the

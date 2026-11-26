@@ -15,15 +15,24 @@ export interface MetricPreset {
 const REQ = 'http_request_duration_seconds_count{path!="unspecified"}';
 const BUCKET = 'http_request_duration_seconds_bucket{path!="unspecified"}';
 
+const REQ_5XX = REQ.replace("}", ',status_code="5xx"}');
+
+/** The ten slowest routes by p95 over the last hour (the Overview links here). */
+export const SLOWEST_ENDPOINTS_QUERY = `topk(10, histogram_quantile(0.95, sum by (le, method, path) (rate(${BUCKET}[1h]))))`;
+/** The ten routes with the highest 5xx share over the last hour. */
+export const LEAST_RELIABLE_ENDPOINTS_QUERY = `topk(10, 100 * sum by (method, path) (rate(${REQ_5XX}[1h])) / sum by (method, path) (rate(${REQ}[1h])))`;
+
 export const METRIC_PRESETS: MetricPreset[] = [
   { group: "Traffic", label: "Requests per minute", query: `sum(rate(${REQ}[5m])) * 60`, unit: "count" },
   { group: "Traffic", label: "Requests per minute by route", query: `sum by (path) (rate(${REQ}[5m])) * 60`, unit: "count" },
   { group: "Availability", label: "Availability (non-5xx %)", query: `100 * (1 - (sum(rate(${REQ.replace("}", ',status_code="5xx"}')}[5m])) or vector(0)) / sum(rate(${REQ}[5m])))`, unit: "percent" },
   { group: "Availability", label: "5xx per minute by route", query: `sum by (path) (rate(${REQ.replace("}", ',status_code="5xx"}')}[5m])) * 60`, unit: "count" },
+  { group: "Availability", label: "Least reliable endpoints (5xx %)", query: LEAST_RELIABLE_ENDPOINTS_QUERY, unit: "percent" },
   { group: "Availability", label: "Responses by status class", query: `sum by (status_code) (rate(${REQ}[5m])) * 60`, unit: "count" },
   { group: "Performance", label: "p95 latency", query: `histogram_quantile(0.95, sum by (le) (rate(${BUCKET}[5m])))`, unit: "seconds" },
   { group: "Performance", label: "p50 latency", query: `histogram_quantile(0.5, sum by (le) (rate(${BUCKET}[5m])))`, unit: "seconds" },
   { group: "Performance", label: "p95 latency by route", query: `histogram_quantile(0.95, sum by (le, path) (rate(${BUCKET}[5m])))`, unit: "seconds" },
+  { group: "Performance", label: "Slowest endpoints (p95)", query: SLOWEST_ENDPOINTS_QUERY, unit: "seconds" },
   { group: "Database", label: "Query p95", query: "histogram_quantile(0.95, sum by (le) (rate(db_query_duration_seconds_bucket[5m])))", unit: "seconds" },
   { group: "Database", label: "Queries per minute", query: "sum(rate(db_query_duration_seconds_count[5m])) * 60", unit: "count" },
   { group: "Database", label: "Failing queries per minute", query: 'sum(rate(db_query_duration_seconds_count{outcome="error"}[5m])) * 60', unit: "count" },

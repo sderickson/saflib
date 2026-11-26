@@ -16,27 +16,35 @@
     <v-skeleton-loader v-else-if="!digest" type="article" />
 
     <template v-if="digest">
-      <section v-for="group in groups" :key="group.key" class="mb-6" :aria-label="group.label">
-        <h2 class="overview-heading mb-2">{{ group.label }}</h2>
-        <div class="overview-tiles">
-          <component
-            :is="linkFor(tile.key) ? RouterLink : 'div'"
-            v-for="tile in group.tiles"
-            :key="tile.key"
-            :to="linkFor(tile.key)"
-            class="overview-tile"
-            :class="`overview-tile--${tile.tone}`"
-            data-test="overview-tile"
-          >
-            <div class="d-flex justify-space-between ga-2 text-body-2 text-medium-emphasis">
-              <span>{{ tile.label }}</span>
-              <span>{{ strings.tone_labels[tile.tone] }}</span>
-            </div>
-            <div class="text-h6 font-weight-bold">{{ tile.value }}</div>
-            <div class="text-caption text-medium-emphasis">{{ tile.detail }}</div>
-          </component>
-        </div>
-      </section>
+      <AdminPanel class="mb-6">
+        <table class="overview-table" data-test="overview-table">
+          <tbody v-for="group in groups" :key="group.key">
+            <tr class="overview-table__group">
+              <th colspan="3" scope="colgroup">{{ group.label }}</th>
+            </tr>
+            <tr
+              v-for="tile in group.tiles"
+              :key="tile.key"
+              class="overview-row"
+              :class="`overview-row--${tile.tone}`"
+              data-test="overview-tile"
+              :data-tone="tile.tone"
+            >
+              <td class="overview-row__icon"><StatusIcon :tone="tile.tone" /></td>
+              <th scope="row" class="overview-row__label">
+                <router-link v-if="linkFor(tile.key)" :to="linkFor(tile.key)!">{{ tile.label }}</router-link>
+                <span v-else>{{ tile.label }}</span>
+              </th>
+              <td class="overview-row__note">
+                <template v-if="tile.tone !== 'ok' || tile.always_show">
+                  <span class="overview-row__value">{{ tile.value }}</span>
+                  <span v-if="tile.detail" class="text-medium-emphasis"> · {{ tile.detail }}</span>
+                </template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </AdminPanel>
 
       <section class="mb-6" :aria-label="graphsTitle">
         <div class="d-flex justify-space-between align-baseline mb-2">
@@ -57,7 +65,7 @@
         </div>
       </section>
 
-      <v-card variant="outlined" class="overview-footer pa-3 d-flex flex-wrap align-center justify-space-between ga-3">
+      <div class="overview-footer d-flex flex-wrap align-center justify-space-between ga-3">
         <span class="text-body-2 text-medium-emphasis d-flex flex-wrap align-center ga-2">
           {{ strings.builds }}:
           <template v-for="c in [build.root, build.saflib]" :key="c.label">
@@ -69,15 +77,17 @@
           </template>
         </span>
         <router-link v-if="links.diagnostics" :to="links.diagnostics" class="text-body-2">{{ strings.self_test }}</router-link>
-      </v-card>
+      </div>
     </template>
   </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { RouterLink, type RouteLocationRaw } from "vue-router";
-import { ContentWidth } from "@saflib/vue/components";
+import type { RouteLocationRaw } from "vue-router";
+import { AdminPanel, ContentWidth } from "@saflib/vue/components";
+import StatusIcon from "./StatusIcon.vue";
+import { LEAST_RELIABLE_ENDPOINTS_QUERY, SLOWEST_ENDPOINTS_QUERY } from "../pages/OpsMetrics.presets.ts";
 import { useOpsDigest } from "../requests/queries.ts";
 import OpsGraph from "./OpsGraph.vue";
 import { getBuildCommits, type BuildRepoUrls } from "./build-info.ts";
@@ -102,12 +112,23 @@ const GRAPH_MEMORY = 'process_resident_memory_bytes{saf_app!="host"}';
 const query = useOpsDigest();
 const digest = computed(() => query.data.value?.digest);
 
-const linkFor = (key: string) => props.links[key];
+// Endpoint rows open Metrics on the matching ranked query.
+const endpointQueries: Record<string, string> = {
+  "slowest-endpoint": SLOWEST_ENDPOINTS_QUERY,
+  "least-available-endpoint": LEAST_RELIABLE_ENDPOINTS_QUERY,
+};
+const linkFor = (key: string): RouteLocationRaw | undefined => {
+  const q = endpointQueries[key];
+  const metrics = props.links.metrics;
+  if (q && typeof metrics === "string") return `${metrics}?q=${encodeURIComponent(q)}`;
+  return props.links[key];
+};
 
 const groups = computed(() => {
   const tiles = digest.value?.tiles ?? [];
   return [
     { key: "system", label: strings.system, tiles: tiles.filter((t) => t.group === "system") },
+    { key: "traffic", label: strings.traffic, tiles: tiles.filter((t) => t.group === "traffic") },
     { key: "customers", label: strings.customers, tiles: tiles.filter((t) => t.group === "customers") },
   ].filter((g) => g.tiles.length > 0);
 });
@@ -144,35 +165,48 @@ const formatClock = (iso: string) =>
   text-transform: uppercase;
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
-.overview-tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+.overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
 }
-.overview-tile {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  background: rgb(var(--v-theme-surface-bright, var(--v-theme-surface)));
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-top-width: 4px;
+.overview-table__group th {
+  text-align: left;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  padding: 14px 16px 6px;
+}
+.overview-row td,
+.overview-row th {
+  padding: 8px 16px;
+  border-top: 1px solid var(--saf-admin-row-border, #f2eee2);
+  vertical-align: middle;
+  text-align: left;
+}
+.overview-row__icon {
+  width: 44px;
+  padding-right: 0 !important;
+}
+.overview-row__label {
+  font-weight: 500;
+  white-space: nowrap;
+  width: 220px;
+}
+.overview-row__label a {
   color: inherit;
   text-decoration: none;
 }
-.overview-tile--ok {
-  border-top-color: rgb(var(--v-theme-success));
+.overview-row__label a:hover {
+  text-decoration: underline;
 }
-.overview-tile--warn {
-  border-top-color: rgb(var(--v-theme-warning));
+.overview-row__value {
+  font-weight: 500;
 }
-.overview-tile--bad {
-  border-top-color: rgb(var(--v-theme-error));
-}
-a.overview-tile:hover,
-a.overview-tile:focus-visible {
-  background: rgba(var(--v-theme-on-surface), 0.03);
+.overview-row--bad .overview-row__value {
+  color: rgb(var(--v-theme-error));
 }
 .overview-graphs {
   display: grid;
@@ -180,6 +214,6 @@ a.overview-tile:focus-visible {
   gap: 12px;
 }
 .overview-footer {
-  border-style: dashed;
+  padding: 4px 2px;
 }
 </style>

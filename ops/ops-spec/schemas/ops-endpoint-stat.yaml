@@ -1,0 +1,18 @@
+type: object
+description: One endpoint's traffic, latency and availability.
+required: [ method, path, requests, p95_ms, availability_pct ]
+properties:
+  method:
+    type: string
+    example: GET
+  path:
+    type: string
+    description: Route template, e.g. `/matters/{id}`.
+  requests:
+    type: integer
+  p95_ms:
+    type: [ number, "null" ]
+    description: 95th percentile latency (from Prometheus), or the upper bound of the bucket holding it (from this process's histogram).
+  availability_pct:
+    type: number
+    description: Share of requests that weren't 5xx, 0–100.

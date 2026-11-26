@@ -1,4 +1,5 @@
 import type { OpsDigest, OpsDigestTile } from "@saflib/ops-spec";
+import { ENDPOINT_MIN_REQUESTS, ENDPOINT_THRESHOLDS } from "../metrics/endpoint-stats.ts";
 
 export type DigestTile = OpsDigestTile;
 type Attention = OpsDigest["summary"]["attention"][number];
@@ -54,7 +55,7 @@ export function builtInTiles(d: Omit<OpsDigest, "tiles" | "summary" | "process">
     group: "system",
     label: "Health checks",
     value: d.health.status === "ok" ? "All pass" : plural(failing.length, "failing check"),
-    detail: d.health.status === "ok" ? "Every check is passing" : failing.map((c) => c.name).join(", ").slice(0, 80),
+    detail: d.health.status === "ok" ? "" : failing.map((c) => `${c.name}: ${c.summary}`).join(" · ").slice(0, 160),
     tone: d.health.status === "ok" ? "ok" : d.health.status === "warn" ? "warn" : "bad",
   });
   if (d.alerts) {
@@ -103,7 +104,48 @@ export function builtInTiles(d: Omit<OpsDigest, "tiles" | "summary" | "process">
       tone: dep.actionable > 0 || dep.runtime_eol_soon > 0 ? "bad" : dep.stale ? "warn" : "ok",
     });
   }
+  tiles.push(...endpointTiles(d.endpoints));
   return tiles;
+}
+
+const fmtMs = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })} s` : `${Math.round(ms)} ms`);
+const fmtPct = (p: number) => `${p >= 99.95 && p < 100 ? p.toFixed(2) : p.toLocaleString(undefined, { maximumFractionDigits: 1 })}%`;
+
+/** Slowest and least available endpoints, as Overview rows. */
+export function endpointTiles(e: OpsDigest["endpoints"]): DigestTile[] {
+  const t = ENDPOINT_THRESHOLDS;
+  const where = e.source === "prometheus" ? "in window" : "since server start";
+  const none = { value: "Not enough traffic yet", detail: `Needs ${ENDPOINT_MIN_REQUESTS}+ requests per endpoint`, tone: "ok" as const };
+  const slow = e.slowest;
+  const avail = e.least_available;
+  return [
+    {
+      key: "slowest-endpoint",
+      group: "traffic",
+      label: "Slowest endpoint",
+      always_show: true,
+      ...(slow && slow.p95_ms !== null
+        ? {
+            value: `${slow.method} ${slow.path}`,
+            detail: `p95 ${e.source === "process" ? "≤ " : ""}${fmtMs(slow.p95_ms)} · ${slow.requests.toLocaleString()} requests ${where}`,
+            tone: slow.p95_ms > t.p95BadMs ? "bad" : slow.p95_ms > t.p95WarnMs ? "warn" : "ok",
+          }
+        : none),
+    },
+    {
+      key: "least-available-endpoint",
+      group: "traffic",
+      label: "Least available endpoint",
+      always_show: true,
+      ...(avail
+        ? {
+            value: `${avail.method} ${avail.path}`,
+            detail: `${fmtPct(avail.availability_pct)} non-5xx · ${avail.requests.toLocaleString()} requests ${where}`,
+            tone: avail.availability_pct < t.availabilityBadPct ? "bad" : avail.availability_pct < t.availabilityWarnPct ? "warn" : "ok",
+          }
+        : none),
+    },
+  ];
 }
 
 /** Everything that needs a look, most severe first. */

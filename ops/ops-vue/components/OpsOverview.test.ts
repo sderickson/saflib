@@ -34,7 +34,12 @@ const digest = () => ({
   activity: null,
   alerts: null,
   dependencies: null,
-  tiles: [tile("issues", "system", "1 open issue", "bad"), tile("jobs", "system", "0 failed", "ok"), tile("whatsapp-inbox", "customers", "3 awaiting reply", "warn")],
+  tiles: [
+    tile("issues", "system", "1 open issue", "bad"),
+    tile("jobs", "system", "0 failed", "ok"),
+    { ...tile("slowest-endpoint", "traffic", "GET /matters", "ok"), always_show: true },
+    tile("whatsapp-inbox", "customers", "3 awaiting reply", "warn"),
+  ],
   process: { started_at: "2026-11-25T10:09:00.000Z", requests_total: 2712, p95_upper_ms: 100, rss_bytes: 212 * 1024 * 1024 },
 });
 
@@ -45,17 +50,21 @@ describe("OpsOverview", () => {
   it("shows tiles by group with links, and since-start numbers without Prometheus", async () => {
     attention = [{ kind: "issues", key: "issues", summary: "1 open issue: Prometheus unreachable", tone: "bad" }];
     const wrapper = mountTestApp(OpsOverview, {
-      props: { links: { issues: "/ops-issues", jobs: "/jobs?status=failed", diagnostics: "/diagnostics" } },
+      props: { links: { issues: "/ops-issues", jobs: "/jobs?status=failed", diagnostics: "/diagnostics", metrics: "/ops-metrics" } },
     });
-    await vi.waitFor(() => expect(wrapper.findAll("[data-test=overview-tile]").length).toBe(3));
+    await vi.waitFor(() => expect(wrapper.findAll("[data-test=overview-tile]").length).toBe(4));
     const tiles = wrapper.findAll("[data-test=overview-tile]");
-    expect(tiles.map((t) => t.text())).toEqual([
-      expect.stringContaining("1 open issue"),
-      expect.stringContaining("0 failed"),
-      expect.stringContaining("3 awaiting reply"),
-    ]);
-    expect(tiles[0]!.classes()).toContain("overview-tile--bad");
-    expect(tiles[1]!.attributes("href")).toBe("/jobs?status=failed");
+    expect(tiles.map((t) => t.attributes("data-tone"))).toEqual(["bad", "ok", "ok", "warn"]);
+    // Rows say something only when it's noteworthy (or the value is the point).
+    expect(tiles[0]!.text()).toContain("1 open issue");
+    expect(tiles[1]!.text()).not.toContain("0 failed");
+    expect(tiles[2]!.text()).toContain("GET /matters");
+    expect(tiles[3]!.text()).toContain("3 awaiting reply");
+    expect(tiles[0]!.find(".status-icon").attributes("aria-label")).toBe("Needs action");
+    expect(tiles[1]!.find("a").attributes("href")).toBe("/jobs?status=failed");
+    // Endpoint rows open Metrics on the ranked query.
+    expect(tiles[2]!.find("a").attributes("href")).toMatch(/^\/ops-metrics\?q=topk/);
+    expect(wrapper.text()).toContain("Traffic");
     expect(wrapper.text()).toContain("Customers");
 
     const sinceStart = wrapper.find("[data-test=overview-since-start]").text();
