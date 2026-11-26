@@ -77,12 +77,12 @@
       <v-table v-if="view === 'request'" density="compact" class="logs-table" data-test="logs-groups">
         <thead>
           <tr>
-            <th aria-hidden="true" />
+            <th aria-hidden="true" class="saf-admin-hide-xs" />
             <th>{{ strings.columns.time }}</th>
-            <th class="saf-admin-hide-xs">{{ strings.columns.group }}</th>
+            <th>{{ strings.columns.group }}</th>
             <th>{{ strings.columns.status }}</th>
             <th class="saf-admin-hide-xs">{{ strings.columns.duration }}</th>
-            <th class="saf-admin-hide-xs">{{ strings.columns.who }}</th>
+            <th>{{ strings.columns.who }}</th>
           </tr>
         </thead>
         <tbody>

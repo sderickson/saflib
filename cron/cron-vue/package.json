@@ -11,11 +11,16 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@saflib/cron-spec": "*",
     "@saflib/ory-kratos-vue": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "exports": {
+    ".": "./index.ts",
+    "./mdi-icons": "./mdi-icons.ts"
+  }
 }

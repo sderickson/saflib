@@ -19,6 +19,9 @@
   ],
   "references": [
     {
+      "path": "../../../../cron/cron-vue"
+    },
+    {
       "path": "../../../../errors/errors-vue"
     },
     {

@@ -109,12 +109,11 @@ describe("CronJobsAsync", () => {
   ): VueWrapper => {
     const row = getRowByJobName(wrapper, jobName);
     // Find the button component within the row's DOM element
-    const button = row.findComponent({ name: "v-btn", text: expectedText });
-    expect(
-      button.exists(),
-      `Button with text "${expectedText}" for job "${jobName}" not found`,
-    ).toBe(true);
-    return button;
+    const button = row
+      .findAllComponents({ name: "v-btn" })
+      .find((b: VueWrapper) => b.attributes("title") === expectedText);
+    expect(button, `Button "${expectedText}" for job "${jobName}" not found`).toBeDefined();
+    return button!;
   };
   const getLoadingIndicator = (wrapper: VueWrapper) =>
     wrapper.findComponent({ name: "v-progress-circular" });

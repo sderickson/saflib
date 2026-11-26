@@ -8,14 +8,14 @@
     @click="toggle"
     @keydown.enter="toggle"
   >
-    <td class="log-group__caret" aria-hidden="true">{{ expandable ? (open ? "▾" : "▸") : "" }}</td>
+    <td class="log-group__caret saf-admin-hide-xs" aria-hidden="true">{{ expandable ? (open ? "▾" : "▸") : "" }}</td>
     <td class="log-mono text-medium-emphasis text-no-wrap">{{ formatTime(group.first_ts) }}</td>
-    <td class="log-group__title-cell saf-admin-hide-xs">
+    <td class="log-group__title-cell">
       <span class="d-flex align-center ga-2" style="min-width: 0">
         <v-chip size="x-small" label variant="tonal" class="flex-shrink-0">{{ groupKindLabel(group) }}</v-chip>
         <span class="log-mono text-truncate">{{ groupTitle(group) }}</span>
-        <v-chip v-if="group.request?.internal" size="x-small" variant="outlined" class="flex-shrink-0">internal</v-chip>
-        <span v-if="group.count > 0 && group.kind" class="text-caption text-medium-emphasis text-no-wrap">
+        <v-chip v-if="group.request?.internal" size="x-small" variant="outlined" class="flex-shrink-0 saf-admin-hide-xs">internal</v-chip>
+        <span v-if="group.count > 0 && group.kind" class="text-caption text-medium-emphasis text-no-wrap saf-admin-hide-xs">
           {{ group.count }} {{ group.count === 1 ? "log" : "logs" }}
         </span>
       </span>
@@ -24,8 +24,12 @@
       <v-chip size="x-small" variant="tonal" :color="status.tone">{{ status.label }}</v-chip>
     </td>
     <td class="log-mono text-no-wrap saf-admin-hide-xs">{{ groupDuration(group) }}</td>
-    <td class="log-group__who saf-admin-hide-xs">
-      <UserRef v-if="group.user_id" :id="group.user_id" />
+    <td class="log-group__who">
+      <!-- Name on wide screens; just the avatar on phones. -->
+      <template v-if="group.user_id">
+        <span class="saf-admin-hide-xs"><UserRef :id="group.user_id" /></span>
+        <span class="saf-admin-only-xs"><UserRef :id="group.user_id" variant="avatar" /></span>
+      </template>
       <ActorChip v-else-if="group.kind === 'cron'" kind="cron" />
       <ActorChip v-else-if="group.kind === 'process' || group.kind === 'job' || group.kind === null" kind="system" />
     </td>
@@ -33,15 +37,18 @@
   <tr v-if="open && expandable" class="log-group__lines-row">
     <td colspan="6">
       <div class="log-group__lines" :style="{ borderLeftColor: color }" data-test="log-group-lines">
-        <div v-if="group.context_id" class="text-caption text-medium-emphasis mb-1" data-test="log-group-id">
-          <span class="saf-admin-only-xs log-mono">{{ groupTitle(group) }} · </span>
-          <ShortId :id="group.context_id" :prefix="contextPrefix(group.kind)" />
+        <!-- What the row leaves out: on phones, everything; on wide screens, the id. -->
+        <div class="log-group__facts" data-test="log-group-id">
+          <span class="saf-admin-only-xs">{{ groupDuration(group) }}</span>
+          <v-chip v-if="group.request?.internal" size="x-small" variant="outlined" class="saf-admin-only-xs">internal</v-chip>
+          <span v-if="group.user_id" class="saf-admin-only-xs"><UserRef :id="group.user_id" variant="compact" /></span>
+          <ShortId v-if="group.context_id" :id="group.context_id" :prefix="contextPrefix(group.kind)" />
         </div>
         <v-progress-linear v-if="lines.isPending.value" indeterminate />
         <div v-for="line in lines.data.value ?? []" :key="line.id" class="log-line" data-test="log-line">
-          <span class="log-mono text-medium-emphasis">{{ formatOffset(line.ts, group.first_ts) }}</span>
+          <span class="log-mono text-medium-emphasis log-line__offset">{{ formatOffset(line.ts, group.first_ts) }}</span>
           <span class="log-line__level" :class="`text-${levelColor(line.level) ?? 'medium-emphasis'}`">{{ line.level }}</span>
-          <span class="log-mono text-medium-emphasis text-truncate">{{ line.operation_name ?? "" }}</span>
+          <span class="log-mono text-medium-emphasis text-truncate log-line__op">{{ line.operation_name ?? "" }}</span>
           <span class="log-mono log-line__message">
             <!-- Untrusted text: plain interpolation only (escaped), never v-html. -->
             {{ line.untrusted.message }}
@@ -137,6 +144,40 @@ const lines = useLogGroupLines(contextId, toRef(() => !!props.live));
 .log-line__message {
   white-space: pre-wrap;
   word-break: break-word;
+}
+.log-group__facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+}
+.log-group__facts:empty {
+  display: none;
+}
+@media (max-width: 599px) {
+  .log-group__lines {
+    margin-left: 0;
+    padding-left: 10px;
+  }
+  /* Offset, level and operation on one line; the message underneath. */
+  .log-line {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    gap: 2px 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.05);
+  }
+  .log-line:last-child {
+    border-bottom: 0;
+  }
+  .log-line__message {
+    grid-column: 1 / -1;
+  }
+  .log-group__title-cell .log-mono {
+    font-size: 0.75rem;
+  }
 }
 .log-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;

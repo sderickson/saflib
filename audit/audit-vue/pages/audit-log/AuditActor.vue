@@ -1,7 +1,11 @@
 <template>
   <span class="audit-actor">
     <ActorChip v-if="actor.kind !== 'user' && actor.kind !== 'none'" :kind="actor.kind" :label="actor.label" />
-    <UserRef v-else-if="actor.kind === 'user'" :id="actor.id" />
+    <template v-else-if="actor.kind === 'user'">
+      <!-- Just the avatar on phones; the name is on hover. -->
+      <span class="saf-admin-hide-xs"><UserRef :id="actor.id" /></span>
+      <span class="saf-admin-only-xs"><UserRef :id="actor.id" variant="avatar" /></span>
+    </template>
     <span v-else class="text-medium-emphasis">—</span>
     <span v-if="row.on_behalf_of_user_id && row.on_behalf_of_user_id !== row.actor_user_id" class="audit-actor__for">
       <span class="text-medium-emphasis">for</span>

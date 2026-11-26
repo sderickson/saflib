@@ -44,15 +44,16 @@
 
       <template #[`item.actions`]="{ item }">
         <v-btn
+          :icon="item.enabled ? 'mdi-pause' : 'mdi-play'"
           size="small"
           variant="text"
           color="primary"
+          :title="item.enabled ? 'Disable' : 'Enable'"
+          :aria-label="`${item.enabled ? 'Disable' : 'Enable'} ${item.job_name}`"
           :loading="isUpdating && updatingJobId === item.job_name"
           :disabled="isUpdating"
           @click="toggleJobStatus(item.job_name, !item.enabled)"
-        >
-          {{ item.enabled ? "Disable" : "Enable" }}
-        </v-btn>
+        />
       </template>
 
       <template #bottom></template>
