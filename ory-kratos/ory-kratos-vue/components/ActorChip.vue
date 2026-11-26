@@ -1,9 +1,9 @@
 <template>
-  <span class="actor-chip" data-test="actor-chip" :title="title">
+  <span class="actor-chip" data-test="actor-chip" :title="iconOnly ? (title ?? fullLabel) : title" :aria-label="iconOnly ? fullLabel : undefined">
     <span class="actor-chip__icon" aria-hidden="true">
       <v-icon size="12" :icon="icon" />
     </span>
-    <span class="actor-chip__text">
+    <span v-if="!iconOnly" class="actor-chip__text">
       {{ kindLabel }}<template v-if="label"> · {{ label }}</template>
     </span>
   </span>
@@ -21,6 +21,8 @@ const props = defineProps<{
   label?: string;
   /** Extra detail on hover, e.g. "enabled by …". */
   title?: string;
+  /** Just the icon (narrow columns); the label moves to the hover title. */
+  iconOnly?: boolean;
 }>();
 
 const KINDS: Record<ActorKind, { label: string; icon: string }> = {
@@ -32,6 +34,7 @@ const KINDS: Record<ActorKind, { label: string; icon: string }> = {
 };
 
 const kindLabel = computed(() => KINDS[props.kind].label);
+const fullLabel = computed(() => (props.label ? `${kindLabel.value} · ${props.label}` : kindLabel.value));
 const icon = computed(() => KINDS[props.kind].icon);
 </script>
 

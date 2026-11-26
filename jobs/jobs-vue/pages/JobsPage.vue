@@ -95,32 +95,37 @@
       </template>
 
       <template #[`item.actions`]="{ item }">
-        <div class="d-flex justify-end">
-          <v-btn icon="mdi-eye" size="small" variant="text" :aria-label="`View job ${item.id}`" title="View" @click="selectJob(item.id)" />
+        <!-- Fixed slots: retry, cancel, view (always last). -->
+        <div class="saf-admin-actions">
           <v-btn
-            v-if="canRetry(item.status)"
             icon="mdi-replay"
             size="small"
             variant="text"
             color="primary"
             title="Retry"
             :aria-label="`Retry job ${item.id}`"
+            :class="{ 'saf-admin-action--off': !canRetry(item.status) }"
+            :aria-hidden="!canRetry(item.status)"
+            :tabindex="canRetry(item.status) ? 0 : -1"
             :loading="isRetrying && actingJobId === item.id"
-            :disabled="isMutating"
+            :disabled="isMutating || !canRetry(item.status)"
             @click="retryJob(item.id)"
           />
           <v-btn
-            v-if="canCancel(item.status)"
             icon="mdi-cancel"
             size="small"
             variant="text"
             color="error"
             title="Cancel"
             :aria-label="`Cancel job ${item.id}`"
+            :class="{ 'saf-admin-action--off': !canCancel(item.status) }"
+            :aria-hidden="!canCancel(item.status)"
+            :tabindex="canCancel(item.status) ? 0 : -1"
             :loading="isCancelling && actingJobId === item.id"
-            :disabled="isMutating"
+            :disabled="isMutating || !canCancel(item.status)"
             @click="cancelJob(item.id)"
           />
+          <v-btn icon="mdi-eye" size="small" variant="text" :aria-label="`View job ${item.id}`" title="View" @click="selectJob(item.id)" />
         </div>
       </template>
 

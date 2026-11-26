@@ -34,27 +34,31 @@
             <div v-if="a.acked_at" class="text-caption text-medium-emphasis">
               {{ strings.acked }} ({{ a.acked_by }})
             </div>
-            <div v-if="a.status === 'firing'" class="d-flex ga-2">
+            <!-- Fixed slots: acknowledge, resolve. -->
+            <div v-if="a.status === 'firing'" class="saf-admin-actions">
               <v-btn
-                v-if="!a.acked_at"
+                icon="mdi-bell-check-outline"
                 size="small"
                 variant="text"
                 color="primary"
+                :title="strings.ack"
+                :aria-label="strings.ack"
+                :class="{ 'saf-admin-action--off': !!a.acked_at }"
+                :disabled="!!a.acked_at"
                 :loading="ack.isPending.value"
                 data-test="alert-ack"
                 @click="ack.mutate({ id: a.id })"
-              >
-                {{ strings.ack }}
-              </v-btn>
+              />
               <v-btn
+                icon="mdi-check-circle-outline"
                 size="small"
                 variant="text"
+                :title="strings.resolve"
+                :aria-label="strings.resolve"
                 :loading="resolve.isPending.value"
                 data-test="alert-resolve"
                 @click="resolveAlert(a.id)"
-              >
-                {{ strings.resolve }}
-              </v-btn>
+              />
             </div>
           </td>
         </tr>

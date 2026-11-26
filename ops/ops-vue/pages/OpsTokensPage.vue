@@ -64,17 +64,21 @@
         {{ item.expires_at ? formatShortDateTime(item.expires_at) : strings.never }}
       </template>
       <template #[`item.actions`]="{ item }">
-        <v-btn
-          v-if="stateOf(item) === 'active'"
-          size="small"
-          color="error"
-          variant="text"
-          :loading="revokingId === item.id"
-          :disabled="revokingId !== null"
-          @click="revoke(item.id)"
-        >
-          {{ strings.revoke }}
-        </v-btn>
+        <div class="saf-admin-actions">
+          <v-btn
+            icon="mdi-key-remove"
+            size="small"
+            color="error"
+            variant="text"
+            :title="strings.revoke"
+            :aria-label="`${strings.revoke} ${item.name}`"
+            :class="{ 'saf-admin-action--off': stateOf(item) !== 'active' }"
+            :loading="revokingId === item.id"
+            :disabled="revokingId !== null || stateOf(item) !== 'active'"
+            data-test="token-revoke"
+            @click="revoke(item.id)"
+          />
+        </div>
       </template>
       <template #no-data>{{ strings.noActive }}</template>
       <template #bottom></template>

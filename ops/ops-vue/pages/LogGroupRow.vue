@@ -13,6 +13,20 @@
       <span class="saf-admin-hide-xs">{{ formatTime(group.first_ts) }}</span>
       <span class="saf-admin-only-xs">{{ formatClock(group.first_ts) }}</span>
     </td>
+    <td class="log-group__who">
+      <!-- Name on wide screens; just the avatar on phones. -->
+      <template v-if="group.user_id">
+        <span class="saf-admin-hide-xs"><UserRef :id="group.user_id" /></span>
+        <span class="saf-admin-only-xs"><UserRef :id="group.user_id" variant="avatar" /></span>
+      </template>
+      <template v-else-if="actorKind">
+        <span class="saf-admin-hide-xs"><ActorChip :kind="actorKind" /></span>
+        <span class="saf-admin-only-xs"><ActorChip :kind="actorKind" icon-only /></span>
+      </template>
+    </td>
+    <td class="log-group__status">
+      <v-chip size="x-small" variant="tonal" :color="status.tone">{{ status.label }}</v-chip>
+    </td>
     <td class="log-group__title-cell">
       <span class="d-flex align-center ga-2" style="min-width: 0">
         <v-chip size="x-small" label variant="tonal" class="flex-shrink-0" :color="groupKindColor(groupKindLabel(group))">{{ groupKindLabel(group) }}</v-chip>
@@ -23,19 +37,7 @@
         </span>
       </span>
     </td>
-    <td>
-      <v-chip size="x-small" variant="tonal" :color="status.tone">{{ status.label }}</v-chip>
-    </td>
     <td class="log-mono text-no-wrap saf-admin-hide-xs">{{ groupDuration(group) }}</td>
-    <td class="log-group__who">
-      <!-- Name on wide screens; just the avatar on phones. -->
-      <template v-if="group.user_id">
-        <span class="saf-admin-hide-xs"><UserRef :id="group.user_id" /></span>
-        <span class="saf-admin-only-xs"><UserRef :id="group.user_id" variant="avatar" /></span>
-      </template>
-      <ActorChip v-else-if="group.kind === 'cron'" kind="cron" />
-      <ActorChip v-else-if="group.kind === 'process' || group.kind === 'job' || group.kind === null" kind="system" />
-    </td>
   </tr>
   <tr v-if="open && expandable" class="log-group__lines-row">
     <td colspan="6">
@@ -90,6 +92,10 @@ import {
 
 const props = defineProps<{ group: OpsLogGroupResponse; live?: boolean }>();
 
+const actorKind = computed(() =>
+  props.group.kind === "cron" ? "cron" : props.group.kind === "process" || props.group.kind === "job" || props.group.kind === null ? "system" : null,
+);
+
 const expandable = computed(() => props.group.context_id !== null);
 const open = ref(startsOpen(props.group));
 const toggle = () => {
@@ -123,6 +129,12 @@ const lines = useLogGroupLines(contextId, toRef(() => !!props.live));
 }
 .log-group__who {
   max-width: 200px;
+}
+/* Who and status take only what they need, so the request gets the rest. */
+.log-group__who,
+.log-group__status {
+  width: 1%;
+  white-space: nowrap;
 }
 .log-group__lines-row > td {
   padding-top: 0 !important;

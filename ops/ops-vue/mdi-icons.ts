@@ -5,6 +5,9 @@
 import {
   mdiAccessPoint,
   mdiAlert,
+  mdiBellCheckOutline,
+  mdiCheckCircleOutline,
+  mdiKeyRemove,
   mdiCheck,
   mdiCheckCircle,
   mdiChevronDown,
@@ -26,6 +29,9 @@ import {
 export const opsVueMdiIconPaths: Record<string, string> = {
   "mdi-access-point": mdiAccessPoint,
   "mdi-alert": mdiAlert,
+  "mdi-bell-check-outline": mdiBellCheckOutline,
+  "mdi-check-circle-outline": mdiCheckCircleOutline,
+  "mdi-key-remove": mdiKeyRemove,
   "mdi-check": mdiCheck,
   "mdi-check-circle": mdiCheckCircle,
   "mdi-chevron-down": mdiChevronDown,

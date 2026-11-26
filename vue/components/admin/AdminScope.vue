@@ -107,6 +107,19 @@ import { adminDefaults } from "./admin-defaults.ts";
   }
 }
 
+/* Row actions: icon buttons in fixed slots, right-aligned. An action that
+   doesn't apply to a row keeps its slot (saf-admin-action--off), so the
+   same icon sits in the same place on every row. */
+.saf-admin .saf-admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
+}
+.saf-admin .saf-admin-action--off {
+  visibility: hidden;
+}
+
 /* Inputs: white, warm hairline, primary when focused. */
 .saf-admin .v-field--variant-outlined {
   background: var(--saf-admin-surface);

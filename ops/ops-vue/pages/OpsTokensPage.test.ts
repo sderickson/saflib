@@ -80,10 +80,10 @@ describe("OpsTokensAsync", () => {
     expect(rows).toHaveLength(3);
     expect(rows[0]!.find("[data-test=token-state]").exists()).toBe(false);
     expect(rows[0]!.find("[data-test=token-lifetime] .v-icon").exists()).toBe(true); // ∞, no expiry
-    expect(rows[0]!.text()).toContain("Revoke");
+    expect(rows[0]!.find("[data-test=token-revoke]").classes()).not.toContain("saf-admin-action--off");
     expect(rows[1]!.find("[data-test=token-state]").text()).toBe("Revoked");
-    expect(rows[1]!.text()).not.toContain("Revoke ");
-    expect(rows[1]!.findComponent({ name: "v-btn" }).exists()).toBe(false);
+    // Revoked tokens keep the slot (icons line up) but can't be revoked again.
+    expect(rows[1]!.find("[data-test=token-revoke]").classes()).toContain("saf-admin-action--off");
     expect(rows[2]!.find("[data-test=token-lifetime]").text()).toBe("8h");
     wrapper.unmount();
   });

@@ -50,14 +50,15 @@
       </v-alert>
 
       <v-table v-if="view === 'request'" density="compact" class="logs-table" data-test="logs-groups">
-        <thead>
+        <!-- No header on phones: it only widened the narrow columns. -->
+        <thead class="saf-admin-hide-xs">
           <tr>
             <th aria-hidden="true" class="saf-admin-hide-xs" />
             <th>{{ strings.columns.time }}</th>
-            <th>{{ strings.columns.group }}</th>
-            <th>{{ strings.columns.status }}</th>
-            <th class="saf-admin-hide-xs">{{ strings.columns.duration }}</th>
             <th>{{ strings.columns.who }}</th>
+            <th>{{ strings.columns.status }}</th>
+            <th>{{ strings.columns.group }}</th>
+            <th class="saf-admin-hide-xs">{{ strings.columns.duration }}</th>
           </tr>
         </thead>
         <tbody>
