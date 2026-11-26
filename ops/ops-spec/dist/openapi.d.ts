@@ -1010,6 +1010,18 @@ export interface components {
                 update: "major" | "minor" | "patch";
                 /** @description The latest release is past the 3-day minimum release age, so Renovate should have a PR open. */
                 renovate_due: boolean;
+                /** @description The package's source repository, from npm. Absent in reports from before this was checked. */
+                repository_url?: string | null;
+                /** @description Where to read about new versions (the GitHub releases page, else npm's versions tab). */
+                releases_url?: string;
+                /** @description GitHub release notes for versions after the deployed one, up to the latest, newest first (at most 10). Outside text, as plain text; render it escaped. Null when unavailable (not on GitHub, no matching tags, rate limited). */
+                release_notes?: {
+                    version: string;
+                    /** Format: date-time */
+                    published_at: string | null;
+                    url: string;
+                    body: string;
+                }[] | null;
             }[];
             /** @description Pins outside the lockfile that age out on their own: the Node version, the container's base OS (moving means a new Dockerfile `FROM`), and the server's OS (moving means upgrading or replacing the host). Empty in reports from before this was checked. */
             runtime: {

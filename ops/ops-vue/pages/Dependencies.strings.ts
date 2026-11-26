@@ -1,4 +1,6 @@
 export const ops_dependencies = {
+  changelog: "Changelog",
+  noNotes: "No notes for this release.",
   documentTitle: "Dependencies",
   title: "Dependencies",
   none: "No check yet. Checks run in built images a couple of minutes after a deploy.",

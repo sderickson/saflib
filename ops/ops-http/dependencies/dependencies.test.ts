@@ -68,7 +68,17 @@ function fakeFetch(opts: { osvDown?: boolean } = {}): typeof fetch {
     }
     if (url.endsWith("/-/package/express/dist-tags")) return json({ latest: "5.3.0" });
     if (url.endsWith("/-/package/@scope%2Flib/dist-tags")) return json({ latest: "1.0.0" });
-    if (url.endsWith("/express")) return json({ time: { "5.3.0": "2026-10-09T00:00:00.000Z" } });
+    if (url.endsWith("/express")) {
+      return json({ time: { "5.3.0": "2026-10-09T00:00:00.000Z" }, repository: { type: "git", url: "git+https://github.com/expressjs/express.git" } });
+    }
+    if (url.endsWith("/repos/expressjs/express/releases?per_page=50")) {
+      return json([
+        { tag_name: "v5.3.0", html_url: "https://github.com/expressjs/express/releases/tag/v5.3.0", published_at: "2026-10-09T00:00:00Z", body: "## What's changed\r\n* Faster <b>router</b>" },
+        { tag_name: "v5.2.2", html_url: "https://github.com/expressjs/express/releases/tag/v5.2.2", published_at: "2026-09-01T00:00:00Z", body: "Fix" },
+        { tag_name: "v5.2.1", html_url: "x", published_at: null, body: "deployed already" },
+        { tag_name: "v6.0.0-beta.1", html_url: "x", published_at: null, body: "too new", prerelease: true },
+      ]);
+    }
     if (url.endsWith("/api/nodejs.json")) {
       return json([
         { cycle: "24", eol: "2028-04-30", latest: "24.22.2" },
@@ -145,7 +155,21 @@ describe("checkDependencies", () => {
       expect.objectContaining({ id: "GHSA-aaaa", severity: "high", package: "body-parser", deployed: "2.3.0", fixed_in: "2.4.0", direct: false, actionable: true }),
     ]);
     expect(r.outdated).toEqual([
-      { name: "express", deployed: "5.2.1", latest: "5.3.0", latest_published_at: "2026-10-09T00:00:00.000Z", update: "minor", renovate_due: true },
+      {
+        name: "express",
+        deployed: "5.2.1",
+        latest: "5.3.0",
+        latest_published_at: "2026-10-09T00:00:00.000Z",
+        update: "minor",
+        renovate_due: true,
+        repository_url: "https://github.com/expressjs/express",
+        releases_url: "https://github.com/expressjs/express/releases",
+        // Releases after the deployed version up to latest, newest first, as plain text.
+        release_notes: [
+          { version: "5.3.0", published_at: "2026-10-09T00:00:00Z", url: "https://github.com/expressjs/express/releases/tag/v5.3.0", body: "## What's changed\n* Faster router" },
+          { version: "5.2.2", published_at: "2026-09-01T00:00:00Z", url: "https://github.com/expressjs/express/releases/tag/v5.2.2", body: "Fix" },
+        ],
+      },
     ]);
   });
 });

@@ -87,6 +87,29 @@ properties:
         renovate_due:
           type: boolean
           description: The latest release is past the 3-day minimum release age, so Renovate should have a PR open.
+        repository_url:
+          type: [ string, "null" ]
+          description: The package's source repository, from npm. Absent in reports from before this was checked.
+        releases_url:
+          type: string
+          description: Where to read about new versions (the GitHub releases page, else npm's versions tab).
+        release_notes:
+          type: [ array, "null" ]
+          description: >
+            GitHub release notes for versions after the deployed one, up to the
+            latest, newest first (at most 10). Outside text, as plain text;
+            render it escaped. Null when unavailable (not on GitHub, no
+            matching tags, rate limited).
+          items:
+            type: object
+            required: [ version, published_at, url, body ]
+            properties:
+              version: { type: string }
+              published_at:
+                type: [ string, "null" ]
+                format: date-time
+              url: { type: string }
+              body: { type: string }
   runtime:
     type: array
     description: >

@@ -1,6 +1,7 @@
 import type { DependencyManifest } from "./manifest.ts";
 import { compareVersions, updateKind } from "./semver.ts";
 import { checkRuntime, type OsRelease, type RuntimeComponent } from "./runtime.ts";
+import { fetchReleaseNotes, releasesUrl, repositoryUrl, type ReleaseNote } from "./changelog.ts";
 
 export type AdvisorySeverity = "critical" | "high" | "moderate" | "low" | "unknown";
 
@@ -27,6 +28,12 @@ export interface OutdatedDependency {
   update: "major" | "minor" | "patch";
   /** The latest release is past the minimum release age, so Renovate should have a PR open. */
   renovate_due: boolean;
+  /** The package's source repository, from npm. */
+  repository_url?: string | null;
+  /** Where to read about new versions (GitHub releases, else npm's versions tab). */
+  releases_url?: string;
+  /** GitHub release notes after the deployed version, newest first; null when unavailable. */
+  release_notes?: ReleaseNote[] | null;
 }
 
 export interface DependencyReport {
@@ -57,6 +64,9 @@ export interface CheckOptions {
    */
   hostOs?: () => Promise<OsRelease | null>;
   timeoutMs?: number;
+  /** Raises GitHub's rate limit for release notes (default GITHUB_TOKEN; works without). */
+  githubToken?: string;
+  githubApiUrl?: string;
 }
 
 const SEVERITY_ORDER: AdvisorySeverity[] = ["critical", "high", "moderate", "low", "unknown"];
@@ -190,9 +200,16 @@ export async function checkDependencies(
       const update = latest ? updateKind(p.version, latest) : undefined;
       if (!latest || !update) return;
       let publishedAt: string | null = null;
+      let repo: string | null = null;
       const doc = await f(`${registry}/${name}`, { signal: timeout() });
-      if (doc.ok) publishedAt = ((await doc.json()) as { time?: Record<string, string> }).time?.[latest] ?? null;
+      if (doc.ok) {
+        const body = (await doc.json()) as { time?: Record<string, string>; repository?: unknown };
+        publishedAt = body.time?.[latest] ?? null;
+        repo = repositoryUrl(body.repository);
+      }
       outdated.push({
+        repository_url: repo,
+        releases_url: releasesUrl(p.name, repo),
         name: p.name,
         deployed: p.version,
         latest,
@@ -202,6 +219,24 @@ export async function checkDependencies(
       });
     } catch (e) {
       errors.push(`npm ${p.name}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  });
+  // What changed: GitHub release notes between the deployed and latest
+  // version. Best effort; a missing note leaves the releases link.
+  const githubToken = options.githubToken ?? process.env.GITHUB_TOKEN;
+  await mapLimit(outdated, 3, async (o) => {
+    try {
+      o.release_notes = await fetchReleaseNotes(f, {
+        name: o.name,
+        repo: o.repository_url ?? null,
+        deployed: o.deployed,
+        latest: o.latest,
+        token: githubToken,
+        signal: timeout,
+        apiUrl: options.githubApiUrl,
+      });
+    } catch {
+      o.release_notes = null;
     }
   });
   outdated.sort((a, b) => ["major", "minor", "patch"].indexOf(a.update) - ["major", "minor", "patch"].indexOf(b.update) || a.name.localeCompare(b.name));
