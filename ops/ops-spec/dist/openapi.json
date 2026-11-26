@@ -1339,6 +1339,10 @@
                     }
                   ]
                 },
+                "ecosystem": {
+                  "type": "string",
+                  "description": "`npm`, or the base image's OS (e.g. `Debian:12`). OS advisories are only listed when the distro has a fix; rebuilding the image (fresh base, `apt-get upgrade`) picks it up.\n"
+                },
                 "untrusted": {
                   "type": "object",
                   "required": [

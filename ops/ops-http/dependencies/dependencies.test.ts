@@ -55,7 +55,29 @@ function fakeFetch(opts: { osvDown?: boolean } = {}): typeof fetch {
     if (url.endsWith("/v1/querybatch")) {
       if (opts.osvDown) return json({}, 503);
       const queries = (JSON.parse(String(init!.body)) as { queries: { package: { name: string } }[] }).queries;
-      return json({ results: queries.map((q) => (q.package.name === "body-parser" ? { vulns: [{ id: "GHSA-aaaa" }] } : {})) });
+      return json({
+        results: queries.map((q) => (q.package.name === "body-parser" ? { vulns: [{ id: "GHSA-aaaa" }] } : q.package.name === "openssl" ? { vulns: [{ id: "x" }] } : {})),
+      });
+    }
+    if (url.endsWith("/v1/query")) {
+      const debian = (id: string, vector: string, fixed?: string) => ({
+        id,
+        summary: `${id} in openssl`,
+        severity: [{ type: "CVSS_V3", score: vector }],
+        affected: [
+          {
+            package: { name: "openssl", ecosystem: "Debian:12" },
+            ranges: [{ events: [{ introduced: "0" }, ...(fixed ? [{ fixed }] : [])] }],
+          },
+        ],
+      });
+      return json({
+        vulns: [
+          debian("DEBIAN-CVE-2026-10", "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N", "3.0.16-1~deb12u1"),
+          debian("DEBIAN-CVE-2026-11", "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"), // no fix yet: skipped
+          debian("DSA-6000-1", "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N", "3.0.16-1~deb12u1"), // repeats the CVE: skipped
+        ],
+      });
     }
     if (url.endsWith("/v1/vulns/GHSA-aaaa")) {
       return json({
@@ -171,6 +193,33 @@ describe("checkDependencies", () => {
         ],
       },
     ]);
+  });
+});
+
+describe("base image OS packages", () => {
+  it("lists Debian CVEs the distro has fixed, scored from CVSS", async () => {
+    const manifest = {
+      ...parseLockfile(lockfile, "v24.11.0"),
+      osRelease: { id: "debian", versionId: "12" },
+      osPackages: [
+        { name: "openssl", version: "3.0.15-1~deb12u1" },
+        { name: "zlib", version: "1:1.2.13.dfsg-1" },
+      ],
+    };
+    const r = await checkDependencies(manifest, { fetch: fakeFetch(), now });
+    expect(r.errors).toEqual([]);
+    const os = r.advisories.filter((a) => a.ecosystem === "Debian:12");
+    expect(os).toEqual([
+      expect.objectContaining({
+        id: "DEBIAN-CVE-2026-10",
+        severity: "high",
+        package: "openssl",
+        deployed: "3.0.15-1~deb12u1",
+        fixed_in: "3.0.16-1~deb12u1",
+        actionable: true,
+      }),
+    ]);
+    expect(r.advisories.find((a) => a.id === "GHSA-aaaa")?.ecosystem).toBe("npm");
   });
 });
 

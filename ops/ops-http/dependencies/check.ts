@@ -1,6 +1,8 @@
 import type { DependencyManifest } from "./manifest.ts";
 import { compareVersions, updateKind } from "./semver.ts";
 import { checkRuntime, type OsRelease, type RuntimeComponent } from "./runtime.ts";
+import { cvss3BaseScore, severityFromScore } from "./cvss.ts";
+import { osvEcosystem } from "./os-packages.ts";
 import { fetchReleaseNotes, releasesUrl, repositoryUrl, type ReleaseNote } from "./changelog.ts";
 
 export type AdvisorySeverity = "critical" | "high" | "moderate" | "low" | "unknown";
@@ -18,6 +20,8 @@ export interface DependencyAdvisory {
   actionable: boolean;
   /** From OSV: outside text. */
   summary: string;
+  /** `npm`, or the base image's OS (e.g. `Debian:12`): fixed by rebuilding the image. */
+  ecosystem?: string;
 }
 
 export interface OutdatedDependency {
@@ -84,6 +88,7 @@ interface OsvVuln {
   summary?: string;
   details?: string;
   database_specific?: { severity?: string };
+  severity?: { type?: string; score?: string }[];
   affected?: {
     package?: { name?: string; ecosystem?: string };
     ranges?: { events?: { introduced?: string; fixed?: string }[] }[];
@@ -102,6 +107,88 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (t: T) => Promise<R
       }
     }),
   );
+  return out;
+}
+
+/** A severity word from OSV, else from its CVSS v3 vector. */
+function osvSeverity(v: OsvVuln | undefined): AdvisorySeverity {
+  const word = normalizeSeverity(v?.database_specific?.severity);
+  if (word !== "unknown") return word;
+  const vector = v?.severity?.find((s) => s.type === "CVSS_V3")?.score;
+  const score = vector ? cvss3BaseScore(vector) : null;
+  return score === null ? "unknown" : severityFromScore(score);
+}
+
+/**
+ * CVEs in the base image's OS packages (Debian), only those the distro has
+ * already fixed: a rebuild picks the fix up, and unfixed ones would be
+ * hundreds of lines nobody can act on. Failures go in `errors` without
+ * blocking the report (the npm check is the one that must succeed).
+ */
+async function checkOsPackages(
+  manifest: DependencyManifest,
+  ctx: { f: typeof fetch; osv: string; timeout: () => AbortSignal; errors: string[] },
+): Promise<DependencyAdvisory[]> {
+  const ecosystem = osvEcosystem(manifest.osRelease);
+  const pkgs = ecosystem ? (manifest.osPackages ?? []) : [];
+  if (!ecosystem || !pkgs.length) return [];
+  const hit: number[] = [];
+  try {
+    const res = await ctx.f(`${ctx.osv}/v1/querybatch`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ queries: pkgs.map((p) => ({ package: { name: p.name, ecosystem }, version: p.version })) }),
+      signal: ctx.timeout(),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const body = (await res.json()) as { results?: { vulns?: unknown[] }[] };
+    (body.results ?? []).forEach((r, i) => {
+      if (r.vulns?.length) hit.push(i);
+    });
+  } catch (e) {
+    ctx.errors.push(`osv ${ecosystem}: ${e instanceof Error ? e.message : String(e)}`);
+    return [];
+  }
+  // One full query per affected package (rather than one fetch per CVE).
+  const out: DependencyAdvisory[] = [];
+  await mapLimit(hit, 4, async (i) => {
+    const pkg = pkgs[i]!;
+    try {
+      const res = await ctx.f(`${ctx.osv}/v1/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ package: { name: pkg.name, ecosystem }, version: pkg.version }),
+        signal: ctx.timeout(),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      for (const v of ((await res.json()) as { vulns?: OsvVuln[] }).vulns ?? []) {
+        // DSA/DLA advisories repeat the per-CVE records.
+        if (/^(DSA|DLA)-/.test(v.id)) continue;
+        const fixed = (v.affected ?? [])
+          .filter((a) => a.package?.ecosystem === ecosystem && a.package?.name === pkg.name)
+          .flatMap((a) => a.ranges ?? [])
+          .flatMap((r) => r.events ?? [])
+          .map((e) => e.fixed)
+          .find((x): x is string => Boolean(x));
+        if (!fixed) continue;
+        const severity = osvSeverity(v);
+        out.push({
+          id: v.id,
+          aliases: v.aliases ?? [],
+          severity,
+          package: pkg.name,
+          deployed: pkg.version,
+          fixed_in: fixed,
+          direct: false,
+          actionable: severity === "critical" || severity === "high",
+          summary: (v.summary || v.details?.split("\n")[0] || "").slice(0, 300),
+          ecosystem,
+        });
+      }
+    } catch (e) {
+      ctx.errors.push(`osv ${ecosystem} ${pkg.name}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  });
   return out;
 }
 
@@ -169,8 +256,9 @@ export async function checkDependencies(
         .map((e) => e.fixed)
         .filter((x): x is string => Boolean(x) && compareVersions(x!, pkg.version) > 0)
         .sort(compareVersions);
-      const severity = normalizeSeverity(v?.database_specific?.severity);
+      const severity = osvSeverity(v);
       advisories.push({
+        ecosystem: "npm",
         id,
         aliases: v?.aliases ?? [],
         severity,
@@ -183,6 +271,7 @@ export async function checkDependencies(
       });
     }
   }
+  advisories.push(...(await checkOsPackages(manifest, { f, osv, timeout, errors })));
   advisories.sort(
     (a, b) => SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity) || a.package.localeCompare(b.package),
   );

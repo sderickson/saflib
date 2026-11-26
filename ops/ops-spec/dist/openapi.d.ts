@@ -995,6 +995,8 @@ export interface components {
                     /** @description Last day the acceptance applies (YYYY-MM-DD). */
                     until: string | null;
                 };
+                /** @description `npm`, or the base image's OS (e.g. `Debian:12`). OS advisories are only listed when the distro has a fix; rebuilding the image (fresh base, `apt-get upgrade`) picks it up. */
+                ecosystem?: string;
                 untrusted: {
                     summary: string;
                 };

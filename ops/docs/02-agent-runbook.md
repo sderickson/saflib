@@ -61,7 +61,7 @@ alert wakes you.
 | Firing alerts | `GET /ops/alerts?status=firing` | Prometheus rules tripped (error rate, latency, host) |
 | Background jobs failed | `GET /ops/logs/groups?context_id=<job id>` | A job ran out of retries; its logs say why |
 | Cron failing | `GET /ops/health` (`cron` check) | A scheduled job's last run failed |
-| Dependencies: advisories | `GET /ops/dependencies` | A vulnerable package; `fixed_in` says what to bump to |
+| Dependencies: advisories | `GET /ops/dependencies` | A vulnerable package; `fixed_in` says what to bump to. An `ecosystem` like `Debian:12` means the base image: rebuild it |
 | Slow or unreliable endpoint | the digest's `endpoints`, then PromQL below | One route regressed |
 | Trouble started recently | `GET /ops/deploys` (each deploy's commits) | A deploy; compare its commits with the one before |
 

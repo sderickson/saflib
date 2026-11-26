@@ -15,6 +15,7 @@ export const ops_dependencies = {
   fixedIn: "fixed in",
   noFix: "no fix yet",
   transitive: "transitive",
+  osHint: "In the base image: rebuilding the image (fresh base, apt-get upgrade) picks up the fix.",
   renovateDue: "Renovate due",
   errors: "Some lookups failed",
   runtime: "Runtime",

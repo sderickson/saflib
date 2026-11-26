@@ -43,7 +43,11 @@
             <td><v-chip :color="severityColor(a.severity)" size="x-small">{{ a.severity }}</v-chip></td>
             <td class="text-no-wrap">
               <code>{{ a.package }}@{{ a.deployed }}</code>
-              <span v-if="!a.direct" class="text-caption text-medium-emphasis"> ({{ strings.transitive }})</span>
+              <!-- Base image OS package: fixed by rebuilding the image, not a package bump. -->
+              <span v-if="a.ecosystem && a.ecosystem !== 'npm'" class="text-caption text-medium-emphasis" :title="strings.osHint" data-test="advisory-os">
+                ({{ a.ecosystem }})
+              </span>
+              <span v-else-if="!a.direct" class="text-caption text-medium-emphasis"> ({{ strings.transitive }})</span>
             </td>
             <td class="text-no-wrap saf-admin-hide-xs">{{ a.fixed_in ? `${strings.fixedIn} ${a.fixed_in}` : strings.noFix }}</td>
             <td>
