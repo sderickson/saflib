@@ -67,8 +67,17 @@ export function fieldKeysSummary(fields: unknown): string {
   return keys.length === 0 ? "{}" : `{ ${keys.join(", ")} }`;
 }
 
-export const formatTime = (ts: string) =>
-  new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(ts));
+/** "4:47:10 PM" today; "Nov 24, 4:47:10 PM" for older lines. */
+export function formatTime(ts: string, now = new Date()): string {
+  const d = new Date(ts);
+  const sameDay = d.toDateString() === now.toDateString();
+  return new Intl.DateTimeFormat(undefined, {
+    ...(sameDay ? {} : { month: "short", day: "numeric" }),
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(d);
+}
 
 export const formatDay = (ts: string) =>
   new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(ts));

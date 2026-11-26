@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { OpsLogGroupResponse } from "@saflib/ops-spec";
-import { formatOffset, groupDuration, groupKindLabel, groupStatus, groupTitle, startsOpen } from "./log-format.ts";
+import { formatOffset, formatTime, groupDuration, groupKindLabel, groupStatus, groupTitle, startsOpen } from "./log-format.ts";
 
 const base: OpsLogGroupResponse = {
   kind: "request",
@@ -41,5 +41,11 @@ describe("log group formatting", () => {
     expect(formatOffset("2026-11-25T10:00:00.000Z", base.first_ts)).toBe("+0");
     expect(formatOffset("2026-11-25T10:00:00.006Z", base.first_ts)).toBe("+6 ms");
     expect(formatOffset("2026-11-25T10:00:03.000Z", base.first_ts)).toBe("+3.0 s");
+  });
+
+  it("adds the date to times not from today", () => {
+    const now = new Date("2026-11-25T18:00:00");
+    expect(formatTime("2026-11-25T16:47:10", now)).not.toMatch(/Nov/);
+    expect(formatTime("2026-11-24T16:47:10", now)).toMatch(/Nov/);
   });
 });
