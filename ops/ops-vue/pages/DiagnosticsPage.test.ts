@@ -63,6 +63,18 @@ describe("DiagnosticsPage", () => {
         ],
       }),
     ),
+    http.get(`${API}/ops/health`, () =>
+      HttpResponse.json({
+        health: {
+          status: "warn",
+          checked_at: new Date().toISOString(),
+          checks: [
+            { name: "disk", status: "warn", summary: "18% free (87 GB of 461 GB)", duration_ms: 1 },
+            { name: "daemon-db", status: "ok", summary: "ok", duration_ms: 2 },
+          ],
+        },
+      }),
+    ),
     http.get(`${API}/ops/digest`, () => HttpResponse.json({ digest: { process: { started_at: new Date().toISOString() } } })),
   ]);
 
@@ -96,5 +108,17 @@ describe("DiagnosticsPage", () => {
     expect(metrics.text()).toContain("288 MB");
     wrapper.unmount();
     window.removeEventListener("unhandledrejection", swallow);
+  });
+
+  it("lists every health check with its status on the Health tab", async () => {
+    const { router } = await import("./test_router.ts");
+    await router.push("/?tab=health");
+    const wrapper = mountTestApp(DiagnosticsPage);
+    await vi.waitFor(() => expect(wrapper.find("[data-test=health-disk]").exists()).toBe(true));
+    expect(wrapper.find("[data-test=health-disk]").text()).toContain("18% free");
+    expect(wrapper.find("[data-test=health-disk] .status-icon").attributes("aria-label")).toBe("Warning");
+    expect(wrapper.find("[data-test=health-daemon-db] .status-icon").attributes("aria-label")).toBe("OK");
+    wrapper.unmount();
+    await router.push("/");
   });
 });

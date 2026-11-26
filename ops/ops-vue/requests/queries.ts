@@ -125,6 +125,17 @@ export function useLogGroupLines(contextId: Ref<string | null>, live?: Ref<boole
   });
 }
 
+/** Every health check's latest result (runs them). */
+export function useOpsHealth(enabled?: Ref<boolean>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["getOpsHealth"][200], TanstackError>({
+    queryKey: ["ops", "health"],
+    enabled: enabled ?? true,
+    staleTime: 30_000,
+    queryFn: () => handleClientMethod(client.GET("/ops/health")),
+  });
+}
+
 /** The digest: health, deploys, issues, alerts, metrics since `since` (default 24h). */
 export function useOpsDigest(since?: Ref<string | undefined>) {
   const client = getClient();

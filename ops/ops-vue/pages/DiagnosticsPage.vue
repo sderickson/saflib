@@ -14,6 +14,7 @@
 
     <v-tabs :model-value="tab" class="mb-4" density="compact" @update:model-value="goToTab">
       <v-tab value="test" data-test="diagnostics-tab-test">{{ strings.tabs.test }}</v-tab>
+      <v-tab value="health" data-test="diagnostics-tab-health">{{ strings.tabs.health }}</v-tab>
       <v-tab value="build" data-test="diagnostics-tab-build">{{ strings.tabs.build }}</v-tab>
       <v-tab value="metrics" data-test="diagnostics-tab-metrics">{{ strings.tabs.metrics }}</v-tab>
     </v-tabs>
@@ -80,6 +81,36 @@
       </v-table>
     </AdminPanel>
 
+    <AdminPanel v-else-if="tab === 'health'" data-test="diagnostics-health">
+      <template #title>
+        <h2>{{ strings.health_title }}</h2>
+      </template>
+      <template #actions>
+        <v-btn variant="text" size="small" prepend-icon="mdi-refresh" :loading="health.isFetching.value" @click="health.refetch()">
+          {{ strings.health_recheck }}
+        </v-btn>
+      </template>
+      <v-progress-linear v-if="health.isPending.value" indeterminate />
+      <v-table v-else-if="health.data.value">
+        <thead>
+          <tr>
+            <th style="width: 40px" aria-hidden="true" />
+            <th>{{ strings.health_cols.check }}</th>
+            <th>{{ strings.health_cols.reading }}</th>
+            <th class="text-right">{{ strings.health_cols.took }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="c in health.data.value.health.checks" :key="c.name" :data-test="`health-${c.name}`">
+            <td><StatusIcon :tone="c.status" /></td>
+            <td><code>{{ c.name }}</code></td>
+            <td>{{ c.summary }}</td>
+            <td class="text-right text-medium-emphasis">{{ c.duration_ms != null ? `${Math.round(c.duration_ms)} ms` : "" }}</td>
+          </tr>
+        </tbody>
+      </v-table>
+    </AdminPanel>
+
     <AdminPanel v-else-if="tab === 'build'" padded class="diagnostics-build">
       <dl class="build-grid">
         <template v-for="c in [build.root, build.saflib]" :key="c.label">
@@ -118,12 +149,13 @@ import { useRoute, useRouter, type RouteLocationRaw } from "vue-router";
 import type { OpsDiagnosticProbe } from "@saflib/ops-spec";
 import { AdminPanel, ContentWidth } from "@saflib/vue/components";
 import { getDeploymentName, showInfo } from "@saflib/vue";
-import { useClearOpsDiagnostics, useOpsDiagnostics, useOpsDigest } from "../requests/queries.ts";
+import { useClearOpsDiagnostics, useOpsDiagnostics, useOpsDigest, useOpsHealth } from "../requests/queries.ts";
+import StatusIcon from "../components/StatusIcon.vue";
 import { getBuildCommits, type BuildRepoUrls } from "../components/build-info.ts";
 import { useDiagnosticRun } from "./diagnostic-run.ts";
 
-type DiagnosticsTab = "test" | "build" | "metrics";
-const TABS: DiagnosticsTab[] = ["test", "build", "metrics"];
+type DiagnosticsTab = "test" | "health" | "build" | "metrics";
+const TABS: DiagnosticsTab[] = ["test", "health", "build", "metrics"];
 const route = useRoute();
 const router = useRouter();
 const tab = computed<DiagnosticsTab>(() => {
@@ -192,6 +224,7 @@ const resultLink = (p: OpsDiagnosticProbe): RouteLocationRaw | undefined => {
 const build = computed(() => getBuildCommits(props.repos));
 const deployment = getDeploymentName() ?? "unknown";
 const digest = useOpsDigest();
+const health = useOpsHealth(computed(() => tab.value === "health"));
 const deploys = computed(() => digest.data.value?.digest.deploys ?? []);
 const formatWhen = (iso: string) =>
   new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
