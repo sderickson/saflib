@@ -29,3 +29,9 @@ import { logsDbManager } from "./instances.ts";
 
 /** For managing connections to the logs database. */
 export const logsDb = logsDbManager.publicInterface();
+
+/** The logs DB's file path, or null when it's in memory (tests). */
+export function getLogsDbPath(dbKey: import("@saflib/drizzle").DbKey): string | null {
+  const name = logsDbManager.get(dbKey)?.$client.name;
+  return name && name !== ":memory:" ? name : null;
+}

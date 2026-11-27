@@ -29,6 +29,7 @@
     "@saflib/ops-spec": "*",
     "@saflib/rate-limit": "*",
     "@saflib/utils": "*",
+    "better-sqlite3": "12.11.1",
     "dejavu-fonts-ttf": "^2.37.3",
     "express": "^5.0.0",
     "http-errors": "^2.0.0"
@@ -38,7 +39,8 @@
     "@types/express": "^5.0.0",
     "@types/http-errors": "^2.0.0",
     "@types/supertest": "^7.0.0",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+    "@types/better-sqlite3": "^9.0.0"
   },
   "sideEffects": false
 }

@@ -55,7 +55,7 @@ createOpsToken:
               minItems: 1
               items:
                 type: string
-                enum: [ "ops:read", "ops:triage", "ops:alerts-ingest", "ops:exchange" ]
+                enum: [ "ops:read", "ops:triage", "ops:alerts-ingest", "ops:exchange", "ops:query" ]
             expires_at:
               type: [ string, "null" ]
               format: date-time
@@ -174,7 +174,7 @@ exchangeOpsToken:
               minItems: 1
               items:
                 type: string
-                enum: [ "ops:read", "ops:triage", "ops:alerts-ingest" ]
+                enum: [ "ops:read", "ops:triage", "ops:alerts-ingest", "ops:query" ]
               description: >
                 Scopes for the new token; each must be one the caller holds.
                 Defaults to all of the caller's scopes except `ops:exchange`.

@@ -19,7 +19,8 @@ components:
         Machine credential for the ops API (`Authorization: Bearer safops_…`).
         Not tied to a user. Scopes: `ops:read` (every GET), `ops:triage`
         (issue status changes, alert acknowledgement and manual resolve), `ops:alerts-ingest`
-        (only posting alerts; Alertmanager's token).
+        (only posting alerts; Alertmanager's token), `ops:query` (read-only SQL
+        over the logs DB).
   schemas:
     OpsHealth:
       $ref: "./schemas/ops-health.yaml"
@@ -96,6 +97,9 @@ paths:
   /ops/logs/groups:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogGroups"
+  /ops/logs/query:
+    post:
+      $ref: "./routes/logs.yaml#/queryOpsLogs"
   /ops/logs/templates:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogTemplates"

@@ -38,6 +38,11 @@ export const baseAuditMap: Record<string, AuditMapEntry> = {
     eventType: "ops_api.log_templates.read",
     resourceType: "ops_api",
   },
+  // Read-only SQL over the logs DB; the SQL text is in the request's log line.
+  "POST /ops/logs/query": {
+    eventType: "ops_api.logs.query",
+    resourceType: "ops_api",
+  },
   "GET /ops/digest": {
     eventType: "ops_api.digest.read",
     resourceType: "ops_api",

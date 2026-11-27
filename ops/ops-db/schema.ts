@@ -7,12 +7,15 @@ import type { Expect, Equal } from "@saflib/drizzle";
  * `ops:alerts-ingest`: only posting alerts (Alertmanager's webhook token).
  * `ops:exchange`: trade this token for a short-lived one (never granted to
  * the exchanged token itself).
+ * `ops:query`: read-only SQL over the logs DB (broader than the curated
+ * endpoints, so not part of `ops:read`).
  */
 export const opsTokenScopes = [
   "ops:read",
   "ops:triage",
   "ops:alerts-ingest",
   "ops:exchange",
+  "ops:query",
 ] as const;
 
 export type OpsTokenScope = (typeof opsTokenScopes)[number];

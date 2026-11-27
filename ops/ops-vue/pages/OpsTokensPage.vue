@@ -156,7 +156,7 @@ import { useOpsTokensPageLoader } from "./OpsTokens.loader.ts";
 import { ops_tokens as strings } from "./OpsTokens.strings.ts";
 
 type Scope = OpsTokenResponse["scopes"][number];
-const scopeOptions: Scope[] = ["ops:read", "ops:triage", "ops:alerts-ingest", "ops:exchange"];
+const scopeOptions: Scope[] = ["ops:read", "ops:triage", "ops:alerts-ingest", "ops:exchange", "ops:query"];
 
 const wide = { headerProps: { class: "saf-admin-hide-xs" }, cellProps: { class: "saf-admin-hide-xs" } };
 const headers = [
