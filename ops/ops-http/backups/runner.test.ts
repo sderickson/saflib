@@ -101,3 +101,21 @@ describe("backups", () => {
     expect(await verifyLatestBackups(ctx)).toEqual([{ id: b!.id, ok: false }]);
   });
 });
+
+describe("pre-migration snapshots", () => {
+  it("uploads snapshots as pre-migration backups of their database, then removes them", async () => {
+    const { mkdirSync, writeFileSync, existsSync, readdirSync } = await import("node:fs");
+    const { uploadPreMigrationSnapshots } = await import("./pre-migration.ts");
+    const { ctx, live } = setup(10);
+    const dir = join(mkdtempSync(join(tmpdir(), "pm-")), "pre-migration");
+    mkdirSync(dir);
+    const snap = join(dir, "main-2026-11-27T04-00-00-000Z.sqlite");
+    live.db.prepare("VACUUM INTO ?").run(snap);
+    writeFileSync(`${snap}.json`, JSON.stringify({ source: live.path, pending: ["0042_x"] }));
+    expect(await uploadPreMigrationSnapshots(ctx, dir)).toBe(1);
+    const [b] = await recentBackups(ctx);
+    expect(b).toMatchObject({ database: "main", tag: "pre-migration", status: "ok" });
+    expect(existsSync(snap)).toBe(false);
+    expect(readdirSync(dir)).toEqual([]);
+  });
+});

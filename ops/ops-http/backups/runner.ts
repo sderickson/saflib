@@ -43,6 +43,11 @@ export interface OpsBackupsConfig {
   dailyHourUtc?: number;
   /** A table shrinking by more than this since the last good backup makes it suspicious. Default 0.1. */
   shrinkThreshold?: number;
+  /**
+   * Where pre-migration snapshots land (see `enablePreMigrationBackups`);
+   * the schedule uploads them as `pre-migration` backups.
+   */
+  preMigrationDir?: string;
 }
 
 export interface BackupContext {

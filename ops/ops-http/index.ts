@@ -47,3 +47,4 @@ export {
 } from "./diagnostics/probes.ts";
 export type { OpsAuditSource } from "./audit/source.ts";
 export type { BackupDatabase, OpsBackupsConfig } from "./backups/runner.ts";
+export { enablePreMigrationBackups } from "./backups/pre-migration.ts";

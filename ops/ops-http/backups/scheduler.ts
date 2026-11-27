@@ -8,6 +8,7 @@ import {
   verifyLatestBackups,
   type BackupContext,
 } from "./runner.ts";
+import { uploadPreMigrationSnapshots } from "./pre-migration.ts";
 
 /**
  * Start the backup schedule in this process: a deploy backup soon after a
@@ -33,6 +34,7 @@ export function startBackups(
     try {
       // Anything still "running" after two hours belonged to a process that died.
       await throwError(failStaleBackups(ctx.dbKey, new Date((ctx.now?.() ?? new Date()).getTime() - 2 * 3_600_000)));
+      if (ctx.config.preMigrationDir) await uploadPreMigrationSnapshots(ctx, ctx.config.preMigrationDir);
       if (first) {
         const ref = await options.buildRef;
         if (ref) await runDeployBackups(ctx, ref);

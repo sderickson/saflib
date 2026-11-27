@@ -31,3 +31,9 @@ export {
   findFkCascadeViolations,
   type FkCascadeViolation,
 } from "./no-fk-cascades.ts";
+export {
+  addPreMigrationHook,
+  pendingMigrations,
+  type PreMigrationHook,
+  type PreMigrationInfo,
+} from "./pre-migration.ts";

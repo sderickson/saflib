@@ -14,11 +14,14 @@ import {
   configureBaseIssues,
   enableBasePersistentLogs,
   startBaseOpsNotifier,
+  enableBasePreMigrationBackups,
 } from "@saflib/base-ops";
 import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 
 validateEnv(process.env, envSchema);
 setServiceName("base");
+// Before any database connects: snapshot databases that are about to migrate.
+enableBasePreMigrationBackups();
 
 addLokiTransport();
 // Redacted, searchable logs for GET /ops/logs (see @saflib/node-log-db).

@@ -23,6 +23,7 @@ import {
   type DiagnosticProbe,
 } from "@saflib/ops-http";
 import type { BackupDatabase, OpsAuditSource, OpsBackupsConfig } from "@saflib/ops-http";
+import { enablePreMigrationBackups } from "@saflib/ops-http";
 import { createObjectStore } from "@saflib/object-store";
 import { createGcsObjectStore } from "@saflib/vendors-gcs";
 
@@ -50,11 +51,23 @@ export function baseBackupsConfig(databases: BackupDatabase[]): OpsBackupsConfig
   // Kratos's SQLite file, when its volume is mounted here.
   const kratosPath = process.env.KRATOS_SQLITE_PATH?.trim();
   const all = [...databases, ops, ...(kratosPath ? [{ name: "kratos", path: kratosPath }] : [])];
-  if (bucketName) return { databases: all, store: createGcsObjectStore({ bucketName }), retentionDays: 14 };
+  if (bucketName) return { databases: all, store: createGcsObjectStore({ bucketName }), retentionDays: 14, preMigrationDir };
   if (process.env.DEPLOYMENT_NAME === "development") {
-    return { databases: all, store: createObjectStore({ type: "disk", rootPath: path.join(dataDir, "backups") }), retentionDays: 14 };
+    return { databases: all, store: createObjectStore({ type: "disk", rootPath: path.join(dataDir, "backups") }), retentionDays: 14, preMigrationDir };
   }
   return undefined;
+}
+
+/** Where snapshots taken before migrations wait to be uploaded (the ops data volume). */
+const preMigrationDir = path.join(dataDir, "pre-migration");
+
+/**
+ * Snapshot each database before migrations run on it (the backup schedule
+ * uploads them as `pre-migration` backups). Call first thing at startup,
+ * before any database connects.
+ */
+export function enableBasePreMigrationBackups() {
+  return enablePreMigrationBackups(preMigrationDir);
 }
 
 /** Rate-limit counts (SQLite), on this package's data volume so blue/green share them. */
