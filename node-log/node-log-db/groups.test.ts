@@ -33,6 +33,17 @@ describe("log contexts and groups", () => {
   });
   afterEach(() => transport.close());
 
+  it("doesn't group the old shared 'no-request-id' placeholder", async () => {
+    const shared = ctx("request", "no-request-id", "-");
+    shared.http("POST /ops/alerts/webhook", { method: "POST", route: "/ops/alerts/webhook", status: 200, duration_ms: 3, internal: true });
+    shared.http("POST /ops/alerts/webhook", { method: "POST", route: "/ops/alerts/webhook", status: 200, duration_ms: 4, internal: true });
+    transport.flush();
+    const { groups } = await throwError(listLogGroups(dbKey, {}));
+    expect(groups).toHaveLength(2);
+    expect(groups.every((g) => g.context_id === null && typeof g.line_id === "number")).toBe(true);
+    expect(groups[0]!.request).toMatchObject({ route: "/ops/alerts/webhook", status: 200 });
+  });
+
   it("persists context, filters by it, and groups lines newest first", async () => {
     const r1 = ctx("request", "r1");
     r1.info("loading");

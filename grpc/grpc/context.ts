@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type {
   UntypedServiceImplementation,
   UntypedHandleCall,
@@ -32,7 +33,7 @@ export const addSafContext = (
     const impl = methodImpl as handleUnaryCall<any, any>;
     const wrappedMethod: handleUnaryCall<any, any> = (call, callback) => {
       // Create the context for this request
-      const reqId: string = call.request?.request?.id || "no-request-id";
+      const reqId: string = call.request?.request?.id || randomUUID();
       let auth: Auth | undefined = undefined;
       const authFromRequest = call.request.auth;
       if (authFromRequest instanceof SafAuth) {

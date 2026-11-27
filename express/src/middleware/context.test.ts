@@ -141,3 +141,27 @@ describe("makeContextMiddleware Kratos session re-validation", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+describe("makeContextMiddleware request ids", () => {
+  function appEchoingRequestId() {
+    const app = express();
+    app.use(makeContextMiddleware());
+    app.get("/id", (_req, res) => {
+      res.status(200).json({ requestId: getSafContext().requestId });
+    });
+    return app;
+  }
+
+  it("uses the edge's X-Request-ID when present", async () => {
+    const res = await request(appEchoingRequestId()).get("/id").set("x-request-id", "edge-123");
+    expect(res.body.requestId).toBe("edge-123");
+  });
+
+  it("gives each request without one its own id (callers that skip the edge)", async () => {
+    const app = appEchoingRequestId();
+    const a = await request(app).get("/id");
+    const b = await request(app).get("/id");
+    expect(a.body.requestId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(b.body.requestId).not.toBe(a.body.requestId);
+  });
+});

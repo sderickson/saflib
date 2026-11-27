@@ -138,7 +138,10 @@ export const listLogGroups = queryWrapper(
       where.push("id IN (SELECT rowid FROM log_entries_fts WHERE log_entries_fts MATCH ?)");
       args.push(fts);
     }
-    const key = "COALESCE(context_id, 'line:' || id)";
+    // Older servers logged "no-request-id" for every request that arrived
+    // without an x-request-id header; those are separate requests, not a group.
+    const ctx = "NULLIF(context_id, 'no-request-id')";
+    const key = `COALESCE(${ctx}, 'line:' || id)`;
     const having = params.cursor && /^\d+$/.test(params.cursor) ? "HAVING MAX(id) < ?" : "";
     if (having) args.push(Number(params.cursor));
 
@@ -164,8 +167,8 @@ export const listLogGroups = queryWrapper(
          )
          SELECT key,
            MAX(context_kind) AS kind,
-           MAX(context_id) AS context_id,
-           CASE WHEN MAX(context_id) IS NULL THEN MIN(id) END AS line_id,
+           MAX(${ctx}) AS context_id,
+           CASE WHEN MAX(${ctx}) IS NULL THEN MIN(id) END AS line_id,
            MIN(ts) AS first_ts, MAX(ts) AS last_ts, MAX(id) AS last_id,
            SUM(level_num < ${HTTP}) AS count,
            SUM(level_num = ${ERROR}) AS errors,
