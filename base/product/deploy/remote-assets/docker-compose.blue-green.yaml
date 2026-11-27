@@ -30,6 +30,12 @@ services:
       # The deploy's release stamp (saf-deploy), recorded on each boot.
       - ./release:/etc/saf/release:ro
       - /opt/__product-name__/cron:/app/__product-name__/service/cron/data
+      # The audit log and the job queue: kept across deploys, shared by both colors.
+      - /opt/__product-name__/audit:/app/__product-name__/service/audit/data
+      # saflib's audit write lock lives in its own package's data/ folder; same
+      # directory, so the lock is on the data disk and shared by both colors.
+      - /opt/__product-name__/audit:/app/saflib/audit/audit-db/data
+      - /opt/__product-name__/jobs:/app/__product-name__/service/jobs/data
       - /opt/__product-name__/db:/app/__product-name__/service/db/data
       - /opt/__product-name__/identity:/app/__product-name__/service/identity/data
       - /opt/__product-name__/identity-http:/app/saflib/identity/identity-http/data
