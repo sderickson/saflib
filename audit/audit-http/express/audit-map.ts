@@ -6,6 +6,12 @@ export interface AuditMapEntry {
   alsoEmitFor?: string[];
   outcomeOverride?: (statusCode: number) => AuditOutcome;
   /**
+   * Record only when the caller is a machine credential (e.g. an ops token),
+   * not a signed-in person: for reads an admin UI polls, where auditing
+   * every page refresh would bury everything else.
+   */
+  machineOnly?: boolean;
+  /**
    * When set, handlers must `await appendFailClosedHttpAuditIfRequired(...)` after a
    * successful mutation and before sending a response whose status is listed in
    * {@link failClosedStatusCodes}. If audit append fails, the client gets **503** even

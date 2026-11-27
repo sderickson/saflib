@@ -290,3 +290,36 @@ describe("createAuditRecorder", () => {
     expect(result?.events?.length ?? 0).toBe(0);
   });
 });
+
+describe("machineOnly entries", () => {
+  it("record a machine credential's call but not a signed-in person's", async () => {
+    process.env.DEPLOYMENT_NAME = "audit-http-test";
+    const auditKey = auditDb.connect();
+    const recorder = createAuditRecorder({
+      getAuditDbKey: () => auditKey,
+      auditMap: { "GET /polled": { eventType: "polled.read", resourceType: "x", machineOnly: true } },
+      resolveMachineActor: (res) => (res.locals.token ? { authMethod: "ops_token", actorId: "ops_token:t1" } : undefined),
+    });
+    const app = express();
+    app.use((req, res, next) => {
+      const person = req.headers["x-person"] === "1";
+      if (!person) res.locals.token = true;
+      safContextStorage.run(
+        { requestId: "r", serviceName: "test", subsystemName: "http", operationName: "op", auth: person ? { userId: "u1" } : undefined },
+        () => next(),
+      );
+    });
+    app.use(recorder.middleware());
+    app.get("/polled", (_req, res) => {
+      res.sendStatus(200);
+    });
+    await request(app).get("/polled").set("x-person", "1").expect(200);
+    await request(app).get("/polled").expect(200);
+    await drainAuditRecorder();
+    const { result } = await listAuditEventsByTimestamp(auditKey, { limit: 10 });
+    expect(result!.events.map((e) => [e.event_type, e.auth_method, e.actor_user_id])).toEqual([
+      ["polled.read", "ops_token", "ops_token:t1"],
+    ]);
+    auditDb.disconnect(auditKey);
+  });
+});
