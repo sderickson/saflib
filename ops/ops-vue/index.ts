@@ -19,6 +19,7 @@ import BuildAsync from "./pages/BuildAsync.vue";
 import ProcessMetricsAsync from "./pages/ProcessMetricsAsync.vue";
 import AnalyticsExploreAsync from "./pages/AnalyticsExploreAsync.vue";
 import AnalyticsTrendsAsync from "./pages/AnalyticsTrendsAsync.vue";
+import BackupsAsync from "./pages/BackupsAsync.vue";
 
 export { configureOpsVue } from "./client.ts";
 export { useOpsAccess } from "./requests/access.ts";
@@ -35,6 +36,7 @@ export {
   type BuildRepoUrls,
 } from "./components/build-info.ts";
 export {
+  BackupsAsync,
   AnalyticsExploreAsync,
   AnalyticsTrendsAsync,
   AlertsAsync,

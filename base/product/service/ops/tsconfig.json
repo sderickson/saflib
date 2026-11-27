@@ -1,14 +1,36 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
-    { "path": "../../../../drizzle" },
-    { "path": "../../../../monorepo" },
-    { "path": "../../../../node" },
-    { "path": "../../../../ops/ops-db" },
-    { "path": "../../../../errors/errors-db" },
-    { "path": "../../../../errors/errors-service" },
-    { "path": "../../../../node-log/node-log-db" },
-    { "path": "../../../../ops/ops-http" }
+    {
+      "path": "../../../../drizzle"
+    },
+    {
+      "path": "../../../../errors/errors-db"
+    },
+    {
+      "path": "../../../../errors/errors-service"
+    },
+    {
+      "path": "../../../../monorepo"
+    },
+    {
+      "path": "../../../../node"
+    },
+    {
+      "path": "../../../../node-log/node-log-db"
+    },
+    {
+      "path": "../../../../object-store"
+    },
+    {
+      "path": "../../../../ops/ops-db"
+    },
+    {
+      "path": "../../../../ops/ops-http"
+    },
+    {
+      "path": "../../../../vendors/gcs"
+    }
   ],
   "compilerOptions": {
     "outDir": "./dist/types",
@@ -17,6 +39,15 @@
     "emitDeclarationOnly": true,
     "rootDir": "."
   },
-  "exclude": ["node_modules", "dist/types", "e2e", "playwright-report", "test-results"],
-  "include": ["**/*.ts", "**/*.json"]
+  "exclude": [
+    "node_modules",
+    "dist/types",
+    "e2e",
+    "playwright-report",
+    "test-results"
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ]
 }

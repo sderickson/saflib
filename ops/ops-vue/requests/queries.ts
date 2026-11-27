@@ -405,3 +405,26 @@ export function useOpsLogsQuery(sql: Ref<string>) {
     },
   });
 }
+
+/** The app's backups (Status → Backups). Polls while one is running. */
+export function useOpsBackups() {
+  const client = getClient();
+  return useQuery<OpsResponseBody["listOpsBackups"][200], TanstackError>({
+    queryKey: ["ops", "backups"],
+    queryFn: () => handleClientMethod(client.GET("/ops/backups", { params: { query: { days: 62 } } })),
+    refetchInterval: (q) => (q.state.data?.backups.some((b) => b.status === "running") ? 3000 : false),
+  });
+}
+
+/** "Back up now". */
+export function useRunOpsBackups() {
+  const client = getClient();
+  const queryClient = useQueryClient();
+  return useMutation<OpsResponseBody["runOpsBackups"][202], TanstackError, void>({
+    mutationFn: () => handleClientMethod(client.POST("/ops/backups/run", {})),
+    onSuccess: () => {
+      // The backups appear as "running" within a moment; then polling takes over.
+      setTimeout(() => void queryClient.invalidateQueries({ queryKey: ["ops", "backups"] }), 500);
+    },
+  });
+}

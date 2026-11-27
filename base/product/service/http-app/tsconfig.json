@@ -5,7 +5,13 @@
       "path": "../../../../analytics/analytics-http"
     },
     {
+      "path": "../../../../audit/audit-db"
+    },
+    {
       "path": "../../../../audit/audit-http"
+    },
+    {
+      "path": "../../../../cron/cron-db"
     },
     {
       "path": "../../../../cron/cron-http"
@@ -24,6 +30,9 @@
     },
     {
       "path": "../../../../express"
+    },
+    {
+      "path": "../../../../jobs/jobs-db"
     },
     {
       "path": "../../../../jobs/jobs-http"

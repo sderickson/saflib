@@ -9,6 +9,9 @@ import { createKratosAdminRouter } from "@saflib/ory-kratos-http";
 import { createDevLogsRouter } from "@saflib/node-log-http";
 import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 import { baseDb, baseDbManager } from "@saflib/base-db/instances";
+import { auditDb } from "@saflib/audit-db/instances";
+import { jobsDb } from "@saflib/jobs-db";
+import { cronDb } from "@saflib/cron-db";
 import { createBaseOpsRouter, getBaseRateLimitDbPath, isOpsApiRequest } from "@saflib/base-ops";
 import { createProductEventsRouter, productEventNames } from "@saflib/analytics-http";
 import { jsonSpec } from "@saflib/base-spec";
@@ -120,6 +123,13 @@ export function buildBaseHttpApp(
         ],
         // Sign-ins, account changes and admin actions for agents (GET /ops/audit).
         audit: opsAuditSource({ getAuditDbKey: () => context.auditDbKey }),
+        // App-managed backups (ops and Kratos are added by base-ops).
+        backupDatabases: [
+          { name: "main", path: () => baseDb.getDbPath(dbKey) ?? null },
+          { name: "audit", path: () => auditDb.getDbPath(context.auditDbKey) ?? null },
+          { name: "jobs", path: () => jobsDb.getDbPath(getBaseJobsDbKey()) ?? null },
+          { name: "cron", path: () => cronDb.getDbPath(getBaseCronDbKey()) ?? null },
+        ],
       }),
       createBaseAuditRouter(),
       // Site-admin identity routes (UserRef lookups, Users page). Pass

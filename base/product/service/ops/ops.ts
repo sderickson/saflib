@@ -22,7 +22,9 @@ import {
   type DigestTileProvider,
   type DiagnosticProbe,
 } from "@saflib/ops-http";
-import type { OpsAuditSource } from "@saflib/ops-http";
+import type { BackupDatabase, OpsAuditSource, OpsBackupsConfig } from "@saflib/ops-http";
+import { createObjectStore } from "@saflib/object-store";
+import { createGcsObjectStore } from "@saflib/vendors-gcs";
 
 export { isOpsApiRequest };
 
@@ -36,6 +38,24 @@ const opsDbAccessor = createOnDiskDbKeyAccessor({
 
 /** Opaque key for `@saflib/ops-db` (ops tokens), separate from the main app DB. */
 export const getBaseOpsDbKey = opsDbAccessor.getDbKey;
+
+/**
+ * Where backups go: the GCS bucket in `BACKUPS_GCS_BUCKET` (a bucket of its
+ * own, not the product's blobs); in development, a folder on this package's
+ * data volume. Elsewhere without a bucket: none (Status says so).
+ */
+export function baseBackupsConfig(databases: BackupDatabase[]): OpsBackupsConfig | undefined {
+  const bucketName = process.env.BACKUPS_GCS_BUCKET?.trim();
+  const ops: BackupDatabase = { name: "ops", path: () => opsDb.getDbPath(getBaseOpsDbKey()) ?? null };
+  // Kratos's SQLite file, when its volume is mounted here.
+  const kratosPath = process.env.KRATOS_SQLITE_PATH?.trim();
+  const all = [...databases, ops, ...(kratosPath ? [{ name: "kratos", path: kratosPath }] : [])];
+  if (bucketName) return { databases: all, store: createGcsObjectStore({ bucketName }), retentionDays: 14 };
+  if (process.env.DEPLOYMENT_NAME === "development") {
+    return { databases: all, store: createObjectStore({ type: "disk", rootPath: path.join(dataDir, "backups") }), retentionDays: 14 };
+  }
+  return undefined;
+}
 
 /** Rate-limit counts (SQLite), on this package's data volume so blue/green share them. */
 export const getBaseRateLimitDbPath = () =>
@@ -93,6 +113,8 @@ export interface CreateBaseOpsRouterOptions {
   digestTiles?: DigestTileProvider[];
   /** Self-test probes beyond the ops API's own (failing job, audit event). */
   diagnosticProbes?: DiagnosticProbe[];
+  /** The databases to back up (ops and Kratos are added); see {@link baseBackupsConfig}. */
+  backupDatabases?: BackupDatabase[];
   /** The audit log for `GET /ops/audit` (`opsAuditSource` from audit-http). */
   audit?: OpsAuditSource;
 }
@@ -115,6 +137,7 @@ export function createBaseOpsRouter(options: CreateBaseOpsRouterOptions = {}) {
     digestTiles: options.digestTiles,
     diagnosticProbes: options.diagnosticProbes,
     audit: options.audit,
+    backups: options.backupDatabases ? baseBackupsConfig(options.backupDatabases) : undefined,
   });
 }
 
