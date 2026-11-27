@@ -16,6 +16,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@prometheus-io/client": "^0.16.1",
     "@saflib/node": "*"
   },
   "devDependencies": {

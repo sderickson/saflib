@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { getSafContext, getSafReporters } from "@saflib/node";
 import { hasAnalyticsConsent } from "./consent.ts";
+import { countProductEvent } from "./metrics.ts";
 import type { SafContext } from "@saflib/node";
 import type { AnalyticsService, CommonEvent, IdentifyProps } from "./types.ts";
 
@@ -74,9 +75,12 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
       context: mergedContext,
     });
 
+    countProductEvent(event.event);
     const { log } = getSafReporters();
+    // `product_event` puts the line in the logs DB's event column (and the
+    // product_events view), where it's kept longer than other lines.
     log.info(`Product event: ${event.event}`, {
-      event: event.event,
+      product_event: event.event,
       distinct_id: distinctId,
       ...(mergedContext !== undefined
         ? { context: withoutClientIdentifiers(mergedContext) }

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as node from "@saflib/node";
+import client from "@prometheus-io/client";
 import {
   clearCapturedAnalyticsCalls,
   capturedAnalyticsCalls,
@@ -33,6 +34,25 @@ describe("createAnalyticsService", () => {
     const svc = createAnalyticsService({ type: "in-memory" });
     svc.capture({ event: "e" });
     expect(capturedAnalyticsCalls).toHaveLength(1);
+  });
+
+  it("counts each event by name in Prometheus and logs it as a product event", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.spyOn(node, "getSafContext").mockReturnValue({
+      serviceName: "example-http",
+      subsystemName: "http",
+      operationName: "op",
+      auth: { userId: "u" },
+    });
+    const info = vi.fn();
+    vi.spyOn(node, "getSafReporters").mockReturnValue({ log: { info } } as unknown as ReturnType<typeof node.getSafReporters>);
+    const svc = createAnalyticsService({ type: "in-memory" });
+    svc.capture({ event: "counted.event" });
+    svc.capture({ event: "counted.event" });
+    const metric = await client.register.getSingleMetricAsString("saf_product_events_total");
+    expect(metric).toContain('saf_product_events_total{event="counted.event"} 2');
+    expect(info).toHaveBeenCalledWith("Product event: counted.event", expect.objectContaining({ product_event: "counted.event" }));
+    vi.mocked(node.getSafReporters).mockRestore();
   });
 
   it("throws when SafContext has no auth.userId", () => {

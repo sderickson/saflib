@@ -76,6 +76,7 @@ interface PendingEntry {
   message: string;
   fields: string | null;
   redactions: number;
+  event: string | null;
 }
 
 function str(v: unknown): string | null {
@@ -159,8 +160,17 @@ export class PersistentLogTransport extends TransportStream {
     }
 
     const rawMessage = typeof info.message === "string" ? info.message : String(info.message);
+    // A product event (`analytics.capture` logs `product_event: <name>`) gets
+    // its own column; the rest of the fields are its properties.
+    const allFields = extractFields(info);
+    const event = typeof allFields?.product_event === "string" ? allFields.product_event.slice(0, 200) : null;
+    let fields = allFields;
+    if (event !== null && allFields) {
+      const { product_event: _e, ...rest } = allFields;
+      fields = rest;
+    }
     const redacted = redactLogEntry(
-      { message: rawMessage.slice(0, MAX_MESSAGE_CHARS), fields: extractFields(info) },
+      { message: rawMessage.slice(0, MAX_MESSAGE_CHARS), fields },
       this.options.redact,
     );
     const serviceName = str(info.service_name);
@@ -198,6 +208,7 @@ export class PersistentLogTransport extends TransportStream {
       message: redacted.value.message,
       fields: serializeFields(redacted.value.fields),
       redactions: redacted.detections.length,
+      event,
     });
   }
 
@@ -210,8 +221,8 @@ export class PersistentLogTransport extends TransportStream {
     try {
       const client = logsDbManager.get(this.options.getDbKey())!.$client;
       const insertEntry = client.prepare(
-        `INSERT INTO log_entries (ts, level, level_num, service_name, subsystem_name, operation_name, request_id, user_id, context_kind, context_id, template_hash, message, fields, redactions)
-         VALUES (@ts, @level, @level_num, @service_name, @subsystem_name, @operation_name, @request_id, @user_id, @context_kind, @context_id, @template_hash, @message, @fields, @redactions)`,
+        `INSERT INTO log_entries (ts, level, level_num, service_name, subsystem_name, operation_name, request_id, user_id, context_kind, context_id, template_hash, message, fields, redactions, event)
+         VALUES (@ts, @level, @level_num, @service_name, @subsystem_name, @operation_name, @request_id, @user_id, @context_kind, @context_id, @template_hash, @message, @fields, @redactions, @event)`,
       );
       const upsertTemplate = client.prepare(
         `INSERT INTO log_templates (hash, template, level, service_name, first_seen, last_seen, count)

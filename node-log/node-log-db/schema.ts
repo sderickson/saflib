@@ -40,6 +40,11 @@ export interface LogEntry {
   fields: Record<string, unknown> | null;
   /** How many values were masked in this line. */
   redactions: number;
+  /**
+   * The product event's name when this line is one (`analytics.capture`);
+   * null for ordinary log lines. Kept longer than other lines.
+   */
+  event: string | null;
 }
 
 export const logEntries = sqliteTable(
@@ -60,6 +65,7 @@ export const logEntries = sqliteTable(
     message: text("message").notNull(),
     fields: text("fields", { mode: "json" }).$type<Record<string, unknown>>(),
     redactions: integer("redactions").notNull().default(0),
+    event: text("event"),
   },
   (t) => [
     index("log_entries_ts_idx").on(t.ts),
@@ -68,6 +74,7 @@ export const logEntries = sqliteTable(
     index("log_entries_context_idx").on(t.context_id, t.id),
     index("log_entries_user_idx").on(t.user_id, t.id),
     index("log_entries_template_ts_idx").on(t.template_hash, t.ts),
+    index("log_entries_event_ts_idx").on(t.event, t.ts),
   ],
 );
 
