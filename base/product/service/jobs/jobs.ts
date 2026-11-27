@@ -15,6 +15,7 @@ import {
 import { baseJobs } from "@saflib/base-cron";
 import { operationJsonSpec as raiseTestErrorMaintenanceOperationJsonSpec } from "@saflib/errors-spec/operations/raiseTestErrorMaintenance";
 import { operationJsonSpec as runOpsDiagnosticProbeOperationJsonSpec } from "@saflib/ops-spec/operations/runOpsDiagnosticProbe";
+import { operationJsonSpec as runOpsBackupsMaintenanceOperationJsonSpec } from "@saflib/ops-spec/operations/runOpsBackupsMaintenance";
 
 /**
  * Reviewed map of which base operations may enqueue which operations.
@@ -29,6 +30,7 @@ export const baseTriggerMap: TriggerMap = {
   // BEGIN WORKFLOW AREA trigger-map FOR jobs/add-job
   // END WORKFLOW AREA
   "cron:jobsDemoKick": ["jobsDemoStepB"],
+  "cron:backups": ["runOpsBackupsMaintenance"],
   // Cron job names → background targets (cron/add-job). Template stub uses the
   // demo step so the golden product validates; replace operationId when adding.
   // BEGIN WORKFLOW AREA cron-trigger-map FOR cron/add-job
@@ -41,6 +43,8 @@ export const baseJobOperations: JobOperationConfigMap = {
   jobsDemoStepB: { timeoutMs: 30_000, maxAttempts: 5 },
   jobsDemoStepC: { timeoutMs: 30_000 },
   raiseTestErrorMaintenance: { timeoutMs: 30_000 },
+  // Backs up every database; if they grow past this, split per database.
+  runOpsBackupsMaintenance: { timeoutMs: 120_000, maxAttempts: 2 },
 };
 
 /**
@@ -52,6 +56,7 @@ export const baseJobsApiSpec = (productSpec: OpenApiDocument): OpenApiDocument[]
   productSpec,
   raiseTestErrorMaintenanceOperationJsonSpec as unknown as OpenApiDocument,
   runOpsDiagnosticProbeOperationJsonSpec as unknown as OpenApiDocument,
+  runOpsBackupsMaintenanceOperationJsonSpec as unknown as OpenApiDocument,
 ];
 
 const jobsDbAccessor = createOnDiskDbKeyAccessor({

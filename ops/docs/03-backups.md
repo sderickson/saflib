@@ -5,9 +5,12 @@ their own. The host's disk snapshots are the second layer.
 
 ## What happens on its own
 
-- **Daily** (after 03:00 UTC), **at each deploy** (first process of a new
-  build) and **before migrations** (a snapshot taken right before pending
-  migrations run, uploaded shortly after).
+- **Daily**: the product's `backups` cron job (03:00 UTC; like every cron
+  job, it's off until an admin turns it on under Jobs → Schedules) runs
+  `runOpsBackupsMaintenance`: today's backups, retention, read-back.
+- **At each deploy** (first process of a new build) and **before
+  migrations** (a snapshot taken right before pending migrations run): done
+  once at startup, since these are events rather than a schedule.
 - Each backup is a `VACUUM INTO` copy, checked (`integrity_check`, latest
   migration, per-table rows and created/updated ranges), compared with the
   last good backup (a table emptied or shrunk by more than 10% marks it

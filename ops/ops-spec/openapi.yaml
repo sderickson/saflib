@@ -78,6 +78,9 @@ paths:
   /ops/backups/run:
     post:
       $ref: "./routes/backups.yaml#/runOpsBackups"
+  /ops/backups/maintenance:
+    post:
+      $ref: "./routes/backups.yaml#/runOpsBackupsMaintenance"
   /ops/audit:
     get:
       $ref: "./routes/audit.yaml#/listOpsAuditEvents"

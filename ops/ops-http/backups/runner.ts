@@ -39,8 +39,6 @@ export interface OpsBackupsConfig {
    * terms set on holding deleted data. Default 14 days.
    */
   retentionDays?: number;
-  /** UTC hour after which the daily backup runs. Default 3. */
-  dailyHourUtc?: number;
   /** A table shrinking by more than this since the last good backup makes it suspicious. Default 0.1. */
   shrinkThreshold?: number;
   /**
@@ -149,10 +147,12 @@ export async function runBackup(
   }
 }
 
-/** Today's daily backup of each database, once the daily hour has passed. */
-export async function runDueBackups(ctx: BackupContext): Promise<OpsBackup[]> {
+/**
+ * Today's daily backup of each database (once per UTC day; the product's
+ * `backups` cron job decides when).
+ */
+export async function runDailyBackups(ctx: BackupContext): Promise<OpsBackup[]> {
   const now = ctx.now?.() ?? new Date();
-  if (now.getUTCHours() < (ctx.config.dailyHourUtc ?? 3)) return [];
   const done: OpsBackup[] = [];
   for (const db of ctx.config.databases) {
     const b = await runBackup(ctx, db, "daily", `daily:${db.name}:${day(now)}`);
@@ -237,4 +237,27 @@ export async function verifyLatestBackups(ctx: BackupContext, everyDays = 7): Pr
 export async function recentBackups(ctx: BackupContext, days = 62): Promise<OpsBackup[]> {
   const now = ctx.now?.() ?? new Date();
   return throwError(listBackups(ctx.dbKey, { since: new Date(now.getTime() - days * 86_400_000) }));
+}
+
+/**
+ * The daily maintenance the `backups` cron job runs: snapshots taken before
+ * migrations, today's backups, retention, read-back and cleanup of files a
+ * restore moved aside.
+ */
+export async function runBackupsMaintenance(
+  ctx: BackupContext,
+): Promise<{ backed_up: number; failed: number; removed: number; verified: number }> {
+  const { uploadPreMigrationSnapshots } = await import("./pre-migration.ts");
+  const { pruneReplacedFiles } = await import("./restore.ts");
+  const fromSnapshots = ctx.config.preMigrationDir ? await uploadPreMigrationSnapshots(ctx, ctx.config.preMigrationDir) : 0;
+  const daily = await runDailyBackups(ctx);
+  const removed = await applyBackupRetention(ctx);
+  const verified = await verifyLatestBackups(ctx);
+  pruneReplacedFiles(ctx.config.databases.map((d) => (typeof d.path === "function" ? d.path() : d.path)).filter((p): p is string => !!p));
+  return {
+    backed_up: fromSnapshots + daily.filter((b) => b.status !== "failed").length,
+    failed: daily.filter((b) => b.status === "failed").length,
+    removed,
+    verified: verified.length,
+  };
 }

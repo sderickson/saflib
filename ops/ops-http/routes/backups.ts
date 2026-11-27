@@ -4,7 +4,7 @@ import { getSafReporters } from "@saflib/node";
 import type { OpsBackup } from "@saflib/ops-db";
 import type { OpsResponseBody } from "@saflib/ops-spec";
 import { opsServiceStorage } from "../context.ts";
-import { recentBackups, runManualBackups } from "../backups/runner.ts";
+import { recentBackups, runBackupsMaintenance, runManualBackups } from "../backups/runner.ts";
 
 type BackupResponse = OpsResponseBody["listOpsBackups"][200]["backups"][number];
 
@@ -50,4 +50,13 @@ export const runOpsBackupsHandler = createHandler(async function (_req, res) {
   // Uploads can take a while; the page polls GET /ops/backups.
   void runManualBackups(backups).catch((e) => getSafReporters().logError(e instanceof Error ? e : new Error(String(e))));
   res.status(202).json({ started: true });
+});
+
+/** The daily maintenance, run by the product's `backups` cron job. */
+export const runOpsBackupsMaintenanceHandler = createHandler(async function (_req, res) {
+  const { backups } = opsServiceStorage.getStore()!;
+  const response: OpsResponseBody["runOpsBackupsMaintenance"][200] = backups
+    ? { configured: true, ...(await runBackupsMaintenance(backups)) }
+    : { configured: false, backed_up: 0, failed: 0, removed: 0, verified: 0 };
+  res.status(200).json(response);
 });

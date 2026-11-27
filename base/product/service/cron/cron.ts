@@ -12,6 +12,14 @@ import { __groupName__Jobs } from "./jobs/__group-name__/index.ts";
 
 export const baseJobs: JobsMap = {
   ...jobsDemoJobs,
+  // The app's daily backups (Status: Backups). Disabled until an admin turns it on.
+  backups: {
+    schedule: "0 3 * * *",
+    enqueue: {
+      operationId: "runOpsBackupsMaintenance",
+      request: { body: {} },
+    },
+  },
   // BEGIN WORKFLOW AREA job-map FOR cron/add-job
   ...__groupName__Jobs,
   // END WORKFLOW AREA

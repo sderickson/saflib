@@ -10,7 +10,7 @@ import {
   applyBackupRetention,
   recentBackups,
   runBackup,
-  runDueBackups,
+  runDailyBackups,
   verifyLatestBackups,
   type BackupContext,
 } from "./runner.ts";
@@ -40,18 +40,12 @@ function setup(rows = 50) {
 describe("backups", () => {
   it("backs up with stats, uploads with a hash, and runs the daily once per day", async () => {
     const { ctx, store } = setup();
-    const [b] = await runDueBackups(ctx);
+    const [b] = await runDailyBackups(ctx);
     expect(b).toMatchObject({ status: "ok", database: "main", tag: "daily" });
     expect(JSON.parse(b!.stats!).tables.users).toEqual({ rows: 50, created_min: 1000, created_max: 1049, updated_min: 2000, updated_max: 2049 });
     expect(b!.object_key).toMatch(/^backups\/main\/2026-11-27\/.+-daily\.sqlite\.zst$/);
     expect(store.getFiles().map((f) => f.path)).toEqual([b!.object_key]);
-    expect(await runDueBackups(ctx)).toEqual([]);
-  });
-
-  it("waits for the daily hour", async () => {
-    const { ctx, setNow } = setup();
-    setNow("2026-11-27T01:00:00Z");
-    expect(await runDueBackups(ctx)).toEqual([]);
+    expect(await runDailyBackups(ctx)).toEqual([]);
   });
 
   it("flags a backup whose tables shrank since the last good one", async () => {
@@ -74,12 +68,12 @@ describe("backups", () => {
   it("deletes backups past retention but keeps the latest passed one", async () => {
     const { ctx, store, setNow, live } = setup(100);
     setNow("2026-11-01T04:00:00Z");
-    const old = await runDueBackups(ctx);
+    const old = await runDailyBackups(ctx);
     setNow("2026-11-02T04:00:00Z");
-    const passed = await runDueBackups(ctx);
+    const passed = await runDailyBackups(ctx);
     live.db.exec(`DELETE FROM users`);
     setNow("2026-11-03T04:00:00Z");
-    const bad = await runDueBackups(ctx);
+    const bad = await runDailyBackups(ctx);
     expect(bad[0]?.status).toBe("suspicious");
     setNow("2026-11-27T04:00:00Z");
     expect(await applyBackupRetention(ctx)).toBe(2);
@@ -91,7 +85,7 @@ describe("backups", () => {
 
   it("reads back the latest backup and catches a changed object", async () => {
     const { ctx, store, setNow } = setup();
-    const [b] = await runDueBackups(ctx);
+    const [b] = await runDailyBackups(ctx);
     expect(await verifyLatestBackups(ctx)).toEqual([{ id: b!.id, ok: true }]);
     expect(await verifyLatestBackups(ctx)).toEqual([]);
     // Stores refuse to overwrite, so replace it the long way.

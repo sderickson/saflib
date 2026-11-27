@@ -126,6 +126,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/backups/maintenance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Daily backup maintenance (run by the backups cron job)
+         * @description Backs up each database (once per day), uploads snapshots taken before migrations, deletes backups past retention and reads back the latest ones. Enqueued by the product's `backups` cron job; safe to run again (each day's backup is claimed once). 200 with `configured: false` when the product has no backups store.
+         */
+        post: operations["runOpsBackupsMaintenance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ops/audit": {
         parameters: {
             query?: never;
@@ -1615,6 +1635,57 @@ export interface operations {
             };
             /** @description Backups aren't configured. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    runOpsBackupsMaintenance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            /** @description Done. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        configured: boolean;
+                        /** @description Backups made (including uploaded pre-migration snapshots). */
+                        backed_up: number;
+                        failed: number;
+                        /** @description Backups deleted by retention. */
+                        removed: number;
+                        /** @description Backups read back. */
+                        verified: number;
+                    };
+                };
+            };
+            /** @description Not signed in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Not a site admin. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
