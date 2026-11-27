@@ -512,7 +512,7 @@ export interface paths {
         };
         /**
          * PromQL query over a time range
-         * @description Like `queryOpsMetrics`, evaluated every `step` seconds from `start` to `end`. Limits: range at most 31 days, step at least 60s, at most 1,500 points per series.
+         * @description Like `queryOpsMetrics`, evaluated every `step` seconds from `start` to `end`. Limits: range at most 31 days, step at least 60s, at most 1,500 points per series. Range selectors shorter than the step plus a minute (e.g. `[5m]` at a 12-minute step) are widened to that, so each point covers the whole gap since the previous one.
          */
         get: operations["queryOpsMetricsRange"];
         put?: never;

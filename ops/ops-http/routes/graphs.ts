@@ -14,6 +14,7 @@ import {
   type GraphLinkParams,
 } from "../graphs/signing.ts";
 import { enforceSeriesCap, promGet, validateRange } from "../metrics/prometheus.ts";
+import { widenRangeSelectors } from "../metrics/rate-window.ts";
 
 /** Graph images are public (signed), so cap renders per IP. */
 const imageLimiter = createFixedWindowLimiter({ limit: 60, windowMs: 60_000 });
@@ -92,7 +93,7 @@ async function renderSignedGraph(query: Record<string, unknown>, ip: string): Pr
     config,
     "/api/v1/query_range",
     new URLSearchParams({
-      query: params.q,
+      query: widenRangeSelectors(params.q, params.step),
       start: String(params.start),
       end: String(params.end),
       step: String(params.step),
