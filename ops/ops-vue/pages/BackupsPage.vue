@@ -49,56 +49,99 @@
           </div>
         </AdminPanel>
 
-        <AdminPanel padded class="backups-detail" data-test="backups-detail">
-          <p v-if="!selectedDay" class="saf-admin-empty ma-0">{{ strings.pick_day }}</p>
-          <template v-else>
-            <div class="text-subtitle-2 mb-2">{{ selectedLabel }}</div>
-            <p v-if="!dayBackups.length" class="saf-admin-empty ma-0">{{ strings.no_backups_day }}</p>
-            <div v-for="b in dayBackups" :key="b.id" class="backups-entry" data-test="backups-entry">
-              <div class="d-flex align-center ga-2 flex-wrap">
-                <StatusIcon :tone="toneOf(b.status)" />
-                <span class="font-weight-medium">{{ b.database }}</span>
-                <v-chip size="x-small" variant="tonal">{{ strings.tags[b.tag] ?? b.tag }}</v-chip>
-                <span class="text-caption text-medium-emphasis">{{ clock(b.started_at) }}</span>
-                <v-spacer />
-                <span class="text-caption text-medium-emphasis">{{ strings.statuses[b.status] ?? b.status }}</span>
-              </div>
-              <ul v-if="b.problems.length || b.error" class="backups-problems">
-                <li v-for="p in b.problems" :key="p">{{ p }}</li>
-                <li v-if="b.error">{{ b.error }}</li>
-              </ul>
-              <dl v-if="b.status !== 'failed' && b.status !== 'running'" class="backups-facts">
-                <dt>{{ strings.size }}</dt>
-                <dd>{{ bytes(b.size_bytes) }} <span class="text-medium-emphasis">({{ bytes(b.raw_bytes) }} uncompressed)</span></dd>
-                <dt>{{ strings.tables }}</dt>
-                <dd>
-                  {{ Object.keys(b.tables).length }} · {{ totalRows(b).toLocaleString() }} {{ strings.rows }}
-                  <span v-if="change(b) !== null" class="text-medium-emphasis">({{ change(b) }} {{ strings.change_since }})</span>
-                </dd>
-                <dt>{{ strings.migration }}</dt>
-                <dd class="saf-admin-mono">{{ b.migration ?? "—" }}</dd>
-                <dt>{{ strings.hash }}</dt>
-                <dd class="saf-admin-mono">{{ b.sha256?.slice(0, 16) }}…</dd>
-                <dt />
-                <dd class="text-medium-emphasis">{{ strings.verified(b.verified_ok, b.verified_at ? formatShortDateTime(b.verified_at) : null) }}</dd>
-              </dl>
-              <details v-if="Object.keys(b.tables).length" class="backups-tables">
-                <summary class="text-caption">{{ strings.table_list }}</summary>
-                <v-table density="compact">
-                  <tbody>
-                    <tr v-for="(t, name) in b.tables" :key="name">
-                      <td class="saf-admin-mono">{{ name }}</td>
-                      <td class="text-end">{{ t.rows.toLocaleString() }}</td>
-                      <td class="text-caption text-medium-emphasis saf-admin-hide-xs">{{ range(t) }}</td>
-                    </tr>
-                  </tbody>
-                </v-table>
-              </details>
-            </div>
-          </template>
+        <AdminPanel class="backups-runs" data-test="backups-runs">
+          <div v-if="selectedDay" class="d-flex align-center ga-2 px-4 pt-3 text-body-2 text-medium-emphasis">
+            {{ strings.showing_day(selectedLabel) }}
+            <v-btn size="x-small" variant="text" @click="selectedDay = null">{{ strings.show_all }}</v-btn>
+          </div>
+          <p v-if="!shownRuns.length" class="saf-admin-empty pa-4 ma-0">
+            {{ selectedDay ? strings.no_backups_day : strings.no_backups }}
+          </p>
+          <v-table v-else density="compact" hover>
+            <thead>
+              <tr>
+                <th>{{ strings.cols.when }}</th>
+                <th>{{ strings.cols.kind }}</th>
+                <th>{{ strings.cols.status }}</th>
+                <th class="text-end">{{ strings.cols.databases }}</th>
+                <th class="text-end">{{ strings.cols.size }}</th>
+                <th class="text-end saf-admin-hide-xs">{{ strings.cols.rows }}</th>
+                <th class="saf-admin-hide-xs">{{ strings.cols.verified }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="r in shownRuns" :key="r.key" class="backups-run" data-test="backups-run" @click="openRun = r">
+                <td class="text-no-wrap">{{ formatShortDateTime(r.started_at) }}</td>
+                <td>{{ strings.tags[r.tag] ?? r.tag }}</td>
+                <td class="text-no-wrap">
+                  <StatusIcon :tone="toneOf(r.status)" size="16" />
+                  <span class="ms-1">{{ strings.statuses[r.status] ?? r.status }}</span>
+                </td>
+                <td class="text-end">{{ r.backups.length }}</td>
+                <td class="text-end text-no-wrap">{{ bytes(r.size_bytes) }}</td>
+                <td class="text-end saf-admin-hide-xs">{{ r.rows.toLocaleString() }}</td>
+                <td class="saf-admin-hide-xs text-medium-emphasis">
+                  {{ r.verified === null ? strings.verified_short.none : r.verified ? strings.verified_short.ok : strings.verified_short.bad }}
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
         </AdminPanel>
       </div>
     </template>
+
+    <v-dialog :model-value="!!openRun" max-width="1120" scrollable @update:model-value="(v: boolean) => !v && (openRun = null)">
+      <v-card v-if="openRun" data-test="backups-dialog">
+        <v-card-title class="text-subtitle-1">
+          {{ strings.dialog_title(strings.tags[openRun.tag] ?? openRun.tag, formatShortDateTime(openRun.started_at)) }}
+        </v-card-title>
+        <v-tabs v-model="openDb" density="compact" show-arrows>
+          <v-tab v-for="b in openRun.backups" :key="b.id" :value="b.id" data-test="backups-db-tab">
+            <StatusIcon :tone="toneOf(b.status)" size="14" class="me-1" />{{ b.database }}
+          </v-tab>
+        </v-tabs>
+        <v-card-text v-if="openBackup" class="pt-3">
+          <ul v-if="openBackup.problems.length || openBackup.error" class="backups-problems">
+            <li v-for="p in openBackup.problems" :key="p">{{ p }}</li>
+            <li v-if="openBackup.error">{{ openBackup.error }}</li>
+          </ul>
+          <dl class="backups-facts">
+            <dt>{{ strings.size }}</dt>
+            <dd>{{ bytes(openBackup.size_bytes) }} <span class="text-medium-emphasis">({{ bytes(openBackup.raw_bytes) }} uncompressed)</span></dd>
+            <dt>{{ strings.migration }}</dt>
+            <dd class="saf-admin-mono">{{ openBackup.migration ?? "—" }}</dd>
+            <dt>{{ strings.hash }}</dt>
+            <dd class="saf-admin-mono">{{ openBackup.sha256 ?? "—" }}</dd>
+            <dt />
+            <dd class="text-medium-emphasis">
+              {{ strings.verified(openBackup.verified_ok, openBackup.verified_at ? formatShortDateTime(openBackup.verified_at) : null) }}
+            </dd>
+          </dl>
+          <v-table v-if="tableRows.length" density="compact" class="mt-3" data-test="backups-tables">
+            <thead>
+              <tr>
+                <th>{{ strings.table_cols.table }}</th>
+                <th class="text-end">{{ strings.table_cols.rows }}</th>
+                <th class="saf-admin-hide-xs">{{ strings.table_cols.created }}</th>
+                <th class="saf-admin-hide-xs">{{ strings.table_cols.updated }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="t in tableRows" :key="t.name" data-test="backups-table-row">
+                <td class="saf-admin-mono">{{ t.name }}</td>
+                <td class="text-end">{{ t.rows.toLocaleString() }}</td>
+                <td class="text-caption saf-admin-hide-xs text-no-wrap">{{ t.created }}</td>
+                <td class="text-caption saf-admin-hide-xs text-no-wrap">{{ t.updated }}</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="openRun = null">{{ strings.close }}</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </ContentWidth>
 </template>
 
@@ -110,6 +153,7 @@ import type { OpsBackupResponse } from "@saflib/ops-spec";
 import { useOpsBackups, useRunOpsBackups } from "../requests/queries.ts";
 import StatusIcon from "../components/StatusIcon.vue";
 import { formatBytes } from "./metric-format.ts";
+import { formatStatTime, groupBackupRuns, type BackupRun } from "./backup-runs.ts";
 import { ops_backups as strings } from "./Backups.strings.ts";
 
 const query = useOpsBackups();
@@ -121,7 +165,7 @@ const anyRunning = computed(() => backups.value.some((b) => b.status === "runnin
 const dayKey = (iso: string | Date) => new Date(iso).toISOString().slice(0, 10);
 const todayKey = dayKey(new Date());
 const month = ref(new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)));
-const selectedDay = ref<string | null>(todayKey);
+const selectedDay = ref<string | null>(null);
 const shiftMonth = (n: number) => {
   month.value = new Date(Date.UTC(month.value.getUTCFullYear(), month.value.getUTCMonth() + n, 1));
 };
@@ -166,10 +210,25 @@ const monthDays = computed(() => {
 // Monday-first grid.
 const leadingBlanks = computed(() => (month.value.getUTCDay() + 6) % 7);
 
-const dayBackups = computed(() =>
-  selectedDay.value
-    ? [...(byDay.value.get(selectedDay.value) ?? [])].sort((a, b) => a.started_at.localeCompare(b.started_at))
-    : [],
+const runs = computed(() => groupBackupRuns(backups.value));
+const shownRuns = computed(() =>
+  selectedDay.value ? runs.value.filter((r) => dayKey(r.started_at) === selectedDay.value) : runs.value,
+);
+const openRun = ref<BackupRun | null>(null);
+const openDb = ref<string | null>(null);
+watch(openRun, (r) => {
+  openDb.value = r?.backups[0]?.id ?? null;
+});
+const openBackup = computed(() => openRun.value?.backups.find((b) => b.id === openDb.value) ?? null);
+const tableRows = computed(() =>
+  Object.entries(openBackup.value?.tables ?? {})
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, t]) => ({
+      name,
+      rows: t.rows,
+      created: t.created_min != null ? `${formatStatTime(t.created_min)} → ${formatStatTime(t.created_max)}` : "—",
+      updated: t.updated_max != null ? `${formatStatTime(t.updated_min)} → ${formatStatTime(t.updated_max)}` : "—",
+    })),
 );
 const selectedLabel = computed(() =>
   selectedDay.value
@@ -181,27 +240,7 @@ watch(month, (m) => {
 });
 
 const toneOf = (s: string): "ok" | "warn" | "bad" => (s === "ok" ? "ok" : s === "failed" ? "bad" : "warn");
-const clock = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 const bytes = (n: number | null) => (n === null ? "—" : formatBytes(n));
-const totalRows = (b: OpsBackupResponse) => Object.values(b.tables).reduce((s, t) => s + t.rows, 0);
-
-/** Row change versus the previous finished backup of the same database. */
-function change(b: OpsBackupResponse): string | null {
-  const prev = backups.value.find(
-    (o) => o.database === b.database && o.started_at < b.started_at && (o.status === "ok" || o.status === "suspicious"),
-  );
-  if (!prev) return null;
-  const d = totalRows(b) - totalRows(prev);
-  return d === 0 ? "no change" : `${d > 0 ? "+" : "−"}${Math.abs(d).toLocaleString()}`;
-}
-
-function range(t: OpsBackupResponse["tables"][string]): string {
-  const fmt = (v: unknown) => (typeof v === "number" && v > 1e11 ? formatShortDateTime(new Date(v).toISOString()) : String(v));
-  const parts: string[] = [];
-  if (t.created_min != null) parts.push(`created ${fmt(t.created_min)} → ${fmt(t.created_max)}`);
-  if (t.updated_max != null) parts.push(`updated → ${fmt(t.updated_max)}`);
-  return parts.join(" · ");
-}
 </script>
 
 <style scoped>
@@ -290,13 +329,11 @@ function range(t: OpsBackupResponse["tables"][string]): string {
   font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
-.backups-entry + .backups-entry {
-  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  margin-top: 12px;
-  padding-top: 12px;
+.backups-run {
+  cursor: pointer;
 }
 .backups-problems {
-  margin: 6px 0 0 28px;
+  margin: 0 0 8px 18px;
   font-size: 0.8125rem;
   color: rgb(var(--v-theme-warning));
 }
@@ -304,7 +341,7 @@ function range(t: OpsBackupResponse["tables"][string]): string {
   display: grid;
   grid-template-columns: max-content 1fr;
   gap: 2px 16px;
-  margin: 8px 0 0 28px;
+  margin: 0;
   font-size: 0.8125rem;
 }
 .backups-facts dt {
@@ -312,8 +349,5 @@ function range(t: OpsBackupResponse["tables"][string]): string {
 }
 .backups-facts dd {
   margin: 0;
-}
-.backups-tables {
-  margin: 6px 0 0 28px;
 }
 </style>
