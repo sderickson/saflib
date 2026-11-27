@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/utils";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { opsDbManager } from "../../instances.ts";
 import { opsBoots, type OpsBoot } from "../../schema.ts";
 
@@ -48,7 +48,7 @@ export const recordBoot = queryWrapper(
     const db = opsDbManager.get(dbKey)!;
     const previous = await db.query.opsBoots.findFirst({
       where: eq(opsBoots.service_name, params.service_name),
-      orderBy: [desc(opsBoots.started_at)],
+      orderBy: [desc(opsBoots.started_at), desc(sql`rowid`)],
     });
     const [row] = await db
       .insert(opsBoots)
