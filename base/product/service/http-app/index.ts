@@ -9,7 +9,9 @@ import { createKratosAdminRouter } from "@saflib/ory-kratos-http";
 import { createDevLogsRouter } from "@saflib/node-log-http";
 import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 import { baseDb, baseDbManager } from "@saflib/base-db/instances";
-import { createBaseOpsRouter, isOpsApiRequest } from "@saflib/base-ops";
+import { createBaseOpsRouter, getBaseRateLimitDbPath, isOpsApiRequest } from "@saflib/base-ops";
+import { createProductEventsRouter, productEventNames } from "@saflib/analytics-http";
+import { jsonSpec } from "@saflib/base-spec";
 import { kratosCheck, probeCheck } from "@saflib/ops-http";
 import { createAuditRotationHealthCheck } from "@saflib/audit-http/express/audit-rotation-health-check";
 import { auditDigestTile } from "@saflib/audit-http/express/audit-digest-tile";
@@ -72,6 +74,11 @@ export function buildBaseHttpApp(
     runInContext: (next) => baseServiceStorage.run(context, next),
     publicRouters: [
       createErrorsRouter(),
+      // Browser product events: only names declared in the spec's ProductEvent.
+      createProductEventsRouter({
+        allowedEvents: productEventNames(jsonSpec),
+        rateLimitDbPath: getBaseRateLimitDbPath(),
+      }),
       // Development-only observability routes.
       ...(isDevelopmentDeployment()
         ? [

@@ -37,6 +37,10 @@ const opsDbAccessor = createOnDiskDbKeyAccessor({
 /** Opaque key for `@saflib/ops-db` (ops tokens), separate from the main app DB. */
 export const getBaseOpsDbKey = opsDbAccessor.getDbKey;
 
+/** Rate-limit counts (SQLite), on this package's data volume so blue/green share them. */
+export const getBaseRateLimitDbPath = () =>
+  path.join(dataDir, `rate-limit-${process.env.DEPLOYMENT_NAME ?? "development"}.sqlite`);
+
 const logsDbAccessor = createOnDiskDbKeyAccessor({
   packageUrl: import.meta.url,
   filePrefix: "logs-db",

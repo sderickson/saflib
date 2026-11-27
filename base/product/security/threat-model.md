@@ -38,6 +38,10 @@ Keep this list in sync with Caddy `@public_monolith`, `isPublicMonolithRoute` in
 - `GET /health`
 - `POST /csp-violations` (also mounted via `@saflib/errors-http` in Express global middleware)
 - `POST /user-configs/unsubscribe-marketing`
+- `POST /product-events` (`@saflib/analytics-http`): browser product events, anonymous allowed. Only
+  event names declared in the spec's `ProductEvent`, properties ≤ 2 KB, rate limited (per user, per
+  IP, and all anonymous traffic) with counts in SQLite on the data volume. A session cookie, when
+  present, is resolved by the app (Kratos whoami) to attribute the event.
 - `POST /errors/record` (global middleware chrome)
 - `GET /dev/logs`, `GET /dev/logs/stream` (development only; handler 403 otherwise)
 

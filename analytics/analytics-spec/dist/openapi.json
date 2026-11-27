@@ -1,0 +1,113 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Product Analytics API",
+    "version": "2.0.0",
+    "description": "Browser product events. The server records them the same way as server-side events (logs DB, Prometheus counter, the analytics vendor).\n"
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/product-events": {
+      "post": {
+        "summary": "Record a product event from the browser",
+        "description": "Public, so anonymous visitors' events count too. Signed-in users are attributed (subject to their analytics consent); anonymous events get a random id per event. Rate limited per user, per IP and for all anonymous traffic; events over the limit are dropped (429).\n",
+        "operationId": "recordProductEvent",
+        "x-public": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "product_event"
+                ],
+                "properties": {
+                  "product_event": {
+                    "type": "object",
+                    "required": [
+                      "event"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "event": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/ -]{0,99}$"
+                      },
+                      "org": {
+                        "type": "string",
+                        "maxLength": 100
+                      },
+                      "client": {
+                        "type": "string",
+                        "maxLength": 100
+                      },
+                      "view": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "component": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "context": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "The event's properties (at most ~2 KB as JSON)."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Recorded."
+          },
+          "400": {
+            "description": "Invalid body, unknown event name, or properties too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited; the event was dropped.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

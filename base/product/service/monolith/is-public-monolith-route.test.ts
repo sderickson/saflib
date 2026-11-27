@@ -33,6 +33,11 @@ describe("isPublicMonolithRoute", () => {
     expect(isPublicMonolithRoute(req("GET", "/admin/errors"))).toBe(false);
   });
 
+  it("allows browser product events (POST only)", () => {
+    expect(isPublicMonolithRoute(req("POST", "/product-events"))).toBe(true);
+    expect(isPublicMonolithRoute(req("GET", "/product-events"))).toBe(false);
+  });
+
   it("denies authenticated product routes", () => {
     expect(isPublicMonolithRoute(req("GET", "/user-configs/mine"))).toBe(
       false,

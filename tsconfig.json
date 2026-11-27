@@ -5,7 +5,16 @@
   },
   "references": [
     {
+      "path": "./analytics/analytics-http"
+    },
+    {
+      "path": "./analytics/analytics-sdk"
+    },
+    {
       "path": "./analytics/analytics-service"
+    },
+    {
+      "path": "./analytics/analytics-spec"
     },
     {
       "path": "./audit/audit-db"

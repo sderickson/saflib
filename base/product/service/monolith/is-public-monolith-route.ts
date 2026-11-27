@@ -12,6 +12,8 @@ const PUBLIC_POST_PATHS = new Set([
   "/csp-violations",
   "/errors/record",
   "/user-configs/unsubscribe-marketing",
+  // Browser product events (anonymous visitors too); rate limited in @saflib/analytics-http.
+  "/product-events",
 ]);
 
 const PUBLIC_GET_PATHS = new Set([

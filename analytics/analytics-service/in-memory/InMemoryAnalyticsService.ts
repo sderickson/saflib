@@ -26,9 +26,19 @@ export function clearCapturedAnalyticsCalls(): void {
   capturedAnalyticsCalls.length = 0;
 }
 
+/** Calls kept (the most recent); without a vendor key this runs in production too. */
+const MAX_CAPTURED_CALLS = 1000;
+
+function keep(call: CapturedAnalyticsCall): void {
+  capturedAnalyticsCalls.push(call);
+  if (capturedAnalyticsCalls.length > MAX_CAPTURED_CALLS) {
+    capturedAnalyticsCalls.splice(0, capturedAnalyticsCalls.length - MAX_CAPTURED_CALLS);
+  }
+}
+
 export class InMemoryAnalyticsService extends AnalyticsServiceBase {
   identify(props: IdentifyProps): void {
-    capturedAnalyticsCalls.push({
+    keep({
       kind: "identify",
       distinctId: props.distinctId,
       properties: props.properties,
@@ -52,7 +62,7 @@ export class InMemoryAnalyticsService extends AnalyticsServiceBase {
         ? { context: withoutClientIdentifiers(event.context) }
         : {}),
     });
-    capturedAnalyticsCalls.push({
+    keep({
       kind: "capture",
       distinctId: event.distinctId,
       event: event.event,

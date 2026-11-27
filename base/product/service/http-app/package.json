@@ -14,6 +14,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/analytics-http": "*",
     "@saflib/audit-http": "*",
     "@saflib/base-audit": "*",
     "@saflib/base-cron": "*",
@@ -21,6 +22,7 @@
     "@saflib/base-jobs": "*",
     "@saflib/base-ops": "*",
     "@saflib/base-service-common": "*",
+    "@saflib/base-spec": "*",
     "@saflib/cron-http": "*",
     "@saflib/drizzle": "*",
     "@saflib/email-service": "*",

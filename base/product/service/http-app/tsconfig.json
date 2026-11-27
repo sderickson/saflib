@@ -2,6 +2,9 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
+      "path": "../../../../analytics/analytics-http"
+    },
+    {
       "path": "../../../../audit/audit-http"
     },
     {
@@ -60,6 +63,9 @@
     },
     {
       "path": "../ops"
+    },
+    {
+      "path": "../spec"
     }
   ],
   "compilerOptions": {

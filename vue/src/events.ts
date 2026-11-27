@@ -13,6 +13,13 @@ export type ProductEventConnector<T extends ProductEventCommon = ProductEventCom
 
 const productEventConnectors: ProductEventConnector[] = [];
 
+let forwardedToServer = false;
+
+/** Product events reach the analytics vendor through the product's API; don't also send them from the browser. */
+export function setProductEventsForwardedToServer(on: boolean): void {
+  forwardedToServer = on;
+}
+
 /**
  * Register an optional sink for {@link commonEventLogger} (PostHog init,
  * dev backend ring buffer, etc.). Connectors run after built-in globals
@@ -151,7 +158,10 @@ export const commonEventLogger = <T extends ProductEventCommon>(event: T) => {
     log("- to dataLayer");
   }
 
-  if ("posthog" in globalThis) {
+  // When events go through the product's API (which forwards them to
+  // PostHog), sending them from the browser too would count them twice.
+  // posthog-js still does autocapture, replays and flags.
+  if ("posthog" in globalThis && !forwardedToServer) {
     // @ts-expect-error - posthog is not typed
     globalThis.posthog.capture(event.event, event.context);
     log("- to posthog");

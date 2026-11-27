@@ -48,7 +48,13 @@
       "path": "../../../../secret-store"
     },
     {
+      "path": "../../../../vendors/brevo"
+    },
+    {
       "path": "../../../../vendors/loki"
+    },
+    {
+      "path": "../../../../vendors/posthog"
     },
     {
       "path": "../../../../vendors/sentry-node"
@@ -58,9 +64,6 @@
     },
     {
       "path": "../common"
-    },
-    {
-      "path": "../ops"
     },
     {
       "path": "../cron"
@@ -84,10 +87,10 @@
       "path": "../kratos-handlers"
     },
     {
-      "path": "../spec"
+      "path": "../ops"
     },
     {
-      "path": "../../../../vendors/brevo"
+      "path": "../spec"
     }
   ]
 }

@@ -37,6 +37,7 @@
     "@saflib/secret-store": "*",
     "@saflib/vendors-brevo": "*",
     "@saflib/vendors-loki": "*",
+    "@saflib/vendors-posthog": "*",
     "@saflib/vendors-sentry-node": "*"
   },
   "sideEffects": false,

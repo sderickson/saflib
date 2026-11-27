@@ -37,6 +37,10 @@ export function createSpaMain(options: CreateSpaMainOptions): () => void {
       configureAppDocumentTitle(options.title);
     }
     options.beforeMount?.();
+    // Browser product events go to the product's API, like server-side ones.
+    void import("./server-product-events.ts").then(({ registerServerProductEventConnector }) => {
+      registerServerProductEventConnector();
+    });
     createVueApp(options.spa, {
       router: options.createRouter(),
       asyncPageError: options.asyncPageError,

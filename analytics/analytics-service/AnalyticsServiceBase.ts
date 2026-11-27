@@ -43,11 +43,24 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
         "Analytics capture requires SafContext.auth.userId (authenticated request).",
       );
     }
+    this.record(ctx, event, String(userId).trim());
+  }
+
+  /**
+   * An event from someone not signed in (e.g. a browser event on a public
+   * page): counted and logged like any other, with a fresh id per event.
+   */
+  captureAnonymous(event: CommonEvent): void {
+    this.record(getSafContext(), event, null);
+  }
+
+  private record(ctx: SafContext, event: CommonEvent, userId: string | null): void {
     // A user who hasn't agreed to analytics still counts toward product
     // events, but anonymously: a fresh id per event (nothing links events to
-    // each other or to the user) and no PostHog person profile.
-    const consented = hasAnalyticsConsent(String(userId).trim());
-    const distinctId = consented ? String(userId).trim() : randomUUID();
+    // each other or to the user) and no PostHog person profile. Anonymous
+    // visitors are treated the same way.
+    const consented = userId !== null && hasAnalyticsConsent(userId);
+    const distinctId = consented ? userId : randomUUID();
     const fromContext = this.getCapturePropertiesFromSafContext(ctx);
     const fromEnvelope: Record<string, unknown> = {};
     const putEnvelope = (key: string, value: string | undefined) => {
