@@ -64,6 +64,7 @@ alert wakes you.
 | Cron failing | `GET /ops/health` (`cron` check) | A scheduled job's last run failed |
 | Dependencies: advisories | `GET /ops/dependencies` | A vulnerable package; `fixed_in` says what to bump to. An `ecosystem` like `Debian:12` means the base image: rebuild it |
 | Slow or unreliable endpoint | the digest's `endpoints`, then PromQL below | One route regressed |
+| Backups tile `warn`/`bad` | `GET /ops/backups` | A failed or missing backup, or one where a table shrank (`problems`) |
 | Trouble started recently | `GET /ops/deploys` (each deploy's commits) | A deploy; compare its commits with the one before |
 
 ## Reading logs
@@ -129,6 +130,21 @@ Things worth a line in the report, compared with the baseline:
 Only successful flows reach the log (Kratos's hooks fire after success), so
 failed sign-in attempts aren't visible through this API yet.
 
+## Backups
+
+`GET /ops/backups` lists the app's own backups of each database (daily, at
+each deploy, before migrations, by hand), newest first. Each has a
+`status`: `ok` (checked), `suspicious` (stored, but a table went empty or
+shrank sharply since the last good one; see `problems`), `failed` (see
+`error`) or `running`. `tables` has per-table row counts and created/updated
+ranges; `verified_ok` is the latest weekly read-back (stored object
+downloaded, hash compared).
+
+Report a `failed` or `suspicious` backup, a database with no good backup in
+over a day and a half, or `verified_ok: false`. A suspicious backup often
+means data was deleted, by a person or a bug; say which tables and by how
+much. Restoring is never done through the API.
+
 ## Product activity
 
 Product events (sign-ups, key actions) are rows in the logs DB, kept 180
@@ -183,7 +199,5 @@ jobs exist and that they run on schedule. Unusual is relative: a doubling of
 ## Not in the API yet
 
 - **Failed sign-in attempts** (see Account activity).
-- **Backups** aren't reported. If the host snapshots the disk, check that in
-  the host's console.
 
 When you hit one of these, say so in your report rather than guessing.
