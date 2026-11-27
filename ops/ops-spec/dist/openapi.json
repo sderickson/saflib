@@ -35,6 +35,9 @@
       "OpsAuditEvent": {
         "$ref": "#/components/schemas/ops-audit-event"
       },
+      "OpsBackup": {
+        "$ref": "#/components/schemas/ops-backup"
+      },
       "OpsLogEntry": {
         "$ref": "#/components/schemas/ops-log-entry"
       },
@@ -1220,6 +1223,144 @@
           }
         }
       },
+      "ops-backup": {
+        "type": "object",
+        "description": "One backup of one database.",
+        "required": [
+          "id",
+          "database",
+          "tag",
+          "status",
+          "started_at",
+          "finished_at",
+          "size_bytes",
+          "raw_bytes",
+          "sha256",
+          "object_key",
+          "migration",
+          "tables",
+          "problems",
+          "error",
+          "verified_at",
+          "verified_ok"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "database": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string",
+            "enum": [
+              "daily",
+              "deploy",
+              "pre-migration",
+              "manual"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "ok",
+              "suspicious",
+              "failed"
+            ],
+            "description": "`suspicious`: stored, but a table went empty or shrank sharply since the last good backup (see `problems`)."
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "size_bytes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Stored (compressed) size."
+          },
+          "raw_bytes": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "sha256": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "object_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Where it is in the backups store (for restores)."
+          },
+          "migration": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The database's latest migration when it was backed up."
+          },
+          "tables": {
+            "type": "object",
+            "description": "Per table, row count and created/updated ranges (where the columns exist).",
+            "additionalProperties": {
+              "type": "object",
+              "required": [
+                "rows"
+              ],
+              "properties": {
+                "rows": {
+                  "type": "integer"
+                },
+                "created_min": {},
+                "created_max": {},
+                "updated_min": {},
+                "updated_max": {}
+              }
+            }
+          },
+          "problems": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "verified_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Last read-back (the stored object downloaded and its hash compared)."
+          },
+          "verified_ok": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      },
       "ops-audit-event": {
         "type": "object",
         "description": "One audit log row: who did what, when and with what outcome. Includes sign-ins, sign-ups, recovery and settings changes from the identity service (`kratos.*` events) as well as admin and API actions.\n",
@@ -2380,6 +2521,173 @@
           },
           "429": {
             "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/backups": {
+      "get": {
+        "summary": "Backups, newest first",
+        "description": "The app's own backups of its databases (and Kratos's): daily, at each deploy, before migrations and by hand. Each is checked when made (integrity, per-table stats compared with the last good one), stored with a hash, and read back weekly. `configured` is false when the product has no backups store; the host's disk snapshots are the other layer.\n",
+        "operationId": "listOpsBackups",
+        "security": [
+          {
+            "ops-token": [
+              "ops:read"
+            ]
+          },
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 400,
+              "default": 62
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Backups.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "configured",
+                    "retention_days",
+                    "databases",
+                    "backups"
+                  ],
+                  "properties": {
+                    "configured": {
+                      "type": "boolean"
+                    },
+                    "retention_days": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "databases": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "backups": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ops-backup"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, unknown, revoked or expired token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the required scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ops/backups/run": {
+      "post": {
+        "summary": "Back up every database now",
+        "description": "Starts a manual backup of each database and returns right away. Site admins only.",
+        "operationId": "runOpsBackups",
+        "security": [
+          {
+            "session": [
+              "site-admin"
+            ]
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Started.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "started"
+                  ],
+                  "properties": {
+                    "started": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a site admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Backups aren't configured.",
             "content": {
               "application/json": {
                 "schema": {

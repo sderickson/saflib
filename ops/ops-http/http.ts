@@ -22,6 +22,9 @@ import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
 import type { DigestTileProvider } from "./digest/tiles.ts";
 import { builtInProbes, RunRegistry, type DiagnosticProbe } from "./diagnostics/probes.ts";
 import type { OpsAuditSource } from "./audit/source.ts";
+import type { OpsBackupsConfig } from "./backups/runner.ts";
+import { startBackups } from "./backups/scheduler.ts";
+import { backupsTile } from "./backups/tile.ts";
 
 export interface OpsRouterOptions {
   /** Connection to the ops database; connects with `dbOptions` when omitted. */
@@ -70,6 +73,14 @@ export interface OpsRouterOptions {
    * `opsAuditSource` in `@saflib/audit-http`. Omitted: the endpoint 404s.
    */
   audit?: OpsAuditSource;
+  /**
+   * The app's own backups: which SQLite databases, the backups store (a
+   * bucket of its own), and retention (days; keep it well under what the
+   * product's terms allow for holding deleted data). Backups run daily, at
+   * each deploy and by hand, are checked and read back, and show on Status.
+   * Omitted: none, and a production Status tile says so.
+   */
+  backups?: OpsBackupsConfig;
   /**
    * Daily dependency checks (OSV advisories, npm latest) of the image's
    * lockfile. On by default when a lockfile exists at
@@ -137,6 +148,7 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
     metrics,
     digestTiles: options.digestTiles,
     audit: options.audit,
+    backups: options.backups ? { dbKey, config: options.backups } : undefined,
     diagnostics: {
       probes: [
         ...builtInProbes({
@@ -158,6 +170,15 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
       ...(options.dependencies ? (options.dependencies.acceptedAdvisories ?? []) : []),
     ],
   };
+  // Backups get a Status tile whether or not they're configured (production
+  // without them says so).
+  context.digestTiles = [backupsTile(context.backups), ...(options.digestTiles ?? [])];
+  if (context.backups && process.env.NODE_ENV !== "test") {
+    startBackups(context.backups, {
+      // A deploy backup when this process is the first of a new build.
+      buildRef: context.currentBoot.then((b) => (b?.new_build ? b.build_ref : null)),
+    });
+  }
   registerHealthCheckMetric(context.healthChecks);
   const manifest =
     options.dependencies === false || process.env.NODE_ENV === "test"

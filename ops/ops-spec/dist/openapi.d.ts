@@ -86,6 +86,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ops/backups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Backups, newest first
+         * @description The app's own backups of its databases (and Kratos's): daily, at each deploy, before migrations and by hand. Each is checked when made (integrity, per-table stats compared with the last good one), stored with a hash, and read back weekly. `configured` is false when the product has no backups store; the host's disk snapshots are the other layer.
+         */
+        get: operations["listOpsBackups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ops/backups/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Back up every database now
+         * @description Starts a manual backup of each database and returns right away. Site admins only.
+         */
+        post: operations["runOpsBackups"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ops/audit": {
         parameters: {
             query?: never;
@@ -690,6 +730,7 @@ export interface components {
         OpsToken: components["schemas"]["ops-token"];
         OpsBoot: components["schemas"]["ops-boot"];
         OpsAuditEvent: components["schemas"]["ops-audit-event"];
+        OpsBackup: components["schemas"]["ops-backup"];
         OpsLogEntry: components["schemas"]["ops-log-entry"];
         OpsLogGroup: components["schemas"]["ops-log-group"];
         OpsLogTemplate: components["schemas"]["ops-log-template"];
@@ -1004,6 +1045,48 @@ export interface components {
                 p95_upper_ms: number | null;
                 rss_bytes: number | null;
             };
+        };
+        /** @description One backup of one database. */
+        "ops-backup": {
+            id: string;
+            database: string;
+            /** @enum {string} */
+            tag: "daily" | "deploy" | "pre-migration" | "manual";
+            /**
+             * @description `suspicious`: stored, but a table went empty or shrank sharply since the last good backup (see `problems`).
+             * @enum {string}
+             */
+            status: "running" | "ok" | "suspicious" | "failed";
+            /** Format: date-time */
+            started_at: string;
+            /** Format: date-time */
+            finished_at: string | null;
+            /** @description Stored (compressed) size. */
+            size_bytes: number | null;
+            raw_bytes: number | null;
+            sha256: string | null;
+            /** @description Where it is in the backups store (for restores). */
+            object_key: string | null;
+            /** @description The database's latest migration when it was backed up. */
+            migration: string | null;
+            /** @description Per table, row count and created/updated ranges (where the columns exist). */
+            tables: {
+                [key: string]: {
+                    rows: number;
+                    created_min?: unknown;
+                    created_max?: unknown;
+                    updated_min?: unknown;
+                    updated_max?: unknown;
+                };
+            };
+            problems: string[];
+            error: string | null;
+            /**
+             * Format: date-time
+             * @description Last read-back (the stored object downloaded and its hash compared).
+             */
+            verified_at: string | null;
+            verified_ok: boolean | null;
         };
         /** @description One audit log row: who did what, when and with what outcome. Includes sign-ins, sign-ups, recovery and settings changes from the identity service (`kratos.*` events) as well as admin and API actions. */
         "ops-audit-event": {
@@ -1429,6 +1512,109 @@ export interface operations {
             };
             /** @description Rate limited. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listOpsBackups: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Backups. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        configured: boolean;
+                        retention_days: number | null;
+                        databases: string[];
+                        backups: components["schemas"]["ops-backup"][];
+                    };
+                };
+            };
+            /** @description Missing, malformed, unknown, revoked or expired token. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description The token lacks the required scope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Rate limited. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    runOpsBackups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Started. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        started: boolean;
+                    };
+                };
+            };
+            /** @description Not signed in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Not a site admin. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Backups aren't configured. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

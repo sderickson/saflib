@@ -25,6 +25,7 @@
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/node-log-db": "*",
+    "@saflib/object-store": "*",
     "@saflib/ops-db": "*",
     "@saflib/ops-spec": "*",
     "@saflib/rate-limit": "*",

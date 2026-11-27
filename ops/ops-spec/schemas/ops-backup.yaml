@@ -1,0 +1,57 @@
+type: object
+description: One backup of one database.
+required: [ id, database, tag, status, started_at, finished_at, size_bytes, raw_bytes, sha256, object_key, migration, tables, problems, error, verified_at, verified_ok ]
+properties:
+  id:
+    type: string
+  database:
+    type: string
+  tag:
+    type: string
+    enum: [ daily, deploy, pre-migration, manual ]
+  status:
+    type: string
+    enum: [ running, ok, suspicious, failed ]
+    description: "`suspicious`: stored, but a table went empty or shrank sharply since the last good backup (see `problems`)."
+  started_at:
+    type: string
+    format: date-time
+  finished_at:
+    type: [ string, "null" ]
+    format: date-time
+  size_bytes:
+    type: [ integer, "null" ]
+    description: Stored (compressed) size.
+  raw_bytes:
+    type: [ integer, "null" ]
+  sha256:
+    type: [ string, "null" ]
+  object_key:
+    type: [ string, "null" ]
+    description: Where it is in the backups store (for restores).
+  migration:
+    type: [ string, "null" ]
+    description: The database's latest migration when it was backed up.
+  tables:
+    type: object
+    description: Per table, row count and created/updated ranges (where the columns exist).
+    additionalProperties:
+      type: object
+      required: [ rows ]
+      properties:
+        rows: { type: integer }
+        created_min: {}
+        created_max: {}
+        updated_min: {}
+        updated_max: {}
+  problems:
+    type: array
+    items: { type: string }
+  error:
+    type: [ string, "null" ]
+  verified_at:
+    type: [ string, "null" ]
+    format: date-time
+    description: Last read-back (the stored object downloaded and its hash compared).
+  verified_ok:
+    type: [ boolean, "null" ]

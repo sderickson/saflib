@@ -32,6 +32,8 @@ components:
       $ref: "./schemas/ops-boot.yaml"
     OpsAuditEvent:
       $ref: "./schemas/ops-audit-event.yaml"
+    OpsBackup:
+      $ref: "./schemas/ops-backup.yaml"
     OpsLogEntry:
       $ref: "./schemas/ops-log-entry.yaml"
     OpsLogGroup:
@@ -70,6 +72,12 @@ paths:
   /ops/deploys:
     get:
       $ref: "./routes/deploys.yaml#/listOpsDeploys"
+  /ops/backups:
+    get:
+      $ref: "./routes/backups.yaml#/listOpsBackups"
+  /ops/backups/run:
+    post:
+      $ref: "./routes/backups.yaml#/runOpsBackups"
   /ops/audit:
     get:
       $ref: "./routes/audit.yaml#/listOpsAuditEvents"

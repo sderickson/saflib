@@ -35,3 +35,4 @@ export type OpsRequestBody = ExtractRequestBody<operations>;
 export type OpsDigestTile = components["schemas"]["OpsDigestTile"];
 export type OpsDiagnosticProbe = components["schemas"]["OpsDiagnosticProbe"];
 export type OpsAuditEvent = components["schemas"]["OpsAuditEvent"];
+export type OpsBackupResponse = components["schemas"]["OpsBackup"];
