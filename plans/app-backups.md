@@ -24,10 +24,21 @@ migration tool.
   own bucket).
 - **Kratos's DB** (identities, credentials, second factors; losing it locks
   everyone out). It lives in Kratos's container, so its volume is also
-  mounted into the app container (read-write, so SQLite's WAL works).
+  mounted into the app container (read-write, so SQLite's WAL works). This
+  barely widens exposure: the app's admin API already reads identities.
 - Not logs or issues: large and rebuildable.
 
-## A backup run (daily job)
+## When backups are made
+
+- **Daily** (job, scheduled by cron), tagged `daily`.
+- **At each deploy**, tagged `deploy`: when a process boots on a new build
+  (the ops boot record's `new_build`), once per build.
+- **Before migrations**, tagged `pre-migration`: when a DB has pending
+  migrations at startup, it's backed up before they run. This is the
+  backup you want if a migration goes wrong.
+- **By hand** ("back up now"), tagged `manual`.
+
+## A backup run
 
 For each database:
 
@@ -53,9 +64,18 @@ catches objects that went missing or changed after upload.
 
 ## Cleanup (cron)
 
-Keep 7 daily, 4 weekly and 6 monthly backups per DB. Never delete the most
-recent backup that passed, so a run of suspicious or failed backups can't
-push out the last good one.
+A retention policy per product, as a maximum age plus optional weekly and
+monthly keeps. Every tag ages out the same way (no backup is kept forever).
+
+- Template default: 14 days, no weekly or monthly keeps.
+- Products whose terms cap how long data is held must keep the whole
+  window under that cap, with margin: deleted customer data must not live
+  on in backups past what the terms promise. (E.g. terms of one month →
+  14 days.)
+
+The most recent backup that passed is never deleted, so a run of
+suspicious or failed backups can't push out the last good one (it still
+ages out once a newer backup passes).
 
 Turn on the bucket's soft delete (deleted objects recoverable for ~7 days)
 as cheap protection against the app deleting too much. The app's key can
@@ -64,7 +84,8 @@ delete, since it does the cleanup; disk snapshots are the backstop.
 ## Admin: Status → Backups
 
 - A calendar month, one dot per day: green = checked, yellow = suspicious,
-  red = failed or missing.
+  red = failed or missing. Deploy and pre-migration backups show as small
+  marks on their day.
 - Click a day to see each DB's size, row counts, timestamp range, change
   since the previous backup, hash and last read-back.
 - "Back up now" (enqueues the job). No restore or download buttons.
@@ -88,17 +109,12 @@ The existing suite becomes this: same object-store plumbing, but run as
 base-jobs and cron, reported through ops, and no HTTP restore. In the
 template, so every product gets it.
 
-## Open questions
-
-1. Mount Kratos's volume into the app container (assumed above)?
-2. Daily backups (assumed above), or hourly? Hourly is cheap at these sizes
-   but adds 24 entries a day.
-
 ## Phases
 
 1. Backup job: `VACUUM INTO`, checks, stats, comparison, upload, run
-   records. Backups bucket config in the template.
-2. Cleanup cron; weekly read-back.
+   records, tags. Backups bucket config in the template.
+2. Cleanup cron with the retention policy; weekly read-back; deploy and
+   pre-migration backups.
 3. Status → Backups (calendar, day detail, tile); `/ops/backups`; runbook.
 4. Kratos volume mount; Kratos DB included.
 5. Restore in the migration tool.
