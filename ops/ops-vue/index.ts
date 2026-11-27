@@ -17,6 +17,8 @@ import DiagnosticsAsync from "./pages/DiagnosticsAsync.vue";
 import HealthAsync from "./pages/HealthAsync.vue";
 import BuildAsync from "./pages/BuildAsync.vue";
 import ProcessMetricsAsync from "./pages/ProcessMetricsAsync.vue";
+import AnalyticsExploreAsync from "./pages/AnalyticsExploreAsync.vue";
+import AnalyticsTrendsAsync from "./pages/AnalyticsTrendsAsync.vue";
 
 export { configureOpsVue } from "./client.ts";
 export { useOpsAccess } from "./requests/access.ts";
@@ -33,6 +35,8 @@ export {
   type BuildRepoUrls,
 } from "./components/build-info.ts";
 export {
+  AnalyticsExploreAsync,
+  AnalyticsTrendsAsync,
   AlertsAsync,
   AlertsPage,
   BuildChip,

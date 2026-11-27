@@ -1,5 +1,7 @@
 // Runs one read-only query in a worker thread so the caller can kill it on a
-// timeout (better-sqlite3 can't interrupt a running statement).
+// timeout (better-sqlite3 can't interrupt a running statement). Replies are
+// tagged `logsQuery`: under `node --watch`, Node posts its own messages
+// (loaded modules) on the same port.
 import { parentPort, workerData } from "node:worker_threads";
 import Database from "better-sqlite3";
 
@@ -35,7 +37,7 @@ try {
     rows.push(r.map(cell));
   }
   db.close();
-  parentPort!.postMessage({ ok: true, columns, rows, truncated });
+  parentPort!.postMessage({ logsQuery: true, ok: true, columns, rows, truncated });
 } catch (e) {
-  parentPort!.postMessage({ ok: false, message: e instanceof Error ? e.message : String(e) });
+  parentPort!.postMessage({ logsQuery: true, ok: false, message: e instanceof Error ? e.message : String(e) });
 }

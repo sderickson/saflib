@@ -385,3 +385,23 @@ export function useOpsDiagnosticMetrics(raw: Ref<boolean>) {
       ),
   });
 }
+
+/**
+ * Read-only SQL over the logs DB (Analytics → Explore). A query, not a
+ * mutation: it reads, and caching the last result per SQL is what we want.
+ */
+export function useOpsLogsQuery(sql: Ref<string>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["queryOpsLogs"][200], Error>({
+    queryKey: computed(() => ["ops", "logs", "query", sql.value] as const),
+    enabled: computed(() => sql.value.trim() !== ""),
+    retry: false,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data, error, response } = await client.POST("/ops/logs/query", { body: { sql: sql.value } });
+      if (data) return data;
+      const message = (error as { message?: unknown } | undefined)?.message;
+      throw new Error(typeof message === "string" ? message : `Request failed (${response.status})`);
+    },
+  });
+}

@@ -22,8 +22,13 @@ function defaultKratosBrowserUrl(): string {
   return "http://kratos:4433";
 }
 
-/** Kratos's default browser session cookie. */
-const KRATOS_SESSION_COOKIE = /(?:^|;\s*)ory_kratos_session=/;
+/**
+ * Kratos's browser session cookie: the default name, or a custom one ending
+ * in `_session` (stacks that share a domain name theirs, e.g.
+ * `myapp_dev_session`). Only a trigger for asking Kratos's whoami; a cookie
+ * that isn't a session just gets a 401 and the request stays anonymous.
+ */
+const KRATOS_SESSION_COOKIE = /(?:^|;\s*)(?:ory_kratos_session|[A-Za-z0-9_-]+_session)=/;
 
 async function resolveKratosAuth(
   cookie: string | undefined,

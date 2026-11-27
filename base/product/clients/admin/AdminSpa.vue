@@ -49,7 +49,10 @@ const groups = computed<AdminNavGroup[]>(() => [
   },
   {
     label: "Customers",
-    items: [{ ...adminLinks.users, name: "Users" }],
+    items: [
+      { ...adminLinks.users, name: "Users" },
+      { ...adminLinks.analytics, name: "Analytics", match: sectionMatch("analytics") },
+    ],
   },
   {
     label: "System",

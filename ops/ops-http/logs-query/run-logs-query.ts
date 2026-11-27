@@ -37,14 +37,21 @@ export function runLogsQuery(
       finish(() => reject(createError(408, "Query took longer than 5 seconds and was stopped")));
       void worker.terminate();
     }, options.timeoutMs ?? LOGS_QUERY_TIMEOUT_MS);
-    worker.once("message", (m: { ok: true; columns: string[]; rows: unknown[][]; truncated: boolean } | { ok: false; message: string }) => {
-      finish(() =>
-        m.ok
-          ? resolve({ columns: m.columns, rows: m.rows, truncated: m.truncated, duration_ms: Date.now() - started })
-          : reject(createError(400, m.message)),
-      );
+    worker.on("message", (m: unknown) => {
+      const msg = (m ?? {}) as { logsQuery?: boolean; ok?: boolean; columns?: string[]; rows?: unknown[][]; truncated?: boolean; message?: unknown };
+      // Ignore anything that isn't the worker's reply (e.g. --watch's module reports).
+      if (msg.logsQuery !== true) return;
+      finish(() => {
+        if (msg.ok && Array.isArray(msg.columns) && Array.isArray(msg.rows)) {
+          resolve({ columns: msg.columns, rows: msg.rows, truncated: !!msg.truncated, duration_ms: Date.now() - started });
+        } else {
+          reject(createError(400, typeof msg.message === "string" && msg.message ? msg.message : "Query failed"));
+        }
+      });
       void worker.terminate();
     });
-    worker.once("error", (e) => finish(() => reject(e)));
+    // Never let a worker failure escape as an uncaught exception.
+    worker.once("error", (e) => finish(() => reject(createError(500, `Query worker failed: ${e instanceof Error ? e.message : String(e)}`))));
+    worker.once("exit", (code) => finish(() => reject(createError(500, `Query worker exited (${code})`))));
   });
 }

@@ -13,14 +13,24 @@ import {
   LogsAsync,
   OpsMetricsAsync,
   ProcessMetricsAsync,
+  AnalyticsExploreAsync,
+  AnalyticsTrendsAsync,
 } from "@saflib/ops-vue";
 import { adminRepos } from "./repos.ts";
 
 /**
- * The admin's System sections: each is one sidebar item whose pages are its
+ * The admin's sections (Analytics, and the System ones): each is one sidebar item whose pages are its
  * tabs. Pages keep their own paths, so links to them still work.
  */
 export const adminSections = {
+  analytics: {
+    path: "/section/analytics",
+    title: "Analytics",
+    tabs: [
+      { label: "Explore", path: adminLinks.analytics.path, component: AnalyticsExploreAsync },
+      { label: "Trends", path: adminLinks.analyticsTrends.path, component: AnalyticsTrendsAsync },
+    ],
+  },
   issues: {
     path: "/section/issues",
     title: "Issues",
