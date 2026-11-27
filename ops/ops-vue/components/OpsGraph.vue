@@ -4,11 +4,11 @@
       v-if="objectUrl"
       :src="objectUrl"
       :alt="title"
-      :width="width"
-      :height="height"
+      :width="size.width"
+      :height="size.height"
       class="ops-graph-img"
     />
-    <v-skeleton-loader v-else type="image" :width="width" :height="height" />
+    <v-skeleton-loader v-else type="image" :width="size.width" :height="size.height" />
   </div>
 </template>
 
@@ -21,13 +21,19 @@ const props = withDefaults(
   { hours: 24, width: 560, height: 240 },
 );
 
+// The renderer's limits (the API rejects smaller); a small slot scales the image down.
+const size = {
+  width: Math.min(1600, Math.max(200, Math.round(props.width))),
+  height: Math.min(1000, Math.max(120, Math.round(props.height))),
+};
+
 // Minted through the same endpoint agents use; the PNG URL needs no session.
 const link = useOpsGraphLink({
   query: props.query,
   title: props.title,
   start: new Date(Date.now() - props.hours * 3_600_000).toISOString(),
-  width: props.width,
-  height: props.height,
+  width: size.width,
+  height: size.height,
 });
 
 // The PNG lives on the API's origin, which the admin SPA's CSP doesn't allow

@@ -4,20 +4,38 @@
       <span class="ops-spark__title">{{ title }}</span>
       <span v-if="points.length" class="ops-spark__latest">{{ format(points[points.length - 1]!.v) }}</span>
     </div>
-    <!-- One series: an interactive sparkline (hover for time and value). -->
-    <v-sparkline
-      v-if="points.length > 1"
-      :model-value="points.map((p) => p.v)"
-      :height="height"
-      :line-width="1.5"
-      :smooth="4"
-      color="primary"
-      fill
-      interactive
-      :tooltip="{ titleFormat: tooltipFor, showCrosshair: true }"
-      auto-draw
-      data-test="ops-spark-line"
-    />
+    <!-- One series: an interactive sparkline (hover for time and value),
+         drawn at the box's real width so the height stays fixed. -->
+    <template v-if="points.length > 1">
+      <div class="ops-spark__plot">
+        <div class="ops-spark__max" aria-hidden="true">
+          <span data-test="ops-spark-max">max {{ format(maxValue) }}</span>
+        </div>
+        <div ref="box" class="ops-spark__chart" :style="{ height: `${height}px` }">
+          <v-sparkline
+            :model-value="points.map((p) => p.v)"
+            :width="boxWidth || width"
+            :height="height"
+            :padding="2"
+            :min="minValue"
+            :line-width="1.5"
+            :smooth="4"
+            :gradient="gradient"
+            gradient-direction="top"
+            color="primary"
+            fill
+            inset
+            interactive
+            :tooltip="{ titleFormat: tooltipFor, showCrosshair: true }"
+            data-test="ops-spark-line"
+          />
+        </div>
+      </div>
+      <div v-if="height >= 120" class="ops-spark__axis">
+        <span>{{ timeFormat.format(new Date(points[0]!.t * 1000)) }}</span>
+        <span>{{ timeFormat.format(new Date(points[points.length - 1]!.t * 1000)) }}</span>
+      </div>
+    </template>
     <!-- Several series (e.g. by route) or no data yet: the rendered graph. -->
     <OpsGraph v-else-if="fallback" :query="query" :title="title" :hours="hours" :width="width" :height="height" />
     <div v-else class="ops-spark__empty">{{ range.isPending.value ? "…" : "No data yet" }}</div>
@@ -31,7 +49,8 @@
  * falls back to the server-rendered graph image, which stays the format
  * for reports and agents.
  */
-import { computed, toRef } from "vue";
+import { computed, onBeforeUnmount, ref, toRef, watch } from "vue";
+import { useTheme } from "vuetify";
 import { useOpsMetricsRange } from "../requests/queries.ts";
 import OpsGraph from "./OpsGraph.vue";
 
@@ -52,6 +71,36 @@ const points = computed<Point[]>(() => {
     .map(([t, v]) => ({ t: Number(t), v: Number(v) }))
     .filter((p) => Number.isFinite(p.v));
 });
+const maxValue = computed(() => Math.max(...points.value.map((p) => p.v)));
+// Anchor the area at zero for non-negative metrics, so heights compare honestly.
+const minValue = computed(() => Math.min(0, ...points.value.map((p) => p.v)));
+
+const theme = useTheme();
+function rgba(hex: string, alpha: number): string {
+  const h = hex.replace("#", "");
+  const n = Number.parseInt(h.length === 3 ? [...h].map((c) => c + c).join("") : h.slice(0, 6), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+const gradient = computed(() => {
+  const primary = String(theme.current.value.colors.primary ?? "#1f2a44");
+  return [rgba(primary, 0.35), rgba(primary, 0.03)];
+});
+
+const box = ref<HTMLElement | null>(null);
+const boxWidth = ref(0);
+let observer: ResizeObserver | null = null;
+watch(box, (el) => {
+  observer?.disconnect();
+  if (!el) return;
+  boxWidth.value = Math.round(el.clientWidth);
+  if (typeof ResizeObserver === "undefined") return;
+  observer = new ResizeObserver(([entry]) => {
+    boxWidth.value = Math.round(entry!.contentRect.width);
+  });
+  observer.observe(el);
+});
+onBeforeUnmount(() => observer?.disconnect());
+
 const fallback = computed(() => range.isSuccess.value && series.value.length > 1);
 
 function format(v: number): string {
@@ -92,6 +141,40 @@ function tooltipFor({ index, value }: { index: number; value: number }): string 
 }
 .ops-spark__title {
   font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+}
+.ops-spark__chart {
+  position: relative;
+  overflow: hidden;
+}
+.ops-spark__chart :deep(svg) {
+  width: 100%;
+  height: 100%;
+}
+.ops-spark__plot {
+  position: relative;
+  padding-top: 14px;
+}
+/* A dashed line at the peak's height (the chart's top), labelled above it. */
+.ops-spark__max {
+  position: absolute;
+  inset: 16px 0 auto 0;
+  border-top: 1px dashed rgba(var(--v-theme-on-surface), 0.18);
+  pointer-events: none;
+}
+.ops-spark__max span {
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  font-size: 0.6875rem;
+  line-height: 1;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+}
+.ops-spark__axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 .ops-spark__latest {
