@@ -916,10 +916,10 @@ export interface components {
             /** @description Show value and detail even when `ok`. Most rows say nothing when healthy; this is for rows whose value is the point (e.g. which endpoint is slowest). */
             always_show?: boolean;
             /**
-             * @description `ok` green, `warn` yellow (worth a look), `bad` red (needs action; counts toward attention). Every tile has one: a fact with no status belongs on its own page, not the Overview.
+             * @description `ok` green, `todo` neutral (ordinary work waiting, e.g. drafts to review or messages to answer; never counts toward attention), `warn` yellow (something may be wrong), `bad` red (needs action; counts toward attention). Every tile has one: a fact with no status belongs on its own page, not the Overview.
              * @enum {string}
              */
-            tone: "ok" | "warn" | "bad";
+            tone: "ok" | "todo" | "warn" | "bad";
         };
         /** @description One endpoint's traffic, latency and availability. */
         "ops-endpoint-stat": {

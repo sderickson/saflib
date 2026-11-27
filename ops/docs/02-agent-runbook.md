@@ -42,7 +42,9 @@ alert wakes you.
 1. **Digest first.** `GET /ops/digest` answers "is anything wrong?" in one
    call: `summary.needs_attention` and `summary.attention` (each item has a
    `kind`, a `summary` and a `tone` of `warn` or `bad`), plus the same tiles
-   the admin Overview shows (`tiles`, each `ok` / `warn` / `bad`). If
+   the admin Overview shows (`tiles`, each `ok` / `todo` / `warn` / `bad`;
+   `todo` is ordinary work waiting for a person, like drafts to review, not
+   a problem to report). If
    `needs_attention` is false and nothing in `tiles` is `bad`, report "all
    clear" with the numbers below and stop.
 2. **Drill into what's flagged.** Use the table below to find where each kind

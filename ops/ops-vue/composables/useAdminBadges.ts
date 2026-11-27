@@ -5,7 +5,8 @@ import { useOpsDigest } from "../requests/queries.ts";
  * Sidebar badge counts from the Overview's digest (the same cached query, so
  * no extra requests): how many things need attention, new issues, firing
  * alerts, and the
- * leading number of any tile (e.g. "3 awaiting reply" → 3) by tile key.
+ * leading number of any tile that isn't ok (e.g. "3 awaiting reply" → 3) by
+ * tile key.
  */
 export function useAdminBadges() {
   const query = useOpsDigest();
@@ -15,7 +16,7 @@ export function useAdminBadges() {
     const tiles: Record<string, number> = {};
     for (const t of d.tiles) {
       const n = Number.parseInt(t.value, 10);
-      if (Number.isFinite(n) && n > 0 && (t.tone === "warn" || t.tone === "bad")) tiles[t.key] = n;
+      if (Number.isFinite(n) && n > 0 && t.tone !== "ok") tiles[t.key] = n;
     }
     return {
       attention: d.summary.attention.length,

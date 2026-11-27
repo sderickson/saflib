@@ -134,6 +134,12 @@ describe("GET /ops/digest tiles", () => {
           tiles: async () => ({ key: "jobs", group: "system", label: "Background jobs", value: "3 failed", detail: "Last 24h", tone: "bad" }),
         },
         {
+          key: "drafts",
+          label: "Drafts",
+          group: "customers",
+          tiles: async () => ({ key: "drafts", group: "customers", label: "Drafts", value: "2 to review", detail: "", tone: "todo" }),
+        },
+        {
           key: "inbox",
           label: "Inbox",
           group: "customers",
@@ -150,11 +156,13 @@ describe("GET /ops/digest tiles", () => {
       expect.objectContaining({ key: "inbox", group: "customers", value: "Couldn't check", detail: "db locked", tone: "warn" }),
     );
     expect(tiles.map((t: { key: string }) => t.key)).toEqual(expect.arrayContaining(["health", "alerts"]));
-    // Every tile is green, yellow or red; deploys live in Diagnostics → Build.
+    // Every tile has a tone; deploys live in Diagnostics → Build.
     expect(tiles.map((t: { key: string }) => t.key)).not.toContain("deploys");
-    expect(tiles.every((t: { tone: string }) => ["ok", "warn", "bad"].includes(t.tone))).toBe(true);
+    expect(tiles.every((t: { tone: string }) => ["ok", "todo", "warn", "bad"].includes(t.tone))).toBe(true);
     expect(summary.needs_attention).toBe(true);
     expect(summary.attention).toContainEqual({ kind: "tile", key: "jobs", summary: "Background jobs: 3 failed", tone: "bad" });
+    // Work waiting is not a problem.
+    expect(summary.attention.map((a: { key: string }) => a.key)).not.toContain("drafts");
     expect(proc.requests_total).toBeGreaterThanOrEqual(0);
     expect(proc.rss_bytes).toBeGreaterThan(0);
   });

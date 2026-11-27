@@ -24,8 +24,10 @@ properties:
       endpoint is slowest).
   tone:
     type: string
-    enum: [ ok, warn, bad ]
+    enum: [ ok, todo, warn, bad ]
     description: >
-      `ok` green, `warn` yellow (worth a look), `bad` red (needs action;
-      counts toward attention). Every tile has one: a fact with no status
+      `ok` green, `todo` neutral (ordinary work waiting, e.g. drafts to
+      review or messages to answer; never counts toward attention), `warn`
+      yellow (something may be wrong), `bad` red (needs action; counts
+      toward attention). Every tile has one: a fact with no status
       belongs on its own page, not the Overview.
