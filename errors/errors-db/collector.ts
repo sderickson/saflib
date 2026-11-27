@@ -3,6 +3,7 @@ import type { ErrorCollector, ErrorLevels } from "@saflib/node";
 import { getBuildInfo } from "@saflib/node/git-hashes";
 import type { IssueLevel } from "./schema.ts";
 import { recordOccurrence } from "./queries/record-occurrence.ts";
+import { describeError } from "./describe-error.ts";
 
 const LEVELS: Partial<Record<ErrorLevels, IssueLevel>> = {
   warning: "warn",
@@ -37,11 +38,12 @@ export function createIssueCollector(options: {
     if (!level) return;
     if (options.ignore?.(param.error.message)) return;
     try {
+      const { message, stack } = describeError(param.error);
       recordOccurrence(options.getDbKey(), {
         level,
         kind: "server",
-        message: param.error.message,
-        stack: param.error.stack,
+        message,
+        stack,
         errorName: param.error.name,
         fingerprint: param.fingerprint,
         serviceName: tag(param.tags, "service.name"),
