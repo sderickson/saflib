@@ -1,3 +1,4 @@
+import { formatShortDateTime } from "@saflib/vue";
 import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
@@ -67,17 +68,6 @@ const mockJobs: Job[] = [
   }),
 ];
 
-const formatDateTime = (dateTimeString: string | null | undefined): string => {
-  if (!dateTimeString) return "N/A";
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(dateTimeString));
-  } catch {
-    return dateTimeString;
-  }
-};
 
 const handlers = [
   http.get<PathParams, never, ListJobsResponse>(
@@ -159,7 +149,8 @@ describe("JobsPage", () => {
     getTable(wrapper).findAll("tbody tr");
   const getRowByJobId = (wrapper: VueWrapper, jobId: string) => {
     const rows = getRows(wrapper);
-    const row = rows.find((r) => r.text().includes(jobId));
+    // Rows follow the list order (the id itself is in the job dialog).
+    const row = rows[mockJobs.findIndex((j) => j.id === jobId)];
     expect(row, `Row for job "${jobId}" not found`).toBeDefined();
     return row!;
   };
@@ -171,7 +162,7 @@ describe("JobsPage", () => {
     const row = getRowByJobId(wrapper, jobId);
     const button = row
       .findAllComponents({ name: "v-btn" })
-      .find((btn: VueWrapper) => btn.text().trim() === expectedText);
+      .find((btn: VueWrapper) => btn.attributes("title") === expectedText);
     expect(
       button,
       `Button with text "${expectedText}" for job "${jobId}" not found`,
@@ -185,7 +176,7 @@ describe("JobsPage", () => {
 
   it("should render the title and loading indicator initially", async () => {
     const wrapper = await mountComponent(false);
-    expect(wrapper.find("h1").text()).toBe("Jobs");
+    expect(wrapper.find("h1").text()).toBe("Background jobs");
     expect(getLoadingIndicator(wrapper).exists()).toBe(true);
     expect(getTable(wrapper).exists()).toBe(false);
     expect(getErrorAlert(wrapper).exists()).toBe(false);
@@ -200,29 +191,19 @@ describe("JobsPage", () => {
     expect(table.exists()).toBe(true);
 
     const headers = table.findAll("thead th");
-    expect(headers.map((h) => h.text())).toEqual([
-      "Id",
-      "Status",
-      "Operation",
-      "User",
-      "Original Request Id",
-      "Attempt",
-      "Created At",
-      "Actions",
-    ]);
+    expect(headers.map((h) => h.text())).toEqual(["", "Status", "Operation", "Started by", "Created", ""]);
 
     const rows = getRows(wrapper);
     expect(rows).toHaveLength(mockJobs.length);
 
     const row1 = getRowByJobId(wrapper, "job-1");
-    expect(row1.text()).toContain("job-1");
     expect(row1.text()).toContain("jobsDemoStepB");
-    expect(row1.text()).toContain("user-1");
-    expect(row1.text()).toContain("r-abc");
+    // "user-1" isn't a Kratos id, so UserRef shows it as a ShortId.
+    expect(row1.text()).toContain("u·user");
     expect(
       row1.findComponent({ name: "v-chip", text: "pending" }).exists(),
     ).toBe(true);
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].created_at));
+    expect(row1.text()).toContain(formatShortDateTime(mockJobs[0].created_at));
     expect(getActionButton(wrapper, "job-1", "Cancel").exists()).toBe(true);
     expect(getActionButton(wrapper, "job-2", "Retry").exists()).toBe(true);
   });
@@ -232,10 +213,15 @@ describe("JobsPage", () => {
     const viewButton = getActionButton(wrapper, "job-1", "View");
     await viewButton.trigger("click");
 
+    // The dialog teleports to the body.
     await vi.waitFor(() => {
-      expect(wrapper.text()).toContain("Job job-1");
-      expect(wrapper.text()).toContain("Authority Assertion");
-      expect(wrapper.text()).toContain("eyJ1c2VySWQiOiJ1c2VyLTEifQ");
+      const dialog = document.querySelector("[data-test=job-detail]");
+      expect(dialog?.textContent).toContain("jobsDemoStepB");
+      expect(dialog?.textContent).toContain("0 of 5");
+      // Authority reads as who and why, with the signing key, not the raw token.
+      expect(dialog?.querySelector("[data-test=job-authority]")?.textContent).toContain("signed (k1)");
+      expect(dialog?.textContent).not.toContain("eyJ1c2VySWQiOiJ1c2VyLTEifQ");
+      expect(dialog?.textContent).toContain("failures_before_success");
     });
   });
 
@@ -289,14 +275,8 @@ describe("JobsPage", () => {
     });
   });
 
-  it("should mass-cancel a chain when Mass Cancel Chain is clicked", async () => {
+  it("cancels a job's whole chain from its dialog", async () => {
     const wrapper = await mountComponent();
-
-    const originalRequestInput = wrapper
-      .findAllComponents({ name: "v-text-field" })
-      .find((field) => field.props("label") === "Original Request Id");
-    expect(originalRequestInput).toBeDefined();
-    await originalRequestInput!.vm.$emit("update:modelValue", "r-abc");
 
     let receivedBody: CancelByOriginalRequestBody | null = null;
     server.use(
@@ -315,20 +295,43 @@ describe("JobsPage", () => {
       ),
     );
 
+    // job-1 is pending, and its request (r-abc) still has pending work.
+    await getActionButton(wrapper, "job-1", "View").trigger("click");
+    let chainButton: HTMLElement | null = null;
     await vi.waitFor(() => {
-      const massCancelButton = wrapper
-        .findAllComponents({ name: "v-btn" })
-        .find((btn: VueWrapper) => btn.text() === "Mass Cancel Chain");
-      expect(massCancelButton?.attributes("disabled")).toBeUndefined();
+      chainButton = document.querySelector<HTMLElement>("[data-test=job-cancel-chain]");
+      expect(chainButton?.textContent).toMatch(/Cancel chain \(\d+ pending\)/);
     });
-
-    const massCancelButton = wrapper
-      .findAllComponents({ name: "v-btn" })
-      .find((btn: VueWrapper) => btn.text() === "Mass Cancel Chain")!;
-    await massCancelButton.trigger("click");
+    chainButton!.click();
 
     await vi.waitFor(() => {
       expect(receivedBody).toEqual({ original_request_id: "r-abc" });
     });
+  });
+
+  it("retries or cancels the checked jobs in bulk", async () => {
+    const wrapper = await mountComponent();
+    const retried: string[] = [];
+    const cancelled: string[] = [];
+    server.use(
+      http.post<PathParams, never, RetryJobResponse>("http://api.localhost:3000/jobs/:id/retry", ({ params }) => {
+        retried.push(String(params.id));
+        return HttpResponse.json({ job: makeJob({ id: String(params.id) }) });
+      }),
+      http.post<PathParams, never, CancelJobResponse>("http://api.localhost:3000/jobs/:id/cancel", ({ params }) => {
+        cancelled.push(String(params.id));
+        return HttpResponse.json({ job: makeJob({ id: String(params.id), status: "cancelled" }) });
+      }),
+    );
+    // Check every row: job-1 is pending (cancellable), job-2 dead (retryable,
+    // or cancellable to give up on it), job-3 succeeded (neither).
+    await wrapper.find("thead input[type=checkbox]").setValue(true);
+    await vi.waitFor(() => expect(wrapper.find("[data-test=jobs-bulk]").text()).toContain("3 selected"));
+    expect(wrapper.find("[data-test=jobs-bulk-retry]").text()).toContain("Retry 1");
+    expect(wrapper.find("[data-test=jobs-bulk-cancel]").text()).toContain("Cancel 2");
+    await wrapper.find("[data-test=jobs-bulk-cancel]").trigger("click");
+    await vi.waitFor(() => expect(cancelled).toEqual(["job-1", "job-2"]));
+    expect(retried).toEqual([]);
+    await vi.waitFor(() => expect(wrapper.find("[data-test=jobs-bulk]").exists()).toBe(false));
   });
 });

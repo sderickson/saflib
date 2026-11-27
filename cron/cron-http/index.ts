@@ -10,6 +10,7 @@ export type { CronServiceOptions };
 
 export { createCronRouter };
 export { createCronHealthCheck } from "./src/health-check.ts";
+export { cronDigestTile, nextDueAfter, CRON_LATE_GRACE_MS, type CronDigestTileProvider } from "./src/digest-tile.ts";
 
 export type {
   JobsMap,

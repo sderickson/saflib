@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { cronDb, setEnabled, setLastRunStatus } from "@saflib/cron-db";
 import { createCronHealthCheck } from "./health-check.ts";
+import { cronDigestTile } from "./digest-tile.ts";
 
 describe("createCronHealthCheck", () => {
   let dbKey: DbKey;
@@ -29,5 +30,63 @@ describe("createCronHealthCheck", () => {
     const outcome = await run();
     expect(outcome.status).toBe("warn");
     expect(outcome.summary).toMatch(/a, b|b, a/);
+  });
+});
+
+describe("cronDigestTile", () => {
+  let dbKey: DbKey;
+  beforeEach(() => {
+    dbKey = cronDb.connect();
+  });
+
+  const jobs = {
+    hourly: { schedule: "0 * * * *", enqueue: { operationId: "x" } },
+    nightly: { schedule: "0 3 * * *", enqueue: { operationId: "y" } },
+    off: { schedule: "0 * * * *", enqueue: { operationId: "z" } },
+  } as unknown as Parameters<typeof cronDigestTile>[0]["jobs"];
+  const tile = (now?: Date) =>
+    cronDigestTile({ expectSchedule: true, getDbKey: () => dbKey, jobs, now: now ? () => now : undefined }).tiles({ since: new Date(0) });
+
+  it("is ok when enabled jobs ran on time; disabled ones don't count", async () => {
+    await setEnabled(dbKey, "hourly", true, "admin");
+    await setLastRunStatus(dbKey, "hourly", "success");
+    await setEnabled(dbKey, "nightly", true, "admin");
+    await setEnabled(dbKey, "off", false);
+    expect(await tile()).toMatchObject({ value: "2 on schedule", detail: "", tone: "ok" });
+  });
+
+  it("needs action for failed and late jobs", async () => {
+    // A fixed clock, so the nightly job's slot doesn't fall inside the
+    // two hours depending on when the test runs.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-06-01T12:00:00Z"));
+    await setEnabled(dbKey, "hourly", true, "admin");
+    await setLastRunStatus(dbKey, "hourly", "success");
+    await setEnabled(dbKey, "nightly", true, "admin");
+    await setLastRunStatus(dbKey, "nightly", "fail");
+    const twoHoursLater = new Date(Date.now() + 2 * 3600_000);
+    expect(await tile(twoHoursLater)).toMatchObject({ value: "1 failed · 1 late", tone: "bad" });
+    vi.useRealTimers();
+  });
+
+  it("doesn't count missed slots where the server isn't always up", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-06-01T12:00:00Z"));
+    await setEnabled(dbKey, "hourly", true, "admin");
+    await setLastRunStatus(dbKey, "hourly", "success");
+    const twoHoursLater = new Date(Date.now() + 2 * 3600_000);
+    const devTile = cronDigestTile({ expectSchedule: false, getDbKey: () => dbKey, jobs, now: () => twoHoursLater });
+    expect(await devTile.tiles({ since: new Date(0) })).toMatchObject({ tone: "ok" });
+    vi.useRealTimers();
+  });
+
+  it("is only yellow when jobs are late but none failed", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-06-01T12:00:00Z"));
+    await setEnabled(dbKey, "hourly", true, "admin");
+    await setLastRunStatus(dbKey, "hourly", "success");
+    const twoHoursLater = new Date(Date.now() + 2 * 3600_000);
+    expect(await tile(twoHoursLater)).toMatchObject({ value: "1 late", tone: "warn" });
+    vi.useRealTimers();
   });
 });

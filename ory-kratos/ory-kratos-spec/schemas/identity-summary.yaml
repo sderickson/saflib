@@ -1,0 +1,41 @@
+type: object
+description: What admin pages need to show a person. Resolved at read time; never stored.
+required:
+  - id
+  - email
+  - name
+  - verified
+  - state
+  - created_at
+  - org
+  - role
+properties:
+  id:
+    type: string
+    description: Kratos identity id.
+  email:
+    type: [ string, "null" ]
+    description: The identity's email trait.
+  name:
+    type: [ string, "null" ]
+    description: Display name, when the product supplies one.
+  verified:
+    type: boolean
+    description: Whether any verifiable address is verified.
+  state:
+    type: string
+    description: Kratos identity state (`active` or `inactive`).
+  created_at:
+    type: string
+    format: date-time
+  org:
+    type: [ string, "null" ]
+    description: The org(s) the person belongs to, when the product has orgs.
+  role:
+    type: [ string, "null" ]
+    description: Their role in that org, when the product has roles.
+  admin:
+    type: boolean
+    description: >
+      A site admin: the email is in ADMIN_EMAILS and verified (the same rule
+      the server's auth uses). Admin lists put admins first.

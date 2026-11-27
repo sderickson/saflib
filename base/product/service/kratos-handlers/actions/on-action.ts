@@ -1,14 +1,15 @@
-import { getSafReporters } from "@saflib/node";
 import type { KratosActionHandler } from "@saflib/ory-kratos-http";
+import { recordKratosAction } from "@saflib/audit-http/express/kratos-action-audit";
+import { getBaseAuditDbKey } from "@saflib/base-audit";
 
 /**
- * Default action handler for base. Logs the body at info level.
- * Replace or extend this when the product wires in audit logging, metrics,
- * or other fan-out — all consumers should compose inside this dispatcher.
+ * Kratos webhook dispatcher: every successful sign-in, sign-up, recovery and
+ * settings change (password, second factors) becomes an audit row, so the
+ * audit log (and agents reading it through the ops API) can spot unusual
+ * account activity. Add other fan-out (welcome email, notifications) here.
  */
 export const makeKratosActionHandler = (): KratosActionHandler => ({
   onAction: async (action) => {
-    const { log } = getSafReporters();
-    log.info("kratos action received", { action });
+    await recordKratosAction(getBaseAuditDbKey(), action);
   },
 });

@@ -10,6 +10,7 @@ import { typedEnv } from "./env.ts";
 import { randomUUID } from "crypto";
 import { Readable } from "node:stream";
 import { checkMigrationHistory } from "./migration-history.ts";
+import { runPreMigrationHooks } from "./pre-migration.ts";
 
 /**
  * A class which mainly manages "connections" to the sqlite3 database and drizzle
@@ -93,7 +94,7 @@ export class DbManager<S extends Schema, C extends Config> {
       !options?.readonly &&
       !options?.skipMigrations
     ) {
-      this.runMigrations(sqlite, db, log);
+      this.runMigrations(sqlite, db, log, dbStorage);
     }
 
     const key: DbKey = Symbol(`db-${Date.now()}-${Math.random()}`);
@@ -106,6 +107,7 @@ export class DbManager<S extends Schema, C extends Config> {
     sqlite: Database.Database,
     db: DbConnection<S>,
     log: { info: (message: string) => void; error: (message: string) => void },
+    dbPath: string = ":memory:",
   ): void => {
     log.info("Running migrations...");
     let migrationsPath = this.config.out!;
@@ -122,6 +124,8 @@ export class DbManager<S extends Schema, C extends Config> {
         info: (message) => log.info(message),
         warn: (message) => log.info(message),
       });
+      // E.g. snapshot the database first, so a bad migration can be undone.
+      runPreMigrationHooks(sqlite, dbPath, migrationsPath, log);
       migrate(db, {
         migrationsFolder: migrationsPath,
       });

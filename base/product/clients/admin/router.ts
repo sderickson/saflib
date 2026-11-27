@@ -5,26 +5,13 @@ import {
   type RouteRecordRaw,
 } from "vue-router";
 import { adminLinks } from "@saflib/base-links";
+import { adminSectionRoutes } from "./sections.ts";
 import { PageNotFound } from "@saflib/vue/components";
 import { isDevelopmentDeployment, scrollBehavior } from "@saflib/vue";
-import { CronJobsAsync } from "@saflib/cron-vue";
-import { JobsAsync } from "@saflib/jobs-vue";
 import { SentEmailsAsync } from "@saflib/email-vue";
-import { ProductEventsAsync } from "@saflib/analytics-vue";
-import { MetricsAsync } from "@saflib/node-metrics-vue";
-import { ErrorsAsync } from "@saflib/errors-vue";
-import { AuditLogsAsync } from "@saflib/audit-vue";
-import {
-  AlertsAsync,
-  DependenciesAsync,
-  IssuesAsync,
-  LogsAsync,
-  OpsMetricsAsync,
-  OpsTokensAsync,
-} from "@saflib/ops-vue";
+import { UsersAsync } from "@saflib/ory-kratos-vue";
+import { BackupsAsync, OpsTokensAsync } from "@saflib/ops-vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
-import UsersAsync from "./pages/users/UsersAsync.vue";
-import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 // END WORKFLOW AREA
@@ -32,24 +19,8 @@ import DevLogsAsync from "./pages/logs/DevLogsAsync.vue";
 const devObservabilityRoutes: RouteRecordRaw[] = isDevelopmentDeployment()
   ? [
       {
-        path: adminLinks.errors.path,
-        component: ErrorsAsync,
-      },
-      {
         path: adminLinks.emails.path,
         component: SentEmailsAsync,
-      },
-      {
-        path: adminLinks.logs.path,
-        component: DevLogsAsync,
-      },
-      {
-        path: adminLinks.metrics.path,
-        component: MetricsAsync,
-      },
-      {
-        path: adminLinks.events.path,
-        component: ProductEventsAsync,
       },
     ]
   : [];
@@ -63,42 +34,16 @@ export const createAdminRouter = (options?: {
       component: HomeAsync,
     },
     {
+      path: adminLinks.backups.path,
+      component: BackupsAsync,
+    },
+    {
       path: adminLinks.users.path,
       component: UsersAsync,
     },
-    {
-      path: adminLinks.cronJobs.path,
-      component: CronJobsAsync,
-    },
-    {
-      path: adminLinks.jobs.path,
-      component: JobsAsync,
-    },
     ...devObservabilityRoutes,
-    {
-      path: adminLinks.audit.path,
-      component: AuditLogsAsync,
-    },
-    {
-      path: adminLinks.opsLogs.path,
-      component: LogsAsync,
-    },
-    {
-      path: adminLinks.opsIssues.path,
-      component: IssuesAsync,
-    },
-    {
-      path: adminLinks.opsAlerts.path,
-      component: AlertsAsync,
-    },
-    {
-      path: adminLinks.opsMetrics.path,
-      component: OpsMetricsAsync,
-    },
-    {
-      path: adminLinks.opsDependencies.path,
-      component: DependenciesAsync,
-    },
+    // System sections (Issues, Logs, Jobs, Metrics, Status): tabbed pages.
+    ...adminSectionRoutes,
     {
       path: adminLinks.opsTokens.path,
       component: OpsTokensAsync,

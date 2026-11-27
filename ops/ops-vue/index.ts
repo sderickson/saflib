@@ -6,22 +6,54 @@ import IssuesAsync from "./pages/IssuesAsync.vue";
 import IssuesPage from "./pages/IssuesPage.vue";
 import AlertsAsync from "./pages/AlertsAsync.vue";
 import AlertsPage from "./pages/AlertsPage.vue";
-import OpsDigestPanel from "./components/OpsDigestPanel.vue";
 import OpsGraph from "./components/OpsGraph.vue";
+import BuildChip from "./components/BuildChip.vue";
+import OpsOverview from "./components/OpsOverview.vue";
+import HealthPill from "./components/HealthPill.vue";
+import TrafficChip from "./components/TrafficChip.vue";
 import OpsMetricsAsync from "./pages/OpsMetricsAsync.vue";
 import DependenciesAsync from "./pages/DependenciesAsync.vue";
+import DiagnosticsAsync from "./pages/DiagnosticsAsync.vue";
+import HealthAsync from "./pages/HealthAsync.vue";
+import BuildAsync from "./pages/BuildAsync.vue";
+import ProcessMetricsAsync from "./pages/ProcessMetricsAsync.vue";
+import AnalyticsExploreAsync from "./pages/AnalyticsExploreAsync.vue";
+import AnalyticsTrendsAsync from "./pages/AnalyticsTrendsAsync.vue";
+import BackupsAsync from "./pages/BackupsAsync.vue";
 
 export { configureOpsVue } from "./client.ts";
 export { useOpsAccess } from "./requests/access.ts";
+export { useAdminBadges } from "./composables/useAdminBadges.ts";
+export { useRefreshOpsAfterMutations } from "./composables/useRefreshOpsAfterMutations.ts";
+export { useOpsDigest } from "./requests/queries.ts";
+export { default as StatusIcon } from "./components/StatusIcon.vue";
+export type { StatusTone } from "./components/StatusIcon.vue";
 export {
+  getBuildCommits,
+  getDeploymentLabel,
+  DEFAULT_SAFLIB_REPO_URL,
+  type BuildCommit,
+  type BuildRepoUrls,
+} from "./components/build-info.ts";
+export {
+  BackupsAsync,
+  AnalyticsExploreAsync,
+  AnalyticsTrendsAsync,
   AlertsAsync,
   AlertsPage,
+  BuildChip,
+  HealthPill,
+  OpsOverview,
+  TrafficChip,
   DependenciesAsync,
+  DiagnosticsAsync,
+  HealthAsync,
+  BuildAsync,
+  ProcessMetricsAsync,
   IssuesAsync,
   IssuesPage,
   LogsAsync,
   LogsPage,
-  OpsDigestPanel,
   OpsGraph,
   OpsMetricsAsync,
   OpsTokensAsync,

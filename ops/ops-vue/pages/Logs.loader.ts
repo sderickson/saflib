@@ -1,9 +1,15 @@
 import { inject, ref, type InjectionKey } from "vue";
-import { useListAdminLogs, type AdminLogFilters } from "../requests/queries.ts";
+import { useListAdminLogs, useListLogGroups, type AdminLogFilters } from "../requests/queries.ts";
 
 export function useLogsLoader() {
   const filters = ref<AdminLogFilters>({});
-  return { filters, logsQuery: useListAdminLogs(filters) };
+  const live = ref(false);
+  return {
+    filters,
+    live,
+    logsQuery: useListAdminLogs(filters, live),
+    groupsQuery: useListLogGroups(filters, live),
+  };
 }
 
 export type LogsLoader = ReturnType<typeof useLogsLoader>;

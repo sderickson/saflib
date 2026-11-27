@@ -18,16 +18,19 @@
   ],
   "references": [
     {
+      "path": "../../ory-kratos/ory-kratos-vue"
+    },
+    {
       "path": "../../sdk"
     },
     {
       "path": "../../vue"
     },
     {
-      "path": "../audit-spec"
+      "path": "../audit-sdk"
     },
     {
-      "path": "../audit-sdk"
+      "path": "../audit-spec"
     }
   ],
   "include": [

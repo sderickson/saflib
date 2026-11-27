@@ -1,12 +1,13 @@
 <template>
   <ContentWidth variant="full">
-    <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
-    <p class="text-body-2 mb-4">{{ strings.intro }}</p>
+    <AdminPageTitle class="mb-2">{{ strings.title }}</AdminPageTitle>
 
+    <AdminSubTabs>
     <v-tabs :model-value="tab" class="mb-4" density="compact" @update:model-value="goToTab">
       <v-tab value="firing" data-test="alerts-tab-firing">{{ strings.tabFiring }}</v-tab>
       <v-tab value="recent" data-test="alerts-tab-recent">{{ strings.tabRecent }}</v-tab>
     </v-tabs>
+    </AdminSubTabs>
 
     <v-table v-if="alerts.length > 0" density="compact" class="elevation-1">
       <tbody>
@@ -22,7 +23,7 @@
             <div class="text-body-2 alert-text">{{ a.untrusted.annotations.summary ?? "" }}</div>
             <div class="text-caption text-medium-emphasis">{{ labelText(a.labels) }}</div>
           </td>
-          <td class="text-caption text-no-wrap">
+          <td class="text-caption text-no-wrap saf-admin-hide-xs">
             {{ strings.started }} {{ formatTime(a.starts_at) }}
             <div v-if="a.ends_at">{{ strings.ended }} {{ formatTime(a.ends_at) }}</div>
           </td>
@@ -33,39 +34,44 @@
             <div v-if="a.acked_at" class="text-caption text-medium-emphasis">
               {{ strings.acked }} ({{ a.acked_by }})
             </div>
-            <div v-if="a.status === 'firing'" class="d-flex ga-2">
+            <!-- Fixed slots: acknowledge, resolve. -->
+            <div v-if="a.status === 'firing'" class="saf-admin-actions">
               <v-btn
-                v-if="!a.acked_at"
+                icon="mdi-bell-check-outline"
                 size="small"
-                variant="outlined"
+                variant="text"
+                color="primary"
+                :title="strings.ack"
+                :aria-label="strings.ack"
+                :class="{ 'saf-admin-action--off': !!a.acked_at }"
+                :disabled="!!a.acked_at"
                 :loading="ack.isPending.value"
                 data-test="alert-ack"
                 @click="ack.mutate({ id: a.id })"
-              >
-                {{ strings.ack }}
-              </v-btn>
+              />
               <v-btn
+                icon="mdi-check-circle-outline"
                 size="small"
                 variant="text"
+                :title="strings.resolve"
+                :aria-label="strings.resolve"
                 :loading="resolve.isPending.value"
                 data-test="alert-resolve"
                 @click="resolveAlert(a.id)"
-              >
-                {{ strings.resolve }}
-              </v-btn>
+              />
             </div>
           </td>
         </tr>
       </tbody>
     </v-table>
-    <p v-else class="text-body-1">{{ strings.empty }}</p>
+    <p v-else class="saf-admin-empty">{{ strings.empty }}</p>
   </ContentWidth>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ContentWidth } from "@saflib/vue/components";
+import { AdminPageTitle, ContentWidth, AdminSubTabs } from "@saflib/vue/components";
 import { useAlertsPageLoader } from "./Alerts.loader.ts";
 import { ops_alerts as strings } from "./Alerts.strings.ts";
 import { useAckOpsAlert, useResolveOpsAlert } from "../requests/queries.ts";

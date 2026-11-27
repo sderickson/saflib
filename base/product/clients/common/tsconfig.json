@@ -19,19 +19,31 @@
   ],
   "references": [
     {
-      "path": "../../../../analytics/analytics-vue"
+      "path": "../../../../audit/audit-vue"
+    },
+    {
+      "path": "../../../../cron/cron-vue"
     },
     {
       "path": "../../../../errors/errors-vue"
     },
     {
+      "path": "../../../../jobs/jobs-vue"
+    },
+    {
       "path": "../../../../links"
+    },
+    {
+      "path": "../../../../ops/ops-vue"
     },
     {
       "path": "../../../../ory-kratos/ory-kratos-sdk"
     },
     {
       "path": "../../../../ory-kratos/ory-kratos-spa"
+    },
+    {
+      "path": "../../../../ory-kratos/ory-kratos-vue"
     },
     {
       "path": "../../../../sdk"
@@ -47,9 +59,6 @@
     },
     {
       "path": "../links"
-    },
-    {
-      "path": "../../../../ops/ops-vue"
     }
   ],
   "include": [

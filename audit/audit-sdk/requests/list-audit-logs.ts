@@ -10,6 +10,8 @@ export interface UseListAuditLogsOptions {
   cursor?: Ref<string | undefined>;
   limit?: Ref<number | undefined>;
   order?: Ref<"asc" | "desc" | undefined>;
+  /** Only events where this user is the actor or the one acted for. */
+  userId?: Ref<string | undefined>;
 }
 
 export function useListAuditLogs(options: UseListAuditLogsOptions = {}) {
@@ -22,12 +24,14 @@ export function useListAuditLogs(options: UseListAuditLogsOptions = {}) {
       unref(options.cursor),
       unref(options.limit),
       unref(options.order),
+      unref(options.userId),
     ]),
     queryFn: () => {
       const from = unref(options.from);
       const cursor = unref(options.cursor);
       const limit = unref(options.limit);
       const order = unref(options.order);
+      const userId = unref(options.userId);
       return handleClientMethod(
         client.GET("/audit-logs", {
           params: {
@@ -36,6 +40,7 @@ export function useListAuditLogs(options: UseListAuditLogsOptions = {}) {
               ...(cursor !== undefined && cursor !== "" ? { cursor } : {}),
               ...(limit !== undefined ? { limit } : {}),
               ...(order !== undefined ? { order } : {}),
+              ...(userId ? { user_id: userId } : {}),
             },
           },
         }),

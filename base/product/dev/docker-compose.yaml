@@ -74,6 +74,7 @@ services:
     entrypoint: ["sh", "/app/base/product/deploy/scripts/apply-env-defaults.sh"]
     environment:
       - SAF_ENV_DEFAULTS=/app/base/product/deploy/env.defaults
+      - KRATOS_SQLITE_PATH=/kratos-data/db.sqlite
     # Restarts when any file it imports changes (service code and saflib alike).
     command:
       - node
@@ -88,6 +89,8 @@ services:
       - db_data:/app/base/product/service/db/data
       - cron_data:/app/base/product/service/cron/data
       - jobs_data:/app/base/product/service/jobs/data
+      # Kratos's SQLite volume, so app backups include identities.
+      - kratos_data:/kratos-data
     env_file:
       - ./env.dev
       - ./.env

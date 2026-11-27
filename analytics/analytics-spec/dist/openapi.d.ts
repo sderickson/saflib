@@ -6,7 +6,7 @@ import type { Error as _Ext1_Error } from "@saflib/openapi/schemas/Error";
  */
 
 export interface paths {
-    "/product-events/record": {
+    "/product-events": {
         parameters: {
             query?: never;
             header?: never;
@@ -15,28 +15,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Record a product analytics event */
-        post: operations["recordProductEvent"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/product-events": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
         /**
-         * List buffered product events
-         * @description Development ring-buffer listing (`createDevAnalyticsRouter` only). Tagged `no-auth` so local dev stacks can read captured events without a session.
+         * Record a product event from the browser
+         * @description Public, so anonymous visitors' events count too. Signed-in users are attributed (subject to their analytics consent); anonymous events get a random id per event. Rate limited per user, per IP and for all anonymous traffic; events over the limit are dropped (429).
          */
-        get: operations["listProductEvents"];
-        put?: never;
-        post?: never;
+        post: operations["recordProductEvent"];
         delete?: never;
         options?: never;
         head?: never;
@@ -47,27 +30,8 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        ProductEventRecord: components["schemas"]["product-event-record"];
         Error: _Ext1_Error;
         error: _Ext0_error;
-        /** @description A product analytics event stored in the in-memory ring buffer. */
-        "product-event-record": {
-            /** @description Monotonic id for pagination. */
-            id: number;
-            /** @description Product event name (same as product_event.event). */
-            name: string;
-            /** @description Full product event JSON as recorded. */
-            payload: {
-                [key: string]: unknown;
-            };
-            /**
-             * @description Whether the event originated from a browser client or server code.
-             * @enum {string}
-             */
-            source: "client" | "server";
-            /** Format: date-time */
-            timestamp: string;
-        };
     };
     responses: never;
     parameters: never;
@@ -89,27 +53,27 @@ export interface operations {
                 "application/json": {
                     product_event: {
                         event: string;
+                        org?: string;
                         client?: string;
                         view?: string;
                         component?: string;
+                        /** @description The event's properties (at most ~2 KB as JSON). */
                         context?: {
                             [key: string]: unknown;
                         };
-                    } & {
-                        [key: string]: unknown;
                     };
                 };
             };
         };
         responses: {
-            /** @description Event recorded in the server ring buffer. */
+            /** @description Recorded. */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Invalid request body. */
+            /** @description Invalid body, unknown event name, or properties too large. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -118,44 +82,8 @@ export interface operations {
                     "application/json": components["schemas"]["error"];
                 };
             };
-        };
-    };
-    listProductEvents: {
-        parameters: {
-            query?: {
-                /** @description Filter by event name. */
-                name?: string;
-                /** @description Maximum number of entries to return (from the tail). */
-                limit?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Buffered product events, newest last within the filtered slice. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        product_events: components["schemas"]["product-event-record"][];
-                    };
-                };
-            };
-            /** @description Unauthorized - Invalid or missing authentication. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - site admin required. */
-            403: {
+            /** @description Rate limited; the event was dropped. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

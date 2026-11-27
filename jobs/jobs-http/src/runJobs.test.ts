@@ -16,7 +16,7 @@ import {
 import express from "express";
 import { asOpenApiDocument } from "@saflib/openapi";
 import type { DbKey } from "@saflib/drizzle";
-import { verifyAssertion } from "@saflib/node";
+import { addErrorCollector, verifyAssertion } from "@saflib/node";
 import { startExpressServer } from "@saflib/express";
 import { jobsDbManager } from "@saflib/jobs-db/instances";
 
@@ -482,6 +482,30 @@ describe("runJobs", () => {
     const job = await waitForJob(dbKey, "job-4xx", (j) => j.status === "dead");
     expect(job.result?.terminal_reason).toBe("permanent-status");
     expect(job.result?.status_code).toBe(422);
+  });
+
+  it("tags the dead-job warning for a Diagnostics test job", async () => {
+    const warnings: { message: string; fingerprint?: string }[] = [];
+    addErrorCollector((p) => {
+      if (p.level === "warning") warnings.push({ message: p.error.message, fingerprint: p.fingerprint });
+    });
+    scripts.push({ status: 422, body: { error: "gone" } });
+    scripts.push({ status: 422, body: { error: "gone" } });
+    await createJob(dbKey, jobParams({ id: "job-diag", dedupe_key: "[diag:abc123] job-failure" }));
+    await createJob(dbKey, jobParams({ id: "job-plain" }));
+    await startRuntime();
+
+    await waitForJob(dbKey, "job-diag", (j) => j.status === "dead");
+    await waitForJob(dbKey, "job-plain", (j) => j.status === "dead");
+    await vi.waitFor(() => expect(warnings).toHaveLength(2));
+    expect(warnings).toContainEqual({
+      message: "[diag:abc123] job-failure: job went dead: jobsDemoWork",
+      fingerprint: undefined,
+    });
+    expect(warnings).toContainEqual({
+      message: "job went dead: jobsDemoWork",
+      fingerprint: "jobs.dead:jobsDemoWork",
+    });
   });
 
   it(

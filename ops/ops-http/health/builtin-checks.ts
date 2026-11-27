@@ -30,7 +30,10 @@ export function diskCheck(options: {
       const status: HealthStatus = ratio < fail ? "fail" : ratio < warn ? "warn" : "ok";
       return {
         status,
-        summary: `${Math.round(ratio * 100)}% free (${Math.round(free / MB)} MB of ${Math.round(total / MB)} MB)`,
+        // Percent only: some filesystems (Docker Desktop's file sharing)
+        // report a block size that doesn't match their block counts, so the
+        // ratio is right but absolute sizes can be wildly off.
+        summary: `${Math.round(ratio * 100)}% free`,
         observed: { free_bytes: free, total_bytes: total, free_ratio: Number(ratio.toFixed(4)) },
       };
     },

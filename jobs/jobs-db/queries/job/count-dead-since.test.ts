@@ -76,4 +76,13 @@ describe("countDeadSinceJob", () => {
     assert(result !== undefined);
     expect(result).toBe(1);
   });
+
+  it("skips Diagnostics test jobs", async () => {
+    const recent = new Date("2026-08-06T11:00:00.000Z");
+    await createJob(dbKey, jobParams({ id: "d-real", status: "dead", finished_at: recent, original_request_id: "r-a", dedupe_key: "real-key" }));
+    await createJob(dbKey, jobParams({ id: "d-diag", status: "dead", finished_at: recent, original_request_id: "r-b", dedupe_key: "[diag:abc] job-failure" }));
+
+    const { result } = await countDeadSinceJob(dbKey, new Date("2026-08-05T12:00:00.000Z"));
+    expect(result).toBe(1);
+  });
 });

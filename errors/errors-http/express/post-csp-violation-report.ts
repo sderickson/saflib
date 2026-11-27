@@ -81,9 +81,24 @@ export function describeCspViolation(report: unknown): { message: string; finger
   };
 }
 
+/**
+ * Reports from the Vue devtools panel (`/__devtools__/`, a dev-server page
+ * that loads plugin logos from other hosts) aren't the app's violations.
+ */
+export function isDevToolsReport(report: unknown): boolean {
+  const doc = str(report, "document-uri", "documentURL", "documentUri");
+  if (!doc) return false;
+  try {
+    return new URL(doc).pathname.startsWith("/__devtools__/");
+  } catch {
+    return false;
+  }
+}
+
 export function createPostCspViolationReportHandler() {
   return createHandler(async (req, res) => {
     for (const raw of extractCspReports(req.body)) {
+      if (isDevToolsReport(raw)) continue;
       const { message, fingerprint } = describeCspViolation(raw);
       reportError({
         kind: "csp-violation",

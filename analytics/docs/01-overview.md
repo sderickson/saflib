@@ -1,24 +1,18 @@
 # Overview
 
-`analytics` provides **product event** capture, storage, and viewing for SAF applications — browser event logging, server-side typed analytics helpers, and development admin routes/pages. In development events land in an in-memory ring buffer; production swaps in vendor integrations (e.g. PostHog) via the same service abstraction.
+`analytics` provides **product event** helpers for SAF applications: a vendor-neutral `AnalyticsService` with typed event helpers on the server, and the browser event logger in `@saflib/vue`. Production sends events to a vendor (e.g. PostHog); look at them there.
 
-Like [`errors`](../../errors/docs/01-overview.md), this suite spans client and server. It is separate from [`node-metrics`](../../node-metrics/docs/01-overview.md) (Prometheus/process metrics) and [`node-log`](../../node-log/docs/01-overview.md) (Winston operational logs).
+It is separate from [`node-metrics`](../../node-metrics/docs/01-overview.md) (Prometheus/process metrics) and [`node-log`](../../node-log/docs/01-overview.md) (Winston operational logs).
 
 ## What this suite provides
 
-- **`analytics-spec`** — OpenAPI contracts for recording and listing product events
-- **`analytics-service`** — `AnalyticsService` abstraction, typed event helpers, in-memory implementation for tests
-- **`analytics-http`** — in-memory event buffer and dev Express router (`createDevAnalyticsRouter`)
-- **`analytics-sdk`** — TanStack Query client for recording and listing events
-- **`analytics-vue`** — client event logger and admin Events page
+- **`analytics-service`**: `AnalyticsService` abstraction, typed event helpers (`makeTypedAnalytics`), in-memory implementation for tests
 
 ## Integration
 
-Client SPAs call `analytics-sdk` / `analytics-vue` to POST product events to `/product-events/record`. Server code uses `analytics-service` (typed `makeTypedAnalytics`) and can call `recordProductEvent` with `source: "server"` in development.
+Server code uses `analytics-service`. Client SPAs emit through `makeProductEventLogger` / `commonEventLogger` from `@saflib/vue`, and a vendor client connector (e.g. PostHog) forwards them.
 
 [`SafContext`](../../node/docs/ref/index/interfaces/SafContext.md) fields (auth, routing metadata) feed analytics attribution; [`runWithActingUser`](../../node/docs/ref/index/functions/runWithActingUser.md) attributes anonymous operations (webhooks, jobs) to the owning user for event context.
-
-When the repo follows [base/product/service/http](../../base/product/docs/01-overview.md), the HTTP app mounts `createDevAnalyticsRouter()` alongside [node-log](../../node-log/docs/01-overview.md), [node-metrics](../../node-metrics/docs/01-overview.md), and [errors](../../errors/docs/01-overview.md) dev tooling. The admin SPA lists buffered events since process start.
 
 ## Vendor implementations
 
@@ -27,4 +21,4 @@ Production backends implement `AnalyticsService` in vendor packages:
 - [`@saflib/vendors-posthog`](../../vendors/posthog/docs/01-overview.md) — PostHog for server-side events
 - [`@saflib/vendors-posthog-client`](../../vendors/posthog-client/docs/01-overview.md) — PostHog browser init, feature flags, and client events
 
-Development uses the in-memory buffer; call `configureAnalytics()` at startup in production.
+Call `configureAnalytics()` at startup in production.

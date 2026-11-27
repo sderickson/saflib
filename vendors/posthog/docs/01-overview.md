@@ -10,7 +10,7 @@
 
 ## Integration
 
-Call `configureAnalytics()` at process startup before handling requests. In development the in-memory buffer from `@saflib/analytics-http` is used when PostHog is not configured.
+Call `configureAnalytics()` at process startup before handling requests. Without a PostHog key it falls back to the in-memory `analytics-service` implementation.
 
 Environment (see `env.schema.json`):
 

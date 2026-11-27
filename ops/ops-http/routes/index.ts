@@ -4,7 +4,17 @@ import { jsonSpec } from "@saflib/ops-spec";
 import { getOpsHealthHandler } from "./get-ops-health.ts";
 import { getOpsDigestHandler } from "./get-ops-digest.ts";
 import { listOpsDeploysHandler } from "./list-ops-deploys.ts";
-import { listOpsLogsHandler } from "./list-ops-logs.ts";
+import { listOpsAuditEventsHandler } from "./list-ops-audit-events.ts";
+import { listOpsBackupsHandler, runOpsBackupsHandler, runOpsBackupsMaintenanceHandler } from "./backups.ts";
+import { queryOpsLogsHandler } from "./query-ops-logs.ts";
+import { listOpsLogGroupsHandler, listOpsLogsHandler } from "./list-ops-logs.ts";
+import {
+  clearOpsDiagnosticsHandler,
+  getOpsDiagnosticMetricsHandler,
+  getOpsDiagnosticRunHandler,
+  listOpsDiagnosticsHandler,
+  runOpsDiagnosticProbeHandler,
+} from "./diagnostics.ts";
 import { listOpsLogTemplatesHandler } from "./list-ops-log-templates.ts";
 import {
   getOpsIssueHandler,
@@ -45,9 +55,20 @@ export function createOpsRoutes(opsTokenResolver: SecurityResolver) {
   router.get("/ops/health", getOpsHealthHandler);
   router.get("/ops/digest", getOpsDigestHandler);
   router.get("/ops/deploys", listOpsDeploysHandler);
+  router.get("/ops/audit", listOpsAuditEventsHandler);
+  router.get("/ops/backups", listOpsBackupsHandler);
+  router.post("/ops/backups/run", runOpsBackupsHandler);
+  router.post("/ops/backups/maintenance", runOpsBackupsMaintenanceHandler);
   router.get("/ops/dependencies", getOpsDependenciesHandler);
   router.get("/ops/logs", listOpsLogsHandler);
+  router.get("/ops/logs/groups", listOpsLogGroupsHandler);
+  router.get("/ops/diagnostics", listOpsDiagnosticsHandler);
+  router.get("/ops/diagnostics/runs/:run_id", getOpsDiagnosticRunHandler);
+  router.post("/ops/diagnostics/runs/:run_id/probes/:probe_id", runOpsDiagnosticProbeHandler);
+  router.get("/ops/diagnostics/metrics", getOpsDiagnosticMetricsHandler);
+  router.post("/ops/diagnostics/clear", clearOpsDiagnosticsHandler);
   router.get("/ops/logs/templates", listOpsLogTemplatesHandler);
+  router.post("/ops/logs/query", queryOpsLogsHandler);
   router.get("/ops/metrics/query", queryOpsMetricsHandler);
   router.get("/ops/metrics/query_range", queryOpsMetricsRangeHandler);
   router.get("/ops/metrics/series", listOpsMetricsSeriesHandler);

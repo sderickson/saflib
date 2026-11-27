@@ -7,10 +7,11 @@ import type {
   OpsIssueOccurrenceResponse,
   OpsIssueResponse,
   OpsLogEntryResponse,
+  OpsLogGroupResponse,
   OpsLogTemplateResponse,
   OpsTokenResponse,
 } from "@saflib/ops-spec";
-import type { LogEntry, TemplateWithWindowCount } from "@saflib/node-log-db";
+import type { LogEntry, LogGroup, TemplateWithWindowCount } from "@saflib/node-log-db";
 import type { IssueGroup, IssueOccurrence } from "@saflib/errors-db";
 
 /** DB row → API shape. Never includes the hash. */
@@ -62,9 +63,29 @@ export function mapLogEntry(e: LogEntry): OpsLogEntryResponse {
     operation_name: e.operation_name,
     request_id: e.request_id,
     user_id: e.user_id,
+    context_kind: e.context_kind,
+    context_id: e.context_id,
     template_hash: e.template_hash,
     redactions: e.redactions,
     untrusted: { message: e.message, fields: e.fields },
+  };
+}
+
+export function mapLogGroup(g: LogGroup): OpsLogGroupResponse {
+  return {
+    kind: g.kind,
+    context_id: g.context_id,
+    line_id: g.line_id,
+    first_ts: g.first_ts.toISOString(),
+    last_ts: g.last_ts.toISOString(),
+    count: g.count,
+    errors: g.errors,
+    warnings: g.warnings,
+    user_id: g.user_id,
+    operation_name: g.operation_name,
+    service_name: g.service_name,
+    request: g.request,
+    untrusted: { first_message: g.first_message },
   };
 }
 

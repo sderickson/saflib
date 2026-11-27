@@ -2,16 +2,10 @@
   "files": [],
   "references": [
     {
-      "path": "../../../../analytics/analytics-vue"
-    },
-    {
       "path": "../../../../audit/audit-vue"
     },
     {
       "path": "../../../../cron/cron-vue"
-    },
-    {
-      "path": "../../../../ops/ops-vue"
     },
     {
       "path": "../../../../email/email-vue"
@@ -26,10 +20,7 @@
       "path": "../../../../links"
     },
     {
-      "path": "../../../../node-log/node-log-vue"
-    },
-    {
-      "path": "../../../../node-metrics/node-metrics-vue"
+      "path": "../../../../ops/ops-vue"
     },
     {
       "path": "../../../../ory-kratos/ory-kratos-sdk"
@@ -38,10 +29,10 @@
       "path": "../../../../ory-kratos/ory-kratos-spa"
     },
     {
-      "path": "../../../../vue"
+      "path": "../../../../ory-kratos/ory-kratos-vue"
     },
     {
-      "path": "../../service/sdk"
+      "path": "../../../../vue"
     },
     {
       "path": "../common"

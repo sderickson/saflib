@@ -18,15 +18,15 @@ paths:
   /errors/record:
     post:
       $ref: "./routes/errors.yaml#/recordReportedError"
+  /errors/report:
+    post:
+      $ref: "./routes/errors.yaml#/reportClientError"
   /csp-violations:
     post:
       $ref: "./routes/errors.yaml#/postCspViolationReport"
   /admin/test-error:
     post:
       $ref: "./routes/errors.yaml#/postAdminTestError"
-  /admin/errors:
-    get:
-      $ref: "./routes/errors.yaml#/listReportedErrors"
   /maintenance/raise-test-error:
     post:
       $ref: "./routes/maintenance/raise-test-error.yaml#/raiseTestErrorMaintenance"

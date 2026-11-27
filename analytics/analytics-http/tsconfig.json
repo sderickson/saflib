@@ -19,7 +19,16 @@
   },
   "references": [
     {
-      "path": "../../env"
+      "path": "../../express"
+    },
+    {
+      "path": "../../node"
+    },
+    {
+      "path": "../../rate-limit"
+    },
+    {
+      "path": "../analytics-service"
     },
     {
       "path": "../analytics-spec"

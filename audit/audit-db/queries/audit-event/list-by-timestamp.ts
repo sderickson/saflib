@@ -7,7 +7,7 @@ import { InvalidAuditEventCursorError } from "../../errors.ts";
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/utils";
-import { and, asc, desc, eq, gt, gte, lt, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, lt, lte, or, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 
 export type ListAuditEventsByTimestampParams = {
@@ -15,6 +15,10 @@ export type ListAuditEventsByTimestampParams = {
   to?: Date | number;
   limit?: number;
   cursor?: string;
+  /** Only events where this user is the actor or the one acted for. */
+  userId?: string;
+  /** Only event types starting with this (exact, case-sensitive), e.g. `kratos.`. */
+  eventPrefix?: string;
   /** Default `asc` (oldest first). Use `desc` for newest first (admin UI). */
   order?: "asc" | "desc";
 };
@@ -86,6 +90,19 @@ export const listAuditEventsByTimestamp = queryWrapper(
     }
     if (toMs !== undefined) {
       clauses.push(lte(auditEventTable.ts, new Date(toMs)));
+    }
+    if (params.userId) {
+      clauses.push(
+        or(
+          eq(auditEventTable.actor_user_id, params.userId),
+          eq(auditEventTable.on_behalf_of_user_id, params.userId),
+        )!,
+      );
+    }
+    if (params.eventPrefix) {
+      clauses.push(
+        sql`substr(${auditEventTable.event_type}, 1, ${params.eventPrefix.length}) = ${params.eventPrefix}`,
+      );
     }
     if (cursorKey !== undefined) {
       const dt = new Date(cursorKey.ts);

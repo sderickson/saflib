@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import winston from "winston";
-import client from "prom-client";
+import client from "@prometheus-io/client";
 import type { DbKey } from "@saflib/drizzle";
 import { throwError } from "@saflib/utils";
 import {
@@ -159,6 +159,17 @@ describe("persistent log transport", () => {
     expect(after - before).toBe(3);
   });
 
+  it("stores product events in their own column, with properties as fields", () => {
+    child("r1").info("Product event: matter.created", { product_event: "matter.created", matter_type: "estate" });
+    child("r1").info("ordinary line");
+    transport.flush();
+    const c = logsDbManager.get(dbKey)!.$client;
+    const rows = c.prepare(`SELECT event, fields, request_id FROM product_events`).all();
+    expect(rows).toEqual([{ event: "matter.created", fields: '{"matter_type":"estate"}', request_id: "r1" }]);
+    const all = c.prepare(`SELECT COUNT(*) AS n FROM log_entries`).get() as { n: number };
+    expect(all.n).toBe(2);
+  });
+
   it("never throws into the caller when the write fails", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     child("x").info("will fail to write");
@@ -195,6 +206,30 @@ describe("pruneLogs", () => {
     const remaining = c.prepare(`SELECT COUNT(*) AS n FROM log_entries`).get() as { n: number };
     const indexed = c.prepare(`SELECT COUNT(*) AS n FROM log_entries_fts WHERE log_entries_fts MATCH '"new"'`).get() as { n: number };
     expect(indexed.n).toBe(remaining.n);
+  });
+});
+
+describe("pruneLogs and product events", () => {
+  it("keeps events past the log age limit, and prunes ordinary lines first for size", () => {
+    const dbKey = logsDb.connect();
+    const c = logsDbManager.get(dbKey)!.$client;
+    const insert = c.prepare(
+      `INSERT INTO log_entries (ts, level, level_num, template_hash, message, event) VALUES (?, 'info', 2, 'h', ?, ?)`,
+    );
+    const day = 86_400_000;
+    insert.run(Date.now() - 30 * day, "old line", null);
+    insert.run(Date.now() - 30 * day, "old event", "a.b");
+    insert.run(Date.now() - 200 * day, "ancient event", "a.b");
+    const r = pruneLogs(dbKey, { maxAgeDays: 14, eventMaxAgeDays: 180, maxBytes: 1e12 });
+    expect(r.byAge).toBe(2);
+    const left = c.prepare(`SELECT message FROM log_entries`).all();
+    expect(left).toEqual([{ message: "old event" }]);
+
+    for (let i = 0; i < 2000; i++) insert.run(Date.now(), `line ${i} ${"x".repeat(200)}`, null);
+    const before = pruneLogs(dbKey, { maxBytes: 1e12 }).usedBytes;
+    pruneLogs(dbKey, { maxBytes: Math.floor(before / 2) });
+    // The (older) event survives while ordinary lines are removed.
+    expect(c.prepare(`SELECT COUNT(*) AS n FROM log_entries WHERE event IS NOT NULL`).get()).toEqual({ n: 1 });
   });
 });
 

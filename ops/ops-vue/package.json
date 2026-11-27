@@ -3,7 +3,6 @@
   "description": "Admin frontend for ops tokens (machine credentials for the ops API)",
   "private": true,
   "type": "module",
-  "main": "./index.ts",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -11,10 +10,17 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@saflib/ops-spec": "*",
+    "@saflib/ory-kratos-vue": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
-    "@tanstack/vue-query": "*"
+    "@tanstack/vue-query": "*",
+    "vue-router": "*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "exports": {
+    ".": "./index.ts",
+    "./mdi-icons": "./mdi-icons.ts"
+  }
 }

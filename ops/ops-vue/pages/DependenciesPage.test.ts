@@ -24,7 +24,16 @@ describe("DependenciesAsync", () => {
             { id: "GHSA-1", aliases: ["CVE-2026-1"], severity: "high", package: "undici", deployed: "8.10.2", fixed_in: "8.12.2", direct: true, actionable: false, accepted: { reason: "no upstream fix", until: "2027-01-31" }, untrusted: { summary: "TLS bypass <img src=x>" } },
           ],
           outdated: [
-            { name: "express", deployed: "5.2.1", latest: "5.3.0", latest_published_at: "2026-10-09T00:00:00.000Z", update: "minor", renovate_due: true },
+            {
+              name: "express",
+              deployed: "5.2.1",
+              latest: "5.3.0",
+              latest_published_at: "2026-10-09T00:00:00.000Z",
+              update: "minor",
+              renovate_due: true,
+              releases_url: "https://github.com/expressjs/express/releases",
+              release_notes: [{ version: "5.3.0", published_at: null, url: "https://x", body: "<b>Faster</b> router" }],
+            },
           ],
           runtime: [
             { scope: "image", name: "nodejs", version: "24.11.0", cycle: "24", eol: "2028-04-30", eol_soon: false, latest_in_cycle: "24.22.2" },
@@ -53,6 +62,17 @@ describe("DependenciesAsync", () => {
     expect(runtime[0]!.text()).toContain("latest in line: 24.22.2");
     expect(runtime[1]!.text()).toContain("end of life soon");
     expect(runtime[1]!.text()).toContain("(server)");
+    wrapper.unmount();
+  });
+
+  it("links each outdated package's changelog and expands its release notes as plain text", async () => {
+    const wrapper = mountTestApp(DependenciesAsync);
+    await vi.waitFor(() => expect(wrapper.find("[data-test=outdated-row]").exists()).toBe(true));
+    expect(wrapper.find("[data-test=dep-changelog]").attributes("href")).toBe("https://github.com/expressjs/express/releases");
+    await wrapper.find("[data-test=outdated-row]").trigger("click");
+    const notes = wrapper.find("[data-test=dep-notes]");
+    expect(notes.text()).toContain("<b>Faster</b> router");
+    expect(notes.find("b").exists()).toBe(false);
     wrapper.unmount();
   });
 });

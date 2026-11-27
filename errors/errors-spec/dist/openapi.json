@@ -89,6 +89,9 @@
       "post": {
         "summary": "Record a client-reported error",
         "operationId": "recordReportedError",
+        "tags": [
+          "block-html-exempt"
+        ],
         "x-public": true,
         "requestBody": {
           "required": true,
@@ -139,6 +142,94 @@
           },
           "400": {
             "description": "Invalid request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/errors/report": {
+      "post": {
+        "summary": "Report a browser error (signed-in users)",
+        "description": "How client errors reach Issues outside local development: the SPA posts uncaught errors and unhandled rejections here. Requires a session, so only signed-in users can report; reports are redacted, size-capped and grouped like server errors.\n",
+        "operationId": "reportClientError",
+        "tags": [
+          "block-html-exempt"
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "reported_error": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "client"
+                        ]
+                      },
+                      "message": {
+                        "type": "string",
+                        "maxLength": 2000
+                      },
+                      "stack": {
+                        "type": "string",
+                        "maxLength": 8000
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "additionalProperties": true
+                      },
+                      "source": {
+                        "type": "string",
+                        "maxLength": 100
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "message"
+                    ]
+                  }
+                },
+                "required": [
+                  "reported_error"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Recorded."
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not signed in.",
             "content": {
               "application/json": {
                 "schema": {
@@ -241,90 +332,6 @@
           },
           "500": {
             "description": "Intentional error for monitoring verification.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/admin/errors": {
-      "get": {
-        "summary": "List buffered reported errors",
-        "description": "Development ring-buffer listing (`createDevErrorsRouter` only). Tagged `no-auth` so local dev stacks can read captured errors without a session, matching `/dev/logs`.\n",
-        "operationId": "listReportedErrors",
-        "x-public": true,
-        "parameters": [
-          {
-            "name": "kind",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "csp-violation",
-                "client",
-                "server",
-                "test"
-              ]
-            },
-            "description": "Filter by error kind."
-          },
-          {
-            "name": "source",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Filter by source (substring match)."
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "description": "Maximum number of entries to return (from the tail)."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Buffered reported errors, newest last within the filtered slice.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "reported_errors": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/reported-error"
-                      }
-                    }
-                  },
-                  "required": [
-                    "reported_errors"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized — missing or invalid auth.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden — site admin required.",
             "content": {
               "application/json": {
                 "schema": {

@@ -47,6 +47,7 @@ describe("IssuesAsync", () => {
       HttpResponse.json({
         occurrences: [
           { id: "o1", ts: "2026-11-09T10:00:00.000Z", request_id: "req-1", version: "abc", untrusted: { message: "boom", stack: "Error: boom\n    at x", fields: null } },
+          { id: "o2", ts: "2026-11-08T10:00:00.000Z", request_id: null, version: "abc", untrusted: { message: "earlier boom", stack: null, fields: null } },
         ],
       }),
     ),
@@ -91,6 +92,34 @@ describe("IssuesAsync", () => {
     await vi.waitFor(() =>
       expect(wrapper.find("[data-test=issues-tab-active]").classes()).toContain("v-tab--selected"),
     );
+    wrapper.unmount();
+  });
+
+  it("flips through occurrences with the arrows", async () => {
+    await router.push("/ops/issues");
+    const wrapper = mountTestApp(IssuesAsync, { attachTo: document.body });
+    await vi.waitFor(() => expect(wrapper.findAll("[data-test=issue-row]").length).toBe(1));
+    await wrapper.find("[data-test=issue-row] button").trigger("click");
+    const occ = () => wrapper.find("[data-test=issue-occurrence]");
+    await vi.waitFor(() => expect(occ().text()).toContain("Occurrence 1 of 2"));
+    expect(occ().text()).toContain("boom");
+    await wrapper.find("[data-test=occurrence-older]").trigger("click");
+    await vi.waitFor(() => expect(occ().text()).toContain("Occurrence 2 of 2"));
+    expect(occ().text()).toContain("earlier boom");
+    expect(wrapper.find("[data-test=occurrence-older]").attributes("disabled")).toBeDefined();
+    wrapper.unmount();
+  });
+
+  it("resolves the checked issues in bulk", async () => {
+    posts.length = 0;
+    await router.push("/ops/issues");
+    const wrapper = mountTestApp(IssuesAsync, { attachTo: document.body });
+    await vi.waitFor(() => expect(wrapper.findAll("[data-test=issue-row]").length).toBe(1));
+    await wrapper.find("[data-test=issue-row] input[type=checkbox]").setValue(true);
+    await vi.waitFor(() => expect(wrapper.find("[data-test=issues-bulk]").text()).toContain("1 selected"));
+    await wrapper.find("[data-test=issues-bulk-resolve]").trigger("click");
+    await vi.waitFor(() => expect(posts).toHaveLength(1));
+    await vi.waitFor(() => expect(wrapper.find("[data-test=issues-bulk]").exists()).toBe(false));
     wrapper.unmount();
   });
 });

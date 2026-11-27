@@ -745,7 +745,7 @@ Gaps found probing hub's ops API by hand (2026-11-09):
       can't work from the message, route and deploy timing alone.
 
 - [ ] `ops-cli` with `digest`, `issues` and `logs`
-- [ ] Ops skill/doc
+- [x] Ops skill/doc: `ops/docs/02-agent-runbook.md` (the triage loop, where each finding lives, logs, PromQL, diagnostics, what a token may change, what the API lacks)
 - [ ] Branch protection on one production product, plus a GitHub token
       scoped exactly as in *Agent side*
 - [ ] Agent reads recent workflow runs, Renovate PRs and security alerts

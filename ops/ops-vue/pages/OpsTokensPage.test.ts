@@ -27,7 +27,14 @@ const listed: OpsResponseBody["listOpsTokens"][200] = {
   ops_tokens: [
     token({}),
     token({ id: "t2", name: "old laptop", revoked_at: "2026-11-02T00:00:00.000Z" }),
-    token({ id: "t4", name: "maintenance agent", exchanged_from: "t1", scopes: ["ops:read", "ops:triage"] }),
+    token({
+      id: "t4",
+      name: "maintenance agent",
+      exchanged_from: "t1",
+      scopes: ["ops:read", "ops:triage"],
+      expires_at: "2099-11-01T08:00:00.000Z",
+      created_at: "2099-11-01T00:00:00.000Z",
+    }),
   ],
 };
 
@@ -65,18 +72,19 @@ describe("OpsTokensAsync", () => {
     wrapper.unmount();
   });
 
-  it("lists tokens by prefix and state, with revoke only for active ones", async () => {
+  it("lists tokens with their lifetime, a state chip only when not active, and revoke for active ones", async () => {
     const wrapper = await mount();
     await wrapper.find("[data-test=filter-all]").trigger("click");
     await vi.waitFor(() => expect(wrapper.findAll("tbody tr")).toHaveLength(3));
     const rows = wrapper.findAll("tbody tr");
     expect(rows).toHaveLength(3);
-    expect(rows[0]!.text()).toContain("safops_AbCdEfGh…");
-    expect(rows[0]!.text()).toContain("Active");
-    expect(rows[0]!.text()).toContain("Revoke");
-    expect(rows[1]!.text()).toContain("Revoked");
-    expect(rows[1]!.text()).not.toContain("Revoke ");
-    expect(rows[1]!.findComponent({ name: "v-btn" }).exists()).toBe(false);
+    expect(rows[0]!.find("[data-test=token-state]").exists()).toBe(false);
+    expect(rows[0]!.find("[data-test=token-lifetime] .v-icon").exists()).toBe(true); // ∞, no expiry
+    expect(rows[0]!.find("[data-test=token-revoke]").classes()).not.toContain("saf-admin-action--off");
+    expect(rows[1]!.find("[data-test=token-state]").text()).toBe("Revoked");
+    // Revoked tokens keep the slot (icons line up) but can't be revoked again.
+    expect(rows[1]!.find("[data-test=token-revoke]").classes()).toContain("saf-admin-action--off");
+    expect(rows[2]!.find("[data-test=token-lifetime]").text()).toBe("8h");
     wrapper.unmount();
   });
 

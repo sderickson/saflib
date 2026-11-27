@@ -35,3 +35,8 @@ export const isDevEnv = () => {
 export const isDevelopmentDeployment = () => {
   return getViteEnv().VITE_DEPLOYMENT_NAME === "development";
 };
+
+/** The deployment name injected at build time (`DEPLOYMENT_NAME`), e.g. "development" or "production". */
+export const getDeploymentName = (): string | undefined => {
+  return getViteEnv().VITE_DEPLOYMENT_NAME;
+};

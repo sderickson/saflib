@@ -1,5 +1,5 @@
 import { latencyBuckets } from "@saflib/node";
-import client from "prom-client";
+import client from "@prometheus-io/client";
 
 const grpcMetricName = "grpc_request_duration_seconds";
 const grpcMetricHelp =

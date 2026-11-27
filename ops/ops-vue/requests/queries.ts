@@ -49,32 +49,127 @@ export interface AdminLogFilters {
   level?: "error" | "warn" | "info";
   q?: string;
   request_id?: string;
+  /** Lines from one request, job delivery, cron tick or process. */
+  context_id?: string;
+  /** Lines by one user. */
+  user_id?: string;
+}
+
+const LIVE_POLL_MS = 5000;
+
+function logQuery(f: AdminLogFilters) {
+  return {
+    ...(f.level ? { level: f.level } : {}),
+    ...(f.q ? { q: f.q } : {}),
+    ...(f.request_id ? { request_id: f.request_id } : {}),
+    ...(f.context_id ? { context_id: f.context_id } : {}),
+    ...(f.user_id ? { user_id: f.user_id } : {}),
+  };
 }
 
 /** Persisted logs, newest first, a page at a time (`fetchNextPage`). */
-export function useListAdminLogs(filters: Ref<AdminLogFilters>) {
+export function useListAdminLogs(filters: Ref<AdminLogFilters>, live?: Ref<boolean>) {
   const client = getClient();
   type Page = OpsResponseBody["listOpsLogs"][200];
   return useInfiniteQuery<Page, TanstackError, InfiniteData<Page, string | undefined>, readonly unknown[], string | undefined>({
     queryKey: computed(() => ["ops", "logs", { ...filters.value }] as const),
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) => {
-      const f = filters.value;
-      return handleClientMethod(
+    queryFn: ({ pageParam }) =>
+      handleClientMethod(
         client.GET("/ops/logs", {
           params: {
+            query: { limit: 100, ...logQuery(filters.value), ...(pageParam ? { cursor: pageParam } : {}) },
+          },
+        }),
+      ),
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    refetchInterval: computed(() => (live?.value ? LIVE_POLL_MS : false)),
+  });
+}
+
+/** Log lines grouped by request, job, cron tick or process, newest first. */
+export function useListLogGroups(filters: Ref<AdminLogFilters>, live?: Ref<boolean>) {
+  const client = getClient();
+  type Page = OpsResponseBody["listOpsLogGroups"][200];
+  return useInfiniteQuery<Page, TanstackError, InfiniteData<Page, string | undefined>, readonly unknown[], string | undefined>({
+    queryKey: computed(() => ["ops", "log-groups", { ...filters.value }] as const),
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) => {
+      const { request_id: _r, ...f } = filters.value;
+      return handleClientMethod(
+        client.GET("/ops/logs/groups", {
+          params: { query: { limit: 50, ...logQuery(f), ...(pageParam ? { cursor: pageParam } : {}) } },
+        }),
+      );
+    },
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    refetchInterval: computed(() => (live?.value ? LIVE_POLL_MS : false)),
+  });
+}
+
+/** Every line of one group (oldest first), for an expanded row. */
+export function useLogGroupLines(contextId: Ref<string | null>, live?: Ref<boolean>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["listOpsLogs"][200]["logs"], TanstackError>({
+    queryKey: computed(() => ["ops", "logs", "group", contextId.value] as const),
+    enabled: computed(() => !!contextId.value),
+    queryFn: async () => {
+      const page = await handleClientMethod(
+        client.GET("/ops/logs", {
+          params: { query: { context_id: contextId.value!, level: "http", limit: 500 } },
+        }),
+      );
+      return [...page.logs].reverse();
+    },
+    refetchInterval: computed(() => (live?.value ? LIVE_POLL_MS : false)),
+  });
+}
+
+/** A PromQL range query over the last `hours` (about 120 points). */
+export function useOpsMetricsRange(query: Ref<string>, hours: Ref<number>, enabled?: Ref<boolean>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["queryOpsMetricsRange"][200], TanstackError>({
+    queryKey: computed(() => ["ops", "metrics", "range", query.value, hours.value] as const),
+    enabled: computed(() => query.value.trim() !== "" && (enabled?.value ?? true)),
+    retry: false,
+    staleTime: 60_000,
+    queryFn: () => {
+      const end = Math.floor(Date.now() / 1000);
+      const start = end - hours.value * 3600;
+      const step = Math.max(60, Math.floor((end - start) / 120));
+      return handleClientMethod(
+        client.GET("/ops/metrics/query_range", {
+          params: {
             query: {
-              limit: 100,
-              ...(f.level ? { level: f.level } : {}),
-              ...(f.q ? { q: f.q } : {}),
-              ...(f.request_id ? { request_id: f.request_id } : {}),
-              ...(pageParam ? { cursor: pageParam } : {}),
+              query: query.value,
+              start: new Date(start * 1000).toISOString(),
+              end: new Date(end * 1000).toISOString(),
+              step,
             },
           },
         }),
       );
     },
-    getNextPageParam: (last) => last.next_cursor ?? undefined,
+  });
+}
+
+/** Deploy history: new builds, newest first. */
+export function useOpsDeploys(limit = 20) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["listOpsDeploys"][200], TanstackError>({
+    queryKey: ["ops", "deploys", limit],
+    queryFn: () => handleClientMethod(client.GET("/ops/deploys", { params: { query: { limit } } })),
+  });
+}
+
+/** Every health check's latest result (runs them). */
+export function useOpsHealth(enabled?: Ref<boolean>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["getOpsHealth"][200], TanstackError>({
+    queryKey: ["ops", "health"],
+    enabled: enabled ?? true,
+    staleTime: 30_000,
+    queryFn: () => handleClientMethod(client.GET("/ops/health")),
   });
 }
 
@@ -82,6 +177,10 @@ export function useListAdminLogs(filters: Ref<AdminLogFilters>) {
 export function useOpsDigest(since?: Ref<string | undefined>) {
   const client = getClient();
   return useQuery<OpsResponseBody["getOpsDigest"][200], TanstackError>({
+    // Shared by the Overview, the top bar and sidebar badges: one request a
+    // minute however many of them are on screen.
+    staleTime: 60_000,
+    refetchInterval: 60_000,
     queryKey: computed(() => ["ops", "digest", since?.value ?? null] as const),
     queryFn: () =>
       handleClientMethod(
@@ -234,5 +333,98 @@ export function useOpsDependencies() {
   return useQuery<OpsResponseBody["getOpsDependencies"][200], TanstackError>({
     queryKey: ["ops", "dependencies"],
     queryFn: () => handleClientMethod(client.GET("/ops/dependencies", {})),
+  });
+}
+
+/** The self-test probes and why any can't run here. */
+export function useOpsDiagnostics() {
+  const client = getClient();
+  return useQuery<OpsResponseBody["listOpsDiagnostics"][200], TanstackError>({
+    queryKey: ["ops", "diagnostics"],
+    queryFn: () => handleClientMethod(client.GET("/ops/diagnostics", {})),
+  });
+}
+
+/** Fire one server probe. The server-500 probe's 500 is its signal, not a failure. */
+export async function runOpsDiagnosticProbe(runId: string, probeId: string): Promise<void> {
+  const { response } = await getClient().POST("/ops/diagnostics/runs/{run_id}/probes/{probe_id}", {
+    params: { path: { run_id: runId, probe_id: probeId } },
+    body: {},
+  });
+  if (!response.ok && !(probeId === "server-500" && response.status === 500)) {
+    throw new Error(`Probe ${probeId} answered ${response.status}`);
+  }
+}
+
+/** Where a run's signals have landed so far. */
+export async function getOpsDiagnosticRun(runId: string, since: string) {
+  return handleClientMethod(
+    getClient().GET("/ops/diagnostics/runs/{run_id}", {
+      params: { path: { run_id: runId }, query: { since } },
+    }),
+  );
+}
+
+export function useClearOpsDiagnostics() {
+  const client = getClient();
+  const queryClient = useQueryClient();
+  return useMutation<OpsResponseBody["clearOpsDiagnostics"][200], TanstackError>({
+    mutationFn: () => handleClientMethod(client.POST("/ops/diagnostics/clear", { body: {} })),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["ops"] }),
+  });
+}
+
+/** This process's /metrics, summarized; `raw` adds the text exposition. */
+export function useOpsDiagnosticMetrics(raw: Ref<boolean>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["getOpsDiagnosticMetrics"][200], TanstackError>({
+    queryKey: computed(() => ["ops", "diagnostics", "metrics", raw.value] as const),
+    queryFn: () =>
+      handleClientMethod(
+        client.GET("/ops/diagnostics/metrics", { params: { query: raw.value ? { raw: "1" } : {} } }),
+      ),
+  });
+}
+
+/**
+ * Read-only SQL over the logs DB (Analytics → Explore). A query, not a
+ * mutation: it reads, and caching the last result per SQL is what we want.
+ */
+export function useOpsLogsQuery(sql: Ref<string>) {
+  const client = getClient();
+  return useQuery<OpsResponseBody["queryOpsLogs"][200], Error>({
+    queryKey: computed(() => ["ops", "logs", "query", sql.value] as const),
+    enabled: computed(() => sql.value.trim() !== ""),
+    retry: false,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data, error, response } = await client.POST("/ops/logs/query", { body: { sql: sql.value } });
+      if (data) return data;
+      const message = (error as { message?: unknown } | undefined)?.message;
+      throw new Error(typeof message === "string" ? message : `Request failed (${response.status})`);
+    },
+  });
+}
+
+/** The app's backups (Status → Backups). Polls while one is running. */
+export function useOpsBackups() {
+  const client = getClient();
+  return useQuery<OpsResponseBody["listOpsBackups"][200], TanstackError>({
+    queryKey: ["ops", "backups"],
+    queryFn: () => handleClientMethod(client.GET("/ops/backups", { params: { query: { days: 62 } } })),
+    refetchInterval: (q) => (q.state.data?.backups.some((b) => b.status === "running") ? 3000 : false),
+  });
+}
+
+/** "Back up now". */
+export function useRunOpsBackups() {
+  const client = getClient();
+  const queryClient = useQueryClient();
+  return useMutation<OpsResponseBody["runOpsBackups"][202], TanstackError, void>({
+    mutationFn: () => handleClientMethod(client.POST("/ops/backups/run", {})),
+    onSuccess: () => {
+      // The backups appear as "running" within a moment; then polling takes over.
+      setTimeout(() => void queryClient.invalidateQueries({ queryKey: ["ops", "backups"] }), 500);
+    },
   });
 }

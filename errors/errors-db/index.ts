@@ -1,7 +1,14 @@
 export * from "./errors.ts";
 export { issueLevels, issueStatuses } from "./schema.ts";
 export type { IssueGroup, IssueKind, IssueLevel, IssueOccurrence, IssueStatus } from "./schema.ts";
-export { computeFingerprint, inAppFrames, errorNameFromStack } from "./fingerprint.ts";
+export {
+  computeFingerprint,
+  inAppFrames,
+  errorNameFromStack,
+  diagnosticProbeOf,
+  isDiagnosticIssueTitle,
+} from "./fingerprint.ts";
+export { findOccurrenceContaining, resolveDiagnosticIssues, type FoundOccurrence } from "./queries/diagnostics.ts";
 export {
   recordOccurrence,
   OCCURRENCES_PER_ISSUE,

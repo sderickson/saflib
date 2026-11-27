@@ -6,7 +6,8 @@
   "main": "./index.ts",
   "exports": {
     ".": "./index.ts",
-    "./pages/*": "./pages/*"
+    "./pages/*": "./pages/*",
+    "./mdi-icons": "./mdi-icons.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -15,12 +16,15 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@saflib/audit-sdk": "*",
     "@saflib/audit-spec": "*",
+    "@saflib/ory-kratos-vue": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*",
-    "vue": "*"
+    "vue": "*",
+    "vue-router": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

@@ -12,11 +12,15 @@ export type ListJobsQuery = NonNullable<
   paths["/jobs"]["get"]["parameters"]["query"]
 >;
 
-export function useListJobs(filters: MaybeRefOrGetter<ListJobsQuery> = {}) {
+export function useListJobs(
+  filters: MaybeRefOrGetter<ListJobsQuery> = {},
+  options: { enabled?: MaybeRefOrGetter<boolean> } = {},
+) {
   const client = getClient();
   const resolvedFilters = computed(() => toValue(filters));
   return useQuery<JobsServiceResponseBody["listJobs"][200], TanstackError>({
     queryKey: ["jobs", "list", resolvedFilters],
+    enabled: computed(() => toValue(options.enabled ?? true)),
     queryFn: () => {
       return handleClientMethod(
         client.GET("/jobs", {

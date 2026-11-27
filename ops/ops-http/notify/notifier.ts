@@ -1,5 +1,5 @@
 import type { DbKey } from "@saflib/drizzle";
-import { listIssues } from "@saflib/errors-db";
+import { isDiagnosticIssueTitle, listIssues } from "@saflib/errors-db";
 import { claimNotification, getNotifierState, listAlerts, releaseNotification } from "@saflib/ops-db";
 import { getSafReporters } from "@saflib/node";
 import { throwError } from "@saflib/utils";
@@ -38,6 +38,16 @@ function parseAnnotations(json: string): Record<string, string> {
   }
 }
 
+/** A Diagnostics test alert carries the `saf_diagnostics` label. */
+export function isDiagnosticAlert(labelsJson: string): boolean {
+  try {
+    const labels = JSON.parse(labelsJson) as Record<string, unknown>;
+    return labels.saf_diagnostics !== undefined;
+  } catch {
+    return false;
+  }
+}
+
 /** Collect events after `since` and format them; null when there are none. */
 export async function buildNotification(
   options: Pick<OpsNotifierOptions, "product" | "dbKey" | "issuesDbKey">,
@@ -45,7 +55,10 @@ export async function buildNotification(
 ): Promise<OpsNotification | null> {
   const alerts = (
     await throwError(listAlerts(options.dbKey, { activeSince: since, excludeAlertnames: [WATCHDOG_ALERTNAME], limit: 200 }))
-  ).filter((a) => a.starts_at > since || a.first_received_at > since);
+  )
+    .filter((a) => a.starts_at > since || a.first_received_at > since)
+    // Diagnostics test alerts are real but must never page anyone.
+    .filter((a) => !isDiagnosticAlert(a.labels));
   let newIssues: { title: string; level: string; count: number }[] = [];
   let regressed: { title: string; level: string; count: number }[] = [];
   if (options.issuesDbKey) {
@@ -53,8 +66,12 @@ export async function buildNotification(
       throwError(listIssues(options.issuesDbKey, { windowSince: since, newInWindow: true, levels: ["error", "fatal"], limit: 200 })),
       throwError(listIssues(options.issuesDbKey, { windowSince: since, regressedInWindow: true, levels: ["error", "fatal"], limit: 200 })),
     ]);
-    newIssues = fresh.issues.filter((i) => i.status !== "ignored").map((i) => ({ title: i.title, level: i.level, count: i.window_count }));
-    regressed = back.issues.map((i) => ({ title: i.title, level: i.level, count: i.window_count }));
+    // Diagnostics test signals show in Issues but never notify.
+    const real = (i: { title: string }) => !isDiagnosticIssueTitle(i.title);
+    newIssues = fresh.issues
+      .filter((i) => i.status !== "ignored" && real(i))
+      .map((i) => ({ title: i.title, level: i.level, count: i.window_count }));
+    regressed = back.issues.filter(real).map((i) => ({ title: i.title, level: i.level, count: i.window_count }));
   }
   if (alerts.length + newIssues.length + regressed.length === 0) return null;
 

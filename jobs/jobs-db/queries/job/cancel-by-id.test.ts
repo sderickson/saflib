@@ -95,7 +95,24 @@ describe("cancelByIdJob", () => {
     expect(error).toBeInstanceOf(JobNotFoundError);
   });
 
-  it.each(["running", "succeeded", "dead", "cancelled"] as const)(
+  it("gives up on a dead job, keeping its last error", async () => {
+    await createJob(
+      dbKey,
+      jobParams({
+        id: "job-dead",
+        status: "dead",
+        finished_at: now,
+        result: { status_code: 500, error_body: "boom", terminal_reason: "exhausted" },
+      }),
+    );
+    const { result, error } = await cancelByIdJob(dbKey, { id: "job-dead", now: later });
+    expect(error).toBeUndefined();
+    expect(result?.status).toBe("cancelled");
+    expect(result?.result).toEqual({ status_code: 500, error_body: "boom", terminal_reason: "given-up-by-admin" });
+    expect(result?.finished_at).toEqual(now);
+  });
+
+  it.each(["running", "succeeded", "cancelled"] as const)(
     "returns JobNotCancellableError when status is %s",
     async (status) => {
       await createJob(
@@ -107,16 +124,13 @@ describe("cancelByIdJob", () => {
           started_at: status === "running" ? now : null,
           finished_at:
             status === "succeeded" ||
-            status === "dead" ||
             status === "cancelled"
               ? now
               : null,
           result:
             status === "cancelled"
               ? { terminal_reason: "cancelled-by-admin" }
-              : status === "dead"
-                ? { terminal_reason: "exhausted" }
-                : null,
+              : null,
         }),
       );
 

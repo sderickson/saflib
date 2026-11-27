@@ -24,22 +24,6 @@ export const adminLinks: LinkMap = {
     path: "/emails",
     params: ["userEmail"],
   },
-  logs: {
-    subdomain,
-    path: "/logs",
-  },
-  metrics: {
-    subdomain,
-    path: "/metrics",
-  },
-  events: {
-    subdomain,
-    path: "/events",
-  },
-  errors: {
-    subdomain,
-    path: "/errors",
-  },
   audit: {
     subdomain,
     path: "/audit",
@@ -67,6 +51,34 @@ export const adminLinks: LinkMap = {
   opsDependencies: {
     subdomain,
     path: "/ops-dependencies",
+  },
+  diagnostics: {
+    subdomain,
+    path: "/diagnostics",
+  },
+  statusHealth: {
+    subdomain,
+    path: "/status",
+  },
+  statusBuild: {
+    subdomain,
+    path: "/status/build",
+  },
+  opsMetricsProcess: {
+    subdomain,
+    path: "/ops-metrics/process",
+  },
+  analytics: {
+    subdomain,
+    path: "/analytics",
+  },
+  backups: {
+    subdomain,
+    path: "/backups",
+  },
+  analyticsTrends: {
+    subdomain,
+    path: "/analytics/trends",
   },
   // BEGIN WORKFLOW AREA page-links FOR vue/add-view
   // END WORKFLOW AREA

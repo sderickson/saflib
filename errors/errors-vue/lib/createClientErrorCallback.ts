@@ -1,5 +1,5 @@
 import { createApp } from "vue";
-import { reportClientErrorToBackend } from "./reportClientErrorToBackend.ts";
+import { reportClientErrorToBackend, reportUnhandledRejections } from "./reportClientErrorToBackend.ts";
 
 export interface ClientErrorCallbackOptions {
   /** SPA or client name recorded as `source`. */
@@ -7,8 +7,8 @@ export interface ClientErrorCallbackOptions {
 }
 
 /**
- * Vue `createApp` callback: log Vue errors (and POST `/errors/record` on
- * localhost hosts). For Sentry, use `createSentryCallback` from
+ * Vue `createApp` callback: log and report Vue errors and unhandled promise
+ * rejections (see `reportClientErrorToBackend`). For Sentry, use `createSentryCallback` from
  * `@saflib/vendors-sentry-client`.
  */
 export function createClientErrorCallback(
@@ -17,6 +17,7 @@ export function createClientErrorCallback(
   const source = options.source ?? "client";
 
   return function clientErrorCallback(app: ReturnType<typeof createApp>) {
+    reportUnhandledRejections(source);
     const priorErrorHandler = app.config.errorHandler;
     app.config.errorHandler = (error, instance, info) => {
       void reportClientErrorToBackend(error, { source, info });

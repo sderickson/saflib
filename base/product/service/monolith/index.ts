@@ -11,6 +11,7 @@ import {
   baseTriggerMap,
   getBaseJobsDbKey,
   runBaseJobs,
+  baseJobsApiSpec,
 } from "@saflib/base-jobs";
 import { createJobsApp, makeCronEnqueuer } from "@saflib/jobs-http";
 import { jsonSpec } from "@saflib/base-spec";
@@ -49,7 +50,7 @@ export async function startBaseService() {
     const jobsApp = createJobsApp({
       triggerMap: baseTriggerMap,
       operationConfig: baseJobOperations,
-      apiSpec: jsonSpec,
+      apiSpec: baseJobsApiSpec(jsonSpec),
       targetSocketPath: internalSocketPath,
       dbKey: getBaseJobsDbKey(),
     });

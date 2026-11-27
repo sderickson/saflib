@@ -1,3 +1,4 @@
+import { formatShortDateTime } from "@saflib/vue";
 import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
@@ -48,17 +49,6 @@ const mockJobs: ListCronJobsResponse = [
   },
 ];
 
-const formatDateTime = (dateTimeString: string | null | undefined): string => {
-  if (!dateTimeString) return "N/A";
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(dateTimeString));
-  } catch (e) {
-    return dateTimeString;
-  }
-};
 
 // MSW Handlers
 const handlers = [
@@ -119,12 +109,11 @@ describe("CronJobsAsync", () => {
   ): VueWrapper => {
     const row = getRowByJobName(wrapper, jobName);
     // Find the button component within the row's DOM element
-    const button = row.findComponent({ name: "v-btn", text: expectedText });
-    expect(
-      button.exists(),
-      `Button with text "${expectedText}" for job "${jobName}" not found`,
-    ).toBe(true);
-    return button;
+    const button = row
+      .findAllComponents({ name: "v-btn" })
+      .find((b: VueWrapper) => b.attributes("title") === expectedText);
+    expect(button, `Button "${expectedText}" for job "${jobName}" not found`).toBeDefined();
+    return button!;
   };
   const getLoadingIndicator = (wrapper: VueWrapper) =>
     wrapper.findComponent({ name: "v-progress-circular" });
@@ -139,7 +128,7 @@ describe("CronJobsAsync", () => {
 
   it("should render the title after loading", async () => {
     const wrapper = await mountComponent();
-    expect(wrapper.find("h1").text()).toBe("Cron Jobs");
+    expect(wrapper.find("h1").text()).toBe("Cron jobs");
   });
 
   it("should render the table with job data after loading", async () => {
@@ -151,15 +140,7 @@ describe("CronJobsAsync", () => {
 
     // Check headers
     const headers = table.findAll("thead th");
-    expect(headers.map((h) => h.text())).toEqual([
-      "Job Name",
-      "Status",
-      "Enabled By",
-      "Last Run Status",
-      "Last Run At",
-      "Runs Next",
-      "Actions",
-    ]);
+    expect(headers.map((h) => h.text())).toEqual(["Job", "Status", "Last run", "Next run", ""]);
 
     // Check rows
     const rows = getRows(wrapper);
@@ -171,12 +152,12 @@ describe("CronJobsAsync", () => {
     expect(
       row1.findComponent({ name: "v-chip", text: "Enabled" }).exists(),
     ).toBe(true); // Status Chip
-    expect(row1.text()).toContain("admin-user-1");
+    // Who enabled it is on hover over the status chip.
     expect(
       row1.findComponent({ name: "v-chip", text: "success" }).exists(),
     ).toBe(true); // Last Run Status Chip
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].last_run_at));
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].runs_next_at));
+    expect(row1.text()).toContain(formatShortDateTime(mockJobs[0].last_run_at));
+    expect(row1.text()).toContain(formatShortDateTime(mockJobs[0].runs_next_at));
     expect(getActionButton(wrapper, "job-1", "Disable").exists()).toBe(true);
   });
 
@@ -187,7 +168,7 @@ describe("CronJobsAsync", () => {
       row3.findComponent({ name: "v-chip", text: "Re-enable required" }).exists(),
     ).toBe(true);
     expect(row3.text()).toContain(
-      "Missing — re-enable to record authority (job is not running)",
+      "Re-enable required",
     );
   });
 

@@ -1,3 +1,6 @@
-import ErrorsAsync from "./pages/errors/ErrorsAsync.vue";
-
-export { ErrorsAsync };
+export {
+  isLocalhostHostname,
+  reportClientErrorToBackend,
+  reportUnhandledRejections,
+} from "./lib/reportClientErrorToBackend.ts";
+export { createClientErrorCallback } from "./lib/createClientErrorCallback.ts";

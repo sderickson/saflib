@@ -11,6 +11,7 @@ import {
   type OpsMetricsConfig,
 } from "../metrics/prometheus.ts";
 import { queryDate } from "./_helpers.ts";
+import { widenRangeSelectors } from "../metrics/rate-window.ts";
 
 function metricsConfig(): OpsMetricsConfig {
   const { metrics } = opsServiceStorage.getStore()!;
@@ -50,7 +51,7 @@ export const queryOpsMetricsRangeHandler = createHandler(async function (req, re
   const step = req.query.step === undefined ? 300 : Number(req.query.step);
   validateRange(start.getTime() / 1000, end.getTime() / 1000, step);
   const params = new URLSearchParams({
-    query: String(req.query.query),
+    query: widenRangeSelectors(String(req.query.query), step),
     start: toUnixSeconds(start),
     end: toUnixSeconds(end),
     step: String(step),

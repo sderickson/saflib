@@ -62,7 +62,7 @@ test.describe("authorization (base API)", () => {
     expect(body.message).toContain("Forbidden");
   });
 
-  test("non-admin cannot GET /admin/errors", async ({
+  test("non-admin cannot GET /ops/issues", async ({
     page,
     loginPage,
     registrationPage,
@@ -75,7 +75,7 @@ test.describe("authorization (base API)", () => {
       loginPage,
     );
 
-    const res = await page.request.get(`${apiOrigin()}/admin/errors`);
+    const res = await page.request.get(`${apiOrigin()}/ops/issues`);
     expect(res.status()).toBe(403);
   });
 

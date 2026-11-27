@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.3",
+    "@prometheus-io/client": "^0.16.1",
     "@saflib/env": "*",
     "@saflib/node": "*",
     "google-protobuf": "^3.21.4",

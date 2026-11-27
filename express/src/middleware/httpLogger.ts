@@ -1,7 +1,7 @@
 import type { Handler } from "express";
 import morgan from "morgan";
 import { formatHttpAccessLine } from "@saflib/node";
-import { getSafReporters } from "@saflib/node";
+import { getSafReporters, type SafReporters } from "@saflib/node";
 import { typedEnv } from "@saflib/env";
 import { isInternalRequest } from "../markInternal.ts";
 
@@ -45,27 +45,51 @@ export const everyRequestLogger: Handler = (() => {
 const safeMethods = ["GET", "HEAD", "OPTIONS"];
 
 /**
- * For tracking requests which are "unsafe", that is they make some sort of change.
- * These are logged to Loki or whatever transport Winston is hooked up to.
- * They use OpenAPI operationIds to help label the request; these should always be set.
+ * Persists one `http`-level line per request when it finishes: method, the
+ * route template (never the raw path, which can hold ids and tokens),
+ * status, duration and whether it was an internal call. The line carries the
+ * request's context, so the logs UI can show it as the head of the request's
+ * group. Runs after route matching and context setup (scoped middleware).
+ *
+ * Also warns when a changing request has no OpenAPI operation id.
  */
-export const unsafeRequestLogger: Handler = (req, res, next) => {
-  if (req.method && safeMethods.includes(req.method)) {
-    return next();
-  }
-
-  const { log } = getSafReporters();
-  const operationName =
-    req.openapi?.schema?.operationId ?? req.openapi?.openApiRoute ?? "unknown";
-  res.on("finish", () => {
-    if (operationName === "unknown") {
-      log.warn("Unknown operation name", {
+export const makeRequestLineLogger =
+  (getReporters: () => Pick<SafReporters, "log"> = getSafReporters): Handler =>
+  (req, res, next) => {
+    const start = process.hrtime.bigint();
+    // Reporters are bound to this request's context now; the finish event
+    // fires outside it.
+    const { log } = getReporters();
+    const operationId = req.openapi?.schema?.operationId;
+    // Operations that read the logs (and would flood them when polled) opt
+    // out in their OpenAPI fragment.
+    const skip =
+      (req.openapi?.schema as Record<string, unknown> | undefined)?.[
+        "x-skip-request-log"
+      ] === true;
+    res.on("finish", () => {
+      const route = req.openapi?.openApiRoute ?? "(unmatched)";
+      if (skip) return;
+      const durationMs = Number(process.hrtime.bigint() - start) / 1e6;
+      log.http(`${req.method} ${route}`, {
         method: req.method,
-        originalUrl: req.originalUrl,
+        route,
         status: res.statusCode,
+        duration_ms: Math.round(durationMs * 10) / 10,
+        internal: isInternalRequest(req),
       });
-    }
-  });
+      if (!operationId && req.method && !safeMethods.includes(req.method)) {
+        log.warn("Unknown operation name", {
+          method: req.method,
+          route,
+          status: res.statusCode,
+        });
+      }
+    });
+    next();
+  };
 
-  next();
-};
+export const requestLineLogger: Handler = makeRequestLineLogger();
+
+/** @deprecated Use {@link requestLineLogger}, which also does this. */
+export const unsafeRequestLogger: Handler = requestLineLogger;

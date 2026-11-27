@@ -1,8 +1,6 @@
 export const ops_tokens = {
-  documentTitle: "Ops Tokens",
-  title: "Ops Tokens",
-  intro:
-    "Machine credentials for the ops API (health, deploys, and later logs, issues and metrics). Give each agent or integration its own token.",
+  documentTitle: "Admin API",
+  title: "Admin API",
   empty: "No ops tokens yet.",
   noActive: "No active tokens. Show all to see expired and revoked ones.",
   filterActive: "Active",
@@ -25,6 +23,8 @@ export const ops_tokens = {
   revoked: "Revoked",
   expired: "Expired",
   never: "Never",
+  noExpiry: "Never expires",
+  lifetimeHint: "How long the token was issued for",
   exchanged: "exchanged",
   exchangedHint:
     "Short-lived token from POST /ops/tokens/exchange; revoked when the token it was exchanged for is.",

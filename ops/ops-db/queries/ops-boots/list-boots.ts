@@ -1,7 +1,7 @@
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/utils";
-import { and, count, desc, eq, gte, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, gte, type SQL, sql } from "drizzle-orm";
 import { opsDbManager } from "../../instances.ts";
 import { opsBoots, type OpsBoot } from "../../schema.ts";
 
@@ -21,7 +21,7 @@ export const listBoots = queryWrapper(
     if (params.newBuildsOnly) where.push(eq(opsBoots.new_build, true));
     const rows = await db.query.opsBoots.findMany({
       where: where.length ? and(...where) : undefined,
-      orderBy: [desc(opsBoots.started_at)],
+      orderBy: [desc(opsBoots.started_at), desc(sql`rowid`)],
       limit: params.limit,
     });
     return { result: rows };

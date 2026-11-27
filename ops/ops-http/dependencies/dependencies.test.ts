@@ -55,7 +55,29 @@ function fakeFetch(opts: { osvDown?: boolean } = {}): typeof fetch {
     if (url.endsWith("/v1/querybatch")) {
       if (opts.osvDown) return json({}, 503);
       const queries = (JSON.parse(String(init!.body)) as { queries: { package: { name: string } }[] }).queries;
-      return json({ results: queries.map((q) => (q.package.name === "body-parser" ? { vulns: [{ id: "GHSA-aaaa" }] } : {})) });
+      return json({
+        results: queries.map((q) => (q.package.name === "body-parser" ? { vulns: [{ id: "GHSA-aaaa" }] } : q.package.name === "openssl" ? { vulns: [{ id: "x" }] } : {})),
+      });
+    }
+    if (url.endsWith("/v1/query")) {
+      const debian = (id: string, vector: string, fixed?: string) => ({
+        id,
+        summary: `${id} in openssl`,
+        severity: [{ type: "CVSS_V3", score: vector }],
+        affected: [
+          {
+            package: { name: "openssl", ecosystem: "Debian:12" },
+            ranges: [{ events: [{ introduced: "0" }, ...(fixed ? [{ fixed }] : [])] }],
+          },
+        ],
+      });
+      return json({
+        vulns: [
+          debian("DEBIAN-CVE-2026-10", "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N", "3.0.16-1~deb12u1"),
+          debian("DEBIAN-CVE-2026-11", "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"), // no fix yet: skipped
+          debian("DSA-6000-1", "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N", "3.0.16-1~deb12u1"), // repeats the CVE: skipped
+        ],
+      });
     }
     if (url.endsWith("/v1/vulns/GHSA-aaaa")) {
       return json({
@@ -68,7 +90,17 @@ function fakeFetch(opts: { osvDown?: boolean } = {}): typeof fetch {
     }
     if (url.endsWith("/-/package/express/dist-tags")) return json({ latest: "5.3.0" });
     if (url.endsWith("/-/package/@scope%2Flib/dist-tags")) return json({ latest: "1.0.0" });
-    if (url.endsWith("/express")) return json({ time: { "5.3.0": "2026-10-09T00:00:00.000Z" } });
+    if (url.endsWith("/express")) {
+      return json({ time: { "5.3.0": "2026-10-09T00:00:00.000Z" }, repository: { type: "git", url: "git+https://github.com/expressjs/express.git" } });
+    }
+    if (url.endsWith("/repos/expressjs/express/releases?per_page=50")) {
+      return json([
+        { tag_name: "v5.3.0", html_url: "https://github.com/expressjs/express/releases/tag/v5.3.0", published_at: "2026-10-09T00:00:00Z", body: "## What's changed\r\n* Faster <b>router</b>" },
+        { tag_name: "v5.2.2", html_url: "https://github.com/expressjs/express/releases/tag/v5.2.2", published_at: "2026-09-01T00:00:00Z", body: "Fix" },
+        { tag_name: "v5.2.1", html_url: "x", published_at: null, body: "deployed already" },
+        { tag_name: "v6.0.0-beta.1", html_url: "x", published_at: null, body: "too new", prerelease: true },
+      ]);
+    }
     if (url.endsWith("/api/nodejs.json")) {
       return json([
         { cycle: "24", eol: "2028-04-30", latest: "24.22.2" },
@@ -145,8 +177,49 @@ describe("checkDependencies", () => {
       expect.objectContaining({ id: "GHSA-aaaa", severity: "high", package: "body-parser", deployed: "2.3.0", fixed_in: "2.4.0", direct: false, actionable: true }),
     ]);
     expect(r.outdated).toEqual([
-      { name: "express", deployed: "5.2.1", latest: "5.3.0", latest_published_at: "2026-10-09T00:00:00.000Z", update: "minor", renovate_due: true },
+      {
+        name: "express",
+        deployed: "5.2.1",
+        latest: "5.3.0",
+        latest_published_at: "2026-10-09T00:00:00.000Z",
+        update: "minor",
+        renovate_due: true,
+        repository_url: "https://github.com/expressjs/express",
+        releases_url: "https://github.com/expressjs/express/releases",
+        // Releases after the deployed version up to latest, newest first, as plain text.
+        release_notes: [
+          { version: "5.3.0", published_at: "2026-10-09T00:00:00Z", url: "https://github.com/expressjs/express/releases/tag/v5.3.0", body: "## What's changed\n* Faster router" },
+          { version: "5.2.2", published_at: "2026-09-01T00:00:00Z", url: "https://github.com/expressjs/express/releases/tag/v5.2.2", body: "Fix" },
+        ],
+      },
     ]);
+  });
+});
+
+describe("base image OS packages", () => {
+  it("lists Debian CVEs the distro has fixed, scored from CVSS", async () => {
+    const manifest = {
+      ...parseLockfile(lockfile, "v24.11.0"),
+      osRelease: { id: "debian", versionId: "12" },
+      osPackages: [
+        { name: "openssl", version: "3.0.15-1~deb12u1" },
+        { name: "zlib", version: "1:1.2.13.dfsg-1" },
+      ],
+    };
+    const r = await checkDependencies(manifest, { fetch: fakeFetch(), now });
+    expect(r.errors).toEqual([]);
+    const os = r.advisories.filter((a) => a.ecosystem === "Debian:12");
+    expect(os).toEqual([
+      expect.objectContaining({
+        id: "DEBIAN-CVE-2026-10",
+        severity: "high",
+        package: "openssl",
+        deployed: "3.0.15-1~deb12u1",
+        fixed_in: "3.0.16-1~deb12u1",
+        actionable: true,
+      }),
+    ]);
+    expect(r.advisories.find((a) => a.id === "GHSA-aaaa")?.ecosystem).toBe("npm");
   });
 });
 
@@ -208,7 +281,7 @@ describe("accepted advisories", () => {
 
 describe("dependency metrics", () => {
   it("exports advisory counts (accepted separately), runtime EOL and check time", async () => {
-    const client = (await import("prom-client")).default;
+    const client = (await import("@prometheus-io/client")).default;
     const { registerDependencyMetrics } = await import("./metrics.ts");
     const dbKey = opsDb.connect();
     const manifest = { ...parseLockfile(lockfile, "v24.11.0"), osRelease: { id: "debian", versionId: "12" } };

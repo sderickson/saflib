@@ -103,3 +103,88 @@ export async function resolveEmailFromIdentityId(
   }
   return emailFromKratosIdentity(result.identity);
 }
+
+const KRATOS_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Kratos's admin list accepts at most this many `ids` per page. */
+const KRATOS_IDS_CHUNK = 100;
+
+/**
+ * Fetches many Kratos identities by id with the admin list endpoint
+ * (`?ids=`), in chunks. Ids that aren't UUIDs can't be Kratos identities and
+ * are skipped. Missing identities are simply absent from the result.
+ */
+export async function fetchKratosIdentitiesByIds(
+  ids: string[],
+): Promise<{ ok: true; identities: unknown[] } | { ok: false; status: number }> {
+  const unique = [...new Set(ids)].filter((id) => KRATOS_ID_PATTERN.test(id));
+  const identities: unknown[] = [];
+  for (let i = 0; i < unique.length; i += KRATOS_IDS_CHUNK) {
+    const chunk = unique.slice(i, i + KRATOS_IDS_CHUNK);
+    const params = new URLSearchParams({ page_size: String(chunk.length) });
+    for (const id of chunk) params.append("ids", id);
+    let kres: Response;
+    try {
+      kres = await fetch(`${kratosAdminBaseUrl()}/admin/identities?${params}`, {
+        headers: { Accept: "application/json" },
+      });
+    } catch {
+      return { ok: false, status: 0 };
+    }
+    if (!kres.ok) {
+      return { ok: false, status: kres.status };
+    }
+    try {
+      const body: unknown = await kres.json();
+      if (Array.isArray(body)) identities.push(...body);
+    } catch {
+      return { ok: false, status: kres.status };
+    }
+  }
+  return { ok: true, identities };
+}
+
+/** The `rel="next"` URL from a Kratos `Link` header, if any. */
+export function nextKratosPageUrl(link: string | null): string | null {
+  if (!link) return null;
+  for (const part of link.split(",")) {
+    const m = part.match(/<([^>]+)>\s*;\s*rel="next"/);
+    if (m) return m[1]!;
+  }
+  return null;
+}
+
+/**
+ * Fetches every page of a Kratos admin list endpoint (e.g.
+ * `/admin/identities?page_size=500`), following `Link: rel="next"`. Stops
+ * after `maxPages` so a runaway list can't hang a request.
+ */
+export async function fetchAllKratosPages(
+  pathAndQuery: string,
+  maxPages = 20,
+): Promise<{ ok: true; items: unknown[] } | { ok: false; status: number }> {
+  const items: unknown[] = [];
+  let next: string | null = pathAndQuery;
+  for (let page = 0; next && page < maxPages; page++) {
+    let kres: Response;
+    try {
+      kres = await fetch(`${kratosAdminBaseUrl()}${next}`, {
+        headers: { Accept: "application/json" },
+      });
+    } catch {
+      return { ok: false, status: 0 };
+    }
+    if (!kres.ok) return { ok: false, status: kres.status };
+    let body: unknown;
+    try {
+      body = await kres.json();
+    } catch {
+      return { ok: false, status: kres.status };
+    }
+    if (!Array.isArray(body) || body.length === 0) break;
+    items.push(...body);
+    next = nextKratosPageUrl(kres.headers.get("link"));
+  }
+  return { ok: true, items };
+}

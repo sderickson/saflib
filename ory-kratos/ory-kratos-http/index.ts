@@ -50,9 +50,23 @@ export { makePostKratosActionHandler } from "./post-kratos-action.ts";
 export { createPostKratosCourierHandler } from "./routes/post-kratos-courier.ts";
 export { resolveAuthFromIdentityId } from "./resolveAuthFromIdentityId.ts";
 export {
+  createKratosAdminRouter,
+  type KratosAdminRouterOptions,
+} from "./routes/admin-identities.ts";
+export {
+  createIdentityDirectory,
+  matchesIdentitySearch,
+  mfaMethods,
+  toIdentitySummary,
+  MFA_CREDENTIAL_TYPES,
+  type IdentityProfile,
+  type ResolveProfiles,
+} from "./routes/identity-directory.ts";
+export {
   kratosAdminBaseUrl,
   resolveUserIdByEmail,
   fetchKratosIdentityById,
+  fetchKratosIdentitiesByIds,
   resolveEmailFromIdentityId,
 } from "@saflib/express/kratos-admin";
 export type {

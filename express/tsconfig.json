@@ -13,9 +13,6 @@
   ],
   "references": [
     {
-      "path": "../analytics/analytics-http"
-    },
-    {
       "path": "../env"
     },
     {

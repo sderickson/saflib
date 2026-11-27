@@ -1,3 +1,4 @@
+import AnalyticsExploreAsync from "./AnalyticsExploreAsync.vue";
 import { createRouter, createWebHistory } from "vue-router";
 import OpsTokensAsync from "./OpsTokensAsync.vue";
 import LogsAsync from "./LogsAsync.vue";
@@ -15,6 +16,7 @@ export const router = createRouter({
     { path: "/ops/alerts", component: AlertsAsync },
     { path: "/ops/metrics", component: OpsMetricsAsync },
     { path: "/ops/dependencies", component: DependenciesAsync },
+    { path: "/analytics", component: AnalyticsExploreAsync },
     { path: "/", redirect: "/ops/tokens" },
   ],
 });

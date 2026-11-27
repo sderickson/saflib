@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { stubGlobals } from "@saflib/vue/testing";
 import type { AuditResponseBody } from "@saflib/audit-spec/types";
 import AuditLogPage from "./AuditLogPage.vue";
+import { router } from "../test_router.ts";
 import { mountTestApp } from "../../test-app.ts";
 
 type ListAuditLogsResponse = AuditResponseBody["listAuditLogs"][200];
@@ -36,14 +37,18 @@ const mockAuditLogs: ListAuditLogsResponse = {
   next_cursor: null,
 };
 
+const listOptions: { userId?: { value: string | undefined } }[] = [];
 vi.mock("@saflib/audit-sdk/requests/list-audit-logs", () => ({
-  useListAuditLogs: () => ({
+  useListAuditLogs: (options: { userId?: { value: string | undefined } }) => {
+    listOptions.push(options);
+    return {
     data: ref(mockAuditLogs),
     error: ref(null),
     isLoading: ref(false),
     isFetching: ref(false),
     isError: ref(false),
-  }),
+    };
+  },
 }));
 
 vi.mock("@saflib/audit-sdk/requests/seal-audit-log", () => ({
@@ -68,6 +73,25 @@ describe("AuditLogPage", () => {
     });
 
     expect(wrapper.text()).toContain("Audit log");
-    expect(wrapper.text()).toContain("user-1");
+    // Not a Kratos id, so the actor shows as a ShortId.
+    expect(wrapper.text()).toContain("u·user");
+    // Source, request and details are in the row's expanded view.
+    expect(wrapper.text()).not.toContain("r·req1");
+    await wrapper.find("tbody tr").trigger("click");
+    await vi.waitFor(() => expect(wrapper.find("[data-test=audit-expanded]").exists()).toBe(true));
+    expect(wrapper.find("[data-test=audit-expanded]").text()).toContain("r·req1");
+  });
+
+  it("filters to ?user= and shows a removable chip", async () => {
+    await router.push("/audit?user=user-1");
+    const wrapper = mountTestApp(AuditLogPage, { props: {} });
+    await vi.waitFor(() => {
+      expect(wrapper.find('[data-test="audit-user-filter"]').exists()).toBe(true);
+    });
+    expect(listOptions.at(-1)?.userId?.value).toBe("user-1");
+    await wrapper.find('[data-test="audit-user-filter"] .v-chip__close').trigger("click");
+    await vi.waitFor(() => {
+      expect(router.currentRoute.value.query.user).toBeUndefined();
+    });
   });
 });

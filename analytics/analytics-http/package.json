@@ -1,12 +1,10 @@
 {
   "name": "@saflib/analytics-http",
-  "description": "In-memory product event ring buffer and Express routes",
+  "description": "POST /product-events: browser product events, rate limited, recorded like server-side ones",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./lib/*": "./lib/*.ts",
-    "./express/*": "./express/*.ts"
+    ".": "./index.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -15,13 +13,16 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@prometheus-io/client": "^0.16.1",
+    "@saflib/analytics-service": "*",
     "@saflib/analytics-spec": "*",
-    "@saflib/env": "*",
+    "@saflib/express": "*",
+    "@saflib/node": "*",
+    "@saflib/rate-limit": "*",
     "express": "^5.0.0",
     "http-errors": "^2.0.0"
   },
   "devDependencies": {
-    "@saflib/express": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "@types/express": "^5.0.0",

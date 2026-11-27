@@ -19,7 +19,8 @@ components:
         Machine credential for the ops API (`Authorization: Bearer safops_…`).
         Not tied to a user. Scopes: `ops:read` (every GET), `ops:triage`
         (issue status changes, alert acknowledgement and manual resolve), `ops:alerts-ingest`
-        (only posting alerts; Alertmanager's token).
+        (only posting alerts; Alertmanager's token), `ops:query` (read-only SQL
+        over the logs DB).
   schemas:
     OpsHealth:
       $ref: "./schemas/ops-health.yaml"
@@ -29,8 +30,14 @@ components:
       $ref: "./schemas/ops-token.yaml"
     OpsBoot:
       $ref: "./schemas/ops-boot.yaml"
+    OpsAuditEvent:
+      $ref: "./schemas/ops-audit-event.yaml"
+    OpsBackup:
+      $ref: "./schemas/ops-backup.yaml"
     OpsLogEntry:
       $ref: "./schemas/ops-log-entry.yaml"
+    OpsLogGroup:
+      $ref: "./schemas/ops-log-group.yaml"
     OpsLogTemplate:
       $ref: "./schemas/ops-log-template.yaml"
     OpsIssue:
@@ -39,6 +46,10 @@ components:
       $ref: "./schemas/ops-issue-occurrence.yaml"
     OpsDigest:
       $ref: "./schemas/ops-digest.yaml"
+    OpsDigestTile:
+      $ref: "./schemas/ops-digest-tile.yaml"
+    OpsDiagnosticProbe:
+      $ref: "./schemas/ops-diagnostic-probe.yaml"
     OpsDependencies:
       $ref: "./schemas/ops-dependencies.yaml"
     OpsAlert:
@@ -61,12 +72,45 @@ paths:
   /ops/deploys:
     get:
       $ref: "./routes/deploys.yaml#/listOpsDeploys"
+  /ops/backups:
+    get:
+      $ref: "./routes/backups.yaml#/listOpsBackups"
+  /ops/backups/run:
+    post:
+      $ref: "./routes/backups.yaml#/runOpsBackups"
+  /ops/backups/maintenance:
+    post:
+      $ref: "./routes/backups.yaml#/runOpsBackupsMaintenance"
+  /ops/audit:
+    get:
+      $ref: "./routes/audit.yaml#/listOpsAuditEvents"
   /ops/dependencies:
     get:
       $ref: "./routes/dependencies.yaml#/getOpsDependencies"
   /ops/logs:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogs"
+  /ops/diagnostics:
+    get:
+      $ref: "./routes/diagnostics.yaml#/listOpsDiagnostics"
+  /ops/diagnostics/runs/{run_id}:
+    get:
+      $ref: "./routes/diagnostics.yaml#/getOpsDiagnosticRun"
+  /ops/diagnostics/runs/{run_id}/probes/{probe_id}:
+    post:
+      $ref: "./routes/diagnostics.yaml#/runOpsDiagnosticProbe"
+  /ops/diagnostics/metrics:
+    get:
+      $ref: "./routes/diagnostics.yaml#/getOpsDiagnosticMetrics"
+  /ops/diagnostics/clear:
+    post:
+      $ref: "./routes/diagnostics.yaml#/clearOpsDiagnostics"
+  /ops/logs/groups:
+    get:
+      $ref: "./routes/logs.yaml#/listOpsLogGroups"
+  /ops/logs/query:
+    post:
+      $ref: "./routes/logs.yaml#/queryOpsLogs"
   /ops/logs/templates:
     get:
       $ref: "./routes/logs.yaml#/listOpsLogTemplates"

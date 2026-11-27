@@ -246,4 +246,41 @@ describe("listAuditEventsByTimestamp", () => {
     ]);
     expect(secondPage.result.nextCursor).toBeNull();
   });
+
+  it("filters to events where the user is the actor or acted for", async () => {
+    const t = new Date("2026-01-01T00:00:00.000Z");
+    const add = async (eventType: string, actor: string | null, onBehalfOf: string | null) => {
+      const r = await appendAuditEvent(dbKey, {
+        ts: t,
+        source: "system",
+        event_type: eventType,
+        outcome: "success",
+        actor_user_id: actor,
+        on_behalf_of_user_id: onBehalfOf,
+        details: { source: "system", operation: eventType },
+      });
+      assert(r.result);
+    };
+    await add("by-ada", "ada", null);
+    await add("for-ada", "admin", "ada");
+    await add("other", "grace", null);
+
+    const { result } = await listAuditEventsByTimestamp(dbKey, { userId: "ada" });
+    assert(result);
+    expect(result.events.map((e) => e.event_type).sort()).toEqual(["by-ada", "for-ada"]);
+  });
+
+  it("filters to event types with a prefix, exactly", async () => {
+    const t = new Date("2026-01-02T00:00:00.000Z");
+    await appendSystem(t, "kratos.login.password.success");
+    await appendSystem(t, "kratos.settings.totp.success");
+    await appendSystem(t, "KRATOS.upper");
+    await appendSystem(t, "http.GET /x");
+    const { result } = await listAuditEventsByTimestamp(dbKey, { eventPrefix: "kratos." });
+    assert(result);
+    expect(result.events.map((e) => e.event_type).sort()).toEqual([
+      "kratos.login.password.success",
+      "kratos.settings.totp.success",
+    ]);
+  });
 });

@@ -3,7 +3,7 @@
   "saf": {
     "kind": "http"
   },
-  "description": "Dedicated HTTP courier endpoint service for Ory Kratos.",
+  "description": "Kratos courier endpoint service, plus site-admin identity routes for the product API.",
   "private": true,
   "type": "module",
   "exports": {
@@ -19,11 +19,16 @@
   "dependencies": {
     "@saflib/env": "*",
     "@saflib/express": "*",
-    "@saflib/node": "*"
+    "@saflib/node": "*",
+    "@saflib/ory-kratos-spec": "*",
+    "express": "^5.0.0",
+    "http-errors": "^2.0.0"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
+    "@types/express": "^5.0.0",
+    "@types/http-errors": "^2.0.0",
     "@types/supertest": "^7.0.0",
     "supertest": "^7.0.0"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@saflib/analytics-sdk",
-  "description": "TanStack Query hooks for product event capture and admin viewing",
+  "description": "Send browser product events to the product API",
   "private": true,
   "type": "module",
   "exports": {

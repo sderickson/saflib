@@ -1,10 +1,10 @@
-import client from "prom-client";
+import client from "@prometheus-io/client";
 import { getServiceName } from "./context.ts";
 
 const collectDefaultMetrics = client.collectDefaultMetrics;
 
 /**
- * Call when the application starts. Calls [prom-client](https://www.npmjs.com/package/prom-client)'s collectDefaultMetrics function under the hood.
+ * Call when the application starts. Calls [@prometheus-io/client](https://www.npmjs.com/package/@prometheus-io/client)'s collectDefaultMetrics function under the hood.
  */
 export function collectSystemMetrics() {
   collectDefaultMetrics({

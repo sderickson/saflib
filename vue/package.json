@@ -7,7 +7,6 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./dev-product-events": "./src/dev-product-events.ts",
     "./useResolvedHref": "./src/useResolvedHref.ts",
     "./components": "./components/index.ts",
     "./composables/useAsyncPageErrorComponent": "./composables/useAsyncPageErrorComponent.ts",
@@ -18,7 +17,8 @@
     "./tsconfig.app.json": "./tsconfig.app.base.json",
     "./tsconfig.node.json": "./tsconfig.node.json",
     "./workflows": "./workflows/index.ts",
-    "./vitest-config": "./testing/vitest-config.js"
+    "./vitest-config": "./testing/vitest-config.js",
+    "./mdi-icons": "./mdi-icons.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -39,11 +39,11 @@
     "@tanstack/vue-query": "^5.85.9",
     "@vue/devtools-kit": "^8.0.0",
     "@vue/tsconfig": "^0.9.1",
+    "sass-embedded": "^1.0.0",
     "vue": "^3.5.20",
     "vue-i18n": "^11.1.11",
     "vue-router": "^5.0.0",
-    "vuetify": "^4.1.6",
-    "sass-embedded": "^1.0.0"
+    "vuetify": "^4.1.6"
   },
   "devDependencies": {
     "@saflib/ory-kratos-sdk": "*",

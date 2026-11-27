@@ -8,8 +8,6 @@ Production logging still flows through Winston transports you configure at start
 
 - **`node-log-spec`** — OpenAPI contract for listing and streaming dev logs
 - **`node-log-http`** — in-memory log buffer, Winston transport, Express router (`enableDevLogBuffer`, `createDevLogBufferTransport`, `createDevLogsRouter`)
-- **`node-log-sdk`** — TanStack Query client hooks for the admin UI
-- **`node-log-vue`** — Admin SPA page and DevTools integration for browsing buffered logs
 
 ## Integration
 

@@ -33,7 +33,8 @@ describe("GET /ops/digest", () => {
 
   it("says nothing needs attention on a quiet day", async () => {
     // Old history only: an issue and info logs from before the window.
-    recordOccurrence(issuesKey, { level: "error", kind: "server", serviceName: "s", message: "old", fingerprint: "old", ts: new Date(Date.now() - 3 * DAY) });
+    const old = recordOccurrence(issuesKey, { level: "error", kind: "server", serviceName: "s", message: "old", fingerprint: "old", ts: new Date(Date.now() - 3 * DAY) });
+    await throwError(setIssueStatus(issuesKey, old.group.id, { status: "resolved", actor: "a" }));
     winston.createLogger({ transports: [transport] }).info("routine heartbeat 1");
     transport.flush();
     const since = encodeURIComponent(new Date(Date.now() - 1000).toISOString());
@@ -105,6 +106,8 @@ describe("GET /ops/digest", () => {
     const { summary, issues } = res.body.digest;
     const ids = (list: Array<{ id: string }>) => list.map((i) => i.id).sort();
     expect(summary.open_issues).toBe(2);
+    // Open issues count toward attention, matching the Issues page.
+    expect(summary.attention).toContainEqual(expect.objectContaining({ kind: "issues", tone: "bad" }));
     expect(ids(issues.top)).toEqual([fresh]);
     expect(ids(issues.open)).toEqual([fresh, old].sort());
   });
@@ -115,5 +118,52 @@ describe("GET /ops/digest", () => {
     expect(res.body.digest.issues).toBeNull();
     expect(res.body.digest.logs).toBeNull();
     expect(res.body.digest.summary.needs_attention).toBe(false);
+  });
+});
+
+describe("GET /ops/digest tiles", () => {
+  it("includes product tiles; a bad one needs attention, a failing provider says so", async () => {
+    const opsKey = opsDb.connect();
+    const { token } = await throwError(createToken(opsKey, { name: "t", scopes: ["ops:read"], createdBy: null }));
+    const appWithTiles = createApp({
+      dbKey: opsKey,
+      digestTiles: [
+        {
+          key: "jobs",
+          label: "Background jobs",
+          tiles: async () => ({ key: "jobs", group: "system", label: "Background jobs", value: "3 failed", detail: "Last 24h", tone: "bad" }),
+        },
+        {
+          key: "drafts",
+          label: "Drafts",
+          group: "customers",
+          tiles: async () => ({ key: "drafts", group: "customers", label: "Drafts", value: "2 to review", detail: "", tone: "todo" }),
+        },
+        {
+          key: "inbox",
+          label: "Inbox",
+          group: "customers",
+          tiles: async () => {
+            throw new Error("db locked");
+          },
+        },
+      ],
+    });
+    const res = await request(appWithTiles).get("/ops/digest").set({ authorization: `Bearer ${token}` }).expect(200);
+    const { tiles, summary, process: proc } = res.body.digest;
+    expect(tiles).toContainEqual(expect.objectContaining({ key: "jobs", tone: "bad" }));
+    expect(tiles).toContainEqual(
+      expect.objectContaining({ key: "inbox", group: "customers", value: "Couldn't check", detail: "db locked", tone: "warn" }),
+    );
+    expect(tiles.map((t: { key: string }) => t.key)).toEqual(expect.arrayContaining(["health", "alerts"]));
+    // Every tile has a tone; deploys live in Diagnostics → Build.
+    expect(tiles.map((t: { key: string }) => t.key)).not.toContain("deploys");
+    expect(tiles.every((t: { tone: string }) => ["ok", "todo", "warn", "bad"].includes(t.tone))).toBe(true);
+    expect(summary.needs_attention).toBe(true);
+    expect(summary.attention).toContainEqual({ kind: "tile", key: "jobs", summary: "Background jobs: 3 failed", tone: "bad" });
+    // Work waiting is not a problem.
+    expect(summary.attention.map((a: { key: string }) => a.key)).not.toContain("drafts");
+    expect(proc.requests_total).toBeGreaterThanOrEqual(0);
+    expect(proc.rss_bytes).toBeGreaterThan(0);
   });
 });

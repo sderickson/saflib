@@ -20,6 +20,12 @@
       "path": "../../node-log/node-log-db"
     },
     {
+      "path": "../../object-store"
+    },
+    {
+      "path": "../../rate-limit"
+    },
+    {
       "path": "../../utils"
     },
     {

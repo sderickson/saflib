@@ -10,18 +10,24 @@ import { digestMetrics } from "../metrics/digest-metrics.ts";
 import { digestActivity } from "../metrics/digest-activity.ts";
 import { mapAlert, PIPELINE_STALE_MS, WATCHDOG_ALERTNAME } from "./alerts.ts";
 import { latestDependencies } from "./get-ops-dependencies.ts";
+import { attentionItems, builtInTiles, runTileProviders } from "../digest/tiles.ts";
+import { processStats } from "../metrics/process-stats.ts";
+import { digestEndpoints } from "../metrics/endpoint-stats.ts";
 import { mapIssue, mapLogTemplate, mapOpsBoot, queryDate } from "./_helpers.ts";
 
 const DAY_MS = 86_400_000;
 const TOP = 10;
 
 export const getOpsDigestHandler = createHandler(async function (req, res) {
-  const { dbKey, logsDbKey, issuesDbKey, healthChecks, currentBoot, metrics: metricsConfig, dependencyChecks, acceptedAdvisories } =
+  const { dbKey, logsDbKey, issuesDbKey, healthChecks, currentBoot, metrics: metricsConfig, dependencyChecks, acceptedAdvisories, digestTiles } =
     opsServiceStorage.getStore()!;
+  // Only production is expected to have alerting wired up; elsewhere a
+  // missing heartbeat is a muted note, not something to fix.
+  const expectAlerting = process.env.DEPLOYMENT_NAME === "production";
   const since = queryDate(req.query.since) ?? new Date(Date.now() - DAY_MS);
   await currentBoot;
 
-  const [health, recentDeploys, boots, metrics, activity, firing, activeInWindow, watchdog, deps] = await Promise.all([
+  const [health, recentDeploys, boots, metrics, activity, firing, activeInWindow, watchdog, deps, productTiles, processInfo, endpoints] = await Promise.all([
     runHealthChecks(healthChecks),
     throwError(listBoots(dbKey, { newBuildsOnly: true, limit: 50 })),
     throwError(countBootsSince(dbKey, since)),
@@ -31,6 +37,9 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
     throwError(listAlerts(dbKey, { activeSince: since, excludeAlertnames: [WATCHDOG_ALERTNAME], limit: 200 })),
     throwError(listAlerts(dbKey, { alertnames: [WATCHDOG_ALERTNAME], limit: 1 })),
     latestDependencies(dbKey, new Date(), acceptedAdvisories),
+    runTileProviders(digestTiles ?? [], since),
+    processStats(),
+    digestEndpoints(metricsConfig ?? null, since),
   ]);
   const dependencies: OpsDigest["dependencies"] =
     deps || dependencyChecks
@@ -61,6 +70,7 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
     firing_unacked: firingUnacked,
     fired_in_window: activeInWindow.length,
     pipeline_last_seen_at: pipelineLastSeen?.toISOString() ?? null,
+    pipeline_missing: pipelineLastSeen === null,
     pipeline_stale: pipelineStale,
   };
   const deploys = recentDeploys.filter((b) => b.started_at >= since);
@@ -109,30 +119,19 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
     logs = { level_counts: levelCounts, new_templates: templates.slice(0, TOP).map(mapLogTemplate) };
   }
 
-  const digest: OpsDigest = {
+  const summaryCounts = {
+    health_status: health.status,
+    new_issues: newIssueCount,
+    regressed_issues: regressedCount,
+    open_issues: openCount,
+    new_log_templates: newTemplateCount,
+    deploys: deploys.length,
+    boots,
+    firing_alerts: firingUnacked,
+  };
+  const parts = {
     since: since.toISOString(),
     generated_at: new Date().toISOString(),
-    summary: {
-      needs_attention:
-        health.status !== "ok" ||
-        newIssueCount > 0 ||
-        regressedCount > 0 ||
-        newSevereTemplates > 0 ||
-        (metrics?.flags.length ?? 0) > 0 ||
-        firingUnacked > 0 ||
-        pipelineStale ||
-        (dependencies?.actionable ?? 0) > 0 ||
-        (dependencies?.runtime_eol_soon ?? 0) > 0 ||
-        dependencies?.stale === true,
-      health_status: health.status,
-      new_issues: newIssueCount,
-      regressed_issues: regressedCount,
-      open_issues: openCount,
-      new_log_templates: newTemplateCount,
-      deploys: deploys.length,
-      boots,
-      firing_alerts: firingUnacked,
-    },
     health: { status: health.status, failing: health.checks.filter((c) => c.status !== "ok") },
     deploys: deploys.map(mapOpsBoot),
     issues,
@@ -141,6 +140,18 @@ export const getOpsDigestHandler = createHandler(async function (req, res) {
     activity,
     alerts,
     dependencies,
+    endpoints,
+  };
+  const tiles = [...builtInTiles({ ...parts, summary: summaryCounts }, expectAlerting), ...productTiles];
+  // One list drives needs_attention, the Overview's status line and the
+  // sidebar badge, so they can't disagree with each other or with Issues.
+  const attention = attentionItems({ ...parts, tiles, summary: summaryCounts }, expectAlerting);
+  void newSevereTemplates;
+  const digest: OpsDigest = {
+    ...parts,
+    summary: { needs_attention: attention.length > 0, attention, ...summaryCounts },
+    tiles,
+    process: processInfo,
   };
   const response: OpsResponseBody["getOpsDigest"][200] = { digest };
   res.status(200).json(response);

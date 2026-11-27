@@ -24,6 +24,8 @@ export interface AnalyticsService {
   identify: (props: IdentifyProps) => void;
   shutdown: () => void | Promise<void>;
   capture: (event: CommonEvent) => void;
+  /** An event from someone not signed in: counted and logged, with a fresh id per event. */
+  captureAnonymous: (event: CommonEvent) => void;
 }
 
 export type TypedAnalytics<E extends CommonEvent> = Pick<

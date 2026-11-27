@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import request from "supertest";
-import client from "prom-client";
+import client from "@prometheus-io/client";
 import { createToken, opsDb } from "@saflib/ops-db";
 import { throwError } from "@saflib/utils";
 import { createApp } from "../http.ts";

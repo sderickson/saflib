@@ -17,6 +17,7 @@ services:
     environment:
       # Recorded on each boot (ops API deploys), so restarts show their color.
       - SAF_COLOR=${SAF_COLOR:-blue}
+      - KRATOS_SQLITE_PATH=/kratos-data/db.sqlite
     restart: unless-stopped
     deploy:
       resources:
@@ -29,9 +30,21 @@ services:
       # The deploy's release stamp (saf-deploy), recorded on each boot.
       - ./release:/etc/saf/release:ro
       - /opt/__product-name__/cron:/app/__product-name__/service/cron/data
+      # The audit log and the job queue: kept across deploys, shared by both colors.
+      - /opt/__product-name__/audit:/app/__product-name__/service/audit/data
+      # saflib's audit write lock lives in its own package's data/ folder; same
+      # directory, so the lock is on the data disk and shared by both colors.
+      - /opt/__product-name__/audit:/app/saflib/audit/audit-db/data
+      - /opt/__product-name__/jobs:/app/__product-name__/service/jobs/data
       - /opt/__product-name__/db:/app/__product-name__/service/db/data
       - /opt/__product-name__/identity:/app/__product-name__/service/identity/data
       - /opt/__product-name__/identity-http:/app/saflib/identity/identity-http/data
+      # Ops tokens, persisted logs, issues, deploy history, backup records and
+      # rate-limit counts: shared by both colors and kept across deploys.
+      - /opt/__product-name__/ops:/app/__product-name__/service/ops/data
+      # The platform Kratos's SQLite directory, so app backups include
+      # identities (the app user needs write access for SQLite's -shm file).
+      - /opt/kratos/data:/kratos-data
     env_file:
       - ./.env.__product-name__.secrets
     stop_grace_period: 30s

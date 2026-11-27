@@ -27,6 +27,9 @@ describe("ops log endpoints", () => {
     const log = winston.createLogger({ transports: [transport] }).child({
       service_name: "svc",
       request_id: "req-1",
+      user_id: "u_1",
+      context_kind: "request",
+      context_id: "req-1",
     });
     log.info("recipe 12 imported");
     log.info("recipe 13 imported");
@@ -90,5 +93,25 @@ describe("ops log endpoints", () => {
   it("validates query params", async () => {
     await request(app).get("/ops/logs?level=loud").set(auth).expect(400);
     await request(app).get("/ops/logs?limit=9999").set(auth).expect(400);
+  });
+
+  it("filters by context and user, and groups lines by context", async () => {
+    const byContext = await request(app).get("/ops/logs?context_id=req-1").set(auth).expect(200);
+    expect(byContext.body.logs).toHaveLength(3);
+    expect(byContext.body.logs[0]).toMatchObject({ context_kind: "request", context_id: "req-1" });
+    const byOther = await request(app).get("/ops/logs?user_id=someone-else").set(auth).expect(200);
+    expect(byOther.body.logs).toHaveLength(0);
+
+    const groups = await request(app).get("/ops/logs/groups").set(auth).expect(200);
+    expect(groups.body.next_cursor).toBeNull();
+    expect(groups.body.groups).toHaveLength(1);
+    expect(groups.body.groups[0]).toMatchObject({
+      kind: "request",
+      context_id: "req-1",
+      count: 3,
+      warnings: 1,
+      user_id: "u_1",
+      untrusted: { first_message: "recipe 12 imported" },
+    });
   });
 });

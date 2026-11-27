@@ -1,20 +1,17 @@
 openapi: 3.1.0
 info:
   title: Product Analytics API
-  version: 1.0.0
-  description: Product event capture and admin viewing via an in-memory ring buffer.
+  version: 2.0.0
+  description: >
+    Browser product events. The server records them the same way as
+    server-side events (logs DB, Prometheus counter, the analytics vendor).
 
 components:
   schemas:
-    ProductEventRecord:
-      $ref: "./schemas/product-event-record.yaml"
     Error:
       $ref: "pkg:@saflib/openapi/schemas/error.yaml"
 
 paths:
-  /product-events/record:
+  /product-events:
     post:
       $ref: "./routes/product_events.yaml#/recordProductEvent"
-  /admin/product-events:
-    get:
-      $ref: "./routes/product_events.yaml#/listProductEvents"

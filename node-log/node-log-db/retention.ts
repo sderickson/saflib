@@ -5,6 +5,17 @@ import { logsPruned } from "./metrics.ts";
 export interface RetentionOptions {
   /** Delete lines older than this. Default 14 days. */
   maxAgeDays?: number;
+  /**
+   * Delete product events (lines with `event` set) older than this. They're
+   * small and are the long view of what users do. Default 180 days.
+   */
+  eventMaxAgeDays?: number;
+  /**
+   * Delete `http` (one per request) lines older than this. They're the
+   * bulk of the store and matter mostly while debugging recent traffic.
+   * Default 7 days.
+   */
+  httpMaxAgeDays?: number;
   /** Delete oldest lines while live data exceeds this. Default 512 MB. */
   maxBytes?: number;
   /** Forget templates not seen for this long. Default 90 days. */
@@ -43,7 +54,7 @@ export function pruneLogs(dbKey: DbKey, options: RetentionOptions = {}): PruneRe
   const now = Date.now();
 
   const deleteOlder = client.prepare(
-    `DELETE FROM log_entries WHERE id IN (SELECT id FROM log_entries WHERE ts < ? LIMIT ${BATCH})`,
+    `DELETE FROM log_entries WHERE id IN (SELECT id FROM log_entries WHERE event IS NULL AND ts < ? LIMIT ${BATCH})`,
   );
   let byAge = 0;
   for (;;) {
@@ -51,16 +62,39 @@ export function pruneLogs(dbKey: DbKey, options: RetentionOptions = {}): PruneRe
     byAge += n;
     if (n < BATCH) break;
   }
+  const eventMaxAgeMs = (options.eventMaxAgeDays ?? 180) * DAY_MS;
+  const deleteOlderEvents = client.prepare(
+    `DELETE FROM log_entries WHERE id IN (SELECT id FROM log_entries WHERE event IS NOT NULL AND ts < ? LIMIT ${BATCH})`,
+  );
+  for (;;) {
+    const n = deleteOlderEvents.run(now - eventMaxAgeMs).changes;
+    byAge += n;
+    if (n < BATCH) break;
+  }
+  const httpMaxAgeMs = (options.httpMaxAgeDays ?? 7) * DAY_MS;
+  const deleteOlderHttp = client.prepare(
+    `DELETE FROM log_entries WHERE id IN (SELECT id FROM log_entries WHERE level = 'http' AND ts < ? LIMIT ${BATCH})`,
+  );
+  for (;;) {
+    const n = deleteOlderHttp.run(now - httpMaxAgeMs).changes;
+    byAge += n;
+    if (n < BATCH) break;
+  }
 
   // Small steps (about 5% of rows) so the cap isn't overshot by much.
-  const deleteOldest = client.prepare(
+  // Ordinary lines go first; product events only once none are left.
+  const deleteOldestLines = client.prepare(
+    `DELETE FROM log_entries WHERE id IN (SELECT id FROM log_entries WHERE event IS NULL ORDER BY id LIMIT ?)`,
+  );
+  const deleteOldestAny = client.prepare(
     `DELETE FROM log_entries WHERE id IN (SELECT id FROM log_entries ORDER BY id LIMIT ?)`,
   );
   let bySize = 0;
   while (usedBytes(dbKey) > maxBytes) {
     const { n: rows } = client.prepare(`SELECT COUNT(*) AS n FROM log_entries`).get() as { n: number };
     const step = Math.min(BATCH, Math.max(100, Math.ceil(rows / 20)));
-    const n = deleteOldest.run(step).changes;
+    let n = deleteOldestLines.run(step).changes;
+    if (n === 0) n = deleteOldestAny.run(step).changes;
     bySize += n;
     if (n === 0) break;
   }

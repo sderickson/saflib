@@ -19,6 +19,12 @@ import { registerDependencyMetrics } from "./dependencies/metrics.ts";
 import type { BuildInfo, ReleaseInfo } from "@saflib/node/git-hashes";
 import type { HealthCheck } from "./health/types.ts";
 import type { OpsMetricsConfig } from "./metrics/prometheus.ts";
+import type { DigestTileProvider } from "./digest/tiles.ts";
+import { builtInProbes, RunRegistry, type DiagnosticProbe } from "./diagnostics/probes.ts";
+import type { OpsAuditSource } from "./audit/source.ts";
+import type { OpsBackupsConfig } from "./backups/runner.ts";
+import { startBackups } from "./backups/scheduler.ts";
+import { backupsTile } from "./backups/tile.ts";
 
 export interface OpsRouterOptions {
   /** Connection to the ops database; connects with `dbOptions` when omitted. */
@@ -49,6 +55,32 @@ export interface OpsRouterOptions {
    * prom-label-proxy; when omitted, the metrics endpoints respond 404.
    */
   metrics?: OpsMetricsConfig;
+  /**
+   * Status tiles for the admin Overview beyond the ops API's own: background
+   * jobs, cron, audit log (see their packages' providers) and the product's
+   * customer queues. A tile with tone `bad` counts toward needs_attention.
+   */
+  digestTiles?: DigestTileProvider[];
+  /**
+   * Self-test probes beyond the ops API's own (client errors, server error,
+   * warn log, slow request, test alert): e.g. a failing background job or an
+   * audit event (see the jobs and audit packages' providers).
+   */
+  diagnosticProbes?: DiagnosticProbe[];
+  /**
+   * The product's audit log, readable at `GET /ops/audit` (sign-ins, account
+   * changes, admin actions) so an agent can spot unusual activity. See
+   * `opsAuditSource` in `@saflib/audit-http`. Omitted: the endpoint 404s.
+   */
+  audit?: OpsAuditSource;
+  /**
+   * The app's own backups: which SQLite databases, the backups store (a
+   * bucket of its own), and retention (days; keep it well under what the
+   * product's terms allow for holding deleted data). Backups run daily, at
+   * each deploy and by hand, are checked and read back, and show on Status.
+   * Omitted: none, and a production Status tile says so.
+   */
+  backups?: OpsBackupsConfig;
   /**
    * Daily dependency checks (OSV advisories, npm latest) of the image's
    * lockfile. On by default when a lockfile exists at
@@ -90,14 +122,47 @@ function isOpsPath(path: string): boolean {
  * Router for the ops API and ops token admin. Only handles its own paths;
  * everything else falls through to sibling routers.
  */
+/**
+ * Development stacks don't run Prometheus. Without an explicit proxy URL
+ * there, metrics are off (endpoints 404, the digest skips them) rather than
+ * failing every query with a 502 that becomes an issue.
+ */
+export function effectiveMetricsConfig(
+  metrics: OpsMetricsConfig | undefined,
+  env: NodeJS.ProcessEnv = process.env,
+): OpsMetricsConfig | undefined {
+  if (!metrics) return undefined;
+  const explicit = metrics.proxyUrl ?? env.PROM_LABEL_PROXY_URL;
+  if (!explicit && env.DEPLOYMENT_NAME === "development") return undefined;
+  return metrics;
+}
+
 export function createOpsRouter(options: OpsRouterOptions = {}) {
   const dbKey = options.dbKey ?? opsDb.connect(options.dbOptions);
+  const metrics = effectiveMetricsConfig(options.metrics);
   const context: OpsServiceContext = {
     dbKey,
     healthChecks: [processCheck(), ...(options.healthChecks ?? [])],
     logsDbKey: options.logsDbKey,
     issuesDbKey: options.issuesDbKey,
-    metrics: options.metrics,
+    metrics,
+    digestTiles: options.digestTiles,
+    audit: options.audit,
+    backups: options.backups ? { dbKey, config: options.backups } : undefined,
+    diagnostics: {
+      probes: [
+        ...builtInProbes({
+          dbKey,
+          issuesDbKey: options.issuesDbKey,
+          logsDbKey: options.logsDbKey,
+          metricsEnabled: !!metrics,
+          alertmanagerUrl: process.env.ALERTMANAGER_URL,
+          saf_app: metrics?.app,
+        }),
+        ...(options.diagnosticProbes ?? []),
+      ],
+      registry: new RunRegistry(),
+    },
     // Each router creation is one process start in production.
     currentBoot: recordCurrentBoot(dbKey, options.buildInfo, options.releaseInfo),
     acceptedAdvisories: [
@@ -105,13 +170,22 @@ export function createOpsRouter(options: OpsRouterOptions = {}) {
       ...(options.dependencies ? (options.dependencies.acceptedAdvisories ?? []) : []),
     ],
   };
+  // Backups get a Status tile whether or not they're configured (production
+  // without them says so).
+  context.digestTiles = [backupsTile(context.backups), ...(options.digestTiles ?? [])];
+  if (context.backups && process.env.NODE_ENV !== "test") {
+    startBackups(context.backups, {
+      // A deploy backup when this process is the first of a new build.
+      buildRef: context.currentBoot.then((b) => (b?.new_build ? b.build_ref : null)),
+    });
+  }
   registerHealthCheckMetric(context.healthChecks);
   const manifest =
     options.dependencies === false || process.env.NODE_ENV === "test"
       ? undefined
       : readManifest(options.dependencies?.lockfilePath);
   if (manifest) {
-    const metricsConfig = options.metrics;
+    const metricsConfig = metrics;
     startDependencyChecks({
       dbKey,
       manifest,

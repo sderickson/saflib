@@ -1,74 +1,103 @@
 <template>
   <ContentWidth variant="full" class="audit-log-page">
-    <h1 class="text-h4 mb-2">{{ strings.title }}</h1>
-    <p v-if="description" class="text-body-1 text-medium-emphasis mb-4">
-      {{ description }}
-    </p>
+    <AdminPageTitle class="mb-2">{{ strings.title }}</AdminPageTitle>
 
-    <v-alert
-      v-if="spanHead || spanTail"
-      type="info"
-      variant="tonal"
-      class="mb-4"
-      density="comfortable"
-    >
-      <strong>{{ strings.stored_span }}</strong>
-      {{ spanHead ?? "—" }} → {{ spanTail ?? "—" }}
-    </v-alert>
-    <v-alert
-      v-else-if="spanChecked && !spanHead && !spanTail"
-      type="info"
-      variant="tonal"
-      class="mb-4"
-      density="comfortable"
-    >
+    <p v-if="spanChecked && !spanHead && !spanTail" class="saf-admin-empty mb-4">
       {{ strings.no_events }}
-    </v-alert>
-
-    <div class="d-flex flex-wrap ga-3 align-end mb-4">
-      <v-text-field
-        v-model="fromInput"
-        :label="strings.from_label"
-        :hint="strings.from_hint"
-        density="comfortable"
-        hide-details="auto"
-        class="flex-grow-1"
-        style="max-width: 28rem"
-        autocomplete="off"
-      />
-      <v-btn
-        color="primary"
-        variant="flat"
-        :loading="listLoading"
-        :disabled="listLoading || sealPending"
-        @click="reloadFromStart"
-      >
-        {{ strings.apply }}
-      </v-btn>
-      <v-btn
-        v-if="sealEnabled"
-        color="secondary"
-        variant="tonal"
-        :loading="sealPending"
-        :disabled="listLoading || sealPending || loadMorePending"
-        @click="onSeal"
-      >
-        {{ strings.seal }}
-      </v-btn>
-    </div>
-
-    <p v-if="rows.length > 0" class="text-body-2 text-medium-emphasis mb-2">
-      {{ strings.loaded }} {{ rows.length }}
     </p>
+
+    <AdminToolbar :label="strings.title" :active-filters="(fromInput ? 1 : 0) + (userFilter ? 1 : 0)">
+      <v-chip
+        v-if="userFilter"
+        closable
+        variant="outlined"
+        :close-label="strings.clear_user"
+        data-test="audit-user-filter"
+        @click:close="clearUserFilter"
+      >
+        <span class="text-medium-emphasis me-1">{{ strings.filtered_to }}</span>
+        <UserRef :id="userFilter" />
+      </v-chip>
+      <span v-if="spanHead || spanTail" class="text-body-2 text-medium-emphasis text-truncate">
+        <template v-if="rows.length > 0">{{ strings.loaded }} {{ rows.length }} · </template>
+        {{ strings.stored_span }}
+        <span class="saf-admin-mono">{{ formatShortDateTime(spanHead) }} → {{ formatShortDateTime(spanTail) }}</span>
+      </span>
+      <template #actions>
+        <v-btn
+          v-if="sealEnabled"
+          icon="mdi-archive-arrow-up-outline"
+          size="small"
+          variant="text"
+          :title="strings.seal"
+          :aria-label="strings.seal"
+          :loading="sealPending"
+          :disabled="listLoading || sealPending || loadMorePending"
+          @click="onSeal"
+        />
+      </template>
+      <template #filters>
+        <UserPicker :model-value="userFilter ?? null" :label="strings.user_label" @update:model-value="setUserFilter" />
+        <v-text-field v-model="fromInput" :label="strings.from_label" :hint="strings.from_hint" autocomplete="off" />
+        <div>
+          <v-btn color="primary" variant="flat" :loading="listLoading" :disabled="listLoading || sealPending" @click="reloadFromStart">
+            {{ strings.apply }}
+          </v-btn>
+        </div>
+      </template>
+    </AdminToolbar>
+
 
     <v-data-table
+      v-model:expanded="expanded"
       class="audit-log-table"
       :headers="headers"
       :items="tableItems"
+      item-value="id"
       :items-per-page="-1"
       hide-default-footer
       density="compact"
-    />
+      show-expand
+      expand-on-click
+    >
+      <template #[`item.ts`]="{ item }">
+        <span class="text-no-wrap">{{ formatShortDateTime(item.ts) }}</span>
+      </template>
+      <template #[`item.outcome`]="{ item }">
+        <!-- Only worth a look when it isn't a success. -->
+        <v-chip v-if="item.outcome !== 'success'" size="x-small" color="error" variant="tonal">{{ item.outcome }}</v-chip>
+      </template>
+      <template #expanded-row="{ columns, item }">
+        <tr class="audit-expanded" data-test="audit-expanded">
+          <td :colspan="columns.length">
+            <dl class="audit-facts">
+              <dt>{{ strings.columns.time }}</dt>
+              <dd>{{ formatTime(item.ts) }}</dd>
+              <dt>{{ strings.columns.source }}</dt>
+              <dd>{{ item.source }}</dd>
+              <dt>{{ strings.columns.outcome }}</dt>
+              <dd>{{ item.outcome }}</dd>
+              <dt>{{ strings.columns.request }}</dt>
+              <dd>
+                <ShortId v-if="item.request_id" :id="item.request_id" prefix="r" />
+                <span v-else class="text-medium-emphasis">—</span>
+              </dd>
+            </dl>
+            <pre v-if="item.detailsPretty" class="audit-details-full">{{ item.detailsPretty }}</pre>
+          </td>
+        </tr>
+      </template>
+      <template #[`item.actor_user_id`]="{ item }">
+        <AuditActor :row="item" />
+      </template>
+      <template #[`item.resource`]="{ item }">
+        <span v-if="item.resource_type || item.resource_id" class="d-inline-flex align-center ga-1 text-no-wrap">
+          <span v-if="item.resource_type">{{ item.resource_type }}</span>
+          <ShortId v-if="item.resource_id" :id="item.resource_id" :prefix="item.resource_type?.charAt(0)" />
+        </span>
+        <span v-else class="text-medium-emphasis">—</span>
+      </template>
+    </v-data-table>
 
     <div class="mt-4">
       <v-btn
@@ -86,16 +115,18 @@
 
 <script setup lang="ts">
 import type { AuditLog } from "@saflib/audit-spec/types";
-import { ContentWidth } from "@saflib/vue/components";
+import { AdminPageTitle, AdminToolbar, ContentWidth, ShortId } from "@saflib/vue/components";
+import AuditActor from "./AuditActor.vue";
+import { UserPicker, UserRef } from "@saflib/ory-kratos-vue";
+import { useRoute, useRouter } from "vue-router";
 import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
-import { showError, showInfo } from "@saflib/vue";
-import { computed } from "vue";
+import { formatShortDateTime, showError, showInfo } from "@saflib/vue";
+import { computed, ref } from "vue";
 import { audit_log as strings } from "./AuditLog.strings.ts";
 import { useAuditLogsPageLoader } from "./AuditLog.loader.ts";
 
 withDefaults(
   defineProps<{
-    description?: string;
     sealEnabled?: boolean;
   }>(),
   {
@@ -105,6 +136,7 @@ withDefaults(
 
 const {
   fromInput,
+  userFilter,
   rows,
   nextCursor,
   spanHead,
@@ -117,39 +149,54 @@ const {
   sealMutation,
 } = useAuditLogsPageLoader();
 
+const route = useRoute();
+const router = useRouter();
+function clearUserFilter() {
+  router.replace({ query: { ...route.query, user: undefined } });
+}
+function setUserFilter(id: string | null) {
+  router.replace({ query: { ...route.query, user: id ?? undefined } });
+}
+
 const listLoading = computed(
   () =>
     auditLogsQuery.isLoading.value || auditLogsQuery.isFetching.value,
 );
 const sealPending = computed(() => sealMutation.isPending.value);
 
+// Source, request and the full details are in each row's expanded view.
+const wide = { headerProps: { class: "saf-admin-hide-xs" }, cellProps: { class: "saf-admin-hide-xs" } };
 const headers = [
   { title: strings.columns.time, key: "ts", sortable: false },
-  { title: strings.columns.source, key: "source", sortable: false },
   { title: strings.columns.event, key: "event_type", sortable: false },
-  { title: strings.columns.outcome, key: "outcome", sortable: false },
   { title: strings.columns.actor, key: "actor_user_id", sortable: false },
-  { title: strings.columns.resource, key: "resource", sortable: false },
-  { title: strings.columns.request, key: "request_id", sortable: false },
-  { title: strings.columns.details, key: "details", sortable: false },
+  { title: strings.columns.resource, key: "resource", sortable: false, ...wide },
+  { title: strings.columns.outcome, key: "outcome", sortable: false, ...wide },
+  { title: "", key: "data-table-expand", sortable: false, align: "end" as const },
 ];
+const expanded = ref<string[]>([]);
 
 const tableItems = computed(() =>
   rows.value.map((r) => ({
     ...r,
-    resource:
-      [r.resource_type, r.resource_id].filter(Boolean).join(" ") || "—",
-    details: formatDetails(r.details),
+    resource: [r.resource_type, r.resource_id].filter(Boolean).join(" "),
+    detailsPretty: formatDetails(r.details),
   })),
 );
 
-function formatDetails(details: AuditLog["details"]): string {
-  if (details == null) return "—";
+function formatTime(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "medium",
+  }).format(new Date(iso));
+}
+
+function formatDetails(details: AuditLog["details"]): string | null {
+  if (details == null) return null;
   try {
-    const s = JSON.stringify(details);
-    return s.length > 120 ? `${s.slice(0, 117)}…` : s;
+    return JSON.stringify(details, null, 2);
   } catch {
-    return "—";
+    return null;
   }
 }
 
@@ -181,7 +228,34 @@ async function onSeal() {
 .audit-log-table :deep(th) {
   white-space: nowrap;
 }
-.audit-log-table :deep(td) {
-  vertical-align: top;
+.audit-expanded > td {
+  background: #fcfaf3;
+  padding: 12px 16px !important;
+}
+.audit-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+}
+.audit-facts dt {
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+}
+.audit-facts dd {
+  margin: 0;
+}
+.audit-details-full {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.75rem;
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 </style>

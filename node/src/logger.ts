@@ -1,4 +1,5 @@
 import winston, { type Logger, format } from "winston";
+import { randomUUID } from "node:crypto";
 import { type TransformableInfo } from "logform";
 import { type SafContext } from "./types.ts";
 import { getServiceName, testContext } from "./context.ts";
@@ -15,6 +16,7 @@ const LEVEL_ORDER = [
   "error",
   "warn",
   "info",
+  "http",
   "verbose",
   "debug",
   "silly",
@@ -30,10 +32,12 @@ const isDevelopment = typedEnv.DEPLOYMENT_NAME === "development";
  * captures startup/request logs while the console can stay quieter via LOG_LEVEL.
  */
 function resolveLoggerLevel(): LogLevel {
-  if (!isDevelopment) return consoleLevel;
+  // The logger's level gates every transport, and each transport filters
+  // again for itself (the console at LOG_LEVEL). Keep it at least `http` so
+  // per-request lines reach the persistent store.
   const consoleIdx = LEVEL_ORDER.indexOf(consoleLevel);
-  const infoIdx = LEVEL_ORDER.indexOf("info");
-  return LEVEL_ORDER[Math.max(consoleIdx, infoIdx)] ?? "info";
+  const httpIdx = LEVEL_ORDER.indexOf("http");
+  return LEVEL_ORDER[Math.max(consoleIdx, httpIdx)] ?? "http";
 }
 
 const loggerLevel = resolveLoggerLevel();
@@ -89,6 +93,27 @@ export interface LoggerOptions extends LoggerContext {
   format?: winston.Logform.Format;
 }
 
+/** Identifies this process's startup and shutdown lines. */
+const PROCESS_ID = `p-${randomUUID().slice(0, 8)}`;
+
+/**
+ * What a log line belongs to, for grouping in the logs UI: the job delivery,
+ * cron tick, process startup or request it was logged during.
+ */
+export function logContextOf(
+  options: Pick<LoggerContext, "subsystemName" | "requestId" | "jobId">,
+): { context_kind: string; context_id: string } | undefined {
+  if (options.jobId) return { context_kind: "job", context_id: options.jobId };
+  if (options.subsystemName === "cron" && options.requestId) {
+    return { context_kind: "cron", context_id: options.requestId };
+  }
+  if (options.subsystemName === "init") {
+    return { context_kind: "process", context_id: PROCESS_ID };
+  }
+  if (options.requestId) return { context_kind: "request", context_id: options.requestId };
+  return undefined;
+}
+
 /**
  * Creates a child logger with the specified request ID. Any servers or processors
  * should use this to create a unique logger for each request or job or what have you.
@@ -119,6 +144,7 @@ export const createLogger = (options?: LoggerOptions): WinstonLogger => {
     operation_name: options.operationName,
     request_id: options.requestId || "-",
     user_id: options.auth?.userId || "-",
+    ...logContextOf(options),
   };
   if (options.format) {
     return winston.createLogger({

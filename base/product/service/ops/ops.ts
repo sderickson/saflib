@@ -19,7 +19,13 @@ import {
   adminEmailSender,
   startOpsNotifier,
   type EmailSenderLike,
+  type DigestTileProvider,
+  type DiagnosticProbe,
 } from "@saflib/ops-http";
+import type { BackupDatabase, OpsAuditSource, OpsBackupsConfig } from "@saflib/ops-http";
+import { enablePreMigrationBackups } from "@saflib/ops-http";
+import { createObjectStore } from "@saflib/object-store";
+import { createGcsObjectStore } from "@saflib/vendors-gcs";
 
 export { isOpsApiRequest };
 
@@ -33,6 +39,40 @@ const opsDbAccessor = createOnDiskDbKeyAccessor({
 
 /** Opaque key for `@saflib/ops-db` (ops tokens), separate from the main app DB. */
 export const getBaseOpsDbKey = opsDbAccessor.getDbKey;
+
+/**
+ * Where backups go: the GCS bucket in `BACKUPS_GCS_BUCKET` (a bucket of its
+ * own, not the product's blobs); in development, a folder on this package's
+ * data volume. Elsewhere without a bucket: none (Status says so).
+ */
+export function baseBackupsConfig(databases: BackupDatabase[]): OpsBackupsConfig | undefined {
+  const bucketName = process.env.BACKUPS_GCS_BUCKET?.trim();
+  const ops: BackupDatabase = { name: "ops", path: () => opsDb.getDbPath(getBaseOpsDbKey()) ?? null };
+  // Kratos's SQLite file, when its volume is mounted here.
+  const kratosPath = process.env.KRATOS_SQLITE_PATH?.trim();
+  const all = [...databases, ops, ...(kratosPath ? [{ name: "kratos", path: kratosPath }] : [])];
+  if (bucketName) return { databases: all, store: createGcsObjectStore({ bucketName }), retentionDays: 14, preMigrationDir };
+  if (process.env.DEPLOYMENT_NAME === "development") {
+    return { databases: all, store: createObjectStore({ type: "disk", rootPath: path.join(dataDir, "backups") }), retentionDays: 14, preMigrationDir };
+  }
+  return undefined;
+}
+
+/** Where snapshots taken before migrations wait to be uploaded (the ops data volume). */
+const preMigrationDir = path.join(dataDir, "pre-migration");
+
+/**
+ * Snapshot each database before migrations run on it (the backup schedule
+ * uploads them as `pre-migration` backups). Call first thing at startup,
+ * before any database connects.
+ */
+export function enableBasePreMigrationBackups() {
+  return enablePreMigrationBackups(preMigrationDir);
+}
+
+/** Rate-limit counts (SQLite), on this package's data volume so blue/green share them. */
+export const getBaseRateLimitDbPath = () =>
+  path.join(dataDir, `rate-limit-${process.env.DEPLOYMENT_NAME ?? "development"}.sqlite`);
 
 const logsDbAccessor = createOnDiskDbKeyAccessor({
   packageUrl: import.meta.url,
@@ -82,6 +122,14 @@ export function enableBasePersistentLogs() {
 export interface CreateBaseOpsRouterOptions {
   /** Checks beyond the defaults (process, and disk for this package's data volume). */
   healthChecks?: HealthCheck[];
+  /** Overview tiles beyond the ops API's own (jobs, cron, audit, product queues). */
+  digestTiles?: DigestTileProvider[];
+  /** Self-test probes beyond the ops API's own (failing job, audit event). */
+  diagnosticProbes?: DiagnosticProbe[];
+  /** The databases to back up (ops and Kratos are added); see {@link baseBackupsConfig}. */
+  backupDatabases?: BackupDatabase[];
+  /** The audit log for `GET /ops/audit` (`opsAuditSource` from audit-http). */
+  audit?: OpsAuditSource;
 }
 
 /**
@@ -99,6 +147,10 @@ export function createBaseOpsRouter(options: CreateBaseOpsRouterOptions = {}) {
     // PromQL via the host's prom-label-proxy, confined to saf_app="base"
     // (set by this app's scrape config) plus host metrics.
     metrics: { app: "base" },
+    digestTiles: options.digestTiles,
+    diagnosticProbes: options.diagnosticProbes,
+    audit: options.audit,
+    backups: options.backupDatabases ? baseBackupsConfig(options.backupDatabases) : undefined,
   });
 }
 

@@ -1,8 +1,8 @@
 export const ops_dependencies = {
+  changelog: "Changelog",
+  noNotes: "No notes for this release.",
   documentTitle: "Dependencies",
   title: "Dependencies",
-  intro:
-    "What this app's server runs, checked against OSV.dev advisories, the npm registry, and endoflife.date a few minutes after each deploy and then daily. Renovate opens the update PRs; this shows what's actually deployed.",
   none: "No check yet. Checks run in built images a couple of minutes after a deploy.",
   checked: "Checked",
   stale: "stale",
@@ -15,6 +15,7 @@ export const ops_dependencies = {
   fixedIn: "fixed in",
   noFix: "no fix yet",
   transitive: "transitive",
+  osHint: "In the base image: rebuilding the image (fresh base, apt-get upgrade) picks up the fix.",
   renovateDue: "Renovate due",
   errors: "Some lookups failed",
   runtime: "Runtime",

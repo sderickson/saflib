@@ -66,3 +66,15 @@ import { opsDbManager } from "./instances.ts";
  * For managing connections to the ops database.
  */
 export const opsDb = opsDbManager.publicInterface();
+export {
+  claimBackup,
+  failStaleBackups,
+  finishBackup,
+  getBackup,
+  getLatestPassedBackup,
+  listBackups,
+  listBackupsStartedBefore,
+  markBackupsDeleted,
+  recordBackupVerification,
+} from "./queries/ops-backups/backups.ts";
+export type { OpsBackup, OpsBackupStatus, OpsBackupTag } from "./schema.ts";

@@ -33,15 +33,18 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@saflib/analytics-vue": "*",
+    "@saflib/audit-vue": "*",
     "@saflib/base-links": "*",
     "@saflib/base-sdk": "*",
     "@saflib/base-spec": "*",
+    "@saflib/cron-vue": "*",
     "@saflib/errors-vue": "*",
+    "@saflib/jobs-vue": "*",
     "@saflib/links": "*",
     "@saflib/ops-vue": "*",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/ory-kratos-spa": "*",
+    "@saflib/ory-kratos-vue": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*"
   },

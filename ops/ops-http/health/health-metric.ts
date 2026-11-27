@@ -1,4 +1,4 @@
-import client from "prom-client";
+import client from "@prometheus-io/client";
 import { runHealthChecks } from "./run-health-checks.ts";
 import type { HealthCheck } from "./types.ts";
 

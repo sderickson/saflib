@@ -1,4 +1,5 @@
-import { inject, ref, watch, type InjectionKey, type Ref } from "vue";
+import { computed, inject, ref, watch, type InjectionKey, type Ref } from "vue";
+import { useRoute } from "vue-router";
 import type { AuditLog } from "@saflib/audit-spec/types";
 import { useListAuditLogs } from "@saflib/audit-sdk/requests/list-audit-logs";
 import { useSealAuditLog } from "@saflib/audit-sdk/requests/seal-audit-log";
@@ -15,6 +16,8 @@ const PAGE_SIZE = 50;
 
 export type AuditLogsLoader = {
   fromInput: Ref<string>;
+  /** `?user=`: only events by or for this user. */
+  userFilter: Ref<string | undefined>;
   rows: Ref<AuditLog[]>;
   nextCursor: Ref<string | null>;
   spanHead: Ref<string | null>;
@@ -37,10 +40,17 @@ export function useAuditLogsLoader(): AuditLogsLoader {
   const spanChecked = ref(false);
   const loadMorePending = ref(false);
 
+  const route = useRoute();
+  const userFilter = computed(() => {
+    const raw = route?.query.user;
+    return typeof raw === "string" && raw ? raw : undefined;
+  });
+
   const auditLogsQuery = useListAuditLogs({
     from: appliedFrom,
     limit: ref(PAGE_SIZE),
     order: ref("desc"),
+    userId: userFilter,
   });
 
   watch(
@@ -87,6 +97,7 @@ export function useAuditLogsLoader(): AuditLogsLoader {
               cursor: nextCursor.value,
               limit: PAGE_SIZE,
               order: "desc",
+              ...(userFilter.value ? { user_id: userFilter.value } : {}),
             },
           },
         }),
@@ -112,6 +123,7 @@ export function useAuditLogsLoader(): AuditLogsLoader {
 
   return {
     fromInput,
+    userFilter,
     rows,
     nextCursor,
     spanHead,

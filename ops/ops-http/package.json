@@ -17,6 +17,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@prometheus-io/client": "^0.16.1",
     "@resvg/resvg-js": "^2.6.2",
     "@saflib/drizzle": "*",
     "@saflib/errors-db": "*",
@@ -24,20 +25,23 @@
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/node-log-db": "*",
+    "@saflib/object-store": "*",
     "@saflib/ops-db": "*",
     "@saflib/ops-spec": "*",
+    "@saflib/rate-limit": "*",
     "@saflib/utils": "*",
+    "better-sqlite3": "12.11.1",
     "dejavu-fonts-ttf": "^2.37.3",
     "express": "^5.0.0",
-    "http-errors": "^2.0.0",
-    "prom-client": "^15.1.3"
+    "http-errors": "^2.0.0"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
     "@types/express": "^5.0.0",
     "@types/http-errors": "^2.0.0",
     "@types/supertest": "^7.0.0",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+    "@types/better-sqlite3": "^9.0.0"
   },
   "sideEffects": false
 }

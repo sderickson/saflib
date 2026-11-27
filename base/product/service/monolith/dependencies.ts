@@ -1,5 +1,6 @@
 import { createSecretStore, type SecretStore } from "@saflib/secret-store";
 import { getEmailClient } from "@saflib/base-service-common/email";
+import { configureAnalytics } from "@saflib/vendors-posthog";
 // BEGIN WORKFLOW AREA integration-imports FOR integrations/init
 import { configure__IntegrationName__ } from "@saflib/base-__integration-name__-integration";
 // END WORKFLOW AREA
@@ -32,6 +33,9 @@ export async function initializeDependencies(): Promise<void> {
   // END WORKFLOW AREA
 
   getEmailClient();
+  // Product events: PostHog when POSTHOG_PROJECT_API_KEY is set, else
+  // in-memory. Either way each event is logged and counted.
+  configureAnalytics();
 
   initialized = true;
 }

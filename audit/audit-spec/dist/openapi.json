@@ -388,6 +388,16 @@
             }
           },
           {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Only events where this user is the actor or the one acted for.",
+            "schema": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          {
             "name": "order",
             "in": "query",
             "required": false,

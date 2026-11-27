@@ -1,10 +1,12 @@
 export const ops_metrics = {
   documentTitle: "Metrics",
   title: "Metrics",
-  intro:
-    "Query this app's Prometheus metrics (plus host metrics). Start from a preset or write PromQL; scrapes are every 60s, so use rate windows of [5m].",
   queryLabel: "PromQL",
   run: "Run",
+  presets: "Presets",
+  off: "Prometheus isn't set up here, so queries are off. This is the page you get in production; This process (next tab) shows the server's own numbers.",
+  graph_off: "The graph for this query appears here when Prometheus is set up.",
+  values_off: "Current values appear here when Prometheus is set up.",
   range: "Range",
   current: "Current values",
   noSeries: "No series. A fresh deploy needs a few minutes of scrapes before rates appear.",

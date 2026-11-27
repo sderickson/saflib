@@ -5,13 +5,21 @@ import type { Request } from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { createEmailsRouter } from "@saflib/email-service";
 import { createDevErrorsRouter, createErrorsRouter } from "@saflib/errors-http";
-import { createDevAnalyticsRouter } from "@saflib/analytics-http";
+import { createKratosAdminRouter } from "@saflib/ory-kratos-http";
 import { createDevLogsRouter } from "@saflib/node-log-http";
 import { resolveEmailServiceFromEnv } from "@saflib/vendors-brevo";
 import { baseDb, baseDbManager } from "@saflib/base-db/instances";
-import { createBaseOpsRouter, isOpsApiRequest } from "@saflib/base-ops";
+import { auditDb } from "@saflib/audit-db/instances";
+import { jobsDb } from "@saflib/jobs-db";
+import { cronDb } from "@saflib/cron-db";
+import { createBaseOpsRouter, getBaseRateLimitDbPath, isOpsApiRequest } from "@saflib/base-ops";
+import { createProductEventsRouter, productEventNames } from "@saflib/analytics-http";
+import { jsonSpec } from "@saflib/base-spec";
 import { kratosCheck, probeCheck } from "@saflib/ops-http";
 import { createAuditRotationHealthCheck } from "@saflib/audit-http/express/audit-rotation-health-check";
+import { auditDigestTile } from "@saflib/audit-http/express/audit-digest-tile";
+import { auditDiagnosticProbe } from "@saflib/audit-http/express/audit-diagnostic-probe";
+import { opsAuditSource } from "@saflib/audit-http/express/ops-audit-source";
 import {
   baseAuditRecorderMiddleware,
   createBaseAuditRouter,
@@ -21,9 +29,9 @@ import {
   type BaseServiceContextOptions,
   makeContext,
 } from "@saflib/base-service-common/context";
-import { createCronHealthCheck, createCronRouter } from "@saflib/cron-http";
+import { createCronHealthCheck, createCronRouter, cronDigestTile } from "@saflib/cron-http";
 import { baseJobs, getBaseCronDbKey } from "@saflib/base-cron";
-import { createJobsHealthCheck, createJobsRouter } from "@saflib/jobs-http";
+import { createJobsHealthCheck, createJobsRouter, jobsDiagnosticProbe, jobsDigestTile } from "@saflib/jobs-http";
 import { getBaseJobsDbKey } from "@saflib/base-jobs";
 import { createMetricsRouter } from "@saflib/node-metrics-http";
 
@@ -69,12 +77,16 @@ export function buildBaseHttpApp(
     runInContext: (next) => baseServiceStorage.run(context, next),
     publicRouters: [
       createErrorsRouter(),
+      // Browser product events: only names declared in the spec's ProductEvent.
+      createProductEventsRouter({
+        allowedEvents: productEventNames(jsonSpec),
+        rateLimitDbPath: getBaseRateLimitDbPath(),
+      }),
       // Development-only observability routes.
       ...(isDevelopmentDeployment()
         ? [
             createDevErrorsRouter(),
             createDevLogsRouter(),
-            createDevAnalyticsRouter(),
             createEmailsRouter({ emailService: resolveEmailServiceFromEnv() }),
             createMetricsRouter(),
           ]
@@ -96,8 +108,33 @@ export function buildBaseHttpApp(
           createCronHealthCheck({ getDbKey: getBaseCronDbKey }),
           kratosCheck(),
         ],
+        // Overview tiles beyond the ops API's own; add the product's
+        // customer queues here too.
+        digestTiles: [
+          jobsDigestTile({ getDbKey: getBaseJobsDbKey }),
+          cronDigestTile({ getDbKey: getBaseCronDbKey, jobs: baseJobs }),
+          auditDigestTile({ getAuditDbKey: () => context.auditDbKey }),
+        ],
+        // Self-test probes beyond the ops API's own: a job that fails on
+        // purpose (allowed in base-jobs' trigger map) and an audit event.
+        diagnosticProbes: [
+          jobsDiagnosticProbe({ getDbKey: getBaseJobsDbKey }),
+          auditDiagnosticProbe({ getAuditDbKey: () => context.auditDbKey }),
+        ],
+        // Sign-ins, account changes and admin actions for agents (GET /ops/audit).
+        audit: opsAuditSource({ getAuditDbKey: () => context.auditDbKey }),
+        // App-managed backups (ops and Kratos are added by base-ops).
+        backupDatabases: [
+          { name: "main", path: () => baseDb.getDbPath(dbKey) ?? null },
+          { name: "audit", path: () => auditDb.getDbPath(context.auditDbKey) ?? null },
+          { name: "jobs", path: () => jobsDb.getDbPath(getBaseJobsDbKey()) ?? null },
+          { name: "cron", path: () => cronDb.getDbPath(getBaseCronDbKey()) ?? null },
+        ],
       }),
       createBaseAuditRouter(),
+      // Site-admin identity routes (UserRef lookups, Users page). Pass
+      // resolveProfiles to show names; Kratos traits only hold the email.
+      createKratosAdminRouter(),
       createJobsRouter({ dbKey: getBaseJobsDbKey() }),
       createCronRouter({
         dbKey: getBaseCronDbKey(),

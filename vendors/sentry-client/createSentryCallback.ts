@@ -7,6 +7,7 @@ import { createApp } from "vue";
 import {
   isLocalhostHostname,
   reportClientErrorToBackend,
+  reportUnhandledRejections,
 } from "@saflib/errors-vue/lib/reportClientErrorToBackend.ts";
 
 export interface SentryCallbackOptions {
@@ -15,14 +16,15 @@ export interface SentryCallbackOptions {
 }
 
 /**
- * Vue `createApp` callback: log Vue errors (and POST `/errors/record` on
- * localhost hosts). Init Sentry when `VITE_CLIENT_SENTRY_DSN` is set (skipped
+ * Vue `createApp` callback: log and report Vue errors and unhandled
+ * rejections to Issues (see `reportClientErrorToBackend`). Init Sentry when `VITE_CLIENT_SENTRY_DSN` is set (skipped
  * on `*.localhost`).
  */
 export function createSentryCallback(options: SentryCallbackOptions = {}) {
   const source = options.source ?? "client";
 
   return function sentryCallback(app: ReturnType<typeof createApp>) {
+    reportUnhandledRejections(source);
     const priorErrorHandler = app.config.errorHandler;
     app.config.errorHandler = (error, instance, info) => {
       void reportClientErrorToBackend(error, { source, info });

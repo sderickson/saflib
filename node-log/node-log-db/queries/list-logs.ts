@@ -15,6 +15,10 @@ export interface ListLogsParams {
   q?: string;
   templateHash?: string;
   requestId?: string;
+  /** Lines from one request, job delivery, cron tick or process. */
+  contextId?: string;
+  /** Lines by one (pseudonymous) user. */
+  userId?: string;
   /** Default 100, max 500. */
   limit?: number;
   /** From a previous page's `nextCursor`. */
@@ -49,6 +53,8 @@ export const listLogs = queryWrapper(
     if (params.service) where.push(eq(logEntries.service_name, params.service));
     if (params.templateHash) where.push(eq(logEntries.template_hash, params.templateHash));
     if (params.requestId) where.push(eq(logEntries.request_id, params.requestId));
+    if (params.contextId) where.push(eq(logEntries.context_id, params.contextId));
+    if (params.userId) where.push(eq(logEntries.user_id, params.userId));
     if (params.cursor && /^\d+$/.test(params.cursor)) {
       where.push(lt(logEntries.id, Number(params.cursor)));
     }

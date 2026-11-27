@@ -1,6 +1,7 @@
 #!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { Command } from "commander";
 import { setupContext } from "@saflib/commander";
+import { setServiceName } from "@saflib/node";
 // BEGIN WORKFLOW AREA cli-imports FOR commander/add-command
 import { addScanCommand } from "./scan.ts";
 import { addShowCommand } from "./show.ts";
@@ -20,6 +21,10 @@ addShowCommand(program);
 addDiffCommand(program);
 addIssuesCommand(program);
 // END WORKFLOW AREA
+
+// The DB layer logs through @saflib/node, which needs its own service name
+// (setupContext only sets the CLI context's).
+setServiceName("saf-dev-site");
 
 setupContext(
   {

@@ -11,7 +11,7 @@ import {
 } from "@saflib/base-clients-common/fixtures";
 import { adminLinks } from "@saflib/base-links";
 import { home as homeStrings } from "#pages/home/Home.strings.ts";
-import { users as usersStrings } from "#pages/users/Users.strings.ts";
+import { users_page as usersStrings } from "@saflib/ory-kratos-vue";
 
 type AdminNavigationFixtures = {
   baseApp: BaseFixture;
@@ -95,15 +95,12 @@ test("admin navigation smoke", async ({
     });
   }
 
-  await baseApp.step("Users lookup form is interactive", async () => {
+  await baseApp.step("Users search updates the URL", async () => {
     await page.goto(adminUrl(adminLinks.users.path));
     await expect(
       page.getByRole("heading", { name: usersStrings.title }),
     ).toBeVisible();
-    await page
-      .getByLabel(usersStrings.id_label)
-      .fill("22222222-2222-2222-2222-222222222222");
-    await page.getByRole("button", { name: usersStrings.submit }).click();
-    await expect(page).toHaveURL(/id=22222222-2222-2222-2222-222222222222/);
+    await page.getByLabel(usersStrings.search).fill("nobody-here");
+    await expect(page).toHaveURL(/q=nobody-here/);
   });
 });

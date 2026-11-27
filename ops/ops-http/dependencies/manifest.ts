@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { readOsRelease, type OsRelease } from "./runtime.ts";
+import { readOsPackages, type OsPackage } from "./os-packages.ts";
 
 /** One installed package version. */
 export interface InstalledPackage {
@@ -12,11 +13,13 @@ export interface InstalledPackage {
 
 export interface DependencyManifest {
   packages: InstalledPackage[];
-  /** sha256 of the lockfile: a new value means a new set of packages. */
+  /** sha256 of the lockfile (and OS packages): a new value means a new set of packages. */
   lockfileHash: string;
   nodeVersion: string;
   /** The container's OS release (null when not running on Linux, e.g. tests). */
   osRelease?: OsRelease | null;
+  /** The image's OS source packages (Debian), checked against OSV too. */
+  osPackages?: OsPackage[];
 }
 
 interface LockfileEntry {
@@ -82,5 +85,12 @@ export const DEFAULT_LOCKFILE = "/app/package-lock.json";
 /** The image's manifest, or undefined when there's no lockfile (dev, tests). */
 export function readManifest(lockfilePath: string = process.env.SAF_LOCKFILE ?? DEFAULT_LOCKFILE) {
   if (!existsSync(lockfilePath)) return undefined;
-  return { ...parseLockfile(readFileSync(lockfilePath, "utf8")), osRelease: readOsRelease() };
+  const manifest = parseLockfile(readFileSync(lockfilePath, "utf8"));
+  const osRelease = readOsRelease();
+  const osPackages = readOsPackages(osRelease);
+  // A new base image with the same lockfile is still a new set of packages.
+  const lockfileHash = osPackages.length
+    ? createHash("sha256").update(manifest.lockfileHash).update(JSON.stringify(osPackages)).digest("hex")
+    : manifest.lockfileHash;
+  return { ...manifest, lockfileHash, osRelease, osPackages };
 }

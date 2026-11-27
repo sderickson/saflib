@@ -100,8 +100,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Cancel a pending or retrying job
-         * @description Cancels a pending or retrying job (`terminal_reason: cancelled-by-admin`). Running jobs are not interrupted (409). Mounted as monolith chrome (`site-admin-only`).
+         * Cancel a pending, retrying or dead job
+         * @description Cancels a pending or retrying job (`terminal_reason: cancelled-by-admin`), or gives up on a dead one (`terminal_reason: given-up-by-admin`, keeping its last status code and error body) so it no longer counts as failed. Running jobs are not interrupted (409). Mounted as monolith chrome (`site-admin-only`).
          */
         post: operations["cancelJob"];
         delete?: never;
@@ -298,7 +298,7 @@ export interface components {
                  * @example exhausted
                  * @enum {string|null}
                  */
-                terminal_reason?: "exhausted" | "permanent-status" | "rejected-by-endpoint" | "auth-unresolvable" | "cancelled-by-admin" | "cancelled-by-chain" | null;
+                terminal_reason?: "exhausted" | "permanent-status" | "rejected-by-endpoint" | "auth-unresolvable" | "cancelled-by-admin" | "cancelled-by-chain" | "given-up-by-admin" | null;
             } | null;
             /**
              * Format: date-time

@@ -28,9 +28,14 @@ describe("isPublicMonolithRoute", () => {
       true,
     );
     expect(isPublicMonolithRoute(req("GET", "/admin/product-events"))).toBe(
-      true,
+      false,
     );
-    expect(isPublicMonolithRoute(req("GET", "/admin/errors"))).toBe(true);
+    expect(isPublicMonolithRoute(req("GET", "/admin/errors"))).toBe(false);
+  });
+
+  it("allows browser product events (POST only)", () => {
+    expect(isPublicMonolithRoute(req("POST", "/product-events"))).toBe(true);
+    expect(isPublicMonolithRoute(req("GET", "/product-events"))).toBe(false);
   });
 
   it("denies authenticated product routes", () => {

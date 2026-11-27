@@ -8,6 +8,9 @@
       "path": "../../../../env"
     },
     {
+      "path": "../../../../errors/errors-spec"
+    },
+    {
       "path": "../../../../jobs/jobs-db"
     },
     {
@@ -15,6 +18,9 @@
     },
     {
       "path": "../../../../openapi"
+    },
+    {
+      "path": "../../../../ops/ops-spec"
     },
     {
       "path": "../common"

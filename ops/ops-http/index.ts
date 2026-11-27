@@ -31,3 +31,23 @@ export { parseLockfile, readManifest, type DependencyManifest } from "./dependen
 export { runDependencyCheckOnce, startDependencyChecks } from "./dependencies/scheduler.ts";
 export { SAFLIB_ACCEPTED_ADVISORIES, findAcceptance, type AcceptedAdvisory } from "./dependencies/accepted.ts";
 export { checkRuntime, readOsRelease, type RuntimeComponent, type OsRelease } from "./dependencies/runtime.ts";
+export {
+  runTileProviders,
+  type DigestTile,
+  type DigestTileProvider,
+} from "./digest/tiles.ts";
+export { effectiveMetricsConfig } from "./http.ts";
+export {
+  builtInProbes,
+  diagTag,
+  RunRegistry,
+  type DiagnosticFound,
+  type DiagnosticProbe,
+  type DiagnosticRef,
+} from "./diagnostics/probes.ts";
+export type { OpsAuditSource } from "./audit/source.ts";
+export type { BackupDatabase, OpsBackupsConfig } from "./backups/runner.ts";
+export { enablePreMigrationBackups } from "./backups/pre-migration.ts";
+export { downloadBackup, restoreBackup } from "./backups/restore.ts";
+export { runBackupsCli } from "./backups/cli.ts";
+export { opsAuditMap, type OpsAuditMapEntry } from "./audit-map.ts";

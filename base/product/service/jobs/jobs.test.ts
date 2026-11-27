@@ -10,8 +10,7 @@ import { baseJobs } from "@saflib/base-cron";
 import {
   baseJobOperations,
   baseTriggerMap,
-  runBaseJobs,
-} from "./jobs.ts";
+  runBaseJobs, baseJobsApiSpec } from "./jobs.ts";
 
 const validationSpec = asOpenApiDocument({
   openapi: "3.1.0",
@@ -57,7 +56,9 @@ describe("baseTriggerMap / baseJobOperations", () => {
       validateJobsStartup({
         triggerMap: baseTriggerMap,
         operationConfig: baseJobOperations,
-        operations: jsonSpec,
+        // Same list the runtime validates against (product spec + the
+        // errors test operation + the ops self-test).
+        operations: baseJobsApiSpec(jsonSpec),
       }),
     ).not.toThrow();
   });

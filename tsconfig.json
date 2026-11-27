@@ -17,9 +17,6 @@
       "path": "./analytics/analytics-spec"
     },
     {
-      "path": "./analytics/analytics-vue"
-    },
-    {
       "path": "./audit/audit-db"
     },
     {
@@ -332,13 +329,7 @@
       "path": "./node-log/node-log-http"
     },
     {
-      "path": "./node-log/node-log-sdk"
-    },
-    {
       "path": "./node-log/node-log-spec"
-    },
-    {
-      "path": "./node-log/node-log-vue"
     },
     {
       "path": "./node-metrics/node-metrics-http"
@@ -386,6 +377,12 @@
       "path": "./ory-kratos/ory-kratos-spa"
     },
     {
+      "path": "./ory-kratos/ory-kratos-spec"
+    },
+    {
+      "path": "./ory-kratos/ory-kratos-vue"
+    },
+    {
       "path": "./parser"
     },
     {
@@ -402,6 +399,9 @@
     },
     {
       "path": "./product-workflows"
+    },
+    {
+      "path": "./rate-limit"
     },
     {
       "path": "./sdk"

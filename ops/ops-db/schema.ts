@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 
 /** Every scope an ops token can hold. */
@@ -7,12 +7,15 @@ import type { Expect, Equal } from "@saflib/drizzle";
  * `ops:alerts-ingest`: only posting alerts (Alertmanager's webhook token).
  * `ops:exchange`: trade this token for a short-lived one (never granted to
  * the exchanged token itself).
+ * `ops:query`: read-only SQL over the logs DB (broader than the curated
+ * endpoints, so not part of `ops:read`).
  */
 export const opsTokenScopes = [
   "ops:read",
   "ops:triage",
   "ops:alerts-ingest",
   "ops:exchange",
+  "ops:query",
 ] as const;
 
 export type OpsTokenScope = (typeof opsTokenScopes)[number];
@@ -227,3 +230,69 @@ export const opsDependencyChecks = sqliteTable("ops_dependency_checks", {
 });
 
 export type OpsDependencyCheckTest1 = Expect<Equal<OpsDependencyCheck, typeof opsDependencyChecks.$inferSelect>>;
+
+export type OpsBackupTag = "daily" | "deploy" | "pre-migration" | "manual";
+export type OpsBackupStatus = "running" | "ok" | "suspicious" | "failed";
+
+/**
+ * One backup of one database: made (VACUUM INTO), checked, compressed and
+ * uploaded to the backups store. `claim_key` makes each scheduled backup
+ * happen once even with two processes (blue/green) running.
+ */
+export interface OpsBackup {
+  id: string;
+  database: string;
+  tag: string;
+  claim_key: string;
+  started_at: Date;
+  finished_at: Date | null;
+  status: string;
+  /** Compressed size, as stored. */
+  size_bytes: number | null;
+  raw_bytes: number | null;
+  /** sha256 of the stored (compressed) object. */
+  sha256: string | null;
+  object_key: string | null;
+  /** The database's latest migration at backup time. */
+  migration: string | null;
+  /** JSON: per-table row counts and created/updated ranges. */
+  stats: string | null;
+  /** JSON: why the backup is suspicious (or failed checks). */
+  problems: string | null;
+  error: string | null;
+  /** Last read-back: the stored object downloaded and its hash compared. */
+  verified_at: Date | null;
+  verified_ok: boolean | null;
+  /** Removed by retention. */
+  deleted_at: Date | null;
+  /** The live database file it was taken from (where a restore puts it back). */
+  source_path: string | null;
+}
+
+export const opsBackups = sqliteTable(
+  "ops_backups",
+  {
+    id: text("id").primaryKey(),
+    database: text("database").notNull(),
+    tag: text("tag").notNull(),
+    claim_key: text("claim_key").notNull().unique(),
+    started_at: integer("started_at", { mode: "timestamp_ms" }).notNull(),
+    finished_at: integer("finished_at", { mode: "timestamp_ms" }),
+    status: text("status").notNull(),
+    size_bytes: integer("size_bytes"),
+    raw_bytes: integer("raw_bytes"),
+    sha256: text("sha256"),
+    object_key: text("object_key"),
+    migration: text("migration"),
+    stats: text("stats"),
+    problems: text("problems"),
+    error: text("error"),
+    verified_at: integer("verified_at", { mode: "timestamp_ms" }),
+    verified_ok: integer("verified_ok", { mode: "boolean" }),
+    deleted_at: integer("deleted_at", { mode: "timestamp_ms" }),
+    source_path: text("source_path"),
+  },
+  (t) => [index("ops_backups_database_started_idx").on(t.database, t.started_at)],
+);
+
+export type OpsBackupTest1 = Expect<Equal<OpsBackup, typeof opsBackups.$inferSelect>>;

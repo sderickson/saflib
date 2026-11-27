@@ -2,10 +2,16 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
+      "path": "../../../../analytics/analytics-http"
+    },
+    {
+      "path": "../../../../audit/audit-db"
+    },
+    {
       "path": "../../../../audit/audit-http"
     },
     {
-      "path": "../../../../analytics/analytics-http"
+      "path": "../../../../cron/cron-db"
     },
     {
       "path": "../../../../cron/cron-http"
@@ -26,6 +32,9 @@
       "path": "../../../../express"
     },
     {
+      "path": "../../../../jobs/jobs-db"
+    },
+    {
       "path": "../../../../jobs/jobs-http"
     },
     {
@@ -39,6 +48,9 @@
     },
     {
       "path": "../../../../ops/ops-http"
+    },
+    {
+      "path": "../../../../ory-kratos/ory-kratos-http"
     },
     {
       "path": "../../../../vendors/brevo"
@@ -60,6 +72,9 @@
     },
     {
       "path": "../ops"
+    },
+    {
+      "path": "../spec"
     }
   ],
   "compilerOptions": {

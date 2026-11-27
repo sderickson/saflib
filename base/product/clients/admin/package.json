@@ -22,21 +22,18 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@saflib/analytics-vue": "*",
     "@saflib/audit-vue": "*",
     "@saflib/base-clients-common": "*",
     "@saflib/base-links": "*",
-    "@saflib/base-sdk": "*",
     "@saflib/cron-vue": "*",
     "@saflib/email-vue": "*",
     "@saflib/errors-vue": "*",
     "@saflib/jobs-vue": "*",
     "@saflib/links": "*",
-    "@saflib/node-log-vue": "*",
-    "@saflib/node-metrics-vue": "*",
     "@saflib/ops-vue": "*",
     "@saflib/ory-kratos-sdk": "*",
     "@saflib/ory-kratos-spa": "*",
+    "@saflib/ory-kratos-vue": "*",
     "@saflib/vue": "*"
   },
   "devDependencies": {

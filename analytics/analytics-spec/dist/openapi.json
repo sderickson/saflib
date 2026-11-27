@@ -2,14 +2,11 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Product Analytics API",
-    "version": "1.0.0",
-    "description": "Product event capture and admin viewing via an in-memory ring buffer."
+    "version": "2.0.0",
+    "description": "Browser product events. The server records them the same way as server-side events (logs DB, Prometheus counter, the analytics vendor).\n"
   },
   "components": {
     "schemas": {
-      "ProductEventRecord": {
-        "$ref": "#/components/schemas/product-event-record"
-      },
       "Error": {
         "$ref": "#/components/schemas/error"
       },
@@ -26,51 +23,14 @@
             "example": "The requested resource could not be found."
           }
         }
-      },
-      "product-event-record": {
-        "type": "object",
-        "description": "A product analytics event stored in the in-memory ring buffer.",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "Monotonic id for pagination."
-          },
-          "name": {
-            "type": "string",
-            "description": "Product event name (same as product_event.event)."
-          },
-          "payload": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Full product event JSON as recorded."
-          },
-          "source": {
-            "type": "string",
-            "enum": [
-              "client",
-              "server"
-            ],
-            "description": "Whether the event originated from a browser client or server code."
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "payload",
-          "source",
-          "timestamp"
-        ]
       }
     }
   },
   "paths": {
-    "/product-events/record": {
+    "/product-events": {
       "post": {
-        "summary": "Record a product analytics event",
+        "summary": "Record a product event from the browser",
+        "description": "Public, so anonymous visitors' events count too. Signed-in users are attributed (subject to their analytics consent); anonymous events get a random id per event. Rate limited per user, per IP and for all anonymous traffic; events over the limit are dropped (429).\n",
         "operationId": "recordProductEvent",
         "x-public": true,
         "requestBody": {
@@ -79,106 +39,55 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "product_event"
+                ],
                 "properties": {
                   "product_event": {
                     "type": "object",
-                    "additionalProperties": true,
+                    "required": [
+                      "event"
+                    ],
+                    "additionalProperties": false,
                     "properties": {
                       "event": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/ -]{0,99}$"
+                      },
+                      "org": {
+                        "type": "string",
+                        "maxLength": 100
                       },
                       "client": {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 100
                       },
                       "view": {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 200
                       },
                       "component": {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 200
                       },
                       "context": {
                         "type": "object",
-                        "additionalProperties": true
+                        "additionalProperties": true,
+                        "description": "The event's properties (at most ~2 KB as JSON)."
                       }
-                    },
-                    "required": [
-                      "event"
-                    ]
+                    }
                   }
-                },
-                "required": [
-                  "product_event"
-                ]
+                }
               }
             }
           }
         },
         "responses": {
           "204": {
-            "description": "Event recorded in the server ring buffer."
+            "description": "Recorded."
           },
           "400": {
-            "description": "Invalid request body.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/admin/product-events": {
-      "get": {
-        "summary": "List buffered product events",
-        "description": "Development ring-buffer listing (`createDevAnalyticsRouter` only). Tagged `no-auth` so local dev stacks can read captured events without a session.\n",
-        "operationId": "listProductEvents",
-        "x-public": true,
-        "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Filter by event name."
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "description": "Maximum number of entries to return (from the tail)."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Buffered product events, newest last within the filtered slice.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "product_events": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/product-event-record"
-                      }
-                    }
-                  },
-                  "required": [
-                    "product_events"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - Invalid or missing authentication.",
+            "description": "Invalid body, unknown event name, or properties too large.",
             "content": {
               "application/json": {
                 "schema": {
@@ -187,8 +96,8 @@
               }
             }
           },
-          "403": {
-            "description": "Forbidden - site admin required.",
+          "429": {
+            "description": "Rate limited; the event was dropped.",
             "content": {
               "application/json": {
                 "schema": {

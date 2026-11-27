@@ -9,7 +9,8 @@
     ".": "./ops.ts"
   },
   "bin": {
-    "ops-tokens": "./bin/ops-tokens.ts"
+    "ops-tokens": "./bin/ops-tokens.ts",
+    "backups": "./bin/backups.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -25,8 +26,10 @@
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/node-log-db": "*",
+    "@saflib/object-store": "*",
     "@saflib/ops-db": "*",
     "@saflib/ops-http": "*",
+    "@saflib/vendors-gcs": "*",
     "commander": "^15.0.0"
   },
   "devDependencies": {

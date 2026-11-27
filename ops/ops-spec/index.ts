@@ -18,6 +18,7 @@ export type OpsHealthCheck = components["schemas"]["OpsHealthCheck"];
 export type OpsTokenResponse = components["schemas"]["OpsToken"];
 export type OpsBootResponse = components["schemas"]["OpsBoot"];
 export type OpsLogEntryResponse = components["schemas"]["OpsLogEntry"];
+export type OpsLogGroupResponse = components["schemas"]["OpsLogGroup"];
 export type OpsLogTemplateResponse = components["schemas"]["OpsLogTemplate"];
 export type OpsIssueResponse = components["schemas"]["OpsIssue"];
 export type OpsIssueOccurrenceResponse = components["schemas"]["OpsIssueOccurrence"];
@@ -31,3 +32,7 @@ export type OpsResponseBody = ExtractResponseBody<operations>;
 
 /** Request bodies for ops API routes, by operationId. */
 export type OpsRequestBody = ExtractRequestBody<operations>;
+export type OpsDigestTile = components["schemas"]["OpsDigestTile"];
+export type OpsDiagnosticProbe = components["schemas"]["OpsDiagnosticProbe"];
+export type OpsAuditEvent = components["schemas"]["OpsAuditEvent"];
+export type OpsBackupResponse = components["schemas"]["OpsBackup"];

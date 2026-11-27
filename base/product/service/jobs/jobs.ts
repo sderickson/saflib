@@ -13,18 +13,24 @@ import {
   type BaseServiceContext,
 } from "@saflib/base-service-common/context";
 import { baseJobs } from "@saflib/base-cron";
+import { operationJsonSpec as raiseTestErrorMaintenanceOperationJsonSpec } from "@saflib/errors-spec/operations/raiseTestErrorMaintenance";
+import { operationJsonSpec as runOpsDiagnosticProbeOperationJsonSpec } from "@saflib/ops-spec/operations/runOpsDiagnosticProbe";
+import { operationJsonSpec as runOpsBackupsMaintenanceOperationJsonSpec } from "@saflib/ops-spec/operations/runOpsBackupsMaintenance";
 
 /**
  * Reviewed map of which base operations may enqueue which operations.
  * Validated against the bundled OpenAPI spec at startup.
  */
 export const baseTriggerMap: TriggerMap = {
+  // The admin's Diagnostics self-test enqueues a job that fails on purpose.
+  runOpsDiagnosticProbe: ["raiseTestErrorMaintenance"],
   startJobsDemo: ["jobsDemoStepB"],
   jobsDemoStepB: ["jobsDemoStepC"],
   // HTTP/API callers → background targets (jobs/add-job).
   // BEGIN WORKFLOW AREA trigger-map FOR jobs/add-job
   // END WORKFLOW AREA
   "cron:jobsDemoKick": ["jobsDemoStepB"],
+  "cron:backups": ["runOpsBackupsMaintenance"],
   // Cron job names → background targets (cron/add-job). Template stub uses the
   // demo step so the golden product validates; replace operationId when adding.
   // BEGIN WORKFLOW AREA cron-trigger-map FOR cron/add-job
@@ -36,7 +42,22 @@ export const baseTriggerMap: TriggerMap = {
 export const baseJobOperations: JobOperationConfigMap = {
   jobsDemoStepB: { timeoutMs: 30_000, maxAttempts: 5 },
   jobsDemoStepC: { timeoutMs: 30_000 },
+  raiseTestErrorMaintenance: { timeoutMs: 30_000 },
+  // Backs up every database; if they grow past this, split per database.
+  runOpsBackupsMaintenance: { timeoutMs: 120_000, maxAttempts: 2 },
 };
+
+/**
+ * Every OpenAPI document jobs may target or be enqueued from: the product's
+ * own spec, plus the errors test operation and the ops self-test (so the
+ * Diagnostics failing-job probe validates).
+ */
+export const baseJobsApiSpec = (productSpec: OpenApiDocument): OpenApiDocument[] => [
+  productSpec,
+  raiseTestErrorMaintenanceOperationJsonSpec as unknown as OpenApiDocument,
+  runOpsDiagnosticProbeOperationJsonSpec as unknown as OpenApiDocument,
+  runOpsBackupsMaintenanceOperationJsonSpec as unknown as OpenApiDocument,
+];
 
 const jobsDbAccessor = createOnDiskDbKeyAccessor({
   packageUrl: import.meta.url,
@@ -62,7 +83,7 @@ export const runBaseJobs = (
     return runJobs({
       triggerMap: baseTriggerMap,
       operationConfig: baseJobOperations,
-      apiSpec,
+      apiSpec: baseJobsApiSpec(apiSpec),
       targetSocketPath:
         (
           typedEnv as {

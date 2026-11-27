@@ -381,6 +381,7 @@ export function createAuditRecorder(
       }
       const outcome = outcomeForEntry(entry, res.statusCode);
       const { authMethod, actorUserId } = resolveActor(saf, res);
+      if (entry.machineOnly && authMethod === "kratos_session") return;
       const ts = new Date();
       const durationMs = Date.now() - startedAt;
       // Express clears `req.params` once a request leaves its router (e.g. an

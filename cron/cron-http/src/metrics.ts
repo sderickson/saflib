@@ -1,5 +1,5 @@
 import { latencyBuckets } from "@saflib/node";
-import client from "prom-client";
+import client from "@prometheus-io/client";
 
 const cronMetricName = "cron_job_duration_seconds";
 const cronMetricHelp = "duration histogram of cron jobs";
