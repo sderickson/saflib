@@ -74,6 +74,7 @@ const groups = computed<AdminNavGroup[]>(() => [
       },
       { ...adminLinks.opsMetrics, name: "Metrics", match: sectionMatch("metrics") },
       { ...adminLinks.statusHealth, name: "Status", match: sectionMatch("status") },
+      { ...adminLinks.backups, name: "Backups" },
       { ...adminLinks.opsTokens, name: "Admin API" },
     ],
   },

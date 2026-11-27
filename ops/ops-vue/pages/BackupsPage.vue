@@ -1,5 +1,6 @@
 <template>
   <ContentWidth variant="full">
+    <AdminPageTitle class="mb-4">{{ strings.page_title }}</AdminPageTitle>
     <v-progress-linear v-if="query.isPending.value" indeterminate />
     <v-alert v-else-if="data && !data.configured" type="warning" variant="tonal" density="compact" data-test="backups-off">
       {{ strings.not_configured }}
@@ -103,7 +104,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { AdminPanel, ContentWidth } from "@saflib/vue/components";
+import { AdminPageTitle, AdminPanel, ContentWidth } from "@saflib/vue/components";
 import { formatShortDateTime } from "@saflib/vue";
 import type { OpsBackupResponse } from "@saflib/ops-spec";
 import { useOpsBackups, useRunOpsBackups } from "../requests/queries.ts";

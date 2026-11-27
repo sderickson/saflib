@@ -13,6 +13,7 @@ useHomeLoader();
 /** Where each Overview tile and attention item leads. Add the product's own tiles here. */
 const links = {
   health: adminLinks.statusHealth.path,
+  backups: adminLinks.backups.path,
   issues: adminLinks.opsIssues.path,
   alerts: adminLinks.opsAlerts.path,
   heartbeat: adminLinks.opsAlerts.path,

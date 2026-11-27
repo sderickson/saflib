@@ -72,9 +72,9 @@ export const adminLinks: LinkMap = {
     subdomain,
     path: "/analytics",
   },
-  statusBackups: {
+  backups: {
     subdomain,
-    path: "/status/backups",
+    path: "/backups",
   },
   analyticsTrends: {
     subdomain,

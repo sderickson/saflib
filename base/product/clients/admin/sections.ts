@@ -15,7 +15,6 @@ import {
   ProcessMetricsAsync,
   AnalyticsExploreAsync,
   AnalyticsTrendsAsync,
-  BackupsAsync,
 } from "@saflib/ops-vue";
 import { adminRepos } from "./repos.ts";
 
@@ -70,7 +69,6 @@ export const adminSections = {
     tabs: [
       { label: "Health", path: adminLinks.statusHealth.path, component: HealthAsync },
       { label: "Dependencies", path: adminLinks.opsDependencies.path, component: DependenciesAsync },
-      { label: "Backups", path: adminLinks.statusBackups.path, component: BackupsAsync },
       { label: "Build", path: adminLinks.statusBuild.path, component: BuildAsync, props: { repos: adminRepos } },
       {
         label: "Self-test",

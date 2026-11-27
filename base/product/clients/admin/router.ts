@@ -10,7 +10,7 @@ import { PageNotFound } from "@saflib/vue/components";
 import { isDevelopmentDeployment, scrollBehavior } from "@saflib/vue";
 import { SentEmailsAsync } from "@saflib/email-vue";
 import { UsersAsync } from "@saflib/ory-kratos-vue";
-import { OpsTokensAsync } from "@saflib/ops-vue";
+import { BackupsAsync, OpsTokensAsync } from "@saflib/ops-vue";
 import HomeAsync from "./pages/home/HomeAsync.vue";
 
 // BEGIN WORKFLOW AREA page-imports FOR vue/add-view
@@ -32,6 +32,10 @@ export const createAdminRouter = (options?: {
     {
       path: adminLinks.home.path,
       component: HomeAsync,
+    },
+    {
+      path: adminLinks.backups.path,
+      component: BackupsAsync,
     },
     {
       path: adminLinks.users.path,
