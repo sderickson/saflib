@@ -27,6 +27,7 @@
     "@saflib/node-log-db": "*",
     "@saflib/ops-db": "*",
     "@saflib/ops-spec": "*",
+    "@saflib/rate-limit": "*",
     "@saflib/utils": "*",
     "dejavu-fonts-ttf": "^2.37.3",
     "express": "^5.0.0",

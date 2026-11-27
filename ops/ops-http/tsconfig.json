@@ -20,6 +20,9 @@
       "path": "../../node-log/node-log-db"
     },
     {
+      "path": "../../rate-limit"
+    },
+    {
       "path": "../../utils"
     },
     {

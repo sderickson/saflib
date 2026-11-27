@@ -392,6 +392,9 @@
       "path": "./product-workflows"
     },
     {
+      "path": "./rate-limit"
+    },
+    {
       "path": "./sdk"
     },
     {
