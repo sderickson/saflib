@@ -22,6 +22,7 @@ const b = (database: string, hoursAgo: number, status: string, extra: Partial<Op
   verified_at: null,
   verified_ok: null,
   deleted_at: null,
+  source_path: null,
   ...extra,
 });
 

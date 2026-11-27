@@ -40,7 +40,7 @@ export async function uploadPreMigrationSnapshots(ctx: BackupContext, dir: strin
       return p && source && resolve(p) === source;
     });
     const database = match?.name ?? name.replace(/-\d{4}-\d{2}-\d{2}T.*$/, "");
-    await runBackup(ctx, { name: database, path: file }, "pre-migration", `pre-migration:${database}:${name}`);
+    await runBackup(ctx, { name: database, path: file }, "pre-migration", `pre-migration:${database}:${name}`, source);
     rmSync(file, { force: true });
     rmSync(`${file}.json`, { force: true });
     done++;

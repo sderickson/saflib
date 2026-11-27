@@ -9,7 +9,8 @@
     ".": "./ops.ts"
   },
   "bin": {
-    "ops-tokens": "./bin/ops-tokens.ts"
+    "ops-tokens": "./bin/ops-tokens.ts",
+    "backups": "./bin/backups.ts"
   },
   "scripts": {
     "test": "vitest run",

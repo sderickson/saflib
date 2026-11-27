@@ -48,3 +48,5 @@ export {
 export type { OpsAuditSource } from "./audit/source.ts";
 export type { BackupDatabase, OpsBackupsConfig } from "./backups/runner.ts";
 export { enablePreMigrationBackups } from "./backups/pre-migration.ts";
+export { downloadBackup, restoreBackup } from "./backups/restore.ts";
+export { runBackupsCli } from "./backups/cli.ts";

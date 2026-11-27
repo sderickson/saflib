@@ -265,6 +265,8 @@ export interface OpsBackup {
   verified_ok: boolean | null;
   /** Removed by retention. */
   deleted_at: Date | null;
+  /** The live database file it was taken from (where a restore puts it back). */
+  source_path: string | null;
 }
 
 export const opsBackups = sqliteTable(
@@ -288,6 +290,7 @@ export const opsBackups = sqliteTable(
     verified_at: integer("verified_at", { mode: "timestamp_ms" }),
     verified_ok: integer("verified_ok", { mode: "boolean" }),
     deleted_at: integer("deleted_at", { mode: "timestamp_ms" }),
+    source_path: text("source_path"),
   },
   (t) => [index("ops_backups_database_started_idx").on(t.database, t.started_at)],
 );

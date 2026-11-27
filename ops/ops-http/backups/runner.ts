@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { createReadStream, createWriteStream, mkdtempSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { Transform } from "node:stream";
 import { createZstdCompress } from "node:zlib";
@@ -69,14 +69,25 @@ export async function runBackup(
   database: BackupDatabase,
   tag: OpsBackupTag,
   claimKey: string,
+  /** The live file this restores to, when `database.path` is a snapshot (pre-migration). */
+  sourcePath?: string,
 ): Promise<OpsBackup | undefined> {
   const now = ctx.now?.() ?? new Date();
-  const claimed = await throwError(claimBackup(ctx.dbKey, { database: database.name, tag, claimKey, now }));
+  const resolved = resolvePath(database);
+  const claimed = await throwError(
+    claimBackup(ctx.dbKey, {
+      database: database.name,
+      tag,
+      claimKey,
+      now,
+      sourcePath: sourcePath ?? (resolved ? resolve(resolved) : null),
+    }),
+  );
   if (!claimed) return undefined;
 
   const dir = mkdtempSync(join(tmpdir(), "saf-backup-"));
   try {
-    const source = resolvePath(database);
+    const source = resolved;
     if (!source) throw new Error("No database file to back up");
     const copy = join(dir, `${database.name}.sqlite`);
     // A consistent, compacted copy while the app keeps writing; read-only

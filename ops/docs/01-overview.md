@@ -2,7 +2,7 @@
 
 `ops` is the **agent-facing ops API** for SAF products: a small set of read-mostly endpoints, authenticated by a machine token, that let a maintenance agent (or a human with `curl`) check on a running product without a user session, a dashboard, or database access.
 
-For an agent (or person) checking on a product with a token, start with the [agent runbook](./02-agent-runbook.md).
+For an agent (or person) checking on a product with a token, start with the [agent runbook](./02-agent-runbook.md). Backups, and how to look at or restore one: [backups](./03-backups.md).
 
 It is being built in phases; see [`plans/agent-maintainable-ops.md`](../../plans/agent-maintainable-ops.md). Today it provides ops tokens, health checks, deploy history, persisted logs, grouped issues, and a digest. Logs, issues, metrics, audit, alerts, and dependency status follow.
 

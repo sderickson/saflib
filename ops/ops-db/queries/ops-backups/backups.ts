@@ -13,7 +13,7 @@ import { opsBackups, type OpsBackup, type OpsBackupStatus, type OpsBackupTag } f
 export const claimBackup = queryWrapper(
   async (
     dbKey: DbKey,
-    params: { database: string; tag: OpsBackupTag; claimKey: string; now?: Date },
+    params: { database: string; tag: OpsBackupTag; claimKey: string; now?: Date; sourcePath?: string | null },
   ): Promise<ReturnsError<OpsBackup | undefined, never>> => {
     const db = opsDbManager.get(dbKey)!;
     const rows = await db
@@ -25,6 +25,7 @@ export const claimBackup = queryWrapper(
         claim_key: params.claimKey,
         started_at: params.now ?? new Date(),
         status: "running",
+        source_path: params.sourcePath ?? null,
       })
       .onConflictDoNothing({ target: opsBackups.claim_key })
       .returning();
@@ -100,6 +101,15 @@ export const getLatestPassedBackup = queryWrapper(
       where: and(eq(opsBackups.database, database), eq(opsBackups.status, "ok"), isNull(opsBackups.deleted_at)),
       orderBy: [desc(opsBackups.started_at)],
     });
+    return { result: row };
+  },
+);
+
+/** One backup by id (kept or not). */
+export const getBackup = queryWrapper(
+  async (dbKey: DbKey, id: string): Promise<ReturnsError<OpsBackup | undefined, never>> => {
+    const db = opsDbManager.get(dbKey)!;
+    const row = await db.query.opsBackups.findFirst({ where: eq(opsBackups.id, id) });
     return { result: row };
   },
 );

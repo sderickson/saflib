@@ -9,6 +9,7 @@ import {
   type BackupContext,
 } from "./runner.ts";
 import { uploadPreMigrationSnapshots } from "./pre-migration.ts";
+import { pruneReplacedFiles } from "./restore.ts";
 
 /**
  * Start the backup schedule in this process: a deploy backup soon after a
@@ -42,6 +43,10 @@ export function startBackups(
       await runDueBackups(ctx);
       await applyBackupRetention(ctx);
       await verifyLatestBackups(ctx);
+      // Files a restore moved aside are kept a week.
+      pruneReplacedFiles(
+        ctx.config.databases.map((d) => (typeof d.path === "function" ? d.path() : d.path)).filter((p): p is string => !!p),
+      );
     } catch (e) {
       report(e);
     } finally {

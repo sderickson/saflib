@@ -1,6 +1,6 @@
 # App-level backups (plan)
 
-Status: **agreed direction**, not built. Replaces the earlier off-site design.
+Status: **built** (phases 1–5; restore is a command in the app image, see `ops/docs/03-backups.md`). Remaining: a `saf-deploy` wrapper that stops the app, runs the restore and starts it again.
 
 ## Shape
 

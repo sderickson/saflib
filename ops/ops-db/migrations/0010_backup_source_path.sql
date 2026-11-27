@@ -1,0 +1,1 @@
+ALTER TABLE `ops_backups` ADD `source_path` text;

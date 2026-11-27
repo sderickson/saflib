@@ -70,6 +70,7 @@ export {
   claimBackup,
   failStaleBackups,
   finishBackup,
+  getBackup,
   getLatestPassedBackup,
   listBackups,
   listBackupsStartedBefore,

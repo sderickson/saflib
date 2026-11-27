@@ -1,6 +1,6 @@
 # Product analytics (plan)
 
-Status: **agreed direction**, not built.
+Status: **built** (phases 1–4). Remaining: phase 5, download a production DB copy that deletes itself.
 
 ## Goal
 
