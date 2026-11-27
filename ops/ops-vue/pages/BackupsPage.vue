@@ -41,7 +41,6 @@
             >
               <span class="backups-day__num">{{ d.date.getUTCDate() }}</span>
               <span class="backups-day__dot" :class="`backups-dot--${d.tone}`" />
-              <span v-if="d.extras" class="backups-day__extras" :title="d.extrasTitle">+{{ d.extras }}</span>
             </button>
           </div>
           <div class="backups-legend">
@@ -86,8 +85,8 @@
       </div>
     </template>
 
-    <v-dialog :model-value="!!openRun" max-width="1120" scrollable @update:model-value="(v: boolean) => !v && (openRun = null)">
-      <v-card v-if="openRun" data-test="backups-dialog">
+    <v-dialog :model-value="!!openRun" max-width="960" scrollable @update:model-value="(v: boolean) => !v && (openRun = null)">
+      <v-card v-if="openRun" height="min(85vh, 900px)" data-test="backups-dialog">
         <v-card-title class="text-subtitle-1">
           {{ strings.dialog_title(strings.tags[openRun.tag] ?? openRun.tag, formatShortDateTime(openRun.started_at)) }}
         </v-card-title>
@@ -96,39 +95,58 @@
             <StatusIcon :tone="toneOf(b.status)" size="14" class="me-1" />{{ b.database }}
           </v-tab>
         </v-tabs>
-        <v-card-text v-if="openBackup" class="pt-3">
+        <v-divider />
+        <v-card-text v-if="openBackup" class="pt-4">
           <ul v-if="openBackup.problems.length || openBackup.error" class="backups-problems">
             <li v-for="p in openBackup.problems" :key="p">{{ p }}</li>
             <li v-if="openBackup.error">{{ openBackup.error }}</li>
           </ul>
-          <dl class="backups-facts">
+          <dl class="backups-facts" data-test="backups-facts">
             <dt>{{ strings.size }}</dt>
             <dd>{{ bytes(openBackup.size_bytes) }} <span class="text-medium-emphasis">({{ bytes(openBackup.raw_bytes) }} uncompressed)</span></dd>
             <dt>{{ strings.migration }}</dt>
             <dd class="saf-admin-mono">{{ openBackup.migration ?? "—" }}</dd>
             <dt>{{ strings.hash }}</dt>
-            <dd class="saf-admin-mono">{{ openBackup.sha256 ?? "—" }}</dd>
+            <dd>
+              <button
+                v-if="openBackup.sha256"
+                type="button"
+                class="backups-hash saf-admin-mono"
+                :title="openBackup.sha256"
+                data-test="backups-hash"
+                @click="copyHash(openBackup.sha256)"
+              >
+                {{ openBackup.sha256.slice(0, 12) }}…
+                <v-icon :icon="copied === openBackup.sha256 ? 'mdi-check' : 'mdi-content-copy'" size="14" class="ms-1" />
+                <span v-if="copied === openBackup.sha256" class="text-caption text-medium-emphasis ms-1">{{ strings.copied }}</span>
+              </button>
+              <span v-else>—</span>
+            </dd>
             <dt />
             <dd class="text-medium-emphasis">
               {{ strings.verified(openBackup.verified_ok, openBackup.verified_at ? formatShortDateTime(openBackup.verified_at) : null) }}
             </dd>
           </dl>
-          <v-table v-if="tableRows.length" density="compact" class="mt-3" data-test="backups-tables">
+          <v-table v-if="tableRows.length" density="compact" class="mt-4" data-test="backups-tables">
             <thead>
               <tr>
                 <th>{{ strings.table_cols.table }}</th>
                 <th class="text-end">{{ strings.table_cols.rows }}</th>
-                <th class="saf-admin-hide-xs">{{ strings.table_cols.created_from }}</th>
-                <th class="saf-admin-hide-xs">{{ strings.table_cols.created_to }}</th>
-                <th class="saf-admin-hide-xs">{{ strings.table_cols.updated_from }}</th>
-                <th class="saf-admin-hide-xs">{{ strings.table_cols.updated_to }}</th>
+                <th class="saf-admin-hide-xs">{{ strings.table_cols.range }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="t in tableRows" :key="t.name" data-test="backups-table-row">
                 <td class="saf-admin-mono">{{ t.name }}</td>
                 <td class="text-end">{{ t.rows.toLocaleString() }}</td>
-                <td v-for="c in t.times" :key="c.key" class="text-caption saf-admin-hide-xs text-no-wrap">{{ c.text }}</td>
+                <td class="saf-admin-hide-xs text-no-wrap">
+                  <template v-if="t.range">
+                    {{ t.range.from }}
+                    <v-icon icon="mdi-arrow-right" size="14" class="mx-1 text-medium-emphasis" />
+                    {{ t.range.to }}
+                  </template>
+                  <span v-else class="text-medium-emphasis">—</span>
+                </td>
               </tr>
             </tbody>
           </v-table>
@@ -145,12 +163,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { AdminPageTitle, AdminPanel, ContentWidth } from "@saflib/vue/components";
-import { formatShortDateTime } from "@saflib/vue";
+import { formatShortDate, formatShortDateTime } from "@saflib/vue";
 import type { OpsBackupResponse } from "@saflib/ops-spec";
 import { useOpsBackups, useRunOpsBackups } from "../requests/queries.ts";
 import StatusIcon from "../components/StatusIcon.vue";
 import { formatBytes } from "./metric-format.ts";
-import { formatStatTime, groupBackupRuns, type BackupRun } from "./backup-runs.ts";
+import { groupBackupRuns, tableDateRange, type BackupRun } from "./backup-runs.ts";
 import { ops_backups as strings } from "./Backups.strings.ts";
 
 const query = useOpsBackups();
@@ -194,14 +212,7 @@ const monthDays = computed(() => {
       const t = b.status as Tone;
       if (RANK[t] > RANK[tone]) tone = t;
     }
-    const extrasList = list.filter((b) => b.tag !== "daily");
-    return {
-      key,
-      date,
-      tone,
-      extras: extrasList.length,
-      extrasTitle: extrasList.map((b) => `${strings.tags[b.tag] ?? b.tag}: ${b.database}`).join("\n"),
-    };
+    return { key, date, tone };
   });
 });
 // Monday-first grid.
@@ -223,10 +234,7 @@ const tableRows = computed(() =>
     .map(([name, t]) => ({
       name,
       rows: t.rows,
-      times: (["created_min", "created_max", "updated_min", "updated_max"] as const).map((key) => ({
-        key,
-        text: formatStatTime(t[key], formatShortDateTime),
-      })),
+      range: tableDateRange(t, formatShortDate),
     })),
 );
 const selectedLabel = computed(() =>
@@ -249,6 +257,14 @@ function runState(r: BackupRun): string {
 }
 const stateTone = (state: string): "ok" | "warn" | "bad" =>
   state === "verified" || state === "checked" ? "ok" : state === "failed" || state === "mismatch" ? "bad" : "warn";
+const copied = ref<string | null>(null);
+async function copyHash(hash: string) {
+  await navigator.clipboard.writeText(hash);
+  copied.value = hash;
+  setTimeout(() => {
+    if (copied.value === hash) copied.value = null;
+  }, 1500);
+}
 const bytes = (n: number | null) => (n === null ? "—" : formatBytes(n));
 </script>
 
@@ -323,13 +339,6 @@ const bytes = (n: number | null) => (n === null ? "—" : formatBytes(n));
 .backups-dot--none {
   background: rgba(var(--v-theme-on-surface), 0.12);
 }
-.backups-day__extras {
-  position: absolute;
-  top: 2px;
-  right: 4px;
-  font-size: 0.625rem;
-  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
-}
 .backups-legend {
   display: flex;
   flex-wrap: wrap;
@@ -349,9 +358,24 @@ const bytes = (n: number | null) => (n === null ? "—" : formatBytes(n));
 .backups-facts {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 2px 16px;
-  margin: 0;
+  gap: 4px 24px;
+  margin: 8px 0 0;
+  padding: 12px 16px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
   font-size: 0.8125rem;
+}
+.backups-hash {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.backups-hash:hover {
+  text-decoration: underline;
 }
 .backups-facts dt {
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));

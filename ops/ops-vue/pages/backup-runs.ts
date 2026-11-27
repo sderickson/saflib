@@ -73,3 +73,16 @@ export function formatStatTime(v: unknown, format: (iso: string) => string): str
   const d = parseStatTime(v);
   return d ? format(d.toISOString()) : String(v);
 }
+
+/**
+ * A table's data range: earliest created to latest updated (latest created
+ * when the table has no updated_at, e.g. drizzle's migrations table).
+ */
+export function tableDateRange(
+  t: { created_min?: unknown; created_max?: unknown; updated_max?: unknown },
+  format: (iso: string) => string,
+): { from: string; to: string } | null {
+  const end = t.updated_max ?? t.created_max;
+  if ((t.created_min === null || t.created_min === undefined) && (end === null || end === undefined)) return null;
+  return { from: formatStatTime(t.created_min, format), to: formatStatTime(end, format) };
+}

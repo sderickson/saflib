@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { OpsBackupResponse } from "@saflib/ops-spec";
-import { formatStatTime, groupBackupRuns, parseStatTime } from "./backup-runs.ts";
+import { formatStatTime, groupBackupRuns, parseStatTime, tableDateRange } from "./backup-runs.ts";
 
 const b = (database: string, at: string, tag = "daily", status: OpsBackupResponse["status"] = "ok", rows = 1): OpsBackupResponse => ({
   id: `${database}-${at}`,
@@ -65,5 +65,21 @@ describe("parseStatTime", () => {
     expect(formatStatTime("2026-08-10 18:48:39.639452+00:00", fmt)).toBe("fmt:2026-08-10T18:48:39.639Z");
     expect(formatStatTime("abc", fmt)).toBe("abc");
     expect(formatStatTime(null, fmt)).toBe("—");
+  });
+});
+
+describe("tableDateRange", () => {
+  const fmt = (iso: string) => iso.slice(0, 10);
+  it("runs from earliest created to latest updated", () => {
+    expect(tableDateRange({ created_min: 1_700_000_000_000, created_max: 1_710_000_000_000, updated_max: 1_720_000_000_000 }, fmt)).toEqual({
+      from: "2023-11-14",
+      to: "2024-07-03",
+    });
+  });
+  it("falls back to latest created without updated_at", () => {
+    expect(tableDateRange({ created_min: 1_700_000_000_000, created_max: 1_710_000_000_000 }, fmt)).toEqual({ from: "2023-11-14", to: "2024-03-09" });
+  });
+  it("is null without timestamps", () => {
+    expect(tableDateRange({}, fmt)).toBeNull();
   });
 });

@@ -14,10 +14,7 @@ export const ops_backups = {
   table_cols: {
     table: "Table",
     rows: "Rows",
-    created_from: "First created",
-    created_to: "Last created",
-    updated_from: "First updated",
-    updated_to: "Last updated",
+    range: "Data from",
   },
   /** One word for a run: worst of its checks and read-backs. */
   run_states: {
@@ -48,5 +45,6 @@ export const ops_backups = {
   migration: "Migration",
   size: "Size",
   hash: "sha256",
+  copied: "Copied",
   change_since: "since the backup before",
 };
