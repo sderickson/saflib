@@ -62,27 +62,23 @@
               <tr>
                 <th>{{ strings.cols.when }}</th>
                 <th>{{ strings.cols.kind }}</th>
-                <th>{{ strings.cols.status }}</th>
+                <th>{{ strings.cols.verified }}</th>
                 <th class="text-end">{{ strings.cols.databases }}</th>
                 <th class="text-end">{{ strings.cols.size }}</th>
                 <th class="text-end saf-admin-hide-xs">{{ strings.cols.rows }}</th>
-                <th class="saf-admin-hide-xs">{{ strings.cols.verified }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="r in shownRuns" :key="r.key" class="backups-run" data-test="backups-run" @click="openRun = r">
                 <td class="text-no-wrap">{{ formatShortDateTime(r.started_at) }}</td>
                 <td>{{ strings.tags[r.tag] ?? r.tag }}</td>
-                <td class="text-no-wrap">
-                  <StatusIcon :tone="toneOf(r.status)" size="16" />
-                  <span class="ms-1">{{ strings.statuses[r.status] ?? r.status }}</span>
+                <td class="text-no-wrap" :title="strings.run_state_hints[runState(r)]">
+                  <StatusIcon :tone="stateTone(runState(r))" size="16" />
+                  <span class="ms-1">{{ strings.run_states[runState(r)] }}</span>
                 </td>
                 <td class="text-end">{{ r.backups.length }}</td>
                 <td class="text-end text-no-wrap">{{ bytes(r.size_bytes) }}</td>
                 <td class="text-end saf-admin-hide-xs">{{ r.rows.toLocaleString() }}</td>
-                <td class="saf-admin-hide-xs text-medium-emphasis">
-                  {{ r.verified === null ? strings.verified_short.none : r.verified ? strings.verified_short.ok : strings.verified_short.bad }}
-                </td>
               </tr>
             </tbody>
           </v-table>
@@ -95,7 +91,7 @@
         <v-card-title class="text-subtitle-1">
           {{ strings.dialog_title(strings.tags[openRun.tag] ?? openRun.tag, formatShortDateTime(openRun.started_at)) }}
         </v-card-title>
-        <v-tabs v-model="openDb" density="compact" show-arrows>
+        <v-tabs v-model="openDb" density="compact" show-arrows class="flex-0-0">
           <v-tab v-for="b in openRun.backups" :key="b.id" :value="b.id" data-test="backups-db-tab">
             <StatusIcon :tone="toneOf(b.status)" size="14" class="me-1" />{{ b.database }}
           </v-tab>
@@ -122,16 +118,17 @@
               <tr>
                 <th>{{ strings.table_cols.table }}</th>
                 <th class="text-end">{{ strings.table_cols.rows }}</th>
-                <th class="saf-admin-hide-xs">{{ strings.table_cols.created }}</th>
-                <th class="saf-admin-hide-xs">{{ strings.table_cols.updated }}</th>
+                <th class="saf-admin-hide-xs">{{ strings.table_cols.created_from }}</th>
+                <th class="saf-admin-hide-xs">{{ strings.table_cols.created_to }}</th>
+                <th class="saf-admin-hide-xs">{{ strings.table_cols.updated_from }}</th>
+                <th class="saf-admin-hide-xs">{{ strings.table_cols.updated_to }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="t in tableRows" :key="t.name" data-test="backups-table-row">
                 <td class="saf-admin-mono">{{ t.name }}</td>
                 <td class="text-end">{{ t.rows.toLocaleString() }}</td>
-                <td class="text-caption saf-admin-hide-xs text-no-wrap">{{ t.created }}</td>
-                <td class="text-caption saf-admin-hide-xs text-no-wrap">{{ t.updated }}</td>
+                <td v-for="c in t.times" :key="c.key" class="text-caption saf-admin-hide-xs text-no-wrap">{{ c.text }}</td>
               </tr>
             </tbody>
           </v-table>
@@ -226,8 +223,10 @@ const tableRows = computed(() =>
     .map(([name, t]) => ({
       name,
       rows: t.rows,
-      created: t.created_min != null ? `${formatStatTime(t.created_min)} → ${formatStatTime(t.created_max)}` : "—",
-      updated: t.updated_max != null ? `${formatStatTime(t.updated_min)} → ${formatStatTime(t.updated_max)}` : "—",
+      times: (["created_min", "created_max", "updated_min", "updated_max"] as const).map((key) => ({
+        key,
+        text: formatStatTime(t[key], formatShortDateTime),
+      })),
     })),
 );
 const selectedLabel = computed(() =>
@@ -240,6 +239,16 @@ watch(month, (m) => {
 });
 
 const toneOf = (s: string): "ok" | "warn" | "bad" => (s === "ok" ? "ok" : s === "failed" ? "bad" : "warn");
+/** One state per run: failures and mismatches first, then "looks wrong", then verified vs only checked. */
+function runState(r: BackupRun): string {
+  if (r.status === "running") return "running";
+  if (r.status === "failed") return "failed";
+  if (r.verified === false) return "mismatch";
+  if (r.status === "suspicious") return "suspicious";
+  return r.verified ? "verified" : "checked";
+}
+const stateTone = (state: string): "ok" | "warn" | "bad" =>
+  state === "verified" || state === "checked" ? "ok" : state === "failed" || state === "mismatch" ? "bad" : "warn";
 const bytes = (n: number | null) => (n === null ? "—" : formatBytes(n));
 </script>
 

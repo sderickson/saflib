@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { OpsBackupResponse } from "@saflib/ops-spec";
-import { formatStatTime, groupBackupRuns } from "./backup-runs.ts";
+import { formatStatTime, groupBackupRuns, parseStatTime } from "./backup-runs.ts";
 
 const b = (database: string, at: string, tag = "daily", status: OpsBackupResponse["status"] = "ok", rows = 1): OpsBackupResponse => ({
   id: `${database}-${at}`,
@@ -37,12 +37,33 @@ describe("groupBackupRuns", () => {
   });
 });
 
-describe("formatStatTime", () => {
-  it("reads ms, seconds and ISO strings, and leaves the rest", () => {
-    const ms = formatStatTime(1795757554589);
-    expect(formatStatTime(1795757554)).toBe(ms);
-    expect(formatStatTime("2026-11-27 03:00:00")).not.toBe("2026-11-27 03:00:00");
-    expect(formatStatTime("abc")).toBe("abc");
-    expect(formatStatTime(null)).toBe("—");
+describe("run verification", () => {
+  it("is verified only when every database was read back and matched", () => {
+    const one = { ...b("main", "2026-11-27T03:00:01Z"), verified_ok: true };
+    const other = b("audit", "2026-11-27T03:00:02Z");
+    expect(groupBackupRuns([one, other])[0]!.verified).toBeNull();
+    expect(groupBackupRuns([one, { ...other, verified_ok: true }])[0]!.verified).toBe(true);
+    expect(groupBackupRuns([one, { ...other, verified_ok: false }])[0]!.verified).toBe(false);
+  });
+});
+
+describe("parseStatTime", () => {
+  it("reads ms, seconds and the string shapes databases use", () => {
+    const at = Date.UTC(2026, 7, 10, 18, 48, 39, 639);
+    expect(parseStatTime(at)?.getTime()).toBe(at);
+    expect(parseStatTime(Math.floor(at / 1000))?.getTime()).toBe(at - 639);
+    expect(parseStatTime("2026-08-10 18:48:39.639452+00:00")?.getTime()).toBe(at);
+    expect(parseStatTime("2026-08-10T18:48:39.639Z")?.getTime()).toBe(at);
+    expect(parseStatTime("2026-08-10 18:48:39")?.getTime()).toBe(at - 639);
+    expect(parseStatTime("2026-08-10 20:48:39+0200")?.getTime()).toBe(at - 639);
+    expect(parseStatTime("abc")).toBeNull();
+    expect(parseStatTime(42)).toBeNull();
+  });
+
+  it("formats through the admin's formatter, passing other values through", () => {
+    const fmt = (iso: string) => `fmt:${iso}`;
+    expect(formatStatTime("2026-08-10 18:48:39.639452+00:00", fmt)).toBe("fmt:2026-08-10T18:48:39.639Z");
+    expect(formatStatTime("abc", fmt)).toBe("abc");
+    expect(formatStatTime(null, fmt)).toBe("—");
   });
 });

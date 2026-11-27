@@ -9,7 +9,7 @@ export interface BackupRun {
   backups: OpsBackupResponse[];
   size_bytes: number;
   rows: number;
-  /** Whether every read-back done so far matched (null when none yet). */
+  /** false: a read-back didn't match; true: every database was read back and matched; else null. */
   verified: boolean | null;
 }
 
@@ -37,25 +37,39 @@ export function groupBackupRuns(backups: OpsBackupResponse[]): BackupRun[] {
     r.status = r.backups.reduce<BackupRun["status"]>((w, b) => (RANK[b.status] > RANK[w] ? b.status : w), "ok");
     r.size_bytes = r.backups.reduce((s, b) => s + (b.size_bytes ?? 0), 0);
     r.rows = r.backups.reduce((s, b) => s + totalRows(b), 0);
-    const checked = r.backups.filter((b) => b.verified_ok !== null);
-    r.verified = checked.length ? checked.every((b) => b.verified_ok) : null;
+    // A mismatch anywhere is a mismatch; verified only when every database was read back.
+    r.verified = r.backups.some((b) => b.verified_ok === false)
+      ? false
+      : r.backups.every((b) => b.verified_ok === true)
+        ? true
+        : null;
   }
   return runs;
 }
 
 /**
- * A created/updated value as a local date and time: epoch milliseconds,
- * epoch seconds or an ISO string; anything else as is.
+ * A created/updated value as a Date: epoch milliseconds, epoch seconds, or
+ * an ISO-ish string (`2026-08-10 18:48:39.639452+00:00`, with or without
+ * `T`, fraction or zone; no zone means UTC). Null when it isn't a time.
  */
-export function formatStatTime(v: unknown): string {
-  if (v === null || v === undefined || v === "") return "—";
-  let d: Date | null = null;
-  if (typeof v === "number") d = new Date(v > 1e11 ? v : v * 1000);
-  else if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}/.test(v)) d = new Date(v.includes("T") || v.endsWith("Z") ? v : `${v.replace(" ", "T")}Z`);
-  else if (typeof v === "string" && /^\d+$/.test(v)) {
+export function parseStatTime(v: unknown): Date | null {
+  if (typeof v === "number" || (typeof v === "string" && /^\d+$/.test(v))) {
     const n = Number(v);
-    d = new Date(n > 1e11 ? n : n * 1000);
+    if (n < 1e8) return null;
+    return new Date(n > 1e11 ? n : n * 1000);
   }
-  if (!d || Number.isNaN(d.getTime())) return String(v);
-  return d.toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
+  if (typeof v !== "string") return null;
+  const m = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}(?::\d{2})?)(?:\.(\d+))?\s*(Z|[+-]\d{2}:?\d{2})?$/.exec(v.trim());
+  if (!m) return null;
+  const ms = m[3] ? `.${m[3].slice(0, 3).padEnd(3, "0")}` : "";
+  const zone = !m[4] || m[4] === "Z" ? "Z" : m[4].includes(":") ? m[4] : `${m[4].slice(0, 3)}:${m[4].slice(3)}`;
+  const d = new Date(`${m[1]}T${m[2]}${ms}${zone}`);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** A created/updated value in local time like the rest of the admin, or as is when it isn't a time. */
+export function formatStatTime(v: unknown, format: (iso: string) => string): string {
+  if (v === null || v === undefined || v === "") return "—";
+  const d = parseStatTime(v);
+  return d ? format(d.toISOString()) : String(v);
 }
